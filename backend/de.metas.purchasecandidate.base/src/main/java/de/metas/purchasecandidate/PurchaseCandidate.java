@@ -2,6 +2,7 @@ package de.metas.purchasecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemId;
@@ -10,6 +11,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
@@ -182,7 +184,11 @@ public class PurchaseCandidate
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
-			final boolean simulated)
+			final boolean simulated,
+			final boolean isDropShip,
+			@Nullable final BPartnerId dropShipBPartnerId,
+			@Nullable final BPartnerLocationId dropShipLocationId,
+			@Nullable final UserId dropShipUserId)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -210,6 +216,10 @@ public class PurchaseCandidate
 				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
+				.isDropShip(isDropShip)
+				.dropShipBPartnerId(dropShipBPartnerId)
+				.dropShipLocationId(dropShipLocationId)
+				.dropShipUserId(dropShipUserId)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -424,9 +434,29 @@ public class PurchaseCandidate
 
 
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
+	}
+
+	public boolean isDropShip()
+	{
+		return getImmutableFields().isDropShip();
+	}
+
+	public @Nullable BPartnerId getDropShipBPartnerId()
+	{
+		return getImmutableFields().getDropShipBPartnerId();
+	}
+
+	public @Nullable BPartnerLocationId getDropShipLocationId()
+	{
+		return getImmutableFields().getDropShipLocationId();
+	}
+
+	public @Nullable UserId getDropShipUserId()
+	{
+		return getImmutableFields().getDropShipUserId();
 	}
 
 	public boolean hasChanges()

@@ -107,6 +107,13 @@ import java.util.Set;
 				.externalHeaderId(orderAggregationKey.getExternalId())
 				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
+		if (orderAggregationKey.isDropShip())
+		{
+			orderFactory.dropShip(
+					orderAggregationKey.getDropShipBPartnerId(),
+					orderAggregationKey.getDropShipLocationId(),
+					orderAggregationKey.getDropShipUserId());
+		}
 
 		if (docType != null)
 		{

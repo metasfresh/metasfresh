@@ -1895,6 +1895,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
+    permissions:
+      actions: write    # trigger reports-cleanup workflow when disk space is low
+      contents: read
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -2003,20 +2006,23 @@ jobs:
           </body></html>
           EOF
 
-      - name: Update branch metadata
+      - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
           ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os
+          import json, sys, os, shutil
           from datetime import datetime, timezone
+
+          MAX_BUILDS_PER_BRANCH = 3
 
           branch = sys.argv[1]
           version = sys.argv[2]
           metadata_dir = "/var/www/test-reports/_metadata"
           metadata_file = os.path.join(metadata_dir, f"{branch}.json")
+          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
 
           os.makedirs(metadata_dir, exist_ok=True)
 
@@ -2039,11 +2045,21 @@ jobs:
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           })
 
-          # Keep only last 20 builds
-          data["builds"] = data["builds"][:20]
+          # Cap metadata and collect evicted versions
+          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
+          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
 
           with open(metadata_file, "w") as f:
               json.dump(data, f, indent=2)
+
+          # Delete build directories for evicted versions
+          for ver in evicted:
+              build_path = os.path.join(builds_dir, ver)
+              if os.path.isdir(build_path):
+                  shutil.rmtree(build_path)
+                  print(f"Pruned old build: {branch}/{ver}")
+
+          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
           PYEOF
 
       - name: Update landing page
@@ -2141,8 +2157,8 @@ jobs:
                       const buildsDiv = document.createElement('div');
                       buildsDiv.className = 'builds';
 
-                      // Show newest 10 builds (metadata is already sorted newest-first)
-                      const builds = branchData.builds.slice(0, 10);
+                      // Show all builds (metadata is capped to 3 per branch at publish time)
+                      const builds = branchData.builds;
                       builds.forEach(function(build) {
                           buildsDiv.appendChild(createBuildElement(branchData.branch, build));
                       });
@@ -2193,6 +2209,23 @@ jobs:
           </body>
           </html>
           HTMLEOF
+
+      - name: Check disk space and trigger cleanup
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          AVAIL_KB=$(ssh reports-server "df --output=avail /var/www/test-reports | tail -1 | tr -d ' '")
+          AVAIL_MB=$((AVAIL_KB / 1024))
+          AVAIL_GB=$(echo "scale=1; $AVAIL_KB / 1048576" | bc)
+          echo "Available disk space: ${AVAIL_GB} GB (${AVAIL_MB} MB)"
+
+          THRESHOLD_KB=2097152  # 2 GB
+          if [ "$AVAIL_KB" -lt "$THRESHOLD_KB" ]; then
+            echo "::warning::Disk space below 2 GB (${AVAIL_GB} GB) — triggering reports-cleanup workflow"
+            gh workflow run reports-cleanup.yml --repo "$GITHUB_REPOSITORY"
+          fi
 
       - name: Produce summary
         if: always()
