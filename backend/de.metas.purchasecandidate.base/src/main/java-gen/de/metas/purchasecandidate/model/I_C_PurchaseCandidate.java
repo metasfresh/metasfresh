@@ -217,6 +217,31 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -261,31 +286,6 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Bedarfs-ID.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
@@ -307,90 +307,6 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DemandReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "DemandReference", null);
 	String COLUMNNAME_DemandReference = "DemandReference";
-
-	/**
-	 * Set Drop Shipment.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDropShip (boolean IsDropShip);
-
-	/**
-	 * Get Drop Shipment.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDropShip();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsDropShip", null);
-	String COLUMNNAME_IsDropShip = "IsDropShip";
-
-	/**
-	 * Set Drop Shipment Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
-
-	/**
-	 * Get Drop Shipment Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getDropShip_BPartner_ID();
-
-	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
-
-	/**
-	 * Set Drop Shipment Location / Address.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDropShip_Location_ID (int DropShip_Location_ID);
-
-	/**
-	 * Get Drop Shipment Location / Address.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getDropShip_Location_ID();
-
-	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
-	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
-
-	/**
-	 * Set Drop Shipment Contact.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDropShip_User_ID (int DropShip_User_ID);
-
-	/**
-	 * Get Drop Shipment Contact.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getDropShip_User_ID();
-
-	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User> COLUMN_DropShip_User_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_User_ID", org.compiere.model.I_AD_User.class);
-	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
 	 * Set Discount %.
@@ -456,6 +372,66 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DiscountInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "DiscountInternal", null);
 	String COLUMNNAME_DiscountInternal = "DiscountInternal";
+
+	/**
+	 * Set Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_BPartner_ID(int DropShip_BPartner_ID);
+
+	/**
+	 * Get Ship Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_BPartner_ID();
+
+	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Ship Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_ID(int DropShip_Location_ID);
+
+	/**
+	 * Get Ship Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_ID();
+
+	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+
+	/**
+	 * Set Ship Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_User_ID(int DropShip_User_ID);
+
+	/**
+	 * Get Ship Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_User_ID();
+
+	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
 	 * Set External Header ID.
@@ -586,6 +562,29 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsAggregatePO = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsAggregatePO", null);
 	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
+
+	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip(boolean IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set Discount Manual.
@@ -862,26 +861,6 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_ID();
-
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
-
-	/**
 	 * Set Price diff..
 	 *
 	 * <br>Type: CostPrice
@@ -970,6 +949,26 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceInternal", null);
 	String COLUMNNAME_PriceInternal = "PriceInternal";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID(int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Processed.
