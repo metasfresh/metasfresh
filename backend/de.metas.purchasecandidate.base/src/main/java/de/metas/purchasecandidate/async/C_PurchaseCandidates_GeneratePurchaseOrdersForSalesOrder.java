@@ -3,7 +3,7 @@ package de.metas.purchasecandidate.async;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import de.metas.async.api.IWorkPackageQueueFactory;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -24,6 +24,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQuery;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -104,7 +105,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// Sub-query: find WP IDs from params where C_OrderSO_ID matches
-		final var paramQuery = queryBL
+		final IQuery<I_C_Queue_WorkPackage_Param> paramQuery = queryBL
 				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
 				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMNNAME_ParameterName, PARAM_C_ORDER_SO_ID)
 				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMNNAME_P_Number, BigDecimal.valueOf(salesOrderId.getRepoId()))
