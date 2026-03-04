@@ -60,6 +60,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
@@ -278,7 +279,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@NonNull
 	private static MediaType resolveContentType(@NonNull final JsonExternalSystemOutboundEndpoint endpointParameters)
 	{
-		return StringUtils.trimBlankToOptional(endpointParameters.getContentType())
+		return Optional.ofNullable(StringUtils.trimBlankToNull(endpointParameters.getContentType()))
 				.map(MediaType::parseMediaType)
 				.orElse(MediaType.APPLICATION_JSON);
 	}
