@@ -56,7 +56,7 @@ public class ExternalSystemOutboundEndpoint
 	
 	@Nullable String sasSignature;
 
-	@Nullable String contentType;
+	@NonNull String contentType;
 
 	@NonNull
 	public JsonExternalSystemOutboundEndpoint toJson()

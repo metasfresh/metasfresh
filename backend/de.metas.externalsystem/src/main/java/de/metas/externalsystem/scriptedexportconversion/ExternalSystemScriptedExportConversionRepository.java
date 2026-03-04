@@ -32,11 +32,13 @@ import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.ICacheResetListener;
 import de.metas.document.DocBaseType;
+import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,6 +49,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,6 +142,8 @@ public class ExternalSystemScriptedExportConversionRepository
 				.whereClause(config.getWhereClause())
 				.active(config.isActive())
 				.isTriggerOnComplete(config.isTriggerOnComplete())
+				.seqNo(config.getSeqNo() > 0 ? SeqNo.ofInt(config.getSeqNo()) : null)
+				.errorContext(ExternalSystemErrorContext.ofCodeOrUnknown(config.getExternalSystemErrorContext()))
 				.build();
 	}
 
@@ -155,6 +160,10 @@ public class ExternalSystemScriptedExportConversionRepository
 		@NonNull private final ImmutableListMultimap<AdTableAndClientId, ExternalSystemScriptedExportConversionConfig> allTriggerOnCompleteByTableAndClientId;
 		@Getter @NonNull private final ImmutableList<ExternalSystemScriptedExportConversionConfig> allActive;
 
+		private static final Comparator<ExternalSystemScriptedExportConversionConfig> BY_SEQNO = Comparator
+				.comparing((ExternalSystemScriptedExportConversionConfig c) -> c.getSeqNo() != null ? c.getSeqNo().toInt() : Integer.MAX_VALUE)
+				.thenComparing(c -> c.getId().getRepoId());
+
 		ExternalSystemScriptedExportConversionMap(final List<ExternalSystemScriptedExportConversionConfig> list)
 		{
 			this.byId = Maps.uniqueIndex(list, ExternalSystemScriptedExportConversionConfig::getId);
@@ -164,6 +173,7 @@ public class ExternalSystemScriptedExportConversionRepository
 							config -> config));
 			this.allTriggerOnCompleteByTableAndClientId = list.stream()
 					.filter(ExternalSystemScriptedExportConversionConfig::isTriggerOnComplete)
+					.sorted(BY_SEQNO)
 					.collect(ImmutableListMultimap.toImmutableListMultimap(
 							ExternalSystemScriptedExportConversionConfig::getTableAndClientId,
 							config -> config));

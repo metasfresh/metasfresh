@@ -45,7 +45,13 @@ public enum ExternalSystemErrorContext
 	 * EDI (Electronic Data Interchange) export context.
 	 * Used for DESADV and INVOIC exports via external system.
 	 */
-	EDI("EDI");
+	EDI("EDI"),
+
+	/**
+	 * Scripted Adapter Export context.
+	 * Used for scripted export conversions (e.g., EPCIS XML export on shipment completion).
+	 */
+	SCRIPTED_ADAPTER_EXPORT("ScriptedAdapterExport");
 
 	private final String code;
 
@@ -82,5 +88,10 @@ public enum ExternalSystemErrorContext
 	public boolean isEDI()
 	{
 		return this == EDI;
+	}
+
+	public boolean isScriptedAdapterExport()
+	{
+		return this == SCRIPTED_ADAPTER_EXPORT;
 	}
 }

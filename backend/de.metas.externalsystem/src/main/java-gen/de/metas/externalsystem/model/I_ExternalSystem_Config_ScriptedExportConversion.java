@@ -295,6 +295,52 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_IsTriggerOnComplete = "IsTriggerOnComplete";
 
 	/**
+	 * Set External System Error Context.
+	 * Error context identifier for error listener callbacks (e.g. EDI, ScriptedAdapterExport)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystemErrorContext (@Nullable java.lang.String ExternalSystemErrorContext);
+
+	/**
+	 * Get External System Error Context.
+	 * Error context identifier for error listener callbacks (e.g. EDI, ScriptedAdapterExport)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalSystemErrorContext();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_ExternalSystemErrorContext = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystemErrorContext", null);
+	String COLUMNNAME_ExternalSystemErrorContext = "ExternalSystemErrorContext";
+
+	/**
+	 * Set Sequence.
+	 * Method of ordering records; lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Sequence.
+	 * Method of ordering records; lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_SeqNo = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set Script Identifier.
 	 * Name of the JavaScript-file that shall be executed by External Systems
 	 *

@@ -26,6 +26,8 @@ BEGIN
                    'supplierGLN', bpl_supplier.gln,
                    -- Warehouse GLN (same as supplier for now; SGLN extension=0)
                    'warehouseGLN', bpl_supplier.gln,
+                   -- Warehouse value (for SGLN sub-location extension in JS template)
+                   'warehouseValue', wh.value,
                    -- Buyer GLN (from DESADV)
                    'buyerGLN', bpl_buyer.gln,
                    -- Handover partner GLN (delivery point = DP)
@@ -42,6 +44,8 @@ BEGIN
     INTO v_result
     FROM m_inout io
              JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
+             -- Warehouse value (for SGLN sub-location extension)
+             LEFT JOIN m_warehouse wh ON wh.m_warehouse_id = io.m_warehouse_id
              -- Supplier (org) GLN
              LEFT JOIN ad_orginfo org ON org.ad_org_id = io.ad_org_id
              LEFT JOIN c_bpartner_location bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id

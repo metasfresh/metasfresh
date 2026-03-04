@@ -15,6 +15,7 @@ BEGIN
                    'timezone', '+01:00',
                    'supplierGLN', bpl_supplier.gln,
                    'warehouseGLN', bpl_supplier.gln,
+                   'warehouseValue', wh.value,
                    'buyerGLN', bpl_buyer.gln,
                    'handoverGLN', bpl_handover.gln,
                    'dropshipGLN', bpl_dropship.gln,
@@ -25,6 +26,7 @@ BEGIN
     INTO v_result
     FROM m_inout io
              JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
+             LEFT JOIN m_warehouse wh ON wh.m_warehouse_id = io.m_warehouse_id
              LEFT JOIN ad_orginfo org ON org.ad_org_id = io.ad_org_id
              LEFT JOIN c_bpartner_location bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
              LEFT JOIN c_bpartner_location bpl_buyer ON bpl_buyer.c_bpartner_location_id = d.c_bpartner_location_id

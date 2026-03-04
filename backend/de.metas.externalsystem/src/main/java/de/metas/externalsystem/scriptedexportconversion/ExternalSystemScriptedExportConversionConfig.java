@@ -23,6 +23,7 @@
 package de.metas.externalsystem.scriptedexportconversion;
 
 import de.metas.document.DocBaseType;
+import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
@@ -56,6 +57,8 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 	@NonNull String whereClause;
 	boolean active;
 	boolean isTriggerOnComplete;
+	@Nullable SeqNo seqNo;
+	@Nullable ExternalSystemErrorContext errorContext;
 
 	public static ExternalSystemScriptedExportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{

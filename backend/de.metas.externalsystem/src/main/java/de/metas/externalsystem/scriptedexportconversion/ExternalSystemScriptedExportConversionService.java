@@ -249,14 +249,23 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		trxManager.runAfterCommit(() -> executeInvokeScriptedExportConversionAction(config, recordId));
+		final ExternalSystemErrorContext errorContext = config.getErrorContext();
+		trxManager.runAfterCommit(() -> executeInvokeScriptedExportConversionAction(config, recordId, errorContext));
 	}
 
 	public List<Exception> executeInvokeScriptedExportConversionAction(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+		return executeInvokeScriptedExportConversionAction(config, recordId, null);
+	}
+
+	public List<Exception> executeInvokeScriptedExportConversionAction(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId,
+			@Nullable final ExternalSystemErrorContext errorContext)
+	{
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, errorContext).getExceptions();
 	}
 
 	@NonNull
