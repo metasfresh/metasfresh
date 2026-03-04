@@ -28,6 +28,7 @@ import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -62,7 +63,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -84,6 +88,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
 	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
@@ -123,11 +128,14 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.userElementString7(event.getUserElementString7())
 				.build();
 
-		// Extract dropship info from the sales order, if present
+		// Extract dropship info, packing info, and ASI from the sales order/line, if present
 		boolean isDropShip = false;
 		BPartnerId dropShipBPartnerId = null;
 		BPartnerLocationId dropShipLocationId = null;
 		UserId dropShipUserId = null;
+		HUPIItemProductId huPIItemProductId = null;
+		BigDecimal qtyEnteredTU = null;
+		AttributeSetInstanceId copiedAsiId = null;
 		if (orderAndLineIdOrNull != null)
 		{
 			final org.compiere.model.I_C_Order salesOrder = orderDAO.getById(orderAndLineIdOrNull.getOrderId());
@@ -148,6 +156,18 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 					dropShipUserId = UserId.ofRepoIdOrNull(salesOrder.getAD_User_ID());
 				}
 			}
+
+			// Extract packing item, TU qty, and ASI from the sales order line
+			final de.metas.interfaces.I_C_OrderLine salesOrderLine = orderDAO.getOrderLineById(orderAndLineIdOrNull.getOrderLineId(), de.metas.interfaces.I_C_OrderLine.class);
+			huPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(salesOrderLine.getM_HU_PI_Item_Product_ID());
+			qtyEnteredTU = salesOrderLine.getQtyEnteredTU();
+
+			// Copy ASI from the order line (create a new ASI instance rather than sharing the same ID)
+			final AttributeSetInstanceId orderLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
+			if (orderLineAsiId.isRegular())
+			{
+				copiedAsiId = attributeSetInstanceBL.copy(orderLineAsiId);
+			}
 		}
 
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(materialDescriptor.getDate());
@@ -163,7 +183,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.orgId(orgId)
 				.processed(false)
 				.productId(product.getId())
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
+				.attributeSetInstanceId(copiedAsiId != null ? copiedAsiId : AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
 				.qtyToPurchase(Quantitys.of(materialDescriptor.getQuantity(), product.getUomId()))
@@ -172,6 +192,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
 				.simulated(event.isSimulated())
+				.huPIItemProductId(huPIItemProductId)
+				.qtyEnteredTU(qtyEnteredTU)
 				.isDropShip(isDropShip)
 				.dropShipBPartnerId(dropShipBPartnerId)
 				.dropShipLocationId(dropShipLocationId)

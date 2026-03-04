@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -185,6 +186,8 @@ public class PurchaseCandidate
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
 			final boolean simulated,
+			@Nullable final HUPIItemProductId huPIItemProductId,
+			@Nullable final BigDecimal qtyEnteredTU,
 			final boolean isDropShip,
 			@Nullable final BPartnerId dropShipBPartnerId,
 			@Nullable final BPartnerLocationId dropShipLocationId,
@@ -216,6 +219,8 @@ public class PurchaseCandidate
 				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
+				.huPIItemProductId(huPIItemProductId)
+				.qtyEnteredTU(qtyEnteredTU)
 				.isDropShip(isDropShip)
 				.dropShipBPartnerId(dropShipBPartnerId)
 				.dropShipLocationId(dropShipLocationId)
@@ -457,6 +462,16 @@ public class PurchaseCandidate
 	public @Nullable UserId getDropShipUserId()
 	{
 		return getImmutableFields().getDropShipUserId();
+	}
+
+	public @Nullable HUPIItemProductId getHuPIItemProductId()
+	{
+		return getImmutableFields().getHuPIItemProductId();
+	}
+
+	public @Nullable BigDecimal getQtyEnteredTU()
+	{
+		return getImmutableFields().getQtyEnteredTU();
 	}
 
 	public boolean hasChanges()

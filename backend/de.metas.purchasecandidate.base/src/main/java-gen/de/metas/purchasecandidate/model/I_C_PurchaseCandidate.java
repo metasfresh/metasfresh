@@ -796,6 +796,48 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
 
 	/**
+	 * Set Packing Item.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Item.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_HU_PI_Item_Product_ID", Object.class);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set Qty TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Qty TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_PurchaseCandidate.class, "QtyEnteredTU", Object.class);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
