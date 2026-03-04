@@ -30,22 +30,16 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,11 +47,14 @@ import java.util.List;
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule
 {
-	private static final Logger logger = LoggerFactory.getLogger(C_Order_ReceiptSchedule.class);
 	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
 	private static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
+
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -74,14 +71,14 @@ public class C_Order_ReceiptSchedule
 	}
 
 	/**
-	 * On COMPLETE: first reopen any previously closed receipt schedules, then create new ones for order lines that don't have one yet.
+	 * On COMPLETE: first reopen any previously closed receipt schedules, then create new ones
+	 * for order lines that don't have one yet.
 	 * <p>
-	 * Declaration order matters: reopenReceiptSchedules runs before createReceiptSchedules.
-	 * <p>
-	 * We reopen the receipt schedule and sync QtyOrdered in a SINGLE save to produce
-	 * exactly one ReceiptScheduleCreatedEvent with the final quantities. Two separate saves
-	 * would produce CreatedEvent(old qty) + UpdatedEvent(delta), and those two events
-	 * would need to sum correctly in the cockpit — fragile and error-prone.
+	 * Declaration order matters: reopenReceiptSchedules must run before createReceiptSchedules
+	 * so that reopened schedules already have their final QtyOrdered and ASI when
+	 * createReceiptSchedules fires the async workpackage (which reads these fields).
+	 * The reopen combines IsClosed + QtyOrdered + ASI into a single save to produce exactly one
+	 * ReceiptScheduleCreatedEvent with the correct storageAttributesKey.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void reopenReceiptSchedules(final I_C_Order order)
@@ -91,56 +88,7 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (final I_C_OrderLine orderLine : orderLines)
-		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
-
-			if (receiptSchedule == null || !receiptScheduleBL.isClosed(receiptSchedule))
-			{
-				continue;
-			}
-
-			// Reopen the order line BEFORE the receipt schedule.
-			// During save, the M_ReceiptSchedule interceptor fires propagateQtysToOrderLine
-			// which loads the order line from DB and triggers C_OrderLine.updateQtyReserved.
-			// IsDeliveryClosed must already be false at that point, otherwise QtyReserved is
-			// temporarily set to 0 and downstream interceptors (C_Order.updateReserved) may
-			// pick up the stale value.
-			orderBL.reopenLine(orderLine);
-
-			// IMPORTANT: We bypass IReceiptScheduleBL.reopen() intentionally to combine reopen +
-			// QtyOrdered + ASI sync into ONE save. This produces exactly one ReceiptScheduleCreatedEvent
-			// with the final (possibly updated) quantities and the correct storageAttributesKey.
-			// Calling reopen() + save() would produce two events: CreatedEvent(old qty) + UpdatedEvent(delta).
-			//
-			// Bypassed listener callbacks:
-			// - onBeforeReopen: currently no-op in all known implementations
-			//   (OrderLineReceiptScheduleListener, HUReceiptScheduleListener use the default adapter)
-			// - onAfterReopen: manually replicated below (reopenLine + openDeliveryInvoiceCandidates)
-			receiptSchedule.setIsClosed(false);
-			receiptSchedule.setProcessed(false);
-			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());
-			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, orderLine);
-
-			logger.debug("reopenReceiptSchedules: saving M_ReceiptSchedule_ID={} | IsClosed={}, Processed={}, QtyOrdered={}, ASI_ID={}",
-					receiptSchedule.getM_ReceiptSchedule_ID(),
-					receiptSchedule.isIsClosed(), receiptSchedule.isProcessed(), receiptSchedule.getQtyOrdered(),
-					receiptSchedule.getM_AttributeSetInstance_ID());
-
-			InterfaceWrapperHelper.save(receiptSchedule);
-
-			// Fire the side effects that ReceiptScheduleBL.reopen()'s onAfterReopen listener would have done.
-			// orderBL.reopenLine(orderLine) was already called above.
-			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
-		}
+		receiptScheduleBL.reopenReceiptSchedulesForOrder(order);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -153,7 +101,6 @@ public class C_Order_ReceiptSchedule
 
 		// services
 		final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
 		// Generate receipt schedules from this order.
@@ -193,30 +140,7 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (final I_C_OrderLine orderLine : orderLines)
-		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
-
-			if (receiptSchedule == null || receiptScheduleBL.isClosed(receiptSchedule))
-			{
-				continue;
-			}
-
-			receiptScheduleBL.close(receiptSchedule);
-
-			// close() fires the OrderLineReceiptScheduleListener which calls closeLine(),
-			// setting IsDeliveryClosed=true on the order line (via the receipt schedule's FK-cached PO).
-			// During PO reactivation/void the receipt schedule is only "parked" — the order line
-			// itself must stay open for editing. Undo the closeLine side-effect.
-			InterfaceWrapperHelper.refresh(orderLine);
-			orderBL.reopenLine(orderLine);
-		}
+		receiptScheduleBL.closeReceiptSchedulesForOrder(order);
 	}
 
 	/**
@@ -244,7 +168,7 @@ public class C_Order_ReceiptSchedule
 
 	private boolean hasReceipts(final I_C_Order order)
 	{
-		final List<I_M_InOut> inouts = Services.get(IOrderDAO.class).retrieveInOutsForMatchingOrderLines(order);
+		final List<I_M_InOut> inouts = orderDAO.retrieveInOutsForMatchingOrderLines(order);
 
 		return !inouts.isEmpty();
 	}
@@ -284,10 +208,6 @@ public class C_Order_ReceiptSchedule
 
 	public boolean hasProcessedReceiptSchedules(final I_C_Order order)
 	{
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -311,11 +231,6 @@ public class C_Order_ReceiptSchedule
 		{
 			return;
 		}
-
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)

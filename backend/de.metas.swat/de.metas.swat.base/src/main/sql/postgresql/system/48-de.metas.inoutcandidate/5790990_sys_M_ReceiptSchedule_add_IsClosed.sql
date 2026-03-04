@@ -38,6 +38,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 VALUES (0,774763,0,540526,648454,540134,'F',TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Geschlossen',50,0,TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- Propagate element translations to the new AD_Field_Trl rows
+-- Propagate element translations to the new AD_Column_Trl and AD_Field_Trl rows
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2723)
+;
+SELECT update_Column_Translation_From_AD_Element(2723)
 ;

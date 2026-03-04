@@ -42,6 +42,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 
@@ -239,4 +240,16 @@ public interface IReceiptScheduleBL extends ISingletonService
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
 	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDateTime datePromisedOverride, @Nullable String poReference);
+
+	/**
+	 * Reopen all closed receipt schedules belonging to the given order's lines,
+	 * syncing QtyOrdered and ASI from the order line in a single save.
+	 */
+	void reopenReceiptSchedulesForOrder(@NonNull I_C_Order order);
+
+	/**
+	 * Close all open receipt schedules belonging to the given order's lines.
+	 * Used on PO reactivation/void to preserve user modifications.
+	 */
+	void closeReceiptSchedulesForOrder(@NonNull I_C_Order order);
 }
