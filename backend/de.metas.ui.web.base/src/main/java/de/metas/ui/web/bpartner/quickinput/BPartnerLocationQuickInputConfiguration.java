@@ -9,6 +9,7 @@ import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -107,9 +108,11 @@ public class BPartnerLocationQuickInputConfiguration
 		// If a separate billing partner is needed, the user must set Bill_BPartner_ID first.
 		if (bpartnerId == null && !I_C_Order.COLUMNNAME_C_BPartner_ID.equals(bpartnerFieldName))
 		{
-			bpartnerId = triggeringDocument.getFieldView(I_C_Order.COLUMNNAME_C_BPartner_ID)
-					.getValueAsId(BPartnerId.class)
-					.orElse(null);
+			final IDocumentFieldView cbpField = triggeringDocument.getFieldViewOrNull(I_C_Order.COLUMNNAME_C_BPartner_ID);
+			if (cbpField != null)
+			{
+				bpartnerId = cbpField.getValueAsId(BPartnerId.class).orElse(null);
+			}
 		}
 
 		if (bpartnerId == null)
