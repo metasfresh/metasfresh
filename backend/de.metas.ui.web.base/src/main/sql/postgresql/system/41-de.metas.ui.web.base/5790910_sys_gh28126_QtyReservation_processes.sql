@@ -62,8 +62,7 @@ INSERT INTO AD_Process (AD_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
                         IsApplySecuritySettings, IsBetaFunctionality, IsFormatExcelFile, IsLogWarning,
                         IsNotifyUserAfterExecution, IsOneInstanceOnly, IsTranslateExcelHeaders,
                         IsUpdateExportDate, IsUseBPartnerLanguage, LockWaitTimeout,
-                        PostgrestResponseFormat, RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
-                        AD_Element_ID)
+                        PostgrestResponseFormat, RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat)
 VALUES (585588, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         'MD_CockpitV2_MakeQtyReservation',
         'Reservierung anlegen',
@@ -73,8 +72,7 @@ VALUES (585588, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'
         'N', 'N', 'Y', 'N',
         'N', 'N', 'Y',
         'N', 'Y', 0,
-        'json', 'N', 'Y', 'xls',
-        584596);
+        'json', 'N', 'Y', 'xls');
 
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, 585588, NULL, NULL, 'Reservierung anlegen', 'N', 0, 0,
@@ -132,8 +130,7 @@ INSERT INTO AD_Process (AD_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
                         IsApplySecuritySettings, IsBetaFunctionality, IsFormatExcelFile, IsLogWarning,
                         IsNotifyUserAfterExecution, IsOneInstanceOnly, IsTranslateExcelHeaders,
                         IsUpdateExportDate, IsUseBPartnerLanguage, LockWaitTimeout,
-                        PostgrestResponseFormat, RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat,
-                        AD_Element_ID)
+                        PostgrestResponseFormat, RefreshAllAfterExecution, ShowHelp, SpreadsheetFormat)
 VALUES (585589, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         'MD_CockpitV2_DeleteQtyReservation',
         'Reservierung löschen',
@@ -143,8 +140,7 @@ VALUES (585589, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 14:00', 'YYYY-MM-DD HH24:MI'
         'N', 'N', 'Y', 'N',
         'N', 'N', 'Y',
         'N', 'Y', 0,
-        'json', 'N', 'N', 'xls',
-        584597);
+        'json', 'N', 'N', 'xls');
 
 INSERT INTO AD_Process_Trl (AD_Language, AD_Process_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, 585589, NULL, NULL, 'Reservierung löschen', 'N', 0, 0,

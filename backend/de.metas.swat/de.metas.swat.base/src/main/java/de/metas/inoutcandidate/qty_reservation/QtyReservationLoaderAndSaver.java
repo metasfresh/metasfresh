@@ -14,6 +14,7 @@ import org.compiere.model.I_M_QtyReservation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -29,9 +30,13 @@ class QtyReservationLoaderAndSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/** Identity map: QtyReservationId → record, in load order */
+	/**
+	 * Identity map: QtyReservationId → record, in load order
+	 */
 	private final HashMap<QtyReservationId, I_M_QtyReservation> recordsCache = new HashMap<>();
-	/** Maintains insertion order for iteration */
+	/**
+	 * Maintains insertion order for iteration
+	 */
 	private final List<QtyReservationId> recordIdsInOrder = new ArrayList<>();
 
 	void updateByOrderLineIds(
@@ -52,7 +57,7 @@ class QtyReservationLoaderAndSaver
 			final QtyReservation before = fromRecord(record);
 			final QtyReservation after = updater.apply(before);
 
-			if (!before.getQtyDelivered().equals(after.getQtyDelivered()))
+			if (!Objects.equals(before, after))
 			{
 				updateRecord(record, after);
 				toSave.add(record);
