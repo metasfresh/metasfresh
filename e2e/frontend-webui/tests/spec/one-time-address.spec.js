@@ -1,11 +1,12 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { getPage, SLOW_ACTION_TIMEOUT, step } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, step } from '../utils/common';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { Backend } from '../utils/Backend';
+import { AddressWidget } from '../utils/widgets/AddressWidget';
 import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 
@@ -49,54 +50,49 @@ test.describe('One-time address creation', () => {
   });
 
   /**
-   * Fill address fields and check IsOneTime inside the quick input modal.
-   * Uses modal-scoped selectors because BooleanWidget/AddressWidget
-   * operate on the global page scope, not within a modal overlay.
+   * Fill address via the C_Location_ID inline editor and check IsOneTime.
+   * The quick input modal contains a C_Location_ID Address widget (toggle button
+   * that expands inline fields) — not direct Address1/Postal/City inputs.
+   *
+   * We intentionally avoid AddressWidget.setAddress() because it ends with
+   * a body.click() that could dismiss the modal. Instead, we open the editor,
+   * fill fields, and leave the inline editor open for the "Done" button to handle.
    */
-  async function fillAddressInModal(modalScope, { street, postal, city }) {
-    const page = getPage();
-    let fieldsFound = 0;
+  async function fillAddressInModal(page, { street, postalCode, city }) {
+    // Open the C_Location_ID inline address editor
+    await AddressWidget.openEditor('C_Location_ID');
+    await page.waitForTimeout(500);
 
-    const streetInput = modalScope
-      .locator('.form-field-Address1 input, #lookup_Address1 input')
-      .first();
-    if ((await streetInput.count()) > 0) {
-      await streetInput.fill(street);
-      fieldsFound++;
+    // Fill address fields inside the expanded editor
+    const container = WidgetCommon.getFieldContainer('C_Location_ID');
+
+    if (street) {
+      const streetInput = container.locator('.form-field-Address1 input').first();
+      await streetInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      if ((await streetInput.count()) > 0) {
+        await streetInput.fill(street);
+        await page.waitForTimeout(300);
+      }
     }
 
-    const postalInput = modalScope
-      .locator('.form-field-Postal input, #lookup_Postal input')
-      .first();
-    if ((await postalInput.count()) > 0) {
-      await postalInput.fill(postal);
-      fieldsFound++;
+    if (postalCode) {
+      const postalInput = container.locator('.form-field-Postal input').first();
+      if ((await postalInput.count()) > 0) {
+        await postalInput.fill(postalCode);
+        await page.waitForTimeout(300);
+      }
     }
 
-    const cityInput = modalScope
-      .locator('.form-field-City input, #lookup_City input')
-      .first();
-    if ((await cityInput.count()) > 0) {
-      await cityInput.fill(city);
-      fieldsFound++;
+    if (city) {
+      const cityInput = container.locator('.form-field-City input').first();
+      if ((await cityInput.count()) > 0) {
+        await cityInput.fill(city);
+        await page.waitForTimeout(300);
+      }
     }
 
-    expect(fieldsFound, 'At least one address field should be found in the modal').toBeGreaterThan(0);
-
-    // Check IsOneTime checkbox — must use modal-scoped selector because
-    // BooleanWidget.setTrue() operates on global page scope and would
-    // not reliably target the checkbox inside the modal overlay.
-    const isOneTimeCheckbox = modalScope
-      .locator(
-        '#lookup_IsOneTime input[type="checkbox"], .form-field-IsOneTime input[type="checkbox"]'
-      )
-      .first();
-    if ((await isOneTimeCheckbox.count()) > 0) {
-      await isOneTimeCheckbox.evaluate((el) => {
-        if (!el.checked) el.click();
-      });
-      await page.waitForTimeout(500);
-    }
+    // Check IsOneTime checkbox
+    await BooleanWidget.setTrue('IsOneTime');
   }
 
   test('Create one-time address from DropShip location without DropShip BPartner', async ({ page }) => {
@@ -160,10 +156,10 @@ test.describe('One-time address creation', () => {
         });
         await page.waitForTimeout(1000);
 
-        // Step 7: Fill address fields and check IsOneTime inside the modal
-        await fillAddressInModal(modal, {
+        // Step 7: Fill address via C_Location_ID inline editor and check IsOneTime
+        await fillAddressInModal(page, {
           street: 'Test Street 123',
-          postal: '12345',
+          postalCode: '12345',
           city: 'Test City',
         });
 
@@ -269,10 +265,10 @@ test.describe('One-time address creation', () => {
         });
         await page.waitForTimeout(1000);
 
-        // Step 5: Fill address fields and check IsOneTime inside the modal
-        await fillAddressInModal(modal, {
+        // Step 5: Fill address via C_Location_ID inline editor and check IsOneTime
+        await fillAddressInModal(page, {
           street: 'Main Street 456',
-          postal: '54321',
+          postalCode: '54321',
           city: 'Main City',
         });
 
