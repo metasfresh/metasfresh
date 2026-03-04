@@ -21,7 +21,7 @@ import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 test.describe('One-time address creation', () => {
   let masterdata;
 
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ page }) => {
     masterdata = await Backend.createMasterdata({
       request: {
         login: {
@@ -95,14 +95,12 @@ test.describe('One-time address creation', () => {
     }
   }
 
-  test('Create one-time address from DropShip location without DropShip BPartner', async () => {
+  test('Create one-time address from DropShip location without DropShip BPartner', async ({ page }) => {
     test.setTimeout(120000);
 
     await step(
       'Create one-time address from DropShip_Location_ID without DropShip_BPartner_ID',
       async () => {
-        const page = getPage();
-
         // Step 1: Create a new Sales Order and select customer
         await SalesOrderPage.goto();
         await SalesOrderPage.clickNew();
@@ -204,14 +202,12 @@ test.describe('One-time address creation', () => {
     );
   });
 
-  test('Create one-time address from main location field', async () => {
+  test('Create one-time address from main location field', async ({ page }) => {
     test.setTimeout(120000);
 
     await step(
       'Create one-time address from C_BPartner_Location_ID',
       async () => {
-        const page = getPage();
-
         // Step 1: Create a new Sales Order and select customer
         await SalesOrderPage.goto();
         await SalesOrderPage.clickNew();
