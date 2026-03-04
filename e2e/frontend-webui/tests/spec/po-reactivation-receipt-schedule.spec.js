@@ -184,27 +184,11 @@ and re-completing the PO reopens them.
       // =====================================================
       // Step 6: Verify receipt schedule is closed (not deleted)
       // =====================================================
-      await PurchaseOrderPage.openRelatedReceiptCandidate();
-
-      // Double-click first row to open detail view
-      const listRow2 = page.locator('.table-row, [class*="table-row"]').first();
-      await listRow2.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await listRow2.dblclick();
-
-      await page.waitForURL(new RegExp(`/window/${RECEIPT_CANDIDATES_WINDOW_ID}/\\d+`), {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-      // Verify SAME record ID (schedule was preserved, not recreated)
-      const rsRecordId2 = extractRecordIdFromUrl(page, RECEIPT_CANDIDATES_WINDOW_ID);
-      expect(rsRecordId2).toBe(rsRecordId);
-      console.log(`[${language}] Same receipt schedule preserved: ${rsRecordId2} === ${rsRecordId}`);
-
-      // Verify IsClosed is true via WebAPI
-      const isClosedField2 = await getFieldData(RECEIPT_CANDIDATES_WINDOW_ID, rsRecordId2, 'IsClosed');
+      // Use WebAPI directly — the closed receipt schedule (Processed=true) is hidden by
+      // the default "Filter by: Not Processed" filter in the list view, so we verify via API.
+      const isClosedField2 = await getFieldData(RECEIPT_CANDIDATES_WINDOW_ID, rsRecordId, 'IsClosed');
       expect(isClosedField2.value).toBe(true);
-      console.log(`[${language}] Receipt Schedule IsClosed=${isClosedField2.value} (expected: true)`);
+      console.log(`[${language}] Receipt Schedule ${rsRecordId} IsClosed=${isClosedField2.value} (expected: true)`);
 
       // =====================================================
       // Step 7: Navigate back to PO and re-complete
@@ -220,27 +204,10 @@ and re-completing the PO reopens them.
       // =====================================================
       // Step 8: Verify receipt schedule is reopened
       // =====================================================
-      await PurchaseOrderPage.openRelatedReceiptCandidate();
-
-      // Double-click first row to open detail view
-      const listRow3 = page.locator('.table-row, [class*="table-row"]').first();
-      await listRow3.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await listRow3.dblclick();
-
-      await page.waitForURL(new RegExp(`/window/${RECEIPT_CANDIDATES_WINDOW_ID}/\\d+`), {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-      // Verify SAME record ID
-      const rsRecordId3 = extractRecordIdFromUrl(page, RECEIPT_CANDIDATES_WINDOW_ID);
-      expect(rsRecordId3).toBe(rsRecordId);
-      console.log(`[${language}] Same receipt schedule preserved: ${rsRecordId3} === ${rsRecordId}`);
-
-      // Verify IsClosed is false (reopened) via WebAPI
-      const isClosedField3 = await getFieldData(RECEIPT_CANDIDATES_WINDOW_ID, rsRecordId3, 'IsClosed');
+      // Use WebAPI directly to verify the same receipt schedule was reopened.
+      const isClosedField3 = await getFieldData(RECEIPT_CANDIDATES_WINDOW_ID, rsRecordId, 'IsClosed');
       expect(isClosedField3.value).toBe(false);
-      console.log(`[${language}] Receipt Schedule IsClosed=${isClosedField3.value} (expected: false)`);
+      console.log(`[${language}] Receipt Schedule ${rsRecordId} IsClosed=${isClosedField3.value} (expected: false)`);
 
       console.log(`[${language}] ===================================`);
       console.log(`[${language}] PO Reactivation Receipt Schedule Test PASSED`);
