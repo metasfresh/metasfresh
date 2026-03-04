@@ -134,13 +134,17 @@ test.describe('One-time address creation', () => {
 
         // Step 3: Do NOT set DropShip_BPartner_ID — leave it empty (this is the bug scenario)
 
-        // Step 4: Click on DropShip_Location_ID input to open dropdown
+        // Step 4: Click on DropShip_Location_ID input and type a non-matching
+        // string to trigger an empty autocomplete result. The "New" option
+        // (data-testid="option-NEW") only appears when 0 results are returned
+        // (controlled by SysConfig IsAlwaysDisplayNewBPartner, default=N).
         const dropShipLocationInput = dropShipLocationField
           .locator('input.input-field, input[type="text"]')
           .first();
         await dropShipLocationInput.click();
+        await dropShipLocationInput.fill('NewAddr');
 
-        // Step 5: Click "New" option in dropdown (data-testid="option-NEW")
+        // Step 5: Click "New" option in dropdown
         const newOption = page.getByTestId('option-NEW');
         await newOption.waitFor({
           state: 'visible',
@@ -244,6 +248,10 @@ test.describe('One-time address creation', () => {
           .locator('input.input-field, input[type="text"]')
           .first();
         await locationInput.click();
+        // Type a non-matching string so autocomplete returns 0 results,
+        // which causes the "New" option to appear in the dropdown
+        // (SysConfig IsAlwaysDisplayNewBPartner defaults to N).
+        await locationInput.fill('NewAddr');
 
         // Step 3: Click "New" option in dropdown
         const newOption = page.getByTestId('option-NEW');
