@@ -918,6 +918,29 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 34. PO Reactivation — Receipt Schedule Close/Reopen (`po-reactivation-receipt-schedule.spec.js`)
+
+**Features Tested**:
+- F00600: Purchase Order
+- F65010: Material Receipt Candidates
+
+**Epic**: E0140: Purchasing / E0160: Material Receipt
+
+**Workflow**:
+1. Create PO with 1 order line and complete it
+2. Navigate to receipt schedule via Related Documents — verify IsClosed=false (via WebAPI)
+3. Navigate back to PO — create material receipt via HU-Editor workflow
+4. Reactivate PO (requires `PO_AllowReactivationIfReceiptsCreated=Y` sysconfig)
+5. Verify receipt schedule is closed (IsClosed=true), same record ID (not recreated)
+6. Re-complete PO
+7. Verify receipt schedule is reopened (IsClosed=false), same record ID
+
+**Precondition**: `PO_AllowReactivationIfReceiptsCreated=Y` must be set as JVM property on webapi service.
+
+**Components Tested**: PurchaseOrderPage (reactivate), ReceiptCandidatesPage (createReceipt), WebAPI field validation (getFieldData)
+
+---
+
 ## Test Architecture
 
 ### Page Objects

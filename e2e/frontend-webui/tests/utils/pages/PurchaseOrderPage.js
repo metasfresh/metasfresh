@@ -510,6 +510,68 @@ export class PurchaseOrderPage {
   }
 
   /**
+   * Reactivate the purchase order using the document action.
+   * Follows the same pattern as complete() but clicks status-RE instead of status-CO.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum retry attempts (default: 3)
+   */
+  static async reactivate({ maxAttempts = 3 } = {}) {
+    return await test.step('PurchaseOrderPage - Reactivate order', async () => {
+      const page = getPage();
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const reOption = page.getByTestId('status-RE');
+
+        // Check if dropdown is already open from a previous failed attempt
+        const isAlreadyOpen = await reOption.isVisible().catch(() => false);
+        if (!isAlreadyOpen) {
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+        }
+
+        // Language-independent: check if Reactivate action is available
+        const reVisible = await reOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
+
+        if (!reVisible) {
+          console.log('Reactivate action (status-RE) not available');
+          await page.keyboard.press('Escape');
+          throw new Error('Reactivate action not available — is PO_AllowReactivationIfReceiptsCreated=Y set?');
+        }
+
+        console.log(`Reactivate attempt ${attempt}/${maxAttempts}`);
+
+        await reOption.click();
+        await page.waitForTimeout(3000);
+
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Verification: open dropdown and check if CO is now available (document back to Drafted)
+        await page.getByTestId('status-button').click();
+        await page.waitForTimeout(500);
+        const hasCO = await page.getByTestId('status-CO').isVisible().catch(() => false);
+        await page.keyboard.press('Escape');
+
+        if (hasCO) {
+          console.log(`Order reactivated successfully on attempt ${attempt}`);
+          return;
+        }
+
+        console.log(`Order still does not show CO action after attempt ${attempt}, retrying...`);
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to reactivate order after ${maxAttempts} attempts`);
+    });
+  }
+
+  /**
    * Open the related Material Receipt (M_InOut) for the current purchase order using Alt+6.
    *
    * Use this method after creating a material receipt via Receipt Candidates workflow.
