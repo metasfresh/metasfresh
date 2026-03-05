@@ -69,3 +69,24 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # github related
 .github/merge_to_master
 .github/integrate
+
+# workspace-local Maven repository
+.m2-local/
+
+# claude related
+.claude
+**/CLAUDE.md
+**/CLAUDE.md.backup
+.mcp.json
+**/claude-docs
+
+.m2-local
+
+# dev-mode artifacts extracted from CI images
+.dev-artifacts/
+
+# Local CI/CD output logs
+act_output_*.txt
+nul
+
+/mcp-scripts/**/*
