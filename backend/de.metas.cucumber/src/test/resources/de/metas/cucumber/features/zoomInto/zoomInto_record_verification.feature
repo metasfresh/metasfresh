@@ -20,7 +20,7 @@ Feature: Zoom-Into record-level verification
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_soFld  | pl_soFld       | plv_soFld  | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier     | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_soFld | Y          | N        | ps_soFld           |
     And metasfresh contains C_Orders:
@@ -45,7 +45,7 @@ Feature: Zoom-Into record-level verification
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_poFld  | pl_poFld       | plv_poFld  | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier     | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_poFld | N          | Y        | ps_poFld           |
     And metasfresh contains C_Orders:
@@ -64,7 +64,7 @@ Feature: Zoom-Into record-level verification
     And metasfresh contains M_PricingSystems
       | Identifier | Name               | Value              |
       | ps_bpFld   | ps_bpFld_pricing   | ps_bpFld_pricing   |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_fld | Y          | N        | ps_bpFld           |
     When all reference fields of the C_BPartner identified by "bpartner_fld" are verified for zoom-to, excluding columns:

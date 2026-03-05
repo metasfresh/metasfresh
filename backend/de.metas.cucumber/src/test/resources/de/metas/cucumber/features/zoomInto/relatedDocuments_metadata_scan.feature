@@ -19,6 +19,6 @@ Feature: Related Documents metadata scan
   @from:cucumber
   Scenario: C_Order related documents include expected target windows
     Then related documents for source table "C_Order" include targets:
-      | TargetWindowName                   |
-      | Invoice (Customer)           |
-      | Shipment (Customer)                           |
+      | TargetWindowName    |
+      | Invoice (Customer)  |
+      | Shipment (Customer) |

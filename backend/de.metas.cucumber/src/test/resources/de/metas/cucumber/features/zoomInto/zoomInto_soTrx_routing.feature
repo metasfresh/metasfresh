@@ -31,7 +31,7 @@ Feature: Zoom-Into SOTrx routing
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_soZI   | pl_soZI        | plv_soZI   | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier    | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_soZI | Y          | N        | ps_soZI            |
     And metasfresh contains C_Orders:
@@ -51,7 +51,7 @@ Feature: Zoom-Into SOTrx routing
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_poZI   | pl_poZI        | plv_poZI   | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier    | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_poZI | N          | Y        | ps_poZI            |
     And metasfresh contains C_Orders:

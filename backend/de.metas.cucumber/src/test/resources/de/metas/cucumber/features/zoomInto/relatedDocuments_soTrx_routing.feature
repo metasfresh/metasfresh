@@ -20,7 +20,7 @@ Feature: Related Documents SOTrx routing
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_soRel  | pl_soRel       | plv_soRel  | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier     | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_soRel | Y          | N        | ps_soRel           |
     And metasfresh contains C_Orders:
@@ -42,7 +42,7 @@ Feature: Related Documents SOTrx routing
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name       | ValidFrom  |
       | plv_poRel  | pl_poRel       | plv_poRel  | 2021-04-01 |
-    Given metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners:
       | Identifier     | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bpartner_poRel | N          | Y        | ps_poRel           |
     And metasfresh contains C_Orders:

@@ -3,23 +3,14 @@ package de.metas.cucumber.stepdefs.zoom_into;
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
-import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
-import de.metas.document.references.related_documents.RelatedDocumentsFactory;
-import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
-import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.compiere.model.PO;
@@ -34,9 +25,6 @@ public class RelatedDocuments_StepDef
 {
 	@NonNull private final ZoomIntoTestHelper helper;
 	@NonNull private final C_Order_StepDefData orderTable;
-
-	@NonNull private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
-	@NonNull private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
 	private ImmutableList<RelatedDocumentsCandidateGroup> lastCandidateGroups;
 
@@ -119,14 +107,12 @@ public class RelatedDocuments_StepDef
 	private ImmutableList<RelatedDocumentsCandidateGroup> getCandidateGroupsForTable(@NonNull final String tableName)
 	{
 		final PO po = TableModelLoader.instance.newPO(tableName);
-		final IZoomSource zoomSource = POZoomSource.of(po);
-		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.allowAll();
-		return relatedDocumentsFactory.getRelatedDocumentsCandidates(zoomSource, permissions);
+		return helper.getRelatedDocumentsCandidates(po);
 	}
 
 	private String getWindowName(@NonNull final AdWindowId windowId)
 	{
-		final ITranslatableString name = windowDAO.retrieveWindowName(windowId);
-		return name != null ? name.translate("en_US") : "UNKNOWN(ID=" + windowId.getRepoId() + ")";
+		final String name = helper.getWindowName(windowId);
+		return name != null ? name : "UNKNOWN(ID=" + windowId.getRepoId() + ")";
 	}
 }
