@@ -11,7 +11,7 @@ Feature: Zoom-Into record-level verification
 
   @from:cucumber
   Scenario: Sales Order record — all FK fields zoom to valid windows
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name               | Value              |
       | ps_soFld   | ps_soFld_pricing   | ps_soFld_pricing   |
     And metasfresh contains M_PriceLists
@@ -36,7 +36,7 @@ Feature: Zoom-Into record-level verification
 
   @from:cucumber
   Scenario: Purchase Order record — all FK fields zoom to valid windows
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name               | Value              |
       | ps_poFld   | ps_poFld_pricing   | ps_poFld_pricing   |
     And metasfresh contains M_PriceLists
@@ -61,7 +61,7 @@ Feature: Zoom-Into record-level verification
 
   @from:cucumber
   Scenario: BPartner record — all FK fields zoom to valid windows
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name               | Value              |
       | ps_bpFld   | ps_bpFld_pricing   | ps_bpFld_pricing   |
     And metasfresh contains C_BPartners:

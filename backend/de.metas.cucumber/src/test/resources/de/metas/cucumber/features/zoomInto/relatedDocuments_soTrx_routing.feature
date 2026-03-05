@@ -11,7 +11,7 @@ Feature: Related Documents SOTrx routing
 
   @from:cucumber
   Scenario: Sales Order has expected related document candidates
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name              | Value             |
       | ps_soRel   | ps_soRel_pricing  | ps_soRel_pricing  |
     And metasfresh contains M_PriceLists
@@ -33,7 +33,7 @@ Feature: Related Documents SOTrx routing
 
   @from:cucumber
   Scenario: Purchase Order has expected related document candidates
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name              | Value             |
       | ps_poRel   | ps_poRel_pricing  | ps_poRel_pricing  |
     And metasfresh contains M_PriceLists

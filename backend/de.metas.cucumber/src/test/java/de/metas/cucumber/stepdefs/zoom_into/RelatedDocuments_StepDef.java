@@ -28,6 +28,13 @@ public class RelatedDocuments_StepDef
 
 	private ImmutableList<RelatedDocumentsCandidateGroup> lastCandidateGroups;
 
+	/**
+	 * For each source table listed in the DataTable, resolves related document candidate groups
+	 * and asserts the count meets the given minimum.
+	 * Uses soft assertions so all rows are validated before failing.
+	 *
+	 * @param dataTable columns: {@code SourceTable} (AD table name), {@code MinTargetCount} (minimum expected groups)
+	 */
 	@Then("the following source tables have at least the listed related document targets:")
 	public void source_tables_have_minimum_related_document_targets(@NonNull final DataTable dataTable)
 	{
@@ -47,6 +54,13 @@ public class RelatedDocuments_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Resolves related document candidate groups for the given source table and asserts that
+	 * the target windows include each window name listed in the DataTable.
+	 *
+	 * @param sourceTable the AD table name (e.g. "C_Order")
+	 * @param dataTable single-column table with header {@code TargetWindowName}; expected window names in en_US
+	 */
 	@Then("related documents for source table {string} include targets:")
 	public void related_documents_include_targets(@NonNull final String sourceTable, @NonNull final DataTable dataTable)
 	{
@@ -69,6 +83,12 @@ public class RelatedDocuments_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Retrieves related document candidate groups for a specific C_Order record.
+	 * Stores the result in {@code lastCandidateGroups} for assertion by subsequent {@code @Then} steps.
+	 *
+	 * @param orderIdentifier the StepDefData identifier of the C_Order
+	 */
 	@When("related documents are retrieved for the C_Order identified by {string}")
 	public void related_documents_retrieved_for_order(@NonNull final String orderIdentifier)
 	{
@@ -76,18 +96,27 @@ public class RelatedDocuments_StepDef
 		lastCandidateGroups = helper.getRelatedDocumentsCandidates(order);
 	}
 
+	/**
+	 * Asserts that the number of related document candidate groups retrieved by the preceding
+	 * {@code related documents are retrieved} step is at least the given minimum count.
+	 *
+	 * @param minCount the minimum number of candidate groups expected
+	 */
 	@Then("the related documents include at least {int} candidate groups")
 	public void related_documents_include_at_least_n_groups(final int minCount)
 	{
 		assertThat(lastCandidateGroups)
 				.as("Related documents candidate groups")
-				.isNotNull();
-
-		assertThat(lastCandidateGroups.size())
-				.as("Number of related document candidate groups")
-				.isGreaterThanOrEqualTo(minCount);
+				.isNotNull()
+				.hasSizeGreaterThanOrEqualTo(minCount);
 	}
 
+	/**
+	 * Asserts that the related document candidate groups include at least one group
+	 * whose target window matches the given expected window name.
+	 *
+	 * @param expectedWindowName the expected target window name in en_US (e.g. "Invoice (Customer)")
+	 */
 	@Then("the related documents include a candidate group targeting window {string}")
 	public void related_documents_include_candidate_group_targeting_window(@NonNull final String expectedWindowName)
 	{

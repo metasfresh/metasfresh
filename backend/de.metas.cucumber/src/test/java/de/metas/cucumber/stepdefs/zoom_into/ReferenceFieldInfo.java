@@ -17,9 +17,4 @@ public class ReferenceFieldInfo
 
 	@Nullable AdWindowId resolvedWindowId;
 	@Nullable String resolvedWindowName;
-
-	boolean hasIsSOTrxColumn;
-
-	@Nullable AdWindowId defaultSOWindowId;
-	@Nullable AdWindowId defaultPOWindowId;
 }

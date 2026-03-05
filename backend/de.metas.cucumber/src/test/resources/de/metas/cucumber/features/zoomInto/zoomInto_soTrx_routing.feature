@@ -11,7 +11,7 @@ Feature: Zoom-Into SOTrx routing
 
   @from:cucumber
   Scenario: SOTrx routing resolves correct windows without records
-    Given zoom-into for the following tables resolves to the expected windows by SOTrx:
+    Then zoom-into for the following tables resolves to the expected windows by SOTrx:
       | TableName  | IsSOTrx | ExpectedWindowName             |
       | C_Order    | true    | Sales Order                    |
       | C_Order    | false   | Purchase Order                 |
@@ -22,7 +22,7 @@ Feature: Zoom-Into SOTrx routing
 
   @from:cucumber
   Scenario: Zoom-into resolves to Sales Order window for SO record
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name            | Value           |
       | ps_soZI    | ps_soZI_pricing | ps_soZI_pricing |
     And metasfresh contains M_PriceLists
@@ -42,7 +42,7 @@ Feature: Zoom-Into SOTrx routing
 
   @from:cucumber
   Scenario: Zoom-into resolves to Purchase Order window for PO record
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier | Name            | Value           |
       | ps_poZI    | ps_poZI_pricing | ps_poZI_pricing |
     And metasfresh contains M_PriceLists
