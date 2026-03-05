@@ -17,8 +17,12 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.MQuery;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.model.POInfoColumn;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -86,5 +90,156 @@ public class ZoomIntoTestHelper
 		final IZoomSource zoomSource = POZoomSource.of(po);
 		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.allowAll();
 		return relatedDocumentsFactory.getRelatedDocumentsCandidates(zoomSource, permissions);
+	}
+
+	@Nullable
+	private String resolveTargetTableName(@NonNull final POInfoColumn column)
+	{
+		final int displayType = column.getDisplayType();
+		if (displayType == DisplayType.Table || displayType == DisplayType.Search)
+		{
+			final String referencedTable = column.getReferencedTableNameOrNull();
+			if (referencedTable != null)
+			{
+				return referencedTable;
+			}
+			// Fallback: derive table name from column name (same as TableDir logic)
+			return MQuery.getZoomTableName(column.getColumnName());
+		}
+		else if (displayType == DisplayType.TableDir)
+		{
+			return MQuery.getZoomTableName(column.getColumnName());
+		}
+		return null;
+	}
+
+	public ImmutableList<ReferenceFieldInfo> scanReferenceFieldsForTable(
+			@NonNull final String tableName,
+			@NonNull final ImmutableSet<String> excludedColumns)
+	{
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
+		final ImmutableList.Builder<ReferenceFieldInfo> results = ImmutableList.builder();
+
+		for (int i = 0; i < poInfo.getColumnCount(); i++)
+		{
+			final POInfoColumn column = poInfo.getColumn(i);
+			if (column == null)
+			{
+				continue;
+			}
+
+			final int displayType = column.getDisplayType();
+			if (displayType != DisplayType.Table && displayType != DisplayType.TableDir && displayType != DisplayType.Search)
+			{
+				continue;
+			}
+
+			final String columnName = column.getColumnName();
+			if (excludedColumns.contains(columnName))
+			{
+				continue;
+			}
+
+			final String targetTableName = resolveTargetTableName(column);
+			if (targetTableName == null)
+			{
+				results.add(ReferenceFieldInfo.builder()
+						.sourceTableName(tableName)
+						.sourceColumnName(columnName)
+						.targetTableName("UNRESOLVED")
+						.build());
+				continue;
+			}
+
+			final Optional<AdWindowId> windowId = RecordWindowFinder.findAdWindowId(targetTableName);
+			final String windowName = windowId.map(this::getWindowName).orElse(null);
+
+			results.add(ReferenceFieldInfo.builder()
+					.sourceTableName(tableName)
+					.sourceColumnName(columnName)
+					.targetTableName(targetTableName)
+					.resolvedWindowId(windowId.orElse(null))
+					.resolvedWindowName(windowName)
+					.build());
+		}
+
+		return results.build();
+	}
+
+	public ImmutableList<ReferenceFieldInfo> verifyZoomToForRecord(
+			@NonNull final PO record,
+			@NonNull final ImmutableSet<String> excludedColumns)
+	{
+		final String tableName = record.get_TableName();
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
+		final ImmutableList.Builder<ReferenceFieldInfo> results = ImmutableList.builder();
+
+		for (int i = 0; i < poInfo.getColumnCount(); i++)
+		{
+			final POInfoColumn column = poInfo.getColumn(i);
+			if (column == null)
+			{
+				continue;
+			}
+
+			final int displayType = column.getDisplayType();
+			if (displayType != DisplayType.Table && displayType != DisplayType.TableDir && displayType != DisplayType.Search)
+			{
+				continue;
+			}
+
+			final String columnName = column.getColumnName();
+			if (excludedColumns.contains(columnName))
+			{
+				continue;
+			}
+
+			final Object value = record.get_Value(columnName);
+			if (value == null)
+			{
+				continue; // skip null FK values
+			}
+
+			final int recordId;
+			if (value instanceof Number)
+			{
+				recordId = ((Number)value).intValue();
+			}
+			else
+			{
+				continue; // not a numeric FK
+			}
+
+			if (recordId <= 0)
+			{
+				continue; // skip non-positive IDs
+			}
+
+			final String targetTableName = resolveTargetTableName(column);
+			if (targetTableName == null)
+			{
+				results.add(ReferenceFieldInfo.builder()
+						.sourceTableName(tableName)
+						.sourceColumnName(columnName)
+						.targetTableName("UNRESOLVED")
+						.build());
+				continue;
+			}
+
+			final Optional<AdWindowId> windowId = RecordWindowFinder.newInstance(targetTableName, recordId)
+					.checkRecordPresentInWindow()
+					.findAdWindowId();
+			final String windowName = windowId.map(this::getWindowName).orElse(null);
+
+			results.add(ReferenceFieldInfo.builder()
+					.sourceTableName(tableName)
+					.sourceColumnName(columnName)
+					.targetTableName(targetTableName)
+					.resolvedWindowId(windowId.orElse(null))
+					.resolvedWindowName(windowName)
+					.build());
+		}
+
+		return results.build();
 	}
 }
