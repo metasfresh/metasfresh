@@ -16,10 +16,10 @@
 # protection and will NOT trigger the cicd workflow on the merge branch.
 # Without cicd, the Merge Gate check never appears, and Mergify cannot
 # auto-merge the PR. To work around this, after pushing the merge branch
-# we explicitly dispatch the cicd workflow via `gh workflow run` using the
-# CICD_TRIGGER_DISPATCH PAT. We cannot use the PAT for the push itself
-# because it lacks the `workflows` permission needed to push workflow file
-# changes (common in *_release → new_dawn_uat merges).
+# (with GITHUB_TOKEN, which has push access), we explicitly dispatch the
+# cicd workflow via `gh workflow run` using the CICD_TRIGGER_DISPATCH PAT.
+# The PAT cannot be used for the push itself — it belongs to a service
+# account without push access to this repo.
 # ===========================================================================
 
 name: Auto-port to new_dawn_uat chain
@@ -55,22 +55,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # CRITICAL: Use a PAT instead of GITHUB_TOKEN for checkout.
-          # This makes `git push` authenticate with the PAT, which allows
-          # the push to trigger the cicd workflow on the merge branch.
-          # GITHUB_TOKEN pushes are blocked by GitHub's anti-recursion
-          # protection and will NOT trigger downstream workflows.
-          # Falls back to GITHUB_TOKEN if PAT is not configured (but cicd
-          # won't trigger, so Merge Gate won't appear and auto-merge won't work).
-          token: ${{ secrets.CICD_TRIGGER_DISPATCH || github.token }}
-
-      - name: Check push token
-        run: |
-          if [[ -z "${{ secrets.CICD_TRIGGER_DISPATCH }}" ]]; then
-            echo "::warning::CICD_TRIGGER_DISPATCH secret not configured — push will NOT trigger cicd workflow. Auto-merge will not work."
-          else
-            echo "PAT configured — push will trigger cicd workflow"
-          fi
+          # Use default GITHUB_TOKEN for checkout/push. It has push access
+          # to the repo but won't trigger downstream workflows (anti-recursion).
+          # The separate "Dispatch cicd" step handles triggering cicd via PAT.
 
       - name: Determine target branch
         id: target
