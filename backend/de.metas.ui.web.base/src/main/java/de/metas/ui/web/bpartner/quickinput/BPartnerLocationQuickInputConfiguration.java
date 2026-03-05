@@ -3,6 +3,7 @@ package de.metas.ui.web.bpartner.quickinput;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.quick_input.service.BPartnerLocationQuickInputService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 @RequiredArgsConstructor
 public class BPartnerLocationQuickInputConfiguration
 {
+	private static final AdMessageKey MSG_NO_BUSINESS_PARTNER_SELECTED = AdMessageKey.of("de.metas.ui.web.bpartner.quickinput.MSG_NO_BUSINESS_PARTNER_SELECTED");
 	@NonNull private static final Logger logger = LogManager.getLogger(BPartnerLocationQuickInputConfiguration.class);
 	@NonNull private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 	@NonNull private final DocumentCollection documentCollection;
@@ -117,7 +119,7 @@ public class BPartnerLocationQuickInputConfiguration
 
 		if (bpartnerId == null)
 		{
-			throw new AdempiereException("No bpartner ID found");
+			throw new AdempiereException(MSG_NO_BUSINESS_PARTNER_SELECTED);
 		}
 		return bpartnerId;
 	}
