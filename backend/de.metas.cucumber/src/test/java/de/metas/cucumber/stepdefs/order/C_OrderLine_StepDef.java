@@ -656,6 +656,12 @@ public class C_OrderLine_StepDef
 			softly.assertThat(huPiItemProduct.getM_HU_PI_Item_Product_ID()).isEqualTo(orderLineHU.getM_HU_PI_Item_Product_ID());
 		}
 
+		row.getAsOptionalBigDecimal(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU)
+				.ifPresent(qtyEnteredTU -> {
+					final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+					softly.assertThat(orderLineHU.getQtyEnteredTU()).as("QtyEnteredTU").isEqualByComparingTo(qtyEnteredTU);
+				});
+
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
 		if (qtyReserved != null)
 		{

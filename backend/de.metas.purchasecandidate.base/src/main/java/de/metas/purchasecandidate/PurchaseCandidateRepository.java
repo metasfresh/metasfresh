@@ -13,6 +13,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.user.UserId;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
@@ -415,6 +416,9 @@ public class PurchaseCandidateRepository
 		record.setDropShip_Location_ID(BPartnerLocationId.toRepoId(purchaseCandidate.getDropShipLocationId()));
 		record.setDropShip_User_ID(UserId.toRepoId(purchaseCandidate.getDropShipUserId()));
 
+		record.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(purchaseCandidate.getHuPIItemProductId()));
+		record.setQtyEnteredTU(purchaseCandidate.getQtyEnteredTU());
+
 		record.setIsSimulated(purchaseCandidate.isSimulated());
 		record.setIsReadyForPOCreation(purchaseCandidate.isReadyForPOCreation());
 
@@ -531,6 +535,9 @@ public class PurchaseCandidateRepository
 				.dropShipBPartnerId(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()))
 				.dropShipLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()), record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null))
 				.dropShipUserId(UserId.ofRepoIdOrNull(record.getDropShip_User_ID()))
+				//
+				.huPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID()))
+				.qtyEnteredTU(record.getQtyEnteredTU())
 				//
 				.readyForPOCreation(record.isReadyForPOCreation())
 				//
