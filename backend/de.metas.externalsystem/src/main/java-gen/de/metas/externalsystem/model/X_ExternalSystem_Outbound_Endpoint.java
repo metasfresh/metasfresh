@@ -209,6 +209,27 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
+	/**
+	 * ContentType AD_Reference_ID=541925
+	 * Reference name: ExternalSystem_Outbound_Endpoint_ContentType
+	 */
+	public static final int CONTENTTYPE_AD_Reference_ID=541925;
+	/** application/json = application/json */
+	public static final String CONTENTTYPE_ApplicationJson = "application/json";
+	/** application/xml = application/xml */
+	public static final String CONTENTTYPE_ApplicationXml = "application/xml";
+	@Override
+	public void setContentType (final String ContentType)
+	{
+		set_Value (COLUMNNAME_ContentType, ContentType);
+	}
+
+	@Override
+	public String getContentType()
+	{
+		return get_ValueAsString(COLUMNNAME_ContentType);
+	}
+
 	@Override
 	public void setValue (final String Value)
 	{
