@@ -517,6 +517,52 @@ public class C_Order
 		orderBL.setShipperId(order);
 	}
 
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)
+	public void onDropShipLocationCallout(final I_C_Order order)
+	{
+		// NOTE: this method also fires on C_BPartner_Location_ID changes (see @ModelChange above),
+		// but the guard below ensures we only proceed when DropShip_Location_ID is actually set.
+		if (order.getDropShip_Location_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		// Auto-fill DropShip_BPartner_ID from C_BPartner_ID when location is set but BPartner is empty.
+		// This supports the quick-input flow where the user creates a one-time address
+		// from DropShip_Location_ID without first selecting a DropShip BPartner.
+		// Skip during copy — the copied order may have a different DropShip_BPartner_ID that hasn't been applied yet.
+		if (order.getDropShip_BPartner_ID() <= 0
+				&& order.getC_BPartner_ID() > 0
+				&& !InterfaceWrapperHelper.isCopying(order))
+		{
+			order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_HandOver_Location_ID
+	})
+	public void onHandOverLocation(final I_C_Order order)
+	{
+		if (order.getHandOver_Location_ID() <= 0)
+		{
+			return;
+		}
+
+		// Auto-fill HandOver_Partner_ID from C_BPartner_ID when location is set but partner is empty.
+		// Skip during copy — the copied order may have a different HandOver_Partner_ID that hasn't been applied yet.
+		if (order.getHandOver_Partner_ID() <= 0
+				&& order.getC_BPartner_ID() > 0
+				&& !InterfaceWrapperHelper.isCopying(order))
+		{
+			order.setHandOver_Partner_ID(order.getC_BPartner_ID());
+		}
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {

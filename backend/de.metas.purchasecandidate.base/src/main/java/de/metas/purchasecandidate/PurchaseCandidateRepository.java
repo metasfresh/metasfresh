@@ -420,6 +420,7 @@ public class PurchaseCandidateRepository
 		record.setQtyEnteredTU(purchaseCandidate.getQtyEnteredTU());
 
 		record.setIsSimulated(purchaseCandidate.isSimulated());
+		record.setIsReadyForPOCreation(purchaseCandidate.isReadyForPOCreation());
 
 		if (purchaseCandidate.isSimulated())
 		{
@@ -538,6 +539,8 @@ public class PurchaseCandidateRepository
 				.huPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID()))
 				.qtyEnteredTU(record.getQtyEnteredTU())
 				//
+				.readyForPOCreation(record.isReadyForPOCreation())
+				//
 				.build();
 
 		purchaseItemRepository.loadPurchaseItems(purchaseCandidate);
@@ -581,6 +584,20 @@ public class PurchaseCandidateRepository
 			record.setPurchasePriceActual(null);
 			record.setC_Currency_ID(-1);
 		}
+	}
+
+	@NonNull
+	public List<PurchaseCandidate> getReadyForPOCreationBySalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID, salesOrderId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsReadyForPOCreation, true)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, false)
+				.create()
+				.stream(I_C_PurchaseCandidate.class)
+				.map(this::toPurchaseCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)

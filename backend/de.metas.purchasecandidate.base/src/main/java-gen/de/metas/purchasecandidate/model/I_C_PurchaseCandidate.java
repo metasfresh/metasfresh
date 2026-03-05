@@ -1397,6 +1397,27 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
+	 * Set Ready for PO Creation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForPOCreation (boolean IsReadyForPOCreation);
+
+	/**
+	 * Get Ready for PO Creation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForPOCreation();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsReadyForPOCreation = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsReadyForPOCreation", null);
+	String COLUMNNAME_IsReadyForPOCreation = "IsReadyForPOCreation";
+
+	/**
 	 * Set Vendor.
 	 * The Vendor of the product/service
 	 *
