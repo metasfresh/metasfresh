@@ -39,4 +39,8 @@ Feature: Zoom-Into metadata scan
       | I_ESR_Import                       |
       | I_Order                            |
       | I_BPartner_GlobalID               |
+      | C_BPartner_Adv_Search             |
+      | C_BPartner_Location_QuickInput    |
+      | C_BPartner_QuickInput             |
+      | ServiceRepair_Old_Shipped_HU      |
     Then every table in ad_table_windows_v resolves to a non-null window

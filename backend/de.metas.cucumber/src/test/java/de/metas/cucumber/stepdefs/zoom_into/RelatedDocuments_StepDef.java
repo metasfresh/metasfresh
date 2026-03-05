@@ -21,9 +21,8 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MTable;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -119,7 +118,7 @@ public class RelatedDocuments_StepDef
 
 	private ImmutableList<RelatedDocumentsCandidateGroup> getCandidateGroupsForTable(@NonNull final String tableName)
 	{
-		final PO po = MTable.get(Env.getCtx(), tableName).getPO(0, null);
+		final PO po = TableModelLoader.instance.newPO(tableName);
 		final IZoomSource zoomSource = POZoomSource.of(po);
 		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.allowAll();
 		return relatedDocumentsFactory.getRelatedDocumentsCandidates(zoomSource, permissions);
@@ -128,6 +127,6 @@ public class RelatedDocuments_StepDef
 	private String getWindowName(@NonNull final AdWindowId windowId)
 	{
 		final ITranslatableString name = windowDAO.retrieveWindowName(windowId);
-		return name != null ? name.getDefaultValue() : "UNKNOWN(ID=" + windowId.getRepoId() + ")";
+		return name != null ? name.translate("en_US") : "UNKNOWN(ID=" + windowId.getRepoId() + ")";
 	}
 }

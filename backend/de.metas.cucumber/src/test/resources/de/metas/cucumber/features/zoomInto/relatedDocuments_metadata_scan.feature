@@ -20,5 +20,5 @@ Feature: Related Documents metadata scan
   Scenario: C_Order related documents include expected target windows
     Then related documents for source table "C_Order" include targets:
       | TargetWindowName                   |
-      | Sales Invoice (Customer)           |
-      | Shipment                           |
+      | Invoice (Customer)           |
+      | Shipment (Customer)                           |

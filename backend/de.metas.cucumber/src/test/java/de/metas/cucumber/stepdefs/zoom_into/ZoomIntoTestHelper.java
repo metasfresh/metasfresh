@@ -49,7 +49,7 @@ public class ZoomIntoTestHelper
 	public String getWindowName(@NonNull final AdWindowId windowId)
 	{
 		final ITranslatableString name = windowDAO.retrieveWindowName(windowId);
-		return name != null ? name.getDefaultValue() : null;
+		return name != null ? name.translate("en_US") : null;
 	}
 
 	public ImmutableList<String> findTablesWithMissingZoomIntoWindows(@NonNull final ImmutableSet<String> excludedTables)
