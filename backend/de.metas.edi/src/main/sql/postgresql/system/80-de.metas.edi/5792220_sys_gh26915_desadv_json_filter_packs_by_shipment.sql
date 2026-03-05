@@ -1,7 +1,15 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- gh#26915: DESADV JSON export — filter packs and no-pack lines by shipment (m_inout_id)
+-- When a DESADV is shared across multiple shipments, the JSON export must only include
+-- packs and lines belonging to the specific shipment being exported.
+
+-- 1) Drop the view first (it depends on the old single-parameter functions)
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
+
+-- 2) Drop old single-parameter functions
+DROP FUNCTION IF EXISTS "de.metas.edi".get_desadv_packs_json_fn(NUMERIC);
+DROP FUNCTION IF EXISTS "de.metas.edi".get_desadv_lines_no_pack_json_fn(NUMERIC);
+
+-- 3) Recreate get_desadv_packs_json_fn with p_m_inout_id parameter
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -10,8 +18,6 @@ DECLARE
     v_packs_json JSONB;
 BEGIN
     WITH pack_item_comp AS (
-        -- For each pack_item, resolve its compensation group via:
-        -- pack_item.m_inoutline_id -> m_inoutline.c_orderline_id -> c_orderline.c_order_compensationgroup_id
         SELECT epi.edi_desadv_pack_item_id,
                epi.edi_desadv_pack_id,
                epi.edi_desadvline_id,
@@ -31,7 +37,6 @@ BEGIN
           AND epi.isactive = 'Y'
     ),
          main_per_group AS (
-             -- The main line in each comp group = the one with the lowest order_line
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id,
                  edi_desadvline_id AS main_desadvline_id,
@@ -41,7 +46,6 @@ BEGIN
              ORDER BY comp_group_id, order_line
          ),
          pack_with_role AS (
-             -- Enrich each pack_item with its role (main vs sub-article)
              SELECT ep.edi_desadv_pack_id,
                     ep.seqno,
                     ep.ipa_sscc18,
@@ -78,9 +82,6 @@ BEGIN
                AND ep.isactive = 'Y'
          ),
          main_packs AS (
-             -- Identify the main pack per compensation group
-             -- (the pack containing the main article item, i.e. lowest order_line).
-             -- Uses DISTINCT ON to pick one main pack per group regardless of seqno ordering.
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id, edi_desadv_pack_id AS main_pack_id
              FROM pack_with_role
@@ -88,7 +89,6 @@ BEGIN
              ORDER BY comp_group_id, seqno
          ),
          items_assigned AS (
-             -- Sub-article items are reassigned to the main pack in their compensation group
              SELECT pwr.*,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
@@ -98,7 +98,6 @@ BEGIN
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
-             -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
              SELECT DISTINCT ON (ia.effective_pack_id)
                  ia.effective_pack_id,
                  ep.seqno,
@@ -123,9 +122,6 @@ BEGIN
              LEFT JOIN m_hu_packagingcode pc_lu
                        ON pc_lu.m_hu_packagingcode_id = ph.m_hu_packagingcode_id
              LEFT JOIN LATERAL (
-        -- Build LineItems JSON per effective pack.
-        -- Inlines the edi_desadv_line_object_v logic using ia.m_inoutline_id
-        -- to get the correct orderline/order context (avoiding 1:N multiplication).
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
                                'BestBeforeDate', ia.bestbeforedate,
@@ -173,11 +169,9 @@ BEGIN
                  JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
-            -- Use pack_item's m_inoutline_id for 1:1 join (not desadvline-level N:M)
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-            -- BPartner product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin, productno
             FROM c_bpartner_product
@@ -186,7 +180,6 @@ BEGIN
               AND c_bpartner_id = d.c_bpartner_id
             LIMIT 1
             ) bpp ON TRUE
-            -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
             FROM m_hu_pi_item_product
@@ -205,4 +198,100 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql STABLE
+;
+
+-- 4) Recreate get_desadv_lines_no_pack_json_fn with p_m_inout_id parameter
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
+    RETURNS JSONB AS $$
+DECLARE
+    v_lines_no_pack_json JSONB;
+BEGIN
+    SELECT
+        jsonb_agg(
+                jsonb_build_object(
+                        'DesadvLine', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
+                ) ORDER BY edl_lat.line
+        )
+    INTO v_lines_no_pack_json
+    FROM edi_desadvline edl_lat
+             LEFT JOIN "de.metas.edi".edi_desadv_line_object_v line_obj_no_pack ON line_obj_no_pack.edi_desadvline_id = edl_lat.edi_desadvline_id
+    WHERE edl_lat.edi_desadv_id = p_edi_desadv_id
+      AND edl_lat.isactive = 'Y'
+      AND EXISTS (
+        SELECT 1 FROM m_inoutline iol_exist
+        WHERE iol_exist.m_inout_id = p_m_inout_id
+          AND iol_exist.edi_desadvline_id = edl_lat.edi_desadvline_id
+    )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM edi_desadv_pack_item edpi_check
+                 JOIN edi_desadv_pack edp_check ON edp_check.edi_desadv_pack_id = edpi_check.edi_desadv_pack_id
+            AND edp_check.edi_desadv_id = edl_lat.edi_desadv_id
+            AND edp_check.isactive = 'Y'
+                 JOIN m_inoutline iol_check ON iol_check.m_inoutline_id = edpi_check.m_inoutline_id
+            AND iol_check.m_inout_id = p_m_inout_id
+        WHERE edpi_check.edi_desadvline_id = edl_lat.edi_desadvline_id
+          AND edpi_check.isactive = 'Y'
+    );
+
+    RETURN COALESCE(v_lines_no_pack_json, '[]'::jsonb);
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- 5) Recreate the view to pass io.m_inout_id to both functions
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
+CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
+SELECT io.m_inout_id,
+       JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
+               'Version', '0.2',
+               'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
+               'Parties', JSONB_BUILD_OBJECT(
+                       'Supplier', COALESCE(bp_supplier.bpartner_json, '{}'::jsonb),
+                       'Supplier_Location', COALESCE(bpl_supplier.bpartner_location_json, '{}'::jsonb),
+                       'Buyer', COALESCE(bp_buyer.bpartner_json, '{}'::jsonb),
+                       'Buyer_Location', COALESCE(bpl_buyer.bpartner_location_json, '{}'::jsonb),
+                       'Invoicee', COALESCE(bp_bill.bpartner_json, '{}'::jsonb),
+                       'Invoicee_Location', COALESCE(bpl_bill.bpartner_location_json, '{}'::jsonb),
+                       'DeliveryParty', COALESCE(bp_handover.bpartner_json, '{}'::jsonb),
+                       'DeliveryParty_Location', COALESCE(bpl_handover.bpartner_location_json, '{}'::jsonb),
+                       'UltimateConsignee', COALESCE(bp_dropship.bpartner_json, '{}'::jsonb),
+                       'UltimateConsignee_Location', COALESCE(bpl_dropship.bpartner_location_json, '{}'::jsonb)
+               ),
+               'DateOrdered', d.dateordered,
+               'ShipmentDocumentNo', io.documentno,
+               'EDI_Desadv_ID', d.edi_desadv_id,
+               'MovementDate', io.movementdate,
+               'POReference', COALESCE(d.poreference, io.poreference),
+               'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
+               'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
+               'InvoicableQtyBasedOn', (SELECT edl_ib.invoicableqtybasedon
+                                FROM edi_desadvline edl_ib
+                                WHERE edl_ib.edi_desadv_id = d.edi_desadv_id
+                                  AND edl_ib.isactive = 'Y'
+                                ORDER BY edl_ib.line
+                                LIMIT 1),
+               'DeliveryViaRule', COALESCE(d.deliveryviarule, io.deliveryviarule),
+               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id, io.m_inout_id),
+               'M_InOut_ID', io.m_inout_id,
+               'DatePromised', o.datepromised)
+       ) as embedded_json
+                         FROM m_inout io
+                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
+                         JOIN edi_desadv d ON io.edi_desadv_id = d.edi_desadv_id
+                         JOIN c_bpartner buyer ON d.c_bpartner_id = buyer.c_bpartner_id
+                         LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_buyer ON bp_buyer.c_bpartner_id = d.c_bpartner_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v bpl_buyer ON bpl_buyer.c_bpartner_location_id = d.c_bpartner_location_id
+                         LEFT JOIN c_bpartner_location bpl_bill_table ON bpl_bill_table.c_bpartner_location_id = d.bill_location_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_bill ON bp_bill.c_bpartner_id = bpl_bill_table.c_bpartner_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v bpl_bill ON bpl_bill.c_bpartner_location_id = d.bill_location_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_handover ON bp_handover.c_bpartner_id = d.handover_partner_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v bpl_handover ON bpl_handover.c_bpartner_location_id = d.handover_location_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_dropship ON bp_dropship.c_bpartner_id = d.dropship_bpartner_id
+                         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v bpl_dropship ON bpl_dropship.c_bpartner_location_id = d.dropship_location_id
+                         LEFT JOIN ad_orginfo org ON org.ad_org_id = io.ad_org_id
+                         JOIN "de.metas.edi".edi_bpartner_object_v bp_supplier ON bp_supplier.c_bpartner_id = org.org_bpartner_id
+                         JOIN "de.metas.edi".edi_bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
+                         WHERE io.isactive = 'Y'
+  AND io.docstatus IN ('CO', 'CL')
 ;
