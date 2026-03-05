@@ -420,7 +420,7 @@ public class C_BPartner_StepDef
 		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID)
 				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
-				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
+				.ifPresent(identifier -> bPartnerRecord.setEdiINVOIC_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
 

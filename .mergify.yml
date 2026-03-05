@@ -1,20 +1,45 @@
+# =============================================================================
+# ops:* Label Reference
+# =============================================================================
+# ops:auto_squash_merge      — Auto-merge using squash method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:auto_merge_commit      — Auto-merge using merge commit method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:without_review_approval — Skip the review approval requirement for auto-merge.
+#                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
+# ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
+# ops:no_auto_port           — (reserved for future use)
+# =============================================================================
+
+# Transition: "Merge Gate" is the new CI gate (added in cicd.yaml).
+# Branches that already have it use "Merge Gate"; older branches fall back
+# to "testspace-analytics". Once all active branches carry the gate job,
+# remove the testspace-analytics fallback.
 merge_protections:
   - name: default
     if:
-      - check-success=testspace-analytics
+      - or:
+          - check-success=Merge Gate
+          - check-success=testspace-analytics
     success_conditions:
-      - check-success=testspace-analytics
+      - or:
+          - check-success=Merge Gate
+          - check-success=testspace-analytics
 
 queue_rules:
   - name: squash-queue
     merge_method: squash
     merge_conditions:
-      - check-success=testspace-analytics
+      - or:
+          - check-success=Merge Gate
+          - check-success=testspace-analytics
 
   - name: merge-queue
     merge_method: merge
     merge_conditions:
-      - check-success=testspace-analytics
+      - or:
+          - check-success=Merge Gate
+          - check-success=testspace-analytics
 
 pull_request_rules:
 
@@ -66,6 +91,7 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
               - base=temporary_test202412_hotfix
               - base=green_oak_hotfix
@@ -91,6 +117,7 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=taloned_owl_release
               - base=organic_goat_release
               - base=temporary_test202412_release
               - base=green_oak_release
@@ -104,6 +131,7 @@ pull_request_rules:
               - base=soft_panda_release
               - base=vampire_textbook_release
               - base=science_vessel_release
+              - base=memorable_shiny_release
 
     actions:
       label:

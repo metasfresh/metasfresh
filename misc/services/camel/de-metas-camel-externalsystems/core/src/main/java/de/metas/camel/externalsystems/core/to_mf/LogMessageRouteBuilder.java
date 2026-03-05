@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.core.to_mf;
 
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.v1.JsonPInstanceLog;
+import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v2.JsonPInstanceLog;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;

@@ -34,6 +34,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
@@ -216,9 +217,29 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
+	private static Context toContext(@NonNull final PickingJobLine pickingJobLine)
+	{
+		return Context.builder()
+				.deliveryLocationId(pickingJobLine.getDeliveryBPLocationId())
+				.salesOrderDocumentNo(pickingJobLine.getSalesOrderDocumentNo())
+				// .customerName(pickingJobLine.getCustomerName())
+				// .preparationDate(pickingJobLine.getPreparationDate())
+				// .handoverLocationId(pickingJobLine.getHandoverLocationId())
+				.productValueAndName(pickingJobLine.getProductValueAndName())
+				.qtyToDeliver(pickingJobLine.getQtyToPick())
+				.build();
+	}
+
+	@NonNull
 	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJob pickingJob)
 	{
 		return getDisplayValue(field, toContext(pickingJob));
+	}
+
+	@NonNull
+	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJobLine pickingJobLine)
+	{
+		return getDisplayValue(field, toContext(pickingJobLine));
 	}
 
 	@NonNull
@@ -288,7 +309,7 @@ public class DisplayValueProvider
 			{
 				return getRuestplatz(pickingJob)
 						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
-						.orElse(null);
+						.orElse(Integer.MAX_VALUE); // i.e. nulls last
 			}
 			default:
 			{

@@ -2781,6 +2781,18 @@ public class DB
 		}
 	}
 
+	/**
+	 * Get names of database functions in the current schema whose names match a SQL LIKE pattern (case-insensitive).
+	 * Results are ordered alphabetically.
+	 *
+	 * @param namePattern SQL LIKE pattern (e.g. {@code "%MaterialCockpit_SelectForOrderLine"})
+	 * @return matching function names (lowercase), never null
+	 */
+	public List<String> getFunctionsLike(@NonNull final String namePattern)
+	{
+		return CConnection.get().getDatabase().getFunctionsLike(namePattern);
+	}
+
 	@FunctionalInterface
 	public interface ResultSetRowLoader<T>
 	{

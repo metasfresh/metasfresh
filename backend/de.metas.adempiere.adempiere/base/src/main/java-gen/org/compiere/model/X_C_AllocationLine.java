@@ -438,7 +438,7 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	}
 
 	/** Set Abschreiben.
-		@param WriteOffAmt 
+		@param WriteOffAmt
 		Amount to write-off
 	  */
 	@Override
@@ -451,11 +451,35 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		@return Amount to write-off
 	  */
 	@Override
-	public java.math.BigDecimal getWriteOffAmt () 
+	public java.math.BigDecimal getWriteOffAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** WriteOffType AD_Reference_ID=542053 */
+	public static final String WRITEOFFTYPE_StandardWriteOff = "WO";
+	/** WriteOffType AD_Reference_ID=542053 */
+	public static final String WRITEOFFTYPE_BankFee = "BF";
+
+	/** Set Write-Off Type.
+		@param WriteOffType
+		Discriminates standard write-off (WO) from bank fee (BF)
+	  */
+	@Override
+	public void setWriteOffType (String WriteOffType)
+	{
+		set_Value (COLUMNNAME_WriteOffType, WriteOffType);
+	}
+
+	/** Get Write-Off Type.
+		@return Discriminates standard write-off (WO) from bank fee (BF)
+	  */
+	@Override
+	public String getWriteOffType ()
+	{
+		return (String)get_Value(COLUMNNAME_WriteOffType);
 	}
 }

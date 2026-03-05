@@ -37,7 +37,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.accountno
-                       ELSE bpb.accountno
+                       ELSE org_ba.org_bank_acct
                END,
                ''
        )                                       AS org_bank_acct,
@@ -45,7 +45,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bankf.name
-                       ELSE bank.name
+                       ELSE org_ba.org_bank_name
                END,
                ''
        )                                       AS org_bank_name,
@@ -53,7 +53,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.routingno
-                       ELSE bpb.routingno
+                       ELSE org_ba.org_bank_blz
                END,
                ''
        )                                       AS org_bank_blz,
@@ -61,7 +61,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.iban
-                       ELSE bpb.iban
+                       ELSE org_ba.org_bank_iban
                END,
                ''
        )                                       AS org_bank_iban,
@@ -69,7 +69,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
                CASE
                    WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bankf.swiftcode
-                       ELSE bank.swiftcode
+                       ELSE org_ba.org_bank_swift
                END,
                ''
        )                                       AS org_bank_swift,
@@ -100,6 +100,7 @@ FROM ad_org org
          INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
          INNER JOIN c_bpartner_location org_bpl ON org_bp.c_bpartner_id = org_bpl.c_bpartner_id
          INNER JOIN ad_user usr ON org_bp.c_bpartner_id = usr.c_bpartner_id AND usr.isdefaultcontact = 'Y'
+         INNER JOIN LATERAL report.Fresh_Org_BankAccount(org.AD_Org_ID) org_ba ON TRUE
          LEFT OUTER JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
          LEFT OUTER JOIN c_country country ON loc.c_country_id = country.c_country_id
          LEFT OUTER JOIN c_bp_bankaccount bpb ON org_bp.c_bpartner_id = bpb.c_bpartner_id
