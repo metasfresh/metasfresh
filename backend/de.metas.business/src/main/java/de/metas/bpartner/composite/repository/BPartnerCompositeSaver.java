@@ -40,7 +40,6 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -173,7 +172,7 @@ final class BPartnerCompositeSaver
 				|| !isBlank(bpartner.getCompanyName())) // kept this logic here for legacy purpose
 		{
 			bpartnerRecord.setIsCompany(true);
-			bpartnerRecord.setCompanyName(bpartner.getCompanyName().trim());
+			bpartnerRecord.setCompanyName(StringUtils.trimBlankToNull(bpartner.getCompanyName()));
 		}
 		else
 		{
