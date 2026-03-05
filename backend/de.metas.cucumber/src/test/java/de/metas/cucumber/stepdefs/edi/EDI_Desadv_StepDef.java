@@ -169,6 +169,26 @@ public class EDI_Desadv_StepDef
 		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
 	}
 
+	/**
+	 * Asserts that all given M_InOut records point to the same {@code EDI_Desadv_ID}.
+	 * This is used to verify the test precondition that multiple shipments share
+	 * a single DESADV (e.g. because they originate from orders with the same POReference + BPartner).
+	 * <p>
+	 * Each record must have a non-zero {@code EDI_Desadv_ID}, and all must match.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code M_InOut_ID} (required) — identifier of an M_InOut record from {@link M_InOut_StepDefData}</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then M_InOut records share the same EDI_Desadv:
+	 *   | M_InOut_ID |
+	 *   | s_1        |
+	 *   | s_2        |
+	 * </pre>
+	 */
 	@Then("M_InOut records share the same EDI_Desadv:")
 	public void assertShipmentsShareSameDesadv(@NonNull final DataTable dataTable)
 	{
