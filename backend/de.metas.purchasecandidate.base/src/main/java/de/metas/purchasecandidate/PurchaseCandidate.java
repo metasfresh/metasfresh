@@ -136,6 +136,17 @@ public class PurchaseCandidate
 
 	private boolean simulated;
 
+	/**
+	 * Set to {@code true} when this candidate should be auto-processed into a purchase order
+	 * by the debouncer processor ({@code C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder}).
+	 * <p>
+	 * This distinguishes candidates meant for automatic PO creation ({@code PP_Product_Planning.IsCreatePlan=Y}
+	 * with a linked sales order) from candidates that should remain available for manual PO creation.
+	 * Without this flag, the debouncer would sweep up all unprocessed candidates for a sales order,
+	 * including those whose product planning does not have {@code IsCreatePlan=Y}.
+	 */
+	private boolean readyForPOCreation;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
@@ -188,7 +199,8 @@ public class PurchaseCandidate
 			final boolean isDropShip,
 			@Nullable final BPartnerId dropShipBPartnerId,
 			@Nullable final BPartnerLocationId dropShipLocationId,
-			@Nullable final UserId dropShipUserId)
+			@Nullable final UserId dropShipUserId,
+			final boolean readyForPOCreation)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -245,6 +257,7 @@ public class PurchaseCandidate
 		this.simulated = simulated;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
+		this.readyForPOCreation = readyForPOCreation;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -293,6 +306,7 @@ public class PurchaseCandidate
 		discountEff = from.discountEff;
 		currencyId = from.currencyId;
 		simulated = from.simulated;
+		readyForPOCreation = from.readyForPOCreation;
 	}
 
 	public PurchaseCandidate copy()
