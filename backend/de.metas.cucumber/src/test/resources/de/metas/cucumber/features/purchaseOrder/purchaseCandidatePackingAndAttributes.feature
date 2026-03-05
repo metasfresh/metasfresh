@@ -9,6 +9,14 @@ Feature: Packing items, TU quantities, and attributes propagated from SO to Purc
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
+    And load M_Product:
+      | Identifier | OPT.M_Product_ID |
+      | ifco_6410  | 2001343          |
+
+    And update M_Product:
+      | Identifier | IsActive |
+      | ifco_6410  | Y        |
+
     And load M_AttributeSet:
       | Identifier                     | Name               |
       | attributeSet_convenienceSalate | Convenience Salate |
@@ -28,7 +36,7 @@ Feature: Packing items, TU quantities, and attributes propagated from SO to Purc
     # Set up HU packing (TU)
     And load M_HU_PI:
       | M_HU_PI_ID.Identifier | M_HU_PI_ID |
-      | huPI_pk1              | 1000006     |
+      | huPI_pk1              | 1000006    |
     And load M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_Version_ID |
       | huPIV_pk1                     | 2002669            |
@@ -65,12 +73,14 @@ Feature: Packing items, TU quantities, and attributes propagated from SO to Purc
       | plv_pk1p   | pl_pk1p        |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_pk1s    | plv_pk1s               | p_pk1        | 10.0     | PCE               | Normal                        |
+      | pp_pk1s    | plv_pk1s               | p_pk1        | 20.0     | PCE               | Normal                        |
       | pp_pk1p    | plv_pk1p               | p_pk1        | 10.0     | PCE               | Normal                        |
+      | ifco_6410s | plv_pk1s               | ifco_6410    | 0.3      | PCE               | Normal                        |
+      | ifco_6410p | plv_pk1p               | ifco_6410    | 0.1      | PCE               | Normal                        |
 
     And metasfresh contains M_DiscountSchemas:
-      | Identifier | Name                   | DiscountType | ValidFrom  |
-      | ds_pk1     | ds_purchCandPacking_1  | F            | 2021-04-01 |
+      | Identifier | Name                  | DiscountType | ValidFrom  |
+      | ds_pk1     | ds_purchCandPacking_1 | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
       | dsb_pk1    | ds_pk1              | p_pk1        | ps_pk1                | 10    | Y                      | P         | 10         | 0             |
@@ -136,4 +146,4 @@ Feature: Packing items, TU quantities, and attributes propagated from SO to Purc
       | po_pk1     | vendor_pk1    | POO         | CO        |
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
-      | pol_pk1                   | huPiItemProd_pk1                        | 3                |
+      | pol_pk1                   | huPiItemProd_pk1                       | 3                |
