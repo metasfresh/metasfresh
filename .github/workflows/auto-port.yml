@@ -172,6 +172,7 @@ jobs:
           fi
 
       - name: Create or update merge branch and PR
+        id: merge
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -243,6 +244,13 @@ jobs:
                 LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
               fi
 
+              # Outputs for traceability step
+              {
+                echo "result=updated"
+                echo "merge_pr_url=https://github.com/${{ github.repository }}/pull/$EXISTING_PR"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
               # Step summary
               {
                 echo "## Auto-port: Updated existing PR"
@@ -261,6 +269,7 @@ jobs:
             else
               git merge --abort
               echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
               {
                 echo "## Auto-port: Merge conflict"
                 echo ""
@@ -322,6 +331,13 @@ jobs:
 
               echo "Created merge PR: $MERGE_BRANCH → $TARGET"
 
+              # Outputs for traceability step
+              {
+                echo "result=created"
+                echo "merge_pr_url=$PR_URL"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
               # Step summary
               {
                 echo "## Auto-port: Created merge PR"
@@ -340,6 +356,7 @@ jobs:
             else
               git merge --abort
               echo "::error::Merge conflict: $SOURCE → $TARGET. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
               {
                 echo "## Auto-port: Merge conflict"
                 echo ""
@@ -375,3 +392,54 @@ jobs:
           echo "Dispatching cicd workflow for: $MERGE_BRANCH"
           GH_TOKEN="$DISPATCH_TOKEN" gh workflow run cicd.yaml --ref "$MERGE_BRANCH"
           echo "cicd dispatched for $MERGE_BRANCH"
+
+      # ---------------------------------------------------------------
+      # Post a traceability comment on the source PR(s) that triggered
+      # this auto-port. This lets the developer see the result directly
+      # on their merged PR without hunting through workflow runs.
+      # Runs even on merge conflict (always()) so failures are visible.
+      # ---------------------------------------------------------------
+      - name: Post traceability on source PRs
+        if: always() && steps.target.outputs.skip != 'true' && steps.merge.outputs.result != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          RESULT: ${{ steps.merge.outputs.result }}
+          MERGE_PR_URL: ${{ steps.merge.outputs.merge_pr_url }}
+          HAS_DDL: ${{ steps.merge.outputs.has_ddl }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Build comment body based on result
+          case "$RESULT" in
+            created|updated)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: $RESULT $MERGE_PR_URL"
+              if [[ "$HAS_DDL" == "true" ]]; then
+                COMMENT="$COMMENT"$'\n'"⚠️ DDL/migration changes detected — auto-merge disabled, human review required"
+              fi
+              ;;
+            conflict)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: merge conflict — manual resolution needed ([workflow run]($RUN_URL))"
+              ;;
+            *)
+              echo "Unknown result: $RESULT, skipping traceability"
+              exit 0
+              ;;
+          esac
+
+          # Find source PRs associated with the triggering cicd commit
+          SOURCE_PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+            --jq '.[].number' 2>/dev/null || true)
+
+          if [[ -z "$SOURCE_PRS" ]]; then
+            echo "No source PRs found for commit $HEAD_SHA, skipping traceability"
+            exit 0
+          fi
+
+          # Post comment on each source PR
+          for PR_NUM in $SOURCE_PRS; do
+            echo "Posting traceability comment on PR #$PR_NUM"
+            gh pr comment "$PR_NUM" --body "$COMMENT" || true
+          done
