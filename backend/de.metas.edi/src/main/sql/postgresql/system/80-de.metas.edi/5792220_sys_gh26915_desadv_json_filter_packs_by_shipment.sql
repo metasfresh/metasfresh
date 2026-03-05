@@ -2,11 +2,14 @@
 -- When a DESADV is shared across multiple shipments, the JSON export must only include
 -- packs and lines belonging to the specific shipment being exported.
 
--- 1) Drop old single-parameter functions
+-- 1) Drop the view first (it depends on the old single-parameter functions)
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
+
+-- 2) Drop old single-parameter functions
 DROP FUNCTION IF EXISTS "de.metas.edi".get_desadv_packs_json_fn(NUMERIC);
 DROP FUNCTION IF EXISTS "de.metas.edi".get_desadv_lines_no_pack_json_fn(NUMERIC);
 
--- 2) Recreate get_desadv_packs_json_fn with p_m_inout_id parameter
+-- 3) Recreate get_desadv_packs_json_fn with p_m_inout_id parameter
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -197,7 +200,7 @@ $$
     LANGUAGE plpgsql STABLE
 ;
 
--- 3) Recreate get_desadv_lines_no_pack_json_fn with p_m_inout_id parameter
+-- 4) Recreate get_desadv_lines_no_pack_json_fn with p_m_inout_id parameter
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
@@ -235,7 +238,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
--- 4) Recreate the view to pass io.m_inout_id to both functions
+-- 5) Recreate the view to pass io.m_inout_id to both functions
 DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
 CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
 SELECT io.m_inout_id,
