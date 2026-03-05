@@ -1248,7 +1248,7 @@ jobs:
         env:
           CICD_RUN_ID: ${{ github.run_id }}
           TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
-          BRANCH: ${{ github.ref_name }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.CICD_TRIGGER_DISPATCH }}
         run: |
           # Dispatch to mf15-private-extensions which will build private libs
@@ -1274,11 +1274,4 @@ jobs:
           CICD_RUN_ID: ${{ github.run_id }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          echo '### CICD Dispatch :arrow_right:' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo 'Dispatched to mf15-private-extensions with:' >> $GITHUB_STEP_SUMMARY
-          echo "* Version: \`${TAG_FIXED}\`" >> $GITHUB_STEP_SUMMARY
-          echo "* Branch: \`${BRANCH}\`" >> $GITHUB_STEP_SUMMARY
-          echo "* CICD Run: https://github.com/metasfresh/metasfresh/actions/runs/${CICD_RUN_ID}" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo 'mf15-private-extensions will build private libs and dispatch to customer repos via me03-gh-automation.' >> $GITHUB_STEP_SUMMARY
+          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
