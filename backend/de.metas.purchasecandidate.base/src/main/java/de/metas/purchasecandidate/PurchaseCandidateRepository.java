@@ -416,6 +416,7 @@ public class PurchaseCandidateRepository
 		record.setDropShip_User_ID(UserId.toRepoId(purchaseCandidate.getDropShipUserId()));
 
 		record.setIsSimulated(purchaseCandidate.isSimulated());
+		record.setIsReadyForPOCreation(purchaseCandidate.isReadyForPOCreation());
 
 		if (purchaseCandidate.isSimulated())
 		{
@@ -531,6 +532,8 @@ public class PurchaseCandidateRepository
 				.dropShipLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()), record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null))
 				.dropShipUserId(UserId.ofRepoIdOrNull(record.getDropShip_User_ID()))
 				//
+				.readyForPOCreation(record.isReadyForPOCreation())
+				//
 				.build();
 
 		purchaseItemRepository.loadPurchaseItems(purchaseCandidate);
@@ -574,6 +577,20 @@ public class PurchaseCandidateRepository
 			record.setPurchasePriceActual(null);
 			record.setC_Currency_ID(-1);
 		}
+	}
+
+	@NonNull
+	public List<PurchaseCandidate> getReadyForPOCreationBySalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID, salesOrderId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsReadyForPOCreation, true)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, false)
+				.create()
+				.stream(I_C_PurchaseCandidate.class)
+				.map(this::toPurchaseCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void deleteByIds(final Collection<PurchaseCandidateId> purchaseCandidateIds)

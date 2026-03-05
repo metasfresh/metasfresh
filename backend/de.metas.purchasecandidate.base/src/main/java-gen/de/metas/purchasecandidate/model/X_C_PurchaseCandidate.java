@@ -874,6 +874,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsReadyForPOCreation(final boolean IsReadyForPOCreation)
+	{
+		set_Value(COLUMNNAME_IsReadyForPOCreation, IsReadyForPOCreation);
+	}
+
+	@Override
+	public boolean isReadyForPOCreation()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForPOCreation);
+	}
+
+	@Override
 	public void setVendor_ID(final int Vendor_ID)
 	{
 		if (Vendor_ID < 1)
