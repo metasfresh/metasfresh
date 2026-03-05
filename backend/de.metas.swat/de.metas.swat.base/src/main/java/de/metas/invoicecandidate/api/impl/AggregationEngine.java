@@ -401,6 +401,8 @@ public final class AggregationEngine
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
+			invoiceHeader.setC_PromotionCode_ID(icRecord.getC_PromotionCode_ID());
+			invoiceHeader.setC_PromotionCode2_ID(icRecord.getC_PromotionCode2_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
 			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))

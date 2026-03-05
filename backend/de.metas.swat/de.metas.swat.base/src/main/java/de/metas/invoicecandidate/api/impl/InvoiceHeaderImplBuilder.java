@@ -108,6 +108,10 @@ public class InvoiceHeaderImplBuilder
 
 	private String incotermLocation;
 
+	private int C_PromotionCode_ID;
+
+	private int C_PromotionCode2_ID;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -162,6 +166,10 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
+		// promotion codes
+		invoiceHeader.setC_PromotionCode_ID(getC_PromotionCode_ID());
+		invoiceHeader.setC_PromotionCode2_ID(getC_PromotionCode2_ID());
+
 		return invoiceHeader;
 	}
 
@@ -189,6 +197,26 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Incoterms_ID(final int incoterms_id)
 	{
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	private int getC_PromotionCode_ID()
+	{
+		return C_PromotionCode_ID;
+	}
+
+	public void setC_PromotionCode_ID(final int promotionCode_id)
+	{
+		C_PromotionCode_ID = checkOverrideID("C_PromotionCode_ID", C_PromotionCode_ID, promotionCode_id);
+	}
+
+	private int getC_PromotionCode2_ID()
+	{
+		return C_PromotionCode2_ID;
+	}
+
+	public void setC_PromotionCode2_ID(final int promotionCode2_id)
+	{
+		C_PromotionCode2_ID = checkOverrideID("C_PromotionCode2_ID", C_PromotionCode2_ID, promotionCode2_id);
 	}
 
 	public String getIncotermLocation()

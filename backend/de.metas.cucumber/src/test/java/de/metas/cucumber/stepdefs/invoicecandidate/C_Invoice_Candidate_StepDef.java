@@ -41,6 +41,7 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
@@ -173,6 +174,7 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Project_StepDefData projectTable;
+	private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -471,6 +473,13 @@ public class C_Invoice_Candidate_StepDef
 						{
 							assertThat(updatedInvoiceCandidate.getQtyWithIssues_Effective()).isEqualTo(qtyWithIssuesEffective);
 						}
+
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(updatedInvoiceCandidate.getC_PromotionCode_ID()).as("C_PromotionCode_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode2_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(updatedInvoiceCandidate.getC_PromotionCode2_ID()).as("C_PromotionCode2_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
 
 						final LocalDate deliveryDate = TimeUtil.asLocalDate(updatedInvoiceCandidate.getDeliveryDate());
 						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)

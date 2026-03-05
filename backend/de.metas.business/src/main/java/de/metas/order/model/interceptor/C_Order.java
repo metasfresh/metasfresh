@@ -250,6 +250,19 @@ public class C_Order
 		orderBL.setIncoterms(order);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_PromotionCode_ID, I_C_Order.COLUMNNAME_C_PromotionCode2_ID })
+	public void validateNoDuplicatePromotionCode(@NonNull final I_C_Order order)
+	{
+		final int code1 = order.getC_PromotionCode_ID();
+		final int code2 = order.getC_PromotionCode2_ID();
+		if (code1 > 0 && code2 > 0 && code1 == code2)
+		{
+			throw new AdempiereException("@C_PromotionCode_DuplicateError@")
+					.markAsUserValidationError();
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{

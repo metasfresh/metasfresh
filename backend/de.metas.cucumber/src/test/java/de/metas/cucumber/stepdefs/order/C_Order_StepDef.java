@@ -62,6 +62,7 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
@@ -197,6 +198,7 @@ public class C_Order_StepDef
 	@NonNull private final C_PaymentTerm_StepDef paymentTermStepDef;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -430,6 +432,13 @@ public class C_Order_StepDef
 				.map(projectTable::extractIdFromRecord)
 				.map(ProjectId::getRepoId)
 				.ifPresent(order::setC_Project_ID);
+
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode_ID(promoCode.getC_PromotionCode_ID()));
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode2_ID(promoCode.getC_PromotionCode_ID()));
 
 		saveRecord(order);
 
@@ -847,6 +856,17 @@ public class C_Order_StepDef
 				.ifPresent(incotermValue -> softly.assertThat(IncotermsId.equals(incotermsRepository.getByValue(incotermValue, orgId).getId(), IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID())))
 						.as("C_Incoterms_ID for value %s", incotermValue).isTrue());
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(incotermLocation -> softly.assertThat(order.getIncotermLocation()).as(COLUMNNAME_IncotermLocation).isEqualTo(incotermLocation));
+
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode_ID())
+						.as("C_PromotionCode_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode2_ID())
+						.as("C_PromotionCode2_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
 
 		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
 		if (projectIdentifier != null)

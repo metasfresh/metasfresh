@@ -92,6 +92,10 @@ public interface IInvoiceHeader
 
 	String getIncotermLocation();
 
+	int getC_PromotionCode_ID();
+
+	int getC_PromotionCode2_ID();
+
 	String getPaymentRule();
 
 	@Nullable

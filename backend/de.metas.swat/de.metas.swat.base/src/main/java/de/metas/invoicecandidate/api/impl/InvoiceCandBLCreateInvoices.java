@@ -428,6 +428,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
+			invoice.setC_PromotionCode_ID(invoiceHeader.getC_PromotionCode_ID());
+			invoice.setC_PromotionCode2_ID(invoiceHeader.getC_PromotionCode2_ID());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 			invoice.setExternalSystem_ID(ExternalSystemId.toRepoId(invoiceHeader.getExternalSystemId()));
 			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
