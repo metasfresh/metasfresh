@@ -17,8 +17,7 @@ public class MD_CockpitV2_MakeQtyReservation
 		extends MaterialCockpitV2BasedProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Autowired
-	private QtyReservationService qtyReservationService;
+	@Autowired private QtyReservationService qtyReservationService;
 
 	private static final String PARAM_QTY_TU = "QtyTU";
 	@Param(parameterName = PARAM_QTY_TU, mandatory = true)

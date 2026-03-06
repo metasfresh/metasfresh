@@ -6,12 +6,12 @@ import de.metas.process.ProcessPreconditionsResolution;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class MD_CockpitV2_DeleteQtyReservation
 		extends MaterialCockpitV2BasedProcess
 		implements IProcessPrecondition
 {
-	@Autowired
-	private QtyReservationService qtyReservationService;
+	@Autowired private QtyReservationService qtyReservationService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
