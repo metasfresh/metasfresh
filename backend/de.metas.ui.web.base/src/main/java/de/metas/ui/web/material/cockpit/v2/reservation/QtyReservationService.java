@@ -6,25 +6,22 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class QtyReservationService
 {
-	private final QtyReservationRepository repository;
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final QtyReservationRepository repository;
 
-	public QtyReservationService(@NonNull final QtyReservationRepository repository)
-	{
-		this.repository = repository;
-	}
-
-	public QtyReservationId makeReservation(@NonNull final CreateQtyReservationRequest request)
+	public void makeReservation(@NonNull final CreateQtyReservationRequest request)
 	{
 		validateProductMatchesSalesOrderLine(request);
-		return repository.createReservation(request);
+		repository.createReservation(request);
 	}
 
 	public void deleteReservation(@NonNull final QtyReservationId reservationId)
@@ -46,7 +43,7 @@ public class QtyReservationService
 	{
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(request.getOrderLineId());
 		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		if (!request.getProductId().equals(orderLineProductId))
+		if (!ProductId.equals(request.getProductId(), orderLineProductId))
 		{
 			throw new AdempiereException("Product mismatch: reservation product "
 					+ request.getProductId().getRepoId()

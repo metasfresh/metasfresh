@@ -5,6 +5,7 @@ import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_QtyReservation;
 import org.compiere.util.TimeUtil;
@@ -21,7 +22,7 @@ public class QtyReservationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public QtyReservationId createReservation(@NonNull final CreateQtyReservationRequest request)
+	public void createReservation(@NonNull final CreateQtyReservationRequest request)
 	{
 		final I_M_QtyReservation record = newInstance(I_M_QtyReservation.class);
 		record.setC_OrderLine_ID(request.getOrderLineId().getRepoId());
@@ -36,13 +37,13 @@ public class QtyReservationRepository
 		{
 			record.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
 		}
-		record.setC_UOM_ID(request.getUomId().getRepoId());
 		record.setQtyTU(request.getQtyTU().toBigDecimal());
-		record.setQty(request.getQty());
+		record.setQty(request.getQty().toBigDecimal());
+		record.setC_UOM_ID(request.getQty().getUomId().getRepoId());
 		record.setAttributesKey(request.getAttributesKey() != null ? request.getAttributesKey().getAsString() : null);
 		saveRecord(record);
 
-		return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
+		// return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
 	}
 
 	public void deleteById(@NonNull final QtyReservationId reservationId)
@@ -63,7 +64,7 @@ public class QtyReservationRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.forEach(record -> deleteRecord(record));
+				.forEach(InterfaceWrapperHelper::deleteRecord);
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)

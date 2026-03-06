@@ -48,8 +48,6 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
-import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext;
-import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -58,9 +56,7 @@ import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
-import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -87,6 +83,7 @@ import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ReservationKey;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
@@ -103,7 +100,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -136,7 +132,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	@NonNull private final QtyReservationRepository qtyReservationRepository;
 	@NonNull private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	@NonNull private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 	@NonNull private final PickingBOMService pickingBOMService;
@@ -154,13 +149,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
-		final StockRepository stockRepository = new StockRepository();
-		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
+		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = ShipmentScheduleQtyOnHandStorageFactory.newInstanceForUnitTesting();
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
-				new QtyReservationRepository(),
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService,
@@ -497,37 +490,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentScheduleQtyOnHandStorage qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
 
 		//
-		// Load qty-reservations so that non-reserved schedules only see unreserved stock
-		final QtyReservationAllocationContext reservationCtx = loadReservationContext(lines);
-		if (!reservationCtx.isEmpty())
-		{
-			logger.debug("Loaded reservation context for {} order lines", lines.size());
-		}
-
-		//
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands, reservationCtx);
+			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands);
 		}
 		return shipmentSchedulesDuringUpdate;
 	} // generate
 
-	@NonNull
-	private QtyReservationAllocationContext loadReservationContext(@NonNull final List<OlAndSched> lines)
-	{
-		final ImmutableSet<ProductId> productIds = lines.stream()
-				.map(OlAndSched::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return QtyReservationAllocationContext.of(qtyReservationRepository.getActiveByProductIds(productIds));
-	}
-
 	private void processSingleOlAndSched(
 			final @NonNull OlAndSched olAndSched,
 			final @NonNull ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate,
-			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage,
-			final @NonNull QtyReservationAllocationContext reservationCtx)
+			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
@@ -561,20 +535,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Get the QtyOnHand storages suitable for our order line
 			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
+			final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(sched);
+			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable(reservationKey);
 
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
-			//
-			// Cap effective stock by subtracting reservations held by other order lines.
-			// The schedule record keeps the real QtyOnHand; only the allocation decision uses the capped value.
-			final BigDecimal effectiveQtyOnHand = reservationCtx.reserve(olAndSched, qtyOnHandBeforeAllocation);
+			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
 
-			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, effectiveQtyOnHand);
-
-			final OrderLineId orderLineId = olAndSched.getSalesOrderLineId().orElse(null);
-			
 			//
 			// Delivery rule: Force
 			if (deliveryRule.isForce())
@@ -586,8 +554,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						true, // force
 						completeStatus,
 						shipmentSchedulesDuringUpdate);
-
-				consumeReservationAfterAllocation(reservationCtx, orderLineId, qtyToDeliver);
 			}
 			//
 			// Delivery rule: Complete Order/Line or Availability or Manual
@@ -595,11 +561,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					|| deliveryRule.isAvailability()
 					|| deliveryRule.isManual())
 			{
-				if (effectiveQtyOnHand.signum() > 0 || qtyToDeliver.signum() < 0)
+				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
 				{
 					//
 					// if there is anything at all to deliver, create a new inOutLine
-					final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(effectiveQtyOnHand);
+					final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
 
 					// we invoke createLine even if ruleComplete is true and fullLine is false,
 					// because we want the quantity to be allocated.
@@ -611,13 +577,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 							false, // force
 							completeStatus,
 							shipmentSchedulesDuringUpdate);
-
-					consumeReservationAfterAllocation(reservationCtx, orderLineId, qtyToDeliverEffective);
 				}
 				else
 				{
-					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, effectiveOnHand={}, ToDeliver={}, FullLine={}",
-							qtyOnHandBeforeAllocation, effectiveQtyOnHand, qtyToDeliver, completeStatus);
+					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
+							qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
 				}
 			}
 			//
@@ -626,21 +590,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
 						.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
-						.setParameter("effectiveQtyOnHand", effectiveQtyOnHand)
 						.setParameter("qtyToDeliver", qtyToDeliver)
 						.appendParametersToMessage();
 			}
-		}
-	}
-
-	private static void consumeReservationAfterAllocation(
-			@NonNull final QtyReservationAllocationContext reservationCtx,
-			@Nullable final OrderLineId orderLineId,
-			@NonNull final BigDecimal allocatedQty)
-	{
-		if (!reservationCtx.isEmpty() && orderLineId != null && allocatedQty.signum() > 0)
-		{
-			reservationCtx.consumeReservation(orderLineId, allocatedQty);
 		}
 	}
 
@@ -726,6 +678,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return; // we are done
 		}
 
+		final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched.getSched());
+
 		// Shipment Lines (i.e. candidate lines)
 		final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
 
@@ -745,7 +699,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Adjust the quantity that can be delivered from this storage line
 			// Check: Not enough On Hand
-			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
+			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex, reservationKey);
 			if (qtyToDeliver.compareTo(qtyAvailable) > 0
 					&& qtyAvailable.signum() >= 0)         // positive storage
 			{

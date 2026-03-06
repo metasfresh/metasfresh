@@ -22,8 +22,6 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import de.metas.document.engine.DocStatus;
-import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
@@ -33,7 +31,9 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -48,13 +48,14 @@ import java.util.Optional;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OlAndSched
 {
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final Optional<I_C_OrderLine> salesOrderLine;
 	private final Optional<I_C_Order> salesOrder;
 	private final IDeliverRequest deliverRequest;
-	private final BigDecimal initialSchedQtyDelivered;
+	@Getter private final BigDecimal initialSchedQtyDelivered;
 
 	@Builder
 	private OlAndSched(
@@ -98,7 +99,10 @@ public final class OlAndSched
 
 	private I_C_OrderLine getSalesOrderLine()
 	{
-		return salesOrderLine.get();
+		return salesOrderLine.orElseThrow(
+				() -> new AdempiereException("No sales order line")
+						.setParameter("shipmentSchedule", shipmentSchedule)
+		);
 	}
 
 	public ProductId getProductId()
@@ -132,11 +136,6 @@ public final class OlAndSched
 		return getSalesOrderLine().getPriceActual();
 	}
 
-	public DocStatus getOrderDocStatus()
-	{
-		return DocStatus.ofCode(getSalesOrderLine().getC_Order().getDocStatus());
-	}
-
 	public I_M_ShipmentSchedule getSched()
 	{
 		return shipmentSchedule;
@@ -160,11 +159,6 @@ public final class OlAndSched
 		return InterfaceWrapperHelper.getValueOrNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 	}
 
-	public BigDecimal getInitialSchedQtyDelivered()
-	{
-		return initialSchedQtyDelivered;
-	}
-
 	public void setShipmentScheduleLineNetAmt(final BigDecimal lineNetAmt)
 	{
 		shipmentSchedule.setLineNetAmt(lineNetAmt);
@@ -174,19 +168,5 @@ public final class OlAndSched
 	public String getSalesOrderPORef()
 	{
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
-	}
-
-	@Nullable
-	public InputDataSourceId getSalesOrderADInputDatasourceID()
-	{
-		if (!salesOrder.isPresent())
-		{
-			return null;
-		}
-
-		final I_C_Order orderRecord = salesOrder.get();
-
-		return InputDataSourceId.ofRepoIdOrNull(orderRecord.getAD_InputDataSource_ID());
-
 	}
 }

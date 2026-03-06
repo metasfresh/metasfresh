@@ -7,6 +7,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.inout.util.StockMatchingKey;
 import org.adempiere.warehouse.WarehouseId;
 
 /**
@@ -18,9 +19,11 @@ import org.adempiere.warehouse.WarehouseId;
 public class QtyReservation
 {
 	@NonNull OrderLineId orderLineId;
+
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
 	@NonNull AttributesKey attributesKey;
+
 	@NonNull Quantity qty;
 	@NonNull Quantity qtyDelivered;
 
@@ -45,5 +48,14 @@ public class QtyReservation
 	public boolean isFullyDelivered()
 	{
 		return getEffectiveQty().isZero();
+	}
+
+	public StockMatchingKey getStockMatchingKey()
+	{
+		return StockMatchingKey.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.attributesKey(attributesKey)
+				.build();
 	}
 }
