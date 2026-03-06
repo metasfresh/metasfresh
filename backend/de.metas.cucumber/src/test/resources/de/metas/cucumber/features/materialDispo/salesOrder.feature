@@ -86,19 +86,16 @@ Feature: material dispo reacts to order docactions
     Given load M_AttributeSet:
       | M_AttributeSet_ID.Identifier   | Name               |
       | attributeSet_convenienceSalate | Convenience Salate |
-    And load M_Product_Category:
-      | M_Product_Category_ID.Identifier | Name     | Value    |
-      | standard_category                | Standard | Standard |
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
-      | standard_category                | attributeSet_convenienceSalate   |
+      | standard_category_S0461          | attributeSet_convenienceSalate   |
     And update duration for AD_Workflow nodes
       | AD_Workflow_ID | Duration |
       | 540075         | 0        |
     And metasfresh contains M_Products:
       | Identifier | OPT.M_Product_Category_ID.Identifier |
-      | p_finished | standard_category                    |
-      | p_component| standard_category                    |
+      | p_finished | standard_category_S0461              |
+      | p_component| standard_category_S0461              |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
