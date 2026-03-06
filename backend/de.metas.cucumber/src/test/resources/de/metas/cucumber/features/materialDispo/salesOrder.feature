@@ -95,7 +95,7 @@ Feature: material dispo reacts to order docactions
     And metasfresh contains M_Products:
       | Identifier | OPT.M_Product_Category_ID.Identifier |
       | p_finished | standard_category_S0461              |
-      | p_component| standard_category_S0461              |
+      | p_component | standard_category_S0461              |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |

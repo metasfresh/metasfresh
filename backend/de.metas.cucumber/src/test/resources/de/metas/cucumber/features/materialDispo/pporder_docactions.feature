@@ -25,6 +25,7 @@ Feature: material dispo reacts to PP_Order doc-actions
       | AD_Workflow_ID | Duration |
       | 540075         | 0        |
 
+  @Id:S0462_10
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -70,10 +71,11 @@ Feature: material dispo reacts to PP_Order doc-actions
       | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T07:00:00.00Z | 10  | 10  |
       | c_demand   | DEMAND            | PRODUCTION                | p_component  | 2024-09-20T07:00:00.00Z | 30  | -30 |
 
+  @Id:S0462_20
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  Scenario: PP_Order Void zeroes supply and demand candidates
+  Scenario: PP_Order Void deletes supply and demand candidates
     Given metasfresh contains M_Products:
       | Identifier  | OPT.M_Product_Category_ID.Identifier |
       | p_finished  | standard_category                    |
@@ -113,5 +115,9 @@ Feature: material dispo reacts to PP_Order doc-actions
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP |
       | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T07:00:00.00Z | 10  | 10  |
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP |
+      | c_demand   | DEMAND            | PRODUCTION                | p_component  | 2024-09-20T07:00:00.00Z | 30  | -30 |
     When the PP_Order ppo_1 is voided
     Then after not more than 60s, metasfresh has no MD_Candidate for identifier c_supply
+    And after not more than 60s, metasfresh has no MD_Candidate for identifier c_demand

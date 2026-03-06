@@ -16,6 +16,7 @@ Feature: forecast corner cases for material dispo
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
 
+  @Id:S0464_10
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -49,6 +50,7 @@ Feature: forecast corner cases for material dispo
       | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  |
       | c_2        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 5   |
 
+  @Id:S0464_20
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -106,6 +108,7 @@ Feature: forecast corner cases for material dispo
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
       | c_demand   | DEMAND            | SHIPMENT                  | p_1          | 2021-04-17T21:00:00Z | 8   | -8  |
 
+  @Id:S0464_30
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100

@@ -83,8 +83,8 @@ public class ForecastCreatedHandlerTest
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
 
-	int forecastLineId;
-	int forecastLineId2;
+	private int forecastLineId;
+	private int forecastLineId2;
 
 	@BeforeEach
 	public void beforeEach()

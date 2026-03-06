@@ -99,6 +99,7 @@ Feature: material dispo reacts to forecast docactions
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T22:00:00Z | 10  | 10                     |
       | c_3        | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T22:00:00Z | 100 | -100                   |
 
+  @Id:S0463_10
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -121,6 +122,7 @@ Feature: material dispo reacts to forecast docactions
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 15  | 0                      |
 
+  @Id:S0463_20
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -145,6 +147,7 @@ Feature: material dispo reacts to forecast docactions
     When the forecast identified by f_1 is voided
     Then after not more than 60s, metasfresh has no MD_Candidate for identifier c_1
 
+  @Id:S0463_30
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -173,6 +176,7 @@ Feature: material dispo reacts to forecast docactions
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_2        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | 0                      |
 
+  @Id:S0463_40
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
@@ -198,6 +202,7 @@ Feature: material dispo reacts to forecast docactions
       | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | 0                      |
       | c_2        | STOCK_UP          | FORECAST                  | p_2          | 2021-04-16T22:00:00Z | 25  | 0                      |
 
+  @Id:S0463_50
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
