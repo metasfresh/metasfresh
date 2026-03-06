@@ -72,7 +72,7 @@ public class PromotionCodeId implements RepoIdAware
 
 	public static int toRepoId(@Nullable final PromotionCodeId promotionCodeId)
 	{
-		return toRepoIdOr(promotionCodeId, -1);
+		return toRepoIdOr(promotionCodeId, 0);
 	}
 
 	public static int toRepoIdOr(@Nullable final PromotionCodeId promotionCodeId, final int defaultValue)

@@ -52,6 +52,7 @@ FROM C_Order o
              JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID AND il.IsActive = 'Y'
              JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.IsActive = 'Y' AND i.DocStatus IN ('CO', 'CL')
     WHERE ol.C_Order_ID = o.C_Order_ID AND ol.IsActive = 'Y'
+    ORDER BY i.DateInvoiced DESC, i.C_Invoice_ID DESC
     LIMIT 1
     ) inv ON TRUE
 WHERE o.IsActive = 'Y'
