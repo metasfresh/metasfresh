@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -106,17 +106,24 @@ entire order-to-cash flow.
 
             // Step 3: Create Promotion Code via UI
             await page.goto(`${FRONTEND_BASE_URL}/window/${PROMOTION_CODE_WINDOW_ID}`);
-            await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-            await page.waitForTimeout(1000);
+            await page.waitForLoadState('networkidle', { timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
+            // Wait for the window to fully render (list or detail view)
+            await page.locator('.panel-spaced-lg, .table-flex-wrapper table, .document-list-wrapper')
+                .first()
+                .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT })
+                .catch(() => {});
+            await page.waitForTimeout(2000);
 
             // Create new record
             await page.keyboard.press('Alt+n');
-            await page.waitForTimeout(2000);
+            // Wait for URL to change to the new record detail view
+            await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
+            await page.waitForTimeout(3000);
 
             // Fill Value field
             const promoValue = `PC_${Date.now()}`;
             const valueInput = page.locator('#lookup_Value input, input[name="Value"]').first();
-            await valueInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+            await valueInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await valueInput.click();
             await valueInput.fill(promoValue);
             await page.keyboard.press('Tab');
@@ -124,7 +131,7 @@ entire order-to-cash flow.
 
             // Fill Name field
             const nameInput = page.locator('#lookup_Name input, input[name="Name"]').first();
-            await nameInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+            await nameInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await nameInput.click();
             await nameInput.fill(`Test Promotion ${promoValue}`);
             await page.keyboard.press('Tab');
@@ -160,14 +167,14 @@ entire order-to-cash flow.
 
             // Set promotion code on the order
             const promoCodeField = page.locator('#lookup_C_PromotionCode_ID input').first();
-            await promoCodeField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+            await promoCodeField.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await promoCodeField.click();
             await promoCodeField.fill(promoValue);
             await page.waitForTimeout(1000);
 
             // Select from dropdown
             const promoDropdownOption = page.locator('.input-dropdown-list-option').first();
-            await promoDropdownOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+            await promoDropdownOption.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await promoDropdownOption.click();
             await page.waitForTimeout(1000);
 
