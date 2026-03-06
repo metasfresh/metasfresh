@@ -16,14 +16,14 @@ Feature: Validate that C_PromotionCode fields propagate from C_Order through C_I
       | pricingSys_1 |
 
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | Name         | SOTrx | IsTaxIncluded | PricePrecision |
-      | priceList_SO | pricingSys_1       | DE                    | EUR                 | priceList_SO | true  | false         | 2              |
+      | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList_SO | pricingSys_1       | DE                    | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID | Name           | ValidFrom  |
-      | priceListVersion_SO | priceList_SO   | salesOrder-PLV | 2026-02-01 |
+      | Identifier          | M_PriceList_ID |
+      | priceListVersion_SO | priceList_SO   |
     And metasfresh contains M_ProductPrices
-      | Identifier       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | productPrices_SO | priceListVersion_SO    | product_1    | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO    | product_1    | 10.0     | PCE               | Normal                        |
 
   @from:cucumber
   Scenario: One promotion code propagates from C_Order to C_Invoice via IC flow
