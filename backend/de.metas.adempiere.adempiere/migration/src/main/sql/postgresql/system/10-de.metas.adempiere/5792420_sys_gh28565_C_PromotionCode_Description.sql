@@ -17,7 +17,7 @@ VALUES (0, 592197, 275, 0, 10, 542586,
         'Y', 'N', 'N', 'N',
         'N', 'N', 'N', 'N', 'N', 'N',
         'N', 'N', 'N', 'N',
-        'Y', 'N', 0, 'Beschreibung',
+        'Y', 'N', 'Y', 'N', 0, 'Beschreibung',
         'NP', 0, 0, TO_TIMESTAMP('2026-03-06 10:00', 'YYYY-MM-DD HH24:MI'), 100, 0);
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
