@@ -1,12 +1,5 @@
 -- Run mode: SWING_CLIENT
 
--- Table: C_Invoice_Line_Alloc
--- 2026-03-06T11:08:28.516Z
-UPDATE AD_Table
-SET PO_Window_ID=542063, Updated=TO_TIMESTAMP('2026-03-06 11:08:28.405000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
-WHERE AD_Table_ID = 540321
-;
-
 -- Name: M_HU_PI_Version
 -- 2026-03-06T12:18:02.784Z
 INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, IsOrderByValue, Name, Updated, UpdatedBy, ValidationType)
