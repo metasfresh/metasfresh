@@ -8,9 +8,9 @@ import de.metas.distribution.mobileui.rest_api.json.JsonHUInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
-import de.metas.rest_api.v2.warehouse.WarehouseRestController;
-import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorRequest;
-import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorResponse;
+import de.metas.rest_api.v2.warehouse.WarehouseRestService;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.rest_api.v2.warehouse.json.JsonLocator;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -32,7 +32,7 @@ public class ByScannedCode_StepDef
 {
 	private final PickingRestController pickingRestController = SpringContextHolder.instance.getBean(PickingRestController.class);
 	private final DistributionRestController distributionRestController = SpringContextHolder.instance.getBean(DistributionRestController.class);
-	private final WarehouseRestController warehouseRestController = SpringContextHolder.instance.getBean(WarehouseRestController.class);
+	private final WarehouseRestService warehouseRestService = SpringContextHolder.instance.getBean(WarehouseRestService.class);
 	private final IWarehouseDAO warehouseDAO = get(IWarehouseDAO.class);
 
 	private final HUQRCode_StepDefData huQRCodeStorage;
@@ -94,14 +94,10 @@ public class ByScannedCode_StepDef
 
 		assertThat(qrCodeString).as("Locator QR code must contain # separator").contains("#");
 
-		final JsonResolveLocatorRequest request = JsonResolveLocatorRequest.builder()
-				.scannedBarcode(qrCodeString)
-				.build();
+		final ScannedCode scannedCode = ScannedCode.ofString(qrCodeString);
+		final JsonLocator jsonLocator = warehouseRestService.resolveLocatorScannedCode(scannedCode);
 
-		final JsonResolveLocatorResponse response = warehouseRestController.resolveLocatorScannedCode(request);
-
-		assertThat(response).isNotNull();
-		assertThat(response.getError()).isNull();
-		assertThat(response.getLocator()).isNotNull();
+		assertThat(jsonLocator).isNotNull();
+		assertThat(jsonLocator.getQrCode()).isNotNull();
 	}
 }

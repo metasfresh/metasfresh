@@ -84,8 +84,8 @@ Feature: byScannedCode endpoints accept QR codes with # characters (me03#28652)
   @from:cucumber
   Scenario: POST material/warehouses/resolveLocator accepts QR codes with # characters
     And load M_Warehouse:
-      | M_Warehouse_ID.Identifier | M_Warehouse_ID |
-      | wh_hash                   | 540008         |
+      | M_Warehouse_ID.Identifier | Value        |
+      | wh_hash                   | StdWarehouse |
     And call POST material/warehouses/resolveLocator with locator QR code containing hash:
       | M_Warehouse_ID.Identifier |
       | wh_hash                   |
