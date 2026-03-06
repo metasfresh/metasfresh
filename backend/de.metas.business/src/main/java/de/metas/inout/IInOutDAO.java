@@ -119,6 +119,8 @@ public interface IInOutDAO extends ISingletonService
 
 	Stream<InOutId> streamInOutIdsByBPartnerId(BPartnerId bpartnerId);
 
+	List<I_M_InOutLine> retrieveLinesByInOutId(InOutId inOutId);
+
 	Set<InOutAndLineId> retrieveLineIdsByInOutId(InOutId inOutId);
 
 	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);

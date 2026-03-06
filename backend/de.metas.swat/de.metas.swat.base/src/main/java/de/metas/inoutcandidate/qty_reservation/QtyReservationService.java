@@ -40,9 +40,9 @@ public class QtyReservationService
 	 * computes total delivered qty across ALL processed shipment lines for that order line,
 	 * then spreads it across M_QtyReservation records.
 	 */
-	public void updateQtyDeliveredFromShipment(@NonNull final InOutId inOutId)
+	public void updateQtyDeliveredFromShipment(@NonNull final InOutId shipmentId)
 	{
-		final Set<OrderLineId> orderLineIds = inOutDAO.retrieveLines(inOutDAO.getById(inOutId))
+		final Set<OrderLineId> orderLineIds = inOutDAO.retrieveLinesByInOutId(shipmentId)
 				.stream()
 				.map(line -> OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))
 				.filter(Objects::nonNull)

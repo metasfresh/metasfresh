@@ -104,7 +104,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return loadOutOfTrx(inoutId.getRepoId(), modelClass);
 	}
-	
+
 	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
@@ -377,6 +377,14 @@ public class InOutDAO implements IInOutDAO
 				.create()
 				.idsAsSet(InOutId::ofRepoId)
 				.stream();
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveLinesByInOutId(final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return retrieveLines(inOut);
 	}
 
 	@Override
