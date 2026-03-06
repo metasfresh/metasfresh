@@ -1,3 +1,5 @@
+-- gh#28565: Update report function to include Description columns
+
 DROP FUNCTION IF EXISTS report.report_promotion_code_evaluation(
     p_C_PromotionCode_ID  numeric,
     p_C_PromotionCode2_ID numeric,

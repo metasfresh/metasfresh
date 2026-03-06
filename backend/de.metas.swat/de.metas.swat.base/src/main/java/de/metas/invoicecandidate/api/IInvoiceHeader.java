@@ -11,6 +11,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 
@@ -92,13 +93,15 @@ public interface IInvoiceHeader
 
 	String getIncotermLocation();
 
-	int getC_PromotionCode_ID();
+	@Nullable
+	PromotionCodeId getPromotionCodeId();
 
-	void setC_PromotionCode_ID(int C_PromotionCode_ID);
+	void setPromotionCodeId(@Nullable PromotionCodeId promotionCodeId);
 
-	int getC_PromotionCode2_ID();
+	@Nullable
+	PromotionCodeId getPromotionCode2Id();
 
-	void setC_PromotionCode2_ID(int C_PromotionCode2_ID);
+	void setPromotionCode2Id(@Nullable PromotionCodeId promotionCode2Id);
 
 	String getPaymentRule();
 

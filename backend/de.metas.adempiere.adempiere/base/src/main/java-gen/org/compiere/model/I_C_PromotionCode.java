@@ -69,6 +69,27 @@ public interface I_C_PromotionCode
 	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_C_PromotionCode, Object> COLUMN_Description = new ModelColumn<>(I_C_PromotionCode.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Get Created.
 	 *
 	 * <br>Type: DateTime

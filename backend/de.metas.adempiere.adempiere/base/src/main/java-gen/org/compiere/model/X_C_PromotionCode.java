@@ -48,6 +48,18 @@ public class X_C_PromotionCode extends org.compiere.model.PO implements I_C_Prom
 	}
 
 	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);

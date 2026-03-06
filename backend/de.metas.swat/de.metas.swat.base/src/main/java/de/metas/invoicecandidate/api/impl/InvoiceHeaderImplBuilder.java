@@ -11,6 +11,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -108,9 +109,13 @@ public class InvoiceHeaderImplBuilder
 
 	private String incotermLocation;
 
-	private int C_PromotionCode_ID;
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCodeId;
 
-	private int C_PromotionCode2_ID;
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCode2Id;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -167,8 +172,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
 		// promotion codes
-		invoiceHeader.setC_PromotionCode_ID(getC_PromotionCode_ID());
-		invoiceHeader.setC_PromotionCode2_ID(getC_PromotionCode2_ID());
+		invoiceHeader.setPromotionCodeId(getPromotionCodeId());
+		invoiceHeader.setPromotionCode2Id(getPromotionCode2Id());
 
 		return invoiceHeader;
 	}
@@ -199,24 +204,14 @@ public class InvoiceHeaderImplBuilder
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
 	}
 
-	private int getC_PromotionCode_ID()
+	public void setPromotionCodeId(@Nullable final PromotionCodeId promotionCodeId)
 	{
-		return C_PromotionCode_ID;
+		this.promotionCodeId = checkOverride("PromotionCodeId", this.promotionCodeId, promotionCodeId);
 	}
 
-	public void setC_PromotionCode_ID(final int promotionCode_id)
+	public void setPromotionCode2Id(@Nullable final PromotionCodeId promotionCode2Id)
 	{
-		C_PromotionCode_ID = checkOverrideID("C_PromotionCode_ID", C_PromotionCode_ID, promotionCode_id);
-	}
-
-	private int getC_PromotionCode2_ID()
-	{
-		return C_PromotionCode2_ID;
-	}
-
-	public void setC_PromotionCode2_ID(final int promotionCode2_id)
-	{
-		C_PromotionCode2_ID = checkOverrideID("C_PromotionCode2_ID", C_PromotionCode2_ID, promotionCode2_id);
+		this.promotionCode2Id = checkOverride("PromotionCode2Id", this.promotionCode2Id, promotionCode2Id);
 	}
 
 	public String getIncotermLocation()

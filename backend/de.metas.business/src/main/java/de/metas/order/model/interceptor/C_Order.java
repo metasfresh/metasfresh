@@ -50,6 +50,7 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -254,9 +255,9 @@ public class C_Order
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_PromotionCode_ID, I_C_Order.COLUMNNAME_C_PromotionCode2_ID })
 	public void validateNoDuplicatePromotionCode(@NonNull final I_C_Order order)
 	{
-		final int code1 = order.getC_PromotionCode_ID();
-		final int code2 = order.getC_PromotionCode2_ID();
-		if (code1 > 0 && code2 > 0 && code1 == code2)
+		final PromotionCodeId code1 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode_ID());
+		final PromotionCodeId code2 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode2_ID());
+		if (code1 != null && code2 != null && code1.equals(code2))
 		{
 			throw new AdempiereException("@C_PromotionCode_DuplicateError@")
 					.markAsUserValidationError();
