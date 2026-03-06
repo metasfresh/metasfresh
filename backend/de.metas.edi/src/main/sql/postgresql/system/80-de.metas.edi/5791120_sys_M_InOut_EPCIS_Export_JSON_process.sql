@@ -47,8 +47,3 @@ VALUES (543137, 0, 0, 'Y', TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'
         30, 'Y', 'N', 10,
         'de.metas.esb.edi', 0, '@M_InOut_ID/0@');
 
--- AD_Table_Process: link to M_InOut table (not shown as action — called programmatically by the ScriptedAdapter interceptor)
-INSERT INTO AD_Table_Process (AD_Table_Process_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                              AD_Process_ID, AD_Table_ID, EntityType)
-VALUES (541628, 0, 0, 'Y', TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'), 100,
-        585590, 319, 'de.metas.esb.edi');

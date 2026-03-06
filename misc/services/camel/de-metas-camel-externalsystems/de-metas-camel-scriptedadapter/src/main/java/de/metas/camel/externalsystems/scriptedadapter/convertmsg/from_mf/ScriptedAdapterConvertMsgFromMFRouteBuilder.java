@@ -57,6 +57,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
@@ -125,6 +126,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					.process(this::prepareHttpRequestForOAuth)
 				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 					.process(this::prepareHttpRequestForSasAuth)
+				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
+				.process(this::prepareHttpRequestForBasicAuth)
 				.otherwise()
 					.throwException(new RuntimeCamelException("Unsupported authentication type"))
 			.end()
@@ -261,6 +264,27 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, "Bearer " + accessToken.getAccessToken());
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForBasicAuth(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.Basic);
+
+		final String username = endpointParameters.getUser();
+		final String password = endpointParameters.getPassword();
+
+		final String credentials = username + ":" + password;
+		final String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, "Basic " + encoded);
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));

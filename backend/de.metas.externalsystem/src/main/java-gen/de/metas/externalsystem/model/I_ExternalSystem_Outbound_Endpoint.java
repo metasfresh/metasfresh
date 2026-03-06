@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Outbound_Endpoint
  *  @author metasfresh (generated) 
@@ -58,7 +57,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAuthToken (@Nullable String AuthToken);
+	void setAuthToken (@Nullable java.lang.String AuthToken);
 
 	/**
 	 * Get Authentication Token.
@@ -67,7 +66,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getAuthToken();
+	@Nullable java.lang.String getAuthToken();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_AuthToken = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "AuthToken", null);
 	String COLUMNNAME_AuthToken = "AuthToken";
@@ -79,7 +78,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAuthType (String AuthType);
+	void setAuthType (java.lang.String AuthType);
 
 	/**
 	 * Get Authentication Type.
@@ -88,7 +87,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getAuthType();
+	java.lang.String getAuthType();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_AuthType = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "AuthType", null);
 	String COLUMNNAME_AuthType = "AuthType";
@@ -100,7 +99,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setClientId (@Nullable String ClientId);
+	void setClientId (@Nullable java.lang.String ClientId);
 
 	/**
 	 * Get Client ID.
@@ -109,33 +108,10 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getClientId();
+	@Nullable java.lang.String getClientId();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_ClientId = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "ClientId", null);
 	String COLUMNNAME_ClientId = "ClientId";
-
-	/**
-	 * Set Content Type.
-	 * HTTP Content-Type header value (e.g. application/json, application/xml)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setContentType (String ContentType);
-
-	/**
-	 * Get Content Type.
-	 * HTTP Content-Type header value (e.g. application/json, application/xml)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getContentType();
-
-	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_ContentType = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "ContentType", null);
-	String COLUMNNAME_ContentType = "ContentType";
 
 	/**
 	 * Set Client Secret.
@@ -144,7 +120,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setClientSecret (@Nullable String ClientSecret);
+	void setClientSecret (@Nullable java.lang.String ClientSecret);
 
 	/**
 	 * Get Client Secret.
@@ -153,10 +129,31 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getClientSecret();
+	@Nullable java.lang.String getClientSecret();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_ClientSecret = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "ClientSecret", null);
 	String COLUMNNAME_ClientSecret = "ClientSecret";
+
+	/**
+	 * Set Content type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setContentType (java.lang.String ContentType);
+
+	/**
+	 * Get Content type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getContentType();
+
+	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_ContentType = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "ContentType", null);
+	String COLUMNNAME_ContentType = "ContentType";
 
 	/**
 	 * Get Created.
@@ -190,7 +187,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -199,7 +196,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -255,7 +252,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLoginUsername (@Nullable String LoginUsername);
+	void setLoginUsername (@Nullable java.lang.String LoginUsername);
 
 	/**
 	 * Get Login User Name.
@@ -264,7 +261,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getLoginUsername();
+	@Nullable java.lang.String getLoginUsername();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_LoginUsername = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "LoginUsername", null);
 	String COLUMNNAME_LoginUsername = "LoginUsername";
@@ -277,7 +274,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setOutboundHttpEP (String OutboundHttpEP);
+	void setOutboundHttpEP (java.lang.String OutboundHttpEP);
 
 	/**
 	 * Get Outbound HTTP Endpoint.
@@ -287,7 +284,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getOutboundHttpEP();
+	java.lang.String getOutboundHttpEP();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_OutboundHttpEP = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "OutboundHttpEP", null);
 	String COLUMNNAME_OutboundHttpEP = "OutboundHttpEP";
@@ -296,21 +293,21 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * Set Outbound HTTP Method.
 	 * HTTP method to use when sending data (e.g. POST, PUT)
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setOutboundHttpMethod (String OutboundHttpMethod);
+	void setOutboundHttpMethod (java.lang.String OutboundHttpMethod);
 
 	/**
 	 * Get Outbound HTTP Method.
 	 * HTTP method to use when sending data (e.g. POST, PUT)
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getOutboundHttpMethod();
+	java.lang.String getOutboundHttpMethod();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_OutboundHttpMethod = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "OutboundHttpMethod", null);
 	String COLUMNNAME_OutboundHttpMethod = "OutboundHttpMethod";
@@ -323,7 +320,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPassword (@Nullable String Password);
+	void setPassword (@Nullable java.lang.String Password);
 
 	/**
 	 * Get Password.
@@ -333,7 +330,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPassword();
+	@Nullable java.lang.String getPassword();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_Password = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "Password", null);
 	String COLUMNNAME_Password = "Password";
@@ -345,7 +342,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSasSignature (@Nullable String SasSignature);
+	void setSasSignature (@Nullable java.lang.String SasSignature);
 
 	/**
 	 * Get SAS-Signature.
@@ -354,7 +351,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSasSignature();
+	@Nullable java.lang.String getSasSignature();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_SasSignature = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "SasSignature", null);
 	String COLUMNNAME_SasSignature = "SasSignature";
@@ -367,7 +364,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType (String Type);
+	void setType (java.lang.String Type);
 
 	/**
 	 * Get Type.
@@ -377,7 +374,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType();
+	java.lang.String getType();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "Type", null);
 	String COLUMNNAME_Type = "Type";
@@ -415,7 +412,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
@@ -425,7 +422,7 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getValue();
+	java.lang.String getValue();
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_Value = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
