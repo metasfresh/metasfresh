@@ -188,6 +188,15 @@ public class C_Invoice_StepDef
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
 
+	/**
+	 * Validates {@code C_Invoice} records against expected values.
+	 * <p>
+	 * gh#28565: Added validation for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
 	{

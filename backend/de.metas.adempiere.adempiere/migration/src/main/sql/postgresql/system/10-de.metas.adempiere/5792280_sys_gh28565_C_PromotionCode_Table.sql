@@ -8,7 +8,7 @@ INSERT INTO AD_Table (AccessLevel, ACTriggerLength, AD_Client_ID, AD_Org_ID, AD_
                       ReplicationType, TableName, Updated, UpdatedBy)
 VALUES ('3', 0, 0, 0, 542586,
         'N', TO_TIMESTAMP('2026-03-05 12:00', 'YYYY-MM-DD HH24:MI'), 100, 'D', 'N', 'Y', 'N',
-        'N', 'Y', 'N', 'N', 'N', 0, 'Aktionskennzeichen',
+        'Y', 'Y', 'N', 'N', 'N', 0, 'Aktionskennzeichen',
         'L', 'C_PromotionCode', TO_TIMESTAMP('2026-03-05 12:00', 'YYYY-MM-DD HH24:MI'), 100);
 
 INSERT INTO AD_Table_Trl (AD_Language, AD_Table_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
@@ -333,7 +333,7 @@ CREATE TABLE C_PromotionCode
     UpdatedBy          NUMERIC(10)                NOT NULL,
     Value              VARCHAR(40)                NOT NULL,
     Name               VARCHAR(255)               NOT NULL,
-    ValidTo            TIMESTAMP WITH TIME ZONE   DEFAULT NULL,
+    ValidTo            DATE                       DEFAULT NULL,
     CONSTRAINT C_PromotionCode_Key PRIMARY KEY (C_PromotionCode_ID)
 );
 

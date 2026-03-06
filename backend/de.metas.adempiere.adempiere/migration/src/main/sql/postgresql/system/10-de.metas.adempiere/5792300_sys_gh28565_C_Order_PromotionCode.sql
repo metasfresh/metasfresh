@@ -99,7 +99,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
                       SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
 VALUES (0, 592182, 774835, 0, 186, 0,
         TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100, 0, 'D', 0, 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N',
-        'Aktionskennzeichen', 0, 0, 0, 1, 1, TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100);
+        'Aktionskennzeichen', 1050, 0, 0, 1, 1, TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100);
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy
@@ -130,7 +130,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
                       SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
 VALUES (0, 592183, 774836, 0, 186, 0,
         TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100, 0, 'D', 0, 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N',
-        'Aktionskennzeichen 2', 0, 0, 0, 1, 1, TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100);
+        'Aktionskennzeichen 2', 1060, 0, 0, 1, 1, TO_TIMESTAMP('2026-03-05 12:02', 'YYYY-MM-DD HH24:MI'), 100);
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy

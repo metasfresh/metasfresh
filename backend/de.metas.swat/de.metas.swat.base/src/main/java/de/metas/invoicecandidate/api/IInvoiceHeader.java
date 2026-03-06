@@ -94,7 +94,11 @@ public interface IInvoiceHeader
 
 	int getC_PromotionCode_ID();
 
+	void setC_PromotionCode_ID(int C_PromotionCode_ID);
+
 	int getC_PromotionCode2_ID();
+
+	void setC_PromotionCode2_ID(int C_PromotionCode2_ID);
 
 	String getPaymentRule();
 

@@ -41,7 +41,8 @@ class C_Order_PromotionCodeTest
 		order.setC_PromotionCode2_ID(100);
 
 		assertThatThrownBy(() -> interceptor.validateNoDuplicatePromotionCode(order))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
 	}
 
 	@Test

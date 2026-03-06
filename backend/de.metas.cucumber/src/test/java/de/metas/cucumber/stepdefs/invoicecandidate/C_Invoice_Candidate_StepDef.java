@@ -228,6 +228,15 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * Finds and validates {@code C_Invoice_Candidate} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code validation columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{

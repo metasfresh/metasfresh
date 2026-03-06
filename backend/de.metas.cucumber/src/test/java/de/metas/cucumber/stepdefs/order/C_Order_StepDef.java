@@ -221,6 +221,15 @@ public class C_Order_StepDef
 		completeOrder(order);
 	}
 
+	/**
+	 * Creates {@code C_Order} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
@@ -649,6 +658,15 @@ public class C_Order_StepDef
 				.ifPresent(orderIdentifier -> orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord));
 	}
 
+	/**
+	 * Validates {@code C_Order} records against expected values.
+	 * <p>
+	 * gh#28565: Added validation for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{

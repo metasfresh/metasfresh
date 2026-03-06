@@ -16,6 +16,17 @@ public class C_PromotionCode_StepDef
 {
 	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
 
+	/**
+	 * Creates {@code C_PromotionCode} master data records.
+	 *
+	 * <h3>DataTable columns:</h3>
+	 * <ul>
+	 *   <li>{@code Identifier} — record identifier for cross-step references</li>
+	 *   <li>{@code Value} (optional) — search key / code number</li>
+	 *   <li>{@code Name} (optional) — descriptive name</li>
+	 *   <li>{@code ValidTo} (optional) — expiry date (format: {@code yyyy-MM-dd})</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_PromotionCode:")
 	public void metasfresh_contains_c_promotioncode(@NonNull final DataTable dataTable)
 	{
@@ -30,8 +41,8 @@ public class C_PromotionCode_StepDef
 				.ifPresent(record::setValue);
 		row.getAsOptionalString(I_C_PromotionCode.COLUMNNAME_Name)
 				.ifPresent(record::setName);
-		row.getAsOptionalInstant(I_C_PromotionCode.COLUMNNAME_ValidTo)
-				.ifPresent(validTo -> record.setValidTo(java.sql.Timestamp.from(validTo)));
+		row.getAsOptionalLocalDate(I_C_PromotionCode.COLUMNNAME_ValidTo)
+				.ifPresent(validTo -> record.setValidTo(java.sql.Timestamp.valueOf(validTo.atStartOfDay())));
 
 		saveRecord(record);
 

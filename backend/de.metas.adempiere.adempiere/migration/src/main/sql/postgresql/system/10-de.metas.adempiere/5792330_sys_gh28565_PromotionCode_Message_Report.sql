@@ -28,7 +28,7 @@ WHERE AD_Message_ID = 545640;
 
 -- ============================================================
 -- AD_Process: Promotion Code Evaluation Report
--- Uses ExportToSpreadsheetProcess (report function will be in dt204)
+-- Uses ExportToSpreadsheetProcess (report function in de.metas.fresh.base DDL)
 -- ============================================================
 
 -- AD_Element for the process (required for menu naming propagation)
@@ -109,7 +109,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID);
 
 -- ============================================================
--- AD_Process_Para: Invoiced (Ref=17 YesNo list)
+-- AD_Process_Para: Invoiced (Ref=20 YesNo)
 -- ============================================================
 INSERT INTO AD_Process_Para (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID, AD_Process_Para_ID,
                              AD_Reference_ID, ColumnName, Created, CreatedBy, EntityType, FieldLength, IsActive,
