@@ -1,0 +1,7 @@
+{
+  "grantedAuthority": "IMPORT:endpointName",
+  "authKey": "token",
+  "orgCode": "orgCode",
+  "externalSystemValue": "childValue",
+  "pinstance": 123
+}

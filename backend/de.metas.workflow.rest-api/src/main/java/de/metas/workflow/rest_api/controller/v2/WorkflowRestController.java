@@ -31,17 +31,22 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScannedBarcodeSuggestions;
+import de.metas.workflow.rest_api.controller.v2.json.JsonGetCurrentTrolleyResponse;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.controller.v2.json.JsonSetCurrentTrolley;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
@@ -54,15 +59,18 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
+import de.metas.workflow.rest_api.service.TrolleyService;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,23 +86,20 @@ import java.util.Map;
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
 @RestController
 @Profile(Profiles.PROFILE_App)
+@RequiredArgsConstructor
 public class WorkflowRestController
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final WorkflowRestAPIService workflowRestAPIService;
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final WorkflowRestAPIService workflowRestAPIService;
+	@NonNull private final TrolleyService trolleyService;
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
-	public WorkflowRestController(
-			@NonNull final WorkflowRestAPIService workflowRestAPIService)
-	{
-		this.workflowRestAPIService = workflowRestAPIService;
-	}
-
 	private void assertAccess(final MobileApplicationId applicationId)
 	{
-		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		workflowRestAPIService.assertAccess(applicationId, permissions);
 	}
 
 	private JsonOpts newJsonOpts()
@@ -114,10 +119,13 @@ public class WorkflowRestController
 	public JsonMobileApplicationsList getMobileApplications()
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+
 		return JsonMobileApplicationsList.builder()
 				.applications(
-						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
-								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId, permissions)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts, permissions))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();
@@ -155,9 +163,29 @@ public class WorkflowRestController
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
 				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
-				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
+				.excludeAlreadyStarted(query.isExcludeAlreadyStarted())
+				.computeActions(!query.isCountOnly())
+				.limit(extractLimit(query))
 				.build();
+	}
+
+	@Nullable
+	private static QueryLimit extractLimit(final @NotNull JsonLaunchersQuery query)
+	{
+		if (query.getLimit() != null)
+		{
+			return QueryLimit.ofInt(query.getLimit());
+		}
+		else if (query.isCountOnly())
+		{
+			return QueryLimit.NO_LIMIT;
+		}
+		else
+		{
+			return null; // N/A
+		}
 	}
 
 	@PostMapping("/facets")
@@ -170,6 +198,7 @@ public class WorkflowRestController
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
 						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);
@@ -234,7 +263,10 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/abortAll")
 	public void abortAll()
 	{
-		workflowRestAPIService.abortAllWFProcesses(Env.getUserRolePermissions());
+		workflowRestAPIService.abortAllWFProcesses(
+				Env.getLoggedUserId(),
+				Env.getUserRolePermissions().getMobileApplicationPermissions()
+		);
 	}
 
 	public JsonWFProcess toJson(final WFProcess wfProcess)
@@ -321,5 +353,20 @@ public class WorkflowRestController
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.frontendUrl(jsonErrorItem.getFrontendUrl())
 				.build();
+	}
+
+	@GetMapping("/trolley")
+	public JsonGetCurrentTrolleyResponse getCurrentTrolley()
+	{
+		return trolleyService.getCurrent(Env.getLoggedUserId())
+				.map(JsonGetCurrentTrolleyResponse::ofQRCode)
+				.orElse(JsonGetCurrentTrolleyResponse.EMPTY);
+	}
+
+	@PostMapping("/trolley")
+	public JsonGetCurrentTrolleyResponse setCurrentTrolley(@NonNull @RequestBody JsonSetCurrentTrolley request)
+	{
+		final LocatorQRCode locatorQRCode = trolleyService.setCurrent(Env.getLoggedUserId(), request.getScannedCode());
+		return JsonGetCurrentTrolleyResponse.ofQRCode(locatorQRCode);
 	}
 }

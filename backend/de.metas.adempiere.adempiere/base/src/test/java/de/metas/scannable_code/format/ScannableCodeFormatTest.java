@@ -38,8 +38,8 @@ class ScannableCodeFormatTest
 		final ParsedScannedCode parsedScannedCode = format.parse(scannedCode).orElseThrow();
 		assertThat(parsedScannedCode.getScannedCode()).isEqualTo(scannedCode);
 		assertThat(parsedScannedCode.getProductNo()).isEqualTo("1000");
-		assertThat(parsedScannedCode.getWeightKg()).isEqualTo("099999");
-		assertThat(parsedScannedCode.getLotNo()).isEqualTo("00000123");
+		assertThat(parsedScannedCode.getWeightKg()).isEqualTo("99.999");
+		assertThat(parsedScannedCode.getLotNo()).isEqualTo("123");
 		assertThat(parsedScannedCode.getBestBeforeDate()).isEqualTo("2025-04-10");
 		assertThat(parsedScannedCode.getProductionDate()).isEqualTo("2025-04-03");
 	}
@@ -81,8 +81,8 @@ class ScannableCodeFormatTest
 			final ParsedScannedCode parsedScannedCode = format.parse(scannedCode).orElseThrow();
 			assertThat(parsedScannedCode.getScannedCode()).isEqualTo(scannedCode);
 			assertThat(parsedScannedCode.getProductNo()).isEqualTo("593707");
-			assertThat(parsedScannedCode.getWeightKg()).isEqualTo("000384");
-			assertThat(parsedScannedCode.getLotNo()).isEqualTo("05321124");
+			assertThat(parsedScannedCode.getWeightKg()).isEqualTo("0.384");
+			assertThat(parsedScannedCode.getLotNo()).isEqualTo("5321124");
 		}
 
 		@Test

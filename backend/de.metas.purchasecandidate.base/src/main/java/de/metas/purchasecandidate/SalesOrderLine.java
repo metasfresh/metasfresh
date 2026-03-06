@@ -1,10 +1,6 @@
 package de.metas.purchasecandidate;
 
-import java.time.ZonedDateTime;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
@@ -17,6 +13,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -110,5 +111,11 @@ public class SalesOrderLine
 	public ProductPrice getPriceActual()
 	{
 		return orderLine.getPriceActual();
+	}
+
+	@Nullable
+	public HUPIItemProductId getHUPIItemProductId()
+	{
+		return orderLine.getHuPIItemProductId();
 	}
 }

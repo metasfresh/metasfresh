@@ -22,9 +22,9 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.organization.OrgId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import org.adempiere.service.ClientId;

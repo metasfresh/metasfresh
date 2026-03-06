@@ -1,30 +1,9 @@
 package de.metas.dunning.invoice.api.impl;
 
+import de.metas.dunning.DunningTestBase;
+import de.metas.dunning.interfaces.I_C_Dunning;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
 import org.adempiere.ad.trx.api.ITrx;
-
-/*
- * #%L
- * de.metas.dunning
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -32,12 +11,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.dunning.DunningTestBase;
-import de.metas.dunning.interfaces.I_C_Dunning;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class InvoiceSourceBLTest extends DunningTestBase
 {
@@ -79,7 +54,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 			InterfaceWrapperHelper.save(bpGroup);
 			bpartner.setC_Dunning_ID(dunningBP.getC_Dunning_ID());
 			InterfaceWrapperHelper.save(bpartner);
-			Assert.assertEquals("Invalid dunning - BP level", dunningBP, invoiceSourceBL.getDunningForInvoiceOrNull(invoice));
+			Assertions.assertEquals(dunningBP, invoiceSourceBL.getDunningForInvoiceOrNull(invoice), "Invalid dunning - BP level");
 		}
 
 		// Dunning at BP Group level
@@ -88,7 +63,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 			InterfaceWrapperHelper.save(bpGroup);
 			bpartner.setC_Dunning_ID(-1);
 			InterfaceWrapperHelper.save(bpartner);
-			Assert.assertEquals("Invalid dunning - BP Group level", dunningBPG, invoiceSourceBL.getDunningForInvoiceOrNull(invoice));
+			Assertions.assertEquals(dunningBPG, invoiceSourceBL.getDunningForInvoiceOrNull(invoice), "Invalid dunning - BP Group level");
 		}
 
 		// Dunning at Org level
@@ -97,7 +72,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 			InterfaceWrapperHelper.save(bpGroup);
 			bpartner.setC_Dunning_ID(-1);
 			InterfaceWrapperHelper.save(bpartner);
-			Assert.assertEquals("Invalid dunning - Org level", dunningOrgDefault, invoiceSourceBL.getDunningForInvoiceOrNull(invoice));
+			Assertions.assertEquals(dunningOrgDefault, invoiceSourceBL.getDunningForInvoiceOrNull(invoice), "Invalid dunning - Org level");
 		}
 	}
 
@@ -109,10 +84,10 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		InterfaceWrapperHelper.save(candidate);
 
 		final boolean executed = invoiceSourceBL.writeOffDunningCandidate(candidate, null);
-		Assert.assertFalse("Only invoices are supported for write-off", executed);
+		Assertions.assertFalse(executed, "Only invoices are supported for write-off");
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void writeOffDunningCandidate_InvoiceNotFound()
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
@@ -120,7 +95,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		candidate.setRecord_ID(12345);
 		InterfaceWrapperHelper.save(candidate);
 
-		invoiceSourceBL.writeOffDunningCandidate(candidate, null);
+		Assertions.assertThrows(Exception.class, () -> invoiceSourceBL.writeOffDunningCandidate(candidate, null));
 	}
 
 	public void writeOffDunningCandidate()
@@ -129,7 +104,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		invoice1.setIsSOTrx(true);
 		invoice1.setProcessed(true);
 		InterfaceWrapperHelper.save(invoice1);
-		Assert.assertFalse("Invoice not wrote off " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
+		Assertions.assertFalse(invoiceBL.isInvoiceWroteOff(invoice1), "Invoice not wrote off " + invoice1);
 
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setAD_Table_ID(MTable.getTable_ID(I_C_Invoice.Table_Name));
@@ -137,8 +112,8 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		InterfaceWrapperHelper.save(candidate);
 
 		final boolean executed = invoiceSourceBL.writeOffDunningCandidate(candidate, null);
-		Assert.assertFalse("Only invoices are supported for write-off", executed);
+		Assertions.assertFalse(executed, "Only invoices are supported for write-off");
 
-		Assert.assertTrue("Invoice shall be wrote off " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
+		Assertions.assertTrue(invoiceBL.isInvoiceWroteOff(invoice1), "Invoice shall be wrote off " + invoice1);
 	}
 }

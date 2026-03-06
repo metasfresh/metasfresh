@@ -112,7 +112,7 @@
 				 .name2(StringUtils.trunc(address.getCompanyName2(), 50, ON_TRUNC))
 				 .addressStreet(StringUtils.trunc(address.getStreet1(), 50, ON_TRUNC))
 				 .addressHouse(StringUtils.trunc(address.getHouseNo(), 10, ON_TRUNC))
-				 .postalCode(postalCode)
+				 .postalCode(StringUtils.trim(postalCode))
 				 .city(StringUtils.trunc(address.getCity(), 40, ON_TRUNC))
 				 .country(country);
 	 }

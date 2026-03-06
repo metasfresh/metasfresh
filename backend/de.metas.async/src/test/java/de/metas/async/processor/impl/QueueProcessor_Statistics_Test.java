@@ -35,9 +35,9 @@ import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -105,7 +105,7 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 	}
 
 	@Test
-	@Ignore // FIXME this test is unstable and fails on some machines for no known reasons. To fix, please make sure to know what the test is doing..I mean, don't use "sleep" assume each thread will be at a certain point, but use locking etc to make sure.
+	@Disabled // FIXME this test is unstable and fails on some machines for no known reasons. To fix, please make sure to know what the test is doing..I mean, don't use "sleep" assume each thread will be at a certain point, but use locking etc to make sure.
 	public void test() throws Exception
 	{
 		//
@@ -113,35 +113,35 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		// NOTE: we are setting poolSize=maxPoolSize=1 to make sure there is only one slot and tasks are executed in order, one by one
 		setupQueueProcessor(1); // poolSize=maxPoolSize=1
 
-		Assert.assertEquals("Invalid QueueSize", 0, workpackageProcessorStatistics.getQueueSize());
-		Assert.assertEquals("Invalid CountAll", 0, workpackageProcessorStatistics.getCountAll());
-		Assert.assertEquals("Invalid CountErrors", 0, workpackageProcessorStatistics.getCountErrors());
-		Assert.assertEquals("Invalid CountProcessed", 0, workpackageProcessorStatistics.getCountProcessed());
-		Assert.assertEquals("Invalid CountSkipped", 0, workpackageProcessorStatistics.getCountSkipped());
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 
 				5, // count == 5 
 				false); // markReadyForProcessing == false
 		
-		Assert.assertEquals("Invalid QueueSize", 5, workpackageProcessorStatistics.getQueueSize());
-		Assert.assertEquals("Invalid CountAll", 0, workpackageProcessorStatistics.getCountAll());
-		Assert.assertEquals("Invalid CountErrors", 0, workpackageProcessorStatistics.getCountErrors());
-		Assert.assertEquals("Invalid CountProcessed", 0, workpackageProcessorStatistics.getCountProcessed());
-		Assert.assertEquals("Invalid CountSkipped", 0, workpackageProcessorStatistics.getCountSkipped());
+		Assertions.assertEquals( 5,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+		Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 
 		// Workpackage 0: Process Successfully
 		{
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(0);
 			
-			Assert.assertEquals("Invalid ReadyForProcessing", false, workpackage.isReadyForProcessing());
+			Assertions.assertEquals( false,  workpackage.isReadyForProcessing(), "Invalid ReadyForProcessing");
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
-			Assert.assertEquals("Invalid ReadyForProcessing", true, workpackage.isReadyForProcessing());
+			Assertions.assertEquals( true,  workpackage.isReadyForProcessing(), "Invalid ReadyForProcessing");
 			
-			Assert.assertEquals("Invalid QueueSize", 4, workpackageProcessorStatistics.getQueueSize());
-			Assert.assertEquals("Invalid CountAll", 1, workpackageProcessorStatistics.getCountAll());
-			Assert.assertEquals("Invalid CountErrors", 0, workpackageProcessorStatistics.getCountErrors());
-			Assert.assertEquals("Invalid CountProcessed", 1, workpackageProcessorStatistics.getCountProcessed());
-			Assert.assertEquals("Invalid CountSkipped", 0, workpackageProcessorStatistics.getCountSkipped());
+			Assertions.assertEquals( 4,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+			Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+			Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 		}
 
 		// Workpackage 1: Process with Errors
@@ -149,11 +149,11 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(1);
 			workpackageProcessor.setRuntimeException(workpackage, "test error");
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
-			Assert.assertEquals("Invalid QueueSize", 3, workpackageProcessorStatistics.getQueueSize());
-			Assert.assertEquals("Invalid CountAll", 2, workpackageProcessorStatistics.getCountAll());
-			Assert.assertEquals("Invalid CountErrors", 1, workpackageProcessorStatistics.getCountErrors());
-			Assert.assertEquals("Invalid CountProcessed", 1, workpackageProcessorStatistics.getCountProcessed());
-			Assert.assertEquals("Invalid CountSkipped", 0, workpackageProcessorStatistics.getCountSkipped());
+			Assertions.assertEquals( 3,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+			Assertions.assertEquals( 2,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+			Assertions.assertEquals( 0,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 		}
 
 		// Workpackage 2: Process Skipped
@@ -161,33 +161,33 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(2);
 			workpackageProcessor.setSkip(workpackage, 99999999); // Skip it forever
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
-			Assert.assertEquals("Invalid QueueSize", 3, workpackageProcessorStatistics.getQueueSize());
-			Assert.assertEquals("Invalid CountAll", 3, workpackageProcessorStatistics.getCountAll());
-			Assert.assertEquals("Invalid CountErrors", 1, workpackageProcessorStatistics.getCountErrors());
-			Assert.assertEquals("Invalid CountProcessed", 1, workpackageProcessorStatistics.getCountProcessed());
-			Assert.assertEquals("Invalid CountSkipped", 1, workpackageProcessorStatistics.getCountSkipped());
+			Assertions.assertEquals( 3,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+			Assertions.assertEquals( 3,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 		}
 
 		// Workpackage 3: Process Successfully (again)
 		{
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(3);
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
-			Assert.assertEquals("Invalid QueueSize", 2, workpackageProcessorStatistics.getQueueSize());
-			Assert.assertEquals("Invalid CountAll", 4, workpackageProcessorStatistics.getCountAll());
-			Assert.assertEquals("Invalid CountErrors", 1, workpackageProcessorStatistics.getCountErrors());
-			Assert.assertEquals("Invalid CountProcessed", 2, workpackageProcessorStatistics.getCountProcessed());
-			Assert.assertEquals("Invalid CountSkipped", 1, workpackageProcessorStatistics.getCountSkipped());
+			Assertions.assertEquals( 2,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+			Assertions.assertEquals( 4,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+			Assertions.assertEquals( 2,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 		}
 
 		// Workpackage 4: Process Successfully (again)
 		{
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(4);
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
-			Assert.assertEquals("Invalid QueueSize", 1, workpackageProcessorStatistics.getQueueSize());
-			Assert.assertEquals("Invalid CountAll", 5, workpackageProcessorStatistics.getCountAll());
-			Assert.assertEquals("Invalid CountErrors", 1, workpackageProcessorStatistics.getCountErrors());
-			Assert.assertEquals("Invalid CountProcessed", 3, workpackageProcessorStatistics.getCountProcessed());
-			Assert.assertEquals("Invalid CountSkipped", 1, workpackageProcessorStatistics.getCountSkipped());
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getQueueSize(), "Invalid QueueSize");
+			Assertions.assertEquals( 5,  workpackageProcessorStatistics.getCountAll(), "Invalid CountAll");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountErrors(), "Invalid CountErrors");
+			Assertions.assertEquals( 3,  workpackageProcessorStatistics.getCountProcessed(), "Invalid CountProcessed");
+			Assertions.assertEquals( 1,  workpackageProcessorStatistics.getCountSkipped(), "Invalid CountSkipped");
 		}
 
 	}

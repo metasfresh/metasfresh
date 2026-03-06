@@ -10,25 +10,24 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.util.lang.IReference;
-import org.junit.Assert;
-
 import de.metas.handlingunits.IHUAssignmentListener;
 import de.metas.handlingunits.exceptions.HUNotAssignableException;
 import de.metas.handlingunits.model.I_M_HU;
+import org.adempiere.util.lang.IReference;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MockedHUAssignmentListener implements IHUAssignmentListener
 {
@@ -82,13 +81,13 @@ public class MockedHUAssignmentListener implements IHUAssignmentListener
 
 	private void assertExpectation(final ExpectationType expectationTypeActual, final I_M_HU actualHU, final Object actualModel)
 	{
-		Assert.assertEquals("Invalid ExpectationType", expectationType, expectationTypeActual);
-		Assert.assertEquals("Invalid HU", expectedHU, actualHU);
-		Assert.assertEquals("Invalid Model", expectedModel, actualModel);
+		assertThat(expectationTypeActual).as("Invalid ExpectationType").isEqualTo(expectationType);
+		assertThat(actualHU).as("Invalid HU").isEqualTo(expectedHU);
+		assertThat(actualModel).as("Invalid Model").isEqualTo(expectedModel);
 	}
 
 	public void assertExpectationsMatched()
 	{
-		Assert.assertTrue("Expectations shall be matched", expectationMatched);
+		assertThat(expectationMatched).as("Expectations shall be matched").isTrue();
 	}
 }

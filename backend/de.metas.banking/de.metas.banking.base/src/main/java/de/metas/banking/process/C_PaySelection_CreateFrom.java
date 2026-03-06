@@ -1,14 +1,10 @@
 package de.metas.banking.process;
 
-import java.sql.Timestamp;
-
-import org.compiere.model.I_C_PaySelection;
-
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionMatchingMode;
 import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.process.IProcessPrecondition;
@@ -18,6 +14,10 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_PaySelection;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -50,6 +50,15 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
+	public static final String PARAM_OnlyDue = "OnlyDue";
+	public static final String PARAM_OnlyDiscount = "OnlyDiscount";
+	public static final String PARAM_IncludeInDispute = "IncludeInDispute";
+	public static final String PARAM_MatchRequirement = "MatchRequirement";
+	public static final String PARAM_PayDate = "PayDate";
+	public static final String PARAM_PaymentRule = "PaymentRule";
+	public static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
+	public static final String PARAM_C_BP_Group_ID = "C_BP_Group_ID";
+
 	private IPaySelectionUpdater paySelectionUpdater;
 
 	@Override
@@ -78,7 +87,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 		paySelectionUpdater = paySelectionBL.newPaySelectionUpdater();
 
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(getRecord_ID());
-		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).get();
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).orElseThrow(AdempiereException::notFound);
 		paySelectionUpdater.setC_PaySelection(paySelection);
 
 		for (final ProcessInfoParameter para : getParametersAsArray())
@@ -88,42 +97,42 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 			{
 
 			}
-			else if (name.equals("OnlyDiscount"))
+			else if (name.equals(PARAM_OnlyDiscount))
 			{
 				final boolean p_OnlyDiscount = para.getParameterAsBoolean();
 				paySelectionUpdater.setOnlyDiscount(p_OnlyDiscount);
 			}
-			else if (name.equals("OnlyDue"))
+			else if (name.equals(PARAM_OnlyDue))
 			{
 				final boolean p_OnlyDue = para.getParameterAsBoolean();
 				paySelectionUpdater.setOnlyDue(p_OnlyDue);
 			}
-			else if (name.equals("IncludeInDispute"))
+			else if (name.equals(PARAM_IncludeInDispute))
 			{
 				final boolean p_IncludeInDispute = para.getParameterAsBoolean();
 				paySelectionUpdater.setIncludeInDispute(p_IncludeInDispute);
 			}
-			else if (name.equals("MatchRequirement"))
+			else if (name.equals(PARAM_MatchRequirement))
 			{
-				final InvoiceMatchingMode matchRequirement = InvoiceMatchingMode.ofCode(para.getParameterAsString());
+				final PaySelectionMatchingMode matchRequirement = PaySelectionMatchingMode.ofCode(para.getParameterAsString());
 				paySelectionUpdater.setMatchRequirement(matchRequirement);
 			}
-			else if (name.equals("PayDate"))
+			else if (name.equals(PARAM_PayDate))
 			{
 				final Timestamp p_PayDate = para.getParameterAsTimestamp();
 				paySelectionUpdater.setPayDate(p_PayDate);
 			}
-			else if (name.equals("PaymentRule"))
+			else if (name.equals(PARAM_PaymentRule))
 			{
 				final PaymentRule paymentRule = PaymentRule.ofNullableCode(para.getParameterAsString());
 				paySelectionUpdater.setPaymentRule(paymentRule);
 			}
-			else if (name.equals("C_BPartner_ID"))
+			else if (name.equals(PARAM_C_BPartner_ID))
 			{
 				final int p_C_BPartner_ID = para.getParameterAsInt();
 				paySelectionUpdater.setC_BPartner_ID(p_C_BPartner_ID);
 			}
-			else if (name.equals("C_BP_Group_ID"))
+			else if (name.equals(PARAM_C_BP_Group_ID))
 			{
 				final int p_C_BP_Group_ID = para.getParameterAsInt();
 				paySelectionUpdater.setC_BP_Group_ID(p_C_BP_Group_ID);

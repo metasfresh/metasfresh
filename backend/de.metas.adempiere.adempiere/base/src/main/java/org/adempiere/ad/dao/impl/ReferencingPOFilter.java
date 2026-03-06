@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -50,11 +51,8 @@ public class ReferencingPOFilter<T extends IPOReferenceAware> implements IQueryF
 	 * 
 	 * @param referencedModel May not be null; this filter will only accept records that reference the given model. 
 	 */
-	public ReferencingPOFilter(final Object referencedModel)
+	public ReferencingPOFilter(@NonNull final Object referencedModel)
 	{
-		super();
-		
-		Check.assumeNotNull(referencedModel, "Param 'referencedModel' not null");
 		this.referencedModel = referencedModel;
 	}
 

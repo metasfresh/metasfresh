@@ -1,6 +1,6 @@
 package de.metas.bpartner_product;
 
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.Value;

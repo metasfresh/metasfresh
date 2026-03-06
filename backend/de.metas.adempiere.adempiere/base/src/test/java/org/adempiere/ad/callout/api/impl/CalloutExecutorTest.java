@@ -1,44 +1,21 @@
 package org.adempiere.ad.callout.api.impl;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CalloutExecutorTest
 {
 	private MockedCalloutProvider calloutProvider;
 	private MockedCalloutField field;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -57,19 +34,19 @@ public class CalloutExecutorTest
 
 		newExecutor().execute(field);
 
-		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
-		Assert.assertTrue("Callout2 was not called", callout2.isCalled());
-		Assert.assertTrue("Callout3 was not called", callout3.isCalled());
+		Assertions.assertTrue(callout1.isCalled(),"Callout1 was not called");
+		Assertions.assertTrue(callout2.isCalled(), "Callout2 was not called");
+		Assertions.assertTrue(callout3.isCalled(), "Callout3 was not called");
 	}
 
 	@Test
 	public void test_NoCallouts()
 	{
 		final ICalloutExecutor calloutExecutor = newExecutor();
-		
+
 		// We expect the NullCalloutExecutor
-		Assert.assertSame(NullCalloutExecutor.instance, calloutExecutor);
-		
+		Assertions.assertSame(NullCalloutExecutor.instance, calloutExecutor);
+
 		calloutExecutor.execute(field); // shall do nothing
 	}
 
@@ -84,15 +61,14 @@ public class CalloutExecutorTest
 		//
 		// First run
 		assertExceptionOnExecute(calloutExecutor, field, CalloutInitException.class);
-		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
-		Assert.assertFalse("Callout shall be removed from active callouts list",
-				calloutExecutor.hasCallouts(field));
+		Assertions.assertTrue(callout1.isCalled(), "Callout1 was not called");
+		Assertions.assertFalse(calloutExecutor.hasCallouts(field), "Callout shall be removed from active callouts list");
 
 		//
 		// Second run - callout shall not be called again
 		callout1.setCalled(false);
 		calloutExecutor.execute(field);
-		Assert.assertFalse("Callout1 shall NOT be called again", callout1.isCalled());
+		Assertions.assertFalse(callout1.isCalled(), "Callout1 shall NOT be called again");
 	}
 
 	@Test
@@ -106,15 +82,14 @@ public class CalloutExecutorTest
 		//
 		// First run
 		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
-		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
-		Assert.assertTrue("Callout shall NOT be removed from active callouts list",
-				calloutExecutor.hasCallouts(field));
+		Assertions.assertTrue(callout1.isCalled(), "Callout1 was not called");
+		Assertions.assertTrue(calloutExecutor.hasCallouts(field), "Callout shall NOT be removed from active callouts list");
 
 		//
 		// Second run - callout shall BE called again
 		callout1.setCalled(false);
 		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
-		Assert.assertTrue("Callout1 shall be called again", callout1.isCalled());
+		Assertions.assertTrue(callout1.isCalled(), "Callout1 shall be called again");
 	}
 
 	@Test
@@ -128,9 +103,9 @@ public class CalloutExecutorTest
 		final ICalloutExecutor calloutExecutor = newExecutor();
 		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
 
-		Assert.assertTrue("Callout1 shall be called again", callout1.isCalled());
-		Assert.assertTrue("Callout2 shall be called again", callout2.isCalled());
-		Assert.assertFalse("Callout3 shall be called again", callout3.isCalled());
+		Assertions.assertTrue(callout1.isCalled(), "Callout1 shall be called again");
+		Assertions.assertTrue(callout2.isCalled(), "Callout2 shall be called again");
+		Assertions.assertFalse(callout3.isCalled(), "Callout3 shall be called again");
 	}
 
 	private ICalloutExecutor newExecutor()
@@ -160,17 +135,16 @@ public class CalloutExecutorTest
 			exception = e;
 		}
 
-		Assert.assertNotNull("No exception was thrown", exception);
+		Assertions.assertNotNull(exception, "No exception was thrown");
 
 		final boolean gotExpectedException = expectedExceptionClass.isAssignableFrom(exception.getClass());
 		if (!gotExpectedException)
 		{
 			exception.printStackTrace();
 		}
-		Assert.assertTrue("Exception " + expectedExceptionClass + " was expected but we got " + exception, gotExpectedException);
+		Assertions.assertTrue(gotExpectedException, "Exception " + expectedExceptionClass + " was expected but we got " + exception);
 
-		@SuppressWarnings("unchecked")
-		final T exceptionCasted = (T)exception;
+		@SuppressWarnings("unchecked") final T exceptionCasted = (T)exception;
 
 		if (exceptionCasted instanceof CalloutException)
 		{
@@ -182,8 +156,8 @@ public class CalloutExecutorTest
 
 	private void assertCalloutExceptionIsFilled(final CalloutException exception, final ICalloutExecutor calloutExecutor, final ICalloutField field)
 	{
-		Assert.assertSame("Invalid executor for " + exception, calloutExecutor, exception.getCalloutExecutor());
-		Assert.assertSame("Invalid field for " + exception, field, exception.getCalloutField());
+		Assertions.assertSame(calloutExecutor, exception.getCalloutExecutor(), "Invalid executor for " + exception);
+		Assertions.assertSame(field, exception.getCalloutField(), "Invalid field for " + exception);
 		// exception.getCalloutInstance();
 	}
 }

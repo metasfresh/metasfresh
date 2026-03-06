@@ -25,6 +25,7 @@ import { startWorkflowRequest } from '../../../api/launchers';
 import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
+import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -203,7 +204,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const stepsById = line?.steps ?? {};
 
   return {
-    caption: line?.caption,
+    caption: line?.caption, // aka productName
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
@@ -253,7 +254,7 @@ export const useHeaderUpdate = ({
           {
             caption: trl('general.PackingItemName'),
             value: packingItemName,
-            hidden: !(pickingUnit === 'TU' && packingItemName),
+            hidden: !(pickingUnit === PICKING_UNIT_TU && packingItemName),
           },
           {
             caption: trl('activities.picking.target'),

@@ -61,6 +61,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
@@ -284,8 +285,10 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(TimeUtil.asTimestamp(materialDescriptor.getDate()));
 
-		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
-		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+		final MinMaxDescriptor minMaxDescriptor = candidate.getMinMaxDescriptor();
+		candidateRecord.setReplenish_MinQty(minMaxDescriptor.getMin());
+		candidateRecord.setReplenish_MaxQty(minMaxDescriptor.getMax());
+		candidateRecord.setReplenish_IsHighPriority(minMaxDescriptor.isHighPriority());
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 

@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+
 
 /**
  * Test case:
@@ -99,10 +98,10 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 
 		// split everything from tuHU1 and tuHU2 onto one respective LU each
 		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomatoId, new BigDecimal("30"));
-		assertThat(splitSS1LUs.size(), is(1));
+		assertThat(splitSS1LUs).hasSize(1);
 
 		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSaladId, new BigDecimal("10"));
-		assertThat(splitSS2LUs.size(), is(1));
+		assertThat(splitSS2LUs).hasSize(1);
 
 		final I_M_HU splitSS2LU = splitSS2LUs.get(0); // we split full qty on a palette
 

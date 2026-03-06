@@ -131,7 +131,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 
 		//
 		// Charge/InventoryDiff CR/DR
-		final Account invDiff = getInvDifferencesAccount(as, line, costs.toBigDecimal().negate());
+		final Account invDiff = line.getInvDifferencesAccount(as, costs.toBigDecimal().negate());
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(invDiff)
@@ -144,17 +144,4 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 			cr.setAD_Org_ID(line.getOrgId());
 		}
 	}
-
-	@NonNull
-	private Account getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
-	{
-		final Account chargeAcct = line.getChargeAccount(as, amount.negate());
-		if (chargeAcct != null)
-		{
-			return chargeAcct;
-		}
-
-		return getAccountProvider().getWarehouseAccount(as.getId(), getWarehouseId(), WarehouseAccountType.W_Differences_Acct);
-	}
-
 }   // Doc_Inventory

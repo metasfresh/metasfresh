@@ -1,7 +1,7 @@
 package de.metas.cucumber.stepdefs.match_po;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -23,6 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class M_MatchPO_StepDef
 {
+	@NonNull private final IMatchPODAO matchPODAO = Services.get(IMatchPODAO.class);
+
 	@NonNull private final M_MatchPO_StepDefData matchPOTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
@@ -36,10 +38,8 @@ public class M_MatchPO_StepDef
 
 	public void loadMatchPO(@NonNull final DataTableRow row)
 	{
-		@NonNull final StepDefDataIdentifier identifier = row.getAsIdentifier();
-
 		final OrderLineId orderLineId = row.getAsIdentifier(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID).lookupIdIn(orderLineTable);
-		final List<I_M_MatchPO> matchPOs = Services.get(IMatchPODAO.class).getByOrderLineId(orderLineId);
+		final List<I_M_MatchPO> matchPOs = matchPODAO.getByOrderLineId(orderLineId);
 		if (matchPOs.isEmpty())
 		{
 			throw new AdempiereException("No M_MatchPO found for " + orderLineId);
@@ -49,7 +49,9 @@ public class M_MatchPO_StepDef
 			throw new AdempiereException("More than one M_MatchPOs found for " + orderLineId + ": " + matchPOs);
 		}
 		final I_M_MatchPO matchPO = CollectionUtils.singleElement(matchPOs);
-		matchPOTable.put(identifier, matchPO);
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> matchPOTable.put(identifier, matchPO));
 	}
 
 	@And("^Wait until M_MatchPO (.*) (is|are) posted$")

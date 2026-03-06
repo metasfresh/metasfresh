@@ -280,6 +280,8 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void runAfterCommit(final Runnable runnable);
 
+	void runAfterClose(@NonNull Consumer<ITrx> runnable);
+
 	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *
@@ -521,13 +523,14 @@ public interface ITrxManager extends ISingletonService
 			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
 		}
 	}
+
 	default <T> void accumulateAndProcessAfterCommit(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,
 			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
 	{
 		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (isActive(trx)&& canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
+		if (isActive(trx) && canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
 		{
 			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
 		}

@@ -41,6 +41,8 @@ public interface ICostDetailService
 
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
+	AggregatedCostAmount toAggregatedCostAmount(List<CostDetail> costDetails);
+
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
 	List<CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);

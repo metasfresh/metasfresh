@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -47,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
@@ -382,7 +382,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
 	}

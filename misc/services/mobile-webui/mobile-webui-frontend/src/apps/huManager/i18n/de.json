@@ -1,7 +1,8 @@
 {
   "HU": "HU",
   "qrCode": "QR code",
-  "locator": "Lagerort",
+  "eanCode": "EAN Code",
+  "locator": "Lagerplatz",
   "HUStatus": "Status",
   "numberOfAggregatedHUs": "Aggregierte HU-Zahl",
   "product": "Produkt",
@@ -15,7 +16,7 @@
     },
     "move": {
       "buttonCaption": "Bewegen",
-      "scanTarget": "Lagerort scannen",
+      "scanTarget": "Lagerplatz scannen",
       "qtyTULabel": "TU-Zahl"
     },
     "scanAgain": {
@@ -35,7 +36,7 @@
       "moveSuccess": "Erfolgreich verschoben"
     },
     "setCurrentLocator": {
-      "buttonCaption": "Lagerort ändern"
+      "buttonCaption": "Lagerplatz ändern"
     },
     "changeQty": {
       "buttonCaption": "Menge verändern",

@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @EqualsAndHashCode
@@ -53,13 +54,13 @@ public class WorkflowLauncherCaption
 
 	@Builder
 	private WorkflowLauncherCaption(
-			@NonNull final ImmutableList<String> fieldsInOrder,
-			@NonNull final ImmutableMap<String, ITranslatableString> fieldValues,
-			@Nullable final ImmutableMap<String, Comparable<?>> comparingKeys)
+			@NonNull final List<String> fieldsInOrder,
+			@NonNull final Map<String, ITranslatableString> fieldValues,
+			@Nullable final Map<String, Comparable<?>> comparingKeys)
 	{
-		this.fieldsInOrder = fieldsInOrder;
-		this.fieldValues = fieldValues;
-		this.comparingKeys = comparingKeys != null ? comparingKeys : ImmutableMap.of();
+		this.fieldsInOrder = ImmutableList.copyOf(fieldsInOrder);
+		this.fieldValues = ImmutableMap.copyOf(fieldValues);
+		this.comparingKeys = comparingKeys != null ? ImmutableMap.copyOf(comparingKeys) : ImmutableMap.of();
 	}
 
 	public static WorkflowLauncherCaption of(@NonNull final ITranslatableString caption)
@@ -147,8 +148,8 @@ public class WorkflowLauncherCaption
 		final String field = orderBy.getField();
 		final Function<WorkflowLauncherCaption, Comparable<?>> keyExtractor = caption -> caption.getFieldComparingKey(field, adLanguage);
 
-		//noinspection unchecked
-		Comparator<Comparable<?>> keyComparator = (Comparator<Comparable<?>>)Comparator.naturalOrder();
+		//noinspection unchecked,rawtypes
+		Comparator<Comparable> keyComparator = Comparator.naturalOrder();
 		if (!orderBy.isAscending())
 		{
 			keyComparator = keyComparator.reversed();

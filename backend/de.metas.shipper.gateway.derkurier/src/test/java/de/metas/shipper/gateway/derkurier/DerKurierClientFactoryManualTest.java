@@ -7,8 +7,8 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
 
@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DerKurierClientFactoryManualTest
 {
 	@Test
-	@Ignore // remove the ignore to run this test manually
+	@Disabled // remove the ignore to run this test manually
 	public void manualTest()
 	{
 		final Converters converters = new Converters();

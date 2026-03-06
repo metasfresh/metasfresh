@@ -23,6 +23,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
@@ -168,7 +169,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	public ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
@@ -271,7 +272,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public void deleteHUAssignments(@NonNull Properties ctx, @NonNull final TableRecordReference modelRef, @NonNull final Collection<HuId> huIds, final String trxName)
+	public void deleteHUAssignments(@NonNull final Properties ctx, @NonNull final TableRecordReference modelRef, @NonNull final Collection<HuId> huIds, final String trxName)
 	{
 		if (huIds.isEmpty())
 		{

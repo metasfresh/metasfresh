@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for API_Request_Audit
  *  @author metasfresh (generated) 
@@ -32,6 +32,33 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
+	}
+
+	@Override
+	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
+	}
+
+	@Override
+	public void setAD_PInstance_ID (final int AD_PInstance_ID)
+	{
+		if (AD_PInstance_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
+	}
+
+	@Override
+	public int getAD_PInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
 	@Override

@@ -3,7 +3,6 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
-import { connectWS, disconnectWS } from '../utils/websockets';
 import { getRowsData, getTabRequest } from '../api';
 import { getTab } from '../utils';
 
@@ -29,6 +28,7 @@ import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 import { fetchTopActions } from '../actions/Actions';
 
 import history from '../services/History';
+import { useWebsocket } from '../hooks/useWebsocket';
 
 /**
  * @file Class based component.
@@ -36,23 +36,7 @@ import history from '../services/History';
  * @extends PureComponent
  */
 class MasterWindowContainer extends PureComponent {
-  componentDidUpdate(prevProps) {
-    const { master } = this.props;
-
-    if (prevProps.master.websocket !== master.websocket && master.websocket) {
-      // websockets are responsible for pushing info about any updates to the data
-      // displayed in tabs. This is the only place we're updating this apart of
-      // initial load (so contrary to what we used to do, we're not handling responses
-      // from any user actions now, like batch entry for instance)
-      disconnectWS.call(this);
-      // ^^ - for the case where we come from different area like Phonecall Schedule and then
-      // we go via it to Sales Order master.websocket is changed and by doing that we assure that
-      // communication is set on the right master.websocket . disconnectWS clears the WS
-      connectWS.call(this, master.websocket, async (msg) => {
-        this.onWebsocketEvent(msg);
-      });
-    }
-
+  componentDidUpdate() {
     this.handleURLParams();
   }
 
@@ -69,10 +53,9 @@ class MasterWindowContainer extends PureComponent {
 
     clearMasterData();
     this.deleteTabsTables();
-    disconnectWS.call(this);
   }
 
-  async onWebsocketEvent(event) {
+  async onWebsocketEvent({ event }) {
     const { includedTabsInfo, stale, activeTabStaled } = event;
 
     const activeTab = includedTabsInfo
@@ -318,11 +301,17 @@ class MasterWindowContainer extends PureComponent {
 
   render() {
     return (
-      <MasterWindow
-        {...this.props}
-        onRefreshTab={this.refreshActiveTab}
-        onSortTable={this.sort}
-      />
+      <>
+        <DocumentWebsocketConnector
+          topic={this.props.master?.websocket}
+          onMessage={({ event }) => this.onWebsocketEvent({ event })}
+        />
+        <MasterWindow
+          {...this.props}
+          onRefreshTab={this.refreshActiveTab}
+          onSortTable={this.sort}
+        />
+      </>
     );
   }
 }
@@ -389,6 +378,8 @@ export default connect(mapStateToProps, {
 //
 //
 //
+//
+//
 
 const isLayoutLoaded = (layout) => {
   return !!layout?.windowId;
@@ -424,4 +415,19 @@ const getFieldFromLayout = (layout, fieldName) => {
   }
 
   return null; // not found
+};
+
+//
+//
+//
+//
+//
+
+const DocumentWebsocketConnector = ({ topic, onMessage }) => {
+  useWebsocket({
+    topic,
+    traceName: 'Master',
+    onMessage: ({ event }) => onMessage({ topic, event }),
+  });
+  return null;
 };

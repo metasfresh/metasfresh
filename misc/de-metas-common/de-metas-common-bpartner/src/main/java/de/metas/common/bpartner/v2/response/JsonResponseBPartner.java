@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
+	public static final String BPGROUP = "bpGroup";
 	public static final String URL = "url";
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
@@ -52,6 +53,7 @@ public class JsonResponseBPartner
 	public static final String NAME = "name";
 	public static final String NAME_2 = "name2";
 	public static final String NAME_3 = "name3";
+	public static final String GLN_LOOKUP_LABEL = "glnLookupLabel";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String CODE = "code";
@@ -61,6 +63,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER = "customer";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
+	public static final String SALESTREPID = "salesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
@@ -68,6 +71,11 @@ public class JsonResponseBPartner
 	public static final String METASFRESH_URL = "metasfreshUrl";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
+	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
+	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -79,34 +87,39 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.GlobalId`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.GlobalId`.")
 	@JsonProperty(GLOBAL_ID)
 	String globalId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
 	boolean active;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name2`.")
 	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name3`.")
 	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.Lookup_Label`.")
+	@JsonProperty(GLN_LOOKUP_LABEL)
+	@JsonInclude(Include.NON_NULL)
+	String glnLookupLabel;
+
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonProperty(COMPANY_NAME)
@@ -114,7 +127,7 @@ public class JsonResponseBPartner
 	String companyName;
 
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	@JsonProperty(PARENT_ID)
@@ -122,7 +135,7 @@ public class JsonResponseBPartner
 	JsonMetasfreshId parentId;
 
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
@@ -132,33 +145,39 @@ public class JsonResponseBPartner
 	@JsonProperty(LANGUAGE)
 	String language;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL`.")
 	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
-	private String url2;
+	String url2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
-	private String url3;
+	String url3;
 
-	@ApiModelProperty( //
-			required = false, //
-			value = "Name of the business partner's group")
+	@Deprecated
+	@ApiModelProperty(value = "Name of the business partner's group",
+			notes = "DEPRECATED: This field is deprecated. Please use 'bpGroup' instead.")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsVendor`.")
+	@ApiModelProperty(value = "Business partner's group")
+	@JsonProperty(BPGROUP)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseBPGroup bpGroup;
+
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCustomer`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCustomer`.")
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
@@ -172,6 +191,12 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseSalesRep responseSalesRep;
 
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.SalesRep_ID`")
+	@JsonProperty(SALESTREPID)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseSalesRepContact salesRepContact;
+
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
@@ -180,28 +205,59 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String internalName;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.VATaxID`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
 
-	@ApiModelProperty(required = false, value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
+	@ApiModelProperty(value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
 	@JsonProperty(METASFRESH_URL)
 	@JsonInclude(Include.NON_NULL)
 	String metasfreshUrl;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.CreditorId` ")
+	@ApiModelProperty(value = "This translates to `C_BPartner.CreditorId` ")
 	@JsonProperty(CREDITOR_ID)
 	@JsonInclude(Include.NON_NULL)
 	Integer creditorId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.DebtorId` ")
+	@ApiModelProperty(value = "This translates to `C_BPartner.DebtorId` ")
 	@JsonProperty(DEBTOR_ID)
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.EORI` ")
+	@JsonProperty(EORI)
+	@JsonInclude(Include.NON_NULL)
+	String eori;
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.EInvoice_BuyerReference` ")
+	@JsonProperty(E_INVOICE_BUYER_REFERENCE)
+	@JsonInclude(Include.NON_NULL)
+	String eInvoiceBuyerReference;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Sales payment term for this business partner.")
+	@JsonProperty(CUSTOMER_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm customerPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.PO_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Purchase payment term for this business partner.")
+	@JsonProperty(VENDOR_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm vendorPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_Incoterms_Customer_ID` (lookup to C_Incoterms).\n"
+					+ "Customer incoterms for this business partner.")
+	@JsonProperty(CUSTOMER_INCOTERMS)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseIncoterms customerIncoterms;
 
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
@@ -218,6 +274,7 @@ public class JsonResponseBPartner
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,
 			@JsonProperty(NAME_3) @Nullable final String name3,
+			@JsonProperty(GLN_LOOKUP_LABEL) @Nullable final String glnLookupLabel,
 			@JsonProperty(COMPANY_NAME) @Nullable final String companyName,
 			@JsonProperty(PARENT_ID) @Nullable final JsonMetasfreshId parentId,
 			@JsonProperty(PHONE) @Nullable final String phone,
@@ -226,10 +283,12 @@ public class JsonResponseBPartner
 			@JsonProperty(URL_2) @Nullable final String url2,
 			@JsonProperty(URL_3) @Nullable final String url3,
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
+			@JsonProperty(BPGROUP) @Nullable final JsonResponseBPGroup bpGroup,
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
+			@JsonProperty(SALESTREPID) @Nullable final JsonResponseSalesRepContact salesRepContact,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
@@ -237,9 +296,14 @@ public class JsonResponseBPartner
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
 			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
+			@JsonProperty(EORI) @Nullable final String eori,
+			@JsonProperty(E_INVOICE_BUYER_REFERENCE) @Nullable final String eInvoiceBuyerReference,
+			@JsonProperty(CUSTOMER_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm customerPaymentTerm,
+			@JsonProperty(VENDOR_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm vendorPaymentTerm,
+			@JsonProperty(CUSTOMER_INCOTERMS) @Nullable final JsonResponseIncoterms customerIncoterms,
 
 			//
-			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.code = code;
@@ -249,6 +313,7 @@ public class JsonResponseBPartner
 		this.name = name;
 		this.name2 = name2;
 		this.name3 = name3;
+		this.glnLookupLabel = glnLookupLabel;
 
 		this.companyName = companyName;
 
@@ -262,11 +327,13 @@ public class JsonResponseBPartner
 		this.url3 = url3;
 
 		this.group = group;
+		this.bpGroup = bpGroup;
 
 		this.vendor = vendor;
 		this.customer = customer;
 		this.salesPartnerCode = salesPartnerCode;
 		this.responseSalesRep = responseSalesRep;
+		this.salesRepContact = salesRepContact;
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.company = company;
@@ -277,6 +344,12 @@ public class JsonResponseBPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
+		this.customerPaymentTerm = customerPaymentTerm;
+		this.vendorPaymentTerm = vendorPaymentTerm;
+		this.customerIncoterms = customerIncoterms;
 
 		this.changeInfo = changeInfo;
 	}

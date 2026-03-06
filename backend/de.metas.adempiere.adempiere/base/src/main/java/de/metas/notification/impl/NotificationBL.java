@@ -88,7 +88,7 @@ public class NotificationBL implements INotificationBL
 	{
 		try
 		{
-			newNotificationSender().send(request);
+			newNotificationSender().sendNow(request);
 		}
 		catch (final Exception ex)
 		{

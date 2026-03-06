@@ -24,7 +24,8 @@ import AppScreen from './containers/AppScreen';
 import { APPLICATION_ID } from './constants';
 import { toUrl } from '../../utils';
 
-export const appLocation = ({ qrCode, parent } = {}) => toUrl(`/${APPLICATION_ID}`, { qrCode, parent });
+export const appLocation = ({ qrCode, callerApplicationId } = {}) =>
+  toUrl(`/${APPLICATION_ID}`, { qrCode, callerApplicationId });
 
 export const routes = [
   {

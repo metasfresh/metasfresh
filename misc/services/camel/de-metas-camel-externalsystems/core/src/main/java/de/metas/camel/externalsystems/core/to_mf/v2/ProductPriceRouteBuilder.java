@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,7 +26,6 @@ import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
@@ -34,7 +33,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PRICE_LIST_IDENTIFIER;
@@ -60,35 +59,35 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 
 		from(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
 				.routeId(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::processProductPriceUpsertCamelRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_VERSION_IDENTIFIER + "}/productPrices")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
 				.routeId(MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::processProductPriceListUpsertCamelRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
 
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.price-list-upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_IDENTIFIER + "}/productPrices")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID))
 				.routeId(MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::validateJsonRequestProductPriceSearch)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductPriceQuery.class))
 				.removeHeaders("CamelHttp*")
 
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{metasfresh.prices-v2.api.uri}}/${header.orgCode}/product/search")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

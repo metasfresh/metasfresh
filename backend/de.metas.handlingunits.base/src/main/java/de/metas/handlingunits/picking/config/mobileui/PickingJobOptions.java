@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value
@@ -17,9 +18,9 @@ public class PickingJobOptions
 	@Nullable PickingJobAggregationType aggregationType;
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
-	boolean isPickWithNewLU;
 	boolean isShipOnCloseLU;
-	boolean isAllowNewTU;
+	@NonNull AllowedPickToStructures allowedPickToStructures;
+	@NonNull PickAttributesConfig pickAttributes;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
@@ -29,6 +30,7 @@ public class PickingJobOptions
 	boolean isAnonymousPickHUsOnTheFly;
 	@NonNull OptionalBoolean displayPickingSlotSuggestions;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
+	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
 
@@ -37,9 +39,9 @@ public class PickingJobOptions
 			@Nullable final PickingJobAggregationType aggregationType,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isPickWithNewLU,
 			final boolean isShipOnCloseLU,
-			final boolean isAllowNewTU,
+			@NonNull final AllowedPickToStructures allowedPickToStructures,
+			@Nullable final PickAttributesConfig pickAttributes,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
@@ -49,15 +51,16 @@ public class PickingJobOptions
 			final boolean isAnonymousPickHUsOnTheFly,
 			@Nullable final OptionalBoolean displayPickingSlotSuggestions,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
+			@Nullable final OptionalBoolean completeJobAutomatically,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
 	{
 		this.aggregationType = aggregationType;
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
-		this.isPickWithNewLU = isPickWithNewLU;
 		this.isShipOnCloseLU = isShipOnCloseLU;
-		this.isAllowNewTU = isAllowNewTU;
+		this.allowedPickToStructures = allowedPickToStructures;
+		this.pickAttributes = pickAttributes != null ? pickAttributes : PickAttributesConfig.UNKNOWN;
 		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
@@ -67,6 +70,7 @@ public class PickingJobOptions
 		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
 		this.displayPickingSlotSuggestions = displayPickingSlotSuggestions != null ? displayPickingSlotSuggestions : OptionalBoolean.FALSE;
 		this.createShipmentPolicy = createShipmentPolicy;
+		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
 	}
@@ -77,26 +81,13 @@ public class PickingJobOptions
 
 	public PickingJobOptions fallbackTo(@NonNull final PickingJobOptions fallback)
 	{
-		boolean changed = false;
-
-		final OptionalBoolean displayPickingSlotSuggestionsNew;
-		if (this.displayPickingSlotSuggestions.isUnknown() && fallback.getDisplayPickingSlotSuggestions().isPresent())
-		{
-			displayPickingSlotSuggestionsNew = fallback.getDisplayPickingSlotSuggestions();
-			changed = true;
-		}
-		else
-		{
-			displayPickingSlotSuggestionsNew = this.displayPickingSlotSuggestions;
-		}
-
-		if (!changed)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.displayPickingSlotSuggestions(displayPickingSlotSuggestionsNew)
+		final PickingJobOptions newValue = toBuilder()
+				.allowedPickToStructures(this.allowedPickToStructures.fallbackTo(fallback.allowedPickToStructures))
+				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
+				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
+				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
 				.build();
+
+		return Objects.equals(this, newValue) ? this : newValue;
 	}
 }

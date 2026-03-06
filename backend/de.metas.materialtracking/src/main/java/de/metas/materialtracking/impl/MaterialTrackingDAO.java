@@ -1,50 +1,6 @@
 package de.metas.materialtracking.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-/*
- * #%L
- * de.metas.materialtracking
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Period;
-import org.eevolution.model.I_PP_Order;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -62,9 +18,40 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Period;
+import org.eevolution.model.I_PP_Order;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 public class MaterialTrackingDAO implements IMaterialTrackingDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public I_M_Material_Tracking getById(final MaterialTrackingId materialTrackingId)
+	{
+		return queryBL.createQueryBuilder(I_M_Material_Tracking.class)
+				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID, materialTrackingId)
+				.create()
+				.firstOnly();
+	}
+
 	@Override
 	public IMaterialTrackingQuery createMaterialTrackingQuery()
 	{
@@ -189,7 +176,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	{
 		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
 
-		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Material_Tracking_Ref.class, materialTracking)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
@@ -251,7 +238,6 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	@Override
 	public I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(@NonNull final AttributeValueId attributeValueId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValueId)
@@ -356,7 +342,6 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		final Timestamp startDate = materialTracking.getValidFrom();
 		final Timestamp endDate = materialTracking.getValidTo();
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_Flatrate_Term> flatrateTerms = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class, materialTracking)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_QualityInsp_LagerKonf_ID, lagerKonfID)
@@ -386,7 +371,6 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 			final I_AD_Org org)
 	{
 		final Timestamp periodEndDate = period.getEndDate();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Material_Tracking.class, period)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
@@ -399,8 +383,6 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	@Override
 	public void deleteMaterialTrackingReportLines(final I_M_Material_Tracking_Report report)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		queryBL.createQueryBuilder(I_M_Material_Tracking_Report_Line.class, report)
 				.addEqualsFilter(I_M_Material_Tracking_Report_Line.COLUMN_M_Material_Tracking_Report_ID, report.getM_Material_Tracking_Report_ID())
 				.create()

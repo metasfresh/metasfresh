@@ -13,6 +13,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -37,6 +38,8 @@ public interface IPaySelectionBL extends ISingletonService
 	 */
 	void unlinkPaySelectionLineFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
+	I_C_PaySelection getByIdNotNull(@NonNull PaySelectionId paySelectionId);
+
 	Optional<I_C_PaySelection> getById(@NonNull PaySelectionId paySelectionId);
 
 	/**
@@ -45,7 +48,7 @@ public interface IPaySelectionBL extends ISingletonService
 	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(I_C_PaySelectionLine)} returns <code>true</code>,
 	 * then the method does nothing.
 	 */
-	void updateFromInvoice(I_C_PaySelectionLine psl);
+	void updateFromDocument(I_C_PaySelectionLine psl);
 
 	/**
 	 * Make sure its lines are not involved in Bank Statements and set the paySelection as not processed
@@ -66,4 +69,12 @@ public interface IPaySelectionBL extends ISingletonService
 	Set<PaymentId> getPaymentIds(PaySelectionId paySelectionId);
 
 	ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds);
+
+	PaySelectionLineType extractType(I_C_PaySelectionLine line);
+
+	I_C_PaySelectionLine getPaySelectionLineById(@NonNull PaySelectionLineId paySelectionLineId);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull I_C_PaySelection paySelection);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull PaySelectionId paySelectionId);
 }

@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -39,10 +44,10 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
+import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -90,6 +95,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -111,11 +117,12 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
-	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+	public static final String SYSCONFIG_DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -173,27 +180,6 @@ public class CalloutOrder extends CalloutEngine
 		// }
 		// }
 
-		// Invoice Rule
-		if (MOrder.DocSubType_POS.equals(docSubType)
-				|| MOrder.DocSubType_Prepay.equals(docSubType)
-				|| MOrder.DocSubType_OnCredit.equals(docSubType))
-		{
-			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-		}
-		else
-		{
-			order.setInvoiceRule(getDefaultInvoiceRule());
-		}
-
-		// Payment Rule - POS Order
-		if (MOrder.DocSubType_POS.equals(docSubType))
-		{
-			order.setPaymentRule(PaymentRule.Cash.getCode());
-		}
-		else
-		{
-			order.setPaymentRule(PaymentRule.OnCredit.getCode());
-		}
 
 		// Set Context:
 		calloutField.putContext(I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
@@ -204,16 +190,13 @@ public class CalloutOrder extends CalloutEngine
 			order.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
 
-		//
-		// When BPartner is changed, the Rules are not set if
-		// it is a POS or Credit Order (i.e. defaults from Standard
-		// BPartner)
-		// This re-reads the Rules and applies them.
-		if (MOrder.DocSubType_POS.equals(docSubType)
-				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
-		{
-			// for POS/PrePay
+		order.setInvoiceRule(getDefaultInvoiceRule());
 
+		// Invoice Rule, Payment Rule - POS Order
+		if (MOrder.DocSubType_POS.equals(docSubType))
+		{
+			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
+			order.setPaymentRule(PaymentRule.Cash.getCode());
 		}
 		else
 		{
@@ -221,46 +204,19 @@ public class CalloutOrder extends CalloutEngine
 			if (bpartnerId != null)
 			{
 				final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-				final boolean isSOTrx = documentNoInfo.isSOTrx();
 
-				// PaymentRule
+				final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
+				order.setPaymentRule(bPartnerOrderParams.getPaymentRule().getCode());
+
+				final PaymentTermId paymentTermId = bPartnerOrderParams.getPaymentTermId();
+				if (paymentTermId != null)
 				{
-					PaymentRule paymentRule = isSOTrx
-							? PaymentRule.ofCode(bpartner.getPaymentRule())
-							: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-
-					if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
-					{
-						// for SO_Trx
-						paymentRule = PaymentRule.OnCredit; // Payment Term
-					}
-					if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
-					{
-						paymentRule = PaymentRule.OnCredit; // Payment Term
-					}
-					order.setPaymentRule(paymentRule.getCode());
+					order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 				}
 
-				// Payment Term
-				{
-					final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(isSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID());
-					if (paymentTermId != null)
-					{
-						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-					}
-				}
-
-				// InvoiceRule
-				{
-					final InvoiceRule invoiceRule = isSOTrx ?
-							InvoiceRule.ofNullableCode(bpartner.getInvoiceRule()) :
-							InvoiceRule.ofNullableCode(bpartner.getPO_InvoiceRule());
-
-					if (invoiceRule != null)
-					{
-						order.setInvoiceRule(invoiceRule.getCode());
-					}
-				}
+				order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
+				order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
 
 				// DeliveryRule
 				{
@@ -271,6 +227,7 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 
+				// FIXME not in sync with bpartner callout
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
@@ -292,7 +249,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		//
-		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		orderBL.updateDescriptionFromDocTypeTargetId(order);
 
 		//
 		return NO_ERROR;
@@ -325,8 +282,6 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR; // nothing to do
 		}
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 		if (order.getC_BPartner_Location_ID() <= 0)
 		{
@@ -365,22 +320,33 @@ public class CalloutOrder extends CalloutEngine
 
 		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
+		final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
-
-		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-				+ " p.SO_Description,p.IsDiscountPrinted,"
-				+ " p.InvoiceRule,"
-				+ " p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ", "
-				+ " p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
-				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
+        //
+		final String sql = "SELECT p.AD_Language,"
+				+ " COALESCE(p.C_PaymentTerm_ID, g.C_PaymentTerm_ID, pg.C_PaymentTerm_ID) AS C_PaymentTerm_ID,"
+				+ " COALESCE(p.PO_PaymentTerm_ID, g.PO_PaymentTerm_ID, pg.PO_PaymentTerm_ID) AS PO_PaymentTerm_ID,"
+				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID, pg.M_PriceList_ID) AS M_PriceList_ID,"
+				+ " COALESCE(p.PaymentRule, g.PaymentRule, pg.PaymentRule) AS PaymentRule,"
+				+ " COALESCE(p.PaymentRulePO, g.PaymentRulePO, pg.PaymentRulePO) AS PaymentRulePO,"
+				+ " p.POReference,"
+				+ " p.SO_Description,"
+				+ " p.IsDiscountPrinted,"
+				+ " p.DeliveryRule,"
+				+ " COALESCE(p.FreightCostRule, g.FreightCostRule, pg.FreightCostRule) as FreightCostRule,"
+				+ " DeliveryViaRule,"
+				+ " lship.C_BPartner_Location_ID,"
+				+ " c.AD_User_ID,"
+				+ " COALESCE(p.PO_PriceList_ID, g.PO_PriceList_ID, pg.PO_PriceList_ID) AS PO_PriceList_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
+				+ " p.SalesRep_ID,"
+				+ " p.SO_DocTypeTarget_ID, "
 				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
+				+ " LEFT OUTER JOIN C_BP_Group pg ON (pg.C_BP_Group_ID=g.Parent_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y' AND lbill.IsEphemeral='N')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y' AND lship.IsEphemeral='N')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
@@ -399,7 +365,7 @@ public class CalloutOrder extends CalloutEngine
 				// 08578 take default users first.
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC LIMIT 1 "; // #1
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
@@ -541,15 +507,9 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
-				if (MOrder.DocSubType_Prepay.equals(OrderType))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-					// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
-				}
-				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
+				if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
 				{
 					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
@@ -578,14 +538,8 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 					}
 
-					// InvoiceRule
-					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
-							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
-
-					if (!Check.isEmpty(invoiceRule, true))
-					{
-						order.setInvoiceRule(invoiceRule);
-					}
+					order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
+					order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
 
 					// DeliveryRule
 					final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(rs.getString("DeliveryRule"));
@@ -636,7 +590,7 @@ public class CalloutOrder extends CalloutEngine
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		final String invoiceRule = sysConfigBL.getValue(SYSCONFIG_DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
 		if (!invoiceRule.trim().isEmpty())
 		{
 			return invoiceRule;
@@ -727,10 +681,11 @@ public class CalloutOrder extends CalloutEngine
 
 		final String defaultUserFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
+		final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
-				+ "p.InvoiceRule,"
 				+ "p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ","
 				+ "p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
@@ -861,11 +816,7 @@ public class CalloutOrder extends CalloutEngine
 				final String OrderType = order.getOrderType();
 				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
-				if (MOrder.DocSubType_Prepay.equals(OrderType))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				}
-				else if (MOrder.DocSubType_POS.equals(OrderType))
+				if (MOrder.DocSubType_POS.equals(OrderType))
 				{
 					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
@@ -892,14 +843,8 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId);
 					}
 
-					// InvoiceRule
-					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
-							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
-
-					if (!Check.isEmpty(invoiceRule, true))
-					{
-						order.setInvoiceRule(invoiceRule);
-					}
+					order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
+					order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
 				}
 			}
 		}
@@ -1316,7 +1261,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), RoundingMode.HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
@@ -1339,7 +1284,7 @@ public class CalloutOrder extends CalloutEngine
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyOrdered = orderLine.getQtyOrdered();
 			final int precision = MProduct.get(calloutField.getCtx(), M_Product_ID).getUOMPrecision();
-			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, RoundingMode.HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
 				log.debug("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);
@@ -1466,7 +1411,6 @@ public class CalloutOrder extends CalloutEngine
 		final I_M_Product product = Services.get(IProductDAO.class).getById(ol.getM_Product_ID());
 		ol.setProductDescription(product.getDescription());
 
-		return;
 	}
 
 	@Builder

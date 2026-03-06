@@ -43,7 +43,8 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ProductRepositoryTest
 {
@@ -208,6 +209,7 @@ class ProductRepositoryTest
 				.manufacturerId(manufacturerId)
 				.packageSize(packageSize)
 				.weightNetInKg(weight)
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
 				.build();
 
 		productRepository.updateProduct(product);

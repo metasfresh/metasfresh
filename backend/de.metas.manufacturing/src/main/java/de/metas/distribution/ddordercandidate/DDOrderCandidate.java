@@ -28,6 +28,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
@@ -57,6 +58,8 @@ public class DDOrderCandidate
 
 	@NonNull private final WarehouseId sourceWarehouseId;
 	@NonNull private final WarehouseId targetWarehouseId;
+	@Nullable private final LocatorId sourceLocatorId;
+	@Nullable private final LocatorId targetLocatorId;
 	@Nullable private final ResourceId targetPlantId;
 	@NonNull private final ShipperId shipperId;
 
@@ -91,6 +94,8 @@ public class DDOrderCandidate
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final WarehouseId sourceWarehouseId,
 			@NonNull final WarehouseId targetWarehouseId,
+			@Nullable final LocatorId sourceLocatorId,
+			@Nullable final LocatorId targetLocatorId,
 			@Nullable final ResourceId targetPlantId,
 			@NonNull final ShipperId shipperId,
 			final boolean isSimulated,
@@ -120,6 +125,8 @@ public class DDOrderCandidate
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.sourceWarehouseId = sourceWarehouseId;
 		this.targetWarehouseId = targetWarehouseId;
+		this.sourceLocatorId = sourceLocatorId;
+		this.targetLocatorId = targetLocatorId;
 		this.targetPlantId = targetPlantId;
 		this.shipperId = shipperId;
 		this.isSimulated = isSimulated;

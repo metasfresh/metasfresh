@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -415,6 +415,19 @@ public class MD_Candidate_StepDef
 				.execute();
 	}
 
+	/**
+	 * Polls the MD_Candidate table until all expected candidates are found (or timeout).
+	 * Each row is matched independently — candidates from other scenarios are ignored.
+	 * <p>
+	 * The data table is transformed by {@link MD_Candidate_StepDefTableTransformer} —
+	 * see its class-level JavaDoc for required and optional columns.
+	 * <p>
+	 * <b>Important</b>: Add a RabbitMQ drain step before this step when the candidates are created
+	 * asynchronously (e.g. after SO completion triggers ShipmentSchedule → SupplyRequired → PPOrderCandidate chain).
+	 *
+	 * @param timeoutSec max seconds to poll (typically 60)
+	 * @param table transformed data table with expected candidate rows
+	 */
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{

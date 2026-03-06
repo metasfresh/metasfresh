@@ -1,7 +1,7 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.location.ICountryDAO;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.Address;

@@ -22,20 +22,17 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
@@ -44,19 +41,16 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -66,10 +60,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -81,18 +75,15 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
-	private static final Logger logger = LogManager.getLogger(M_InOut.class);
-
+	private static final String SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned = "CustomerReturnsInOut.FailIfNoHUsAssigned";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUInOutDAO inOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
@@ -119,16 +110,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
-		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
-		if (movementType.isOutboundTransaction())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
-			return;
-		}
-
-		// the incoming HU created from this M_InOut needs to be destroyed
-		huInOutBL.copyAssignmentsToReversal(inout);
-		huInOutBL.destroyHUs(inout);
+		huInOutBL.destroyHandlingUnitsIfReversedInboundTransaction(inout);
 	}
 
 	/**
@@ -174,7 +156,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
 			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
@@ -210,7 +192,7 @@ public class M_InOut
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 
-		final List<I_M_HU> handlingUnits = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> handlingUnits = huInOutBL.retrieveHandlingUnits(shipment);
 
 		husToRemove.addAll(handlingUnits);
 
@@ -225,7 +207,7 @@ public class M_InOut
 	private void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
 	{
 		// do nothing if completing the reversal document
-		if (inout.getReversal_ID() > 0)
+		if (returnsServiceFacade.isReversal(inout))
 		{
 			return;
 		}
@@ -250,7 +232,7 @@ public class M_InOut
 	public void removeHUAssignmentsForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
-		
+
 		// Make sure we deal with a shipment (and not a customer-return)
 		final boolean isShipment = shipment.isSOTrx() && movementType.isOutboundTransaction();
 		if (!isShipment)
@@ -279,6 +261,7 @@ public class M_InOut
 						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
 						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
 						.build())
+				.distinct() // one HU might be in multiple qtyPicked records if inouts are completed and reversed multiple times
 				.collect(ImmutableList.toImmutableList());
 
 		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
@@ -332,7 +315,8 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
@@ -346,7 +330,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_InOutLine> reversalLines = inoutDao.retrieveLines(reversal, I_M_InOutLine.class);
+		final List<I_M_InOutLine> reversalLines = huInOutBL.retrieveLines(reversal, I_M_InOutLine.class);
 		for (final I_M_InOutLine reversalLine : reversalLines)
 		{
 			final BigDecimal qtyTuReversed = reversalLine.getQtyEnteredTU().negate();
@@ -360,14 +344,14 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void generateHUsForCustomerReturn(final I_M_InOut customerReturn)
+	public void validateCustomerReturns(final I_M_InOut customerReturn)
 	{
 		if (!returnsServiceFacade.isCustomerReturn(customerReturn))
 		{
 			return; // do nothing if the inout is not a customer return
 		}
 
-		if (inOutBL.isReversal(customerReturn))
+		if (returnsServiceFacade.isReversal(customerReturn))
 		{
 			return; // nothing to do
 		}
@@ -377,14 +361,21 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
-		if (assignedHUs.isEmpty())
+		returnsServiceFacade.createCustomerReturnHandlingUnitsIfNeeded(customerReturn);
+
+		final List<I_M_HU> assignedHUs = huInOutBL.retrieveHandlingUnits(customerReturn);
+		if (assignedHUs.isEmpty() && isCustomerReturnsInOut_FailIfNoHUsAssigned())
 		{
 			throw new AdempiereException("No HUs to return assigned");
 		}
 
 		// make sure all assigned HUs are active
 		handlingUnitsBL.setHUStatus(assignedHUs, X_M_HU.HUSTATUS_Active);
+	}
+
+	private boolean isCustomerReturnsInOut_FailIfNoHUsAssigned()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned, true);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)

@@ -1,4 +1,26 @@
 #!/bin/bash
+#
+# %L
+# master
+# %%
+# Copyright (C) 2025 metas GmbH
+# %%
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public
+# License along with this program. If not, see
+# <http://www.gnu.org/licenses/gpl-2.0.html>.
+# L%
+#
+
 set -o errexit   # abort on nonzero exitstatus
 set -o nounset   # abort on unbound variable
 set -o pipefail  # don't hide errors within pipes
@@ -25,6 +47,7 @@ echo "==================="
 echo " running cucumber tests ..."
 echo "==================="
 
+# i ran this with `-Duser.timezone=UTC`, which causes the ysstem to act as expected in some case, but broke a numer of others
 mvn --offline surefire:test --fail-never "$@"
 
 echo "==================="
@@ -33,3 +56,4 @@ echo "==================="
 
 cp target/*.xml /reports
 cp target/*.html /reports
+cp -r target/allure-results /reports/ 2>/dev/null || true

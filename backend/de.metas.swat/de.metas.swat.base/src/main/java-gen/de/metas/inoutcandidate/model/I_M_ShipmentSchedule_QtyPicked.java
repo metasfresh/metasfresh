@@ -214,7 +214,28 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
 
 	/**
-	 * Set Shipment Schedule.
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_Picking_Job_Schedule_ID", null);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
+
+	/**
+	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -223,7 +244,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Shipment Schedule.
+	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -283,8 +304,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -293,8 +313,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

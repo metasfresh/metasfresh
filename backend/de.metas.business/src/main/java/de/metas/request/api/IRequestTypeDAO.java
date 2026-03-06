@@ -2,6 +2,8 @@ package de.metas.request.api;
 
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_R_RequestType;
 
 /*
  * #%L
@@ -35,5 +37,9 @@ public interface IRequestTypeDAO extends ISingletonService
 
 	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
 
+	RequestTypeId retrieveRequestTypeIdByInternalName(String internalName);
+
 	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
+
+	I_R_RequestType getById(@NonNull RequestTypeId requestTypeId);
 }

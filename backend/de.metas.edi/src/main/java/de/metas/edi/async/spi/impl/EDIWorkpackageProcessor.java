@@ -24,22 +24,41 @@ package de.metas.edi.async.spi.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.EDIType;
+import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.impl.EDIBPartnerConfigService;
+import de.metas.edi.api.impl.EDIDocumentBL;
+import de.metas.edi.api.impl.EDIInOutDAO;
+import de.metas.edi.api.impl.EDIInvoiceDAO;
+import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemInvocationResult;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableAndClientId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,9 +72,16 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
 
 	// Services
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+	@NonNull private final EDIBPartnerConfigService edibPartnerConfigService = SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class);
+	@NonNull private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
+	@NonNull private final EDIInOutDAO ediInoutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
+	@NonNull private final EDIInvoiceDAO ediInvoiceDAO = SpringContextHolder.instance.getBean(EDIInvoiceDAO.class);
+
 
 	/**
 	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
@@ -64,7 +90,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
@@ -82,16 +108,105 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 
 			final int documentTableId = documentTableRecordIdPair.getTableId();
 			final int documentRecordId = documentTableRecordIdPair.getRecordId();
+			final ClientId clientId = ClientId.ofRepoId(workpackage.getAD_Client_ID());
 			final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
 					ctx,
-					ClientId.ofRepoId(workpackage.getAD_Client_ID()),
+					clientId,
 					documentTableId,
 					documentRecordId,
 					localTrxName);
 
 			//
 			// Export & enlist feedback
-			final List<Exception> exportFeedback = export.doExport();
+			final List<Exception> exportFeedback = new ArrayList<>();
+			final BPartnerId bPartnerId = export.getBPartnerId();
+			final EDIType ediType = export.getEDIType();
+			if(ediType.isDesadv() && edibPartnerConfigService.isDESADVReplicationInterfaceRecipient(bPartnerId))
+			{
+				Loggables.addLog("Exporting ediDocumentNo={} via Replication Interface", ediDocument.getDocumentNo());
+				exportFeedback.addAll(export.doExport());
+			}
+			else if(ediType.isDesadv() && edibPartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId))
+			{
+				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
+				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getDESADVExternalSystemParentConfigId(bPartnerId);
+
+				// in the case of externalSystem we want to always send 1 per inout, independent of SYS_CONFIG_OneDesadvPerShipment
+				final String tableName = getTableName(ediDocument);
+				if(I_M_InOut.Table_Name.equals(tableName))
+				{
+					final I_M_InOut shipment = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
+					final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(ediDocument), clientId);
+					final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+					if(result.getPInstanceId() != null)
+					{
+						shipment.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
+						ediInoutDAO.save(shipment);
+					}
+					if(!result.isSuccess())
+					{
+						exportFeedback.addAll(result.getExceptions());
+					}
+				}
+				else if (I_EDI_Desadv.Table_Name.equals(tableName))
+				{
+					final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ediDocument, I_EDI_Desadv.class);
+					final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
+
+					for (final I_M_InOut shipment : shipments)
+					{
+						final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(shipment), clientId);
+						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+						InterfaceWrapperHelper.refresh(shipment);
+						if(result.getPInstanceId() != null)
+						{
+							shipment.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
+							ediInoutDAO.save(shipment);
+						}
+						if(!result.isSuccess())
+						{
+							shipment.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
+							shipment.setEDIErrorMsg(ediDocumentBL.buildFeedback(result.getExceptions()));
+							ediInoutDAO.save(shipment);
+
+							exportFeedback.addAll(result.getExceptions());
+						}
+					}
+				}
+				else
+				{
+					exportFeedback.add(new AdempiereException("Unsupported table name: " + tableName + " for ediDocumentNo=" + ediDocument.getDocumentNo()));
+				}
+
+			}
+			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICReplicationInterfaceRecipient(bPartnerId))
+			{
+				Loggables.addLog("Exporting ediDocumentNo={} via Replication Interface", ediDocument.getDocumentNo());
+				exportFeedback.addAll(export.doExport());
+			}
+			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICExternalSystemRecipient(bPartnerId))
+			{
+				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(ediDocument, I_C_Invoice.class);
+				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bPartnerId);
+				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID());
+				InterfaceWrapperHelper.refresh(invoice);
+				if(result.getPInstanceId() != null)
+				{
+					invoice.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
+					ediInvoiceDAO.save(invoice);
+				}
+				if(!result.isSuccess())
+				{
+					exportFeedback.addAll(result.getExceptions());
+				}
+			}
+			else
+			{
+				// This should only happen if the config is changed after enqueue. Otherwise, it shouldn't be enqueued based on EDIExport Status in the first place
+				exportFeedback.add(new AdempiereException("Skipped ediDocumentNo=" +  ediDocument.getDocumentNo() + ", because of EdiBPartnerConfig not eligible anymore"));
+			}
+
 			if (exportFeedback.isEmpty())
 			{
 				Loggables.addLog("Successfully exported ediDocumentNo={}", ediDocument.getDocumentNo());
@@ -104,7 +219,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 						ediDocument.getDocumentNo(), errorMessage);
 				feedback.addAll(exportFeedback);
 
-				ediDocument.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+				ediDocument.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 				ediDocument.setEDIErrorMsg(errorMessage);
 				InterfaceWrapperHelper.save(ediDocument);
 			}
@@ -124,24 +239,69 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	 */
 	private TableRecordIdPair getDocumentTableRecordId(final I_EDI_Document ediDocument)
 	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(ediDocument);
+		final String tableName = getTableName(ediDocument);
 
 		final Object model;
 		if (org.compiere.model.I_M_InOut.Table_Name.equals(tableName) && !sysConfigBL.getBooleanValue(SYS_CONFIG_OneDesadvPerShipment, false))
 		{
 			final I_M_InOut inOut = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
-			model = inOut.getEDI_Desadv(); // use DESADV for InOut documents
+			model = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(inOut.getEDI_Desadv_ID())); // use DESADV for InOut documents
 		}
 		else
 		{
 			model = ediDocument;
 		}
 
-		final int modelTableId = InterfaceWrapperHelper.getModelTableId(model);
-		final int modelRecordId = InterfaceWrapperHelper.getId(model);
+		final int modelTableId = getTableId(model).getRepoId();
+		final int modelRecordId = getRecordId(model);
 		return new TableRecordIdPair(modelTableId, modelRecordId);
 	}
 
+	private String getTableName(@NonNull final I_EDI_Document ediDocument)
+	{
+		return InterfaceWrapperHelper.getModelTableName(ediDocument);
+	}
+
+	private AdTableId getTableId(@NonNull final Object model)
+	{
+		return AdTableId.ofRepoId(InterfaceWrapperHelper.getModelTableId(model));
+	}
+
+	private int getRecordId(@NonNull final Object model)
+	{
+		return InterfaceWrapperHelper.getId(model);
+	}
+
+	private ExternalSystemInvocationResult exportViaExternalSystem(@NonNull final ExternalSystemParentConfigId externalSystemParentConfigId,
+													@NonNull final AdTableAndClientId adTableAndClientId,
+													@NonNull final I_EDI_Document ediDocument,
+													final int documentRecordId)
+	{
+		final List<ExternalSystemScriptedExportConversionConfig> configs = externalSystemScriptedExportConversionService.getByParentConfigIdAndTableAndClientId(
+				externalSystemParentConfigId,
+				adTableAndClientId
+		);
+
+		if(configs.isEmpty())
+		{
+			Loggables.addLog("No matching ExternalSystemScriptedExportConversionConfig found for ediDocumentNo={}", ediDocument.getDocumentNo());
+			return ExternalSystemInvocationResult.error(new AdempiereException("No matching ExternalSystemScriptedExportConversionConfig found for ediDocumentNo=" + ediDocument.getDocumentNo()));
+		}
+
+		if(configs.size() > 1)
+		{
+			Loggables.addLog("More than one matching ExternalSystemScriptedExportConversionConfig found for ediDocumentNo={}", ediDocument.getDocumentNo());
+			return ExternalSystemInvocationResult.error(new AdempiereException("More than one matching ExternalSystemScriptedExportConversionConfig found for ediDocumentNo=" + ediDocument.getDocumentNo()));
+		}
+
+
+		return externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAndGetResult(
+				configs.get(0),
+				documentRecordId,
+				ExternalSystemErrorContext.EDI);
+	}
+
+	@Getter
 	private static class TableRecordIdPair
 	{
 		private final int tableId;
@@ -155,16 +315,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			this.recordId = recordId;
 		}
 
-		public int getTableId()
-		{
-			return tableId;
-		}
-
-		public int getRecordId()
-		{
-			return recordId;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -176,7 +326,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals(final Object obj)
 		{
 			if (this == obj)
 				return true;
@@ -184,7 +334,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			TableRecordIdPair other = (TableRecordIdPair)obj;
+			final TableRecordIdPair other = (TableRecordIdPair)obj;
 			if (recordId != other.recordId)
 				return false;
 			if (tableId != other.tableId)

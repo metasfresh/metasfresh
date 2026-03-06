@@ -44,24 +44,42 @@ SELECT i.description                                                            
        i.poreference                                                                    AS reference,
        i.dateinvoiced                                                                   AS dateinvoiced,
        paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
-       bp.VATaxID,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'VATaxID') = 'N' THEN
+               bp.VATaxID
+       END                                                                              AS VATaxID,
        bp.value                                                                         AS bp_value,
        bp.eori                                                                          AS eori,
-       bp.customernoatvendor                                                            AS customernoatvendor,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Customer_No_At_Vendor') = 'N' THEN
+               bp.customernoatvendor
+       END                                                                              AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
        COALESCE(' ' || cont.lastName, '')                                               AS cont_name,
-       cont.phone                                                                       AS cont_phone,
-       cont.fax                                                                         AS cont_fax,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Phone') = 'N' THEN
+               cont.phone
+       END                                                                              AS cont_phone,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Fax') = 'N' THEN
+               cont.fax
+       END                                                                              AS cont_fax,
        cont.email                                                                       AS cont_email,
-       COALESCE(srgr.name, '') ||
-       COALESCE(' ' || srep.title, '') ||
-       COALESCE(' ' || srep.firstName, '') ||
-       COALESCE(' ' || srep.lastName, '')                                               AS sr_name,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Name') = 'N' THEN
+               COALESCE(srgr.name, '') ||
+               COALESCE(' ' || srep.title, '') ||
+               COALESCE(' ' || srep.firstName, '') ||
+               COALESCE(' ' || srep.lastName, '')
+       END                                                                              AS sr_name,
        srep.phone                                                                       AS sr_phone,
        srep.fax                                                                         AS sr_fax,
-       srep.email                                                                       AS sr_email,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Email') = 'N' THEN
+               srep.email
+       END                                                                              AS sr_email,
        COALESCE(dtt.PrintName, dt.PrintName)                                            AS PrintName,
        o.docno                                                                          AS order_docno,
        o.dateordered                                                                    AS order_date,
@@ -73,8 +91,14 @@ SELECT i.description                                                            
                ELSE 'N'
        END                                                                              AS isCreditMemo,
        cm.documentno                                                                    AS creditmemo_docNo,
-       o.offer_documentno                                                               AS offer_documentno,
-       o.offer_date                                                                     AS offer_date,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_DocumentNo') = 'N' THEN
+               o.offer_documentno
+       END                                                                              AS offer_documentno,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_Date') = 'N' THEN
+               o.offer_date
+       END                                                                              AS offer_date,
        wh.name                                                                          AS warehouse,
        pr.value                                                                         AS projectno
 FROM C_Invoice i
@@ -91,7 +115,7 @@ FROM C_Invoice i
     SELECT First_Agg(o.DocumentNo ORDER BY o.DocumentNo) ||
            CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END      AS DocNo,
 
-           First_Agg(o.dateordered::text ORDER BY o.dateordered) ||
+           First_Agg((o.dateordered::date)::text ORDER BY o.dateordered) ||
            CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END     AS dateordered,
 
            First_Agg(offer.DocumentNo ORDER BY offer.DocumentNo) ||

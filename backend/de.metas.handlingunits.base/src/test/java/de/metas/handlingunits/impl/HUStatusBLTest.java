@@ -1,10 +1,9 @@
 package de.metas.handlingunits.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import de.metas.handlingunits.model.X_M_HU;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

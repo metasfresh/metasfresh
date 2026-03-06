@@ -2,9 +2,8 @@ package de.metas.migration.cli.rollout_migrate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-
 import com.github.zafarkhaja.semver.Version;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

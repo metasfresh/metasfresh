@@ -1,16 +1,8 @@
-package de.metas.ordercandidate.api;
-
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.ad.column.AdColumnId;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,20 +20,28 @@ import org.adempiere.ad.column.AdColumnId;
  * #L%
  */
 
+package de.metas.ordercandidate.api;
+
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.column.AdColumnId;
+
 @Value
 public class OLCandAggregationColumn
 {
-	private final String columnName;
-	private final AdColumnId adColumnId;
-	private final int orderBySeqNo;
-	private final boolean splitOrderDiscriminator;
-	private final boolean groupByColumn;
+	String columnName;
+	AdColumnId adColumnId;
+	int orderBySeqNo;
+	boolean splitOrderDiscriminator;
+	boolean groupByColumn;
 
-	private final Granularity granularity;
+	Granularity granularity;
 
-	public static enum Granularity
+	public enum Granularity
 	{
-		Day, Week, Month;
+		Day, Week, Month
 	}
 
 	@Builder

@@ -1,12 +1,16 @@
 package de.metas.frontend_testing.masterdata.product;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
@@ -18,10 +22,14 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	// Allow exact value/name (if both null, use valuePrefix or timestamp)
+	@Nullable String value;
+	@Nullable String name;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
-	@Nullable String gtin;
-	@Nullable String ean13ProductCode;
+	@Nullable GTIN gtin;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 
@@ -31,6 +39,14 @@ public class JsonCreateProductRequest
 	@Nullable List<BPartner> bpartners;
 
 	@Nullable BOM bom;
+
+	/**
+	 * Attribute Set name to associate with the product.
+	 * If set, the product will have this M_AttributeSet_ID assigned,
+	 * enabling the Attributes button in the Test Window.
+	 * Example values: "Lot", "Serial", "LotSerial"
+	 */
+	@Nullable String attributeSetName;
 
 	//
 	//
@@ -73,7 +89,7 @@ public class JsonCreateProductRequest
 	public static class BPartner
 	{
 		@NonNull Identifier bpartner;
-		@Nullable String cu_ean;
+		@Nullable EAN13 ean13;
 	}
 
 	@Value
@@ -94,5 +110,7 @@ public class JsonCreateProductRequest
 		boolean percentage;
 		@Nullable X12DE355 uom;
 		@Nullable BOMComponentType componentType;
+		@Nullable BOMComponentIssueMethod issueMethod;
+		@Nullable String pickingInstruction;
 	}
 }
