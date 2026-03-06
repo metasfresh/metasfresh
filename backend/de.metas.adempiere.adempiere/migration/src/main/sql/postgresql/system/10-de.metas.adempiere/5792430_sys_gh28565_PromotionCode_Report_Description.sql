@@ -53,7 +53,9 @@ FROM C_Order o
          LEFT JOIN C_PromotionCode pc2 ON o.C_PromotionCode2_ID = pc2.C_PromotionCode_ID
          JOIN C_BPartner bp_order ON o.C_BPartner_ID = bp_order.C_BPartner_ID
          LEFT JOIN C_Invoice_Candidate ic ON ic.C_Order_ID = o.C_Order_ID AND ic.IsActive = 'Y'
-         LEFT JOIN C_Invoice i ON ic.C_Invoice_ID = i.C_Invoice_ID AND i.IsActive = 'Y'
+         LEFT JOIN C_Invoice_Line_Alloc ila ON ila.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ila.IsActive = 'Y'
+         LEFT JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID AND il.IsActive = 'Y'
+         LEFT JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.IsActive = 'Y'
          LEFT JOIN C_BPartner bp_inv ON i.C_BPartner_ID = bp_inv.C_BPartner_ID
 WHERE o.IsActive = 'Y'
   AND o.IsSOTrx = 'Y'
