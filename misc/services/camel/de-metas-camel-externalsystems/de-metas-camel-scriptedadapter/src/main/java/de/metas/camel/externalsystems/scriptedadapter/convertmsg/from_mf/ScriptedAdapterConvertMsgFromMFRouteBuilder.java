@@ -61,9 +61,11 @@ import java.util.Base64;
 import java.util.Map;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ATTACHMENT_FILE_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
@@ -124,7 +126,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				.otherwise()
 					.throwException(new RuntimeCamelException("Unsupported authentication type"))
 			.end()
-				
+
 			// Make the rest-call and handle the case of a stale OAuth token
 			.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 			.choice()
@@ -133,7 +135,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					.process(this::forceRefreshOAuthToken)
 					.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
 			.end()
-				
+
 			.process(this::prepareJsonAttachmentRequest)
 			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
 			.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
@@ -146,6 +148,13 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final Map<String, String> parameters = request.getParameters();
 
 		final JsonExternalSystemOutboundEndpoint endpointParameters = deserializeEndpointParameters(parameters);
+
+		// Extract and set error context header for error handling
+		final String errorContext = parameters.get(PARAM_ERROR_CONTEXT);
+		if (errorContext != null)
+		{
+			exchange.getIn().setHeader(HEADER_ERROR_CONTEXT, errorContext);
+		}
 
 		final MsgFromMfContext msgFromMfContext = MsgFromMfContext.builder()
 				.orgCode(request.getOrgCode())

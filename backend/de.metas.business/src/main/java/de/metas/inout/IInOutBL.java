@@ -60,6 +60,9 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
+	@Nullable
+	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
+
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);

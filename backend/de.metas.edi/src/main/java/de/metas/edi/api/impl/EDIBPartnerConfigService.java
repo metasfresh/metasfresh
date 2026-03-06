@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIBPartnerConfig;
-import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +38,6 @@ import org.springframework.stereotype.Service;
 public class EDIBPartnerConfigService
 {
 	@NonNull private final EDIBPartnerConfigRepository ediBPartnerConfigRepository;
-	@NonNull private final DesadvBL desadvBL;
 
 	@VisibleForTesting
 	public static EDIBPartnerConfigService newInstanceForUnitTesting()
@@ -48,8 +46,7 @@ public class EDIBPartnerConfigService
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(EDIBPartnerConfigService.class,
 				() -> new EDIBPartnerConfigService(
-						EDIBPartnerConfigRepository.newInstanceForUnitTesting(),
-						DesadvBL.newInstanceForUnitTesting()
+						EDIBPartnerConfigRepository.newInstanceForUnitTesting()
 				)
 		);
 	}
