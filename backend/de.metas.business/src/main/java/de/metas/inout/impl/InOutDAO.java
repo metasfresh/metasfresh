@@ -380,7 +380,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
+	public Set<InOutAndLineId> retrieveLineIdsByInOutId(final InOutId inOutId)
 	{
 		final I_M_InOut inOut = getById(inOutId);
 

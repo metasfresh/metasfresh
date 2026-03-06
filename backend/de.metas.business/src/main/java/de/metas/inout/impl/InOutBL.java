@@ -623,7 +623,7 @@ public class InOutBL implements IInOutBL
 		if (inout.isSOTrx())
 		{
 			final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
-			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLinesForInOutId(shipmentId);
+			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLineIdsByInOutId(shipmentId);
 			if (!shipmentAndLineIds.isEmpty())
 			{
 				CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
