@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.outboundendpoint;
 
+import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,7 +40,7 @@ public class ExternalSystemOutboundEndpoint
 
 	@NonNull String endpointUrl;
 
-	@NonNull String method;
+	@NonNull HttpMethod method;
 
 	@NonNull OutboundEndpointAuthType authType;
 
@@ -61,7 +62,7 @@ public class ExternalSystemOutboundEndpoint
 		return JsonExternalSystemOutboundEndpoint.builder()
 				.value(value)
 				.endpointUrl(endpointUrl)
-				.method(method)
+				.method(method.getCode())
 				.authType(authType.toJson())
 				.clientId(clientId)
 				.clientSecret(clientSecret)

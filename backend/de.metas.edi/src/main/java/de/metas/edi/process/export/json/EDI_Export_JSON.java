@@ -24,10 +24,10 @@ package de.metas.edi.process.export.json;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.Check;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
-import de.metas.process.ProcessCalledFrom;
 import de.metas.report.ReportResultData;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,7 +49,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	protected final CustomPostgRESTParameters beforePostgRESTCall()
 	{
 		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
-		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted);
+		record.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		saveRecord(record);
 
 		final boolean calledViaAPI = isCalledViaAPI();
@@ -80,7 +80,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 				reportData.getReportDataByteArray());
 
 		// note that a possible C_Doc_Outbound_Log's status is updated via modelinterceptor
-		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Sent);
+		record.setEDI_ExportStatus(EDIExportStatus.Sent.getCode());
 		saveRecord(record);
 
 		return MSG_OK;
