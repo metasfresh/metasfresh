@@ -29,11 +29,13 @@ import de.metas.organization.OrgId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.sscc18.SSCC18;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -47,5 +49,7 @@ public class PurchaseShippingPackageCreateRequest
 	@NonNull Instant datePromised;
 	@NonNull BPartnerLocationId bPartnerLocationId;
 	@Nullable SSCC18 sscc;
-
+    @Nullable BigDecimal tuQty;
+	@NonNull @Default BigDecimal luQty = BigDecimal.ONE;
+	@Nullable BigDecimal grossWeightInKg;
 }

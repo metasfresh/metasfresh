@@ -3,7 +3,9 @@ package de.metas.product;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
@@ -22,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
@@ -75,7 +78,8 @@ public class ProductRepository
 	public static ProductRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ProductRepository();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ProductRepository.class, ProductRepository::new);
 	}
 
 	@NonNull
@@ -89,19 +93,6 @@ public class ProductRepository
 				.stream()
 				.map(ProductRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public void inactivateBpartnerProducts(@NonNull final List<BPartnerId> bPartnerIdList, @NonNull final ProductId productId)
-	{
-
-		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerIdList)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsActive, false)
-				.execute();
 	}
 
 	public Product getById(@NonNull final ProductId id)
@@ -127,6 +118,13 @@ public class ProductRepository
 		return productRecord.map(ProductRepository::fromRecord).orElse(null);
 	}
 
+	@NonNull
+	public ImmutableMap<ProductId, Product> getByIdsAsMap(@NonNull final Set<ProductId> ids)
+	{
+		return Maps.uniqueIndex(getByIds(ids), Product::getId);
+	}
+
+	@NonNull
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
 	{
 		final List<I_M_Product> productRecords = queryBL
@@ -432,7 +430,7 @@ public class ProductRepository
 		record.setGTIN(product.getGtin());
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
-		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+		record.setM_Product_Category_ID(product.getProductCategoryId().getRepoId());
 
 		return record;
 	}

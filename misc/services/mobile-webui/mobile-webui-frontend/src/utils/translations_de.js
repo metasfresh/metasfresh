@@ -51,6 +51,7 @@ const translations = {
     },
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
+    trolley: 'Wagen',
   },
   login: {
     submitButton: 'Login',
@@ -77,6 +78,7 @@ const translations = {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
+      scanTrolleyPlaceholder: 'Wagen scannen...',
     },
   },
   activities: {
@@ -135,12 +137,14 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanLocator: 'Ziel-Lagerplatz scannen',
+      scanProduct: 'Artikel scannen',
+      scanDropToLocator: 'Ziel-Lagerplatz scannen',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
       },
+      printMaterialInTransitReport: 'Materialbegleitschein',
     },
     confirmButton: {
       default: {

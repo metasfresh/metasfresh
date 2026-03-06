@@ -314,7 +314,6 @@ class OLCandOrderFactory
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
 		order.setExternalSystem_ID(ExternalSystemId.toRepoId(candidateOfGroup.getExternalSystemId()));
 
-		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
 
@@ -323,6 +322,12 @@ class OLCandOrderFactory
 		order.setBPartnerName(candidateOfGroup.getBpartnerName());
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
+
+		if (candidateOfGroup.getIncotermsId() != null)
+		{
+			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
+			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
+		}
 
 		save(order);
 		return order;

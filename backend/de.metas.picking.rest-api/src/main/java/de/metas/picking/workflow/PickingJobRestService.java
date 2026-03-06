@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -48,6 +49,8 @@ import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -146,6 +149,11 @@ public class PickingJobRestService
 		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
 
+	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
+	{
+		return pickingJobService.complete(pickingJobId, callerId);
+	}
+
 	public void abort(@NonNull final PickingJob pickingJob)
 	{
 		pickingJobService.abort(pickingJob);
@@ -221,6 +229,12 @@ public class PickingJobRestService
 	}
 
 	@NonNull
+	public MobileUIPickingUserProfile getProfile()
+	{
+		return configService.getProfile();
+	}
+
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return configService.getPickingJobOptions(customerId);}
 
 	@NonNull
@@ -262,5 +276,10 @@ public class PickingJobRestService
 	public PickingJobQtyAvailable getQtyAvailable(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
 	{
 		return pickingJobService.getQtyAvailable(pickingJobId, callerId);
+	}
+
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(final @NonNull GetNextEligibleLineToPackRequest request)
+	{
+		return pickingJobService.getNextEligibleLineToPack(request);
 	}
 }

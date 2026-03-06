@@ -22,9 +22,10 @@
 
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -36,8 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -61,48 +60,77 @@ public class C_PurchaseCandidate_Alloc_StepDef
 		this.orderLineTable = orderLineTable;
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec} seconds) until a {@code C_PurchaseCandidate_Alloc} record is found
+	 * for each of the given {@code C_PurchaseCandidate} identifiers. The alloc record links a purchase
+	 * candidate to the purchase order line ({@code C_PurchaseCandidate_Alloc.C_OrderLinePO_ID}) created
+	 * when the async PO generation work package is processed. Stores each found alloc record under the
+	 * row's alloc identifier for use in subsequent load steps.
+	 */
 	@And("^after not more than (.*)s, C_PurchaseCandidate_Alloc are found$")
 	public void findC_PurchaseCandidate_Alloc(
 			final int timeoutSec,
 			@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			findC_PurchaseCandidate_Alloc_ByCandidateId(timeoutSec, tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(tableRow -> findC_PurchaseCandidate_Alloc_ByCandidateId(timeoutSec, tableRow));
 	}
 
+	/**
+	 * Asserts that no {@code C_PurchaseCandidate_Alloc} records exist for the given purchase candidates.
+	 * Use this after draining the async queue (e.g. "wait until de.metas.material rabbitMQ queue is empty")
+	 * to confirm that no C_Order was auto-generated (e.g. when {@code PP_Product_Planning.IsCreatePlan=N}).
+	 */
+	@And("no C_PurchaseCandidate_Alloc are found for:")
+	public void assertNoC_PurchaseCandidate_Alloc(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(this::assertNoPurchaseCandidateAlloc);
+	}
+
+	private void assertNoPurchaseCandidateAlloc(@NonNull final DataTableRow tableRow)
+	{
+		final I_C_PurchaseCandidate purchaseCandidateRecord = tableRow.getAsIdentifier(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID).lookupNotNullIn(purchaseCandidateTable);
+
+		final long count = queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_ID, purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.create()
+				.count();
+
+		assertThat(count)
+				.as("Expected no C_PurchaseCandidate_Alloc for C_PurchaseCandidate_ID=%s", purchaseCandidateRecord.getC_PurchaseCandidate_ID())
+				.isEqualTo(0);
+	}
+
+	/**
+	 * Loads the purchase order line ({@code C_OrderLine}) that was linked via
+	 * {@code C_PurchaseCandidate_Alloc.C_OrderLinePO_ID} and stores it under the given identifier.
+	 * Prerequisite: the alloc record must have been found and stored by a prior
+	 * "C_PurchaseCandidate_Alloc are found" step.
+	 */
 	@And("load C_OrderLines from C_PurchaseCandidate_Alloc")
 	public void loadC_OrderLines(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			loadC_OrderLines(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(this::loadC_OrderLines);
 	}
 
-	private void loadC_OrderLines(@NonNull final Map<String, String> tableRow)
+	private void loadC_OrderLines(@NonNull final DataTableRow tableRow)
 	{
-		final String purchaseCandidateAllocIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_Alloc_ID + ".Identifier");
-		final I_C_PurchaseCandidate_Alloc purchaseCandidateAllocRecord = purchaseCandidateAllocTable.get(purchaseCandidateAllocIdentifier);
-		assertThat(purchaseCandidateAllocRecord).isNotNull();
+		final I_C_PurchaseCandidate_Alloc purchaseCandidateAllocRecord = tableRow.getAsIdentifier(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_Alloc_ID).lookupNotNullIn(purchaseCandidateAllocTable);
 
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(purchaseCandidateAllocRecord.getC_OrderLinePO_ID(), I_C_OrderLine.class);
 		assertThat(orderLineRecord).isNotNull();
 
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID + ".Identifier");
-		orderLineTable.putOrReplace(orderLineIdentifier, orderLineRecord);
+		orderLineTable.putOrReplace(tableRow.getAsIdentifier(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID), orderLineRecord);
 	}
 
 	private void findC_PurchaseCandidate_Alloc_ByCandidateId(
 			final int timeoutSec,
-			final Map<String, String> tableRow) throws InterruptedException
+			final DataTableRow tableRow) throws InterruptedException
 	{
-		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID + ".Identifier");
-
-		final I_C_PurchaseCandidate purchaseCandidateRecord = purchaseCandidateTable.get(purchaseCandidateIdentifier);
+		final I_C_PurchaseCandidate purchaseCandidateRecord = tableRow.getAsIdentifier(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID).lookupNotNullIn(purchaseCandidateTable);
 		assertThat(purchaseCandidateRecord).isNotNull();
 
 		final I_C_PurchaseCandidate_Alloc purchaseCandidateAllocRecord = getPurchaseCandidate_Alloc_Record_ByCandidateId(
@@ -111,8 +139,7 @@ public class C_PurchaseCandidate_Alloc_StepDef
 		
 		assertThat(purchaseCandidateAllocRecord).isNotNull();
 
-		final String purchaseCandidateAllocIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_Alloc_ID + ".Identifier");
-		purchaseCandidateAllocTable.putOrReplace(purchaseCandidateAllocIdentifier, purchaseCandidateAllocRecord);
+		purchaseCandidateAllocTable.putOrReplace(tableRow.getAsIdentifier(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_PurchaseCandidate_Alloc_ID), purchaseCandidateAllocRecord);
 	}
 
 	@NonNull

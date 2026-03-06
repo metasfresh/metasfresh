@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_ILCandHandler
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCandHandler, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 323164106L;
+	private static final long serialVersionUID = -408452174L;
 
     /** Standard Constructor */
     public X_C_ILCandHandler (final Properties ctx, final int C_ILCandHandler_ID, @Nullable final String trxName)
@@ -65,25 +65,25 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	}
 
 	@Override
-	public void setClassname (final java.lang.String Classname)
+	public void setClassname (final String Classname)
 	{
 		set_Value (COLUMNNAME_Classname, Classname);
 	}
 
 	@Override
-	public java.lang.String getClassname() 
+	public String getClassname() 
 	{
 		return get_ValueAsString(COLUMNNAME_Classname);
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -94,13 +94,13 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
 	@Override
-	public void setEntityType (final java.lang.String EntityType)
+	public void setEntityType (final String EntityType)
 	{
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
 	@Override
-	public java.lang.String getEntityType() 
+	public String getEntityType() 
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
@@ -118,25 +118,37 @@ public class X_C_ILCandHandler extends org.compiere.model.PO implements I_C_ILCa
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setIsAllowDifferentShipmentsInSameInvoiceLine (final boolean IsAllowDifferentShipmentsInSameInvoiceLine)
+	{
+		set_Value (COLUMNNAME_IsAllowDifferentShipmentsInSameInvoiceLine, IsAllowDifferentShipmentsInSameInvoiceLine);
+	}
+
+	@Override
+	public boolean isAllowDifferentShipmentsInSameInvoiceLine() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowDifferentShipmentsInSameInvoiceLine);
+	}
+
+	@Override
+	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setTableName (final java.lang.String TableName)
+	public void setTableName (final String TableName)
 	{
 		set_Value (COLUMNNAME_TableName, TableName);
 	}
 
 	@Override
-	public java.lang.String getTableName() 
+	public String getTableName() 
 	{
 		return get_ValueAsString(COLUMNNAME_TableName);
 	}

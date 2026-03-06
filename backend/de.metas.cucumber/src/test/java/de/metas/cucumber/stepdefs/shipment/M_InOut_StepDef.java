@@ -22,28 +22,33 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsResponse;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
@@ -59,7 +64,6 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
@@ -77,12 +81,12 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.material.MovementType;
-import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -111,6 +115,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -118,8 +123,6 @@ import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -132,7 +135,6 @@ import java.util.stream.Collectors;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
@@ -156,6 +158,7 @@ public class M_InOut_StepDef
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_HU_StepDefData huTable;
+	private final C_Project_StepDefData projectTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -168,12 +171,12 @@ public class M_InOut_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	/**
 	 * Validate M_InOut records (shipments or material receipts).
@@ -210,42 +213,36 @@ public class M_InOut_StepDef
 		logger.info("validate_created_shipment: {}", row);
 		final SoftAssertions softly = new SoftAssertions();
 
-		final StepDefDataIdentifier identifier = row.getAsIdentifier("M_InOut_ID");
-		final LocalDate dateOrdered = row.getAsLocalDate(I_M_InOut.COLUMNNAME_DateOrdered);
-		final String poReference = row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference).orElse(null);
-		final boolean processed = row.getAsBoolean("processed");
-		final String docStatus = row.getAsString(I_M_InOut.COLUMNNAME_DocStatus);
-
-		final @NonNull StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
-		final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(bpartnerIdentifier::getAsInt);
-
-		final @NonNull StepDefDataIdentifier bpartnerLocationIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID);
-		final int expectedBPartnerLocationId = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
-				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(bpartnerLocationIdentifier::getAsInt);
-
+		final StepDefDataIdentifier identifier = row.getAsIdentifier(COLUMNNAME_M_InOut_ID);
 		final I_M_InOut inout = inoutTable.get(identifier);
 
-		softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
-		softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered);
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::getIdOrParse)
+				.ifPresent(expectedBPartnerId -> softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId.getRepoId()));
 
-		if (Check.isNotBlank(poReference))
-		{
-			softly.assertThat(inout.getPOReference()).isEqualTo(poReference);
-		}
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::getIdOrParse)
+				.ifPresent(expectedBPartnerLocationId -> softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId.getRepoId()));
 
-		softly.assertThat(inout.isProcessed()).isEqualTo(processed);
-		softly.assertThat(inout.getDocStatus()).isEqualTo(docStatus);
+		row.getAsOptionalLocalDate(I_M_InOut.COLUMNNAME_DateOrdered)
+				.ifPresent(dateOrdered -> softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered));
 
-		final String internalName = row.getAsOptionalString(I_M_InOut.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName).orElse(null);
-		if (Check.isNotBlank(internalName))
-		{
-			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			softly.assertThat(inout.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
-		}
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+				.filter(Check::isNotBlank)
+				.ifPresent(poReference -> softly.assertThat(inout.getPOReference()).isEqualTo(poReference));
+
+		row.getAsOptionalBoolean("processed")
+				.ifPresent(processed -> softly.assertThat(inout.isProcessed()).isEqualTo(processed));
+
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
+				.ifPresent(docStatus -> softly.assertThat(inout.getDocStatus()).isEqualTo(docStatus));
+
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
+				.filter(Check::isNotBlank)
+				.ifPresent(internalName -> {
+					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
+					softly.assertThat(inout.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+				});
 
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {
@@ -269,6 +266,12 @@ public class M_InOut_StepDef
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_ExternalId).
 				ifPresent(externalId -> softly.assertThat(inout.getExternalId()).isEqualTo(externalId));
 
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> {
+					final I_C_Project project = projectTable.get(projectIdentifier);
+					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+				});
+
 		softly.assertAll();
 	}
 
@@ -281,14 +284,14 @@ public class M_InOut_StepDef
 	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
 	 *   <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
 	 *   <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
-	 *   <b>IsShipToday</b> — (required) true/false — use today as shipment date<br>
-	 *   <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver<br>
+	 *   <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-	 *   | shipmentSchedule_1    | D            | true                | false       |
+	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
+	 *   | shipmentSchedule_1    | D            | true                | false               |
 	 * </pre>
 	 */
 	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")
@@ -973,7 +976,7 @@ public class M_InOut_StepDef
 	}
 
 	@NonNull
-	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
+	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<StepDefDataIdentifier> shipmentIdentifiers)
 	{
 		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
 				.map(inoutTable::get)
@@ -1085,7 +1088,7 @@ public class M_InOut_StepDef
 			customerReturn.setC_DocType_ID(docTypeId.getRepoId());
 			customerReturn.setIsSOTrx(true);
 			customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
-			customerReturn.setRef_InOut_ID(shipment.getM_InOut_ID());
+			customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
 			customerReturn.setMovementDate(SystemTime.asTimestamp());
 			customerReturn.setDateAcct(SystemTime.asTimestamp());
 			customerReturn.setM_Warehouse_ID(warehouseId.getRepoId());
@@ -1133,11 +1136,26 @@ public class M_InOut_StepDef
 			final I_M_InOut inout = inoutIdentifier.lookupNotNullIn(inoutTable);
 			InterfaceWrapperHelper.refresh(inout);
 
-			final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(inout);
+			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
 			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isNotEmpty();
 
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
 			huTable.putOrReplace(huIdentifier, hus.get(0));
 		});
+	}
+
+	@Then("process single receipt response")
+	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
+	{
+		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
+		assertThat(receiptsResponse).isNotNull();
+
+		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
+		assertThat(createdReceiptIdList.size()).isEqualTo(1);
+
+		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
+		assertThat(receiptRecord).isNotNull();
+
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
 	}
 }

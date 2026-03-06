@@ -36,6 +36,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -273,6 +275,13 @@ public class PickingRestController
 		}
 	}
 
+	@PostMapping("/nextEligibleLineToPack")
+	public JsonGetNextEligibleLineResponse getNextEligibleLineToPack(@RequestBody @NonNull final JsonGetNextEligibleLineRequest request)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
 	@PostMapping("/job/{wfProcessId}/pickAll")
 	public WFProcess pickAllAndComplete(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
@@ -288,5 +297,12 @@ public class PickingRestController
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobQtyAvailable qtyAvailable = pickingMobileApplication.getQtyAvailable(wfProcessId, getLoggedUserId());
 		return JsonPickingJobQtyAvailable.of(qtyAvailable);
+	}
+
+	@PostMapping("/job/{wfProcessId}/complete")
+	public WFProcess complete(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 }

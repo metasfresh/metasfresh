@@ -57,7 +57,8 @@ public class WarehouseCommand
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
 				.warehouseId(warehouseRecord.getM_Warehouse_ID())
 				.warehouseCode(warehouseRecord.getValue())
-				.warehouseName(warehouseRecord.getName());
+				.warehouseName(warehouseRecord.getName())
+				.inTransit(warehouseRecord.isInTransit());
 
 		final Map<String, JsonWarehouseResponse.Locator> locators = createLocators();
 		responseBuilder.locators(locators);
@@ -146,6 +147,7 @@ public class WarehouseCommand
 		return JsonWarehouseResponse.Locator.builder()
 				.id(locatorRecord.getM_Locator_ID())
 				.code(locatorRecord.getValue())
+				.qrCode(LocatorQRCode.ofLocator(locatorRecord).toGlobalQRCodeJsonString())
 				.isDefault(locatorRecord.isDefault())
 				.x(locatorRecord.getX())
 				.y(locatorRecord.getY())

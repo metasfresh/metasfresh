@@ -143,7 +143,15 @@ DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544770
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=501620
 ;
 
--- 2021-10-01T08:20:12.429Z
+----------------------------------
+
+-- LATER ADDITION (2023-03-14)
+DELETE FROM AD_UI_Element WHERE AD_Field_ID=501620
+;
+
+-----------------------------------
+
+    -- 2021-10-01T08:20:12.429Z
 -- URL zum Konzept
 DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=501620
 ;

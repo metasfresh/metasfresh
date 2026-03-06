@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
 @topic:orderCandidate
 @ghActions:run_on_executor3
 Feature: Process order candidate and automatically generate shipment and invoice for it
+## F00101: Order Candidates
   As a user
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
@@ -15,6 +18,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_100
   @Id:S0469_100
@@ -90,6 +95,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_110
   @Id:S0469_110
@@ -148,6 +155,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_120
   @Id:S0469_120
@@ -244,6 +253,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_130
   @Id:S0469_130
@@ -364,6 +375,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_140
   @Id:S0469_140
@@ -497,6 +510,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_150
   @Id:S0469_150
@@ -576,6 +591,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_160
   @Id:S0469_160
@@ -681,6 +698,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_135
   @Id:S0469_135

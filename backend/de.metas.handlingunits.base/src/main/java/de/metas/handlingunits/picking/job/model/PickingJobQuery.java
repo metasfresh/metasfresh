@@ -35,6 +35,7 @@ import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.picking.api.PackageableQuery.PackageableQueryBuilder;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.user.UserId;
 import de.metas.workplace.WorkplaceId;
@@ -44,6 +45,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -99,11 +101,6 @@ public class PickingJobQuery
 		return facets != null ? facets.getHandoverLocationIds() : ImmutableSet.of();
 	}
 
-	public PackageableQuery toPackageableQuery()
-	{
-		return toPackageableQueryBuilder().build();
-	}
-
 	public PackageableQueryBuilder toPackageableQueryBuilder()
 	{
 		final PackageableQueryBuilder builder = PackageableQuery.builder()
@@ -146,7 +143,27 @@ public class PickingJobQuery
 		{
 			builder.warehouseId(workplaceWarehouseId);
 		}
+
 		return builder;
+	}
+
+	public PickingJobScheduleQuery toPickingJobScheduleQuery()
+	{
+		if (this.scheduledForWorkplaceId == null)
+		{
+			throw new AdempiereException("Expected query to have scheduledForWorkplaceId set");
+		}
+
+		return PickingJobScheduleQuery.builder()
+				.workplaceId(this.scheduledForWorkplaceId)
+				.excludeJobScheduleIds(this.excludeScheduleIds.getJobScheduleIds())
+				.isProcessed(false)
+				.build();
+	}
+
+	public boolean isScheduledForWorkplaceOnly()
+	{
+		return this.scheduledForWorkplaceId != null;
 	}
 
 	//

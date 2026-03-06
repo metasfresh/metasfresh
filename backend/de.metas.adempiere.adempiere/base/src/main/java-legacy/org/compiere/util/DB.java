@@ -907,6 +907,8 @@ public class DB
 			DB.close(cs);
 		}
 
+		// PostgreSQL RAISE NOTICE messages are delivered as SQLWarnings by the JDBC driver.
+		// Extract them here so callers (e.g. ExecuteUpdateSQL) can log them to AD_PInstance_Log.
 		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
 
 		return SQLUpdateResult.builder()
@@ -2777,6 +2779,18 @@ public class DB
 		{
 			close(rs, pstmt);
 		}
+	}
+
+	/**
+	 * Get names of database functions in the current schema whose names match a SQL LIKE pattern (case-insensitive).
+	 * Results are ordered alphabetically.
+	 *
+	 * @param namePattern SQL LIKE pattern (e.g. {@code "%MaterialCockpit_SelectForOrderLine"})
+	 * @return matching function names (lowercase), never null
+	 */
+	public List<String> getFunctionsLike(@NonNull final String namePattern)
+	{
+		return CConnection.get().getDatabase().getFunctionsLike(namePattern);
 	}
 
 	@FunctionalInterface

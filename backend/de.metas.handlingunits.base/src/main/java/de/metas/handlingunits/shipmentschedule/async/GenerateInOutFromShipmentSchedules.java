@@ -244,11 +244,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		pickingJobScheduleService.markAsProcessed(schedules.getJobScheduleIds());
 
-		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
-		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
-		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
-
-		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+		// we exclude the ones with pickingJobSchedules, as they might be split onto multiple workplaces,
+		// and it shouldn't be closed after the first one is done
+		shipmentScheduleBL.closeShipmentSchedules(schedules.getShipmentScheduleIdsWithoutJobSchedules());
 	}
 
 }

@@ -38,6 +38,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -53,8 +55,22 @@ public class ShipmentScheduleService
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
-	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
+
+	public static ShipmentScheduleService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ShipmentScheduleService.class,
+				() -> new ShipmentScheduleService(
+						ShipmentScheduleRepository.newInstanceForUnitTesting(),
+						ShipmentScheduleCarrierServiceRepository.newInstanceForUnitTesting(),
+						PickingJobScheduleRepository.newInstanceForUnitTesting()
+				)
+		);
+	}
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{

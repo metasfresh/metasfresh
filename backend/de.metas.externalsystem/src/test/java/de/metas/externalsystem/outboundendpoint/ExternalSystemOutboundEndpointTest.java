@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.outboundendpoint;
 
+import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +39,7 @@ class ExternalSystemOutboundEndpointTest
 				.id(ExternalSystemOutboundEndpointId.ofRepoId(1))
 				.value("TestEndpoint")
 				.endpointUrl("https://example.com/api")
-				.method("POST")
+				.method(HttpMethod.POST)
 				.authType(OutboundEndpointAuthType.OAuth)
 				.clientId("test-client-id")
 				.clientSecret("test-client-secret")

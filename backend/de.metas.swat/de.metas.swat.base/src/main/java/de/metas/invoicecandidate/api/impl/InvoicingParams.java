@@ -66,6 +66,12 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
+	{
+		return params.getParameterAsBool(PARA_IsDeliveryDateAsInvoiceDate);
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return params.getParameterAsLocalDate(PARA_DateInvoiced);

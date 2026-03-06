@@ -118,7 +118,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobHUService huService;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final PickFromHUQRCodeResolver pickFromHUQRCodeResolver;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
 
 	//
@@ -185,10 +184,6 @@ public class PickingJobPickCommand
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
-		this.pickFromHUQRCodeResolver = PickFromHUQRCodeResolver.builder()
-				.productService(productService)
-				.huService(huService)
-				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.build();
@@ -197,7 +192,7 @@ public class PickingJobPickCommand
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
-		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parse(pickFromQRCode) : null;
+		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
@@ -628,7 +623,8 @@ public class PickingJobPickCommand
 			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
+			return huService.resolvePickFromHUQRCode(pickFromHUQRCode, productId, customerId, warehouseId)
+					.orElseThrow();
 		}
 	}
 
@@ -790,7 +786,7 @@ public class PickingJobPickCommand
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
-				.tuOrVHU(hu)
+				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());

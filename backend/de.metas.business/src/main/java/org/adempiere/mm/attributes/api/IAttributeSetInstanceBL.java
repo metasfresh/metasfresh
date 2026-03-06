@@ -133,8 +133,19 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)},
 	 * but the {@link AttributeId} is loaded from the given {@code attributeCode}.
+	 * Only use on newly created ASIs, as they are assumed to be immutable.
 	 */
-	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, Object value);
+	void setAttributeInstanceValueToCurrentASI(
+			@NonNull AttributeSetInstanceId asiId,
+			@NonNull AttributeCode attributeCode,
+			@Nullable Object value);
+
+	/**
+	 * Clones the current asiId setting a new value for the given attributeCode.
+	 *
+	 * @return the new asiId
+	 */
+	AttributeSetInstanceId setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, @Nullable Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 

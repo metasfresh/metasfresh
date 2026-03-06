@@ -1,9 +1,41 @@
+# =============================================================================
+# ops:* Label Reference
+# =============================================================================
+# ops:auto_squash_merge      — Auto-merge using squash method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:auto_merge_commit      — Auto-merge using merge commit method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:without_review_approval — Skip the review approval requirement for auto-merge.
+#                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
+# ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
+# ops:no_auto_port           — (reserved for future use)
+# =============================================================================
+
+# "Merge Gate" is the CI gate — a workflow_run-based commit status set by
+# merge-gate.yaml after each cicd completion. It maps the cicd workflow
+# conclusion to success/failure. Since it runs from the default branch,
+# it fires for ALL branches automatically.
+#
+# testspace-analytics fallback removed: it could succeed even when tests
+# failed (it only checks upload, not test results), allowing broken PRs
+# to merge.
 merge_protections:
   - name: default
     if:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
     success_conditions:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
+
+queue_rules:
+  - name: squash-queue
+    merge_method: squash
+    merge_conditions:
+      - check-success=Merge Gate
+
+  - name: merge-queue
+    merge_method: merge
+    merge_conditions:
+      - check-success=Merge Gate
 
 pull_request_rules:
 
@@ -55,7 +87,11 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
-              - base=temporary_test20251106_hotfix
+              - base=taloned_owl_hotfix
+              - base=organic_goat_hotfix
+              - base=temporary_test202412_hotfix
+              - base=green_oak_hotfix
+              - base=mighty_pegasus_hotfix
               - base=task_force_hotfix
               - base=keen_hawk_hotfix
               - base=game_time_hotfix
@@ -77,7 +113,11 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
-              - base=temporary_test20251106_release
+              - base=taloned_owl_release
+              - base=organic_goat_release
+              - base=temporary_test202412_release
+              - base=green_oak_release
+              - base=mighty_pegasus_release
               - base=task_force_release
               - base=keen_hawk_release
               - base=game_time_release
@@ -87,6 +127,7 @@ pull_request_rules:
               - base=soft_panda_release
               - base=vampire_textbook_release
               - base=science_vessel_release
+              - base=memorable_shiny_release
 
     actions:
       label:
@@ -96,7 +137,6 @@ pull_request_rules:
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
-      - check-success=testspace-analytics
       - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -104,12 +144,11 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      merge:
-        method: squash
+      queue:
+        name: squash-queue
 
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
-      - check-success=testspace-analytics
       - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -117,6 +156,6 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      merge:
-        method: merge
+      queue:
+        name: merge-queue
 

@@ -55,4 +55,42 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	BigDecimal getEdiDESADVDefaultItemCapacity();
 	void setEdiDESADVDefaultItemCapacity(BigDecimal EdiDESADVDefaultItemCapacity);
 	// @formatter:on
+
+	/**
+	 * EDISendingMode AD_Reference_ID=542047
+	 * Reference name: EDISendingMode
+	 */
+	int EDISendingMode_AD_Reference_ID = 542047;
+	/**
+	 * ReplicationInterface = R
+	 */
+	String EDISendingMode_ReplicationInterface = "R";
+	/**
+	 * ExternalSystem = E
+	 */
+	String EDISendingMode_ExternalSystem = "E";
+
+	// @formatter:off
+	String COLUMNNAME_EdiDESADVSendingMode = "EdiDESADVSendingMode";
+	String getEdiDESADVSendingMode();
+	void setEdiDESADVSendingMode(String EdiDESADVSendingMode);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_EdiINVOICSendingMode = "EdiINVOICSendingMode";
+	String getEdiINVOICSendingMode();
+	void setEdiINVOICSendingMode(String EdiINVOICSendingMode);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID = "EdiDESADV_ExternalSystem_Config_ID";
+	int getEdiDESADV_ExternalSystem_Config_ID();
+	void setEdiDESADV_ExternalSystem_Config_ID(int EdiDESADV_ExternalSystem_Config_ID);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID = "EdiINVOIC_ExternalSystem_Config_ID";
+	int getEdiINVOIC_ExternalSystem_Config_ID();
+	void setEdiINVOIC_ExternalSystem_Config_ID(int EdiINVOIC_ExternalSystem_Config_ID);
+	// @formatter:on
 }

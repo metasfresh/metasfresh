@@ -7,6 +7,8 @@ import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
+import de.metas.ui.web.pattribute.callout.sql.SQLCalloutFunctionList;
+import de.metas.ui.web.pattribute.callout.sql.SQLCalloutFunctionsRepository;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -107,7 +109,7 @@ class ASIDescriptorFactoryTest
 		void string()
 		{
 			final Attribute attribute = createAttribute("StringAttr", AttributeValueType.STRING, null);
-			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
+			final DocumentFieldDescriptor fieldDescriptor = newASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
 			final I_M_AttributeInstance ai = asiBinding.createAndSaveM_AttributeInstance(
@@ -125,7 +127,7 @@ class ASIDescriptorFactoryTest
 		void number()
 		{
 			final Attribute attribute = createAttribute("NumberAttr", AttributeValueType.NUMBER, null);
-			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
+			final DocumentFieldDescriptor fieldDescriptor = newASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
 			final I_M_AttributeInstance ai = asiBinding.createAndSaveM_AttributeInstance(
@@ -143,7 +145,7 @@ class ASIDescriptorFactoryTest
 		void date()
 		{
 			final Attribute attribute = createAttribute("DateAttr", AttributeValueType.DATE, null);
-			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
+			final DocumentFieldDescriptor fieldDescriptor = newASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
 			final I_M_AttributeInstance ai = asiBinding.createAndSaveM_AttributeInstance(
@@ -161,7 +163,7 @@ class ASIDescriptorFactoryTest
 		void list_With_String_key()
 		{
 			final Attribute attribute = createAttribute("StringAttr", AttributeValueType.LIST, StringProvider.class);
-			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
+			final DocumentFieldDescriptor fieldDescriptor = newASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
 			final I_M_AttributeInstance ai = asiBinding.createAndSaveM_AttributeInstance(
@@ -179,7 +181,7 @@ class ASIDescriptorFactoryTest
 		void list_With_Numeric_key()
 		{
 			final Attribute attribute = createAttribute("NumericAttr", AttributeValueType.LIST, NumberProvider.class);
-			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
+			final DocumentFieldDescriptor fieldDescriptor = newASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
 			final I_M_AttributeInstance ai = asiBinding.createAndSaveM_AttributeInstance(
@@ -192,6 +194,15 @@ class ASIDescriptorFactoryTest
 			final AIWithHUPIAttributeValue aiWithHUPIAttributeValue = newAIWithHUPIAttributeValue(ai);
 			assertThat(aiWithHUPIAttributeValue.getValue()).isEqualTo(new BigDecimal("1234"));
 		}
+	}
+
+	private static @NotNull ASIDescriptorFactory newASIDescriptorFactory()
+	{
+		return new ASIDescriptorFactory(new SQLCalloutFunctionsRepository()
+		{
+			@Override
+			public SQLCalloutFunctionList getAllFunctions() {return SQLCalloutFunctionList.EMPTY;}
+		});
 	}
 
 	public static class StringProvider extends MockedAttributeValueTypeProvider

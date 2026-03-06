@@ -201,10 +201,12 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
 
 		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
+				productService,
 				huQRCodeService,
 				huLabelService,
 				huReservationService,
@@ -215,7 +217,7 @@ public class PickingJobTestHelper
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
-				new PickingJobProductService(),
+				productService,
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService
@@ -224,8 +226,8 @@ public class PickingJobTestHelper
 		pickingJobService = new PickingJobService(
 				bpartnerService,
 				warehouseService,
-				new PickingJobProductService(),
-				new PickingJobShipmentScheduleService(),
+				productService,
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
@@ -299,7 +301,7 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
 	}
@@ -334,7 +336,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
@@ -377,6 +379,7 @@ public class PickingJobTestHelper
 		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final I_M_Product product = productBL.getById(productId);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_Packageable_V item = InterfaceWrapperHelper.newInstance(I_M_Packageable_V.class);
@@ -394,6 +397,8 @@ public class PickingJobTestHelper
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());
 		item.setM_Product_ID(productId.getRepoId());
+		item.setProductValue(product.getValue());
+		item.setProductName(product.getName());
 		item.setPackTo_HU_PI_Item_Product_ID(CoalesceUtil.firstGreaterThanZero(
 				sched.getM_HU_PI_Item_Product_Override_ID(),
 				sched.getM_HU_PI_Item_Product_ID()));

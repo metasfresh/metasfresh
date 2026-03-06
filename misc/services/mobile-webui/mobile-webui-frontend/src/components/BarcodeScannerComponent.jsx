@@ -64,6 +64,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
 };
 
 const BarcodeScannerComponent = ({
+  testId,
   isShowInputText: isShowInputTextParam,
   isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
@@ -120,9 +121,7 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (!isInputTextReadonly) {
-        inputTextRef?.current?.focus();
-      }
+      inputTextRef?.current?.focus();
     } /* no deps, call it on each render */
   );
 
@@ -179,7 +178,7 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -221,8 +220,6 @@ const BarcodeScannerComponent = ({
   );
 
   const handleInputTextChanged = (e) => {
-    if (isInputTextReadonly) return;
-
     const scannedBarcode = e.target.value;
 
     if (
@@ -239,8 +236,6 @@ const BarcodeScannerComponent = ({
   }, [textChangedDebounceMillis]);
 
   const handleInputTextKeyPress = (e) => {
-    if (isInputTextReadonly) return;
-
     if (e.key === 'Enter') {
       const scannedBarcode = e.target.value;
 
@@ -270,12 +265,12 @@ const BarcodeScannerComponent = ({
           className="input-text"
           type={isShowInputText ? 'text' : 'hidden'}
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          readOnly={isInputTextReadonly}
+          inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
-          data-testid="qrCode-input"
+          data-testid={testId ?? 'qrCode-input'}
         />
       )}
     </div>
@@ -283,6 +278,7 @@ const BarcodeScannerComponent = ({
 };
 
 BarcodeScannerComponent.propTypes = {
+  testId: PropTypes.string,
   isShowInputText: PropTypes.bool,
   isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,

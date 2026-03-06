@@ -31,6 +31,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 
@@ -50,15 +51,19 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 	@Nullable String outboundHttpEndpoint;
 	@Nullable String outboundHttpToken;
 	@Nullable String outboundHttpMethod;
-	@NonNull AdTableId adTableId;
+	@NonNull AdTableAndClientId tableAndClientId;
 	@Nullable DocBaseType docBaseType;
 	@NonNull String whereClause;
-	@NonNull SeqNo seqNo;
-	@NonNull ClientId clientId;
 	boolean active;
+	boolean isTriggerOnComplete;
 
 	public static ExternalSystemScriptedExportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemScriptedExportConversionConfig)childConfig;
 	}
+
+	@NonNull public AdTableId getTableId() {return tableAndClientId.getTableId();}
+	@NonNull public ClientId getClientId() {return tableAndClientId.getClientId();}
+
+	public boolean isMatching(@NonNull final AdTableAndClientId tableAndClientId){return AdTableAndClientId.equals(tableAndClientId, this.tableAndClientId);}
 }

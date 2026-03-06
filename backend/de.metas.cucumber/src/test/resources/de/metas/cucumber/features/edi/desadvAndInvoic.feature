@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 @ghActions:run_on_executor5
 Feature: desadv and invoic
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,6 +14,9 @@ Feature: desadv and invoic
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 1
 
   in:
@@ -63,8 +70,11 @@ Feature: desadv and invoic
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | KGM               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_29042022_1 | N            | Y              | 2000837                       | true                     | true                     |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_29042022_1 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | 1111111111111 | endcustomer_1            | true                | true         |
@@ -181,6 +191,9 @@ Feature: desadv and invoic
 
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 2
 
   in:
@@ -234,8 +247,11 @@ Feature: desadv and invoic
       | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1                   |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_02052022_2 | N            | Y              | 2000837                       | true                     | true                     |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_02052022_2 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | 2222222222222 | endcustomer_1            | true                | true         |
@@ -348,6 +364,9 @@ Feature: desadv and invoic
 
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 3
   in:
 
@@ -395,8 +414,11 @@ Feature: desadv and invoic
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_03052022_3 | N            | Y              | 2000837                       | true                     | true                     |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_03052022_3 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
@@ -511,6 +533,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | PCE                       | 5                        | 10              | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 4
 
   in:
@@ -563,9 +588,11 @@ Feature: desadv and invoic
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | KGM               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_03052022_4 | N            | Y              | 2000837                       | true                     | true                     |
-
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_03052022_4 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | 4444444444444 | endcustomer_1            | true                | true         |
@@ -677,6 +704,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | KGM                       | 1.25                     | 5               | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 5
 
   in:
@@ -732,9 +762,11 @@ Feature: desadv and invoic
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_03052022_5 | N            | Y              | 2000837                       | true                     | true                     |
-
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_03052022_5 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | 5555555555555 | endcustomer_1            | true                | true         |
@@ -849,6 +881,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | KGM               | 1    | p_1                     | 10         | 5                 | 40         | PCE                       | 20                       | 10              | KGM                        | 5                       | 5                        | 20                        |
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 6
 
   in:
@@ -903,8 +938,11 @@ Feature: desadv and invoic
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
-      | endcustomer_1 | Endcustomer_04052022_6 | N            | Y              | 2000837                       | true                     | true                     |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_04052022_6 | N            | Y              | 2000837                       |
+    And the following c_bpartner is changed
+      | Identifier    | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | IsEdiInvoicRecipient | EdiInvoicRecipientGLN |
+      | endcustomer_1 | true                 | Dummy_GLN             | true                 | Dummy_GLN             |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |

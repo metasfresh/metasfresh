@@ -45,6 +45,7 @@ const updateLineFromSteps = ({ draftLine }) => {
   }
   draftLine.qtyPicked = qtyPicked;
   draftLine.hasLinesInTransit = hasLinesInTransit;
+  draftLine.isFullyPicked = draftLine.qtyPicked >= draftLine.qtyToMove;
 };
 
 const isInTransit = ({ step }) => {
@@ -82,15 +83,20 @@ const updateActivityFromLines = ({ draftActivityDataStored }) => {
     return accum;
   }, []);
 
+  let isFullyPicked = true;
   let hasLinesInTransit = false;
   lineIds.forEach((lineId) => {
     const draftLine = draftActivityDataStored.lines[lineId];
+    if (!draftLine.isFullyPicked) {
+      isFullyPicked = false;
+    }
     if (draftLine.hasLinesInTransit) {
       hasLinesInTransit = true;
     }
   });
 
   draftActivityDataStored.completeStatus = CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
+  draftActivityDataStored.isFullyPicked = isFullyPicked;
   draftActivityDataStored.hasLinesInTransit = hasLinesInTransit;
 };
 
@@ -118,9 +124,12 @@ const normalizeLine = (line) => {
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
-  //
-  // Copy lines
-  draftActivityDataStored.lines = normalizeLinesArray(fromActivity.componentProps.lines);
+  const job = fromActivity.componentProps.job;
+  draftActivityDataStored.lines = normalizeLinesArray(job.lines);
+  draftActivityDataStored.requireScanningProductCode = job.requireScanningProductCode;
+  draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
+  draftActivityDataStored.isNavigateToJobsListAfterPickFromComplete = job.navigateToJobsListAfterPickFromComplete;
+  draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 
   //
   // Update all statuses
@@ -143,12 +152,6 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  normalizeComponentProps: ({ componentProps }) => {
-    return {
-      ...componentProps,
-      lines: normalizeLinesArray(componentProps.lines),
-    };
-  },
-
-  mergeActivityDataStored: mergeActivityDataStored,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored,
 });

@@ -9,10 +9,12 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
-import de.metas.distribution.workflows_api.DDOrderReference;
-import de.metas.distribution.workflows_api.DDOrderReferenceCollector;
-import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
-import de.metas.distribution.workflows_api.facets.DistributionFacetId;
+import de.metas.distribution.mobileui.job.model.DDOrderReference;
+import de.metas.distribution.mobileui.job.model.DistributionJobId;
+import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
+import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
+import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
+import de.metas.distribution.mobileui.launchers.facets.DistributionFacetId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -37,6 +39,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -58,6 +62,7 @@ public class DDOrderCommand
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final DDOrderService ddOrderService;
+	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 
 	@NonNull private final MasterdataContext context;
@@ -105,6 +110,15 @@ public class DDOrderCommand
 			ddOrder.setSeqNo(request.getSeqNo().toInt());
 		}
 
+		if (request.getForwardPPOrder() != null)
+		{
+			ddOrder.setForward_PP_Order_ID(context.getId(request.getForwardPPOrder(), PPOrderId.class).getRepoId());
+		}
+		if (request.getForwardPPOrderBOMLine() != null)
+		{
+			ddOrder.setForward_PP_Order_BOMLine_ID(context.getId(request.getForwardPPOrderBOMLine(), PPOrderBOMLineId.class).getRepoId());
+		}
+
 		ddOrderService.save(ddOrder);
 
 		request.getLines().forEach(line -> createLine(line, ddOrder));
@@ -121,6 +135,7 @@ public class DDOrderCommand
 				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.plantFacetId(DistributionFacetId.ofPlantId(plantId).toWorkflowLaunchersFacetId().toJsonString())
+				.jobId(DistributionJobId.ofDDOrderId(ddOrderReference.getDdOrderId()))
 				.build();
 	}
 
@@ -191,9 +206,9 @@ public class DDOrderCommand
 	private DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.ddOrderService(ddOrderService)
+				.loadingSupportServices(distributionJobLoaderSupportingServices)
 				.build();
-		collector.collect(ddOrder, false);
+		collector.collect(ddOrder);
 		return CollectionUtils.singleElement(collector.getCollectedItems());
 	}
 

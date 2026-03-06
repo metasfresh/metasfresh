@@ -104,8 +104,16 @@ import java.util.Set;
 				.dateOrdered(TimeUtil.asLocalDate(orderAggregationKey.getDateOrdered(), timeZone))
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
-				.externalHeaderId(orderAggregationKey.getExternalId());
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
+		if (orderAggregationKey.isDropShip())
+		{
+			orderFactory.dropShip(
+					orderAggregationKey.getDropShipBPartnerId(),
+					orderAggregationKey.getDropShipLocationId(),
+					orderAggregationKey.getDropShipUserId());
+		}
 
 		if (docType != null)
 		{
@@ -126,6 +134,9 @@ import java.util.Set;
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.piItemProductId(purchaseOrderItem.getHuPIItemProductId());
+		orderLineBuilder.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+		orderLineBuilder.qtyEnteredTU(purchaseOrderItem.getQtyEnteredTU());
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
 		{
@@ -133,32 +144,47 @@ import java.util.Set;
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.externalId(purchaseOrderItem.getExternalLineId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
 
 	public I_C_Order createAndComplete()
 	{
-		final I_C_Order order = orderFactory.createAndComplete();
+		return create(true);
+	}
 
-		purchaseItem2OrderLine
-				.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+	/**
+	 * Creates a purchase order from the accumulated candidates.
+	 *
+	 * @param complete if {@code true}, the C_Order is created and immediately completed (DocStatus=CO);
+	 *                 if {@code false}, only a draft order is created (DocStatus=DR).
+	 *                 Corresponds to {@code PP_Product_Planning.IsDocComplete}.
+	 */
+	public I_C_Order create(final boolean complete)
+	{
+		final I_C_Order order = complete
+				? orderFactory.createAndComplete()
+				: orderFactory.createDraft();
 
-		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
-		if (userIdsToNotify.isEmpty())
+		purchaseItem2OrderLine.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+
+		if (complete)
 		{
-			return order;
+			final Set<UserId> userIdsToNotify = getUserIdsToNotify();
+			if (!userIdsToNotify.isEmpty())
+			{
+				final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
+
+				final NotificationRequest request = NotificationRequest.builder()
+						.order(order)
+						.recipientUserIds(userIdsToNotify)
+						.adMessageAndParams(adMessageAndParams)
+						.build();
+
+				userNotifications.notifyOrderCompleted(request);
+			}
 		}
-
-		final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
-
-		final NotificationRequest request = NotificationRequest.builder()
-				.order(order)
-				.recipientUserIds(userIdsToNotify)
-				.adMessageAndParams(adMessageAndParams)
-				.build();
-
-		userNotifications.notifyOrderCompleted(request);
 
 		return order;
 	}

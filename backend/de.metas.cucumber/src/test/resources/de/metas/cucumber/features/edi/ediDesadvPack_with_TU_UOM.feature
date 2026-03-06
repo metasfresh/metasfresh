@@ -1,5 +1,10 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM like TU or COLI
+## F00350: EDI
+## F00350: EDI
   # Note: we have no tests with M_HU_PI_Item_Product_ID = 101 (No Packing Item), 
   # because an orderline with UOM=COLI implies that the package is specified. 
   # Otherwise, it's unclear how many CUs are ordered to go into the COLI.
@@ -45,8 +50,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | pp_1_S0317_010 | plv_1_S0317_010        | p_1_S0317_010 | 10.0     | KGM               | Normal                        |
       | pp_2_S0317_010 | plv_1_S0317_010        | p_2_S0317_010 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_010 | N        | Y              | ps_1_S0317_010     |
+      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_010 | N        | Y              | ps_1_S0317_010     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer_1_S0317_010  | true                     | bPartnerDesadvRecipientGLN |
@@ -154,8 +159,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | pp_4_S0317_020 | plv_1_S0317_020        | p_4_S0317_020 | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_020 | N        | Y          | ps_1_S0317_020     |
+      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_020 | N        | Y          | ps_1_S0317_020     | location_gln |
 
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
@@ -304,8 +309,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | ReportDataLine                                                                                                                                                                 |
       | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                                                 |
       | %END%                                                                                                                                                                          |
-      | "1","ipaSSCC18_14092022_1","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","10","0","210420","lotNumber","","","","","","","","","","","",""  |
-      | "1","ipaSSCC18_14092022_2","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
+      | "1","ipaSSCC18_14092022_1","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","10","0","210420","lotNumber","location_gln","","","","","","location_gln","","","","",""  |
+      | "1","ipaSSCC18_14092022_2","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","1","0","210420","luLotNumber","location_gln","","","","","","location_gln","","","","","" |
 
 
   @Id:S0317_030
@@ -337,8 +342,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | InvoicableQtyBasedOn |
       | pp_1_S0317_030 | plv_1_S0317_030        | p_1_S0317_030 | 10.0     | KGM               | Normal                        | CatchWeight          |
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_030 | N        | Y              | ps_1_S0317_030     |
+      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_030 | N        | Y              | ps_1_S0317_030     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer_1_S0317_030  | true                     | bPartnerDesadvRecipientGLN |

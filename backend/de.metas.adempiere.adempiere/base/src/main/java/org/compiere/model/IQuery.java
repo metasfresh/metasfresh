@@ -299,6 +299,7 @@ public interface IQuery<T>
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
 
+	@SuppressWarnings("unused")
 	default <ET extends T> Iterator<ET> iterateWithGuaranteedIterator(final Class<ET> clazz) throws DBException
 	{
 		setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
@@ -327,6 +328,7 @@ public interface IQuery<T>
 	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and this method are complementary and NOT exclusive.
 	 */
+	@SuppressWarnings("unused")
 	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
@@ -543,6 +545,11 @@ public interface IQuery<T>
 	 */
 	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
+	default <AT> ImmutableSet<AT> listDistinctAsImmutableSet(String columnName, Class<AT> valueType)
+	{
+		return ImmutableSet.copyOf(listDistinct(columnName, valueType));
+	}
+
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
 	 */
@@ -568,6 +575,7 @@ public interface IQuery<T>
 	 */
 	<K, ET extends T> ListMultimap<K, ET> listMultimap(Class<ET> modelClass, Function<ET, K> keyFunction);
 
+	@SuppressWarnings("unused")
 	default <K> ListMultimap<K, T> listMultimap(@NonNull Function<T, K> keyFunction) {return listMultimap(getModelClass(), keyFunction);}
 
 	/**

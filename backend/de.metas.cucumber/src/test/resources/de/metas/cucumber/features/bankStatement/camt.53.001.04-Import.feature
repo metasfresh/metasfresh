@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
 Feature: import bank statement in camt.53.001.04 import format
+## F01100: Bank Statement
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,6 +40,9 @@ Feature: import bank statement in camt.53.001.04 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_100
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
 
@@ -220,6 +227,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
 
@@ -457,6 +467,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_300
   Scenario: Import one statement, identify org-account by IBAN and link two invoices, but in 2 different bank statements; so the expectation is to have created 2 bank statements
 
@@ -1108,6 +1121,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_5                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_500
   Scenario: Import one statement, identify org-account by IBAN and import as one summary line
 
@@ -1337,6 +1353,9 @@ Feature: import bank statement in camt.53.001.04 import format
 
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_600
   Scenario: Import one statement, identify org-account by IBAN, split QRR transactions from regular transactions and import as only QRR transacations as one summary line
 

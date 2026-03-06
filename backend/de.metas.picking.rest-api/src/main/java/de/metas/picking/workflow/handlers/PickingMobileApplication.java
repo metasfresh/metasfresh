@@ -44,11 +44,15 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -227,6 +231,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		final PickingJob pickingJob = pickingJobRestService.assignPickingJob(pickingJobId, callerId);
+		return toWFProcess(pickingJob);
+	}
+
+	public WFProcess complete(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = pickingJobRestService.complete(toPickingJobId(wfProcessId), callerId);
 		return toWFProcess(pickingJob);
 	}
 
@@ -634,5 +644,22 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		return pickingJobRestService.getQtyAvailable(pickingJobId, callerId);
+	}
+
+	public JsonGetNextEligibleLineResponse getNextEligibleLineToPack(final @NonNull JsonGetNextEligibleLineRequest request, final @NotNull UserId callerId)
+	{
+		final GetNextEligibleLineToPackResponse response = pickingJobRestService.getNextEligibleLineToPack(
+				GetNextEligibleLineToPackRequest.builder()
+						.callerId(callerId)
+						.pickingJobId(toPickingJobId(request.getWfProcessId()))
+						.excludeLineId(request.getExcludeLineId())
+						.huScannedCode(request.getHuScannedCode())
+						.build()
+		);
+
+		return JsonGetNextEligibleLineResponse.builder()
+				.lineId(response.getLineId())
+				.logs(response.getLogs())
+				.build();
 	}
 }

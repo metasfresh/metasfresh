@@ -21,98 +21,331 @@
 # L%
 #
 
-set -e
+set -e          # Exit immediately if a command exits with a non-zero status
+set -o pipefail # Return value of a pipeline is the status of the last command to exit with a non-zero status
 
-# =============================================================================
-# AUTO-DETECT METASFRESH ROOT (works from any working directory)
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Script is at misc/dev-support/bootstrap-scripts/ → metasfresh root is 3 levels up
-METASFRESH_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# ============================================================================
+# Configuration
+# ======================================================================
 
-if [[ ! -f "$METASFRESH_ROOT/backend/pom.xml" ]]; then
-    echo "ERROR: Could not find metasfresh root (expected backend/pom.xml at $METASFRESH_ROOT)"
-    exit 1
-fi
+# Java versions for different build phases
+# Java 8 for: parent-pom, de-metas-common, backend
+# Java 17 for: services (camel, procurement-webui, federated-rabbitmq)
 
-# Use absolute path for .m2-local (critical on Windows Git Bash)
-LOCAL_REPO="$(cd "$METASFRESH_ROOT" && pwd -W 2>/dev/null || pwd)/.m2-local"
-mkdir -p "$LOCAL_REPO"
+# Default Java 8 home (only used if JAVA8_HOME is not already set)
+DEFAULT_JAVA8_HOME="$HOME/.jdks/temurin-1.8.0_452"
 
-echo "Metasfresh root: $METASFRESH_ROOT"
-echo "Local Maven repo: $LOCAL_REPO"
+# Default Java 17 home (only used if JAVA17_HOME is not already set)
+DEFAULT_JAVA17_HOME="$HOME/.jdks/temurin-17.0.15"
 
-# =============================================================================
-# JAVA VERSION
-# =============================================================================
-# Java 8 for backend; override JAVA8_HOME or JAVA_HOME as needed
-if [[ -n "${JAVA8_HOME:-}" ]]; then
-    export JAVA_HOME="$JAVA8_HOME"
-elif [[ -z "${JAVA_HOME:-}" ]]; then
-    # Fallback: look for temurin-1.8 in standard location
-    for jdk in "$HOME"/.jdks/temurin-1.8.*; do
-        [[ -d "$jdk" ]] && export JAVA_HOME="$jdk" && break
-    done
-fi
-echo "JAVA_HOME: $JAVA_HOME"
+# Multithreading configuration
+MULTITHREAD_PARAM=''
+#MULTITHREAD_PARAM='-T2C'
 
-# =============================================================================
-# PARSE OPTIONS
-# =============================================================================
-CLEAN_FLAG=''
-SKIP_TESTS_FLAG=''
-PARALLEL_FLAG=''
+# Additional Maven parameters
+ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
+#ADDITIONAL_PARAMS="${ADDITIONAL_PARAMS} -DskipTests"
+#ADDITIONAL_PARAMS="${ADDITIONAL_PARAMS} -Dmaven.test.skip=true"
+
+# Backend-specific parameters (migration scripts test skip)
+# By default, skip migration scripts test for faster builds
+# Override by setting environment variable: export SKIP_MIGRATION_SCRIPTS_TEST=false
+SKIP_MIGRATION_SCRIPTS_TEST="${SKIP_MIGRATION_SCRIPTS_TEST:-true}"
+BACKEND_PARAMS="-DSKIP_MIGRATION_SCRIPTS_TEST=${SKIP_MIGRATION_SCRIPTS_TEST}"
+
+# Default Maven goals (used if no goals provided as arguments)
+# Incremental build by default (no clean) for faster development cycles
+# Use --clean flag or pass "clean install" explicitly for full clean builds
+DEFAULT_GOALS='install'
+
+# ============================================================================
+# Functions
+# ============================================================================
+
+# Function to run Maven build and handle errors
+run_mvn_build() {
+    local module_name="$1"
+    local java_version="$2"
+    shift 2
+    local mvn_args=("$@")
+
+    echo "$(date): Building $module_name ($java_version)..."
+
+    if JAVA_HOME="$java_version" mvn "${mvn_args[@]}"; then
+        echo "$(date): ✓ $module_name build succeeded"
+        return 0
+    else
+        local exit_code=$?
+        echo ""
+        echo "============================================================================"
+        echo "ERROR: Build failed for $module_name"
+        echo "============================================================================"
+        echo "Exit code: $exit_code"
+        echo "Java version: $java_version"
+        echo "Maven command: mvn ${mvn_args[*]}"
+        echo "============================================================================"
+        exit $exit_code
+    fi
+}
+
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] [MAVEN_GOALS]
+
+Builds metasfresh using Maven with workspace-specific local repository.
+
+IMPORTANT - FULL BUILD DURATION:
+    Full builds (clean install) take 20-25 minutes to complete.
+    Consider running in background and monitoring periodically:
+
+    ./mvn_build.sh > /tmp/metasfresh_build.log 2>&1 &
+
+    Then check progress with:
+    tail -f /tmp/metasfresh_build.log
+
+OPTIONS:
+    -h, --help              Show this help message
+    --clean                 Clean before building (adds 'clean' goal)
+                            By default, builds are incremental (no clean)
+    --deps-only             Build only core dependencies (parent-pom, de-metas-common)
+                            Fast option for installing dependencies (~2-3 minutes)
+    --skip-tests            Skip running tests (adds -DskipTests)
+    --parallel              Enable parallel build (-T2C)
+
+MAVEN_GOALS:
+    Maven goals to execute (default: clean install)
+    Examples: "test", "clean install", "verify", "package"
+
+EXAMPLES:
+    $(basename "$0")                          # Default: incremental install (no clean)
+    $(basename "$0") --clean                  # Full clean install
+    $(basename "$0") --deps-only              # Install only dependencies (parent-pom, de-metas-common)
+    $(basename "$0") test                     # Run tests only
+    $(basename "$0") clean verify             # Clean and verify
+    $(basename "$0") --skip-tests             # Install without tests
+    $(basename "$0") --parallel --clean       # Parallel clean build
+
+ENVIRONMENT VARIABLES:
+    JAVA8_HOME                      Java 8 installation for parent-pom, de-metas-common, backend
+                                    (default: $DEFAULT_JAVA8_HOME)
+    JAVA17_HOME                     Java 17 installation for services (camel, procurement-webui, federated-rabbitmq)
+                                    (default: $DEFAULT_JAVA17_HOME)
+    SKIP_MIGRATION_SCRIPTS_TEST     Skip migration scripts test during backend build
+                                    (default: true, set to 'false' to run the test)
+
+WORKSPACE-SPECIFIC LOCAL REPOSITORY:
+    This script uses a workspace-specific Maven local repository at:
+    <metasfresh-root>/.m2-local
+
+    This keeps artifacts isolated per workspace, useful for working with
+    multiple branches in parallel.
+
+EOF
+}
+
+# ============================================================================
+# Parse command line arguments
+# ============================================================================
+
+MAVEN_GOALS=""
+SKIP_TESTS=""
 DEPS_ONLY=false
+DO_CLEAN=false
 
-for arg in "$@"; do
-    case "$arg" in
-        --clean)      CLEAN_FLAG='clean' ;;
-        --skip-tests) SKIP_TESTS_FLAG='-DskipTests' ;;
-        --parallel)   PARALLEL_FLAG='-T2C' ;;
-        --deps-only)  DEPS_ONLY=true ;;
-        *)            echo "Unknown option: $arg"; exit 1 ;;
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --clean)
+            DO_CLEAN=true
+            shift
+            ;;
+        --deps-only)
+            DEPS_ONLY=true
+            shift
+            ;;
+        --skip-tests)
+            SKIP_TESTS="-DskipTests"
+            shift
+            ;;
+        --parallel)
+            MULTITHREAD_PARAM="-T2C"
+            shift
+            ;;
+        *)
+            # Treat as Maven goals
+            MAVEN_GOALS="$MAVEN_GOALS $1"
+            shift
+            ;;
     esac
 done
 
-GOALS="${CLEAN_FLAG} install"
-
-MULTITHREAD_PARAM="${PARALLEL_FLAG}"
-
-ADDITIONAL_PARAMS="-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true ${SKIP_TESTS_FLAG}"
-
-SETTINGS="$METASFRESH_ROOT/misc/dev-support/maven/settings.xml"
-REPO_FLAG="-Dmaven.repo.local=$LOCAL_REPO"
-MVN_FLAGS="--settings $SETTINGS $REPO_FLAG --no-transfer-progress"
-
-# =============================================================================
-# BUILD
-# =============================================================================
-echo ""
-echo "$(date): Starting build (goals: $GOALS)"
-echo ""
-
-mvn --file "$METASFRESH_ROOT/misc/parent-pom/pom.xml" $MVN_FLAGS $ADDITIONAL_PARAMS $GOALS && \
-
-mvn --file "$METASFRESH_ROOT/misc/de-metas-common/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
-
-if $DEPS_ONLY; then
-    echo "$(date): Done (deps-only: parent-pom + de-metas-common)"
-    exit 0
+# Use default goals if none provided
+if [ -z "$MAVEN_GOALS" ]; then
+    MAVEN_GOALS="$DEFAULT_GOALS"
 fi
 
-JAVA17_HOME="${JAVA17_HOME:-}"
+# Prepend 'clean' if --clean flag was used
+if [ "$DO_CLEAN" = true ]; then
+    MAVEN_GOALS="clean $MAVEN_GOALS"
+fi
 
-mvn -e --file "$METASFRESH_ROOT/backend/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+# If deps-only mode, force skip tests and skip test compilation
+if [ "$DEPS_ONLY" = true ]; then
+    SKIP_TESTS="-DskipTests -Dmaven.test.skip=true"
+fi
 
-if [[ -n "$JAVA17_HOME" ]]; then
-    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/camel/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
-    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/procurement-webui/procurement-webui-backend/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
-    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/federated-rabbitmq/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
+# Add skip tests if requested
+if [ -n "$SKIP_TESTS" ]; then
+    ADDITIONAL_PARAMS="$ADDITIONAL_PARAMS $SKIP_TESTS"
+fi
+
+# ============================================================================
+# Setup paths and environment
+# ============================================================================
+
+# Get script directory and compute workspace root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+
+# Setup workspace-specific Maven local repository
+LOCAL_REPO="$WORKSPACE_ROOT/.m2-local"
+mkdir -p "$LOCAL_REPO"
+
+# Maven local repo parameter
+MAVEN_REPO_PARAM="-Dmaven.repo.local=$LOCAL_REPO"
+
+# Setup Java homes (use environment variables if set, otherwise use defaults)
+if [ -z "$JAVA8_HOME" ]; then
+    JAVA8_HOME="$DEFAULT_JAVA8_HOME"
+    echo "JAVA8_HOME not set, using default: $JAVA8_HOME"
 else
-    echo ""
-    echo "WARNING: JAVA17_HOME not set — skipping camel, procurement-webui-backend, federated-rabbitmq"
-    echo "Set JAVA17_HOME to build Java 17 services."
+    echo "Using JAVA8_HOME from environment: $JAVA8_HOME"
+fi
+
+if [ -z "$JAVA17_HOME" ]; then
+    JAVA17_HOME="$DEFAULT_JAVA17_HOME"
+    echo "JAVA17_HOME not set, using default: $JAVA17_HOME"
+else
+    echo "Using JAVA17_HOME from environment: $JAVA17_HOME"
+fi
+
+# Verify Java installations exist
+if [ ! -d "$JAVA8_HOME" ]; then
+    echo "ERROR: JAVA8_HOME directory does not exist: $JAVA8_HOME"
+    exit 1
+fi
+
+if [ ! -d "$JAVA17_HOME" ]; then
+    echo "ERROR: JAVA17_HOME directory does not exist: $JAVA17_HOME"
+    exit 1
+fi
+
+# Maven settings file (relative to WORKSPACE_ROOT)
+MAVEN_SETTINGS="$WORKSPACE_ROOT/misc/dev-support/maven/settings.xml"
+
+# ============================================================================
+# Build configuration summary
+# ============================================================================
+
+echo "============================================================================"
+if [ "$DEPS_ONLY" = true ]; then
+    echo "metasfresh Core Dependencies Installation"
+else
+    echo "metasfresh Maven Build"
+fi
+echo "============================================================================"
+echo "Workspace:        $WORKSPACE_ROOT"
+echo "Local Repository: $LOCAL_REPO"
+echo "JAVA8_HOME:       $JAVA8_HOME"
+if [ "$DEPS_ONLY" = false ]; then
+    echo "JAVA17_HOME:      $JAVA17_HOME (for services)"
+fi
+echo "Maven Goals:      $MAVEN_GOALS"
+if [ "$DEPS_ONLY" = true ]; then
+    echo "Build Mode:       Dependencies only (parent-pom, de-metas-common)"
+else
+    echo "Build Mode:       Full build (parent-pom, de-metas-common, backend, services)"
+fi
+echo "Multithreading:   ${MULTITHREAD_PARAM:-disabled}"
+echo "Additional Params: $ADDITIONAL_PARAMS"
+if [ "$DEPS_ONLY" = false ]; then
+    echo "Backend Params:   $BACKEND_PARAMS"
+fi
+echo "============================================================================"
+echo ""
+
+# ============================================================================
+# Build modules in order
+# ============================================================================
+
+run_mvn_build "parent-pom" "$JAVA8_HOME" \
+    --file "$WORKSPACE_ROOT/misc/parent-pom/pom.xml" \
+    --settings "$MAVEN_SETTINGS" \
+    $MAVEN_REPO_PARAM \
+    $ADDITIONAL_PARAMS \
+    $MAVEN_GOALS
+
+run_mvn_build "de-metas-common" "$JAVA8_HOME" \
+    --file "$WORKSPACE_ROOT/misc/de-metas-common/pom.xml" \
+    --settings "$MAVEN_SETTINGS" \
+    $MAVEN_REPO_PARAM \
+    $MULTITHREAD_PARAM \
+    $ADDITIONAL_PARAMS \
+    $MAVEN_GOALS
+
+# Only build backend and services if not in deps-only mode
+if [ "$DEPS_ONLY" = false ]; then
+    run_mvn_build "backend" "$JAVA8_HOME" \
+        -e --file "$WORKSPACE_ROOT/backend/pom.xml" \
+        --settings "$MAVEN_SETTINGS" \
+        $MAVEN_REPO_PARAM \
+        $MULTITHREAD_PARAM \
+        $ADDITIONAL_PARAMS \
+        $BACKEND_PARAMS \
+        $MAVEN_GOALS
+
+    run_mvn_build "camel" "$JAVA17_HOME" \
+        --file "$WORKSPACE_ROOT/misc/services/camel/pom.xml" \
+        --settings "$MAVEN_SETTINGS" \
+        $MAVEN_REPO_PARAM \
+        $MULTITHREAD_PARAM \
+        $ADDITIONAL_PARAMS \
+        $MAVEN_GOALS
+
+    run_mvn_build "procurement-webui-backend" "$JAVA17_HOME" \
+        --file "$WORKSPACE_ROOT/misc/services/procurement-webui/procurement-webui-backend/pom.xml" \
+        --settings "$MAVEN_SETTINGS" \
+        $MAVEN_REPO_PARAM \
+        $MULTITHREAD_PARAM \
+        $ADDITIONAL_PARAMS \
+        $MAVEN_GOALS
+
+    run_mvn_build "federated-rabbitmq" "$JAVA17_HOME" \
+        --file "$WORKSPACE_ROOT/misc/services/federated-rabbitmq/pom.xml" \
+        --settings "$MAVEN_SETTINGS" \
+        $MAVEN_REPO_PARAM \
+        $MULTITHREAD_PARAM \
+        $ADDITIONAL_PARAMS \
+        $MAVEN_GOALS
 fi
 
 echo ""
-echo "$(date): Done"
+echo "============================================================================"
+if [ "$DEPS_ONLY" = true ]; then
+    echo "$(date): Dependencies installed successfully!"
+    echo "============================================================================"
+    echo ""
+    echo "Core dependencies (parent-pom, de-metas-common) are now available in:"
+    echo "  $LOCAL_REPO"
+    echo ""
+    echo "You can now:"
+    echo "  - Compile individual modules"
+    echo "  - Run unit tests in specific modules"
+    echo "  - Build the full codebase with: ./mvn_build.sh"
+else
+    echo "$(date): Build completed successfully!"
+fi
+echo "============================================================================"

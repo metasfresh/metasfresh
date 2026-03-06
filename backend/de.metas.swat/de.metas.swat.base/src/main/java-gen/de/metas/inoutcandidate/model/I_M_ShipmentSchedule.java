@@ -743,6 +743,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -1054,6 +1076,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Header  merge characteristic.
@@ -2159,6 +2202,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyScheduledForPicking = "QtyScheduledForPicking";
 
 	/**
+	 * Set Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyScheduledForPickingOfProcessed (@Nullable BigDecimal QtyScheduledForPickingOfProcessed);
+
+	/**
+	 * Get Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyScheduledForPickingOfProcessed();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyScheduledForPickingOfProcessed = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyScheduledForPickingOfProcessed", null);
+	String COLUMNNAME_QtyScheduledForPickingOfProcessed = "QtyScheduledForPickingOfProcessed";
+
+	/**
 	 * Set Quantity to Deliver.
 	 *
 	 * <br>Type: Quantity
@@ -2374,27 +2438,6 @@ public interface I_M_ShipmentSchedule
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Status = new ModelColumn<>(I_M_ShipmentSchedule.class, "Status", null);
 	String COLUMNNAME_Status = "Status";
 
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
-	
 	/**
 	 * Get Updated.
 	 * Date this record was updated

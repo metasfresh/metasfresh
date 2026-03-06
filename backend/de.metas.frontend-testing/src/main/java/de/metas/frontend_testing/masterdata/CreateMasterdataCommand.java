@@ -60,14 +60,13 @@ import java.util.function.BiFunction;
 public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
-
 	@NonNull private final JsonCreateMasterdataRequest request;
 
-	private MasterdataContext context;
+	private final MasterdataContext context = new MasterdataContext();
 
 	public JsonCreateMasterdataResponse execute()
 	{
-		this.context = new MasterdataContext();
+		this.context.putFromJson(request.getContext());
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
@@ -83,12 +82,13 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
-		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
+		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
+				.context(context.toJson())
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
@@ -283,6 +283,7 @@ public class CreateMasterdataCommand
 		return CreateHUCommand.builder()
 				.inventoryService(services.inventoryService)
 				.huQRCodesService(services.huQRCodesService)
+				.sourceHUsService(services.sourceHUsService)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -316,6 +317,7 @@ public class CreateMasterdataCommand
 		return SalesOrderCreateCommand.builder()
 				.pickingJobScheduleService(services.pickingJobScheduleService)
 				.context(context)
+				.identifier(Identifier.ofString(identifier))
 				.request(request)
 				.build()
 				.execute();
@@ -330,6 +332,7 @@ public class CreateMasterdataCommand
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
 				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
 				.request(request)

@@ -53,10 +53,10 @@ SELECT CustomsTariff                                                    AS CNCod
        deliveryCountry                                                  AS CountryDestinationConsignment,
        deliveredFromCountry                                             AS CountryOfOrigin,
        p_IntrastaNatureOfTransaction                                    AS IntrastaNatureOfTransaction,
-       TO_CHAR(weight, 'FM9G999D000')                                   AS NetMass,
-       TO_CHAR(movementqty, 'FM9G999D000')                              AS SupplementaryUnits,
-       TO_CHAR(grandtotal, 'FM9G999D00')                                AS InvoiceValue,
-       TO_CHAR(grandtotal, 'FM9G999D00')                                AS StatisticalValue,
+       TO_CHAR(weight, 'FM9999999D000')                                  AS NetMass,
+       TO_CHAR(movementqty, 'FM9999999D000')                             AS SupplementaryUnits,
+       TO_CHAR(grandtotal, 'FM9999999D00')                               AS InvoiceValue,
+       TO_CHAR(grandtotal, 'FM9999999D00')                               AS StatisticalValue,
        CASE WHEN p_IntrastatDeclarationType = 'Export' THEN vataxid END AS RecipientVATNo
 FROM de_metas_endcustomer_fresh_reports.M_InOut_V
 WHERE (C_Period_ID = p_C_Period_ID OR p_C_Period_ID = -1)
