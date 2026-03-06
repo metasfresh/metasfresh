@@ -187,7 +187,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final C_Project_StepDefData projectTable)
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_PromotionCode_StepDefData promotionCodeTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -200,6 +201,7 @@ public class C_Invoice_Candidate_StepDef
 		this.inoutLineTable = inoutLineTable;
 		this.shipmentTable = shipmentTable;
 		this.projectTable = projectTable;
+		this.promotionCodeTable = promotionCodeTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -474,12 +476,13 @@ public class C_Invoice_Candidate_StepDef
 							assertThat(updatedInvoiceCandidate.getQtyWithIssues_Effective()).isEqualTo(qtyWithIssuesEffective);
 						}
 
+						final I_C_Invoice_Candidate icForPromoCodeCheck = updatedInvoiceCandidate;
 						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode_ID)
 								.map(promotionCodeTable::get)
-								.ifPresent(promoCode -> assertThat(updatedInvoiceCandidate.getC_PromotionCode_ID()).as("C_PromotionCode_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode_ID()).as("C_PromotionCode_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
 						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode2_ID)
 								.map(promotionCodeTable::get)
-								.ifPresent(promoCode -> assertThat(updatedInvoiceCandidate.getC_PromotionCode2_ID()).as("C_PromotionCode2_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode2_ID()).as("C_PromotionCode2_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
 
 						final LocalDate deliveryDate = TimeUtil.asLocalDate(updatedInvoiceCandidate.getDeliveryDate());
 						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
