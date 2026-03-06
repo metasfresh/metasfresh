@@ -147,10 +147,10 @@ Feature: material dispo reacts to order docactions
     When the order identified by o_1 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty |
-      | c_demand   | DEMAND            | SHIPMENT                  | p_finished   | 2024-09-22T21:00:00Z | 10  |
-      | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T21:00:00Z | 10  |
-      | c_comp     | DEMAND            | PRODUCTION                | p_component  | 2024-09-22T21:00:00Z | 50  |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
+      | c_demand   | DEMAND            | SHIPMENT                  | p_finished   | 2024-09-22T21:00:00Z | 10  | -10 |
+      | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T21:00:00Z | 10  | 0   |
+      | c_comp     | DEMAND            | PRODUCTION                | p_component  | 2024-09-22T21:00:00Z | 50  | -50 |
 
   @Id:S0461_30
   @from:cucumber
