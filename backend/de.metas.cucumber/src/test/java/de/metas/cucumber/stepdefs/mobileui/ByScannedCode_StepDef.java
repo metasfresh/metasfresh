@@ -27,6 +27,15 @@ import java.util.List;
 import static de.metas.util.Services.get;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for testing the byScannedCode / resolveLocator POST endpoints
+ * with QR codes that contain {@code #} characters (format: {@code TYPE#VERSION#JSON_PAYLOAD}).
+ * <p>
+ * Calls the REST controllers (or service) directly via Spring bean injection — no HTTP layer involved.
+ * <p>
+ * Prerequisites: HU QR codes must be generated beforehand via "generate QR Codes for HUs" step;
+ * warehouses must be loaded via "load M_Warehouse" step.
+ */
 @RequiredArgsConstructor
 public class ByScannedCode_StepDef
 {
@@ -38,6 +47,16 @@ public class ByScannedCode_StepDef
 	private final HUQRCode_StepDefData huQRCodeStorage;
 	private final M_Warehouse_StepDefData warehouseTable;
 
+	/**
+	 * Calls {@link PickingRestController#getHUInfoByQRCode} with an HU QR code (containing {@code #}) and
+	 * verifies the response contains the full QR code including {@code #} separators.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *     <li>{@code HUQRCode} / {@code HUQRCode.Identifier} — identifier of a previously generated HU QR code</li>
+	 * </ul>
+	 * Prerequisite: "generate QR Codes for HUs" step must have been called before.
+	 */
 	@And("call POST picking\\/hu\\/byScannedCode with HU QR code containing hash:")
 	public void picking_byScannedCode(@NonNull final DataTable dataTable)
 	{
@@ -58,6 +77,16 @@ public class ByScannedCode_StepDef
 		assertThat(response.getHuQRCode().getCode()).contains("#");
 	}
 
+	/**
+	 * Calls {@link DistributionRestController#getHUInfoByQRCode} with an HU QR code (containing {@code #}) and
+	 * verifies the response contains a non-null QR code.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *     <li>{@code HUQRCode} / {@code HUQRCode.Identifier} — identifier of a previously generated HU QR code</li>
+	 * </ul>
+	 * Prerequisite: "generate QR Codes for HUs" step must have been called before.
+	 */
 	@And("call POST distribution\\/hu\\/byScannedCode with HU QR code containing hash:")
 	public void distribution_byScannedCode(@NonNull final DataTable dataTable)
 	{
@@ -76,8 +105,19 @@ public class ByScannedCode_StepDef
 
 		assertThat(response).isNotNull();
 		assertThat(response.getQrCode()).isNotNull();
+		assertThat(response.getQrCode().getCode()).as("Distribution response QR code must contain # separator").contains("#");
 	}
 
+	/**
+	 * Builds a locator QR code (containing {@code #}) from the warehouse's first locator, then calls
+	 * {@link WarehouseRestService#resolveLocatorScannedCode} and verifies the response contains a resolved locator.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *     <li>{@code M_Warehouse_ID} / {@code M_Warehouse_ID.Identifier} — identifier of a previously loaded warehouse</li>
+	 * </ul>
+	 * Prerequisite: "load M_Warehouse" step must have been called before. The warehouse must have at least one locator.
+	 */
 	@And("call POST material\\/warehouses\\/resolveLocator with locator QR code containing hash:")
 	public void warehouse_resolveLocator(@NonNull final DataTable dataTable)
 	{
@@ -98,6 +138,6 @@ public class ByScannedCode_StepDef
 		final JsonLocator jsonLocator = warehouseRestService.resolveLocatorScannedCode(scannedCode);
 
 		assertThat(jsonLocator).isNotNull();
-		assertThat(jsonLocator.getQrCode()).isNotNull();
+		assertThat(jsonLocator.getQrCode()).as("Locator response QR code must contain # separator").contains("#");
 	}
 }
