@@ -22,8 +22,8 @@ Feature: Validate that C_PromotionCode fields propagate from C_Order through C_I
       | Identifier          | M_PriceList_ID |
       | priceListVersion_SO | priceList_SO   |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | priceListVersion_SO    | product_1    | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | priceListVersion_SO    | product_1    | 10.0     | PCE               |
 
   @from:cucumber
   Scenario: One promotion code propagates from C_Order to C_Invoice via IC flow
