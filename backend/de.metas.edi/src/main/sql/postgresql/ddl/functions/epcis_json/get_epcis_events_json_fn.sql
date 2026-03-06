@@ -44,40 +44,40 @@ BEGIN
                    'documentNo', io.documentno,
                    'movementDate', TO_CHAR(io.movementdate, 'YYYY-MM-DD"T"HH24:MI:SS'),
                    'timezone', '+01:00',
-                   -- Supplier GLN (org's BPartner location)
+               -- Supplier GLN (org's BPartner location)
                    'supplierGLN', bpl_supplier.gln,
-                   -- Warehouse GLN (same as supplier for now; SGLN extension=0)
+               -- Warehouse GLN (same as supplier for now; SGLN extension=0)
                    'warehouseGLN', bpl_supplier.gln,
-                   -- Warehouse value (for SGLN sub-location extension in JS template)
+               -- Warehouse value (for SGLN sub-location extension in JS template)
                    'warehouseValue', wh.value,
-                   -- Buyer GLN (from DESADV)
+               -- Buyer GLN (from DESADV)
                    'buyerGLN', bpl_buyer.gln,
-                   -- Handover partner GLN (delivery point = DP)
+               -- Handover partner GLN (delivery point = DP)
                    'handoverGLN', bpl_handover.gln,
-                   -- Dropship/Ultimate Consignee GLN (UC)
+               -- Dropship/Ultimate Consignee GLN (UC)
                    'dropshipGLN', bpl_dropship.gln,
-                   -- DESADV reference number
+               -- DESADV reference number
                    'desadvReference', d.documentno,
-                   -- PO reference
+               -- PO reference
                    'poReference', COALESCE(d.poreference, io.poreference),
-                   -- Pallets array
+               -- Pallets array
                    'pallets', COALESCE(pallets_data.pallets_json, '[]'::jsonb)
            )
     INTO v_result
     FROM m_inout io
              JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
-             -- Warehouse value (for SGLN sub-location extension)
+        -- Warehouse value (for SGLN sub-location extension)
              LEFT JOIN m_warehouse wh ON wh.m_warehouse_id = io.m_warehouse_id
-             -- Supplier (org) GLN
+        -- Supplier (org) GLN
              LEFT JOIN ad_orginfo org ON org.ad_org_id = io.ad_org_id
              LEFT JOIN c_bpartner_location bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
-             -- Buyer GLN
+        -- Buyer GLN
              LEFT JOIN c_bpartner_location bpl_buyer ON bpl_buyer.c_bpartner_location_id = d.c_bpartner_location_id
-             -- Handover (delivery point) GLN
+        -- Handover (delivery point) GLN
              LEFT JOIN c_bpartner_location bpl_handover ON bpl_handover.c_bpartner_location_id = d.handover_location_id
-             -- Dropship (ultimate consignee) GLN
+        -- Dropship (ultimate consignee) GLN
              LEFT JOIN c_bpartner_location bpl_dropship ON bpl_dropship.c_bpartner_location_id = d.dropship_location_id
-             -- Pallets: top-level packs (those without a parent pack = LU level)
+        -- Pallets: top-level packs (those without a parent pack = LU level)
              LEFT JOIN LATERAL (
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
@@ -92,26 +92,38 @@ BEGIN
             SELECT JSONB_AGG(
                            JSONB_BUILD_OBJECT(
                                    'grai', grai_attr.value,
+                                   'lotNumber', lot_attr.value,
+                                   'bestBeforeDate', bestbeforedate_attr.value,
                                    'tuHuId', tu_hu.m_hu_id,
                                    'items', COALESCE(items_data.items_json, '[]'::jsonb)
                            )
                    ) AS crates_json
             FROM m_hu_item parent_item
                      JOIN m_hu tu_hu ON tu_hu.m_hu_item_parent_id = parent_item.m_hu_item_id
-                     -- GRAI attribute on the TU
+                -- GRAI attribute on the TU
                      LEFT JOIN m_hu_attribute grai_attr ON grai_attr.m_hu_id = tu_hu.m_hu_id
                 AND grai_attr.m_attribute_id = (SELECT m_attribute_id
                                                 FROM m_attribute
                                                 WHERE value = 'GRAI'
                                                 LIMIT 1)
-                     -- Items on this TU from the desadv pack items
+                -- LOT attribute on the TU
+                     LEFT JOIN m_hu_attribute lot_attr ON lot_attr.m_hu_id = tu_hu.m_hu_id
+                AND lot_attr.m_attribute_id = (SELECT m_attribute_id
+                                                FROM m_attribute
+                                                WHERE value = 'Lot-Nummer'
+                                                LIMIT 1)
+                -- HU_BestBeforeDate on the TU
+                     LEFT JOIN m_hu_attribute bestbeforedate_attr ON bestbeforedate_attr.m_hu_id = tu_hu.m_hu_id
+                AND bestbeforedate_attr.m_attribute_id = (SELECT m_attribute_id
+                                               FROM m_attribute
+                                               WHERE value = 'HU_BestBeforeDate'
+                                               LIMIT 1)
+                -- Items on this TU from the desadv pack items
                      LEFT JOIN LATERAL (
                 SELECT JSONB_AGG(
                                JSONB_BUILD_OBJECT(
                                        'tuGTIN', pi_item.gtin_tu_packingmaterial,
                                        'productValue', prod.value,
-                                       'lotNumber', pi_item.lotnumber,
-                                       'bestBeforeDate', TO_CHAR(pi_item.bestbeforedate, 'YYYY-MM-DD'),
                                        'quantity', pi_item.qtycuspertu,
                                        'uom', COALESCE(uom.x12de355, 'KGM')
                                )
@@ -137,4 +149,5 @@ BEGIN
     RETURN COALESCE(v_result, '{}'::jsonb);
 END;
 $$
-    LANGUAGE plpgsql STABLE;
+    LANGUAGE plpgsql STABLE
+;
