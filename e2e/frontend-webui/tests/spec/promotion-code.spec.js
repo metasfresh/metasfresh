@@ -104,25 +104,16 @@ entire order-to-cash flow.
             await LoginPage.login(masterdata.login.user);
             await DashboardPage.expectVisible();
 
-            // Step 3: Create Promotion Code via UI
-            await page.goto(`${FRONTEND_BASE_URL}/window/${PROMOTION_CODE_WINDOW_ID}`);
-            await page.waitForLoadState('networkidle', { timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
-            // Wait for the window to fully render (list or detail view)
-            await page.locator('.panel-spaced-lg, .table-flex-wrapper table, .document-list-wrapper')
-                .first()
-                .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT })
-                .catch(() => {});
+            // Step 3: Create Promotion Code via UI (navigate directly to /new)
+            await page.goto(`${FRONTEND_BASE_URL}/window/${PROMOTION_CODE_WINDOW_ID}/new`);
+            await page.waitForURL(new RegExp(`/window/${PROMOTION_CODE_WINDOW_ID}/\\d+`), {
+                timeout: VERY_SLOW_ACTION_TIMEOUT,
+            });
             await page.waitForTimeout(2000);
-
-            // Create new record
-            await page.keyboard.press('Alt+n');
-            // Wait for URL to change to the new record detail view
-            await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
-            await page.waitForTimeout(3000);
 
             // Fill Value field
             const promoValue = `PC_${Date.now()}`;
-            const valueInput = page.locator('#lookup_Value input, input[name="Value"]').first();
+            const valueInput = page.locator('#lookup_Value input.input-field, .form-field-Value input.input-field').first();
             await valueInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await valueInput.click();
             await valueInput.fill(promoValue);
@@ -130,7 +121,7 @@ entire order-to-cash flow.
             await page.waitForTimeout(500);
 
             // Fill Name field
-            const nameInput = page.locator('#lookup_Name input, input[name="Name"]').first();
+            const nameInput = page.locator('#lookup_Name input.input-field, .form-field-Name input.input-field').first();
             await nameInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await nameInput.click();
             await nameInput.fill(`Test Promotion ${promoValue}`);
@@ -138,7 +129,7 @@ entire order-to-cash flow.
             await page.waitForTimeout(500);
 
             // Fill Description field (new column)
-            const descInput = page.locator('#lookup_Description input, input[name="Description"], textarea[name="Description"]').first();
+            const descInput = page.locator('#lookup_Description input.input-field, .form-field-Description input.input-field, #lookup_Description textarea').first();
             if (await descInput.isVisible().catch(() => false)) {
                 await descInput.click();
                 await descInput.fill('Automated test promotion code');
