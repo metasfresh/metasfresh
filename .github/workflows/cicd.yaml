@@ -102,6 +102,7 @@ jobs:
           echo '* Allure test reports: https://test-reports.metasfresh.com/branches/${{ steps.sanitize-branch-gh-pages.outputs.value }}/builds/${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}/allure/' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch (e.g. merge-queue branches)
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
@@ -479,6 +480,7 @@ jobs:
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
       - name: publish results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
           testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
@@ -1227,6 +1229,7 @@ jobs:
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code
@@ -1373,6 +1376,7 @@ jobs:
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
@@ -1693,6 +1697,7 @@ jobs:
           docker compose --profile mobile down
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch
         working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
@@ -1748,10 +1753,22 @@ jobs:
       # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
-    name: frontend webui test
+    name: frontend webui test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: [ init, backend, frontend, db-apply-migrations ]
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        shard: [ "1/3", "2/3", "3/3" ]
+        include:
+          - shard: "1/3"
+            shard_label: shard1
+          - shard: "2/3"
+            shard_label: shard2
+          - shard: "3/3"
+            shard_label: shard3
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1769,46 +1786,46 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           # Capture infrastructure logs separately for debugging
           docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
           docker compose --profile frontend down
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
+        continue-on-error: true  # Testspace may not have a space for this branch
         working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
           mv test-results-frontend test-results-temp || true
-          testspace "[frontend/playwright]playwright-report-frontend/junit/results.xml"
+          testspace "[frontend/playwright-${{ matrix.shard_label }}]playwright-report-frontend/junit/results.xml"
           # Move back for artifact upload
           mv test-results-temp test-results-frontend || true
 
-      # ===== ALLURE REPORT GENERATION =====
-      - name: Generate Allure Report for Frontend
-        uses: ./.github/actions/generate-allure-report
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          results-dir: docker-builds/e2e-tests/allure-results
-          output-dir: e2e/frontend-webui/allure-report
-          artifact-name: allure-report-frontend-webui
-          history-artifact-name: allure-history-frontend-webui
-          report-title: 'Playwright (Frontend WebUI)'
-      # ===== END ALLURE REPORT GENERATION =====
+          name: allure-results-frontend-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/allure-results/
+          if-no-files-found: ignore
+          retention-days: 1
 
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         working-directory: docker-builds/e2e-tests/
         run: |
@@ -1816,7 +1833,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: playwright-frontend-report
+          name: playwright-frontend-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
@@ -1826,11 +1843,49 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: junit-results-playwright-frontend
+          name: junit-results-playwright-frontend-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
-      # Allure reports uploaded by publish-test-reports job
+
+  # =============================================================================
+  # Merge Frontend Playwright Allure Results from Sharded Runners
+  # =============================================================================
+  frontend_allure_report:
+    name: frontend allure report
+    runs-on: ubuntu-latest
+    needs: [ init, frontend_webui_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all shard Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-frontend-*
+          path: allure-results-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-merged" ] && [ "$(ls -A allure-results-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate Allure Report for Frontend
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: allure-results-merged
+          output-dir: e2e/frontend-webui/allure-report
+          artifact-name: allure-report-frontend-webui
+          history-artifact-name: allure-history-frontend-webui
+          report-title: 'Playwright (Frontend WebUI)'
 
   # =============================================================================
   # Publish Allure HTML Reports to test-reports.metasfresh.com
@@ -1838,8 +1893,11 @@ jobs:
   publish-test-reports:
     name: publish test reports
     runs-on: ubuntu-latest
-    needs: [ init, cucumber-allure-report, mobile_test, frontend_webui_test ]
+    needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
+    permissions:
+      actions: write    # trigger reports-cleanup workflow when disk space is low
+      contents: read
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -1931,20 +1989,40 @@ jobs:
             echo "✓ ${report_type} uploaded"
           done
 
-      - name: Update branch metadata
+          # Generate index.html in the allure parent directory so the URL doesn't 403
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}<li><a href=\"${report_type}/\">${report_type}</a></li>"
+          done
+          ssh reports-server "cat > ${BASE_PATH}/index.html" <<EOF
+          <!DOCTYPE html>
+          <html><head><title>Allure Reports — ${VERSION}</title>
+          <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
+          </head><body>
+          <h1>Allure Reports</h1>
+          <p><strong>Build:</strong> ${VERSION}</p>
+          <ul>${REPORT_LINKS}</ul>
+          <p><a href="https://test-reports.metasfresh.com/">← Back to all reports</a></p>
+          </body></html>
+          EOF
+
+      - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
           ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os
+          import json, sys, os, shutil
           from datetime import datetime, timezone
+
+          MAX_BUILDS_PER_BRANCH = 3
 
           branch = sys.argv[1]
           version = sys.argv[2]
           metadata_dir = "/var/www/test-reports/_metadata"
           metadata_file = os.path.join(metadata_dir, f"{branch}.json")
+          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
 
           os.makedirs(metadata_dir, exist_ok=True)
 
@@ -1967,12 +2045,187 @@ jobs:
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           })
 
-          # Keep only last 20 builds
-          data["builds"] = data["builds"][:20]
+          # Cap metadata and collect evicted versions
+          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
+          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
 
           with open(metadata_file, "w") as f:
               json.dump(data, f, indent=2)
+
+          # Delete build directories for evicted versions
+          for ver in evicted:
+              build_path = os.path.join(builds_dir, ver)
+              if os.path.isdir(build_path):
+                  shutil.rmtree(build_path)
+                  print(f"Pruned old build: {branch}/{ver}")
+
+          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
           PYEOF
+
+      - name: Update landing page
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        run: |
+          ssh reports-server "cat > /var/www/test-reports/index.html" <<'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Test Reports - metasfresh</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  h1 { color: #333; }
+                  .branch { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                  .branch h2 { margin-top: 0; color: #0066cc; }
+                  .builds { display: grid; gap: 10px; }
+                  .build { padding: 10px; background: #f9f9f9; border-radius: 4px; }
+                  .build-header { font-weight: bold; margin-bottom: 5px; }
+                  .timestamp { color: #666; font-size: 0.9em; margin-left: 10px; }
+                  .report-links { margin-top: 5px; }
+                  .report-links a { color: #0066cc; text-decoration: none; margin-right: 15px; }
+                  .report-links a:hover { text-decoration: underline; }
+                  .loading { color: #666; }
+                  .error { color: #cc0000; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>📊 Test Reports</h1>
+                  <div id="branches"><p class="loading">Loading reports...</p></div>
+              </div>
+              <script>
+                  function createTextElement(tag, text, className) {
+                      const el = document.createElement(tag);
+                      el.textContent = text;
+                      if (className) el.className = className;
+                      return el;
+                  }
+
+                  function createLink(href, text) {
+                      const a = document.createElement('a');
+                      a.href = href;
+                      a.textContent = text;
+                      return a;
+                  }
+
+                  function createBuildElement(branchName, build) {
+                      const buildDiv = document.createElement('div');
+                      buildDiv.className = 'build';
+
+                      const header = document.createElement('div');
+                      header.className = 'build-header';
+
+                      const versionSpan = document.createElement('span');
+                      versionSpan.textContent = build.version;
+                      header.appendChild(versionSpan);
+
+                      const timestampSpan = document.createElement('span');
+                      timestampSpan.className = 'timestamp';
+                      timestampSpan.textContent = new Date(build.timestamp).toLocaleString();
+                      header.appendChild(timestampSpan);
+
+                      buildDiv.appendChild(header);
+
+                      const linksDiv = document.createElement('div');
+                      linksDiv.className = 'report-links';
+
+                      const basePath = '/branches/' + encodeURIComponent(branchName) + '/builds/' + encodeURIComponent(build.version);
+
+                      const reports = [
+                          { name: 'Frontend', path: '/allure/frontend-webui/' },
+                          { name: 'Mobile', path: '/allure/mobile-webui/' },
+                          { name: 'Cucumber', path: '/allure/cucumber/' }
+                      ];
+
+                      reports.forEach(function(report) {
+                          const link = createLink(basePath + report.path, report.name);
+                          linksDiv.appendChild(link);
+                      });
+
+                      buildDiv.appendChild(linksDiv);
+                      return buildDiv;
+                  }
+
+                  function createBranchElement(branchData) {
+                      const branchDiv = document.createElement('div');
+                      branchDiv.className = 'branch';
+
+                      const heading = createTextElement('h2', branchData.branch);
+                      branchDiv.appendChild(heading);
+
+                      const buildsDiv = document.createElement('div');
+                      buildsDiv.className = 'builds';
+
+                      // Show all builds (metadata is capped to 3 per branch at publish time)
+                      const builds = branchData.builds;
+                      builds.forEach(function(build) {
+                          buildsDiv.appendChild(createBuildElement(branchData.branch, build));
+                      });
+
+                      branchDiv.appendChild(buildsDiv);
+                      return branchDiv;
+                  }
+
+                  async function loadReports() {
+                      const container = document.getElementById('branches');
+
+                      try {
+                          const response = await fetch('/_metadata/');
+                          if (!response.ok) throw new Error('Failed to load metadata');
+
+                          const files = await response.json();
+                          const jsonFiles = files.filter(function(f) {
+                              return f.name.endsWith('.json');
+                          });
+
+                          if (jsonFiles.length === 0) {
+                              container.textContent = 'No reports available yet.';
+                              return;
+                          }
+
+                          container.textContent = '';
+
+                          for (const file of jsonFiles) {
+                              try {
+                                  const branchResponse = await fetch('/_metadata/' + file.name);
+                                  if (branchResponse.ok) {
+                                      const branchData = await branchResponse.json();
+                                      container.appendChild(createBranchElement(branchData));
+                                  }
+                              } catch (e) {
+                                  console.error('Error loading branch:', file.name, e);
+                              }
+                          }
+                      } catch (error) {
+                          container.textContent = '';
+                          const errorP = createTextElement('p', 'Error loading reports: ' + error.message, 'error');
+                          container.appendChild(errorP);
+                      }
+                  }
+
+                  loadReports();
+              </script>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Check disk space and trigger cleanup
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          AVAIL_KB=$(ssh reports-server "df --output=avail /var/www/test-reports | tail -1 | tr -d ' '")
+          AVAIL_MB=$((AVAIL_KB / 1024))
+          AVAIL_GB=$(echo "scale=1; $AVAIL_KB / 1048576" | bc)
+          echo "Available disk space: ${AVAIL_GB} GB (${AVAIL_MB} MB)"
+
+          THRESHOLD_KB=2097152  # 2 GB
+          if [ "$AVAIL_KB" -lt "$THRESHOLD_KB" ]; then
+            echo "::warning::Disk space below 2 GB (${AVAIL_GB} GB) — triggering reports-cleanup workflow"
+            gh workflow run reports-cleanup.yml --repo "$GITHUB_REPOSITORY"
+          fi
 
       - name: Produce summary
         if: always()

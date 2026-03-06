@@ -23,15 +23,19 @@
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_StepDef;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -70,19 +74,28 @@ public class C_PurchaseCandidate_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 
 	public C_PurchaseCandidate_StepDef(
 			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
 			@NonNull final C_PurchaseCandidate_StepDefData purchaseCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
 	{
 		this.identifierIdsTable = identifierIdsTable;
 		this.purchaseCandidateTable = purchaseCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.productTable = productTable;
 		this.orderTable = orderTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.huPiItemProductTable = huPiItemProductTable;
 	}
 
 	/**
@@ -279,6 +292,34 @@ public class C_PurchaseCandidate_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase)
 				.ifPresent(qtyToPurchase -> assertThat(purchaseCandidateRecord.getQtyToPurchase()).isEqualTo(qtyToPurchase));
+
+		row.getAsOptionalBoolean(I_C_PurchaseCandidate.COLUMNNAME_IsDropShip)
+				.ifPresent(isDropShip -> assertThat(purchaseCandidateRecord.isDropShip())
+						.as("IsDropShip")
+						.isEqualTo(isDropShip));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_DropShip_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(bpartnerId -> assertThat(purchaseCandidateRecord.getDropShip_BPartner_ID())
+						.as("DropShip_BPartner_ID")
+						.isEqualTo(bpartnerId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_DropShip_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(locationId -> assertThat(purchaseCandidateRecord.getDropShip_Location_ID())
+						.as("DropShip_Location_ID")
+						.isEqualTo(locationId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.map(huPiItemProductTable::get)
+				.ifPresent(huPiItemProduct -> assertThat(purchaseCandidateRecord.getM_HU_PI_Item_Product_ID())
+						.as("M_HU_PI_Item_Product_ID")
+						.isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
+
+		row.getAsOptionalBigDecimal(I_C_PurchaseCandidate.COLUMNNAME_QtyEnteredTU)
+				.ifPresent(qtyEnteredTU -> assertThat(purchaseCandidateRecord.getQtyEnteredTU())
+						.as("QtyEnteredTU")
+						.isEqualByComparingTo(qtyEnteredTU));
 	}
 
 	private void findPurchaseCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

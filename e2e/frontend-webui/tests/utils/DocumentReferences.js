@@ -343,24 +343,82 @@ export async function openRelatedDocument({
  * reference-AD_RelationType_ID-{id}
  */
 export const REFERENCE_DATA_CY = {
+  // =====================================================================
   // Purchase Order relations (POTrx, IsSOTrx='N')
+  // =====================================================================
   PO_TO_VENDOR_INVOICE: 'reference-C_Order_to_C_Invoice_PO',
-  PO_TO_MATERIAL_RECEIPT: 'reference-C_Order_to_M_InOut_PO',
+  PO_TO_MATERIAL_RECEIPT: 'reference-Receipt',
   PO_TO_RECEIPT_CANDIDATES: 'reference-M_ReceiptSchedule',
   PO_TO_INVOICE_CANDIDATES: 'reference-C_Invoice_Candidate_Purchase',
+  PO_TO_SALES_ORDER: 'reference-C_Order_PO_to_C_Order_SO',
+  PO_TO_INVENTORY_LINE: 'reference-C_Order_PO_to_M_InventoryLine',
+  PO_TO_PROJECT: 'reference-C_Order_PO_to_C_Project',
+  PO_TO_FORECAST: 'reference-C_Order_to_M_Forecast',
 
+  // =====================================================================
   // Sales Order relations (SOTrx, IsSOTrx='Y')
+  // =====================================================================
   SO_TO_CUSTOMER_INVOICE: 'reference-C_Order_to_C_Invoice_SO',
   SO_TO_SHIPMENT: 'reference-C_Order_to_M_InOut_SO',
   SO_TO_SHIPMENT_SCHEDULE: 'reference-M_ShipmentSchedule',
   SO_TO_INVOICE_CANDIDATES: 'reference-C_Invoice_Candidate_Sales',
+  SO_TO_PURCHASE_ORDER: 'reference-C_Order_SO_to_C_Order_PO',
+  SO_TO_QUOTATION: 'reference-C_Order_SO_to_C_Order_Quotation',
+  SO_TO_PROJECT: 'reference-C_Order_SO_to_C_Project',
+  SO_TO_FLATRATE_TERM: 'reference-C_Order_to_C_FlatRate_Term',
+  SO_TO_OLCAND: 'reference-C_Order_to_C_OLCand',
+  SO_TO_PP_ORDER_CANDIDATE: 'reference-C_Order_SO_to_PP_Order_Candidate',
 
+  // =====================================================================
   // Invoice Candidate relations
+  // =====================================================================
   IC_TO_VENDOR_INVOICE: 'reference-C_Invoice_Candidate_to_C_Invoice_PO',
+  IC_SALES_TO_INVOICE: 'reference-C_Invoice_Candidate_Sales_C_Invoice',
+  IC_PURCHASE_TO_INVOICE: 'reference-C_Invoice_Candidate_Purchase_C_Invoice',
 
+  // =====================================================================
   // Shipment Schedule relations
+  // =====================================================================
   SHIPMENT_SCHEDULE_TO_SHIPMENT: 'reference-M_ShipmentSchedule_to_M_InOut',
 
-  // Invoice relations
+  // =====================================================================
+  // Shipment (M_InOut SOTrx) relations
+  // =====================================================================
+  SHIPMENT_TO_SALES_ORDER: 'reference-M_InOut_to_C_Order_SO',
+  SHIPMENT_TO_CUSTOMER_INVOICE: 'reference-M_InOut_to_C_Invoice_SO',
+  SHIPMENT_TO_SHIPMENT_SCHEDULE: 'reference-M_InOut_to_M_ShipmentSchedule',
+  SHIPMENT_TO_PROJECT: 'reference-M_InOut_SO_to_C_Project',
+
+  // =====================================================================
+  // Material Receipt (M_InOut POTrx) relations
+  // =====================================================================
+  RECEIPT_TO_PURCHASE_ORDER: 'reference-M_InOut_to_C_Order_PO',
+  RECEIPT_TO_VENDOR_INVOICE: 'reference-M_InOut_to_C_Invoice_PO',
+
+  // =====================================================================
+  // Sales Invoice (C_Invoice SOTrx) relations
+  // =====================================================================
+  SALES_INVOICE_TO_SALES_ORDER: 'reference-C_Invoice_to_C_Order_SO',
+  SALES_INVOICE_TO_SHIPMENT: 'reference-C_Invoice_to_M_InOut_SO',
+  SALES_INVOICE_TO_INVOICE_CANDIDATE: 'reference-C_Invoice_to_C_Invoice_Candidate_SO',
+  SALES_INVOICE_TO_DUNNING: 'reference-C_Invoice-C_DunningDoc',
+  SALES_INVOICE_TO_PAY_SELECTION: 'reference-C_Invoice_SO_to_C_PaySelection',
+  SALES_INVOICE_TO_PROJECT: 'reference-C_Invoice_SO_to_C_Project',
+  SALES_INVOICE_TO_REF_INVOICE: 'reference-C_Invoice_to_Ref_C_Invoice_SO',
+
+  // =====================================================================
+  // Vendor Invoice (C_Invoice POTrx) relations
+  // =====================================================================
+  VENDOR_INVOICE_TO_PURCHASE_ORDER: 'reference-C_Invoice_to_C_Order_PO',
+  VENDOR_INVOICE_TO_RECEIPT: 'reference-C_Invoice_to_M_InOut_PO',
+  VENDOR_INVOICE_TO_INVOICE_CANDIDATE: 'reference-C_Invoice_to_C_Invoice_Candidate_PO',
+  VENDOR_INVOICE_TO_PAY_SELECTION: 'reference-C_Invoice_PO_to_C_PaySelection',
+  VENDOR_INVOICE_TO_PROJECT: 'reference-C_Invoice_PO_to_C_Project',
+  VENDOR_INVOICE_TO_REF_INVOICE: 'reference-C_Invoice_to_Ref_C_Invoice_PO',
+
+  // =====================================================================
+  // Payment relations
+  // =====================================================================
   INVOICE_TO_PAYMENT: 'reference-C_Invoice_to_C_Payment',
+  PAYMENT_TO_PAY_SELECTION: 'reference-C_Payment_to_C_PaySelection',
 };
