@@ -1,8 +1,35 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
-CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
+/*
+ * #%L
+ * de.metas.edi
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+-- gh#26915: DESADV Mischkarton - merge sub-article packs into main article packs
+-- Sub-articles in compensation groups are now nested within the main article's pack,
+-- adding IsSubArticle and MainArticleLine fields to each LineItem.
+-- Backward compatible: packs NOT in a compensation group are unchanged.
+--
+-- Also inlines the edi_desadv_line_object_v logic in the LATERAL join,
+-- using pack_item.m_inoutline_id to disambiguate orderline/order context
+-- (avoids row multiplication when a desadv line is linked to multiple orders).
+
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB
 AS
 $$
@@ -24,8 +51,6 @@ BEGIN
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = epi.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
             AND ol.c_order_compensationgroup_id IS NOT NULL
-                 JOIN m_inoutline iol_filter ON iol_filter.m_inoutline_id = epi.m_inoutline_id
-            AND iol_filter.m_inout_id = p_m_inout_id
         WHERE ep.edi_desadv_id = p_edi_desadv_id
           AND ep.isactive = 'Y'
           AND epi.isactive = 'Y'
@@ -70,8 +95,6 @@ BEGIN
              FROM edi_desadv_pack ep
                       JOIN edi_desadv_pack_item epi
                            ON epi.edi_desadv_pack_id = ep.edi_desadv_pack_id AND epi.isactive = 'Y'
-                      JOIN m_inoutline iol_filter ON iol_filter.m_inoutline_id = epi.m_inoutline_id
-                           AND iol_filter.m_inout_id = p_m_inout_id
                       LEFT JOIN pack_item_comp pic ON pic.edi_desadv_pack_item_id = epi.edi_desadv_pack_item_id
                       LEFT JOIN main_per_group mg ON mg.comp_group_id = pic.comp_group_id
              WHERE ep.edi_desadv_id = p_edi_desadv_id
