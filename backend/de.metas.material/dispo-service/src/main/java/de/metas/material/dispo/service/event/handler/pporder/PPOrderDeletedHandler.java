@@ -5,6 +5,7 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -81,12 +84,12 @@ public final class PPOrderDeletedHandler
 
 		if (existingCandidateOrNull != null)
 		{
-			deleteLineCandidates(event, existingCandidateOrNull);
-			candidateChangeService.onCandidateDelete(existingCandidateOrNull);
+			zeroLineCandidates(event, existingCandidateOrNull);
+			zeroCandidateQty(existingCandidateOrNull);
 		}
 	}
 
-	private void deleteLineCandidates(
+	private void zeroLineCandidates(
 			@NonNull final PPOrderDeletedEvent event,
 			@NonNull final Candidate headerCandidate)
 	{
@@ -98,9 +101,20 @@ public final class PPOrderDeletedHandler
 			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLine, simulated);
 			if (existingLineCandidate != null)
 			{
-				candidateChangeService.onCandidateDelete(existingLineCandidate);
+				zeroCandidateQty(existingLineCandidate);
 			}
 		}
+	}
+
+	private void zeroCandidateQty(@NonNull final Candidate candidate)
+	{
+		final ProductionDetail detail = ProductionDetail.cast(candidate.getBusinessCaseDetail());
+		final ProductionDetail zeroedDetail = detail.toBuilder().qty(ZERO).build();
+		final Candidate zeroed = candidate.toBuilder()
+				.quantity(ZERO)
+				.businessCaseDetail(zeroedDetail)
+				.build();
+		candidateChangeService.onCandidateNewOrChange(zeroed);
 	}
 
 	@Nullable

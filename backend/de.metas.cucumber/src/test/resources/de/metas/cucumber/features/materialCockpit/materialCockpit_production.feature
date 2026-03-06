@@ -75,6 +75,10 @@ Feature: material cockpit reflects PP_Order operations
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtySupply_PP_Order_AtDate |
       | cp_1       | p_finished              | 2024-09-22  | 10                            |
+    # Verify cockpit for component product shows PP demand
+    And after not more than 120s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyDemand_PP_Order_AtDate |
+      | cp_comp    | p_component             | 2024-09-20  | 30                            |
 
   @Id:S0189_3100
   @from:cucumber
