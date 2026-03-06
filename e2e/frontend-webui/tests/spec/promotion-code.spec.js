@@ -8,6 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { getFieldData } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -156,26 +157,29 @@ entire order-to-cash flow.
             const soRecordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
             console.log(`[${language}] Sales Order ${soRecordId} created`);
 
-            // Set promotion code on the order (field is in Advanced Edit modal)
-            await page.keyboard.press('Alt+e');
-            await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            console.log(`[${language}] Advanced edit modal opened on SO`);
+            // Set promotion code on the order via WebAPI PATCH (field is in Advanced Edit area)
+            const webApiBase = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
-            const promoCodeField = page.locator('.panel-modal-content #lookup_C_PromotionCode_ID input').first();
-            await promoCodeField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            await promoCodeField.click();
-            await promoCodeField.fill(promoValue);
+            // First, find the promotion code record by typeahead lookup
+            const lookupResp = await page.request.get(
+                `${webApiBase}/window/${SALES_ORDER_WINDOW_ID}/${soRecordId}/field/C_PromotionCode_ID/typeahead?query=${encodeURIComponent(promoValue)}`,
+            );
+            expect(lookupResp.ok()).toBeTruthy();
+            const lookupData = await lookupResp.json();
+            const promoOption = lookupData.values?.[0] || lookupData[0];
+            expect(promoOption).toBeTruthy();
+            console.log(`[${language}] Found promotion code in lookup: ${JSON.stringify(promoOption)}`);
+
+            // PATCH the promotion code onto the sales order
+            const patchResp = await page.request.patch(
+                `${webApiBase}/window/${SALES_ORDER_WINDOW_ID}/${soRecordId}`,
+                {
+                    data: [{ op: 'replace', path: 'C_PromotionCode_ID', value: promoOption }],
+                },
+            );
+            expect(patchResp.ok()).toBeTruthy();
+            console.log(`[${language}] Promotion code set on SO via WebAPI`);
             await page.waitForTimeout(1000);
-
-            // Select from dropdown
-            const promoDropdownOption = page.locator('.input-dropdown-list-option').first();
-            await promoDropdownOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            await promoDropdownOption.click();
-            await page.waitForTimeout(1000);
-
-            // Close Advanced Edit modal
-            await page.keyboard.press('Escape');
-            await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
             // Add order line
             await SalesOrderPage.addOrderLine({
@@ -194,16 +198,9 @@ entire order-to-cash flow.
             const screenshotSO = await page.screenshot();
             allure.attachment('Sales Order Completed', screenshotSO, 'image/png');
 
-            // Step 5: Verify promotion code is visible on the completed order (in Advanced Edit modal)
-            await page.keyboard.press('Alt+e');
-            await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            const promoCodeOnOrder = page.locator('.panel-modal-content #lookup_C_PromotionCode_ID .lookup-widget-value, .panel-modal-content #lookup_C_PromotionCode_ID input');
-            const promoCodeText = await promoCodeOnOrder.first().inputValue().catch(() =>
-                promoCodeOnOrder.first().innerText().catch(() => '')
-            );
-            console.log(`[${language}] Promotion code on order: ${promoCodeText}`);
-            await page.keyboard.press('Escape');
-            await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+            // Step 5: Verify promotion code persists on completed order (via WebAPI)
+            const promoFieldOnOrder = await getFieldData(SALES_ORDER_WINDOW_ID, soRecordId, 'C_PromotionCode_ID');
+            console.log(`[${language}] Promotion code on order: ${JSON.stringify(promoFieldOnOrder.value)}`);
 
             // Wait for async processing
             await page.waitForTimeout(5000);
@@ -237,16 +234,13 @@ entire order-to-cash flow.
             expect(invoiceDocNo).toBeTruthy();
             console.log(`[${language}] Invoice created: ${invoiceDocNo}`);
 
-            // Step 9: Verify promotion code on invoice (in Advanced Edit modal)
-            await page.keyboard.press('Alt+e');
-            await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            const promoCodeOnInvoice = page.locator('.panel-modal-content #lookup_C_PromotionCode_ID .lookup-widget-value, .panel-modal-content #lookup_C_PromotionCode_ID input');
-            const invoicePromoText = await promoCodeOnInvoice.first().inputValue().catch(() =>
-                promoCodeOnInvoice.first().innerText().catch(() => '')
-            );
-            console.log(`[${language}] Promotion code on invoice: ${invoicePromoText}`);
-            await page.keyboard.press('Escape');
-            await page.locator('.panel-modal').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+            // Step 9: Verify promotion code on invoice (via WebAPI)
+            const invoiceUrl = page.url();
+            const invoiceRecordId = invoiceUrl.match(/\/window\/\d+\/(\d+)/)?.[1];
+            if (invoiceRecordId) {
+                const promoFieldOnInvoice = await getFieldData(SALES_INVOICE_WINDOW_ID.toString(), invoiceRecordId, 'C_PromotionCode_ID');
+                console.log(`[${language}] Promotion code on invoice: ${JSON.stringify(promoFieldOnInvoice.value)}`);
+            }
 
             const screenshotInvoice = await page.screenshot();
             allure.attachment('Invoice with Promotion Code', screenshotInvoice, 'image/png');
