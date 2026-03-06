@@ -1,5 +1,10 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 Feature: EDI_cctop_invoic_v export format
+## F00350: EDI
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,8 +15,12 @@ Feature: EDI_cctop_invoic_v export format
 
   #   Convenience Salat 250g
     And load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
-      | convenienceSalate       | 2005577          |
+      | Identifier        | OPT.M_Product_ID |
+      | convenienceSalate | 2005577          |
+      | ifco6410          | 2001343          |
+    And update M_Product:
+      | Identifier | IsActive |
+      | ifco6410   | Y        |
 
   Scenario: As a user I want to export C_Invoice using EDI_cctop_invoic_v export format
 
@@ -35,8 +44,8 @@ Feature: EDI_cctop_invoic_v export format
       | 2155894                  | bPartnerVaTaxID |
 
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            | OPT.EAN_CU           |
-      | bp_1                             | 2156425                  | convenienceSalate       | bPartnerProductGTIN | bPartnerProductEANCU |
+      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
+      | bp_1                             | 2156425                  | convenienceSalate       | 0575095404663 |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN       |
@@ -103,7 +112,7 @@ Feature: EDI_cctop_invoic_v export format
       | invoice_1               | invoice_candidate_1               |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference     | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference     | paymentTerm | processed | DocStatus |
       | invoice_1               | 2156425                  | 2205175                           | po_ref_23062023 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
@@ -127,8 +136,8 @@ Feature: EDI_cctop_invoic_v export format
       | ic_1                             | d_1                                |
 
     And EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated
-      | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU   | OPT.Buyer_EAN_CU     | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
-      | ic_1                             | bPartnerProductGTIN | bPartnerProductEANCU | productGTIN          | itemProductGTIN   | itemProductGTIN |
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU | OPT.Buyer_EAN_CU | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
+      | ic_1                             | 0575095404663     | 0575095404663    | productGTIN          | itemProductGTIN   | itemProductGTIN |
 
     And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
       | eancom_locationtype | OPT.Contact |

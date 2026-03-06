@@ -31,7 +31,7 @@ import org.apache.camel.Processor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_SYSTEM_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class ProcessOLCandProcessor implements Processor
@@ -51,7 +51,7 @@ public class ProcessOLCandProcessor implements Processor
 		final List<JsonOLCandProcessRequest> olCandClearRequests = context.getImportedExternalHeaderIds().stream()
 				.map(externalHeaderId -> JsonOLCandProcessRequest.builder()
 						.externalHeaderId(externalHeaderId)
-						.inputDataSourceName(DATA_SOURCE_INT_SHOPWARE)
+						.externalSystemCode(EXTERNAL_SYSTEM_SHOPWARE)
 						.ship(false)
 						.invoice(false)
 						.closeOrder(false)

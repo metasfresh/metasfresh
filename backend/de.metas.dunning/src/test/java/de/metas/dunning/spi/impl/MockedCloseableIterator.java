@@ -10,28 +10,26 @@ package de.metas.dunning.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.util.collections.IteratorUtils;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.junit.Assert;
-
-import de.metas.util.collections.IteratorUtils;
 
 public final class MockedCloseableIterator<E> implements Iterator<E>, Closeable
 {
@@ -47,7 +45,7 @@ public final class MockedCloseableIterator<E> implements Iterator<E>, Closeable
 	public static void assertAllClosed()
 	{
 		final List<MockedCloseableIterator<?>> iteratorsNotClosed = new ArrayList<MockedCloseableIterator<?>>();
-		for (MockedCloseableIterator<?> it : mockedIterators)
+		for (final MockedCloseableIterator<?> it : mockedIterators)
 		{
 			if (!it.isClosed())
 			{
@@ -55,7 +53,7 @@ public final class MockedCloseableIterator<E> implements Iterator<E>, Closeable
 			}
 		}
 
-		Assert.assertTrue("Not closed iterators found: " + iteratorsNotClosed, iteratorsNotClosed.isEmpty());
+		Assertions.assertTrue(iteratorsNotClosed.isEmpty(), "Not closed iterators found: " + iteratorsNotClosed);
 	}
 
 	public static void clear()

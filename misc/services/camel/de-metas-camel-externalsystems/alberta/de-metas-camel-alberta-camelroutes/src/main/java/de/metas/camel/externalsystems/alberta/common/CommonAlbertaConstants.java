@@ -38,4 +38,5 @@ public interface CommonAlbertaConstants
 	String EXTERNAL_IDENTIFIER_PREFIX = "ext";
 
 	String ALBERTA_DATA_INPUT_SOURCE = "int-Alberta";
+	String EXTERNAL_SYSTEM_ALBERTA = "ALBERTA";
 }

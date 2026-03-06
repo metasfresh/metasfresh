@@ -33,8 +33,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -47,8 +47,8 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_2_30;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
 import static de.metas.serviceprovider.issue.IssueTestHelper.buildAndStoreIssueRecord;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class IssueServiceTest
 {
@@ -57,7 +57,7 @@ public class IssueServiceTest
 	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
 	private final IssueService issueService = new IssueService(issueRepository, timeBookingRepository);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

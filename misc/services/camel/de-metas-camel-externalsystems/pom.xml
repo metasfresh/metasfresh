@@ -3,7 +3,7 @@
   ~ #%L
   ~ de-metas-camel-externalsystems
   ~ %%
-  ~ Copyright (C) 2022 metas GmbH
+  ~ Copyright (C) 2025 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -38,27 +38,81 @@
     <version>10.0.0</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <java.version>17</java.version>
+        <spring-boot.version>3.4.3</spring-boot.version>
+        <camel.version>4.10.6</camel.version>
+        <guava.version>33.4.5-jre</guava.version>
+
+        <assertj.version>3.27.3</assertj.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
+        <jackson.version>2.18.3</jackson.version>
+    </properties>
+    
     <modules>
         <module>core</module>
         <module>alberta</module>
         <module>common</module>
-        <module>de-metas-camel-shopware6</module>
-        <module>de-metas-camel-rabbitmq</module>
-        <module>de-metas-camel-woocommerce</module>
         <module>de-metas-camel-grssignum</module>
         <module>de-metas-camel-leichundmehl</module>
-        <module>de-metas-camel-printingclient</module>
         <module>de-metas-camel-pcm-file-import</module>
+        <module>de-metas-camel-printingclient</module>
+        <module>de-metas-camel-rabbitmq</module>
+        <module>de-metas-camel-scriptedadapter</module>
+        <module>de-metas-camel-shopware6</module>
+        <module>de-metas-camel-woocommerce</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-bom</artifactId>
+                <version>${camel.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
     <dependencies>
         <dependency>
-            <!-- we include lombok in the actual build, as a curtesty to 3rd-parties who want to compile against this build's image -->
+            <!-- we include lombok in the actual build, as curtesy to 3rd-parties who want to compile against this build's image -->
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
-            <!-- <version>1.18.18</version> -->
             <version>1.18.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- needed to run the tests with maven's surefire-plugin -->
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

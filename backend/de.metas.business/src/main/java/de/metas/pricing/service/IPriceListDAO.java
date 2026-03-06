@@ -87,7 +87,8 @@ public interface IPriceListDAO extends ISingletonService
 	PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable PricingSystemId pricingSystemId,
 			CountryId countryId,
-			SOTrx soTrx);
+			SOTrx soTrx,
+			@Nullable CurrencyId currencyId);
 
 	@NonNull
 	I_M_PriceList retrievePriceListbyId(@NonNull PriceListId priceListId);
@@ -99,7 +100,7 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param soTrx           sales, purchase or null to return both
 	 */
-	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
+	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx, @Nullable CurrencyId currencyId);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.

@@ -1,15 +1,15 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
@@ -26,39 +26,40 @@ public class PickingJobCompleteCommand
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
+	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
-	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingShipmentService shipmentService;
 
 	@NonNull private final PickingJob initialPickingJob0;
 
 	@Builder
 	private PickingJobCompleteCommand(
-			final @NonNull MobileUIPickingUserProfileRepository configRepository,
+			final @NonNull MobileUIPickingUserProfileService configService,
 			final @NonNull PickingJobService pickingJobService,
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
-			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
+			final @NonNull PickingJobHUService huService,
 			final @NonNull PickingShipmentService shipmentService,
 			//
 			final @NonNull PickingJob pickingJob)
 	{
-		this.configRepository = configRepository;
+		this.configService = configService;
 		this.pickingJobService = pickingJobService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
-		this.pickingJobHUReservationService = pickingJobHUReservationService;
+		this.huService = huService;
 		this.shipmentService = shipmentService;
 
 		this.initialPickingJob0 = pickingJob;
 	}
 
+	@SuppressWarnings("unused")
 	public static class PickingJobCompleteCommandBuilder
 	{
 		public PickingJob execute() {return build().execute();}
@@ -66,6 +67,12 @@ public class PickingJobCompleteCommand
 
 	public PickingJob execute()
 	{
+		// do nothing if already completed 
+		if (initialPickingJob0.getDocStatus().isCompleted())
+		{
+			return initialPickingJob0;
+		}
+
 		validateJob();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
@@ -80,15 +87,15 @@ public class PickingJobCompleteCommand
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
-		pickingJob = pickingJobService.closeAllLUPickingTargets(pickingJob);
+		pickingJob = pickingJobService.closeLUAndTUPickingTargets(pickingJob);
 
 		final PickingJobId pickingJobId = pickingJob.getId();
 		pickingJob.getPickingSlotId()
 				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, pickingJobId));
 
-		pickingJobHUReservationService.releaseAllReservations(pickingJob);
+		huService.releaseAllReservations(pickingJob);
 
-		pickingJobLockService.unlockShipmentSchedules(pickingJob);
+		pickingJobLockService.unlockSchedules(pickingJob);
 
 		shipmentService.createShipmentIfNeeded(pickingJob);
 
@@ -103,7 +110,7 @@ public class PickingJobCompleteCommand
 			throw new AdempiereException(NOTHING_HAS_BEEN_PICKED);
 		}
 
-		final PickingJobOptions options = configRepository.getPickingJobOptions(initialPickingJob0.getCustomerId());
+		final PickingJobOptions options = configService.getPickingJobOptions(initialPickingJob0.getCustomerId());
 		if (!options.isAllowCompletingPartialPickingJob() && !initialPickingJob0.getProgress().isDone())
 		{
 			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);

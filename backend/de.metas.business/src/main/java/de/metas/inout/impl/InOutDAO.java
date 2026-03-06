@@ -49,6 +49,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -82,6 +83,12 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
 		return load(inoutId, I_M_InOut.class);
+	}
+
+	@Override
+	public <T extends I_M_InOut> List<T> getByIds(@NonNull final Set<InOutId> inOutIds, @NonNull final Class<T> type)
+	{
+		return loadByRepoIdAwares(inOutIds, type);
 	}
 
 	@Nullable

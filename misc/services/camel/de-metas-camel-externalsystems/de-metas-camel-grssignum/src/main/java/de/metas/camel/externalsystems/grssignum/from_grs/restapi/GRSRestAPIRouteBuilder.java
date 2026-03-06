@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -107,6 +107,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
+		// open http-endpoint
 		from(direct(ENABLE_RESOURCE_ROUTE_ID))
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
@@ -118,6 +119,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
+		// close http-endpoint
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
@@ -129,10 +131,13 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
+		// here comes the *actual* REST-endpoint
 		rest().path(RestServiceRoutes.GRS.getPath())
-				.post()
-				.route()
-				.routeId(REST_API_ROUTE_ID)
+			.post()
+			.to("direct:" + REST_API_ROUTE_ID);
+		
+		from("direct:" + REST_API_ROUTE_ID)
+			.routeId(REST_API_ROUTE_ID)
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.doTry()
 					.process(this::restAPIProcessor)
@@ -149,8 +154,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 					.to(direct(MF_ERROR_ROUTE_ID))
 					.process(this::prepareErrorResponse)
 					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
-				.endDoTry()
-				.end();
+				.endDoTry();
 		//@formatter:on
 	}
 

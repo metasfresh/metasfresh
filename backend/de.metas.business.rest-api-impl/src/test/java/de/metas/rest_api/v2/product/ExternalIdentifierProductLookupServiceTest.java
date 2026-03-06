@@ -25,13 +25,11 @@ package de.metas.rest_api.v2.product;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -51,13 +49,10 @@ public class ExternalIdentifierProductLookupServiceTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-		
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-		final ExternalSystems externalSystems = new ExternalSystems();
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
-		
+
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
+
 		productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 	}
 

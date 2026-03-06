@@ -55,12 +55,14 @@ public interface IInOutDAO extends ISingletonService
 {
 	I_M_InOut getById(InOutId inoutId);
 
+	<T extends I_M_InOut> List<T> getByIds(@NonNull Set<InOutId> inOutIds, @NonNull Class<T> type);
+
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
 	<T extends I_M_InOut> T getByIdOutOfTrx(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 

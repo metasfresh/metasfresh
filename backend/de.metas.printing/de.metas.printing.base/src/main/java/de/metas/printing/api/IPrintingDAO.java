@@ -1,10 +1,8 @@
-package de.metas.printing.api;
-
 /*
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.printing.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.printing.api;
 
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
@@ -51,6 +51,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
@@ -119,9 +120,11 @@ public interface IPrintingDAO extends ISingletonService
 	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> or empty then this parameter must be <code>> 0</code>. Used to retrieve the config by its
 	 *                      {@link I_AD_Printer_Config#COLUMNNAME_CreatedBy CreatedBy} value
 	 */
-	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId);
+	@Contract("null, null -> fail")
+	I_AD_Printer_Config retrievePrinterConfig(@Nullable String hostKey, @Nullable UserId userToPrintId);
 
-	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId, WorkplaceId workplaceId);
+	@Contract("null, null, null -> fail")
+	I_AD_Printer_Config retrievePrinterConfig(@Nullable String hostKey, @Nullable UserId userToPrintId, @Nullable WorkplaceId workplaceId);
 
 	/**
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.

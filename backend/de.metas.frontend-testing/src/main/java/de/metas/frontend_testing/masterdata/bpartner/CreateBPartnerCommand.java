@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -15,12 +16,16 @@ import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -61,15 +66,28 @@ public class CreateBPartnerCommand
 		this.context = context;
 		this.request = request;
 
-		final Identifier suggestedIdentifier = Identifier.ofNullableString(identifier);
-		if (suggestedIdentifier == null)
+		final String customCode = request.getBpartnerCode();
+
+		final Identifier suggestedIdentifier = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> Identifier.ofNullableString(identifier),
+				() -> Identifier.ofNullableString(customCode),
+				() -> Identifier.unique("BP"));
+		this.bpIdentifier = suggestedIdentifier;
+
+		// NEW: Use custom bpartnerCode if provided (max 40 chars - MOST RESTRICTIVE!)
+
+		if (Check.isNotBlank(customCode))
 		{
-			this.bpIdentifier = Identifier.unique("BP");
-			this.bpValue = bpIdentifier.getAsString();
+			// Validate length - C_BPartner.Value has max 40 characters
+			if (customCode.length() > 40)
+			{
+				throw new AdempiereException("bpartnerCode must not exceed 40 characters (got: " + customCode.length() + ")");
+			}
+			// Use custom code as-is
+			this.bpValue = customCode;
 		}
 		else
 		{
-			this.bpIdentifier = suggestedIdentifier;
 			this.bpValue = suggestedIdentifier.toUniqueString();
 		}
 	}
@@ -80,15 +98,33 @@ public class CreateBPartnerCommand
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setValue(bpValue);
-		bpartner.setName(bpValue);
+
+		// Use custom name if provided (max 100 chars), otherwise use value
+		final String customName = request.getName();
+		if (Check.isNotBlank(customName) && customName.length() > 100)
+		{
+			throw new AdempiereException("bpartner name must not exceed 100 characters");
+		}
+		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
+		bpartner.setName(bpName);
 		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(bpValue);
+		bpartner.setCompanyName(bpName);
 		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
-		bpartner.setIsVendor(false);
-		bpartner.setIsCustomer(true);
+		bpartner.setIsVendor(request.isVendor());
+		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
-		bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+
+		// Set pricing system based on vendor/customer flags
+		if (request.isCustomer())
+		{
+			bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Sales pricing system
+		}
+		if (request.isVendor())
+		{
+			bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Purchase pricing system
+		}
+
 		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
@@ -109,7 +145,8 @@ public class CreateBPartnerCommand
 			singleGLN = GLN.ofNullableString(bpLocationRecord.getGLN());
 			responseLocations = null;
 
-			context.putIdentifier(bpIdentifier, singleBPLocationId);
+			@NonNull final Identifier bpLocationIdentifier = Identifier.ofString(bpIdentifier.getAsString() + MasterdataContext.SINGLE_BP_LOCATION_SUFFIX);
+			context.putIdentifier(bpLocationIdentifier, singleBPLocationId);
 		}
 		else
 		{
@@ -138,19 +175,47 @@ public class CreateBPartnerCommand
 			}
 		}
 
+		// Create contacts (AD_User records) if provided
+		final Map<String, JsonCreateBPartnerResponse.Contact> responseContacts;
+		if (request.getContacts() != null && !request.getContacts().isEmpty())
+		{
+			responseContacts = new HashMap<>();
+			for (final String contactIdentifierStr : request.getContacts().keySet())
+			{
+				final JsonCreateBPartnerRequest.Contact contactRequest = request.getContacts().get(contactIdentifierStr);
+				final I_AD_User contactRecord = createContact(contactRequest, bpartnerId);
+
+				@NonNull final Identifier contactIdentifier = Identifier.ofString(contactIdentifierStr);
+				final UserId contactId = UserId.ofRepoId(contactRecord.getAD_User_ID());
+				context.putIdentifier(contactIdentifier, contactId);
+
+				responseContacts.put(contactIdentifierStr, JsonCreateBPartnerResponse.Contact.builder()
+						.id(contactId.getRepoId())
+						.firstName(contactRecord.getFirstname())
+						.lastName(contactRecord.getLastname())
+						.email(contactRecord.getEMail())
+						.build());
+			}
+		}
+		else
+		{
+			responseContacts = null;
+		}
+
 		return JsonCreateBPartnerResponse.builder()
 				.id(bpartnerId)
 				.bpartnerCode(bpartner.getValue())
 				.bpartnerLocationId(singleBPLocationId != null ? singleBPLocationId.getRepoId() : null)
 				.gln(singleGLN)
 				.locations(responseLocations)
+				.contacts(responseContacts)
 				.build();
 	}
 
 	private I_C_BPartner_Location createBPLocation(
-			@NonNull JsonCreateBPartnerRequest.Location request,
+			@NonNull final JsonCreateBPartnerRequest.Location request,
 			@NonNull final BPartnerId bpartnerId,
-			boolean isDefault)
+			final boolean isDefault)
 	{
 		final LocationId locationId = createLocation();
 
@@ -168,7 +233,61 @@ public class CreateBPartnerCommand
 		return bPartnerLocationRecord;
 	}
 
-	private GLN toGLN(final String glnStr)
+	private I_AD_User createContact(
+			@NonNull final JsonCreateBPartnerRequest.Contact request,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final I_AD_User contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		contactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		contactRecord.setAD_Org_ID(orgId.getRepoId());
+
+		// Set name - use lastName or firstName, or generate a default
+		final String firstName = StringUtils.trimBlankToNull(request.getFirstName());
+		final String lastName = StringUtils.trimBlankToNull(request.getLastName());
+
+		if (lastName != null)
+		{
+			contactRecord.setLastname(lastName);
+			contactRecord.setName(lastName + (firstName != null ? ", " + firstName : ""));
+		}
+		else if (firstName != null)
+		{
+			contactRecord.setName(firstName);
+		}
+		else
+		{
+			contactRecord.setName("Contact-" + System.currentTimeMillis());
+		}
+
+		if (firstName != null)
+		{
+			contactRecord.setFirstname(firstName);
+		}
+
+		final String email = StringUtils.trimBlankToNull(request.getEmail());
+		if (email != null)
+		{
+			contactRecord.setEMail(email);
+		}
+
+		final String phone = StringUtils.trimBlankToNull(request.getPhone());
+		if (phone != null)
+		{
+			contactRecord.setPhone(phone);
+		}
+
+		final String description = StringUtils.trimBlankToNull(request.getDescription());
+		if (description != null)
+		{
+			contactRecord.setDescription(description);
+		}
+
+		InterfaceWrapperHelper.saveRecord(contactRecord);
+		return contactRecord;
+	}
+
+	@Nullable
+	private GLN toGLN(@Nullable final String glnStr)
 	{
 		final String glnStrNorm = StringUtils.trimBlankToNull(glnStr);
 		if (glnStrNorm == null)
@@ -212,7 +331,8 @@ public class CreateBPartnerCommand
 		pricingSystem.setName(value);
 		pricingSystem.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(pricingSystem);
-		PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
 		context.putIdentifier(pricingSystemIdentifier, pricingSystemId);
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
@@ -224,7 +344,7 @@ public class CreateBPartnerCommand
 		priceList.setIsTaxIncluded(false);
 		priceList.setPricePrecision(2);
 		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(true);
+		priceList.setIsSOPriceList(request.isSoPriceList());
 		priceList.setC_Country_ID(countryId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(priceList);
 
@@ -234,7 +354,8 @@ public class CreateBPartnerCommand
 		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		plv.setValidFrom(Timestamp.from(validFrom));
 		saveRecord(plv);
-		PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
+
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		context.putIdentifier(Identifier.unique("PLV"), priceListVersionId);
 
 		return pricingSystemId;

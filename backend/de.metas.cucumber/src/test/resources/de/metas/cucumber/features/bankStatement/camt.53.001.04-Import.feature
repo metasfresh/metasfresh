@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
 Feature: import bank statement in camt.53.001.04 import format
+## F01100: Bank Statement
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,6 +40,9 @@ Feature: import bank statement in camt.53.001.04 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_100
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
 
@@ -216,10 +223,13 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_1_S0337               | true                     | 0.00        | 119        | inv_1_S0337_100             | 2022-05-10  | bpartner_1_S0337             | bpb_1_S0337                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
 
@@ -452,11 +462,14 @@ Feature: import bank statement in camt.53.001.04 import format
       | p_2_1_S0337             | true                     | 0.00        | 119        | inv_1_S0337_200             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
       | p_2_2_S0337             | true                     | 0.00        | 107.1      | inv_2_S0337_200             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
       | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_300
   Scenario: Import one statement, identify org-account by IBAN and link two invoices, but in 2 different bank statements; so the expectation is to have created 2 bank statements
 
@@ -755,7 +768,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | p_3_1_S0337             | true                     | 0.00        | 107.1      | inv_2_S0337_300             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_300 |
       | p_3_2_S0337             | true                     | 0.00        | 119        | inv_1_S0337_300             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_300 |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_300         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
       | inv_2_S0337_300         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
@@ -1108,6 +1121,9 @@ Feature: import bank statement in camt.53.001.04 import format
       | bsl_1_S0337_400_5                 | 2023-10-25     | 2023-10-25   | CHF                        | -1953.15   |                              |                             |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_500
   Scenario: Import one statement, identify org-account by IBAN and import as one summary line
 
@@ -1337,6 +1353,9 @@ Feature: import bank statement in camt.53.001.04 import format
 
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0337_600
   Scenario: Import one statement, identify org-account by IBAN, split QRR transactions from regular transactions and import as only QRR transacations as one summary line
 

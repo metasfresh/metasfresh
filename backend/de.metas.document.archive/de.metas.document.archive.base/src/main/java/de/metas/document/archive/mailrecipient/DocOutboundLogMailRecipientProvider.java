@@ -44,5 +44,5 @@ public interface DocOutboundLogMailRecipientProvider
 	/**
 	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the recored.recordRef's has the same table as {@link #getTableName()}.
 	 */
-	Optional<DocOutBoundRecipient> provideMailRecipient(DocOutboundLogMailRecipientRequest request);
+	Optional<DocOutBoundRecipients> provideMailRecipient(DocOutboundLogMailRecipientRequest request);
 }

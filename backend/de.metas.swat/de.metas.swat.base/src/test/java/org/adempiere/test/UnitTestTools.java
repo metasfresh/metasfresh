@@ -23,6 +23,7 @@ package org.adempiere.test;
  */
 
 import de.metas.common.util.time.SystemTime;
+import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -32,8 +33,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class UnitTestTools
 {
@@ -76,15 +75,15 @@ public class UnitTestTools
 		try
 		{
 			final Method method = className.getMethod(methodName, params);
-			assertEquals(returnType, method.getReturnType());
+			Assertions.assertEquals(returnType, method.getReturnType());
 		}
 		catch (SecurityException e)
 		{
-			fail();
+			Assertions.fail();
 		}
 		catch (NoSuchMethodException e)
 		{
-			fail("Method doesn't exist");
+			Assertions.fail("Method doesn't exist");
 		}
 	}
 

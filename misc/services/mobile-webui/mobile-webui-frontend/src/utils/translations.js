@@ -3,6 +3,7 @@ import translations_en from './translations_en';
 import translations_de from './translations_de';
 
 import { getApplicationMessages } from '../apps';
+import { getMessages } from '../api/configuration';
 
 /** Just a shortcut & abstraction of counterpart's translate function */
 export const trl = (key, args = {}) => {
@@ -22,7 +23,21 @@ export const setupCounterpart = () => {
     console.log(`Registered apps messages ${locale}`, applicationsMessages[locale]);
   });
 
+  registerBackendMessages({ lang: 'en' });
+  registerBackendMessages({ lang: 'de' });
+
   //setLanguage('de_DE'); // used only for debugging
+};
+
+const registerBackendMessages = ({ lang }) => {
+  getMessages({ lang })
+    .then(({ messages }) => {
+      counterpart.registerTranslations(lang, messages);
+      console.log(`Registered backend messages for ${lang}`, { messages });
+    })
+    .catch((error) => {
+      console.warn(`Got error while trying to register backend messages for '${lang}' language`, { error });
+    });
 };
 
 const generateMissingTranslation = (key) => {

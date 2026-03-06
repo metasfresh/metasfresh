@@ -1,10 +1,8 @@
-package de.metas.user.api;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.user.api;
  * #L%
  */
 
+package de.metas.user.api;
+
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.job.JobId;
@@ -33,7 +33,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -79,8 +78,11 @@ public interface IUserDAO extends ISingletonService
 
 	String retrieveUserFullName(UserId userId);
 
+	/**
+	 * @param email the mail needs to be a syntactically correct mail-address!
+	 */
 	@Nullable
-	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
+	UserId retrieveUserIdByEMail(@Nullable String email, ClientId adClientId);
 
 	/**
 	 * @return all system(login) user IDs

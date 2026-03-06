@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.freightcost;
 
 import de.metas.bpartner.service.IBPartnerBL;
@@ -57,30 +79,8 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class FreightCostTest
 {
@@ -106,7 +106,7 @@ public class FreightCostTest
 
 		final FreightCostRepository freightCostRepo = new FreightCostRepository();
 		final FreightCostService freightCostService = new FreightCostService(freightCostRepo);
-		orderFreightCostsService = new OrderFreightCostsService(freightCostService, new BPartnerOrderParamsRepository());
+		orderFreightCostsService = new OrderFreightCostsService(freightCostService, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -172,19 +172,19 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(N123));
+		assertThat(order1.getFreightAmt()).isEqualByComparingTo(N123);
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(2));
+		assertThat(orderLines).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
 
-		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(N123));
+		assertThat(freightCostLine.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostLine.getPriceActual()).isEqualTo(N123);
 
 	}
 
@@ -248,19 +248,19 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(N123));
+		assertThat(order1.getFreightAmt()).isEqualTo(N123);
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(2));
+		assertThat(orderLines).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
 
-		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(N123));
+		assertThat(freightCostLine.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostLine.getPriceActual()).isEqualByComparingTo(N123);
 
 	}
 
@@ -334,19 +334,19 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order1.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(2));
+		assertThat(orderLines).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
 
-		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(N123));
+		assertThat(freightCostLine.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostLine.getPriceActual()).isEqualTo(N123);
 
 	}
 
@@ -420,14 +420,14 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order1.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(1));
+		assertThat(orderLines).hasSize(1);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
 
@@ -501,14 +501,14 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order1.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(1));
+		assertThat(orderLines).hasSize(1);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
 
@@ -582,14 +582,14 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order1.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(1));
+		assertThat(orderLines).hasSize(1);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
 
@@ -606,6 +606,7 @@ public class FreightCostTest
 		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		partner1.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner1.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		save(partner1);
 
 		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
@@ -651,19 +652,19 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(N123));
+		assertThat(order1.getFreightAmt()).isEqualByComparingTo(N123);
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(2));
+		assertThat(orderLines).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
 
-		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(FIVE));
+		assertThat(freightCostLine.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostLine.getPriceActual()).isEqualByComparingTo(FIVE);
 	}
 
 	@Test
@@ -728,18 +729,18 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order1.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(2));
+		assertThat(orderLines).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine = orderLines.get(1);
-		assertThat(freightCostOrderLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostOrderLine.getPriceActual(), comparesEqualTo(FIVE));
+		assertThat(freightCostOrderLine.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostOrderLine.getPriceActual()).isEqualByComparingTo(FIVE);
 
 		final I_C_Order order2 = createSalesOrder(
 				partner1.getC_BPartner_ID(),
@@ -756,18 +757,18 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order2, IDocument.ACTION_Complete);
 
-		assertThat(order2.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order2.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines2 = Services.get(IOrderDAO.class).retrieveOrderLines(order2);
 
-		assertThat(orderLines2.size(), comparesEqualTo(2));
+		assertThat(orderLines2).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine2 = orderLines2.get(0);
-		assertThat(productOrderLine2.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine2.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine2 = orderLines2.get(1);
-		assertThat(freightCostOrderLine2.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostOrderLine2.getPriceActual(), comparesEqualTo(TEN));
+		assertThat(freightCostOrderLine2.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostOrderLine2.getPriceActual()).isEqualByComparingTo(TEN);
 
 		final I_C_Order order3 = createSalesOrder(
 				partner1.getC_BPartner_ID(),
@@ -784,18 +785,18 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order3, IDocument.ACTION_Complete);
 
-		assertThat(order3.getFreightAmt(), comparesEqualTo(ZERO));
+		assertThat(order3.getFreightAmt()).isZero();
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines3 = Services.get(IOrderDAO.class).retrieveOrderLines(order3);
 
-		assertThat(orderLines3.size(), comparesEqualTo(2));
+		assertThat(orderLines3).hasSize(2);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine3 = orderLines3.get(0);
-		assertThat(productOrderLine3.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine3.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine3 = orderLines3.get(1);
-		assertThat(freightCostOrderLine3.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostOrderLine3.getPriceActual(), comparesEqualTo(ZERO));
+		assertThat(freightCostOrderLine3.getM_Product_ID()).isEqualTo(freightCostProduct.getM_Product_ID());
+		assertThat(freightCostOrderLine3.getPriceActual()).isZero();
 	}
 
 	@Test
@@ -855,14 +856,14 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, IDocument.ACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(N123));
+		assertThat(order1.getFreightAmt()).isEqualByComparingTo(N123);
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
-		assertThat(orderLines.size(), comparesEqualTo(1));
+		assertThat(orderLines).hasSize(1);
 
 		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
-		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
 
@@ -891,6 +892,7 @@ public class FreightCostTest
 	{
 		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
 		bpGroup.setName(name);
+		bpGroup.setValue(name);
 
 		save(bpGroup);
 
@@ -903,6 +905,7 @@ public class FreightCostTest
 		partner.setName(partnerName);
 		partner.setC_BP_Group_ID(bpGroupId);
 		partner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 
 		save(partner);
 

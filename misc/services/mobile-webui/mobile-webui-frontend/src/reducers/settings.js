@@ -16,7 +16,12 @@ export const useBooleanSetting = (name, defaultIfNotFound = false) => {
   } else if (value === 'N' || value === false) {
     return false;
   } else {
-    return defaultIfNotFound;
+    if (typeof defaultIfNotFound === 'function') {
+      // noinspection JSValidateTypes
+      return defaultIfNotFound();
+    } else {
+      return defaultIfNotFound;
+    }
   }
 };
 

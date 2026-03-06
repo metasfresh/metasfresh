@@ -1124,7 +1124,7 @@ public interface I_DD_Order
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1134,7 +1134,7 @@ public interface I_DD_Order
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1436,6 +1436,31 @@ public interface I_DD_Order
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_DD_Order.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -1536,7 +1561,7 @@ public interface I_DD_Order
 	String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Weight.
+	 * Set Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number
@@ -1546,7 +1571,7 @@ public interface I_DD_Order
 	void setWeight (@Nullable BigDecimal Weight);
 
 	/**
-	 * Get Weight.
+	 * Get Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number

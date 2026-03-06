@@ -49,6 +49,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -89,6 +90,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU getById(HuId huId);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
@@ -118,6 +121,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
+	List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull Set<HuPackingInstructionsItemId> piItemIds);
+
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
 	 */
@@ -133,11 +138,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @param hu may not be {@code null}
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(I_M_HU hu);
+	@Nullable HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
@@ -224,6 +225,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
+	@NonNull
 	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
@@ -340,6 +342,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 
+	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
+
 	// TODO: replace it by getByIds
 	@Deprecated
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
@@ -366,4 +370,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
 
 	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
+
+	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
 }

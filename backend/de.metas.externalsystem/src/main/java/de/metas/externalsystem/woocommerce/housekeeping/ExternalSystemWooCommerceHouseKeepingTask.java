@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.woocommerce.WooCommerceCommand;
 import de.metas.logging.LogManager;
@@ -59,7 +60,7 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 	@Override
 	public void executeTask()
 	{
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemType.WOO.getExternalSystemProcessClassName());
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(ExternalSystemType.WOO));
 
 		if (processId == null)
 		{

@@ -31,7 +31,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -355,6 +354,12 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnNameOrNull(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
 	{
 		try
@@ -508,9 +513,10 @@ public class DataTableUtil
 	@Nullable
 	public String extractValueOrNull(@Nullable final String value)
 	{
-		if (value == null || value.equals("null"))
+		if (value == null || value.equals(NULL_STRING))
+		{
 			return null;
-
+		}
 		return value;
 	}
 

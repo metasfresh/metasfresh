@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.user;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.organization.OrgId;
@@ -11,10 +12,13 @@ import de.metas.security.UserAuthToken;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenService;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
@@ -25,6 +29,7 @@ public class LoginUserCommand
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final UserAuthTokenService userAuthTokenService;
+	@NonNull private final WorkplaceService workplaceService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonLoginUserRequest request;
@@ -32,11 +37,33 @@ public class LoginUserCommand
 
 	public JsonLoginUserResponse execute()
 	{
-		final String login = identifier.toUniqueString();
+		// Use custom login if provided (max 255 chars), otherwise generate timestamp-based
+		final String customLogin = request.getLogin();
+		if (Check.isNotBlank(customLogin) && customLogin.length() > 255)
+		{
+			throw new AdempiereException("login must not exceed 255 characters (got: " + customLogin.length() + ")");
+		}
+		final String login = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> customLogin,
+				identifier::toUniqueString);
+
+		final String customFirstname = request.getFirstname();
+		if (Check.isNotBlank(customFirstname) && customFirstname.length() > 255)
+		{
+			throw new AdempiereException("firstname must not exceed 255 characters");
+		}
+		final String firstname = CoalesceUtil.coalesceNotNull(customFirstname, login);
+
+		final String customLastname = request.getLastname();
+		if (Check.isNotBlank(customLastname) && customLastname.length() > 255)
+		{
+			throw new AdempiereException("lastname must not exceed 255 characters");
+		}
+		final String lastname = CoalesceUtil.coalesceNotNull(customLastname, login);
 
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		user.setFirstname(login);
-		user.setLastname(login);
+		user.setFirstname(firstname);
+		user.setLastname(lastname);
 		user.setEMail(login + "@metasfresh.com");
 		user.setAD_Language(request.getLanguage());
 		user.setIsSystemUser(true);
@@ -44,6 +71,7 @@ public class LoginUserCommand
 		InterfaceWrapperHelper.save(user);
 		userBL.save(user);
 		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+		context.putIdentifier(identifier, userId);
 
 		//noinspection UnnecessaryLocalVariable
 		final String password = login; // for convenience, we use the same password as user // UUID.randomUUID().toString().replace("-", "");

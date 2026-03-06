@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,6 +47,7 @@ import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.http.base.HttpOperationFailedException;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -56,13 +57,14 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.CoreConstants.CUSTOM_TO_MF_ROUTE;
+import static de.metas.camel.externalsystems.core.authorization.CustomMessageFromMFRouteBuilder.CUSTOM_FROM_MF_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.authorization.CustomMessageFromMFRouteBuilder.CUSTOM_MESSAGE_FROM_MF_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.restapi.ExternalSystemRestAPIHandler.HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.hu.ClearHURouteBuilder.CLEAR_HU_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID;
 import static de.metas.camel.externalsystems.woocommerce.restapi.RestAPIRouteBuilder.REST_API_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 {
@@ -75,21 +77,26 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	private MetasfreshAuthProvider metasfreshAuthProvider;
 	private CustomRouteController customRouteController;
 
+
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
+
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(CustomMessageToMFRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
-
+	
 	@Override
 	protected CamelContext createCamelContext() throws Exception
 	{
@@ -134,15 +141,14 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		};
 	}
 
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
 	@Test
 	public void happyFlow() throws Exception
 	{
+		// given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID, 
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+		
 		//when
 		context.start();
 
@@ -162,6 +168,10 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	public void givenAnExchange_whenCallingMFAPI_thenAuthNotifierProvidesAnAuthToken() throws Exception
 	{
 		//given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID,
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+		
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
 		final MockClearHUProcessor mockClearHUProcessor = new MockClearHUProcessor();
 		prepareClearHURouteForTesting(mockCustomMessageToMFProcessor, mockClearHUProcessor);
@@ -196,7 +206,7 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + CLEAR_HU_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockCustomMessageToMFProcessor.called).isEqualTo(0);
 		assertThat(mockClearHUProcessor.called).isEqualTo(1);
 	}
@@ -205,6 +215,10 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	public void givenAnExchange_whenCallingAnythingButMFAPI_thenAuthNotifierDoesntProvideAnAuthToken() throws Exception
 	{
 		//given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID,
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+		
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
 		final MockClearHUProcessor mockClearHUProcessor = new MockClearHUProcessor();
 		prepareClearHURouteForTesting(mockCustomMessageToMFProcessor, mockClearHUProcessor);
@@ -245,6 +259,10 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	public void givenAnExchange_whenCallingMFAPI_withNoAuthTokenAvailable_thenShutdownAllRoutesAndRequestAuthToken() throws Exception
 	{
 		//given
+		AdviceWith.adviceWith(context,
+				CUSTOM_FROM_MF_ROUTE_ID,
+				a -> a.replaceFromWith("direct:test-RabbitMQ_custom_from_MF_Route_ID"));
+		
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
 		final MockClearHUProcessor mockClearHUProcessor = new MockClearHUProcessor(true);
 		prepareClearHURouteForTesting(mockCustomMessageToMFProcessor, mockClearHUProcessor);

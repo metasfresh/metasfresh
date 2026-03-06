@@ -38,6 +38,7 @@ import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -82,6 +83,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -89,7 +91,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
@@ -122,12 +123,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static de.metas.handlingunits.impl.HandlingUnitsBL.getTUsCount;
+import static de.metas.handlingunits.impl.HandlingUnitsBL.isAggregatedTUHolder;
+
 /**
  * This class contains business logic run by clients when they transform HUs.
  * Use {@link #newInstance(IHUContext)} to obtain an instance.
- *
- * @author metas-dev <dev@metasfresh.com>
- * task https://github.com/metasfresh/metasfresh-webui/issues/181
  */
 public class HUTransformService
 {
@@ -153,6 +154,7 @@ public class HUTransformService
 	// services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
@@ -163,8 +165,10 @@ public class HUTransformService
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService;
 
-	private final IHUContext huContext;
+	@NonNull private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
+
+	private static final AdMessageKey MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND = AdMessageKey.of("HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND");
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -885,7 +889,7 @@ public class HUTransformService
 	 */
 	public LUTUResult luExtractTUs(@NonNull final LUExtractTUsRequest request)
 	{
-		@NonNull final I_M_HU sourceLU = request.getSourceLU();
+		@NonNull final LU sourceLU = retrieveLUWithTUs(request.getSourceLU());
 		@NonNull final QtyTU qtyTU = request.getQtyTU();
 		@NonNull final HashSet<HuId> alreadyExtractedTUIds = request.getAlreadyExtractedTUIds() != null
 				? request.getAlreadyExtractedTUIds()
@@ -894,25 +898,35 @@ public class HUTransformService
 
 		//
 		// Validate request
-		Check.assume(handlingUnitsBL.isLoadingUnit(sourceLU), "Source shall be a LU: {}", sourceLU);
 		Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
 
 		TargetLU targetLU = request.getTargetLU();
 		QtyTU qtyTUsRemaining = qtyTU; // how many TUs we still have to extract
-		LUTUResult allExtractedTUs = LUTUResult.EMPTY;
+		LUTUResult result = LUTUResult.EMPTY;
+
+		//
+		// Check if we can take the LU as is
+		if (!sourceLU.containsAnyOfHUIds(alreadyExtractedTUIds) // sourceLU shall not (soon to) be modified, it must be intact
+				&& QtyTU.equals(sourceLU.getQtyTU(), qtyTU) // expected number of TUs
+				&& isSourceLUMatching_TargetLU(sourceLU, targetLU) // expected packing
+				&& isSourceLUMatching_SingleProductId(sourceLU, expectedProductId) // expected single product
+		)
+		{
+			return LUTUResult.ofLU(sourceLU);
+		}
 
 		// if keepSourceLuAsParent==true, then includedHUs probably contains TUs we already extracted; that's why we need alreadyExtractedTUIds.
-		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(sourceLU))
+		for (final TU tu : sourceLU.getTus())
 		{
 			if (qtyTUsRemaining.isZero())
 			{
 				break;
 			}
-			if (alreadyExtractedTUIds.contains(HuId.ofRepoId(tu.getM_HU_ID())))
+			if (alreadyExtractedTUIds.contains(tu.getId()))
 			{
 				continue;
 			}
-			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(tu, expectedProductId))
+			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(tu.toHU(), expectedProductId))
 			{
 				continue;
 			}
@@ -921,9 +935,9 @@ public class HUTransformService
 
 			//
 			// TU (aggregated or non-aggregated)
-			if (handlingUnitsBL.isTransportUnitOrAggregate(tu))
+			if (tu.isTransportUnitOrAggregate())
 			{
-				final QtyTU qtyTUsAvailable = getMaximumQtyTU(tu);
+				final QtyTU qtyTUsAvailable = tu.getQtyTU();
 				if (qtyTUsAvailable.isZero())
 				{
 					continue;
@@ -932,17 +946,17 @@ public class HUTransformService
 				final QtyTU qtyTUsToExtract = qtyTUsRemaining.min(qtyTUsAvailable);
 				if (targetLU.isExistingLU())
 				{
-					extractedTUs = tuToExistingLU(tu, qtyTUsToExtract, targetLU.getExistingLUNotNull());
+					extractedTUs = tuToExistingLU(tu.toHU(), qtyTUsToExtract, targetLU.getExistingLUNotNull());
 				}
 				else if (targetLU.isNewLU())
 				{
-					extractedTUs = tuToNewLU(tu, qtyTUsToExtract, targetLU.getNewLUIdNotNull());
+					extractedTUs = tuToNewLU(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull());
 					extractedTUs.assertNoTopLevelTUs();
 					targetLU = TargetLU.ofExistingLU(extractedTUs.getSingleLURecord());
 				}
 				else if (targetLU.isNone())
 				{
-					extractedTUs = tuToNewTUs(tu, qtyTUsToExtract);
+					extractedTUs = tuToNewTUs(tu.toHU(), qtyTUsToExtract);
 				}
 				else
 				{
@@ -951,9 +965,9 @@ public class HUTransformService
 			}
 			//
 			// VHU on LU
-			else if (handlingUnitsBL.isVirtual(tu))
+			else if (tu.isVHU())
 			{
-				// Skip VHUs which are directly set on LU
+				// Skip VHUs, which are directly set on LU
 				extractedTUs = LUTUResult.EMPTY;
 			}
 			else
@@ -961,14 +975,91 @@ public class HUTransformService
 				throw new AdempiereException("Unknown HU type: " + tu);
 			}
 
-			allExtractedTUs = allExtractedTUs.mergeWith(extractedTUs);
+			result = result.mergeWith(extractedTUs);
 			qtyTUsRemaining = qtyTUsRemaining.subtractOrZero(extractedTUs.getQtyTUs());
 
 		} // each TU
 
-		alreadyExtractedTUIds.addAll(allExtractedTUs.getAllTUIds());
+		alreadyExtractedTUIds.addAll(result.getAllTUIds());
 
-		return allExtractedTUs;
+		return result;
+	}
+
+	private boolean isSourceLUMatching_TargetLU(
+			@NonNull final LU sourceLU,
+			@NonNull final TargetLU targetLU)
+	{
+		if (targetLU.isNone())
+		{
+			return true;
+		}
+		else if (targetLU.isNewLU())
+		{
+			return HuPackingInstructionsId.equals(targetLU.getNewLUIdNotNull(), handlingUnitsBL.getPIId(sourceLU.toHU()));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	private boolean isSourceLUMatching_SingleProductId(
+			@NonNull final LU sourceLU,
+			@Nullable final ProductId expectedProductId)
+	{
+		return expectedProductId == null || huContext.getHUStorageFactory().isSingleProductStorageMatching(sourceLU.toHU(), expectedProductId);
+	}
+
+	private LU retrieveLUWithTUs(@NonNull final I_M_HU luHU)
+	{
+		Check.assume(handlingUnitsBL.isLoadingUnit(luHU), "Expected LU: {}", luHU);
+
+		final ArrayList<TU> tus = new ArrayList<>();
+
+		final Set<Integer> seenTUIds = new HashSet<>();
+		for (final I_M_HU_Item luItem : handlingUnitsDAO.retrieveItems(luHU))
+		{
+			for (final I_M_HU tuHU : handlingUnitsDAO.retrieveIncludedHUs(luItem))
+			{
+				final int tuId = tuHU.getM_HU_ID();
+				if (!seenTUIds.add(tuId))
+				{
+					continue;
+				}
+
+				final TU tu;
+
+				//
+				// Aggregated TUs
+				if (isAggregatedTUHolder(luItem))
+				{
+					final QtyTU qtyTUs = getTUsCount(luItem);
+					if (qtyTUs.isPositive())
+					{
+						tu = TU.ofAggregatedTU(tuHU, qtyTUs);
+					}
+					else
+					{
+						tu = null;
+					}
+				}
+				//
+				// Single (non-aggregated) TU
+				// or VHU on LU
+				else
+				{
+					tu = TU.ofSingleTU(tuHU);
+				}
+
+				if (tu != null)
+				{
+					tus.add(tu);
+				}
+			}
+		}
+
+		return LU.of(luHU, tus)
+				.markedAsPreExistingLU();
 	}
 
 	/**
@@ -1220,8 +1311,8 @@ public class HUTransformService
 					.findFirst().orElse(null);
 			if (materialItem == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
-						.setParameter("tuPI", tuPI);
+				throw new HUException(MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND, tuPI.getName(), tuPI.getM_HU_PI_ID(), sourceTuHU.getM_HU_ID())
+						.markAsUserValidationError();
 			}
 			destination.setTUPI(tuPI);
 			destination.addCUPerTU(cuProductId, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
@@ -1326,19 +1417,28 @@ public class HUTransformService
 		}
 	}
 
+	@Value
+	@Builder
+	public static class HUsToNewCUsResponse
+	{
+		@NonNull ImmutableList<I_M_HU> newCUs;
+		@NonNull Quantity qtyCUsLeft;
+
+		public I_M_HU singleCU() {return CollectionUtils.singleElement(newCUs);}
+	}
+
 	public I_M_HU huToNewSingleCU(@NonNull final HUsToNewCUsRequest newCURequest)
 	{
 		Check.assume(newCURequest.getSourceHUs().size() == 1, "Only one source HU expected: {}", newCURequest);
-		final List<I_M_HU> splitCUs = husToNewCUs(newCURequest);
-		return CollectionUtils.singleElement(splitCUs);
+		return husToNewCUs(newCURequest).singleCU();
 	}
 
 	/**
 	 * Creates new CUs (vhus) according to the given request
 	 */
-	public List<I_M_HU> husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
+	public HUsToNewCUsResponse husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
 	{
-		Quantity qtyCuLeft = newCUsRequest.getQtyCU();
+		@NonNull Quantity qtyCuLeft = newCUsRequest.getQtyCU();
 
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
@@ -1359,7 +1459,11 @@ public class HUTransformService
 				break;
 			}
 		}
-		return result.build();
+
+		return HUsToNewCUsResponse.builder()
+				.newCUs(result.build())
+				.qtyCUsLeft(qtyCuLeft)
+				.build();
 	}
 
 	/**
@@ -1569,31 +1673,34 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> childCUs,
 			@NonNull final I_M_HU targetTU)
 	{
-		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
 		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Param 'tuHU' does not have one 'MI' item; tuHU=" + targetTU)));
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No Material HU Item found for " + targetTU));
 
-		// finally do the attaching
+		childCUs.forEach(childCU -> {
+			setParent(childCU,
+					tuMaterialItem,
+					true,
+					// before the newChildCU's parent item is set,
+					localHuContext -> {
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+						updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
+					},
 
-		// iterate the child CUs and set their parent item
-		childCUs.forEach(childCU -> setParent(childCU,
-				tuMaterialItem,
-				true,
-				// before the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-					updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
-				},
+					// after the newChildCU's parent item is set,
+					localHuContext -> {
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+						updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
+					});
 
-				// after the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-					updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
-				}));
+			// Make sure child CU will have the same status as the target TU
+			huStatusBL.setHUStatus(huContext, childCU, targetTU.getHUStatus());
+			handlingUnitsDAO.saveHU(childCU);
+		});
 	}
 
 	@NonNull

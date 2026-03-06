@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ClientId;
-import org.junit.Test;
 
 import de.metas.user.UserId;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

@@ -1,28 +1,8 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.calendar.CalendarId;
@@ -34,6 +14,24 @@ import de.metas.util.time.generator.FrequencyType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -61,7 +59,7 @@ import lombok.ToString;
 public class BPPurchaseScheduleRepository
 {
 	private final CCache<BPartnerId, AllBPPurchaseSchedule> //
-	schedulesByBpartnerId = CCache.<BPartnerId, AllBPPurchaseSchedule> newCache(I_C_BP_PurchaseSchedule.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	schedulesByBpartnerId = CCache.newCache(I_C_BP_PurchaseSchedule.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	public Optional<BPPurchaseSchedule> getByBPartnerIdAndValidFrom(final BPartnerId bpartnerId, final LocalDate date)
 	{
@@ -120,7 +118,6 @@ public class BPPurchaseScheduleRepository
 				.frequency(frequency)
 				.dailyPreparationTimes(extractPreparationTimes(daysOfWeek, scheduleRecord))
 				.reminderTime(Duration.ofMinutes(scheduleRecord.getReminderTimeInMin()))
-				.leadTimeOffset(Duration.ofDays(scheduleRecord.getLeadTimeOffset()))
 				.bpartnerId(BPartnerId.ofRepoId(scheduleRecord.getC_BPartner_ID()))
 				.nonBusinessDaysCalendarId(CalendarId.ofRepoIdOrNull(scheduleRecord.getC_Calendar_ID()))
 				.build();
@@ -160,7 +157,7 @@ public class BPPurchaseScheduleRepository
 
 	private static ImmutableSet<DayOfWeek> extractDaysOfWeek(final I_C_BP_PurchaseSchedule schedule)
 	{
-		final ImmutableSet.Builder<DayOfWeek> daysOfWeek = ImmutableSet.<DayOfWeek> builder();
+		final ImmutableSet.Builder<DayOfWeek> daysOfWeek = ImmutableSet.builder();
 
 		if (schedule.isOnMonday())
 		{
@@ -267,20 +264,9 @@ public class BPPurchaseScheduleRepository
 		public Optional<BPPurchaseSchedule> findByDate(@NonNull final LocalDate date)
 		{
 			return schedules.stream()
-					.filter(schedule -> schedule.getValidFrom().compareTo(date) <= 0)
+					.filter(schedule -> !schedule.getValidFrom().isAfter(date))
 					.findFirst();
 		}
-	}
-
-	public BPPurchaseSchedule changeLeadTimeOffset(final BPPurchaseSchedule bpPurchaseSchedule, Duration leadTimeOffset)
-	{
-		bpPurchaseSchedule.toBuilder()
-				.leadTimeOffset(leadTimeOffset)
-				.build();
-
-		save(bpPurchaseSchedule);
-
-		return bpPurchaseSchedule;
 	}
 
 	public BPPurchaseSchedule save(@NonNull final BPPurchaseSchedule schedule)
@@ -308,7 +294,6 @@ public class BPPurchaseScheduleRepository
 
 		scheduleRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(schedule.getBpartnerId(), 0));
 		scheduleRecord.setValidFrom(TimeUtil.asTimestamp(schedule.getValidFrom()));
-		scheduleRecord.setLeadTimeOffset((int)schedule.getLeadTimeOffset().toDays());
 		scheduleRecord.setReminderTimeInMin((int)schedule.getReminderTime().toMinutes());
 		final Frequency frequency = schedule.getFrequency();
 		scheduleRecord.setFrequencyType(toFrequencyTypeString(frequency.getType()));

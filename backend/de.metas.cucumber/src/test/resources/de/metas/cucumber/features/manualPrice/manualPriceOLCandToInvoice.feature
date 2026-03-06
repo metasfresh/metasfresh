@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @topic:orderCandidate
 Feature: Process order candidate and automatically generate shipment and invoice for it, using a product without product price
+## F32000: Pricing
   As a user
   I create an order candidate, using a product without product price
   and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
@@ -13,6 +17,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @Id:S0469_10
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given set sys config boolean value true for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
@@ -41,6 +48,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "orgCode": "001",
     "externalLineId": "externalLineId_S0469_10",
     "externalHeaderId": "externalHeaderId_S0469_10",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -69,7 +77,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 """
 {
     "externalHeaderId": "externalHeaderId_S0469_10",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true
@@ -81,7 +89,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus |
       | order_1               | externalHeaderId_S0469_10 | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_S0469_10 | true      | CL        |
 
     And validate the created order lines
@@ -89,7 +97,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | ol_1                      | order_1               | 2021-04-15      | p_S0469_10              | 10           | 10         | 10          | 10    | 0        | EUR          | true      | Normal                          |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference | processed | DocStatus |
       | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | po_ref_S0469_10 | true      | CO        |
 
     And validate the created shipment lines
@@ -97,7 +105,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | shipmentLine_1            | shipment_1            | p_S0469_10              | 10          | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_S0469_10 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
@@ -109,6 +117,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @Id:S0469_20
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order. Like the first one, but here the product is identified by a TU-GTIN
     Given set sys config boolean value true for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
@@ -152,6 +163,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "orgCode": "001",
     "externalLineId": "externalLineId_S0469_20",
     "externalHeaderId": "externalHeaderId_S0469_20",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -180,7 +192,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 """
 {
     "externalHeaderId": "externalHeaderId_S0469_20",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true
@@ -192,7 +204,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus |
       | order_1               | externalHeaderId_S0469_20 | bpartner_1_S0469_20      | bpartnerLocation_1_S0469_20       | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_S0469_20 | true      | CL        |
 
     And validate the created order lines
@@ -200,7 +212,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | ol_1                      | order_1               | 2021-04-15      | p_S0469_20              | 10           | 10         | 10          | 10    | 0        | EUR          | true      | Normal                          | 10              | huItemManufacturingProduct_S0469_20   |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference | processed | DocStatus |
       | shipment_1            | bpartner_1_S0469_20      | bpartnerLocation_1_S0469_20       | 2021-04-15  | po_ref_S0469_20 | true      | CO        |
 
     And validate the created shipment lines
@@ -208,7 +220,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | shipmentLine_1            | shipment_1            | p_S0469_20              | 10          | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
       | invoice_1               | bpartner_1_S0469_20      | bpartnerLocation_1_S0469_20       | po_ref_S0469_20 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines

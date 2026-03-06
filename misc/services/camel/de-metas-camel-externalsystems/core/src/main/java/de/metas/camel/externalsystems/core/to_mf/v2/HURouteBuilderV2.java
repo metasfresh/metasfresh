@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_HU_ID;
@@ -57,35 +57,35 @@ public class HURouteBuilderV2 extends RouteBuilder
 
 		from(direct(MF_RETRIEVE_HU_V2_CAMEL_ROUTE_ID))
 				.routeId(MF_RETRIEVE_HU_V2_CAMEL_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 
 				.process(this::validateAndAttachHeaders)
 
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.toD("{{" + MF_RETRIEVE_HU_V2_CAMEL_URI + "}}/${header.M_HU_ID}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID))
 				.routeId(MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 
 				.process(this::validateHUUpdateRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonHUAttributeCodeAndValues.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{" + MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI + "}}")
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_CLEAR_HU_V2_CAMEL_ROUTE_ID))
 				.routeId(MF_CLEAR_HU_V2_CAMEL_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::processClearanceStatusRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonSetClearanceStatusRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{" + MF_CLEAR_HU_V2_URI + "}}/clearance")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
@@ -94,13 +94,11 @@ public class HURouteBuilderV2 extends RouteBuilder
 	private void validateAndAttachHeaders(@NonNull final Exchange exchange)
 	{
 		final var lookupRequest = exchange.getIn().getBody();
-		if (!(lookupRequest instanceof RetrieveHUCamelRequest))
+		if (!(lookupRequest instanceof final RetrieveHUCamelRequest retrieveHUCamelRequest))
 		{
 			throw new RuntimeCamelException("The route " + MF_RETRIEVE_HU_V2_CAMEL_ROUTE_ID + " requires the body to be instanceof RetrieveHUCamelRequest."
 													+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 		}
-
-		final RetrieveHUCamelRequest retrieveHUCamelRequest = ((RetrieveHUCamelRequest)lookupRequest);
 
 		exchange.getIn().setHeader(HEADER_HU_ID, retrieveHUCamelRequest.getHuIdentifier());
 		exchange.getIn().setHeader(HEADER_EXTERNALSYSTEM_CONFIG_ID, retrieveHUCamelRequest.getExternalSystemConfigId().getValue());

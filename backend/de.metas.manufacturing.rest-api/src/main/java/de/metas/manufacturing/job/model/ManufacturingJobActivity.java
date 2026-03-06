@@ -130,6 +130,11 @@ public class ManufacturingJobActivity
 		}
 	}
 
+	public boolean isRawMaterialsIssue()
+	{
+		return this.type == PPRoutingActivityType.RawMaterialsIssue;
+	}
+
 	public RawMaterialsIssue getRawMaterialsIssueAssumingNotNull()
 	{
 		if (rawMaterialsIssue == null)

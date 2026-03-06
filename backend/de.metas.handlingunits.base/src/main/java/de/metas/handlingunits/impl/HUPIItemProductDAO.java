@@ -47,6 +47,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -109,7 +110,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(NumberUtils.stripTrailingDecimalZeros(record.getQty()), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isOrderInTuUomWhenMatched(record.isOrderInTuUomWhenMatched())
 				.build();
 	}
@@ -148,6 +149,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				HUPIItemProductId.VIRTUAL_HU);
 	}
 
+	@Nullable
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_PI_Item itemDef,
@@ -606,6 +608,20 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
+				.create()
+				.list(I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveAllForProducts(@NonNull final Set<ProductId> productIdSet)
+	{
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setOnlyProductIds(productIdSet);
+		queryVO.setAllowVirtualPI(false);
+		queryVO.setAllowAnyPartner(true);
+
+		return createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
 	}

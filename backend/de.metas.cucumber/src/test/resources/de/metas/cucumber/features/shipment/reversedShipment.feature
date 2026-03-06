@@ -1,10 +1,16 @@
 @from:cucumber
 @ghActions:run_on_executor7
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00150
 Feature: reversed shipment
+
+  ## F00150: Sales Shipment
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
   Scenario: we can create and complete a shipment, then reserve/correct it and check the hu's status
@@ -43,9 +49,12 @@ Feature: reversed shipment
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -62,12 +71,19 @@ Feature: reversed shipment
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | E        | N        |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
+    # === Reverse and re-ship ===
     And perform shipment document action
       | M_InOut_ID.Identifier | DocAction |
       | s_1                   | RC        |
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | A        | Y        |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -80,3 +96,6 @@ Feature: reversed shipment
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | E        | N        |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |

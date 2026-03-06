@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,6 +38,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,30 +86,27 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+		testConfiguration().withUseAdviceWith(true);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(PushBOMProductsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
+
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
 		return new PushBOMProductsRouteBuilder();
-	}
-
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
 	}
 
 	@BeforeEach
@@ -166,7 +164,7 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + PUSH_BOM_PRODUCTS_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockPushBOMsEP.called).isEqualTo(1);
 		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
 		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(1);

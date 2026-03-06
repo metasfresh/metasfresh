@@ -5,9 +5,9 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Check;
@@ -31,7 +31,7 @@ public class PickingJobAbortCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
-	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull private final PickingJobHUService huService;
 
 	@NonNull private final ImmutableList<PickingJob> initialPickingJobs;
 
@@ -40,7 +40,7 @@ public class PickingJobAbortCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
-			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
+			final @NonNull PickingJobHUService huService,
 			//
 			final @Singular @NonNull List<PickingJob> pickingJobs)
 	{
@@ -49,7 +49,7 @@ public class PickingJobAbortCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
-		this.pickingJobHUReservationService = pickingJobHUReservationService;
+		this.huService = huService;
 
 		this.initialPickingJobs = ImmutableList.copyOf(pickingJobs);
 	}
@@ -96,8 +96,8 @@ public class PickingJobAbortCommand
 				// NOTE: abort is not "reversing", so we don't have to reverse (unpick) what we picked.
 				// Even more, imagine that those picked things are already phisically splitted out.
 				//.map(this::unpickAllStepsAndSave)
-				.peek(pickingJobHUReservationService::releaseAllReservations)
-				.peek(pickingJobLockService::unlockShipmentSchedules)
+				.peek(huService::releaseAllReservations)
+				.peek(pickingJobLockService::unlockSchedules)
 				.map(this::markAsVoidedAndSave)
 				.findFirst()
 				.get();

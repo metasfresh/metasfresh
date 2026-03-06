@@ -51,11 +51,12 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
@@ -75,17 +76,15 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PricingConditionsTest
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private PricingConditionsRepository repo;
 	private PricingConditionsService service;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

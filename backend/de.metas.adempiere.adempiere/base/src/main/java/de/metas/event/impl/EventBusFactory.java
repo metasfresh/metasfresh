@@ -15,9 +15,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.log.EventLogService;
-import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -26,8 +24,6 @@ import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -64,7 +60,6 @@ public class EventBusFactory implements IEventBusFactory
 				}
 			});
 
-	private final IEventBusRemoteEndpoint remoteEndpoint;
 	private final MeterRegistry meterRegistry;
 	private final EventEnqueuer eventEnqueuer;
 	private final EventBusMonitoringService eventBusMonitoringService;
@@ -73,26 +68,19 @@ public class EventBusFactory implements IEventBusFactory
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
 	public EventBusFactory(
-			@NonNull final IEventBusRemoteEndpoint remoteEndpoint,
 			@NonNull final MeterRegistry meterRegistry,
 			@NonNull final EventEnqueuer eventEnqueuer,
 			@NonNull final EventBusMonitoringService eventBusMonitoringService,
 			@NonNull final EventLogService eventLogService)
 	{
-		this.remoteEndpoint = remoteEndpoint;
 		this.meterRegistry = meterRegistry;
 		this.eventEnqueuer = eventEnqueuer;
 		this.eventBusMonitoringService = eventBusMonitoringService;
 		this.eventLogService = eventLogService;
-		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
-		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
-
-		// Setup default user notification topics
+		// Set up default user notification topics
 		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotifications);
 		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotificationsLocal);
-
-		remoteEndpoint.setEventBusFactory(this);
 	}
 
 	@Override
@@ -188,9 +176,9 @@ public class EventBusFactory implements IEventBusFactory
 		if (EventBusConfig.isEventBusPostAsync(topic))
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-															 .setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
-															 .setDaemon(true)
-															 .build());
+					.setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
+					.setDaemon(true)
+					.build());
 		}
 		else
 		{
@@ -253,12 +241,5 @@ public class EventBusFactory implements IEventBusFactory
 				.stream()
 				.map(this::getEventBus)
 				.forEach(eventBus -> eventBus.unsubscribe(listener));
-	}
-
-	@Override
-	public boolean checkRemoteEndpointStatus()
-	{
-		remoteEndpoint.checkConnection();
-		return remoteEndpoint.isConnected();
 	}
 }

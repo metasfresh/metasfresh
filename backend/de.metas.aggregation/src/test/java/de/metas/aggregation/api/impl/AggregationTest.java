@@ -1,14 +1,13 @@
 package de.metas.aggregation.api.impl;
 
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.util.DisplayType;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationItem;
 import de.metas.aggregation.api.AggregationItem.Type;
 import de.metas.aggregation.api.AggregationItemId;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.compiere.util.DisplayType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link Aggregation}
@@ -54,6 +53,6 @@ public class AggregationTest
 	{
 		final String message = "Invalid hasColumnName(" + columnName + ")"
 				+ "\n Aggregation: " + aggregation;
-		Assert.assertEquals(message, hasColumnNameExpected, aggregation.hasColumnName(columnName));
+		Assertions.assertEquals(hasColumnNameExpected, aggregation.hasColumnName(columnName), message);
 	}
 }

@@ -36,14 +36,14 @@ public class LotNumberDateAttributeDAO implements ILotNumberDateAttributeDAO
 	public AttributeId getLotNumberDateAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumberDate);
+		return attributesRepo.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumberDate);
 	}
 
 	@Override
 	public AttributeId getLotNumberAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumber);
+		return attributesRepo.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumber);
 	}
 
 	@Override
@@ -52,6 +52,6 @@ public class LotNumberDateAttributeDAO implements ILotNumberDateAttributeDAO
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 		final AttributeId attributeId = getLotNumberAttributeId();
-		return attributesRepo.getAttributeById(attributeId);
+		return attributesRepo.getAttributeRecordById(attributeId);
 	}
 }

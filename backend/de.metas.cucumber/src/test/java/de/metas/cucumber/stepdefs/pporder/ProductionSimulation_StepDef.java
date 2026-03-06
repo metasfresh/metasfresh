@@ -22,10 +22,10 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.material.dispo.service.simulation.ProductionSimulationService;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.order.OrderLineId;
@@ -61,8 +61,8 @@ public class ProductionSimulation_StepDef
 
 	private void invokeSimulation(@NonNull final DataTableRow tableRow)
 	{
-		final I_C_Order orderRecord = tableRow.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupIn(orderTable);
-		final OrderLineId orderLineId = tableRow.getAsIdentifier(COLUMNNAME_C_OrderLine_ID).lookupIdIn(orderLineTable);
+		final I_C_Order orderRecord = tableRow.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		final OrderLineId orderLineId = tableRow.getAsIdentifier(COLUMNNAME_C_OrderLine_ID).lookupNotNullIdIn(orderLineTable);
 
 		final OrderLineDescriptor orderLineDescriptor = OrderLineDescriptor.builder()
 				.orderId(orderRecord.getC_Order_ID())

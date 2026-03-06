@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
-import { updateManufacturingIssue } from '../../../../../actions/ManufacturingActions';
+import { postManufacturingIssueEventThunk } from '../../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
@@ -94,7 +94,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
 
     return dispatch(
-      updateManufacturingIssue({
+      postManufacturingIssueEventThunk({
         wfProcessId,
         activityId,
         lineId,

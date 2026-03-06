@@ -22,15 +22,6 @@ package de.metas.handlingunits.test;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -40,6 +31,12 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class HUAssertsBuilder
 {
@@ -83,9 +80,7 @@ public class HUAssertsBuilder
 		final IHUStorage storage = storageFactory.getStorage(hu);
 		final BigDecimal qtyActual = storage.getQty(productId, uom);
 
-		Assert.assertThat(assertPrefix + "Invalid qty for product " + product.getValue(),
-				qtyActual,
-				Matchers.comparesEqualTo(qty));
+		Assertions.assertThat(qtyActual).as(assertPrefix + "Invalid qty for product " + product.getValue()).isEqualByComparingTo(qty);
 
 		return this;
 	}
@@ -109,7 +104,7 @@ public class HUAssertsBuilder
 			}
 		}
 
-		Assert.fail(assertPrefix + "No item was found for itemType=" + itemType + ", index=" + index);
+		Assertions.fail(assertPrefix + "No item was found for itemType=" + itemType + ", index=" + index);
 		return null;
 	}
 

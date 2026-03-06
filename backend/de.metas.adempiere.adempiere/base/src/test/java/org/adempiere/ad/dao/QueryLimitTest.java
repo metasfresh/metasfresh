@@ -1,9 +1,16 @@
 package org.adempiere.ad.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +72,7 @@ public class QueryLimitTest
 	public void toIntOr()
 	{
 		assertThat(QueryLimit.NO_LIMIT.toIntOr(Integer.MAX_VALUE)).isEqualTo(Integer.MAX_VALUE);
-		assertThat(QueryLimit.ofInt(1).toIntOr(Integer.MAX_VALUE)).isEqualTo(1);
+		assertThat(QueryLimit.ofInt(1).toIntOr(Integer.MAX_VALUE)).isOne();
 	}
 
 	@Test
@@ -91,6 +98,15 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(9).isLimitHitOrExceeded(listOfSize(10))).isTrue();
 		assertThat(QueryLimit.ofInt(10).isLimitHitOrExceeded(listOfSize(10))).isTrue();
 		assertThat(QueryLimit.ofInt(11).isLimitHitOrExceeded(listOfSize(10))).isFalse();
+	}
+
+	@Test
+	public void isBelowLimit()
+	{
+		assertThat(QueryLimit.NO_LIMIT.isBelowLimit(listOfSize(10))).isTrue();
+		assertThat(QueryLimit.ofInt(9).isBelowLimit(listOfSize(10))).isFalse();
+		assertThat(QueryLimit.ofInt(10).isBelowLimit(listOfSize(10))).isFalse();
+		assertThat(QueryLimit.ofInt(11).isBelowLimit(listOfSize(10))).isTrue();
 	}
 
 	@Nested
@@ -133,6 +149,48 @@ public class QueryLimitTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Invalid collection size");
 		}
-
 	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	static class JsonHolder
+	{
+		@Nullable QueryLimit limit;
+	}
+
+	@Test
+	void testSerializeDeserialize() throws JsonProcessingException
+	{
+		testSerializeDeserialize(new JsonHolder(null));
+		testSerializeDeserialize(new JsonHolder(QueryLimit.NO_LIMIT));
+		testSerializeDeserialize(new JsonHolder(QueryLimit.TEN));
+	}
+
+	void testSerializeDeserialize(JsonHolder obj) throws JsonProcessingException
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		final String jsonStr = jsonObjectMapper.writeValueAsString(obj);
+		final JsonHolder obj2 = jsonObjectMapper.readValue(jsonStr, JsonHolder.class);
+		assertThat(obj2).usingRecursiveComparison().isEqualTo(obj);
+		assertThat(obj2).isEqualTo(obj);
+	}
+
+	@Test
+	void testDeserialize() throws JsonProcessingException
+	{
+		testDeserialize("{ \"limit\": null }", null);
+		testDeserialize("{ \"limit\": -1 }", QueryLimit.NO_LIMIT);
+		testDeserialize("{ \"limit\": 0 }", QueryLimit.NO_LIMIT);
+		testDeserialize("{ \"limit\": 10 }", QueryLimit.TEN);
+		testDeserialize("{ \"limit\": \"10\" }", QueryLimit.TEN);
+	}
+
+	void testDeserialize(String jsonStr, QueryLimit expected) throws JsonProcessingException
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		final JsonHolder obj = jsonObjectMapper.readValue(jsonStr, JsonHolder.class);
+		assertThat(obj.getLimit()).isEqualTo(expected);
+	}
+
 }

@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,5 +37,13 @@ public class Warehouse
 	@NonNull WarehouseId warehouseId;
 	@NonNull String name;
 	@Nullable ResourceId resourceId;
+	boolean isReceiveAsSourceHU;
+	@NonNull WarehouseSourceHUConfigList warehouseSourceHUConfigs;
 	boolean active;
+
+	public boolean isConfiguredToReceiveAsSourceHU(@NonNull final ProductCategoryId productCategoryId)
+	{
+		if (!isReceiveAsSourceHU) {return false;}
+		return warehouseSourceHUConfigs.applies(productCategoryId);
+	}
 }

@@ -2,6 +2,8 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_isTUToBePickedAsWhole,
+  ATTR_isUnique,
   ATTR_lotNo,
   ATTR_productionDate,
   ATTR_productNo,
@@ -30,6 +32,8 @@ export const parseCustomQRCode = ({ string, format }) => {
   try {
     let result = {
       [ATTR_barcodeType]: BARCODE_TYPE_CUSTOM,
+      [ATTR_isUnique]: false,
+      [ATTR_isTUToBePickedAsWhole]: true,
     };
 
     for (const formatPart of format.parts) {

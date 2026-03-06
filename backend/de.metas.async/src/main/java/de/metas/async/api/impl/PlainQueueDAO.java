@@ -132,7 +132,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 
 	@Override
 	@NonNull
-	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
+	protected <T> T retrieveItem(final @NonNull I_C_Queue_Element element, final @NonNull Class<T> clazz, final String trxName)
 	{
 		final int tableId = element.getAD_Table_ID();
 		final int recordId = element.getRecord_ID();

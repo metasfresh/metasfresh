@@ -1,11 +1,10 @@
 package de.metas.purchasecandidate.availability;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

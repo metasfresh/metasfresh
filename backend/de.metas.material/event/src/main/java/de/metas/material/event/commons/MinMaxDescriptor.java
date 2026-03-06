@@ -25,13 +25,14 @@ package de.metas.material.event.commons;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /**
  * Makes sense together with a {@link MaterialDescriptor}.
@@ -46,15 +47,26 @@ public class MinMaxDescriptor
 
 	BigDecimal max;
 
-	@Builder
-	@JsonCreator
+	boolean highPriority;
+
 	private MinMaxDescriptor(
 			@JsonProperty("min") @Nullable final BigDecimal min,
 			@JsonProperty("max") @Nullable final BigDecimal max)
 	{
-		this.min = CoalesceUtil.coalesceNotNull(min, BigDecimal.ZERO);
-		this.max = CoalesceUtil.coalesceNotNull(max, this.min);
+		this(min, max, false);
+	}
+
+	@JsonCreator
+	@Builder
+	private MinMaxDescriptor(
+			@JsonProperty("min") @Nullable final BigDecimal min,
+			@JsonProperty("max") @Nullable final BigDecimal max,
+			@JsonProperty("highPriority") final @Nullable Boolean highPriority)
+	{
+		this.min = coalesceNotNull(min, BigDecimal.ZERO);
+		this.max = coalesceNotNull(max, this.min);
 		Check.errorIf(this.min.compareTo(this.max) > 0, "Minimum={} maybe not be bigger than maximum={}", this.min, this.max);
+		this.highPriority = coalesceNotNull(highPriority, false);
 	}
 
 	@JsonIgnore

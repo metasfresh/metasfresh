@@ -16,6 +16,7 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -85,10 +86,7 @@ public interface IHUInOutBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getTU_HU_PI(I_M_InOutLine inoutLine);
 
-	/**
-	 * Destroy all HUs which are assigned to this receipt.
-	 */
-	void destroyHUs(I_M_InOut inout);
+	void destroyHandlingUnitsIfReversedInboundTransaction(@NonNull I_M_InOut reversalInout);
 
 	/**
 	 * Set shipment line's QtyEntered, QtyEnteredTU, M_HU_PI_Item_Product from calculated or from overrides, based on {@link I_M_InOutLine#isManualPackingMaterial()}.
@@ -127,4 +125,11 @@ public interface IHUInOutBL extends ISingletonService
 	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
 
 	void validateMandatoryOnShipmentAttributes(I_M_InOut shipment);
+
+	boolean isReversal(I_M_InOut inout);
+
+	List<I_M_HU> retrieveHandlingUnits(I_M_InOut inOut);
+
+	@NonNull
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
 }

@@ -109,7 +109,19 @@ public class ReceiptScheduleEventHandler
 			@NonNull final MainDataRecordIdentifier identifier,
 			@NonNull final ZoneId timeZone)
 	{
-		if ((event instanceof ReceiptScheduleUpdatedEvent) 
+		logger.debug("ReceiptScheduleEventHandler: event={}, receiptScheduleId={}"
+						+ " | orderedQtyDelta={}, reservedQtyDelta={}"
+						+ " | materialDescriptor.qty={}, reservedQty={}"
+						+ " | identifier={}",
+				event.getClass().getSimpleName(),
+				event.getReceiptScheduleId(),
+				event.getOrderedQuantityDelta(),
+				event.getReservedQuantityDelta(),
+				event.getMaterialDescriptor().getQuantity(),
+				event.getReservedQuantity(),
+				identifier);
+
+		if ((event instanceof ReceiptScheduleUpdatedEvent)
 				&& event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
 		{

@@ -38,6 +38,7 @@ public class GridFieldDefaultFilterDescriptor
 	int defaultFilterSeqNo;
 	String operator;
 	boolean showFilterIncrementButtons;
+	boolean showInactiveValues;
 	boolean showFilterInline;
 	String defaultValue;
 	@Nullable AdValRuleId adValRuleId;
@@ -52,6 +53,7 @@ public class GridFieldDefaultFilterDescriptor
 			final int defaultFilterSeqNo,
 			final String operator,
 			final boolean showFilterIncrementButtons,
+			final boolean showInactiveValues,
 			final boolean showFilterInline,
 			final String defaultValue,
 			@Nullable AdValRuleId adValRuleId,
@@ -73,6 +75,7 @@ public class GridFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = defaultFilterSeqNo;
 			this.operator = operator;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.showInactiveValues = showInactiveValues;
 			this.showFilterInline = showFilterInline;
 			this.defaultValue = defaultValue;
 			this.adValRuleId = adValRuleId;
@@ -83,6 +86,7 @@ public class GridFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = 0;
 			this.operator = null; // default
 			this.showFilterIncrementButtons = false;
+			this.showInactiveValues = false;
 			this.showFilterInline = false;
 			this.defaultValue = null;
 			this.adValRuleId = null;

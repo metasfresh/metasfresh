@@ -37,8 +37,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Two inout lines, one in-dispute. However, <code>QualityDiscount_Override</code> is set to zero.
@@ -83,7 +82,7 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 	 */
 	@Override
 	protected void step_updateInvoiceCandidates(
-			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
 			@Nullable final List<I_M_InOutLine> inOutLines)
 	{
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
@@ -94,22 +93,22 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 
 	@Override
 	protected void step_validate_before_aggregation(
-			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
 			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
-		assertThat(ic.getQualityDiscountPercent(), comparesEqualTo(new BigDecimal("10"))); // 10 out of (90 + 10)
+		assertThat(ic.getQualityDiscountPercent()).isEqualByComparingTo(new BigDecimal("10")); // 10 out of (90 + 10)
 
-		assertThat(ic.getQtyDelivered(), comparesEqualTo(new BigDecimal("100")));
-		assertThat(ic.getQtyToInvoiceBeforeDiscount(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(ic.getQtyToInvoiceBeforeDiscount()).isEqualByComparingTo(new BigDecimal("100"));
 
-		assertThat(ic.getQtyWithIssues(), comparesEqualTo(new BigDecimal("10")));
-		assertThat("Invalid QtyWithIssues_Effective", ic.getQtyWithIssues_Effective(), comparesEqualTo(new BigDecimal("0")));
+		assertThat(ic.getQtyWithIssues()).isEqualByComparingTo(new BigDecimal("10"));
+		assertThat(ic.getQtyWithIssues_Effective()).as("Invalid QtyWithIssues_Effective").isEqualByComparingTo(new BigDecimal("0"));
 
-		assertThat(ic.getQtyToInvoice(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(ic.getQtyToInvoice()).isEqualByComparingTo(new BigDecimal("100"));
 
 	}
 
@@ -125,7 +124,7 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("100"));
 	}
 
 }

@@ -1,36 +1,13 @@
 package org.compiere.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import org.compiere.util.Util.ArrayKey;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.Optional;
 
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArrayKeyTest
 {
@@ -43,11 +20,11 @@ public class ArrayKeyTest
 				"s1",
 				null,
 				date
-				);
+		);
 
 		final String keyStrExpected = "5#s1#NULL#2013-02-05 00:00:00.0";
 		final String keyStrActual = key.toString();
-		Assert.assertEquals(keyStrExpected, keyStrActual);
+		Assertions.assertEquals(keyStrExpected, keyStrActual);
 	}
 
 	@Test
@@ -115,7 +92,7 @@ public class ArrayKeyTest
 				+ "\n key1=" + key1
 				+ "\n key2=" + key2;
 		final int actual = ArrayKey.compare(key1, key2);
-		Assert.assertEquals(message, expected, actual);
+		Assertions.assertEquals(expected, actual, message);
 	}
 
 }

@@ -10,26 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningCandidateProducer;
@@ -37,6 +28,13 @@ import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 public class DefaultDunningCandidateProducerFactoryTest
 {
@@ -192,35 +190,35 @@ public class DefaultDunningCandidateProducerFactoryTest
 
 	private DefaultDunningCandidateProducerFactory factory;
 
-	@Before
+	@BeforeEach
 	public void createFactory()
 	{
 		factory = new DefaultDunningCandidateProducerFactory();
 	}
 
-	@Test(expected = DunningException.class)
+	@Test
 	public void registerDunningCandidateProducer_ClassInitializationError()
 	{
 		// shall throw exception because class cannot be initialized
-		factory.registerDunningCandidateProducer(InitializationErrorDunningCandidateProducer.class);
+		Assertions.assertThrows(DunningException.class, () -> factory.registerDunningCandidateProducer(InitializationErrorDunningCandidateProducer.class));
 	}
 
 	@Test
 	public void registerDunningCandidateProducer_SameClassMultipleTimes()
 	{
 		factory.registerDunningCandidateProducer(AlwaysHandledDunningCandidateProducer.class);
-		Assert.assertEquals("Invalid producer classes registered: " + factory.getProducerClasses(), 1, factory.getProducerClasses().size());
+		Assertions.assertEquals(1, factory.getProducerClasses().size(), "Invalid producer classes registered: " + factory.getProducerClasses());
 
 		// registering second time, same class => nothing shall happen
 		factory.registerDunningCandidateProducer(AlwaysHandledDunningCandidateProducer.class);
-		Assert.assertEquals("Invalid producer classes registered: " + factory.getProducerClasses(), 1, factory.getProducerClasses().size());
+		Assertions.assertEquals(1, factory.getProducerClasses().size(), "Invalid producer classes registered: " + factory.getProducerClasses());
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void getDunningCandidateProducer_NullParam()
 	{
 		Check.setDefaultExClass(AdempiereException.class);
-		factory.getDunningCandidateProducer(null);
+		Assertions.assertThrows(AdempiereException.class, () -> factory.getDunningCandidateProducer(null));
 	}
 
 	@Test
@@ -231,31 +229,31 @@ public class DefaultDunningCandidateProducerFactoryTest
 
 		// no producer found exception shall be thrown:
 		final IDunningCandidateProducer producer = factory.getDunningCandidateProducer(new EmptyDunnableDoc());
-		Assert.assertTrue("Invalid producer: " + producer, producer instanceof AlwaysHandledDunningCandidateProducer);
+		Assertions.assertTrue(producer instanceof AlwaysHandledDunningCandidateProducer, "Invalid producer: " + producer);
 	}
 
-	@Test(expected = DunningException.class)
+	@Test
 	public void getDunningCandidateProducer_NoHandlerFound()
 	{
 		factory.registerDunningCandidateProducer(AlwaysNotHandledDunningCandidateProducer.class);
 
 		// no producer found exception shall be thrown:
-		factory.getDunningCandidateProducer(new EmptyDunnableDoc());
+		Assertions.assertThrows(DunningException.class, () -> factory.getDunningCandidateProducer(new EmptyDunnableDoc()));
 	}
 
-	@Test(expected = DunningException.class)
+	@Test
 	public void getDunningCandidateProducer_MultipleHandlersFound()
 	{
 		factory.registerDunningCandidateProducer(AlwaysHandledDunningCandidateProducer.class);
 		factory.registerDunningCandidateProducer(AlwaysHandledDunningCandidateProducer2.class);
 
 		// shall throw exception because we found multiple producers
-		factory.getDunningCandidateProducer(new EmptyDunnableDoc());
+		Assertions.assertThrows(DunningException.class, () -> factory.getDunningCandidateProducer(new EmptyDunnableDoc()));
 	}
 
 	@Test
 	public void test_toString()
 	{
-		Assert.assertNotNull(factory.toString());
+		Assertions.assertNotNull(factory.toString());
 	}
 }

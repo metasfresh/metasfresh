@@ -1,14 +1,11 @@
 package de.metas.util;
 
+import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -44,7 +41,7 @@ public class GroupByClassifierSpliteratorTest
 				value -> value)
 				.collect(ImmutableList.toImmutableList());
 
-		Assert.assertEquals(expected, actual);
+		Assertions.assertEquals(expected, actual);
 	}
 
 	@Test
@@ -60,6 +57,6 @@ public class GroupByClassifierSpliteratorTest
 				value -> value.charAt(0))
 				.collect(ImmutableList.toImmutableList());
 
-		Assert.assertEquals(expected, actual);
+		Assertions.assertEquals(expected, actual);
 	}
 }

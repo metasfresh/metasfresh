@@ -6,7 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ public class VendorProductInfoTest
 {
 	private I_M_Product product;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,7 +13,9 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeRepoId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -20,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -33,6 +37,8 @@ import java.util.stream.Stream;
 @Repository
 public class HUQRCodesRepository
 {
+	private final Logger logger = LogManager.getLogger(HUQRCodesRepository.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
@@ -124,7 +130,8 @@ public class HUQRCodesRepository
 		final I_M_HU_QRCode existingRecord = getByUniqueId(qrCode.getId()).orElse(null);
 		if (existingRecord == null)
 		{
-			//nothing to be done
+			Loggables.withLogger(logger, Level.WARN).addLog("Cannot remove QR code assignment - QR code record not found in database. " +
+					"qrCodeId={}, huIdsToRemove={}", qrCode.getId(), huIdsToRemove);
 			return;
 		}
 
@@ -205,7 +212,7 @@ public class HUQRCodesRepository
 
 		return assignments.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(record -> HuId.ofRepoId(record.getM_HU_ID()),
-																	 record -> toHUQRCode(id2QrCode.get(HUQRCodeRepoId.ofRepoId(record.getM_HU_QRCode_ID())))));
+						record -> toHUQRCode(id2QrCode.get(HUQRCodeRepoId.ofRepoId(record.getM_HU_QRCode_ID())))));
 	}
 
 	@NonNull
@@ -259,7 +266,7 @@ public class HUQRCodesRepository
 	{
 		return streamAssignmentForQrIds(huQrCodeIds)
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(assignment -> HUQRCodeRepoId.ofRepoId(assignment.getM_HU_QRCode_ID()),
-																	 assignment -> HuId.ofRepoId(assignment.getM_HU_ID())));
+						assignment -> HuId.ofRepoId(assignment.getM_HU_ID())));
 	}
 
 	private void createAssignments(@NonNull final I_M_HU_QRCode qrCode, @NonNull final ImmutableSet<HuId> huIds)
@@ -297,7 +304,7 @@ public class HUQRCodesRepository
 				.create()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(huQrCode -> HUQRCodeRepoId.ofRepoId(huQrCode.getM_HU_QRCode_ID()),
-													 Function.identity()));
+						Function.identity()));
 	}
 
 	@NonNull

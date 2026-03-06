@@ -13,6 +13,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public enum PickingUnit
 {
+	// NOTE to dev: keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/reducers/wfProcesses/picking/PickingUnit.js
+	
 	TU("TU"),
 	CU("CU"),
 	;

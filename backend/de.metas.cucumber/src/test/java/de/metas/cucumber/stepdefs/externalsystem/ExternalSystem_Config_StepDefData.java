@@ -23,15 +23,23 @@
 package de.metas.cucumber.stepdefs.externalsystem;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class ExternalSystem_Config_StepDefData extends StepDefData<I_ExternalSystem_Config>
+public class ExternalSystem_Config_StepDefData extends StepDefData<I_ExternalSystem_Config> implements StepDefDataGetIdAware<ExternalSystemParentConfigId, I_ExternalSystem_Config>
 {
 	public ExternalSystem_Config_StepDefData()
 	{
 		super(I_ExternalSystem_Config.class);
+	}
+
+	@Override
+	public ExternalSystemParentConfigId extractIdFromRecord(final I_ExternalSystem_Config record)
+	{
+		return ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID());
 	}
 }
