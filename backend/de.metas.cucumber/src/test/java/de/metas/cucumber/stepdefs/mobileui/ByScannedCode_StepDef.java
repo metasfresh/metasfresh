@@ -4,9 +4,10 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.mobileui.rest_api.DistributionRestController;
-import de.metas.distribution.mobileui.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonHUInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.picking.rest_api.PickingRestController;
+import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
 import de.metas.rest_api.v2.warehouse.WarehouseRestController;
 import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorRequest;
 import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorResponse;
@@ -46,11 +47,11 @@ public class ByScannedCode_StepDef
 
 		assertThat(qrCodeString).as("HU QR code must contain # separator").contains("#");
 
-		final var request = de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest.builder()
+		final JsonGetHUInfoByScannedCodeRequest request = JsonGetHUInfoByScannedCodeRequest.builder()
 				.scannedCode(qrCodeString)
 				.build();
 
-		final var response = pickingRestController.getHUInfoByQRCode(request);
+		final de.metas.picking.rest_api.json.JsonHUInfo response = pickingRestController.getHUInfoByQRCode(request);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getHuQRCode()).isNotNull();
@@ -66,11 +67,12 @@ public class ByScannedCode_StepDef
 
 		assertThat(qrCodeString).as("HU QR code must contain # separator").contains("#");
 
-		final var request = JsonGetHUInfoByScannedCodeRequest.builder()
-				.scannedCode(qrCodeString)
-				.build();
+		final de.metas.distribution.mobileui.rest_api.json.JsonGetHUInfoByScannedCodeRequest request =
+				de.metas.distribution.mobileui.rest_api.json.JsonGetHUInfoByScannedCodeRequest.builder()
+						.scannedCode(qrCodeString)
+						.build();
 
-		final var response = distributionRestController.getHUInfoByQRCode(request);
+		final JsonHUInfo response = distributionRestController.getHUInfoByQRCode(request);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getQrCode()).isNotNull();
@@ -92,7 +94,7 @@ public class ByScannedCode_StepDef
 
 		assertThat(qrCodeString).as("Locator QR code must contain # separator").contains("#");
 
-		final var request = JsonResolveLocatorRequest.builder()
+		final JsonResolveLocatorRequest request = JsonResolveLocatorRequest.builder()
 				.scannedBarcode(qrCodeString)
 				.build();
 
