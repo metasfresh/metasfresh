@@ -156,7 +156,9 @@ entire order-to-cash flow.
             const soRecordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
             console.log(`[${language}] Sales Order ${soRecordId} created`);
 
-            // Set promotion code on the order
+            // Set promotion code on the order (field is in Advanced Edit area)
+            await page.keyboard.press('Alt+e');
+            await page.waitForTimeout(1000);
             const promoCodeField = page.locator('#lookup_C_PromotionCode_ID input').first();
             await promoCodeField.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await promoCodeField.click();
@@ -168,6 +170,10 @@ entire order-to-cash flow.
             await promoDropdownOption.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
             await promoDropdownOption.click();
             await page.waitForTimeout(1000);
+
+            // Close Advanced Edit
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500);
 
             // Add order line
             await SalesOrderPage.addOrderLine({
@@ -186,12 +192,16 @@ entire order-to-cash flow.
             const screenshotSO = await page.screenshot();
             allure.attachment('Sales Order Completed', screenshotSO, 'image/png');
 
-            // Step 5: Verify promotion code is visible on the completed order
+            // Step 5: Verify promotion code is visible on the completed order (in Advanced Edit)
+            await page.keyboard.press('Alt+e');
+            await page.waitForTimeout(1000);
             const promoCodeOnOrder = page.locator('#lookup_C_PromotionCode_ID .lookup-widget-value, #lookup_C_PromotionCode_ID input');
             const promoCodeText = await promoCodeOnOrder.first().inputValue().catch(() =>
                 promoCodeOnOrder.first().innerText().catch(() => '')
             );
             console.log(`[${language}] Promotion code on order: ${promoCodeText}`);
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500);
 
             // Wait for async processing
             await page.waitForTimeout(5000);
@@ -225,12 +235,16 @@ entire order-to-cash flow.
             expect(invoiceDocNo).toBeTruthy();
             console.log(`[${language}] Invoice created: ${invoiceDocNo}`);
 
-            // Step 9: Verify promotion code on invoice
+            // Step 9: Verify promotion code on invoice (in Advanced Edit)
+            await page.keyboard.press('Alt+e');
+            await page.waitForTimeout(1000);
             const promoCodeOnInvoice = page.locator('#lookup_C_PromotionCode_ID .lookup-widget-value, #lookup_C_PromotionCode_ID input');
             const invoicePromoText = await promoCodeOnInvoice.first().inputValue().catch(() =>
                 promoCodeOnInvoice.first().innerText().catch(() => '')
             );
             console.log(`[${language}] Promotion code on invoice: ${invoicePromoText}`);
+            await page.keyboard.press('Escape');
+            await page.waitForTimeout(500);
 
             const screenshotInvoice = await page.screenshot();
             allure.attachment('Invoice with Promotion Code', screenshotInvoice, 'image/png');
