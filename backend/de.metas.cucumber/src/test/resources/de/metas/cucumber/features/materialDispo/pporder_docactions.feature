@@ -114,6 +114,4 @@ Feature: material dispo reacts to PP_Order doc-actions
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP |
       | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T07:00:00.00Z | 10  | 10  |
     When the PP_Order ppo_1 is voided
-    Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP |
-      | c_supply   | SUPPLY            | PRODUCTION                | p_finished   | 2024-09-22T07:00:00.00Z | 0   | 0   |
+    Then after not more than 60s, metasfresh has no MD_Candidate for identifier c_supply
