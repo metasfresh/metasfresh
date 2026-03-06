@@ -184,7 +184,7 @@ BEGIN
                                'DesadvLineNo', dl.line,
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
                                'IsSubArticle', ia.is_sub_article,
-                               'MainArticleLine',
+                               'MainArticleItemLine',
                                CASE WHEN ia.is_sub_article THEN ia.main_pi_line ELSE NULL END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
