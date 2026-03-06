@@ -22,14 +22,16 @@
 
 package de.metas.edi.process.export.json;
 
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.Check;
 import de.metas.edi.api.impl.EDIInOutDAO;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.inout.InOutId;
+import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.Param;
+import de.metas.report.ReportResultData;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 /**
@@ -37,26 +39,52 @@ import org.compiere.SpringContextHolder;
  * Directs {@link de.metas.postgrest.process.PostgRESTProcessExecutor} to fetch from
  * {@code M_InOut_Export_EPCIS_JSON_V} and store the result.
  */
-public class M_InOut_EPCIS_Export_JSON extends EDI_Export_JSON
+public class M_InOut_EPCIS_Export_JSON extends PostgRESTProcessExecutor
 {
 	public static final String PARAM_M_InOut_ID = "M_InOut_ID";
 
-	private final EDIInOutDAO ediInOutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
+	@NonNull private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	@NonNull private final EDIInOutDAO ediInOutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
 
 	@Param(parameterName = PARAM_M_InOut_ID, mandatory = true)
 	private int m_inout_id;
 
 	@Override
-	protected I_EDI_Document_Extension loadRecordOutOfTrx()
+	protected final CustomPostgRESTParameters beforePostgRESTCall()
 	{
-		final I_M_InOut record = ediInOutDAO.getByIdOutOfTrx(InOutId.ofRepoId(m_inout_id));
-		return Check.assumeNotNull(record, "M_InOut with ID={} shall not be null", m_inout_id);
+		final boolean calledViaAPI = isCalledViaAPI();
+
+		return CustomPostgRESTParameters.builder()
+				.storeJsonFile(!calledViaAPI)
+				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
+				.build();
 	}
 
 	@Override
-	protected void saveRecord(@NonNull final I_EDI_Document_Extension record)
+	protected final String afterPostgRESTCall()
 	{
-		final I_M_InOut inOutRecord = InterfaceWrapperHelper.create(record, I_M_InOut.class);
-		ediInOutDAO.saveOutOfTrx(inOutRecord);
+		final ReportResultData reportData = Check.assumeNotNull(getResult().getReportData(), "reportData shall not be null after successful invocation");
+
+		final I_M_InOut record = loadRecordOutOfTrx();
+		// note that if it was called via API, then the result will also be in API_Response_Audit, but there it will be removed after some time
+		final TableRecordReference recordReference = TableRecordReference.of(record);
+
+		addLog("Attaching result with filename {} to the {}-record with ID {}",
+				reportData.getReportFilename(),
+				recordReference.getTableName(),
+				recordReference.getRecord_ID()
+		);
+		attachmentEntryService.createNewAttachment(
+				record,
+				reportData.getReportFilename(),
+				reportData.getReportDataByteArray());
+
+		return MSG_OK;
+	}
+
+	private I_M_InOut loadRecordOutOfTrx()
+	{
+		final I_M_InOut record = ediInOutDAO.getByIdOutOfTrx(InOutId.ofRepoId(m_inout_id));
+		return Check.assumeNotNull(record, "M_InOut with ID={} shall not be null", m_inout_id);
 	}
 }
