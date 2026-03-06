@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
-import { toUrl, unboxAxiosResponse } from '../utils';
+import { unboxAxiosResponse } from '../utils';
 import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const getDistributionScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
-    .get(toUrl(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode }))
+    .post(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode })
     .then((response) => unboxAxiosResponse(response));
 };
 
