@@ -83,6 +83,8 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
+	Stream<I_M_InOutLine> streamLinesByOrderLineIds(Set<OrderLineId> orderLineIds);
+
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
 	 */

@@ -260,17 +260,22 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
 	{
-		if (orderLineIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
+		if (orderLineIds.isEmpty()) {return ImmutableSet.of();}
+
+		return streamLinesByOrderLineIds(orderLineIds)
+				.map(this::extractInOutAndLineId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Stream<I_M_InOutLine> streamLinesByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty()) {return Stream.of();}
 
 		return queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
 				.addOnlyActiveRecordsFilter()
-				.stream()
-				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+				.stream();
 	}
 
 	@Override

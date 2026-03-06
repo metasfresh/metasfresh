@@ -33,9 +33,6 @@ public class QtyReservation
 		return toBuilder().qtyDelivered(newQtyDelivered).build();
 	}
 
-	/**
-	 * @return the effective (unfulfilled) reservation: {@code qty - qtyDelivered}, clamped to zero.
-	 */
 	@NonNull
 	public Quantity getEffectiveQty()
 	{

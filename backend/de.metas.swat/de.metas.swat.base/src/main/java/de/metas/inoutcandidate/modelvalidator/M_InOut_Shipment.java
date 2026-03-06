@@ -31,27 +31,32 @@ import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_InOut.class)
+@Component
+@RequiredArgsConstructor
 public class M_InOut_Shipment
 {
 	final ITrxManager trxManager = Services.get(ITrxManager.class);
-	final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final QtyReservationService qtyReservationService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_COMPLETE })
-	public void invalidateShipmentSchedsForLines(final I_M_InOut inoutRecord)
+	public void invalidateShipmentSchedulesForLines(final I_M_InOut inoutRecord)
 	{
-		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
 			// Only if it's a shipment
 			if (!inoutRecord.isSOTrx())
@@ -70,14 +75,13 @@ public class M_InOut_Shipment
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(final I_M_InOut inoutRecord)
 	{
-		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
 			if (!inoutRecord.isSOTrx())
 			{
 				return;
 			}
 
-			final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 			shipmentScheduleInvalidateBL.invalidateJustForLines(inoutRecord); // make sure that at least the lines themselves are invalidated
 			shipmentScheduleInvalidateBL.notifySegmentsChangedForShipment(inoutRecord);
 		}
@@ -88,14 +92,13 @@ public class M_InOut_Shipment
 			ifColumnsChanged = I_M_InOut.COLUMNNAME_Processed)
 	public void updateM_ShipmentSchedule_QtyPicked_Processed(final I_M_InOut inoutRecord)
 	{
-		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
 			if (!inoutRecord.isSOTrx())
 			{
 				return;
 			}
 
-			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 			shipmentScheduleAllocDAO.updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(inoutRecord);
 		}
 	}
@@ -103,19 +106,21 @@ public class M_InOut_Shipment
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void closePartiallyShipped_ShipmentSchedules(@NonNull final I_M_InOut inoutRecord)
 	{
-		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IShipmentScheduleBL.class).closePartiallyShipped_ShipmentSchedules(inoutRecord);
+			shipmentScheduleBL.closePartiallyShipped_ShipmentSchedules(inoutRecord);
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
+			ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void updateQtyReservationDelivered(@NonNull final I_M_InOut inoutRecord)
 	{
-		if (!inoutRecord.isSOTrx())
-		{
-			return;
-		}
+		if (!inoutRecord.isSOTrx()) {return;}
+
 		qtyReservationService.updateQtyDeliveredFromShipment(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
 	}
 }

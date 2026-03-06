@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
@@ -168,8 +169,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final InOutId inoutId)
 	{
-		final I_M_InOut inout = getById(inoutId);
-		return getLines(inout);
+		return inOutDAO.retrieveLinesByInOutId(inoutId);
 	}
 
 	@Override
@@ -224,6 +224,12 @@ public class InOutBL implements IInOutBL
 	public Set<InOutAndLineId> getLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
 	{
 		return inOutDAO.retrieveLineIdsByOrderLineIds(orderLineIds);
+	}
+
+	@Override
+	public List<I_M_InOutLine> getLinesByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.streamLinesByOrderLineIds(orderLineIds).collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
