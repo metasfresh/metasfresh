@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -43,8 +44,8 @@ public class QtyReservationService
 	{
 		final Set<OrderLineId> orderLineIds = inOutDAO.retrieveLines(inOutDAO.getById(inOutId))
 				.stream()
-				.filter(line -> line.getC_OrderLine_ID() > 0)
-				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
+				.map(line -> OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
 		if (orderLineIds.isEmpty())
