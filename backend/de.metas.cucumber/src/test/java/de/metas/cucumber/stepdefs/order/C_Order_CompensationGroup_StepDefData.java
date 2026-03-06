@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.order;
 
+import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_C_Order_CompensationGroup;
 
 /** StepDefData holder for {@link I_C_Order_CompensationGroup} records, auto-discovered by PicoContainer. */
