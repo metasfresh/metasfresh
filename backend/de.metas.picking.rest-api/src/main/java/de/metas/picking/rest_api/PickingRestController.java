@@ -36,6 +36,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
@@ -228,12 +229,12 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
-	@GetMapping("/hu/byScannedCode")
-	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("scannedCode") @NonNull final String scannedCodeStr)
+	@PostMapping("/hu/byScannedCode")
+	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestBody @NonNull final JsonGetHUInfoByScannedCodeRequest request)
 	{
 		assertApplicationAccess();
 
-		final ScannedCode scannedCode = ScannedCode.ofString(scannedCodeStr);
+		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedCode());
 		final HUQRCode qrCode = toHUQRCode(scannedCode);
 
 		final List<JsonHU> hus = handlingUnitsService.getHUsByQrCode(
