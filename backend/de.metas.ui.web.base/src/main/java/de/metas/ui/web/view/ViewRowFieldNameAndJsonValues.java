@@ -164,6 +164,7 @@ public final class ViewRowFieldNameAndJsonValues
 	public boolean getAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
 	{
 		final Object valueObj = map.get(fieldName);
+		//noinspection DataFlowIssue
 		return StringUtils.toBoolean(valueObj, defaultValueIfNotFoundOrError);
 	}
 

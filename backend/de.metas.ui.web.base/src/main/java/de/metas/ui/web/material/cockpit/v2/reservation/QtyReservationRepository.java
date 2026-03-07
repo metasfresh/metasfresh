@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -47,29 +46,9 @@ public class QtyReservationRepository
 		// return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
 	}
 
-	public void deleteById(@NonNull final QtyReservationId reservationId)
-	{
-		final I_M_QtyReservation record = queryBL
-				.createQueryBuilder(I_M_QtyReservation.class)
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, reservationId.getRepoId())
-				.create()
-				.firstOnlyNotNull(I_M_QtyReservation.class);
-
-		deleteRecord(record);
-	}
-
-	public void deleteByOrderLineId(@NonNull final OrderLineId orderLineId)
-	{
-		queryBL.createQueryBuilder(I_M_QtyReservation.class)
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.delete(false);
-	}
-
 	public void deleteReservation(@NonNull final DeleteQtyReservationRequest request)
 	{
-		toSqlQuery(request).delete(false);
+		toSqlQuery(request).create().delete();
 	}
 
 	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
@@ -77,33 +56,35 @@ public class QtyReservationRepository
 		return getReservedQtyTU(toSqlQuery(request));
 	}
 
-	private IQuery<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
+	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
 	{
-		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_QtyReservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, request.getOrderLineId())
+		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(request.getOrderLineId())
 				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, request.getSupplyType().getCode());
+
 		if (request.getDatePromised() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_DatePromised, TimeUtil.asTimestamp(request.getDatePromised()));
 		}
 
-		return sqlQueryBuilder.create();
+		return sqlQueryBuilder;
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)
 	{
-		return getReservedQtyTU(
-				queryBL.createQueryBuilder(I_M_QtyReservation.class)
-						.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
-						.addOnlyActiveRecordsFilter()
-						.create()
-		);
+		return getReservedQtyTU(queryNotProcessedByOrderLine(orderLineId));
 	}
 
-	private static QtyTU getReservedQtyTU(@NonNull final IQuery<I_M_QtyReservation> query)
+	private IQueryBuilder<I_M_QtyReservation> queryNotProcessedByOrderLine(final @NotNull OrderLineId orderLineId)
 	{
-		final BigDecimal result = query.aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, IQuery.Aggregate.SUM, BigDecimal.class);
+		return queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId);
+	}
+
+	private static QtyTU getReservedQtyTU(@NonNull final IQueryBuilder<I_M_QtyReservation> queryBuilder)
+	{
+		final BigDecimal result = queryBuilder.create().aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, IQuery.Aggregate.SUM, BigDecimal.class);
 		return result != null ? QtyTU.ofBigDecimal(result) : QtyTU.ZERO;
 	}
 
@@ -111,5 +92,4 @@ public class QtyReservationRepository
 	{
 		return getReservedQtyTU(orderLineId).isPositive();
 	}
-
 }

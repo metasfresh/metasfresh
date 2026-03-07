@@ -58,7 +58,7 @@ public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemp
 	{
 		if (_singleSelectedRow == null)
 		{
-			_singleSelectedRow = MaterialCockpitV2RowVO.ofViewRow(getSingleSelectedRow());
+			_singleSelectedRow = MaterialCockpitV2RowVOs.ofViewRow(getSingleSelectedRow());
 		}
 		return _singleSelectedRow;
 	}

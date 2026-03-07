@@ -40,11 +40,6 @@ public class QtyReservationService
 		return repository.getReservedQtyTU(orderLineId);
 	}
 
-	public boolean hasReservation(@NonNull final OrderLineId orderLineId)
-	{
-		return repository.hasReservation(orderLineId);
-	}
-
 	private void validateProductMatchesSalesOrderLine(@NonNull final CreateQtyReservationRequest request)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(request.getOrderLineId());
