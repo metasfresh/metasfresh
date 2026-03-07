@@ -49,7 +49,7 @@ testCases.forEach(({ language, label }) => {
 ## F00250: Promotion Code
 
 ### Test Scenario
-This test validates promotion code creation via UI and setting on a Sales Order:
+This test validates promotion code creation via UI and propagation to Invoice Candidates:
 
 1. **Create Promotion Code** - New promotion code via the Aktionskennzeichen window
 2. **Create Sales Order** - SO with customer, product, and the promotion code (set via Advanced Edit)
@@ -59,6 +59,7 @@ This test validates promotion code creation via UI and setting on a Sales Order:
 ### Business Value
 Ensures promotion codes created via the UI can be set on sales orders
 via the Advanced Edit modal and propagate correctly to invoice candidates.
+Full O2C chain (IC -> Invoice) is covered by the Cucumber test.
             `);
 
             test.setTimeout(180000); // 3 minutes
@@ -228,33 +229,33 @@ via the Advanced Edit modal and propagate correctly to invoice candidates.
             await InvoiceCandidatePage.expectVisibleForSalesOrder();
 
             const screenshotIC = await page.screenshot();
-            allure.attachment('Invoice Candidates', screenshotIC, 'image/png');
+            allure.attachment('Invoice Candidates List', screenshotIC, 'image/png');
 
             // Step 10: Open first IC row and verify promo code propagated
             const firstRow = page.locator('.table-flex-wrapper table tbody tr, table tbody tr').first();
             const rowVisible = await firstRow.isVisible().catch(() => false);
-            if (rowVisible) {
-                await firstRow.dblclick();
-                await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
-                await page.waitForTimeout(1000);
+            expect(rowVisible).toBeTruthy();
+            await firstRow.dblclick();
+            await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+            await page.waitForTimeout(1000);
 
-                // Verify promo code on IC via Advanced Edit
-                await AdvancedEdit.open();
+            // Verify promo code on IC via Advanced Edit
+            await AdvancedEdit.open();
 
-                const icPromoFieldVisible = await AdvancedEdit.isFieldVisible('C_PromotionCode_ID');
-                if (icPromoFieldVisible) {
-                    const icPromoValue = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
-                    expect(icPromoValue).toContain(promoValue);
-                    console.log(`[${language}] IC C_PromotionCode_ID verified: ${icPromoValue}`);
-                } else {
-                    console.log(`[${language}] IC C_PromotionCode_ID not in Advanced Edit (may not be configured)`);
-                }
+            const icPromoFieldVisible = await AdvancedEdit.isFieldVisible('C_PromotionCode_ID');
+            expect(icPromoFieldVisible).toBeTruthy();
+            const icPromoValue = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
+            expect(icPromoValue).toContain(promoValue);
+            console.log(`[${language}] IC C_PromotionCode_ID verified: ${icPromoValue}`);
 
-                const screenshotICDetail = await page.screenshot();
-                allure.attachment('IC Advanced Edit - Promo Code', screenshotICDetail, 'image/png');
+            // Pause so the video clearly shows the promo code on the IC
+            await page.waitForTimeout(3000);
 
-                await AdvancedEdit.close();
-            }
+            const screenshotICDetail = await page.screenshot();
+            allure.attachment('IC Advanced Edit - Promo Code', screenshotICDetail, 'image/png');
+
+            await AdvancedEdit.close();
+            await page.waitForTimeout(1000);
 
             console.log(`[${language}] Promotion code E2E test completed successfully`);
         });
