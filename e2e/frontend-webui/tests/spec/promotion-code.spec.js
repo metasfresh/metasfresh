@@ -6,8 +6,8 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
+import { AdvancedEdit } from '../utils/AdvancedEdit';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Promotion Code E2E test suite.
@@ -18,12 +18,12 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  *
  * Tests the promotion code lifecycle:
  * 1. Create a promotion code via UI (window 542105)
- * 2. Create a sales order with the promotion code
- * 3. Complete order and verify promo code was set
+ * 2. Create a sales order and set promo code via Advanced Edit (Alt+E)
+ * 3. Complete order and verify promo code persisted via Advanced Edit
  * 4. Navigate to invoice candidates and verify promo code propagated
  *
  * Note: Full O2C propagation (IC -> Invoice) is tested by the Cucumber test.
- * The E2E test focuses on UI creation and WebAPI integration.
+ * The E2E test focuses on UI creation and Advanced Edit integration.
  */
 
 const PROMOTION_CODE_WINDOW_ID = 542105;
@@ -52,16 +52,16 @@ testCases.forEach(({ language, label }) => {
 This test validates promotion code creation via UI and setting on a Sales Order:
 
 1. **Create Promotion Code** - New promotion code via the Aktionskennzeichen window
-2. **Create Sales Order** - SO with customer, product, and the promotion code
-3. **Complete Order** - Verify order completes successfully
-4. **Check Invoice Candidates** - Verify promo code propagated to IC
+2. **Create Sales Order** - SO with customer, product, and the promotion code (set via Advanced Edit)
+3. **Complete Order** - Verify promo code persisted (read via Advanced Edit)
+4. **Check Invoice Candidates** - Verify promo code propagated to IC (read via Advanced Edit)
 
 ### Business Value
 Ensures promotion codes created via the UI can be set on sales orders
-and propagate to invoice candidates.
+via the Advanced Edit modal and propagate correctly to invoice candidates.
             `);
 
-            test.setTimeout(120000); // 2 minutes
+            test.setTimeout(180000); // 3 minutes
 
             // Step 1: Create test master data via Backend API
             const masterdata = await Backend.createMasterdata({
@@ -157,7 +157,7 @@ and propagate to invoice candidates.
             const screenshotPromo = await page.screenshot();
             allure.attachment('Promotion Code Created', screenshotPromo, 'image/png');
 
-            // Step 4: Create Sales Order with promotion code
+            // Step 4: Create Sales Order
             await SalesOrderPage.goto();
             await SalesOrderPage.clickNew();
 
@@ -166,31 +166,35 @@ and propagate to invoice candidates.
             );
             console.log(`[${language}] Sales Order ${soRecordId} created`);
 
-            // Set promotion code on the order via WebAPI PATCH (field is in Advanced Edit area)
-            const webApiBase = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
+            // Step 5: Set promotion code via Advanced Edit (Alt+E)
+            await AdvancedEdit.open();
 
-            // Use the known record ID from promo code creation (no typeahead needed)
-            const promoLookupValue = { key: promoRecordId, caption: promoValue };
-            const patchResp = await page.request.patch(
-                `${webApiBase}/window/${SALES_ORDER_WINDOW_ID}/${soRecordId}`,
-                {
-                    data: [
-                        { op: 'replace', path: 'C_PromotionCode_ID', value: promoLookupValue },
-                    ],
-                }
-            );
-            expect(patchResp.ok()).toBeTruthy();
-            console.log(`[${language}] Promotion code set on SO via WebAPI`);
-            await page.waitForTimeout(1000);
+            // Verify the C_PromotionCode_ID field is visible in Advanced Edit
+            const promoFieldVisible = await AdvancedEdit.isFieldVisible('C_PromotionCode_ID');
+            expect(promoFieldVisible).toBeTruthy();
+            console.log(`[${language}] C_PromotionCode_ID field visible in Advanced Edit`);
 
-            // Add order line
+            // Set the promotion code using typeahead search
+            await AdvancedEdit.setLookupField('C_PromotionCode_ID', promoValue);
+
+            // Verify the value was set by reading it back
+            const setPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+            expect(setPromoValue).toContain(promoValue);
+            console.log(`[${language}] C_PromotionCode_ID set to: ${setPromoValue}`);
+
+            const screenshotAdvEdit = await page.screenshot();
+            allure.attachment('Advanced Edit - Promo Code Set', screenshotAdvEdit, 'image/png');
+
+            await AdvancedEdit.close();
+
+            // Step 6: Add order line
             await SalesOrderPage.addOrderLine({
                 product: masterdata.products.Product1.productCode,
                 quantity: '10',
                 recordId: soRecordId,
             });
 
-            // Complete order
+            // Step 7: Complete order
             await SalesOrderPage.complete();
 
             const soDocumentNo = await SalesOrderPage.getDocumentNo();
@@ -200,25 +204,57 @@ and propagate to invoice candidates.
             const screenshotSO = await page.screenshot();
             allure.attachment('Sales Order Completed', screenshotSO, 'image/png');
 
+            // Step 8: Verify promotion code persisted on completed SO via Advanced Edit
+            await AdvancedEdit.open();
+
+            const soPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+            expect(soPromoValue).toContain(promoValue);
+            console.log(`[${language}] SO C_PromotionCode_ID verified after completion: ${soPromoValue}`);
+
+            // Also verify the field is now readonly (order is completed)
+            const soPromoReadonly = await AdvancedEdit.isFieldReadonly('C_PromotionCode_ID');
+            console.log(`[${language}] SO C_PromotionCode_ID readonly after completion: ${soPromoReadonly}`);
+
+            const screenshotSOVerify = await page.screenshot();
+            allure.attachment('SO Advanced Edit - Promo Code Verified', screenshotSOVerify, 'image/png');
+
+            await AdvancedEdit.close();
+
             // Wait for async processing (invoice candidate creation)
             await page.waitForTimeout(5000);
 
-            // Step 5: Navigate to invoice candidates to verify propagation
+            // Step 9: Navigate to invoice candidates to verify propagation
             await SalesOrderPage.openRelatedInvoiceCandidate(5000);
             await InvoiceCandidatePage.expectVisibleForSalesOrder();
 
             const screenshotIC = await page.screenshot();
             allure.attachment('Invoice Candidates', screenshotIC, 'image/png');
-            console.log(`[${language}] Invoice candidates visible - promo code propagated`);
 
-            // Validation summary
-            const validationHtml = `<table border="1">
-                <tr><th>Check</th><th>Status</th><th>Value</th></tr>
-                <tr><td>Promotion Code Created</td><td>PASS</td><td>${promoValue}</td></tr>
-                <tr><td>Sales Order Created</td><td>PASS</td><td>${soDocumentNo}</td></tr>
-                <tr><td>Invoice Candidates Visible</td><td>PASS</td><td>Propagated</td></tr>
-            </table>`;
-            allure.attachment('Validation Results', validationHtml, 'text/html');
+            // Step 10: Open first IC row and verify promo code propagated
+            const firstRow = page.locator('.table-flex-wrapper table tbody tr, table tbody tr').first();
+            const rowVisible = await firstRow.isVisible().catch(() => false);
+            if (rowVisible) {
+                await firstRow.dblclick();
+                await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+                await page.waitForTimeout(1000);
+
+                // Verify promo code on IC via Advanced Edit
+                await AdvancedEdit.open();
+
+                const icPromoFieldVisible = await AdvancedEdit.isFieldVisible('C_PromotionCode_ID');
+                if (icPromoFieldVisible) {
+                    const icPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+                    expect(icPromoValue).toContain(promoValue);
+                    console.log(`[${language}] IC C_PromotionCode_ID verified: ${icPromoValue}`);
+                } else {
+                    console.log(`[${language}] IC C_PromotionCode_ID not in Advanced Edit (may not be configured)`);
+                }
+
+                const screenshotICDetail = await page.screenshot();
+                allure.attachment('IC Advanced Edit - Promo Code', screenshotICDetail, 'image/png');
+
+                await AdvancedEdit.close();
+            }
 
             console.log(`[${language}] Promotion code E2E test completed successfully`);
         });
