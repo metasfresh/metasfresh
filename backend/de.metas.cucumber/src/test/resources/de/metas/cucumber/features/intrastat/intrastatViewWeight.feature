@@ -48,8 +48,8 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
       | Identifier  | Name                     | Value                     |
       | ps_intra    | intra_pricing_system     | intra_pricing_system_val  |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_intra   | ps_intra                      | DE                        | EUR                 | intra_price_list  | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | C_Currency.ISO_Code | Name              | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_intra   | ps_intra                      | EUR                 | intra_price_list  | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name         | ValidFrom  |
       | plv_intra  | pl_intra                  | intra_PLV    | 2025-01-01 |
