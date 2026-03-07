@@ -10,6 +10,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -33,10 +34,11 @@ import javax.annotation.Nullable;
 public class DD_Order_PostMaterialEvent
 {
 	@NonNull private final PostMaterialEventService materialEventService;
-	@NonNull private final IProductPlanningDAO productPlanningDAO;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
 	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrderRecord)
