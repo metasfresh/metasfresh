@@ -25,10 +25,6 @@ package de.metas.cucumber.stepdefs.forecast;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -42,7 +38,6 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -71,14 +66,12 @@ public class M_Forecast_GenerateLines_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
-	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	@NonNull private final M_Forecast_StepDefData forecastTable;
 	@NonNull private final M_Product_StepDefData productTable;
 
 	/**
 	 * Updates the forecast-specific columns on an existing PP_Product_Planning record.
-	 * These columns are not yet in the generated model interface, so we use InterfaceWrapperHelper.
 	 *
 	 * <h4>Required columns:</h4>
 	 * <ul>
@@ -112,13 +105,13 @@ public class M_Forecast_GenerateLines_StepDef
 			final String precisionUnit = row.getAsString("Forecast_PrecisionUnit");
 			final int frequency = row.getAsInt("Forecast_Frequency");
 			final int bufferTime = row.getAsInt("Forecast_BufferTime");
-			final String excludeFromForecast = row.getAsString("IsExcludeFromForecast");
+			final boolean excludeFromForecast = row.getAsBoolean("IsExcludeFromForecast");
 
-			InterfaceWrapperHelper.setValue(ppRecord, "Forecast_ComparisonPeriod", comparisonPeriod);
-			InterfaceWrapperHelper.setValue(ppRecord, "Forecast_PrecisionUnit", precisionUnit);
-			InterfaceWrapperHelper.setValue(ppRecord, "Forecast_Frequency", new BigDecimal(frequency));
-			InterfaceWrapperHelper.setValue(ppRecord, "Forecast_BufferTime", new BigDecimal(bufferTime));
-			InterfaceWrapperHelper.setValue(ppRecord, "IsExcludeFromForecast", excludeFromForecast);
+			ppRecord.setForecast_ComparisonPeriod(comparisonPeriod);
+			ppRecord.setForecast_PrecisionUnit(precisionUnit);
+			ppRecord.setForecast_Frequency(new BigDecimal(frequency));
+			ppRecord.setForecast_BufferTime(new BigDecimal(bufferTime));
+			ppRecord.setIsExcludeFromForecast(excludeFromForecast);
 
 			InterfaceWrapperHelper.saveRecord(ppRecord);
 		});
@@ -205,6 +198,33 @@ public class M_Forecast_GenerateLines_StepDef
 
 		assertThat(lineCount)
 				.as("Expected no forecast lines for forecast %s", forecastIdentifierStr)
+				.isZero();
+	}
+
+	/**
+	 * Verifies that the forecast has no line for a specific product
+	 * (e.g., because the product was excluded via {@code IsExcludeFromForecast}).
+	 */
+	@Then("the forecast identified by {string} has no forecast line for product {string}")
+	public void forecastHasNoLineForProduct(
+			@NonNull final String forecastIdentifierStr,
+			@NonNull final String productIdentifierStr)
+	{
+		final StepDefDataIdentifier forecastIdentifier = StepDefDataIdentifier.ofString(forecastIdentifierStr);
+		final I_M_Forecast forecast = forecastTable.get(forecastIdentifier);
+
+		final StepDefDataIdentifier productIdentifier = StepDefDataIdentifier.ofString(productIdentifierStr);
+		final I_M_Product product = productTable.get(productIdentifier);
+
+		final int lineCount = queryBL.createQueryBuilder(I_M_ForecastLine.class)
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecast.getM_Forecast_ID())
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+
+		assertThat(lineCount)
+				.as("Expected no forecast line for product %s in forecast %s", productIdentifierStr, forecastIdentifierStr)
 				.isZero();
 	}
 }
