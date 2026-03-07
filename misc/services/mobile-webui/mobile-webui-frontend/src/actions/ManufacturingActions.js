@@ -4,7 +4,11 @@ import {
 } from '../constants/ManufacturingActionTypes';
 
 import { getLineById, getStepByIdFromLine } from '../reducers/wfProcesses';
-import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
+import {
+  postManufacturingIssueEvent,
+  postManufacturingIssueToLineEvent,
+  postManufacturingReceiveEvent,
+} from '../api/manufacturing';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import { updateWFProcess } from './WorkflowActions';
 
@@ -42,6 +46,20 @@ export const postManufacturingIssueEventThunk = ({
     } else {
       return Promise.reject('No line found');
     }
+  };
+};
+
+export const postManufacturingIssueToLineEventThunk = ({ wfProcessId, activityId, lineId }) => {
+  return (dispatch) => {
+    return postManufacturingIssueToLineEvent({
+      wfProcessId,
+      activityId,
+      issueToLine: {
+        lineIndex: Number(lineId),
+      },
+    }).then((wfProcess) => {
+      return dispatch(updateWFProcess({ wfProcess }));
+    });
   };
 };
 

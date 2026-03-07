@@ -174,6 +174,10 @@ const translations = {
         step: {
           name: 'Issue HU',
         },
+        confirmLine: {
+          caption: 'Confirm Issue',
+          promptQuestion: 'Issue all planned materials for this line?',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Qty to Receive Target',

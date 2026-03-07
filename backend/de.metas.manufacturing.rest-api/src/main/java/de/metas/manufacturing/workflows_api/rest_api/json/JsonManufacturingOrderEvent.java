@@ -41,6 +41,16 @@ public class JsonManufacturingOrderEvent
 	@Value
 	@Builder
 	@Jacksonized
+	public static class IssueToLine
+	{
+		int lineIndex;
+	}
+
+	@Nullable IssueToLine issueToLine;
+
+	@Value
+	@Builder
+	@Jacksonized
 	public static class ReceiveFrom
 	{
 		@NonNull String lineId;
@@ -79,18 +89,20 @@ public class JsonManufacturingOrderEvent
 			@NonNull final String wfActivityId,
 			//
 			@Nullable final IssueTo issueTo,
+			@Nullable final IssueToLine issueToLine,
 			@Nullable final ReceiveFrom receiveFrom,
 			@Nullable final PickTo pickTo)
 	{
-		if (CoalesceUtil.countNotNulls(issueTo, receiveFrom) != 1)
+		if (CoalesceUtil.countNotNulls(issueTo, issueToLine, receiveFrom) != 1)
 		{
-			throw new AdempiereException("One and only one action like issueTo, receiveFrom etc shall be specified in an event.");
+			throw new AdempiereException("One and only one action like issueTo, issueToLine, receiveFrom etc shall be specified in an event.");
 		}
 
 		this.wfProcessId = wfProcessId;
 		this.wfActivityId = wfActivityId;
 
 		this.issueTo = issueTo;
+		this.issueToLine = issueToLine;
 		this.receiveFrom = receiveFrom;
 		this.pickTo = pickTo;
 	}

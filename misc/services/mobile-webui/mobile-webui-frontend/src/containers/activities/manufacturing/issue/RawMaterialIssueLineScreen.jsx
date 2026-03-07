@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
+import { postManufacturingIssueToLineEventThunk } from '../../../../actions/ManufacturingActions';
 import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
+import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 import {
   manufacturingLineScanScreenLocation,
@@ -12,6 +14,8 @@ import {
 } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
+import ConfirmButton from '../../../../components/buttons/ConfirmButton';
+import { toastError } from '../../../../utils/toast';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
@@ -34,10 +38,13 @@ const RawMaterialIssueLineScreen = () => {
     qtyToIssueRemaining,
     qtyIssued,
     readOnly,
+    weightable,
+    completeStatus,
     steps,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
+  const [isConfirming, setConfirming] = useState(false);
   useEffect(() => {
     dispatch(
       updateHeaderEntry(
@@ -64,8 +71,28 @@ const RawMaterialIssueLineScreen = () => {
     history.push(manufacturingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
+  const hasUnissuedSteps = steps.some((step) => !step.qtyIssued && !step.qtyRejectedReasonCode);
+  const showConfirmButton = !readOnly && !weightable && hasUnissuedSteps && completeStatus !== CompleteStatus.COMPLETED;
+
+  const onConfirmLine = () => {
+    setConfirming(true);
+    dispatch(postManufacturingIssueToLineEventThunk({ wfProcessId, activityId, lineId }))
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setConfirming(false));
+  };
+
   return (
     <div className="section pt-2">
+      {showConfirmButton && (
+        <ConfirmButton
+          id="confirmIssueLine-button"
+          caption={trl('activities.mfg.issues.confirmLine.caption')}
+          promptQuestion={trl('activities.mfg.issues.confirmLine.promptQuestion')}
+          isUserEditable={!isConfirming}
+          isProcessing={isConfirming}
+          onUserConfirmed={onConfirmLine}
+        />
+      )}
       {!readOnly && (
         <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} testId="scanQRCode-button" />
       )}
@@ -110,6 +137,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyToIssueRemaining: line?.qtyToIssueRemaining,
     qtyIssued: line?.qtyIssued,
     readOnly: line?.readOnly,
+    weightable: line?.weightable,
+    completeStatus: line?.completeStatus,
     steps: getStepsArrayFromLine(line),
   };
 };

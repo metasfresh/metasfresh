@@ -36,6 +36,7 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
+import de.metas.manufacturing.job.service.commands.issue.IssueBOMLineCommand;
 import de.metas.manufacturing.job.service.commands.issue.IssueRawMaterialsCommand;
 import de.metas.manufacturing.job.service.commands.issue.IssueRawMaterialsCommand.IssueRawMaterialsCommandBuilder;
 import de.metas.manufacturing.job.service.commands.issue_what_was_received.IssueWhatWasReceivedCommand;
@@ -477,6 +478,21 @@ public class ManufacturingJobService
 				.job(job)
 				.request(request)
 				//
+				.build().execute();
+	}
+
+	public ManufacturingJob issueAllStepsOfLine(
+			@NonNull final ManufacturingJob job,
+			@NonNull final PPOrderRoutingActivityId activityId,
+			final int lineIndex)
+	{
+		return IssueBOMLineCommand.builder()
+				.trxManager(trxManager)
+				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+				.job(job)
+				.activityId(activityId)
+				.lineIndex(lineIndex)
 				.build().execute();
 	}
 
