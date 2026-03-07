@@ -35,7 +35,6 @@ Feature: Qty Reservation delivery tracking
 
   @from:cucumber
   @Id:S_QtyRes_10
-  @Ignore
   Scenario: Full shipment covers reservation — QtyDelivered=Qty and Processed=true
   ## _Given a sales order line for 10 PCE and a matching M_QtyReservation for 10 PCE
   ## _When the shipment is generated and completed
@@ -57,7 +56,7 @@ Feature: Qty Reservation delivery tracking
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | shipmentSchedule_1    | D            | true                | false               |
+      | shipmentSchedule_1    | D            | true                | false       |
 
     Then validate M_QtyReservations:
       | Identifier       | Qty | QtyDelivered | Processed |
@@ -66,7 +65,6 @@ Feature: Qty Reservation delivery tracking
 
   @from:cucumber
   @Id:S_QtyRes_20
-    @Ignore
   Scenario: Shipment qty less than reservation qty — partial delivery, Processed stays false
   ## _Given a sales order line for 5 PCE and an M_QtyReservation for 10 PCE
   ## _When the shipment for 5 PCE is completed
@@ -88,7 +86,7 @@ Feature: Qty Reservation delivery tracking
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | shipmentSchedule_2    | D            | true                | false               |
+      | shipmentSchedule_2    | D            | true                | false       |
 
     Then validate M_QtyReservations:
       | Identifier       | Qty | QtyDelivered | Processed |
@@ -120,7 +118,7 @@ Feature: Qty Reservation delivery tracking
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | shipmentSchedule_3    | D            | true                | false               |
+      | shipmentSchedule_3    | D            | true                | false       |
 
     Then validate M_QtyReservations:
       | Identifier          | Qty | QtyDelivered | Processed |

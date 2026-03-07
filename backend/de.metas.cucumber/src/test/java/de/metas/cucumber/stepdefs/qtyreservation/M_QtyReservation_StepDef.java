@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.qtyreservation;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.quantity.Quantity;
@@ -36,14 +37,13 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_QtyReservation;
 import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for {@code M_QtyReservation}.
@@ -84,8 +84,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <li><b>QtyDelivered</b> — (optional) expected delivered quantity so far</li>
  *   <li><b>Processed</b> — (optional) expected value of the {@code Processed} flag</li>
  * </ul>
- *
- * @cucumber.depends StepDefData: M_QtyReservation_StepDefData, C_OrderLine_StepDefData, M_Product_StepDefData, M_Warehouse_StepDefData
  */
 @RequiredArgsConstructor
 public class M_QtyReservation_StepDef
@@ -143,24 +141,32 @@ public class M_QtyReservation_StepDef
 				.forEach(this::validateReservation);
 	}
 
-	private void validateReservation(@NonNull final DataTableRow row)
+	private void validateReservation(@NonNull final DataTableRow row) throws InterruptedException
 	{
-		final I_M_QtyReservation record = qtyReservationTable.get(row.getAsIdentifier());
-		InterfaceWrapperHelper.refresh(record);
+		StepDefUtil.tryAndWaitForData(() -> {
+					final I_M_QtyReservation record = qtyReservationTable.get(row.getAsIdentifier());
+					InterfaceWrapperHelper.refresh(record);
+					return record;
+				})
+				.validateUsingConsumer(record -> {
+					final SoftAssertions softly = new SoftAssertions();
+					row.getAsOptionalBigDecimal("Qty").ifPresent(expectedQty ->
+							softly.assertThat(record.getQty())
+									.as("M_QtyReservation[%d].Qty", record.getM_QtyReservation_ID())
+									.isEqualByComparingTo(expectedQty));
 
-		row.getAsOptionalBigDecimal("Qty").ifPresent(expectedQty ->
-				assertThat(record.getQty())
-						.as("M_QtyReservation[%d].Qty", record.getM_QtyReservation_ID())
-						.isEqualByComparingTo(expectedQty));
+					row.getAsOptionalBigDecimal("QtyDelivered").ifPresent(expectedQtyDelivered ->
+							softly.assertThat(record.getQtyDelivered())
+									.as("M_QtyReservation[%d].QtyDelivered", record.getM_QtyReservation_ID())
+									.isEqualByComparingTo(expectedQtyDelivered));
 
-		row.getAsOptionalBigDecimal("QtyDelivered").ifPresent(expectedQtyDelivered ->
-				assertThat(record.getQtyDelivered())
-						.as("M_QtyReservation[%d].QtyDelivered", record.getM_QtyReservation_ID())
-						.isEqualByComparingTo(expectedQtyDelivered));
+					row.getAsOptionalBoolean("Processed").ifPresent(expectedProcessed ->
+							softly.assertThat(record.isProcessed())
+									.as("M_QtyReservation[%d].Processed", record.getM_QtyReservation_ID())
+									.isEqualTo(expectedProcessed));
 
-		row.getAsOptionalBoolean("Processed").ifPresent(expectedProcessed ->
-				assertThat(record.isProcessed())
-						.as("M_QtyReservation[%d].Processed", record.getM_QtyReservation_ID())
-						.isEqualTo(expectedProcessed));
+					softly.assertAll();
+				})
+				.execute();
 	}
 }
