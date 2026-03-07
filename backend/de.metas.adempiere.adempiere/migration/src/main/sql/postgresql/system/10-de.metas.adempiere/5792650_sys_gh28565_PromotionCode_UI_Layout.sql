@@ -17,7 +17,7 @@
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 540499,
     SeqNo = 283,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648483;
 
@@ -25,7 +25,7 @@ WHERE AD_UI_Element_ID = 648483;
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 540499,
     SeqNo = 286,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648484;
 
@@ -37,7 +37,7 @@ WHERE AD_UI_Element_ID = 648484;
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 541214,
     SeqNo = 115,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648487;
 
@@ -45,7 +45,7 @@ WHERE AD_UI_Element_ID = 648487;
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 541214,
     SeqNo = 118,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648488;
 
@@ -56,13 +56,13 @@ WHERE AD_UI_Element_ID = 648488;
 -- C_PromotionCode_ID (648485): fix seqno from 1050 to 1055 (1050 collides with C_Project_ID)
 UPDATE AD_UI_Element
 SET SeqNo = 1055,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648485;
 
 -- C_PromotionCode2_ID (648486): fix seqno from 1060 to 1058
 UPDATE AD_UI_Element
 SET SeqNo = 1058,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648486;

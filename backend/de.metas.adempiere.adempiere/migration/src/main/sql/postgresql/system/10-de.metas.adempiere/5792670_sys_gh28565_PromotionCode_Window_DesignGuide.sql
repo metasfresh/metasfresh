@@ -25,7 +25,7 @@ INSERT INTO AD_UI_Column (
   Created, CreatedBy, IsActive, SeqNo, Updated, UpdatedBy
 ) VALUES (
   0, 0, 549276, 547597,
-  now(), 100, 'Y', 20, now(), 100
+  TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'), 100, 'Y', 20, TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'), 100
 );
 
 -- ==========================================================================
@@ -36,7 +36,7 @@ INSERT INTO AD_UI_ElementGroup (
   Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy
 ) VALUES (
   0, 0, 549276, 554985,
-  now(), 100, 'Y', 'flags', 10, 'primary', now(), 100
+  TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'), 100, 'Y', 'flags', 10, 'primary', TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'), 100
 );
 
 -- ==========================================================================
@@ -45,7 +45,7 @@ INSERT INTO AD_UI_ElementGroup (
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 554985,
     SeqNo = 10,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648480;  -- IsActive
 
@@ -55,14 +55,14 @@ WHERE AD_UI_Element_ID = 648480;  -- IsActive
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 554985,
     SeqNo = 20,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648481;  -- AD_Org_ID
 
 UPDATE AD_UI_Element
 SET AD_UI_ElementGroup_ID = 554985,
     SeqNo = 30,
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648482;  -- AD_Client_ID
 
@@ -72,7 +72,7 @@ WHERE AD_UI_Element_ID = 648482;  -- AD_Client_ID
 UPDATE AD_UI_Element
 SET SeqNoGrid = 50,
     IsDisplayedGrid = 'Y',
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648481;  -- AD_Org_ID
 
@@ -81,6 +81,6 @@ WHERE AD_UI_Element_ID = 648481;  -- AD_Org_ID
 -- ==========================================================================
 UPDATE AD_Tab
 SET OrderByClause = 'Name',
-    Updated = now(),
+    Updated = TO_TIMESTAMP('2026-03-07', 'YYYY-MM-DD'),
     UpdatedBy = 100
 WHERE AD_Tab_ID = 549080;
