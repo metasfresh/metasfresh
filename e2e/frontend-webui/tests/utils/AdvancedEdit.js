@@ -11,8 +11,8 @@
  *   import { AdvancedEdit } from '../utils/AdvancedEdit';
  *
  *   await AdvancedEdit.open();
- *   await AdvancedEdit.setLookupField('C_PromotionCode_ID', 'PC_12345');
- *   const value = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+ *   await AdvancedEdit.setListField('C_PromotionCode_ID', 'PC_12345');
+ *   const value = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
  *   await AdvancedEdit.close();
  */
 import { test } from '../../playwright.config';
