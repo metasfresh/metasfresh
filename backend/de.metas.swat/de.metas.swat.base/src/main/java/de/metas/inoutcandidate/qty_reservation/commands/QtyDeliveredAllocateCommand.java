@@ -82,7 +82,7 @@ public class QtyDeliveredAllocateCommand
 			_orderLineIds = inOutBL.getLines(triggeringShipmentLineId)
 					.stream()
 					.map(QtyDeliveredAllocateCommand::extractSalesOrderLineIdOrNull)
-					.filter(Objects::isNull)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		return _orderLineIds;
