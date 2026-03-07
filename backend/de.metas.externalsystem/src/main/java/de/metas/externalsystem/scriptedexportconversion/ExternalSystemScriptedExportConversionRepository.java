@@ -112,9 +112,10 @@ public class ExternalSystemScriptedExportConversionRepository
 	private ExternalSystemScriptedExportConversionRepository.ExternalSystemScriptedExportConversionMap retrieveMap()
 	{
 		return new ExternalSystemScriptedExportConversionMap(queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedExportConversion.class)
-			     .addOnlyActiveRecordsFilter()
-				 .create()
-				 .stream()
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID)
+				.create()
+				.stream()
 				.map(this::fromRecord)
 				.collect(ImmutableList.toImmutableList())
 		);
