@@ -75,7 +75,7 @@ public class M_Forecast_GenerateLines_StepDef
 	 *
 	 * <h4>Required columns:</h4>
 	 * <ul>
-	 *   <li>{@code Forecast_ComparisonPeriod} — comparison method (0-4)</li>
+	 *   <li>{@code Forecast_CalculationMethod} — calculation method (0-4)</li>
 	 *   <li>{@code Forecast_PrecisionUnit} — W or M</li>
 	 *   <li>{@code Forecast_Frequency} — order cycle in precision units</li>
 	 *   <li>{@code Forecast_BufferTime} — buffer in precision units</li>
@@ -101,13 +101,13 @@ public class M_Forecast_GenerateLines_StepDef
 				.firstOnlyNotNull(I_PP_Product_Planning.class);
 
 		DataTableRows.of(dataTable).forEach(row -> {
-			final String comparisonPeriod = row.getAsString("Forecast_ComparisonPeriod");
+			final String calculationMethod = row.getAsString("Forecast_CalculationMethod");
 			final String precisionUnit = row.getAsString("Forecast_PrecisionUnit");
 			final int frequency = row.getAsInt("Forecast_Frequency");
 			final int bufferTime = row.getAsInt("Forecast_BufferTime");
 			final boolean excludeFromForecast = row.getAsBoolean("IsExcludeFromForecast");
 
-			ppRecord.setForecast_ComparisonPeriod(comparisonPeriod);
+			ppRecord.setForecast_CalculationMethod(calculationMethod);
 			ppRecord.setForecast_PrecisionUnit(precisionUnit);
 			ppRecord.setForecast_Frequency(new BigDecimal(frequency));
 			ppRecord.setForecast_BufferTime(new BigDecimal(bufferTime));

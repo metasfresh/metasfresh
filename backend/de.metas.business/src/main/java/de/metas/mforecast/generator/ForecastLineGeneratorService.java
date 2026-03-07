@@ -50,15 +50,15 @@ public class ForecastLineGeneratorService
 			deleteExistingLines(forecastId);
 		}
 
-		final List<ProductPlanningForForecast> products = loadEligibleProducts(forecast, request);
 		final OrgId orgId = OrgId.ofRepoId(forecast.getAD_Org_ID());
 		final LocalDate referenceDate = TimeUtil.asLocalDate(forecast.getDatePromised());
+		final List<ProductPlanningForForecast> products = loadEligibleProducts(forecast, request, referenceDate);
 
 		int count = 0;
 		for (final ProductPlanningForForecast pp : products)
 		{
-			final ForecastComparisonPeriod method = request.getComparisonPeriodOverride()
-					.orElse(pp.getForecastComparisonPeriod());
+			final ForecastCalculationMethod method = request.getCalculationMethodOverride()
+					.orElse(pp.getForecastCalculationMethod());
 
 			if (method == null)
 			{
@@ -106,7 +106,8 @@ public class ForecastLineGeneratorService
 
 	private List<ProductPlanningForForecast> loadEligibleProducts(
 			@NonNull final I_M_Forecast forecast,
-			@NonNull final ForecastGeneratorRequest request)
+			@NonNull final ForecastGeneratorRequest request,
+			@NonNull final LocalDate referenceDate)
 	{
 		final ImmutableList.Builder<ProductPlanningForForecast> result = ImmutableList.builder();
 		final OrgId orgId = OrgId.ofRepoId(forecast.getAD_Org_ID());
@@ -128,8 +129,9 @@ public class ForecastLineGeneratorService
 			final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
 			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
-			// Skip discontinued products — no point forecasting products that are no longer available
-			if (product.isDiscontinued())
+			// Skip products that are discontinued as of the forecast's reference date.
+			// A product with DiscontinuedFrom in the future is still eligible for forecasting until that date.
+			if (productBL.isDiscontinuedAt(product, referenceDate))
 			{
 				continue;
 			}
@@ -158,7 +160,7 @@ public class ForecastLineGeneratorService
 			result.add(ProductPlanningForForecast.builder()
 					.productId(productId)
 					.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(warehouseId))
-					.forecastComparisonPeriod(ForecastComparisonPeriod.ofNullableCode(pp.getForecast_ComparisonPeriod()))
+					.forecastCalculationMethod(ForecastCalculationMethod.ofNullableCode(pp.getForecast_CalculationMethod()))
 					.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(pp.getForecast_PrecisionUnit()))
 					.forecastFrequency(extractForecastIntOrNull(pp.getForecast_Frequency()))
 					.forecastBufferTime(extractForecastIntOrNull(pp.getForecast_BufferTime()))

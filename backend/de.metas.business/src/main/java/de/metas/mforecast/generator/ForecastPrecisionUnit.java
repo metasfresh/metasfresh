@@ -9,6 +9,12 @@ import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 
+/**
+ * Time bucket granularity for the forecast calculation: weekly or monthly.
+ * Stored in PP_Product_Planning.Forecast_PrecisionUnit (AD_Reference 542073).
+ * <p>
+ * Controls how the forecast horizon (frequency + buffer) and lead time conversion are interpreted.
+ */
 @Getter
 @RequiredArgsConstructor
 public enum ForecastPrecisionUnit implements ReferenceListAwareEnum

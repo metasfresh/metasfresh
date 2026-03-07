@@ -1,9 +1,9 @@
 -- Migration: PP_Product_Planning forecast columns + AD_References
 -- Forecast Generator feature: add forecast configuration columns to PP_Product_Planning
 
--- AD_Reference: Forecast_ComparisonPeriod (List)
+-- AD_Reference: Forecast_CalculationMethod (List)
 INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType)
-VALUES (0,0,542072,TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Y','Forecast_ComparisonPeriod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'L');
+VALUES (0,0,542072,TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Y','Forecast_CalculationMethod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'L');
 
 INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
@@ -11,7 +11,7 @@ FROM AD_Language l, AD_Reference t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=542072
 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID);
 
--- AD_Ref_List values for Forecast_ComparisonPeriod
+-- AD_Ref_List values for Forecast_CalculationMethod
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
 VALUES (0,0,544159,542072,TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Ø letzte 52 Wochen',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'0','AVG_52_WEEKS');
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -90,15 +90,15 @@ UPDATE AD_Ref_List_Trl SET Name='Month', IsTranslated='Y', Updated=TO_TIMESTAMP(
 -- AD_Elements for new columns
 --
 
--- AD_Element: Forecast_ComparisonPeriod
+-- AD_Element: Forecast_CalculationMethod
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
-VALUES (0,584630,0,'Forecast_ComparisonPeriod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Vergleichszeitraum Prognose','Vergleichszeitraum Prognose',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100);
+VALUES (0,584630,0,'Forecast_CalculationMethod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Berechnungsmethode Prognose','Berechnungsmethode Prognose',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100);
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584630
 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID);
-UPDATE AD_Element_Trl SET Name='Forecast Comparison Period', PrintName='Forecast Comparison Period', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100 WHERE AD_Element_ID=584630 AND AD_Language='en_US';
+UPDATE AD_Element_Trl SET Name='Forecast Calculation Method', PrintName='Forecast Calculation Method', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100 WHERE AD_Element_ID=584630 AND AD_Language='en_US';
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584630,'en_US');
 
 -- AD_Element: Forecast_PrecisionUnit
@@ -149,16 +149,16 @@ UPDATE AD_Element_Trl SET Name='Exclude from Forecast', PrintName='Exclude from 
 -- AD_Columns on PP_Product_Planning (AD_Table_ID=53020)
 --
 
--- Column: PP_Product_Planning.Forecast_ComparisonPeriod
+-- Column: PP_Product_Planning.Forecast_CalculationMethod
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
-VALUES (0,592199,584630,0,17,542072,53020,'XX','Forecast_ComparisonPeriod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Vergleichszeitraum Prognose','NP',0,0,TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,0);
+VALUES (0,592199,584630,0,17,542072,53020,'XX','Forecast_CalculationMethod',TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,'N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Berechnungsmethode Prognose','NP',0,0,TO_TIMESTAMP('2026-03-07 10:00','YYYY-MM-DD HH24:MI'),100,0);
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592199
 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID);
 /* DDL */ SELECT update_Column_Translation_From_AD_Element(584630);
-/* DDL */ SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning ADD COLUMN Forecast_ComparisonPeriod VARCHAR(1)');
+/* DDL */ SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning ADD COLUMN Forecast_CalculationMethod VARCHAR(1)');
 
 -- Column: PP_Product_Planning.Forecast_PrecisionUnit
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)

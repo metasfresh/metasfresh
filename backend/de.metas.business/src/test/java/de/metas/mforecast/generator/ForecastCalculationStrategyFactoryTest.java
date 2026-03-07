@@ -20,30 +20,30 @@ class ForecastCalculationStrategyFactoryTest
 	@Test
 	void test52Weeks()
 	{
-		assertThat(factory.getStrategy(ForecastComparisonPeriod.AVG_52_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
+		assertThat(factory.getStrategy(ForecastCalculationMethod.AVG_52_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
 	}
 
 	@Test
 	void test26Weeks()
 	{
-		assertThat(factory.getStrategy(ForecastComparisonPeriod.AVG_26_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
+		assertThat(factory.getStrategy(ForecastCalculationMethod.AVG_26_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
 	}
 
 	@Test
 	void test12Weeks()
 	{
-		assertThat(factory.getStrategy(ForecastComparisonPeriod.AVG_12_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
+		assertThat(factory.getStrategy(ForecastCalculationMethod.AVG_12_WEEKS)).isInstanceOf(RollingWeeksAvgStrategy.class);
 	}
 
 	@Test
 	void testPrevCalendarYear()
 	{
-		assertThat(factory.getStrategy(ForecastComparisonPeriod.AVG_PREV_CALENDAR_YEAR)).isInstanceOf(PrevCalendarYearAvgStrategy.class);
+		assertThat(factory.getStrategy(ForecastCalculationMethod.AVG_PREV_CALENDAR_YEAR)).isInstanceOf(PrevCalendarYearAvgStrategy.class);
 	}
 
 	@Test
 	void testSamePeriodPrevYear()
 	{
-		assertThat(factory.getStrategy(ForecastComparisonPeriod.AVG_SAME_PERIOD_PREV_YEAR)).isInstanceOf(SamePeriodPrevYearAvgStrategy.class);
+		assertThat(factory.getStrategy(ForecastCalculationMethod.AVG_SAME_PERIOD_PREV_YEAR)).isInstanceOf(SamePeriodPrevYearAvgStrategy.class);
 	}
 }

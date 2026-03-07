@@ -1,6 +1,6 @@
 package de.metas.mforecast.process;
 
-import de.metas.mforecast.generator.ForecastComparisonPeriod;
+import de.metas.mforecast.generator.ForecastCalculationMethod;
 import de.metas.mforecast.generator.ForecastGeneratorRequest;
 import de.metas.mforecast.generator.ForecastLineGeneratorService;
 import de.metas.mforecast.generator.ForecastPrecisionUnit;
@@ -25,8 +25,8 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 	@Param(parameterName = "M_Product_ID")
 	private int p_productId;
 
-	@Param(parameterName = "Forecast_ComparisonPeriod")
-	private String p_comparisonPeriod;
+	@Param(parameterName = "Forecast_CalculationMethod")
+	private String p_calculationMethod;
 
 	@Param(parameterName = "Forecast_PrecisionUnit")
 	private String p_precisionUnit;
@@ -56,7 +56,7 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 		final ForecastGeneratorRequest request = ForecastGeneratorRequest.builder()
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(p_productCategoryId))
 				.productId(ProductId.ofRepoIdOrNull(p_productId))
-				.comparisonPeriodOverride(ForecastComparisonPeriod.ofNullableCode(p_comparisonPeriod))
+				.calculationMethodOverride(ForecastCalculationMethod.ofNullableCode(p_calculationMethod))
 				.precisionUnitOverride(ForecastPrecisionUnit.ofNullableCode(p_precisionUnit))
 				.deleteExistingLines(p_deleteExistingLines)
 				.build();

@@ -884,25 +884,25 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
 
 	/**
-	 * Set Forecast Comparison Period.
+	 * Set Forecast Calculation Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setForecast_ComparisonPeriod (@Nullable java.lang.String Forecast_ComparisonPeriod);
+	void setForecast_CalculationMethod (@Nullable java.lang.String Forecast_CalculationMethod);
 
 	/**
-	 * Get Forecast Comparison Period.
+	 * Get Forecast Calculation Method.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getForecast_ComparisonPeriod();
+	@Nullable java.lang.String getForecast_CalculationMethod();
 
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_ComparisonPeriod = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_ComparisonPeriod", null);
-	String COLUMNNAME_Forecast_ComparisonPeriod = "Forecast_ComparisonPeriod";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_CalculationMethod = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_CalculationMethod", null);
+	String COLUMNNAME_Forecast_CalculationMethod = "Forecast_CalculationMethod";
 
 	/**
 	 * Set Forecast Precision Unit.

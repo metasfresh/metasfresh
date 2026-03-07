@@ -602,15 +602,15 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public void setForecast_ComparisonPeriod (final String Forecast_ComparisonPeriod)
+	public void setForecast_CalculationMethod (final String Forecast_CalculationMethod)
 	{
-		set_Value (COLUMNNAME_Forecast_ComparisonPeriod, Forecast_ComparisonPeriod);
+		set_Value (COLUMNNAME_Forecast_CalculationMethod, Forecast_CalculationMethod);
 	}
 
 	@Override
-	public String getForecast_ComparisonPeriod()
+	public String getForecast_CalculationMethod()
 	{
-		return (String)get_Value(COLUMNNAME_Forecast_ComparisonPeriod);
+		return (String)get_Value(COLUMNNAME_Forecast_CalculationMethod);
 	}
 
 	@Override

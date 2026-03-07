@@ -13,7 +13,7 @@ public class ForecastCalculationStrategyFactory
 		this.salesHistoryRepo = salesHistoryRepo;
 	}
 
-	public ForecastCalculationStrategy getStrategy(@NonNull final ForecastComparisonPeriod period)
+	public ForecastCalculationStrategy getStrategy(@NonNull final ForecastCalculationMethod period)
 	{
 		switch (period)
 		{
@@ -28,7 +28,7 @@ public class ForecastCalculationStrategyFactory
 			case AVG_SAME_PERIOD_PREV_YEAR:
 				return new SamePeriodPrevYearAvgStrategy(salesHistoryRepo);
 			default:
-				throw new IllegalArgumentException("Unknown comparison period: " + period);
+				throw new IllegalArgumentException("Unknown calculation method: " + period);
 		}
 	}
 }

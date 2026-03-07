@@ -2,7 +2,7 @@
 -- Purpose: Improve usability by providing tooltips and help texts for all forecast-related fields and process parameters
 
 -- ==========================================================================
--- AD_Element: Forecast_ComparisonPeriod (584630)
+-- AD_Element: Forecast_CalculationMethod (584630)
 -- ==========================================================================
 UPDATE AD_Element_Trl SET
   Description='Berechnungsmethode für die Prognosemenge basierend auf historischen Verkaufsdaten',
@@ -126,7 +126,7 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584635, 'en_US');
 -- ==========================================================================
 UPDATE AD_Element_Trl SET
   Description='Erzeugt Prognosezeilen basierend auf historischen Verkaufsdaten und Produktplanungskonfiguration',
-  Help='Dieser Prozess erstellt automatisch Prognosezeilen (M_ForecastLine) für alle Produkte, die in der Produktionsplanung (PP_Product_Planning) eine Prognosekonfiguration haben. Die Berechnung basiert auf abgeschlossenen Kundenaufträgen und kann pro Produkt individuell konfiguriert werden (Vergleichszeitraum, Zeiteinheit, Frequenz, Bevorratungszeit).',
+  Help='Dieser Prozess erstellt automatisch Prognosezeilen (M_ForecastLine) für alle Produkte, die in der Produktionsplanung (PP_Product_Planning) eine Prognosekonfiguration haben. Die Berechnung basiert auf abgeschlossenen Kundenaufträgen und kann pro Produkt individuell konfiguriert werden (Berechnungsmethode, Zeiteinheit, Frequenz, Bevorratungszeit).',
   Updated=TO_TIMESTAMP('2026-03-07 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
 WHERE AD_Element_ID=584636 AND AD_Language='de_DE';
 
@@ -135,7 +135,7 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584636, 'de_DE');
 
 UPDATE AD_Element_Trl SET
   Description='Generates forecast lines based on historical sales data and product planning configuration',
-  Help='This process automatically creates forecast lines (M_ForecastLine) for all products that have a forecast configuration in product planning (PP_Product_Planning). The calculation is based on completed sales orders and can be individually configured per product (comparison period, time unit, frequency, buffer time).',
+  Help='This process automatically creates forecast lines (M_ForecastLine) for all products that have a forecast configuration in product planning (PP_Product_Planning). The calculation is based on completed sales orders and can be individually configured per product (calculation method, time unit, frequency, buffer time).',
   IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-07 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
 WHERE AD_Element_ID=584636 AND AD_Language='en_US';
 
@@ -147,12 +147,12 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584636, 'en_US');
 -- ==========================================================================
 UPDATE AD_Process SET
   Description='Erzeugt Prognosezeilen basierend auf historischen Verkaufsdaten und Produktplanungskonfiguration',
-  Help='Dieser Prozess erstellt automatisch Prognosezeilen (M_ForecastLine) für alle Produkte, die in der Produktionsplanung (PP_Product_Planning) eine Prognosekonfiguration haben. Die Berechnung basiert auf abgeschlossenen Kundenaufträgen und kann pro Produkt individuell konfiguriert werden (Vergleichszeitraum, Zeiteinheit, Frequenz, Bevorratungszeit).',
+  Help='Dieser Prozess erstellt automatisch Prognosezeilen (M_ForecastLine) für alle Produkte, die in der Produktionsplanung (PP_Product_Planning) eine Prognosekonfiguration haben. Die Berechnung basiert auf abgeschlossenen Kundenaufträgen und kann pro Produkt individuell konfiguriert werden (Berechnungsmethode, Zeiteinheit, Frequenz, Bevorratungszeit).',
   Updated=TO_TIMESTAMP('2026-03-07 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
 WHERE AD_Process_ID=585593;
 
 UPDATE AD_Process_Trl SET
   Description='Generates forecast lines based on historical sales data and product planning configuration',
-  Help='This process automatically creates forecast lines (M_ForecastLine) for all products that have a forecast configuration in product planning (PP_Product_Planning). The calculation is based on completed sales orders and can be individually configured per product (comparison period, time unit, frequency, buffer time).',
+  Help='This process automatically creates forecast lines (M_ForecastLine) for all products that have a forecast configuration in product planning (PP_Product_Planning). The calculation is based on completed sales orders and can be individually configured per product (calculation method, time unit, frequency, buffer time).',
   IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-07 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
 WHERE AD_Process_ID=585593 AND AD_Language='en_US';

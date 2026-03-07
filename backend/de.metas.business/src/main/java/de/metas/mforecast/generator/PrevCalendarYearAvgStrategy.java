@@ -5,7 +5,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.Year;
+
 
 public class PrevCalendarYearAvgStrategy implements ForecastCalculationStrategy
 {
@@ -36,7 +36,7 @@ public class PrevCalendarYearAvgStrategy implements ForecastCalculationStrategy
 			return BigDecimal.ZERO;
 		}
 
-		final int weeksInPrevYear = Year.of(prevYear).isLeap() ? 52 : 52;
+		final int weeksInPrevYear = 52;
 		final int horizonWeeks = toWeeks(ctx);
 
 		return totalSales

@@ -26,7 +26,7 @@ import de.metas.material.maturing.MaturingConfigId;
 import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.mforecast.generator.ForecastComparisonPeriod;
+import de.metas.mforecast.generator.ForecastCalculationMethod;
 import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
@@ -101,7 +101,7 @@ public class ProductPlanning
 
 	//
 	// Forecast
-	@Nullable ForecastComparisonPeriod forecastComparisonPeriod;
+	@Nullable ForecastCalculationMethod forecastCalculationMethod;
 	@Nullable ForecastPrecisionUnit forecastPrecisionUnit;
 	@Nullable Integer forecastFrequency;
 	@Nullable Integer forecastBufferTime;
@@ -136,7 +136,7 @@ public class ProductPlanning
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
 						   @Nullable final DistributionNetworkId distributionNetworkId,
-						   @Nullable final ForecastComparisonPeriod forecastComparisonPeriod,
+						   @Nullable final ForecastCalculationMethod forecastCalculationMethod,
 						   @Nullable final ForecastPrecisionUnit forecastPrecisionUnit,
 						   @Nullable final Integer forecastFrequency,
 						   @Nullable final Integer forecastBufferTime,
@@ -178,7 +178,7 @@ public class ProductPlanning
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;
 		this.manufacturingAggregationId = manufacturingAggregationId;
-		this.forecastComparisonPeriod = forecastComparisonPeriod;
+		this.forecastCalculationMethod = forecastCalculationMethod;
 		this.forecastPrecisionUnit = forecastPrecisionUnit;
 		this.forecastFrequency = forecastFrequency;
 		this.forecastBufferTime = forecastBufferTime;
