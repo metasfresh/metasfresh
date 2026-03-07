@@ -16,6 +16,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -112,6 +113,12 @@ import java.util.Optional;
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
+
+	@Getter @Setter @Nullable
+	private PromotionCodeId promotionCodeId;
+
+	@Getter @Setter @Nullable
+	private PromotionCodeId promotionCode2Id;
 
 	/* package */ InvoiceHeaderImpl()
 	{
