@@ -882,4 +882,109 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
 	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
+
+	/**
+	 * Set Forecast Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_CalculationMethod (@Nullable java.lang.String Forecast_CalculationMethod);
+
+	/**
+	 * Get Forecast Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getForecast_CalculationMethod();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_CalculationMethod = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_CalculationMethod", null);
+	String COLUMNNAME_Forecast_CalculationMethod = "Forecast_CalculationMethod";
+
+	/**
+	 * Set Forecast Precision Unit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_PrecisionUnit (@Nullable java.lang.String Forecast_PrecisionUnit);
+
+	/**
+	 * Get Forecast Precision Unit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getForecast_PrecisionUnit();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_PrecisionUnit = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_PrecisionUnit", null);
+	String COLUMNNAME_Forecast_PrecisionUnit = "Forecast_PrecisionUnit";
+
+	/**
+	 * Set Forecast Frequency.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_Frequency (@Nullable BigDecimal Forecast_Frequency);
+
+	/**
+	 * Get Forecast Frequency.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable BigDecimal getForecast_Frequency();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_Frequency = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_Frequency", null);
+	String COLUMNNAME_Forecast_Frequency = "Forecast_Frequency";
+
+	/**
+	 * Set Forecast Buffer Time.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_BufferTime (@Nullable BigDecimal Forecast_BufferTime);
+
+	/**
+	 * Get Forecast Buffer Time.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable BigDecimal getForecast_BufferTime();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_BufferTime = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_BufferTime", null);
+	String COLUMNNAME_Forecast_BufferTime = "Forecast_BufferTime";
+
+	/**
+	 * Set Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromForecast (boolean IsExcludeFromForecast);
+
+	/**
+	 * Get Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromForecast();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsExcludeFromForecast = new ModelColumn<>(I_PP_Product_Planning.class, "IsExcludeFromForecast", null);
+	String COLUMNNAME_IsExcludeFromForecast = "IsExcludeFromForecast";
 }
