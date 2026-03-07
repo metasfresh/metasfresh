@@ -87,9 +87,4 @@ public class QtyReservationRepository
 		final BigDecimal result = queryBuilder.create().aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, IQuery.Aggregate.SUM, BigDecimal.class);
 		return result != null ? QtyTU.ofBigDecimal(result) : QtyTU.ZERO;
 	}
-
-	public boolean hasReservation(@NonNull final OrderLineId orderLineId)
-	{
-		return getReservedQtyTU(orderLineId).isPositive();
-	}
 }
