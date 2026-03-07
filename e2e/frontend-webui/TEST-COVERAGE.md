@@ -963,6 +963,35 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 37. Promotion Code (`promotion-code.spec.js`)
+
+**Features Tested**:
+- F00100: Sales Order
+- F00250: Promotion Code (Aktionskennzeichen)
+
+**Epic**: E0100: Sales
+
+**Workflow**:
+1. Create promotion code via UI (window 542105) with Value, Name, Description
+2. Create sales order with customer and product
+3. Open Advanced Edit (Alt+E), set C_PromotionCode_ID via typeahead
+4. Verify promo code value in Advanced Edit, close modal
+5. Add order line, complete order
+6. Reopen Advanced Edit — verify promo code persisted after completion
+7. Navigate to Invoice Candidates (Alt+6)
+8. Open first IC row, open Advanced Edit — verify promo code propagated
+
+**Key Validations**:
+- Promotion code creation via direct window navigation
+- Advanced Edit modal (Alt+E) for setting and reading advanced fields
+- Promotion code lookup typeahead inside modal
+- Promotion code persistence after order completion
+- Promotion code propagation from SO to Invoice Candidate
+
+**Components Tested**: SalesOrderPage, InvoiceCandidatePage, AdvancedEdit utility
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -986,6 +1015,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - **WebAPIValidation.js** - Record state validation via WebAPI
 - **PaymentValidation.js** - Payment allocation and IsPaid/IsAllocated flag validation
 - **DocumentReferences.js** - Alt+6 reference panel operations, reference constants, SSE resilience
+- **AdvancedEdit.js** - Advanced Edit modal (Alt+E) interactions: open, close, set/get lookup and text fields
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 
