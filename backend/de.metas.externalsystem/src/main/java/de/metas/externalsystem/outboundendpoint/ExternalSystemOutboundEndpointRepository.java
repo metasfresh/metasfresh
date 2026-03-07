@@ -28,6 +28,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -68,6 +69,7 @@ public class ExternalSystemOutboundEndpointRepository
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.sasSignature(endpointRecord.getSasSignature())
+				.contentType(MediaType.parseMediaType(endpointRecord.getContentType()))
 				.build();
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.externalsystem.outboundendpoint;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -47,6 +48,7 @@ class ExternalSystemOutboundEndpointTest
 				.user("test@example.com")
 				.password("test-password")
 				.sasSignature("test-signature")
+				.contentType(MediaType.parseMediaType("application/json"))
 				.build();
 
 		// when
