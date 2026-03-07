@@ -5,9 +5,7 @@ import de.metas.mforecast.IForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -23,6 +21,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -115,7 +114,7 @@ public class ForecastLineGeneratorService
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter("IsExcludeFromForecast", false);
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsExcludeFromForecast, false);
 
 		if (request.getProductId() != null)
 		{
@@ -153,10 +152,10 @@ public class ForecastLineGeneratorService
 			result.add(ProductPlanningForForecast.builder()
 					.productId(productId)
 					.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(warehouseId))
-					.forecastComparisonPeriod(extractComparisonPeriod(pp))
-					.forecastPrecisionUnit(extractPrecisionUnit(pp))
-					.forecastFrequency(extractIntOrNull(pp, "Forecast_Frequency"))
-					.forecastBufferTime(extractIntOrNull(pp, "Forecast_BufferTime"))
+					.forecastComparisonPeriod(ForecastComparisonPeriod.ofNullableCode(pp.getForecast_ComparisonPeriod()))
+					.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(pp.getForecast_PrecisionUnit()))
+					.forecastFrequency(extractForecastIntOrNull(pp.getForecast_Frequency()))
+					.forecastBufferTime(extractForecastIntOrNull(pp.getForecast_BufferTime()))
 					.deliveryTimePromised(pp.getDeliveryTime_Promised())
 					.build());
 		}
@@ -172,31 +171,17 @@ public class ForecastLineGeneratorService
 		{
 			return false;
 		}
-		final Object excludeFlag = InterfaceWrapperHelper.getValueOrNull(category, "IsExcludeFromForecast");
-		return excludeFlag != null && de.metas.util.StringUtils.toBoolean(excludeFlag);
+		return category.isExcludeFromForecast();
 	}
 
-	private static ForecastComparisonPeriod extractComparisonPeriod(@NonNull final I_PP_Product_Planning pp)
+	@Nullable
+	private static Integer extractForecastIntOrNull(@Nullable final BigDecimal value)
 	{
-		final Object value = InterfaceWrapperHelper.getValueOrNull(pp, "Forecast_ComparisonPeriod");
-		return value != null ? ForecastComparisonPeriod.ofNullableCode(value.toString()) : null;
-	}
-
-	private static ForecastPrecisionUnit extractPrecisionUnit(@NonNull final I_PP_Product_Planning pp)
-	{
-		final Object value = InterfaceWrapperHelper.getValueOrNull(pp, "Forecast_PrecisionUnit");
-		return value != null ? ForecastPrecisionUnit.ofNullableCode(value.toString()) : null;
-	}
-
-	private static Integer extractIntOrNull(@NonNull final I_PP_Product_Planning pp, @NonNull final String columnName)
-	{
-		final Object value = InterfaceWrapperHelper.getValueOrNull(pp, columnName);
-		if (value instanceof Number)
+		if (value == null || value.signum() <= 0)
 		{
-			final int intValue = ((Number) value).intValue();
-			return intValue > 0 ? intValue : null;
+			return null;
 		}
-		return null;
+		return value.intValue();
 	}
 
 	private int computeForecastHorizon(

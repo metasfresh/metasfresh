@@ -600,4 +600,66 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Manufacturing_Aggregation_ID);
 	}
+
+	@Override
+	public void setForecast_ComparisonPeriod (final String Forecast_ComparisonPeriod)
+	{
+		set_Value (COLUMNNAME_Forecast_ComparisonPeriod, Forecast_ComparisonPeriod);
+	}
+
+	@Override
+	public String getForecast_ComparisonPeriod()
+	{
+		return (String)get_Value(COLUMNNAME_Forecast_ComparisonPeriod);
+	}
+
+	@Override
+	public void setForecast_PrecisionUnit (final String Forecast_PrecisionUnit)
+	{
+		set_Value (COLUMNNAME_Forecast_PrecisionUnit, Forecast_PrecisionUnit);
+	}
+
+	@Override
+	public String getForecast_PrecisionUnit()
+	{
+		return (String)get_Value(COLUMNNAME_Forecast_PrecisionUnit);
+	}
+
+	@Override
+	public void setForecast_Frequency (final java.math.BigDecimal Forecast_Frequency)
+	{
+		set_Value (COLUMNNAME_Forecast_Frequency, Forecast_Frequency);
+	}
+
+	@Override
+	public java.math.BigDecimal getForecast_Frequency()
+	{
+		final java.math.BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Forecast_Frequency);
+		return bd;
+	}
+
+	@Override
+	public void setForecast_BufferTime (final java.math.BigDecimal Forecast_BufferTime)
+	{
+		set_Value (COLUMNNAME_Forecast_BufferTime, Forecast_BufferTime);
+	}
+
+	@Override
+	public java.math.BigDecimal getForecast_BufferTime()
+	{
+		final java.math.BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Forecast_BufferTime);
+		return bd;
+	}
+
+	@Override
+	public void setIsExcludeFromForecast (final boolean IsExcludeFromForecast)
+	{
+		set_Value (COLUMNNAME_IsExcludeFromForecast, IsExcludeFromForecast);
+	}
+
+	@Override
+	public boolean isExcludeFromForecast()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromForecast);
+	}
 }

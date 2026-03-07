@@ -35,6 +35,8 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.mforecast.generator.ForecastComparisonPeriod;
+import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
@@ -136,6 +138,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
 				.manufacturingAggregationId(record.getC_Manufacturing_Aggregation_ID())
+				.forecastComparisonPeriod(ForecastComparisonPeriod.ofNullableCode(record.getForecast_ComparisonPeriod()))
+				.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(record.getForecast_PrecisionUnit()))
+				.forecastFrequency(extractForecastIntOrNull(record.getForecast_Frequency()))
+				.forecastBufferTime(extractForecastIntOrNull(record.getForecast_BufferTime()))
+				.isExcludeFromForecast(record.isExcludeFromForecast())
 				.build();
 	}
 
@@ -169,6 +176,21 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(from.getMaturingConfigId()));
 		record.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(from.getMaturingConfigLineId()));
 		record.setC_Manufacturing_Aggregation_ID(from.getManufacturingAggregationId() > 0 ? from.getManufacturingAggregationId() : -1);
+		record.setForecast_ComparisonPeriod(from.getForecastComparisonPeriod() != null ? from.getForecastComparisonPeriod().getCode() : null);
+		record.setForecast_PrecisionUnit(from.getForecastPrecisionUnit() != null ? from.getForecastPrecisionUnit().getCode() : null);
+		record.setForecast_Frequency(from.getForecastFrequency() != null ? BigDecimal.valueOf(from.getForecastFrequency()) : null);
+		record.setForecast_BufferTime(from.getForecastBufferTime() != null ? BigDecimal.valueOf(from.getForecastBufferTime()) : null);
+		record.setIsExcludeFromForecast(from.isExcludeFromForecast());
+	}
+
+	@Nullable
+	private static Integer extractForecastIntOrNull(@Nullable final BigDecimal value)
+	{
+		if (value == null || value.signum() <= 0)
+		{
+			return null;
+		}
+		return value.intValue();
 	}
 
 	@Nullable
