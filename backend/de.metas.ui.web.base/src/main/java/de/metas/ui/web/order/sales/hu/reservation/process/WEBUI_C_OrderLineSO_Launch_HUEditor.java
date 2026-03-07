@@ -73,7 +73,6 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	@NonNull private final HUReservationDocumentFilterService huReservationDocumentFilterService = SpringContextHolder.instance.getBean(HUReservationDocumentFilterService.class);
 	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
-	public static final String VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID = "WEBUI_C_OrderLineSO_ID";
 	private static final String MATERIAL_COCKPIT_FUNCTION_NAME_PATTERN = "%MaterialCockpit_SelectForOrderLine";
 
 	@Override
@@ -125,6 +124,12 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 				.build());
 
 		return MSG_OK;
+	}
+
+	@NonNull
+	private OrderId getOrderId()
+	{
+		return getRecordIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
 	}
 
 	private OrderLineId getSingleOrderLineId()
@@ -184,12 +189,11 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		callMaterialCockpitSelectionFunction(functionName, selectionId);
 
 		final DocumentFilter selectionFilter = MaterialCockpitV2SelectionFilterConverter.createSelectionFilter(selectionId);
-		final OrderLineId orderLineId = getSingleOrderLineId();
 
 		final IView view = viewsRepo.createView(CreateViewRequest
 				.builder(WindowId.of(adWindowId))
 				.addStickyFilters(selectionFilter)
-				.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
+				.setParameter(MaterialCockpitViewContext.VIEW_PARAMETER_NAME, createMaterialCockpitViewContext())
 				.build());
 
 		return view.getViewId();
@@ -219,8 +223,16 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 				.createView(CreateViewRequest
 						.builder(HUsReservationViewFactory.WINDOW_ID)
 						.addStickyFilters(stickyFilters)
-						.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
+						.setParameter(MaterialCockpitViewContext.VIEW_PARAMETER_NAME, createMaterialCockpitViewContext())
 						.build());
 		return view.getViewId();
+	}
+
+	private MaterialCockpitViewContext createMaterialCockpitViewContext()
+	{
+		return MaterialCockpitViewContext.builder()
+				.salesOrderId(getOrderId())
+				.salesOrderLineId(getSingleOrderLineId())
+				.build();
 	}
 }

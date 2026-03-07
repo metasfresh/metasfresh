@@ -3,7 +3,6 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -16,13 +15,8 @@ public class MD_CockpitV2_DeleteQtyReservation
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final OrderLineId orderLineId = getSalesOrderLineIdOrNull();
-		if (orderLineId == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order line context");
-		}
-
-		if (!qtyReservationService.getReservedQtyTU(orderLineId).isPositive())
+		final OrderLineId orderLineId = getSalesOrderLineId();
+		if (!qtyReservationService.hasReservation(orderLineId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservations to delete");
 		}
@@ -33,16 +27,17 @@ public class MD_CockpitV2_DeleteQtyReservation
 	@Override
 	protected String doIt()
 	{
-		final OrderLineId orderLineId = getSalesOrderLineIdOrNull();
-		if (orderLineId == null)
-		{
-			throw new AdempiereException("No sales order line context");
-		}
-
-		qtyReservationService.deleteReservationsForOrderLine(orderLineId);
+		qtyReservationService.deleteReservationsForOrderLine(getSalesOrderLineId());
 
 		invalidateView();
 
 		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success) {return;}
+		invalidateViewSelection();
 	}
 }

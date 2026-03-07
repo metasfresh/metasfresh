@@ -68,6 +68,8 @@ public class SalesOrderLine
 		this.id = orderLineId != null ? OrderAndLineId.of(orderLine.getOrderId(), orderLineId) : null;
 	}
 
+	public OrderLineId getOrderLineId() {return orderLine.getId();}
+
 	public ZonedDateTime getPreparationDate()
 	{
 		return order.getPreparationDate();

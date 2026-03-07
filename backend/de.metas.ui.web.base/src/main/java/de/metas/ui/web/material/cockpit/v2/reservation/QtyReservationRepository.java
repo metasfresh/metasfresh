@@ -77,4 +77,10 @@ public class QtyReservationRepository
 
 		return result != null ? QtyTU.ofBigDecimal(result) : QtyTU.ZERO;
 	}
+
+	public boolean hasReservation(@NonNull final OrderLineId orderLineId)
+	{
+		return getReservedQtyTU(orderLineId).isPositive();
+	}
+
 }

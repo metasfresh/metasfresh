@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ public class MaterialCockpitV2RowVO
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
 	@NonNull SupplyType supplyType;
+	@NonNull AvailabilityType availabilityType;
 	@Nullable Instant datePromised;
 	@Nullable BPartnerId vendorBPartnerId;
 	@Nullable AttributesKey attributesKey;
@@ -34,6 +36,7 @@ public class MaterialCockpitV2RowVO
 
 	private static final String COLUMNNAME_QtyTU = "QtyTU";
 	private static final String COLUMNNAME_SupplyType = "SupplyType";
+	private static final String COLUMNNAME_AvailabilityStatus = "AvailabilityStatus";
 	private static final String COLUMNNAME_DatePromised = "DatePromised";
 	private static final String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
@@ -44,6 +47,7 @@ public class MaterialCockpitV2RowVO
 				.productId(row.getFieldValueAsRepoId(I_QtyDemand_QtySupply_V.COLUMNNAME_M_Product_ID, ProductId::ofRepoId))
 				.warehouseId(row.getFieldValueAsRepoId(I_QtyDemand_QtySupply_V.COLUMNNAME_M_Warehouse_ID, WarehouseId::ofRepoId))
 				.supplyType(extractSupplyType(row))
+				.availabilityType(extractAvailabilityType(row))
 				.datePromised(extractDatePromised(row))
 				.vendorBPartnerId(extractVendorBPartnerId(row))
 				.attributesKey(extractAttributesKey(row))
@@ -66,19 +70,18 @@ public class MaterialCockpitV2RowVO
 		return value instanceof String ? SupplyType.ofNullableCode((String)value) : SupplyType.ON_HAND;
 	}
 
+	@NonNull
+	private static AvailabilityType extractAvailabilityType(@NonNull final IViewRow row)
+	{
+		final Object value = row.getFieldNameAndJsonValues().get(COLUMNNAME_AvailabilityStatus);
+		return value instanceof String ? AvailabilityType.ofCode((String)value) : AvailabilityType.AVAILABLE;
+	}
+
 	@Nullable
 	private static Instant extractDatePromised(@NonNull final IViewRow row)
 	{
 		final Object value = row.getFieldNameAndJsonValues().get(COLUMNNAME_DatePromised);
-		if (value instanceof java.sql.Timestamp)
-		{
-			return ((java.sql.Timestamp)value).toInstant();
-		}
-		if (value instanceof Instant)
-		{
-			return (Instant)value;
-		}
-		return null;
+		return TimeUtil.asInstant(value);
 	}
 
 	@Nullable
@@ -97,7 +100,10 @@ public class MaterialCockpitV2RowVO
 			final String str = (String)value;
 			return str.isEmpty() ? null : AttributesKey.ofString(str);
 		}
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	public Quantity computeQtyCUToReserve(@NonNull final QtyTU qtyTUToReserve)
@@ -112,6 +118,12 @@ public class MaterialCockpitV2RowVO
 	{
 		if (!qtyTU.isPositive()) {throw new AdempiereException("qtyTU shall be positive");}
 		return qtyStock.divide(qtyTU.toInt());
+	}
+
+	public boolean isAvailableForReservation()
+	{
+		return availabilityType == AvailabilityType.AVAILABLE
+				&& qtyTU.isPositive();
 	}
 }
 

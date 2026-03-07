@@ -1,10 +1,9 @@
 package de.metas.inoutcandidate.qty_reservation;
 
-import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
-import de.metas.inoutcandidate.qty_reservation.commands.QtyDeliveredAllocateCommand;
-import de.metas.util.Services;
+import de.metas.inoutcandidate.qty_reservation.qty_delivered_update.UpdateQtyDeliveredDispatcher;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,23 +11,13 @@ import org.springframework.stereotype.Service;
  * based on actual shipment completions (M_InOut).
  */
 @Service
+@RequiredArgsConstructor
 public class QtyReservationService
 {
-	@NonNull private final QtyReservationRepository qtyReservationRepository;
-	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final UpdateQtyDeliveredDispatcher updateQtyDeliveredDispatcher;
 
-	public QtyReservationService(@NonNull final QtyReservationRepository qtyReservationRepository)
+	public void scheduleUpdateQtyDelivered(@NonNull final InOutId shipmentId)
 	{
-		this.qtyReservationRepository = qtyReservationRepository;
+		updateQtyDeliveredDispatcher.fireShipmentChanged(shipmentId);
 	}
-
-	public void updateQtyDeliveredFromShipment(@NonNull final InOutId shipmentId)
-	{
-		QtyDeliveredAllocateCommand.builder()
-				.qtyReservationRepository(qtyReservationRepository)
-				.inOutBL(inOutBL)
-				.triggeringShipmentLineId(shipmentId)
-				.build().execute();
-	}
-
 }
