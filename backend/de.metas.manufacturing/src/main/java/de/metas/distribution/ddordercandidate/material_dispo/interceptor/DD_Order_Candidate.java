@@ -11,6 +11,7 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -69,6 +70,6 @@ public class DD_Order_Candidate
 
 	private MinMaxDescriptor getFromWarehouseMinMaxDescriptor(final DDOrderCandidate candidate)
 	{
-		return replenishInfoRepository.getBy(candidate.getSourceWarehouseId(), candidate.getProductId()).toMinMaxDescriptor();
+		return replenishInfoRepository.getBy(ReplenishInfo.Identifier.of(candidate.getSourceWarehouseId(), candidate.getSourceLocatorId(), candidate.getProductId())).toMinMaxDescriptor();
 	}
 }

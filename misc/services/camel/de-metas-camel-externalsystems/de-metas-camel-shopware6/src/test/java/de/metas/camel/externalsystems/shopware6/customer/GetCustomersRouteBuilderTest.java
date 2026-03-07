@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -66,7 +66,7 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.customer.GetCustomersRouteBuilder.GET_CUSTOMERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.customer.GetCustomersRouteBuilder.PREPARE_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.customer.GetCustomersRouteBuilder.PROCESS_CUSTOMER_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -133,7 +133,7 @@ public class GetCustomersRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + GET_CUSTOMERS_ROUTE_ID, invokeExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockPrepareContextProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
 		// dev-note: when `JsonExternalSystemRequest` contains `UpdatedAfterOverride` param, `UPSERT_RUNTIME_PARAMS_ROUTE_ID` route is not called

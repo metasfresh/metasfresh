@@ -1,9 +1,7 @@
 package de.metas.email;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.email.mailboxes.Mailbox;
-import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.templates.MailText;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -11,17 +9,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
 @Value
 public class EMailRequest
 {
-	@Nullable MailboxQuery mailboxQuery;
-	@Nullable Mailbox mailbox;
+	@NonNull Mailbox mailbox;
 
 	@NonNull ImmutableList<EMailAddress> toList;
+	@Nullable EMailAddress cc;
 	@Nullable String subject;
 	@Nullable String message;
 	boolean html;
@@ -33,9 +30,9 @@ public class EMailRequest
 
 	@Builder
 	private EMailRequest(
-			@Nullable final MailboxQuery mailboxQuery,
-			@Nullable final Mailbox mailbox,
+			@NonNull final Mailbox mailbox,
 			@NonNull @Singular("to") final ImmutableList<EMailAddress> toList,
+			final @Nullable EMailAddress cc,
 			@Nullable final String subject,
 			@Nullable final String message,
 			final boolean html,
@@ -44,14 +41,10 @@ public class EMailRequest
 			@Nullable final ILoggable debugLoggable,
 			final boolean forceRealEmailRecipients)
 	{
-		if (CoalesceUtil.countNotNulls(mailboxQuery, mailbox) != 1)
-		{
-			throw new AdempiereException("One and only one of mailboxQuery or mailbox shall be specified");
-		}
-		this.mailboxQuery = mailboxQuery;
 		this.mailbox = mailbox;
 
 		this.toList = Check.assumeNotEmpty(toList, "at least one to recipient shall be specified");
+		this.cc = cc;
 		this.subject = subject;
 		this.message = message;
 		this.html = html;
@@ -84,4 +77,6 @@ public class EMailRequest
 	}
 
 	public EMailAddress getTo() {return toList.get(0);}
+
+	public @Nullable EMailAddress getCc() {return cc;}
 }

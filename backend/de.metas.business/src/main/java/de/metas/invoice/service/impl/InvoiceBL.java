@@ -17,8 +17,7 @@ import java.util.Properties;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {
-	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<>(
-			org.compiere.model.I_C_InvoiceLine.class);
+	private static final ICopyHandlerBL copuHandlerBL = Services.get(ICopyHandlerBL.class);
 
 	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice,
@@ -58,7 +57,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			{
 				additionalDocLineHandler.copyPreliminaryValues(fromLine, toLine);
 			}
-			Services.get(ICopyHandlerBL.class).copyPreliminaryValues(fromLine, toLine);
+			copuHandlerBL.copyPreliminaryValues(fromLine, toLine);
 
 			toLine.setC_Invoice_ID(toInvoice.getC_Invoice_ID());
 
@@ -107,7 +106,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 				if (fromLine.getC_OrderLine_ID() != 0)
 				{
 					final I_C_OrderLine peer = fromLine.getC_OrderLine();
-					if (peer.getRef_OrderLine_ID() != 0)
+					if (peer !=null && peer.getRef_OrderLine_ID() != 0)
 					{
 						toLine.setC_OrderLine_ID(peer.getRef_OrderLine_ID());
 					}
@@ -116,7 +115,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 				if (fromLine.getM_InOutLine_ID() != 0)
 				{
 					final I_M_InOutLine peer = fromLine.getM_InOutLine();
-					if (peer.getRef_InOutLine_ID() != 0)
+					if (peer !=null && peer.getRef_InOutLine_ID() != 0)
 					{
 						toLine.setM_InOutLine_ID(peer.getRef_InOutLine_ID());
 					}
@@ -175,4 +174,5 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		}
 		return sb.toString();
 	}
+
 }

@@ -1,10 +1,8 @@
-package org.adempiere.ad.expression.api.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,33 +11,34 @@ package org.adempiere.ad.expression.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+package org.adempiere.ad.expression.api.impl;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.MockedEvaluatee;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringExpressionCompilerTests
 {
 	private StringExpressionCompiler compiler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		compiler = StringExpressionCompiler.instance;
@@ -71,31 +70,30 @@ public class StringExpressionCompilerTests
 		final String expressionStr = "C_BPartner_ID=@C_BPartner_ID@ AND Text='@@'";
 		final IStringExpression expression = compiler.compile(expressionStr);
 		final Set<String> expectedParams = ImmutableSet.of("C_BPartner_ID");
-		assertEquals("Invalid params", expectedParams, expression.getParameterNames());
+		assertEquals(expectedParams, expression.getParameterNames(), "Invalid params");
 
-		assertEquals("Formated expression shall be equal to initial expression", expressionStr, expression.getFormatedExpressionString());
+		assertEquals(expressionStr, expression.getFormatedExpressionString(), "Formated expression shall be equal to initial expression");
 
 		// Try to evaluate it
 		final MockedEvaluatee ctx = new MockedEvaluatee();
 		ctx.put("C_BPartner_ID", "123");
 	}
 
-	@Test(expected = ExpressionCompileException.class)
+	@Test
 	public void test_compileStringExpression_noClosingTag()
 	{
 		final String expressionStr = "C_BPartner_ID=@C_BPartner_ID and closing tag is missing";
-		final IStringExpression expression = compiler.compile(expressionStr);
-		Assert.fail("Expression '" + expressionStr + "' shall not be compiled to: " + expression);
+		Assertions.assertThrows(ExpressionCompileException.class, () -> compiler.compile(expressionStr));
 	}
 
 	@Test
 	public void test_compileStringExpression_NullExpression()
 	{
-		Assert.assertSame(IStringExpression.NULL, compiler.compile(null));
-		Assert.assertSame(IStringExpression.NULL, compiler.compile(""));
+		Assertions.assertSame(IStringExpression.NULL, compiler.compile(null));
+		Assertions.assertSame(IStringExpression.NULL, compiler.compile(""));
 
 		// empty expressions with wildcards shall be compiled to a regular expression
-		Assert.assertNotSame(IStringExpression.NULL, compiler.compile("   "));
+		Assertions.assertNotSame(IStringExpression.NULL, compiler.compile("   "));
 	}
 
 	@Test
@@ -104,8 +102,8 @@ public class StringExpressionCompilerTests
 		// empty expressions with wildcards shall be compiled to a regular expression
 		final String expressionStr = "     ";
 		final IStringExpression expression = compiler.compile(expressionStr);
-		Assert.assertNotSame("Empty expressions with wildcards shall be compiled to a regular expression", IStringExpression.NULL, expression);
-		Assert.assertEquals(expressionStr, expression.getFormatedExpressionString());
+		Assertions.assertNotSame(IStringExpression.NULL, expression, "Empty expressions with wildcards shall be compiled to a regular expression");
+		Assertions.assertEquals(expressionStr, expression.getFormatedExpressionString());
 	}
 
 	@Test
@@ -113,7 +111,7 @@ public class StringExpressionCompilerTests
 	{
 		final String expressionStr = "C_BPartner_Location.C_BPartner_ID=bp.C_BPartner_ID and no parameters";
 		final ConstantStringExpression expression = (ConstantStringExpression)compiler.compile(expressionStr);
-		Assert.assertEquals(expressionStr, expression.getFormatedExpressionString());
+		Assertions.assertEquals(expressionStr, expression.getFormatedExpressionString());
 	}
 
 	@Test
@@ -121,7 +119,7 @@ public class StringExpressionCompilerTests
 	{
 		final String expressionStr = "@C_BPartner_ID@=C_BPartner_ID";
 		final IStringExpression expression = compiler.compile(expressionStr);
-		Assert.assertEquals(expressionStr, expression.getFormatedExpressionString());
+		Assertions.assertEquals(expressionStr, expression.getFormatedExpressionString());
 	}
 
 }

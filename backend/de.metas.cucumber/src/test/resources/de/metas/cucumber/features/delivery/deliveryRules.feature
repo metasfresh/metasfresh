@@ -1,10 +1,14 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
 @ghActions:run_on_executor5
 Feature: Delivery rules with and without quantity in stock
+## F00104: Delivery Rules
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2022-08-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value              | OPT.IsActive |
@@ -17,6 +21,8 @@ Feature: Delivery rules with and without quantity in stock
       | plv_1      | pl_1                      | SalesOrder-PLV | 2022-08-01 |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_10
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` but has no available stock
   _Given M_Product.IsStocked = true
@@ -48,14 +54,16 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_1 | orderLine_A_stocked_1     | N             | 0            |
 
-    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | shipmentSchedule_1               | D            | true                | false       |
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule and expects error message
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | AD_Message.Value                                                                    |
+      | shipmentSchedule_1               | D            | true                | false       | de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords |
 
     Then validate no M_InOut found for C_Order identified by order_A_stocked_1
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_20
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` and has no available stock
   _Given M_Product.IsStocked = false
@@ -101,6 +109,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_30
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` and has available stock
   _Given M_Product.IsStocked = true
@@ -158,6 +168,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_40
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` but has available stock
   _Given M_Product.IsStocked = false
@@ -218,6 +230,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_50
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` and has no available stock
   _Given M_Product.IsStocked = false
@@ -261,6 +275,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_60
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` but has no available stock
   _Given M_Product.IsStocked = true
@@ -304,6 +320,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_70
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` but has available stock
   _Given M_Product.IsStocked = false
@@ -364,6 +382,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_80
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` and has available stock
   _Given M_Product.IsStocked = true
@@ -421,6 +441,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_B_10
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
@@ -493,6 +515,8 @@ Feature: Delivery rules with and without quantity in stock
 
   @flaky
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_B_20
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true

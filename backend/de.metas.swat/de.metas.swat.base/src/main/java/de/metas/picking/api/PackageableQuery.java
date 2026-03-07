@@ -41,6 +41,7 @@ import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 @Value
@@ -57,6 +58,8 @@ public class PackageableQuery
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 	@Nullable LocalDate preparationDate;
+	@Nullable ZonedDateTime maximumFixedPreparationDate;
+	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;
 
 	/**

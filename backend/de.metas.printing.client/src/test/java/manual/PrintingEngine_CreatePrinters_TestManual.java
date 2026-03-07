@@ -22,12 +22,11 @@ package manual;
  * #L%
  */
 
-import org.junit.Ignore;
-
 import de.metas.printing.client.engine.PrintingEngine;
 import de.metas.printing.esb.api.PrinterHWList;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class PrintingEngine_CreatePrinters_TestManual
 {
 

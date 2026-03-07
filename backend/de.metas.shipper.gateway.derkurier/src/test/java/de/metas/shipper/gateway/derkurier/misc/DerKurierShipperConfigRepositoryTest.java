@@ -10,8 +10,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class DerKurierShipperConfigRepositoryTest
 {
 	private I_AD_Sequence sequenceRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

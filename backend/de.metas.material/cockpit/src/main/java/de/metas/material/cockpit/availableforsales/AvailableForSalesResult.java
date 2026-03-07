@@ -1,10 +1,12 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import java.math.BigDecimal;
 
@@ -44,7 +46,12 @@ public class AvailableForSalesResult
 	AttributesKey storageAttributesKey;
 
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	Quantities quantities;
+
+	@NonNull WarehouseId warehouseId;
 
 	@Value
 	@Builder

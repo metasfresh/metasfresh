@@ -24,14 +24,12 @@
 
 set -e
 
+# Source common utility functions
+SCRIPT_DIR=$(dirname "$0")
+. "${SCRIPT_DIR}/00_common.sh"
+
 # We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
-if ! [ -z "$1" ]; then
-    BRANCH_NAME=$1
-else
-    echo "!! The first parameter needs do correspond to an env-File !!"
-    echo "!! E.g. to use the env-file env-files/release.env, run 10_reset_db_to_seek_Dump.sh release !!" 
-    exit
-fi
+BRANCH_NAME=$(resolve_branch_name "$1")
 
 set -u
 

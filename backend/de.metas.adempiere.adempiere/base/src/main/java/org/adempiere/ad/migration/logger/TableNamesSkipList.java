@@ -50,6 +50,7 @@ import org.compiere.model.I_I_ReportLine;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
 import org.compiere.model.I_Mobile_Application_Access;
+import org.compiere.model.I_Mobile_Application_Action_Access;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -173,7 +174,8 @@ public class TableNamesSkipList
 						I_AD_Document_Action_Access.Table_Name,
 						I_AD_Table_Access.Table_Name,
 						I_AD_Column_Access.Table_Name,
-						I_Mobile_Application_Access.Table_Name
+						I_Mobile_Application_Access.Table_Name,
+						I_Mobile_Application_Action_Access.Table_Name
 				)
 		);
 

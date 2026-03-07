@@ -1,7 +1,9 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.impl.ASIBuilder;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.ad.trx.api.ITrx;
@@ -10,16 +12,13 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.impl.ASIBuilder;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /*
  * #%L
@@ -31,26 +30,23 @@ import de.metas.pricing.service.impl.ASIBuilder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUPricingTests
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private HUPricingTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -92,7 +88,9 @@ public class HUPricingTests
 			pricingCtx.setReferencedObject(orderLine);
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
-			Assert.assertThat("not-Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(2)));
+			
+			assertThat(result.getPriceStd()).as("not-Bio PriceStd\n" + result).isEqualByComparingTo(BigDecimal.valueOf(2));
+
 		}
 
 		//
@@ -108,7 +106,8 @@ public class HUPricingTests
 			pricingCtx.setReferencedObject(orderLine);
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
-			Assert.assertThat("Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
+			assertThat(result.getPriceStd()).as("Bio PriceStd\n" + result).isEqualByComparingTo(BigDecimal.valueOf(3));
+
 		}
 	}
 }

@@ -23,14 +23,12 @@ package de.metas.util.collections;
  */
 
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import de.metas.util.collections.PeekIterator;
 import de.metas.util.collections.PeekIteratorWrapper;
@@ -44,24 +42,24 @@ public class PeekIteratorWrapperTest
 		final Iterator<Integer> source = Arrays.asList(1, 2, 3).iterator();
 		final PeekIterator<Integer> it = new PeekIteratorWrapper<Integer>(source);
 
-		assertEquals("Iterator peek value", Integer.valueOf(1), it.peek());
+		assertThat(it.peek()).as("Iterator peek value").isEqualTo(Integer.valueOf(1));
 
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(1), it.peek());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(1));
 
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(1), it.peek());
-		assertEquals("Invalid next value", Integer.valueOf(1), it.next());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(1));
+		assertThat(it.next()).as("Invalid next value").isEqualTo(Integer.valueOf(1));
 
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(2), it.peek());
-		assertEquals("Invalid peek value", Integer.valueOf(2), it.next());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(2));
+		assertThat(it.next()).as("Invalid peek value").isEqualTo(Integer.valueOf(2));
 
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(3), it.peek());
-		assertEquals("Invalid peek value", Integer.valueOf(3), it.next());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(3));
+		assertThat(it.next()).as("Invalid peek value").isEqualTo(Integer.valueOf(3));
 
-		assertEquals("Invalid hasNext", false, it.hasNext());
+		assertThat(it.hasNext()).as("Invalid hasNext").isFalse();
 	}
 
 	@Test
@@ -70,7 +68,7 @@ public class PeekIteratorWrapperTest
 		final Iterator<Integer> source = new ArrayList<Integer>().iterator();
 		final PeekIterator<Integer> it = new PeekIteratorWrapper<Integer>(source);
 
-		assertEquals("Invalid hasNext", false, it.hasNext());
+		assertThat(it.hasNext()).as("Invalid hasNext").isFalse();
 	}
 	
 	/**
@@ -95,17 +93,17 @@ public class PeekIteratorWrapperTest
 			it.next();
 		}
 
-		assertEquals("Item not found", true, found);
+		assertThat(found).as("Item not found").isTrue();
 		
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(4), it.peek());
-		assertEquals("Invalid peek value", Integer.valueOf(4), it.next());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(4));
+		assertThat(it.next()).as("Invalid peek value").isEqualTo(Integer.valueOf(4));
 		
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-		assertEquals("Invalid peek value", Integer.valueOf(5), it.peek());
-		assertEquals("Invalid peek value", Integer.valueOf(5), it.next());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(5));
+		assertThat(it.next()).as("Invalid peek value").isEqualTo(Integer.valueOf(5));
 
-		Assert.assertEquals("Invalid hasNext value", false, it.hasNext());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isFalse();
 	}
 	
 	@Test
@@ -117,13 +115,13 @@ public class PeekIteratorWrapperTest
 		// Pick the first element for a while
 		for (int i = 1; i <= 10; i++)
 		{
-			Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
-			assertEquals("Invalid peek value", Integer.valueOf(1), it.peek());
+			assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
+			assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(1));
 		}
 		
 		//  Move to next element
-		Assert.assertEquals("Invalid hasNext value", true, it.hasNext());
+		assertThat(it.hasNext()).as("Invalid hasNext value").isTrue();
 		it.next();
-		assertEquals("Invalid peek value", Integer.valueOf(2), it.peek());
+		assertThat(it.peek()).as("Invalid peek value").isEqualTo(Integer.valueOf(2));
 	}
 }

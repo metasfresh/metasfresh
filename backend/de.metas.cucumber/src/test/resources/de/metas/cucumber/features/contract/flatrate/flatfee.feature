@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0170_Contract_Management
+@allure.label.feature:F00970_CAMT_53_Sepa_Import_version_is184
+@F00970
 @topic:flatfeeContracts
 Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
+## F00970: Flatrate Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +13,9 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0170_Contract_Management
+@allure.label.feature:F00970_CAMT_53_Sepa_Import_version_is184
+@F00970
   @topic:flatFeeContractsWithReporterdQty
   @Id:S0433_1
   Scenario: Create Flatfee contract with reported quantities and make sure, a normal sales order is identified with the contract.
@@ -31,9 +38,9 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | M_AttributeSet_ID.Identifier | Name                         | MandatoryType |
       | attributeSet_S0433_1         | flatfee_attributeSet_S0433_1 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_mealType        | attributeSet_S0433_1         | mealType_S0433_1          | 10    |
-      | attributeUse_serviceType     | attributeSet_S0433_1         | serviceType_S0433_1       | 20    |
+      | M_AttributeSet_ID    | M_Attribute_ID      | SeqNo |
+      | attributeSet_S0433_1 | mealType_S0433_1    | 10    |
+      | attributeSet_S0433_1 | serviceType_S0433_1 | 20    |
     And metasfresh contains M_AttributeSetInstance with identifier "ASI_Standard_S0433_1":
   """
   {
@@ -89,8 +96,8 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | matching_1_S0433_1 | flatFeeConditions_1_S0433_1         | 10    | transaction_category_S0433_1         |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | OPT.C_BPartner_Location_ID.Identifier | Name                    | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID |
-      | shipToPartner_1_S0433_1 | shipToPartner_location_1_S0433_1      | shipToPartner_1_S0433_1 | ps_1_S0433_1                  | Y            | Y              | Y              | 1000009              |
+      | Identifier              | OPT.C_BPartner_Location_ID.Identifier | Name                    | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep |
+      | shipToPartner_1_S0433_1 | shipToPartner_location_1_S0433_1      | shipToPartner_1_S0433_1 | ps_1_S0433_1                  | Y            | Y              | Y              |
     And metasfresh contains C_BPartner_Departments:
       | Identifier           | C_BPartner_ID.Identifier | Value | Name         |
       | department_1_S0433_1 | shipToPartner_1_S0433_1  | 1     | Department 1 |

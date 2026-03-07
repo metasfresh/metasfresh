@@ -27,9 +27,15 @@ import de.metas.RestUtils;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.rest_api.v2.order.JsonOrderRevertRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -43,6 +49,7 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.payment.PaymentService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -51,7 +58,9 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -62,11 +71,15 @@ import java.util.Optional;
 @Service
 public class OrderService
 {
-	private final static transient Logger logger = LogManager.getLogger(OrderService.class);
+	private final static Logger logger = LogManager.getLogger(OrderService.class);
+
+	private static final AdMessageKey MSG_ERR_ORDER_HAS_DELIVERED_ITEMS = AdMessageKey.of("MSG_ERR_ORDER_HAS_DELIVERED_ITEMS");
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final CurrencyService currencyService;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -82,6 +95,13 @@ public class OrderService
 		this.paymentService = paymentService;
 	}
 
+	@NonNull
+	public Optional<byte[]> getOrderPDF(@NonNull final OrderId orderId)
+	{
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.map(archiveBL::getBinaryData);
+	}
+
 	public void createOrderPayment(@NonNull final JsonOrderPaymentCreateRequest request)
 	{
 		final LocalDate dateTrx = CoalesceUtil.coalesce(request.getTransactionDate(), SystemTime.asLocalDate());
@@ -94,7 +114,7 @@ public class OrderService
 		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
 		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.",orgId.getRepoId(), paymentExternalId.getValue());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.", orgId.getRepoId(), paymentExternalId.getValue());
 			return; // nothing to do, external payment already registered
 		}
 
@@ -150,7 +170,39 @@ public class OrderService
 		});
 	}
 
-	private Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
+	@NonNull
+	public I_C_Order reverseOrder(@NonNull final OrderId orderId)
+	{
+		if (orderDAO.hasDeliveredItems(orderId))
+		{
+			throw new AdempiereException(MSG_ERR_ORDER_HAS_DELIVERED_ITEMS, orderId);
+		}
+
+		final I_C_Order documentRecord = orderDAO.getById(orderId);
+
+		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		return documentRecord;
+	}
+
+	@NonNull
+	public Optional<OrderId> getOrderId(@NonNull final JsonOrderRevertRequest request, @NonNull final MasterdataProvider masterdataProvider)
+	{
+		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
+		final ExternalSystemId externalSystemId = masterdataProvider.getExternalSystemId(ExternalSystemType.ofValue(request.getExternalSystemCode()));
+
+		final OrderQuery orderQuery = OrderQuery.builder()
+				.orgId(orgId)
+				.externalId(ExternalId.of(request.getExternalId()))
+				.externalSystemId(externalSystemId)
+				.build();
+
+		return orderDAO.retrieveByOrderCriteria(orderQuery)
+				.map(I_C_Order::getC_Order_ID)
+				.map(OrderId::ofRepoId);
+	}
+
+	public Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
 	{
 		final OrderQuery.OrderQueryBuilder queryBuilder = OrderQuery.builder().orgId(orgId);
 

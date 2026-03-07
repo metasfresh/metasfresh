@@ -42,6 +42,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Setter;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -164,6 +165,9 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyResultHint;
 
+	@JsonProperty("allowNew")
+	@Setter private boolean allowNew = true;
+
 	private JSONViewResult(@NonNull final ViewResult viewResult, @Nullable final List<? extends JSONViewRowBase> rows, @NonNull final JSONOptions jsonOpts)
 	{
 		//
@@ -216,7 +220,7 @@ public final class JSONViewResult
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
 		queryLimitHit = viewResult.isQueryLimitHit() ? Boolean.TRUE : null;
 
-		if(viewResult.getEmptyReason() != null)
+		if (viewResult.getEmptyReason() != null)
 		{
 			this.emptyResultText = StringUtils.trimBlankToNull(viewResult.getEmptyReason().getText().translate(jsonOpts.getAdLanguage()));
 			this.emptyResultHint = StringUtils.trimBlankToNull(viewResult.getEmptyReason().getHint().translate(jsonOpts.getAdLanguage()));

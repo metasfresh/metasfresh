@@ -87,6 +87,11 @@ public enum SOTrx
 		return this == PURCHASE;
 	}
 
+	/**
+	 * @return true if AP (Account Payable), aka Purchase
+	 */
+	public boolean isAP() {return isPurchase();}
+
 	public SOTrx invert()
 	{
 		return isSales() ? PURCHASE : SALES;

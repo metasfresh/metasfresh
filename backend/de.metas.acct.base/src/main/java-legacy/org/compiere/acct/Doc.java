@@ -12,6 +12,8 @@ import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
@@ -161,10 +163,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private boolean documentDetailsLoaded = false;
 	private DocBaseAndSubType _docBaseAndSubType = null;
 	private final DocStatus _docStatus;
-    @Nullable private String m_DocumentNo = null;
-    @Nullable private String m_Description = null;
-    @Nullable private GLCategoryId m_GL_Category_ID;
-    @Nullable private MPeriod m_period = null;
+	@Nullable private String m_DocumentNo = null;
+	@Nullable private String m_Description = null;
+	@Nullable private GLCategoryId m_GL_Category_ID;
+	@Nullable private MPeriod m_period = null;
 	private int m_C_Period_ID = 0;
 	@Nullable private final LocationId locationFromId = null;
 	@Nullable private final LocationId locationToId = null;
@@ -1264,7 +1266,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return bankAccount;
 	}
 
-    @Nullable
+	@Nullable
 	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
@@ -1581,11 +1583,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		final ClientId clientId = getClientId();
-		for (final ID documentId : documentIds)
-		{
-			final TableRecordReference documentRef = TableRecordReference.of(tableName, documentId);
-			services.postImmediateNoFail(documentRef, clientId);
-		}
+		documentIds.stream()
+				.map(documentId -> DocumentPostRequest.builder()
+						.record(TableRecordReference.of(tableName, documentId))
+						.clientId(clientId)
+						.build())
+				.collect(DocumentPostMultiRequest.collect())
+				.ifPresent(services::scheduleReposting);
 	}
 
 	@Nullable

@@ -1,10 +1,8 @@
-package org.adempiere.util.test;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,9 @@ package org.adempiere.util.test;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
+package org.adempiere.util.test;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,17 +31,19 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
-import de.metas.util.lang.RepoIdAware;
+import java.math.BigDecimal;
+import java.util.Collection;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.within;
 
 /**
  * This class is the mother and the father, at same time, of all our expectations ;)
  *
- * @author tsa
- *
  * @param <ParentExpectationType>
+ * @author tsa
  */
 public class AbstractExpectation<ParentExpectationType>
 {
@@ -66,7 +63,7 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * BigDecimal comparation with margin used by {@link #assertCloseToExpected(ErrorMessage, BigDecimal, BigDecimal)} methods.
-	 *
+	 * <p>
 	 * NOTE: by default is not set (i.e. margin will be 0). Please let it like this because generally we shall have zero tolerance.
 	 */
 	private BigDecimal _errorMargin;
@@ -77,7 +74,9 @@ public class AbstractExpectation<ParentExpectationType>
 		this._parentExpectation = parentExpectation;
 	}
 
-	/** No parent constructor */
+	/**
+	 * No parent constructor
+	 */
 	protected AbstractExpectation()
 	{
 		this((ParentExpectationType)null);
@@ -159,10 +158,8 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * Copy values from given expectation to this expectation.
-	 *
+	 * <p>
 	 * To be extended by actual expectations. At this level it throws {@link UnsupportedOperationException}.
-	 *
-	 * @param from
 	 */
 	public <FromExpectationType extends AbstractExpectation<?>> void copyFromExpectation(FromExpectationType from)
 	{
@@ -188,17 +185,11 @@ public class AbstractExpectation<ParentExpectationType>
 			actualToUse = BigDecimal.ZERO;
 		}
 
-		Assert.assertThat(ErrorMessage.toString(message),
-				actualToUse,
-				Matchers.comparesEqualTo(expectedToUse));
+		assertThat(actualToUse).as(ErrorMessage.toString(message)).isEqualByComparingTo(expectedToUse);
 	}
 
 	/**
 	 * Asserts <code>actual</code> is close to <code>expected</code>, considering the defined error margin ({@link #getErrorMargin()}).
-	 *
-	 * @param message
-	 * @param expected
-	 * @param actual
 	 */
 	protected final void assertCloseToExpected(final String message, final BigDecimal expected, final BigDecimal actual)
 	{
@@ -225,11 +216,9 @@ public class AbstractExpectation<ParentExpectationType>
 			errorMargin = BigDecimal.ZERO;
 		}
 
-		Assert.assertThat(
-				message.toString(),
-				actualToUse, // actual
-				is(closeTo(expectedToUse, errorMargin)) // expected
-		);
+		assertThat(actualToUse)
+				.as(message.toString())
+				.isCloseTo(expectedToUse, within(errorMargin)); // expected
 	}
 
 	protected <T> void assertModelEquals(final String message, final T expected, final T actual)
@@ -263,7 +252,7 @@ public class AbstractExpectation<ParentExpectationType>
 				.addContextInfo("Expected model", expected)
 				.addContextInfo("Actual model", actual);
 
-		Assert.assertEquals(messageToUse.expect("same IDs").toString(), expectedId, actualId);
+		Assertions.assertEquals(expectedId, actualId, messageToUse.expect("same IDs").toString());
 	}
 
 	public final AbstractExpectation<ParentExpectationType> setErrorMargin(final BigDecimal errorMargin)
@@ -299,22 +288,22 @@ public class AbstractExpectation<ParentExpectationType>
 
 	protected void assertNotNull(final ErrorMessage message, final Object object)
 	{
-		Assert.assertNotNull(ErrorMessage.toString(message), object);
+		Assertions.assertNotNull(object, ErrorMessage.toString(message));
 	}
 
 	protected void assertTrue(final ErrorMessage message, final boolean condition)
 	{
-		Assert.assertTrue(ErrorMessage.toString(message), condition);
+		Assertions.assertTrue(condition, ErrorMessage.toString(message));
 	}
 
 	protected void assertEquals(final String message, final Object expected, final Object actual)
 	{
-		Assert.assertEquals(message, expected, actual);
+		Assertions.assertEquals(expected, actual, message);
 	}
 
 	protected void assertEquals(final ErrorMessage message, final Object expected, final Object actual)
 	{
-		Assert.assertEquals(ErrorMessage.toString(message), expected, actual);
+		Assertions.assertEquals(expected, actual, ErrorMessage.toString(message));
 	}
 
 	protected void assertNotEmpty(final ErrorMessage message, final Collection<?> collection)

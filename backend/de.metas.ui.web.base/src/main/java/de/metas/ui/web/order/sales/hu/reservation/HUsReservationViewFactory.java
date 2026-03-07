@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -18,6 +17,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 
 /*
  * #%L
@@ -46,9 +46,11 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 {
 	static final String WINDOW_ID_STRING = "husToReserve";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
+	public static final String SYSCFG_DE_METAS_UI_WEB_ORDER_SALES_HU_RESERVATION_HU_RESERVATION_ACTUAL_HUS_DEFAULT = "de.metas.ui.web.order.sales.hu.reservation.HuReservation.ActualHUs.Default";
 
 	// services
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public HUsReservationViewFactory()
 	{
@@ -86,20 +88,21 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected void customizeHUEditorView(@NonNull final HUEditorViewBuilder huViewBuilder)
 	{
+		final boolean isDefaultReserveActualHus = sysConfigBL.getBooleanValue(SYSCFG_DE_METAS_UI_WEB_ORDER_SALES_HU_RESERVATION_HU_RESERVATION_ACTUAL_HUS_DEFAULT, false);
 		huViewBuilder
-				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HUReservation.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HUReservation.class, !isDefaultReserveActualHus))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.order.sales.hu.reservation.process.WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs.class, isDefaultReserveActualHus))
 				.clearOrderBys()
 					.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}
 
-	@Override
-	protected RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass, final boolean webuiDefaultQuickAction)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
 				.displayPlace(DisplayPlace.ViewQuickActions)
-				.webuiDefaultQuickAction(true)
+				.webuiDefaultQuickAction(webuiDefaultQuickAction)
 				.build();
 	}
 }

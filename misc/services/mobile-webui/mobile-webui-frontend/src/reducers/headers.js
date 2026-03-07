@@ -29,6 +29,7 @@ const getEntryItemsFromState = (state) => {
 
   let nextUniqueId = 1;
   const itemsByKey = {};
+  const hiddenFields = [];
 
   headersEntries
     .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
@@ -36,14 +37,23 @@ const getEntryItemsFromState = (state) => {
     .filter((entryItem) => !entryItem.hidden)
     .forEach((entryItem) => {
       const caption = entryItem.caption;
-      let key;
-      if (!caption) {
-        key = 'unique-' + nextUniqueId++;
+      const key = caption ? caption : 'unique-' + nextUniqueId++;
+
+      let isFieldRemoved;
+      if (entryItem.hideField) {
+        if (!hiddenFields.includes(key)) {
+          hiddenFields.push(key);
+        }
+        isFieldRemoved = true;
       } else {
-        key = caption;
+        isFieldRemoved = hiddenFields.includes(key);
       }
 
-      itemsByKey[key] = entryItem;
+      if (isFieldRemoved) {
+        delete itemsByKey[key];
+      } else {
+        itemsByKey[key] = entryItem;
+      }
     });
 
   return Object.values(itemsByKey);

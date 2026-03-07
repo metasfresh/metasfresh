@@ -1,18 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.order.IOrderLineBL;
@@ -24,6 +11,18 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -102,7 +101,10 @@ public class PurchaseItemRepository
 		record.setC_OrderLinePO_ID(OrderAndLineId.getOrderLineRepoIdOr(purchaseOrderAndLineId, -1));
 
 		record.setC_PurchaseCandidate_ID(PurchaseCandidateId.getRepoIdOr(purchaseOrderItem.getPurchaseCandidateId(), -1));
+
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
+		record.setDateOrdered(TimeUtil.asTimestamp(purchaseOrderItem.getDateOrdered()));
+
 		record.setRemotePurchaseOrderId(purchaseOrderItem.getRemotePurchaseOrderId());
 
 		final ITableRecordReference transactionReference = purchaseOrderItem.getTransactionReference();
@@ -185,6 +187,7 @@ public class PurchaseItemRepository
 					.dimension(purchaseCandidate.getDimension())
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
 					.datePromised(TimeUtil.asZonedDateTime(record.getDatePromised()))
+					.dateOrdered(TimeUtil.asZonedDateTime(record.getDateOrdered()))
 					.purchasedQty(purchasedQty)
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)

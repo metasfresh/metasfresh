@@ -2,6 +2,8 @@ package org.adempiere.warehouse.api.impl;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -17,6 +19,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -55,6 +58,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -406,11 +410,44 @@ public class WarehouseDAO implements IWarehouseDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private Map<WarehouseId, ImmutableList<LocatorId>> retrieveLocatorIdsByWarehouseIds(final Set<WarehouseId> warehouseIds)
+	{
+		if (warehouseIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<WarehouseId, Collection<LocatorId>> locatorIdsByWarehouseId = queryBL
+				.createQueryBuilderOutOfTrx(I_M_Locator.class)
+				.addInArrayFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseIds)
+				.orderBy(I_M_Locator.COLUMNNAME_M_Warehouse_ID)
+				.orderBy(I_M_Locator.COLUMNNAME_X)
+				.orderBy(I_M_Locator.COLUMNNAME_Y)
+				.orderBy(I_M_Locator.COLUMNNAME_Z)
+				.orderBy(I_M_Locator.COLUMNNAME_M_Locator_ID)
+				.create()
+				.stream()
+				.map(record -> LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						LocatorId::getWarehouseId,
+						locatorId -> locatorId))
+				.asMap();
+
+		return CollectionUtils.mapValues(locatorIdsByWarehouseId, collection -> ImmutableList.copyOf(collection));
+	}
+
 	@Override
 	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseIds(@NonNull final Collection<WarehouseId> warehouseIds)
 	{
-		return warehouseIds.stream()
-				.flatMap(warehouseId -> getLocatorIds(warehouseId).stream())
+		if (warehouseIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final Collection<ImmutableList<LocatorId>> locatorIds = locatorIdsByWarehouseId.getAllOrLoad(warehouseIds, this::retrieveLocatorIdsByWarehouseIds);
+
+		return locatorIds.stream()
+				.flatMap(List::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -453,7 +490,8 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
-	private Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull final OrgId orgId)
+	@Override
+	public Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull final OrgId orgId)
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
@@ -650,6 +688,16 @@ public class WarehouseDAO implements IWarehouseDAO
 				.create()
 				.firstIdOnly();
 		return LocatorId.ofRepoIdOrNull(warehouseId, locatorRepoId);
+	}
+
+	@Override
+	public List<I_M_Locator> retrieveActiveLocatorsByValue(@NonNull final String locatorValue)
+	{
+		return queryBL.createQueryBuilder(I_M_Locator.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
+				.create()
+				.list();
 	}
 
 	@Override

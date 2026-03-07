@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -164,6 +165,19 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			final BPartnerId bpartnerId,
 			final boolean noLUForVirtualTU)
 	{
+		return createLUTUConfiguration(tuPIItemProduct, cuProductId, cuUomId, bpartnerId, noLUForVirtualTU, null, BigDecimal.ZERO);
+	}
+
+	@Override
+	public I_M_HU_LUTU_Configuration createLUTUConfiguration(
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final ProductId cuProductId,
+			@NonNull final UomId cuUomId,
+			final BPartnerId bpartnerId,
+			final boolean noLUForVirtualTU,
+			@Nullable final HuPackingInstructionsId luPIId,
+			@NonNull final BigDecimal qtyLu)
+	{
 		// Services used:
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -220,7 +234,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
+			luPIItem = (luPIId != null)
+					? handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID())).orElse(null)
+					: handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
 		}
 
 		if (luPIItem != null)
@@ -230,7 +246,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setM_LU_HU_PI_Item(luPIItem);
 
 			lutuConfiguration.setIsInfiniteQtyLU(true); // we produce as many as needed
-			lutuConfiguration.setQtyLU(BigDecimal.ZERO);
+			lutuConfiguration.setQtyLU(qtyLu);
 
 			final QtyTU qtyTU = QtyTU.ofBigDecimal(luPIItem.getQty());
 			if (qtyTU.isPositive())
@@ -263,7 +279,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public boolean isNoLU(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 
-		return lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0;
+		return HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_Item_ID()) == null;
 	}
 
 	private ArrayKey createKeyForHUProducer(final I_M_HU_LUTU_Configuration lutuConfiguration)
@@ -399,7 +415,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// Check if we were explicitly asked to not check the changes
 		final Boolean disableChangeCheckingOnSave = InterfaceWrapperHelper.getDynAttribute(lutuConfiguration, DYNATTR_DisableChangeCheckingOnSave);
-		if (disableChangeCheckingOnSave != null && disableChangeCheckingOnSave == true)
+		if (disableChangeCheckingOnSave != null && disableChangeCheckingOnSave)
 		{
 			return;
 		}
@@ -480,6 +496,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return 0;
 		}
 
+		if (lutuConfiguration.isInfiniteQtyTU() || lutuConfiguration.isInfiniteQtyCU())
+		{
+			return 1;
+		}
+
 		//
 		// Calculate how many CUs we need for an LU
 		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCUsPerTU().multiply(lutuConfiguration.getQtyTU());
@@ -494,8 +515,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
-		final int qtyLUs = qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
-		return qtyLUs;
+		return qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
 	}
 
 	@Override
@@ -520,7 +540,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many CUs can be handled by an LU
-		final BigDecimal luMaxLoadWeight =  packingMaterial.getMaxLoadWeight();
+		final BigDecimal luMaxLoadWeight = packingMaterial.getMaxLoadWeight();
 		if (Objects.nonNull(luMaxLoadWeight)
 				&& luMaxLoadWeight.signum() <= 0)
 		{
@@ -531,7 +551,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		// load the product
 		final I_M_Product product = InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
 		final BigDecimal productWeight = product.getWeight();
-		if(productWeight.signum() <= 0 )
+		if (productWeight.signum() <= 0)
 		{
 			return BigDecimal.ZERO;
 		}
@@ -730,9 +750,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			}
 
 			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(lutuConfigRequest.getBaseLUTUConfiguration()),
-																 lutuConfigRequest.getLuHUPIID(),
-																 I_M_HU_PI.class,
-																 ITrx.TRXNAME_None);
+					lutuConfigRequest.getLuHUPIID(),
+					I_M_HU_PI.class,
+					ITrx.TRXNAME_None);
 
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
@@ -796,11 +816,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// calculate total CUs per LU
-		final BigDecimal totalQtyCUs =qtyCUsPerTU.multiply(qtyTUsTotal);
+		final BigDecimal totalQtyCUs = qtyCUsPerTU.multiply(qtyTUsTotal);
 
 		//
 		// CUs are counted by product's UOM
-		final I_M_Product pp =InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
+		final I_M_Product pp = InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
 		final I_C_UOM productUOM = InterfaceWrapperHelper.load(pp.getC_UOM_ID(), I_C_UOM.class);
 
 		final BigDecimal qtyLU = calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, Quantity.of(totalQtyCUs, productUOM), packingMaterial);

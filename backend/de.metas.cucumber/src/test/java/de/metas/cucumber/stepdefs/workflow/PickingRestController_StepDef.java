@@ -33,13 +33,13 @@ import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
 import de.metas.cucumber.stepdefs.mobileui.picking.MobileUIPickingClient;
 import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
-import de.metas.workflow.rest_api.model.WFActivityId;
-import de.metas.workflow.rest_api.model.WFProcessId ;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.workflow.rest_api.model.WFActivityId;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_QtyPicked;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class PickingRestController_StepDef
@@ -139,25 +139,33 @@ public class PickingRestController_StepDef
 	@And("^store workflow endpointPath (.*) in context$")
 	public void store_workflow_endpointPath_in_context(@NonNull final String endpointPath)
 	{
-		final String regex = "(:[a-zA-Z0-9\\-]+)";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
-		assertThat(matcher.find()).isTrue();
-		final String workflowIdentifierGroup = matcher.group(1);
-		final String workflowIdentifier = workflowIdentifierGroup.replace(":", "");
-		final WFProcessId wfProcessId = workflowProcessTable.get(workflowIdentifier);
+		String actualEndpoint = endpointPath;
 
-		String actualEndpoint = endpointPath.replace(workflowIdentifierGroup, wfProcessId.getAsString());
-
-		if (matcher.find())
+		while (matcher.find())
 		{
-			final String activityIdentifierGroup = matcher.group(1);
-			final String activityIdentifier = activityIdentifierGroup.replace(":", "");
-			final de.metas.workflow.rest_api.model.WFActivityId activityId = workflowActivityTable.get(activityIdentifier);
+			final String placeholder = matcher.group();
+			final String identifier = placeholder.replaceAll("@", "");
 
-			actualEndpoint = actualEndpoint.replace(activityIdentifierGroup, activityId.getAsString());
+			final String replacement;
+			if (workflowProcessTable.getOptional(identifier).isPresent())
+			{
+				replacement = workflowProcessTable.get(identifier).getAsString();
+			}
+			else if (workflowActivityTable.getOptional(identifier).isPresent())
+			{
+				replacement = workflowActivityTable.get(identifier).getAsString();
+			}
+			else
+			{
+				throw new IllegalStateException("No replacement found for workflow placeholder: " + identifier);
+			}
+
+			actualEndpoint = actualEndpoint.replace(placeholder, replacement);
 		}
 
 		testContext.setEndpointPath(actualEndpoint);

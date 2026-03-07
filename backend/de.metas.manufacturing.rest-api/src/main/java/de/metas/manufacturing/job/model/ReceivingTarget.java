@@ -42,6 +42,20 @@ public class ReceivingTarget
 
 	public static ReceivingTarget ofExistingTU(@NonNull final I_M_HU tu)
 	{
-		return builder().tuId(HuId.ofRepoId(tu.getM_HU_ID())).build();
+		return ofExistingTUId(HuId.ofRepoId(tu.getM_HU_ID()));
 	}
+
+	public static ReceivingTarget ofExistingTUId(@NonNull final HuId tuId)
+	{
+		return builder().tuId(tuId).build();
+	}
+
+	public static ReceivingTarget ofExistingLU(@NonNull final I_M_HU lu, @NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		return ReceivingTarget.builder()
+				.luId(HuId.ofRepoId(lu.getM_HU_ID()))
+				.tuPIItemProductId(tuPIItemProductId)
+				.build();
+	}
+
 }

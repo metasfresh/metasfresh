@@ -17,8 +17,8 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -127,16 +127,13 @@ public final class PurchaseCandidateAdvisedHandler
 				.simulated(supplyRequiredDescriptor.isSimulated())
 				.build();
 
-		final MaterialDispoGroupId groupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).getGroupId().orElse(null);
-		if (event.isDirectlyCreatePurchaseCandidate())
-		{
-			if (groupId == null)
-			{
-				throw new AdempiereException("No groupId");
-			}
-			
-			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor());
-		}
+		final MaterialDispoGroupId groupId = Check.assumeNotNull(
+				candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).getGroupId().orElse(null),
+				"onCandidateNewOrChange should always return a groupId for supplyCandidate={}", supplyCandidate);
+
+		// the group contains just one item, i.e. the supplyCandidate, but for the sake of generic-ness we use that same interface that's also used for production and distribution
+		// Always request a purchase candidate — whether to also auto-create/complete a C_Order is controlled by PP_Product_Planning.IsCreatePlan and IsDocComplete,
+		// and is handled downstream in PurchaseCandidateRequestedHandler.
+		requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor());
 	}
 }

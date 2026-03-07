@@ -94,7 +94,7 @@ const DateInputLegacy = ({ value, readOnly, onChange, testId }) => {
       className={cx('input', { 'is-danger': !isValid })}
       type="text"
       value={displayedDate}
-      placeholder="DD.MM.YYYY"
+      placeholder={DISPLAY_DATE_FORMAT_USER_FRIENDLY}
       disabled={readOnly}
       onChange={handleChange}
     />
@@ -107,6 +107,7 @@ DateInputLegacy.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
+const DISPLAY_DATE_FORMAT_USER_FRIENDLY = 'DD.MM.YYYY';
 const DISPLAY_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const convertDateFromDisplay = (displayedDate) => {
   if (!displayedDate) return '';
@@ -119,7 +120,11 @@ const convertDateFromDisplay = (displayedDate) => {
 const STANDARD_DATE_FORMAT = /^(\d{4})-(\d{2})-(\d{2})$/;
 const convertDateToDisplay = (date) => {
   if (!date) return '';
-  const [, year, month, day] = STANDARD_DATE_FORMAT.exec(date);
+  const parts = STANDARD_DATE_FORMAT.exec(date);
+  if (!parts) {
+    throw new Error(`Date string '${date}' is not matching '${STANDARD_DATE_FORMAT}' format`);
+  }
+  const [, year, month, day] = parts;
   assertDayMonthYearValid({ day, month, year, dateString: date });
   return `${day}.${month}.${year}`;
 };

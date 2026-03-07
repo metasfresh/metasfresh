@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
@@ -27,8 +28,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 import static de.metas.util.Check.assume;
 
 /*
@@ -71,6 +72,9 @@ public final class BPartnerComposite
 	@NonNull
 	private final List<BPartnerBankAccount> bankAccounts;
 
+	@NonNull
+	private final List<BPartnerCreditLimit> creditLimits;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private BPartnerComposite(
@@ -78,17 +82,19 @@ public final class BPartnerComposite
 			@JsonProperty("bpartner") @Nullable final BPartner bpartner,
 			@JsonProperty("locations") @Singular final List<BPartnerLocation> locations,
 			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts,
-			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts)
+			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts,
+			@JsonProperty("creditLimits") @Singular final List<BPartnerCreditLimit> creditLimits)
 	{
 		this.orgId = orgId;
 
-		this.bpartner = coalesceSuppliers(
+		this.bpartner = coalesceSuppliersNotNull(
 				() -> bpartner,
 				() -> BPartner.builder().build());
 
-		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
-		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
-		this.bankAccounts = new ArrayList<>(coalesce(bankAccounts, ImmutableList.of()));
+		this.locations = new ArrayList<>(coalesceNotNull(locations, ImmutableList.of()));
+		this.contacts = new ArrayList<>(coalesceNotNull(contacts, ImmutableList.of()));
+		this.bankAccounts = new ArrayList<>(coalesceNotNull(bankAccounts, ImmutableList.of()));
+		this.creditLimits = new ArrayList<>(coalesceNotNull(creditLimits, ImmutableList.of()));
 	}
 
 	public ImmutableSet<GLN> extractLocationGlns()
@@ -100,6 +106,16 @@ public final class BPartnerComposite
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public ImmutableSet<GlnWithLabel> extractLocationGlnsWithLabel()
+	{
+		return this.locations
+				.stream()
+				.map(BPartnerLocation::getGln)
+				.filter(Objects::nonNull)
+				.map(gln -> GlnWithLabel.ofGLN(gln, bpartner.getGlnLookupLabel()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+	
 	public BPartnerComposite deepCopy()
 	{
 		final BPartnerCompositeBuilder result = this
@@ -117,6 +133,13 @@ public final class BPartnerComposite
 		{
 			result.contact(contact.deepCopy());
 		}
+
+		result.clearCreditLimits();
+		for (final BPartnerCreditLimit creditLimit : getCreditLimits())
+		{
+			result.creditLimit(creditLimit.deepCopy());
+		}
+
 
 		return result.build();
 	}
@@ -274,18 +297,14 @@ public final class BPartnerComposite
 	{
 		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsBillToOr(false);
 
-		return createFilteredLocationStream(predicate)
-				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsBillToDefaultOr(false)))
-				.findFirst();
+		return createFilteredLocationStream(predicate).min(Comparator.comparing(l -> !l.getLocationType().getIsBillToDefaultOr(false)));
 	}
 
 	public Optional<BPartnerLocation> extractShipToLocation()
 	{
 		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsShipToOr(false);
 
-		return createFilteredLocationStream(predicate)
-				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsShipToDefaultOr(false)))
-				.findFirst();
+		return createFilteredLocationStream(predicate).min(Comparator.comparing(l -> !l.getLocationType().getIsShipToDefaultOr(false)));
 	}
 
 	public Optional<BPartnerLocation> extractLocationByHandle(@NonNull final String handle)
@@ -305,11 +324,6 @@ public final class BPartnerComposite
 				.filter(filter);
 	}
 
-	public List<BPartnerBankAccount> getBankAccounts()
-	{
-		return bankAccounts;
-	}
-
 	public void addBankAccount(@NonNull final BPartnerBankAccount bankAccount)
 	{
 		bankAccounts.add(bankAccount);
@@ -322,6 +336,11 @@ public final class BPartnerComposite
 		return bankAccounts.stream()
 				.filter(bankAccount -> iban.equals(bankAccount.getIban()))
 				.findFirst();
+	}
+
+	public void addCreditLimit(@NonNull final BPartnerCreditLimit creditLimit)
+	{
+		creditLimits.add(creditLimit);
 	}
 
 	@NonNull

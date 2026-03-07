@@ -1,11 +1,11 @@
 package de.metas.report.xls.engine;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /*
  * #%L
@@ -17,12 +17,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,7 @@ public class JexlCustomFunctionsTest
 {
 	private JexlCustomFunctions customFunctions;
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		customFunctions = new JexlCustomFunctions();
@@ -92,14 +92,15 @@ public class JexlCustomFunctionsTest
 
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void test_MonthsBetween_InvalidMonth()
 	{
-		customFunctions.monthBetween(
-				13,
-				2016,
-				createDate(2016, 1, 1),
-				createDate(2016, 12, 12));
+		Assertions.assertThrows(IllegalArgumentException.class,
+				() -> customFunctions.monthBetween(
+						13,
+						2016,
+						createDate(2016, 1, 1),
+						createDate(2016, 12, 12)));
 	}
 
 	private void test_MonthsBetween(
@@ -117,7 +118,7 @@ public class JexlCustomFunctionsTest
 				+ "\n dateStart = " + dateStart
 				+ "\n dateEnd= " + dateEnd;
 
-		Assert.assertEquals(errmsg, expected, actualResult);
+		Assertions.assertEquals(expected, actualResult, errmsg);
 	}
 
 	private static final Date createDate(final int year, final int month, final int day)

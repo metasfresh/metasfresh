@@ -88,6 +88,7 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
+	@NonNull
 	String retrieveTableName(AdTableId adTableId);
 
 	@Nullable

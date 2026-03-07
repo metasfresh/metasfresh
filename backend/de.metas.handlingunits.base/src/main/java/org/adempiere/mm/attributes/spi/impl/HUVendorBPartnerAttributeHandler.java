@@ -23,26 +23,21 @@ package org.adempiere.mm.attributes.spi.impl;
  */
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCalloutAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import java.math.BigDecimal;
-import java.util.Properties;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Retrieve all vendor BPartners for {@link I_M_HU#getC_BPartner_ID()}.
- *
  */
 public class HUVendorBPartnerAttributeHandler
 		implements IAttributeValueGeneratorAdapter, IAttributeValueCalloutAdapter, IAttributeValuesProviderFactory
@@ -57,9 +52,9 @@ public class HUVendorBPartnerAttributeHandler
 	}
 
 	@Override
-	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
+	public IAttributeValuesProvider createAttributeValuesProvider(final @NotNull Attribute attribute)
 	{
-		return new HUVendorBPartnerAttributeValuesProvider(attribute);
+		return new HUVendorBPartnerAttributeValuesProvider();
 	}
 
 	@Override

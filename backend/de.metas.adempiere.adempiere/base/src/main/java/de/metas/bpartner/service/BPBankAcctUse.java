@@ -26,9 +26,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_C_BP_BankAccount;
 
+@Getter
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public enum BPBankAcctUse implements ReferenceListAwareEnum
 {
@@ -43,11 +45,6 @@ public enum BPBankAcctUse implements ReferenceListAwareEnum
 	BPBankAcctUse(final String code)
 	{
 		this.code = code;
-	}
-
-	public String getCode()
-	{
-		return code;
 	}
 
 	public static BPBankAcctUse ofCode(@NonNull final String code)

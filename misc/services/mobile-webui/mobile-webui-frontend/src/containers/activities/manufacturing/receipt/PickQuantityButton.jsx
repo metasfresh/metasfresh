@@ -28,6 +28,7 @@ const PickQuantityButton = ({ qtyTarget, uom, catchWeightUom, caption, isDisable
     productionDate,
     lotNo,
     barcodeType,
+    barcode, // i.e. the catch weight QR code
     isDone = true,
   }) => {
     if (isDone) {
@@ -40,7 +41,8 @@ const PickQuantityButton = ({ qtyTarget, uom, catchWeightUom, caption, isDisable
       bestBeforeDate,
       productionDate,
       lotNo,
-      isBarcodeScan: !!barcodeType,
+      barcode,
+      barcodeType,
       isDone,
     });
   };

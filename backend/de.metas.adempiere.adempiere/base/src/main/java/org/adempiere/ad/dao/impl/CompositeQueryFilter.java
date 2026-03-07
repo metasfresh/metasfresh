@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,12 +112,12 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 		}
 	};
 
-	public CompositeQueryFilter(final Class<T> modelClass)
+	private CompositeQueryFilter(final Class<T> modelClass)
 	{
 		this(InterfaceWrapperHelper.getTableName(modelClass));
 	}
 
-	public CompositeQueryFilter(final String tableName)
+	public CompositeQueryFilter(@Nullable final String tableName)
 	{
 		this.tableName = tableName;
 	}
@@ -126,6 +127,10 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 	{
 		this.tableName = null; // N/A
 	}
+
+	public static <T> CompositeQueryFilter<T> newInstance(@NonNull final Class<T> modelClass) {return new CompositeQueryFilter<>(modelClass);}
+
+	public static <T> CompositeQueryFilter<T> newInstance(@Nullable final String tableName) {return new CompositeQueryFilter<>(tableName);}
 
 	@Override
 	public String toString()
@@ -225,7 +230,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 				}
 				// Case: our composite is not a pure SQL filter but it's join method is AND
 				// => we can mix this kind of filters
-				else if (compositeFilter.isJoinAnd() == this.isJoinAnd() == true)
+				else if (compositeFilter.isJoinAnd() == this.isJoinAnd())
 				{
 					sqlFilters = compositeFilter.getSqlFilters();
 					nonSqlFilters = compositeFilter.getNonSqlFilters();
@@ -688,6 +693,5 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 		this._allowSqlFilters = allowSqlFilters;
 		_compiled = false;
 		return this;
-
 	}
 }

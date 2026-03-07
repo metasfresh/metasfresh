@@ -16,6 +16,32 @@
  *****************************************************************************/
 package de.metas.document.engine.impl;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingService;
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.logging.LogManager;
+import de.metas.record.warning.RecordWarningRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.slf4j.Logger;
+
+import java.util.Set;
+
 import static de.metas.document.engine.IDocument.ACTION_Approve;
 import static de.metas.document.engine.IDocument.ACTION_Close;
 import static de.metas.document.engine.IDocument.ACTION_Complete;
@@ -44,34 +70,6 @@ import static de.metas.document.engine.IDocument.STATUS_WaitingConfirmation;
 import static de.metas.document.engine.IDocument.STATUS_WaitingPayment;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
-import java.util.Set;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.record.warning.RecordWarningRepository;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
-import de.metas.document.engine.IDocument;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockAutoCloseable;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /**
  * Document Action Engine
  *
@@ -86,7 +84,7 @@ import lombok.NonNull;
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(DocumentEngine.class);
+	private static final Logger logger = LogManager.getLogger(DocumentEngine.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
@@ -114,7 +112,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private final IDocument getDocument()
+	private IDocument getDocument()
 	{
 		return _document;
 	}
@@ -185,7 +183,7 @@ import lombok.NonNull;
 	 * Process actual document. Checks if user (document) action is valid and then process action Calls the individual actions which call the document action
 	 *
 	 * @param processAction document action based on workflow
-	 * @param docAction document action based on document
+	 * @param docAction     document action based on document
 	 * @return true if performed
 	 */
 	public boolean processIt(@NonNull final String processAction, @NonNull final String docAction)
@@ -241,7 +239,7 @@ import lombok.NonNull;
 				.acquire();
 		logger.debug("Acquired Lock {}", lock);
 
-		try (final ILockAutoCloseable autoCloseableLock = lock.asAutoCloseable())
+		try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
 		{
 			return processIt0(docAction);
 		}
@@ -273,8 +271,8 @@ import lombok.NonNull;
 		}
 		if (ACTION_Complete.equals(docAction) || ACTION_WaitComplete.equals(docAction))
 		{
-			String status = null;
-			if (isDrafted() || isInvalid())		// prepare if not prepared yet
+			String status;
+			if (isDrafted() || isInvalid())        // prepare if not prepared yet
 			{
 				status = prepareIt();
 				if (!STATUS_InProgress.equals(status))
@@ -287,7 +285,7 @@ import lombok.NonNull;
 			// Post it if applies
 			if (STATUS_Completed.equals(status))
 			{
-				postIt(PostImmediate.IfConfigured);
+				postIt();
 			}
 
 			return STATUS_Completed.equals(status)
@@ -305,8 +303,7 @@ import lombok.NonNull;
 		}
 		if (ACTION_Reverse_Correct.equals(docAction))
 		{
-			final boolean ok = reverseCorrectIt();
-			return ok;
+			return reverseCorrectIt();
 		}
 		if (ACTION_Close.equals(docAction))
 		{
@@ -322,7 +319,7 @@ import lombok.NonNull;
 		}
 		if (ACTION_Post.equals(docAction))
 		{
-			postIt(PostImmediate.Yes);
+			postIt();
 			return true; // return true because the posting request was enqueued
 		}
 		//
@@ -463,7 +460,7 @@ import lombok.NonNull;
 	/**
 	 * Post Document Does not change status
 	 */
-	private final void postIt(final PostImmediate postImmediate)
+	private void postIt()
 	{
 		// Make sure the Post action is supported by this document
 		if (!isValidDocAction(ACTION_Post))
@@ -471,19 +468,18 @@ import lombok.NonNull;
 			return;
 		}
 
-		// Make sure document is saved before we are asking to be posted
+		// Make sure the document is saved before we are asking to be posted
 		final IDocument document = getDocument();
 		InterfaceWrapperHelper.save(document);
 
-		postingService
-				.newPostingRequest()
-				.setClientId(ClientId.ofRepoId(document.getAD_Client_ID()))
-				.setDocumentRef(document.toTableRecordReference())
-				.setForce(true)
-				.setPostImmediate(postImmediate)
-				.setFailOnError(false) // backward compatibility
-				.postIt();
-	}	// postIt
+		postingService.schedule(
+				DocumentPostRequest.builder()
+						.record(document.toTableRecordReference())
+						.clientId(ClientId.ofRepoId(document.getAD_Client_ID()))
+						.force(true)
+						.build()
+		);
+	}    // postIt
 
 	/**
 	 * Void Document. Status: Voided
@@ -659,7 +655,9 @@ import lombok.NonNull;
 		}
 	}
 
-	/** @return all valid DocActions based on current DocStatus */
+	/**
+	 * @return all valid DocActions based on current DocStatus
+	 */
 	private Set<String> getValidDocActionsForCurrentDocStatus()
 	{
 		if (isInvalid())
@@ -705,7 +703,9 @@ import lombok.NonNull;
 		return ImmutableSet.of();
 	}
 
-	/** @return true if given docAction is valid for current docStatus. */
+	/**
+	 * @return true if given docAction is valid for current docStatus.
+	 */
 	private boolean isValidDocAction(final String docAction)
 	{
 		final Set<String> availableDocActions = getValidDocActionsForCurrentDocStatus();

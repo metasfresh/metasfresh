@@ -22,9 +22,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -37,6 +34,9 @@ import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
@@ -77,7 +77,7 @@ public class PMMProductBLTest
 
 	private I_C_BPartner partner1;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -136,7 +136,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProductExpected, pmmProductActual);
+		Assertions.assertEquals(pmmProductExpected, pmmProductActual, "pmmProductExpected != pmmProductActual ");
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertNull(pmmProductActual);
+		Assertions.assertNull(pmmProductActual);
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProductExpected, pmmProductActual);
+		Assertions.assertEquals(pmmProductExpected, pmmProductActual, "pmmProductExpected != pmmProductActual ");
 	}
 
 	@Test
@@ -286,7 +286,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertNull(pmmProductActual);
+		Assertions.assertNull(pmmProductActual);
 	}
 
 	@Test
@@ -353,7 +353,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProduct1, pmmProductActual);
+		Assertions.assertEquals(pmmProduct1, pmmProductActual, "pmmProductExpected != pmmProductActual ");
 
 		// change seqNO
 		pmmProduct1.setSeqNo(20);
@@ -369,7 +369,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProduct2, pmmProductActual);
+		Assertions.assertEquals(pmmProduct2, pmmProductActual, "pmmProductExpected != pmmProductActual ");
 	}
 
 	private I_M_HU_PI_Item_Product createHUPIP(

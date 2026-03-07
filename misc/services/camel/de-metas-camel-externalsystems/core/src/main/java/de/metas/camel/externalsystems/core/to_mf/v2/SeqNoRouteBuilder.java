@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.rest_api.v2.seqno.JsonSeqNoResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_SEQ_NO_V2_URI;
@@ -46,10 +46,10 @@ public class SeqNoRouteBuilder extends RouteBuilder
 
 		from(direct(ExternalSystemCamelConstants.MF_SEQ_NO_ROUTE_ID))
 				.routeId(ExternalSystemCamelConstants.MF_SEQ_NO_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.toD("{{" + MF_SEQ_NO_V2_URI + "}}" + "/" + AUDIT_AD_SEQUENCE_ID + "/next")
 				.to(direct(UNPACK_V2_API_RESPONSE))
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonSeqNoResponse.class));

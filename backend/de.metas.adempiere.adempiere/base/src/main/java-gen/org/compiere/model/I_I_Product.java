@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.model;
 
 import java.math.BigDecimal;
@@ -302,7 +324,7 @@ public interface I_I_Product
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -312,7 +334,7 @@ public interface I_I_Product
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -582,6 +604,50 @@ public interface I_I_Product
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGuaranteeDaysMin();
+
+	ModelColumn<I_I_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_I_Product.class, "GuaranteeDaysMin", null);
+	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
+	 * Set Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHeightInCm (int HeightInCm);
+
+	/**
+	 * Get Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHeightInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_HeightInCm = new ModelColumn<>(I_I_Product.class, "HeightInCm", null);
+	String COLUMNNAME_HeightInCm = "HeightInCm";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *
@@ -848,6 +914,29 @@ public interface I_I_Product
 	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
+	 * Set Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPurchased (boolean IsPurchased);
+
+	/**
+	 * Get Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPurchased();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsPurchased = new ModelColumn<>(I_I_Product.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
+
+	/**
 	 * Set Scale Price.
 	 *
 	 * <br>Type: YesNo
@@ -867,6 +956,27 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_IsScalePrice = new ModelColumn<>(I_I_Product.class, "IsScalePrice", null);
 	String COLUMNNAME_IsScalePrice = "IsScalePrice";
+
+	/**
+	 * Set Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSelfPacked (boolean IsSelfPacked);
+
+	/**
+	 * Get Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSelfPacked();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsSelfPacked = new ModelColumn<>(I_I_Product.class, "IsSelfPacked", null);
+	String COLUMNNAME_IsSelfPacked = "IsSelfPacked";
 
 	/**
 	 * Set Sold.
@@ -934,6 +1044,48 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateName = new ModelColumn<>(I_I_Product.class, "IsUpdateName", null);
 	String COLUMNNAME_IsUpdateName = "IsUpdateName";
+
+	/**
+	 * Set Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateProductCategory (boolean IsUpdateProductCategory);
+
+	/**
+	 * Get Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateProductCategory();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateProductCategory = new ModelColumn<>(I_I_Product.class, "IsUpdateProductCategory", null);
+	String COLUMNNAME_IsUpdateProductCategory = "IsUpdateProductCategory";
+
+	/**
+	 * Set Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLengthInCm (int LengthInCm);
+
+	/**
+	 * Get Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLengthInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_LengthInCm = new ModelColumn<>(I_I_Product.class, "LengthInCm", null);
+	String COLUMNNAME_LengthInCm = "LengthInCm";
 
 	/**
 	 * Set Manufacturer.
@@ -2043,6 +2195,47 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_WeightUOM = new ModelColumn<>(I_I_Product.class, "WeightUOM", null);
 	String COLUMNNAME_WeightUOM = "WeightUOM";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeight_UOM_ID (int Weight_UOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWeight_UOM_ID();
+
+	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
+
+	/**
+	 * Set Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWidthInCm (int WidthInCm);
+
+	/**
+	 * Get Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWidthInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_WidthInCm = new ModelColumn<>(I_I_Product.class, "WidthInCm", null);
+	String COLUMNNAME_WidthInCm = "WidthInCm";
 
 	/**
 	 * Set UOM Code.

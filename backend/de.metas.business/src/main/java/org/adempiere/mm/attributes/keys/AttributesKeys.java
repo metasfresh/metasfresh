@@ -167,7 +167,7 @@ public final class AttributesKeys
 			return Optional.empty();
 		}
 
-		final ImmutableSet<AttributesKeyPart> parts = attributesRepo().retrieveAttributeInstances(attributeSetInstanceId)
+		final ImmutableSet<AttributesKeyPart> parts = asiService().getAttributeInstances(attributeSetInstanceId)
 				.stream()
 				.filter(additionalFilter)
 				.map(AttributesKeys::createAttributesKeyPart)
@@ -186,7 +186,7 @@ public final class AttributesKeys
 	private static AttributesKeyPart createAttributesKeyPart(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
+		final I_M_Attribute attribute = attributesRepo().getAttributeRecordById(attributeId);
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{

@@ -24,18 +24,18 @@ package de.metas.document.refid;
 
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 public class RefIdTestBase
 {
-	@BeforeClass
+	@BeforeAll
 	public static void staticInitAdempiereTestHelper()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void initAdempiereTestHelper()
 	{
 		AdempiereTestHelper.get().init();

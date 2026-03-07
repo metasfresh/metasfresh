@@ -203,26 +203,34 @@ public class InfrastructureSupport
 	{
 		if (cucumberIsUsingProvidedInfrastructure)
 		{
-			postgRESTHost = getEnv(ENV_EXTERNALLY_RUNNING_POSTGREST_HOST);
-			postgRESTPort = getEnvInt(ENV_EXTERNALLY_RUNNING_POSTGREST_PORT);
-			loggable.addLog("Using provided postgREST: host={}, port={}", postgRESTHost, postgRESTPort);
-			return;
+			postgRESTHost = getEnvOpt(ENV_EXTERNALLY_RUNNING_POSTGREST_HOST).orElse(null);
+			if (postgRESTHost == null)
+			{
+				loggable.addLog("Skip starting provided postgREST because {} was not defined", ENV_EXTERNALLY_RUNNING_POSTGREST_HOST);
+			}
+			else
+			{
+				postgRESTPort = getEnvInt(ENV_EXTERNALLY_RUNNING_POSTGREST_PORT);
+				loggable.addLog("Using provided postgREST: host={}, port={}", postgRESTHost, postgRESTPort);
+			}
 		}
+		else
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final String fullImageName = "postgrest/postgrest:latest";
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final String fullImageName = "postgrest/postgrest:latest";
+			final GenericContainer<?> postgREST = new GenericContainer<>(DockerImageName.parse(fullImageName))
+					.withImagePullPolicy(PullPolicy.alwaysPull()) // needed since we go with "latest"
+					.withEnv("PGRST_DB_URI", "postgres://metasfresh:metasfresh@" + dbHost + ":" + dbPort + "/metasfresh")
+					.withEnv("PGRST_DB_SCHEMA", "public")
+					.withEnv("PGRST_DB_ANON_ROLE", "metasfresh")
+					.withStartupTimeout(Duration.ofMinutes(1))
+					.withExposedPorts(3000);
 
-		final GenericContainer<?> postgREST = new GenericContainer<>(DockerImageName.parse(fullImageName))
-				.withImagePullPolicy(PullPolicy.alwaysPull()) // needed since we go with "latest"
-				.withEnv("PGRST_DB_URI", "postgres://metasfresh:metasfresh@" + dbHost + ":" + dbPort + "/metasfresh")
-				.withEnv("PGRST_DB_SCHEMA", "public")
-				.withEnv("PGRST_DB_ANON_ROLE", "metasfresh")
-				.withStartupTimeout(Duration.ofMinutes(1))
-				.withExposedPorts(3000);
-
-		postgRESTHost = postgREST.getHost();
-		postgRESTPort = postgREST.getFirstMappedPort();
-		loggable.addLog("dockerized postgREST {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
+			postgRESTHost = postgREST.getHost();
+			postgRESTPort = postgREST.getFirstMappedPort();
+			loggable.addLog("dockerized postgREST {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
+		}
 	}
 
 	private static Integer getEnvInt(@NonNull final String variableName)

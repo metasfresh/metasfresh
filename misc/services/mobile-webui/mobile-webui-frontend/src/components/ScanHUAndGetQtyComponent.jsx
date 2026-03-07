@@ -11,9 +11,11 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
+import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
-const STATUS_READ_BARCODE = 'READ_BARCODE';
+const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
+const STATUS_READ_PRODUCT_BARCODE = 'READ_PRODUCT_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
 
 const DEFAULT_MSG_qtyAboveMax = 'activities.picking.qtyAboveMax';
@@ -23,28 +25,30 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 const ScanHUAndGetQtyComponent = ({
   scannedBarcode: scannedBarcodeParam,
   eligibleBarcode,
-  resolveScannedBarcode,
+  resolveScannedBarcode: resolveScannedBarcodeFunc,
+  resolveProductScannedCode: resolveProductScannedCodeFunc,
   useHUScanner,
+  scanHUPlaceholderText,
+  scanProductPlaceholderText,
   //
   userInfo,
   qtyCaption,
   packingItemName,
   qtyTargetCaption,
-  qtyTarget,
-  qtyMax,
+  qtyTarget: qtyTargetParam,
+  qtyMax: qtyMaxParam,
   lineQtyToIssue,
   lineQtyIssued,
   qtyHUCapacity,
   qtyAlreadyOnScale,
-  uom,
+  uom: uomParam,
   qtyRejectedReasons,
   scaleDevice,
   scaleTolerance,
   catchWeight,
   catchWeightUom,
   customQRCodeFormats,
-  isShowBestBeforeDate = false,
-  isShowLotNo = false,
+  readAttributes = [],
   isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
@@ -55,138 +59,111 @@ const ScanHUAndGetQtyComponent = ({
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
-  const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
-    lineId: null,
-    userInfo,
-    qtyCaption,
-    packingItemName,
-    qtyTarget,
-    qtyTargetCaption,
-    qtyMax,
-    lineQtyToIssue,
-    lineQtyIssued,
-    qtyHUCapacity,
-    qtyAlreadyOnScale,
-    uom,
-    qtyRejectedReasons,
-    scaleDevice,
-    scaleTolerance,
-    catchWeight,
-    catchWeightUom,
-  });
-
-  //
-  // Init/reset resolvedBarcodeData on parameters changed (usually the first time or when we get here from history.replace)
-  useEffect(() => {
-    setResolvedBarcodeData((prevState) => ({
-      lineId: prevState?.lineId,
+  const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
+    useResolvedBarcodeData({
       userInfo,
       qtyCaption,
       packingItemName,
+      qtyTarget: qtyTargetParam,
       qtyTargetCaption,
-      qtyTarget,
-      qtyMax,
+      qtyMax: qtyMaxParam,
       lineQtyToIssue,
       lineQtyIssued,
       qtyHUCapacity,
       qtyAlreadyOnScale,
-      uom,
+      uom: uomParam,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
       catchWeight,
       catchWeightUom,
-      // remember the scanned barcode as no new scan has been performed
-      scannedBarcode: prevState?.scannedBarcode,
-    }));
-  }, [
-    userInfo,
-    qtyCaption,
-    packingItemName,
-    qtyTargetCaption,
-    qtyTarget,
-    qtyMax,
-    lineQtyToIssue,
-    lineQtyIssued,
-    qtyHUCapacity,
-    qtyAlreadyOnScale,
-    uom,
-    qtyRejectedReasons,
-    scaleDevice,
-    scaleTolerance,
-    catchWeight,
-    catchWeightUom,
-  ]);
+    });
 
   //
   // Simulate barcode scanning when we get "qrCode" url param
   // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
-      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
+      handleResolveHUScannedBarcode({ scannedBarcode: scannedBarcodeParam })
+        .then(onHUBarcodeResolvedResult)
+        .catch((error) => {
+          toastErrorFromObj(error);
+          setProgressStatus(STATUS_READ_HU_BARCODE);
+        });
     } else {
-      setProgressStatus(STATUS_READ_BARCODE);
+      setProgressStatus(STATUS_READ_HU_BARCODE);
     }
   }, [scannedBarcodeParam]);
 
-  const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
-    // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
-
+  const handleResolveHUScannedBarcode = async ({ scannedBarcode, huId }) => {
     // If an eligible barcode was provided, make sure the scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
+      console.warn(
+        `Scanned barcode (${scannedBarcode}) does not match the provided eligible barcode (${eligibleBarcode})`
+      );
       return {
         error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
     }
 
     let resolveScannedBarcodeFuncResult = {};
-    if (resolveScannedBarcode && scannedBarcode !== PICK_ON_THE_FLY_QRCODE) {
-      resolveScannedBarcodeFuncResult = resolveScannedBarcode(scannedBarcode, huId);
+    if (resolveScannedBarcodeFunc && scannedBarcode !== PICK_ON_THE_FLY_QRCODE) {
+      resolveScannedBarcodeFuncResult = await resolveScannedBarcodeFunc(scannedBarcode, huId);
     }
 
-    // noinspection UnnecessaryLocalVariableJS
-    let resolvedBarcodeDataNew = {
-      ...resolvedBarcodeData,
-      ...resolveScannedBarcodeFuncResult,
-      scannedBarcode,
-    };
-
-    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
-
-    return resolvedBarcodeDataNew;
+    return computeNewResolvedBarcodeData({ ...resolveScannedBarcodeFuncResult, scannedBarcode });
   };
 
-  const handleEligibleBarcodeClicked = ({ scannedBarcode }) => {
-    return handleResolveScannedBarcode({ scannedBarcode });
-  };
-
-  const handleHandlingUnitInfoScanned = (handlingUnitInfo) => {
+  const onHUScannerResult = async (handlingUnitInfo) => {
     try {
-      onBarcodeScanned(
-        handleResolveScannedBarcode({
-          scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
-          huId: handlingUnitInfo.id,
-        })
-      );
+      const resolvedBarcodeDataNew = await handleResolveHUScannedBarcode({
+        scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
+        huId: handlingUnitInfo.id,
+      });
+      await onHUBarcodeResolvedResult(resolvedBarcodeDataNew);
     } catch (e) {
       toastError({ plainMessage: e });
     }
   };
 
-  const onBarcodeScanned = (resolvedBarcodeDataNew) => {
+  const onHUBarcodeResolvedResult = async (resolvedBarcodeDataNew) => {
     setResolvedBarcodeData(resolvedBarcodeDataNew);
-    const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
 
-    console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
+    if (resolvedBarcodeDataNew.isScanProductCodeRequired) {
+      setProgressStatus(STATUS_READ_PRODUCT_BARCODE);
+      return;
+    }
 
-    if (askForQty) {
+    await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
+  };
+
+  const onProductScannedCode = async ({ scannedBarcode: productScannedCode }) => {
+    let resolveProductScannedCodeFuncResult = {};
+    if (resolveProductScannedCodeFunc) {
+      resolveProductScannedCodeFuncResult = await resolveProductScannedCodeFunc?.({
+        huScannedCode: resolvedBarcodeData.scannedBarcode,
+        productScannedCode,
+      });
+    }
+
+    const resolvedBarcodeDataNew = updateResolvedBarcodeData({
+      ...resolveProductScannedCodeFuncResult,
+      productScannedCode,
+    });
+
+    // console.log('onProductScannedCode', { resolvedBarcodeDataNew, resolveProductScannedCodeFuncResult });
+    await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
+  };
+
+  const requestQtyOrReportResult = async ({ resolvedBarcodeData }) => {
+    if (isAskForQty({ resolvedBarcodeData })) {
       setProgressStatus(STATUS_READ_QTY);
     } else {
-      onResult({
+      await onResult({
         qty: 0,
         reason: null,
-        scannedBarcode: resolvedBarcodeDataNew.scannedBarcode,
-        resolvedBarcodeData,
+        scannedBarcode: resolvedBarcodeData.scannedBarcode,
+        resolvedBarcodeData: resolvedBarcodeData,
       })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
@@ -206,7 +183,7 @@ const ScanHUAndGetQtyComponent = ({
 
       if (diff > 0) {
         const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
+        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff });
       }
     }
 
@@ -248,31 +225,46 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onCloseDialog = () => {
-    setProgressStatus(STATUS_READ_BARCODE);
+    setProgressStatus(STATUS_READ_HU_BARCODE);
     onCloseCallback?.();
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
 
   switch (progressStatus) {
-    case STATUS_READ_BARCODE: {
+    case STATUS_READ_HU_BARCODE: {
       return (
         <>
           {useHUScanner ? (
-            <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} eligibleBarcode={eligibleBarcode} />
+            <HUScanner onResolvedBarcode={onHUScannerResult} eligibleBarcode={eligibleBarcode} />
           ) : (
             <BarcodeScannerComponent
-              resolveScannedBarcode={handleResolveScannedBarcode}
-              onResolvedResult={onBarcodeScanned}
+              key="scanHUBarcode"
+              testId="scanHUBarcode-input"
+              inputPlaceholderText={scanHUPlaceholderText}
+              resolveScannedBarcode={handleResolveHUScannedBarcode}
+              onResolvedResult={onHUBarcodeResolvedResult}
             />
           )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: QR`}
-              onClick={() => onBarcodeScanned(handleEligibleBarcodeClicked({ scannedBarcode: eligibleBarcode }))}
+              onClick={() =>
+                onHUBarcodeResolvedResult(handleResolveHUScannedBarcode({ scannedBarcode: eligibleBarcode }))
+              }
             />
           )}
         </>
+      );
+    }
+    case STATUS_READ_PRODUCT_BARCODE: {
+      return (
+        <BarcodeScannerComponent
+          key="scanProductCode"
+          testId="scanProductCode-input"
+          inputPlaceholderText={scanProductPlaceholderText}
+          onResolvedResult={onProductScannedCode}
+        />
       );
     }
     case STATUS_READ_QTY: {
@@ -282,6 +274,7 @@ const ScanHUAndGetQtyComponent = ({
           qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          qtyInitial={resolvedBarcodeData.qtyInitial}
           packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
@@ -294,9 +287,8 @@ const ScanHUAndGetQtyComponent = ({
           customQRCodeFormats={customQRCodeFormats}
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
-          isShowBestBeforeDate={isShowBestBeforeDate}
+          readAttributes={readAttributes}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
-          isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
@@ -319,7 +311,10 @@ ScanHUAndGetQtyComponent.propTypes = {
   scannedBarcode: PropTypes.string,
   eligibleBarcode: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
+  resolveProductScannedCode: PropTypes.func,
   useHUScanner: PropTypes.bool,
+  scanHUPlaceholderText: PropTypes.string,
+  scanProductPlaceholderText: PropTypes.string,
   //
   // Props: Qty related
   userInfo: PropTypes.array,
@@ -339,8 +334,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
-  isShowBestBeforeDate: PropTypes.bool,
-  isShowLotNo: PropTypes.bool,
+  readAttributes: PropTypes.array,
   isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
@@ -354,3 +348,156 @@ ScanHUAndGetQtyComponent.propTypes = {
 };
 
 export default ScanHUAndGetQtyComponent;
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const isAskForQty = ({ resolvedBarcodeData }) => {
+  const qrCode = resolvedBarcodeData?.qrCode;
+  if (qrCode && qrCode[ATTR_isUnique] === false) {
+    // user just scanned a non-unique QR code (e.g. EAN13, custom)
+    return qrCode[ATTR_isTUToBePickedAsWhole] === false;
+  } else {
+    return resolvedBarcodeData.qtyTarget != null || resolvedBarcodeData.qtyMax != null;
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const useResolvedBarcodeData = ({
+  userInfo,
+  qtyCaption,
+  packingItemName,
+  qtyTargetCaption,
+  qtyTarget,
+  qtyMax,
+  lineQtyToIssue,
+  lineQtyIssued,
+  qtyHUCapacity,
+  qtyAlreadyOnScale,
+  uom,
+  qtyRejectedReasons,
+  scaleDevice,
+  scaleTolerance,
+  catchWeight,
+  catchWeightUom,
+}) => {
+  const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
+    lineId: null,
+    userInfo,
+    qtyCaption,
+    packingItemName,
+    qtyTarget,
+    qtyTargetCaption,
+    qtyMax,
+    lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
+    catchWeight,
+    catchWeightUom,
+  });
+
+  //
+  // Init/reset resolvedBarcodeData on parameters changed (usually the first time or when we get here from history.replace)
+  useEffect(() => {
+    setResolvedBarcodeData((prevState) => ({
+      ...prevState,
+      lineId: prevState?.lineId,
+      userInfo,
+      qtyCaption,
+      packingItemName,
+      qtyTargetCaption,
+      qtyTarget,
+      qtyMax,
+      lineQtyToIssue,
+      lineQtyIssued,
+      qtyHUCapacity,
+      qtyAlreadyOnScale,
+      uom,
+      qtyRejectedReasons,
+      scaleDevice,
+      scaleTolerance,
+      catchWeight,
+      catchWeightUom,
+      // remember the scanned barcode as no new scan has been performed
+      scannedBarcode: prevState?.scannedBarcode,
+    }));
+  }, [
+    userInfo,
+    qtyCaption,
+    packingItemName,
+    qtyTargetCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
+    catchWeight,
+    catchWeightUom,
+  ]);
+
+  const computeNewResolvedBarcodeData = (dataToUpdate) => {
+    // noinspection UnnecessaryLocalVariableJS
+    let resolvedBarcodeDataNew = {
+      ...resolvedBarcodeData,
+      ...dataToUpdate,
+    };
+
+    //
+    // Make sure qtyTarget is not exceeding the number of available TUs on scanned LU
+    if (
+      resolvedBarcodeDataNew?.qtyMax != null &&
+      resolvedBarcodeDataNew?.scannedHU?.huUnitType === 'LU' &&
+      resolvedBarcodeDataNew?.scannedHU?.qtyTUs != null
+    ) {
+      resolvedBarcodeDataNew.qtyInitial = Math.min(
+        resolvedBarcodeDataNew.qtyMax,
+        resolvedBarcodeDataNew.scannedHU.qtyTUs
+      );
+    }
+
+    // console.log('computeNewResolvedBarcodeData', {
+    //   resolvedBarcodeDataNew,
+    //   resolvedBarcodeData,
+    //   dataToUpdate,
+    // });
+
+    return resolvedBarcodeDataNew;
+  };
+
+  const updateResolvedBarcodeData = (dataToUpdate) => {
+    const resolvedBarcodeDataNew = computeNewResolvedBarcodeData(dataToUpdate);
+    setResolvedBarcodeData(resolvedBarcodeDataNew);
+    return resolvedBarcodeDataNew;
+  };
+
+  return {
+    resolvedBarcodeData,
+    computeNewResolvedBarcodeData,
+    updateResolvedBarcodeData,
+    setResolvedBarcodeData,
+  };
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//

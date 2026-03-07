@@ -23,6 +23,7 @@
 package de.metas.externalreference;
 
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.rest_api.utils.MetasfreshId;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
@@ -113,6 +114,23 @@ class ExternalIdentifierTest
 		assertThat(result.getRawValue()).isEqualTo(rawId);
 		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
 		assertThat(result.asGLN()).isEqualTo(GLN.ofString("1234567890123"));
+	}
+
+	@Test
+	void ofOrNull_shouldReturnExternalIdentifier_whenInputIsGlnWithLabel()
+	{
+		// given
+		final String rawId = "glnl-1234567890123_label";
+
+		// when
+		final ExternalIdentifier result = ExternalIdentifier.ofOrNull(rawId);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getType()).isEqualTo(ExternalIdentifier.Type.GLN_WITH_LABEL);
+		assertThat(result.getRawValue()).isEqualTo(rawId);
+		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
+		assertThat(result.asGlnWithLabel()).isEqualTo(GlnWithLabel.ofString("1234567890123_label"));
 	}
 
 	@Test

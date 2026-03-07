@@ -4,6 +4,7 @@ import { toUrl, unboxAxiosResponse } from '../utils';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
   const isTU = type === PickingTargetType.TU;
@@ -121,6 +122,12 @@ const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };
 
+export const postPickAll = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/pickAll`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const closePickingJobLine = ({ wfProcessId, lineId }) => {
   return axios
     .post(`${apiBasePath}/picking/closeLine`, { wfProcessId, pickingLineId: lineId })
@@ -133,8 +140,42 @@ export const openPickingJobLine = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const hasClosedLUs = ({ wfProcessId, lineId }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/has-closed-lu`, { lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const getClosedLUs = ({ wfProcessId, lineId }) => {
   return axios
     .get(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/closed-lu`, { lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getScannedHUQRCodeInfo = ({ qrCode }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getNextEligibleLineToPack = ({ wfProcessId, huScannedCode, excludeLineId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/nextEligibleLineToPack`, {
+      wfProcessId,
+      huScannedCode: toQRCodeString(huScannedCode),
+      excludeLineId,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getQtyAvailable = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/qtyAvailable`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const completePickingJob = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
     .then((response) => unboxAxiosResponse(response));
 };

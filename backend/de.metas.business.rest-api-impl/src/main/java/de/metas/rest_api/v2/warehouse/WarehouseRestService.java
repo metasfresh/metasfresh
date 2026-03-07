@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.warehouse;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.impl.GLNQuery;
@@ -39,6 +40,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouse;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsert;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsertItem;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
@@ -49,6 +51,8 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.v2.warehouse.json.JsonLocator;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -60,6 +64,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.Warehouse;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.compiere.model.I_AD_Org;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -81,7 +88,8 @@ public class WarehouseRestService
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceService;
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceService;
 
 	@NonNull
 	public JsonResponseUpsert upsertWarehouses(
@@ -100,7 +108,7 @@ public class WarehouseRestService
 		final SyncAdvise syncAdvise = request.getSyncAdvise();
 
 		final ImmutableList<JsonResponseUpsertItem> responseList =
-				request.getRequestItems()
+				Check.assumeNotNull(request.getRequestItems(), "JsonRequestWarehouseUpsert={} has to have reQuestItems", request)
 						.stream()
 						.map(reqItem -> upsertWarehouseItem(reqItem, syncAdvise, orgCode))
 						.collect(ImmutableList.toImmutableList());
@@ -156,10 +164,10 @@ public class WarehouseRestService
 		}
 
 		handleWarehouseExternalReference(org,
-										 externalIdentifier,
-										 JsonMetasfreshId.of(warehouseId.getRepoId()),
-										 jsonRequestWarehouseUpsertItem.getExternalVersion(),
-										 jsonRequestWarehouseUpsertItem.getExternalReferenceUrl());
+				externalIdentifier,
+				JsonMetasfreshId.of(warehouseId.getRepoId()),
+				jsonRequestWarehouseUpsertItem.getExternalVersion(),
+				jsonRequestWarehouseUpsertItem.getExternalReferenceUrl());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -209,10 +217,10 @@ public class WarehouseRestService
 			@NonNull final I_AD_Org org)
 	{
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
-		
+
 		return resolveWarehouseExternalIdentifier(warehouseIdentifier, orgId);
 	}
-	
+
 	@NonNull
 	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
 			@NonNull final ExternalIdentifier warehouseIdentifier,
@@ -318,8 +326,8 @@ public class WarehouseRestService
 		final BPartnerLocationId bPartnerLocationId = resolveBPartnerLocationExternalIdentifier(externalIdentifier, bPartnerOrgId)
 				.orElseThrow(() -> new AdempiereException("No BPartnerLocationId found for external identifier")
 						.appendParametersToMessage()
-						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue())); 
-		
+						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue()));
+
 		if (!bPartnerLocationId.getBpartnerId().equals(bPartnerId))
 		{
 			throw new AdempiereException("Found BPartnerLocationId does not belong to the current Org BPartner !")
@@ -328,7 +336,7 @@ public class WarehouseRestService
 					.setParameter("BPartnerLocationID", bPartnerLocationId)
 					.setParameter("Org BPartnerId", bPartnerOrgId);
 		}
-		
+
 		return bPartnerLocationId;
 	}
 
@@ -351,8 +359,15 @@ public class WarehouseRestService
 						.onlyOrgId(orgId)
 						.gln(bPartnerLocationExternalIdentifier.asGLN())
 						.build();
-
 				return bpartnersRepo.retrieveSingleBPartnerLocationIdBy(glnQuery);
+			case GLN_WITH_LABEL:
+				final GlnWithLabel glnWithLabel = bPartnerLocationExternalIdentifier.asGlnWithLabel();
+				final GLNQuery glnWithLabelQuery = GLNQuery.builder()
+						.onlyOrgId(orgId)
+						.gln(glnWithLabel.getGln())
+						.glnLookupLabel(glnWithLabel.getLabel())
+						.build();
+				return bpartnersRepo.retrieveSingleBPartnerLocationIdBy(glnWithLabelQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerLocationExternalIdentifier.getType())
@@ -401,6 +416,21 @@ public class WarehouseRestService
 					.build()
 					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 		}
+	}
+
+	@NonNull
+	public JsonLocator resolveLocatorScannedCode(@NonNull final ScannedCode scannedCode)
+	{
+		final LocatorScannedCodeResolverResult result = locatorScannedCodeResolver.resolve(scannedCode);
+		return toJsonLocator(result.getLocatorQRCode());
+	}
+
+	private static JsonLocator toJsonLocator(final LocatorQRCode locatorQRCode)
+	{
+		return JsonLocator.builder()
+				.caption(locatorQRCode.getCaption())
+				.qrCode(locatorQRCode.toGlobalQRCodeJsonString())
+				.build();
 	}
 }
 

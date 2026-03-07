@@ -253,7 +253,26 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		if (existingShipmentCandidate != null)
 		{
-			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(existingShipmentCandidate, changedTransactionDetail);
+			// When an M_Transaction is deleted (e.g., during shipment reactivation RA), the TransactionDeletedEvent
+			// replaces the existing TransactionDetail that has the same transactionId. In that case, the deleted
+			// transaction's contribution should be 0, not the event's negative delta.
+			// Without this, the stale negative detail (-15) from RA persists and cancels out the re-CO's
+			// positive detail (+15), leaving the candidate at qty=0 instead of the expected qty.
+			// For reversals (RC), the TransactionDeletedEvent uses a NEW transactionId (from the reversal
+			// M_Transaction), so it's added as a counter-contribution with the negative delta — which is correct.
+			final TransactionDetail effectiveTransactionDetail;
+			if (event instanceof TransactionDeletedEvent
+					&& existingShipmentCandidate.getTransactionDetails().stream()
+					.anyMatch(td -> td.getTransactionId() == changedTransactionDetail.getTransactionId()))
+			{
+				effectiveTransactionDetail = changedTransactionDetail.toBuilder().quantity(BigDecimal.ZERO).build();
+			}
+			else
+			{
+				effectiveTransactionDetail = changedTransactionDetail;
+			}
+
+			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(existingShipmentCandidate, effectiveTransactionDetail);
 
 			final Instant firstTransactionDate = extractMinTransactionDate(newTransactionDetailsSet);
 

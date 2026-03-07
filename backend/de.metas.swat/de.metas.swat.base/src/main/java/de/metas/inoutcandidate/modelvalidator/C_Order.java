@@ -1,15 +1,20 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.model.I_C_Order;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -38,11 +43,12 @@ import org.compiere.model.ModelValidator;
 public class C_Order
 {
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
-	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
+	private static final AdMessageKey ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS = AdMessageKey.of("ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -70,32 +76,61 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
-		if (!order.isSOTrx())
+		if (order.isSOTrx())
 		{
-			return; // we can spare us the effort
+			shipmentScheduleBL.assertSalesOrderCanBeReactivated(OrderId.ofRepoId(order.getC_Order_ID()));
 		}
-		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+		else
 		{
-			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED)
-					.markAsUserValidationError();
+			if (receiptScheduleDAO.existsExportedReceiptScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+			{
+				throw new AdempiereException(MSG_PO_REACTIVATION_VOID_NOT_ALLOWED)
+						.markAsUserValidationError();
+			}
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID,
-			ModelValidator.TIMING_BEFORE_CLOSE })
-	public void assertPOReActivationAllowed(final I_C_Order order)
+	/**
+	 * Prevents altering a PO if it has receipts and has been reactivated via the `PO_AllowReactivationIfReceiptsCreated` sysconfig.
+	 * If that's the case, prevent any meaningful changes.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ignoreColumnsChanged = {
+					I_C_Order.COLUMNNAME_DocStatus,
+					I_C_Order.COLUMNNAME_DocAction,
+					I_C_Order.COLUMNNAME_Processing,
+					I_C_Order.COLUMNNAME_Processed,
+					I_C_Order.COLUMNNAME_IsApproved,
+					I_C_Order.COLUMNNAME_QtyOrdered,
+					I_C_Order.COLUMNNAME_QtyInvoiced,
+					I_C_Order.COLUMNNAME_InvoiceDate,
+					I_C_Order.COLUMNNAME_QtyMoved,
+					I_C_Order.COLUMNNAME_GrandTotal,
+					I_C_Order.COLUMNNAME_TotalLines,
+					I_C_Order.COLUMNNAME_Weight,
+					I_C_Order.COLUMNNAME_Posted,
+					I_C_Order.COLUMNNAME_Updated,
+					I_C_Order.COLUMNNAME_UpdatedBy })
+	public void assertChangeAllowed(@NonNull final I_C_Order order)
 	{
-		if (order.isSOTrx())
+		if (!InterfaceWrapperHelper.isUIAction(order))
 		{
-			return; // we can spare us the effort
+			// do nothing if the modification was triggered from the application, not by the user
+			return;
 		}
-		if (receiptScheduleDAO.existsExportedReceiptScheduleForOrder(OrderId.ofRepoId(order.getC_Order_ID())))
+		if (order.getQtyMoved().signum() == 0 || orderBL.isSalesOrder(order))
 		{
-			throw new AdempiereException(MSG_PO_REACTIVATION_VOID_NOT_ALLOWED)
-					.markAsUserValidationError();
+			// not a PO or has no receipts
+			return;
 		}
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if (!docStatus.isInProgress())
+		{
+			// document has not been reactivated
+			return;
+		}
+
+		throw new AdempiereException(ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS)
+				.markAsUserValidationError();
 	}
 }

@@ -22,12 +22,6 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.AbstractHUTest;
@@ -43,6 +37,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.quantity.Quantity;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Test how HUs are created and which {@link I_M_HU_PI_Item_Product}s are used when we have a BPartner set in our referenced model.
@@ -129,7 +128,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: only one HU shall be created because for BPartner01 we accept 20items and we loaded 19
-		Assert.assertEquals("Invalid number of created HUs", 1, hus.size());
+		Assertions.assertEquals( 1,  hus.size(), "Invalid number of created HUs");
 
 		//
 		// Assert: loaded Qty to our HU is 19
@@ -137,7 +136,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assertions.assertEquals( bpartner01,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)), "Invalid BPartner in " + hus.get(0));
 	}
 
 	/**
@@ -163,7 +162,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: 4 HUs shall be created because we accept 5items/HU and we loaded 19
-		Assert.assertEquals("Invalid number of created HUs", 4, hus.size());
+		Assertions.assertEquals( 4,  hus.size(), "Invalid number of created HUs");
 
 		//
 		// Assert: loaded Qty to our HU is 19
@@ -174,10 +173,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));
+		Assertions.assertEquals( bpartner02,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)), "Invalid BPartner in " + hus.get(0));
+		Assertions.assertEquals( bpartner02,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)), "Invalid BPartner in " + hus.get(1));
+		Assertions.assertEquals( bpartner02,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)), "Invalid BPartner in " + hus.get(2));
+		Assertions.assertEquals( bpartner02,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)), "Invalid BPartner in " + hus.get(3));
 	}
 
 	@Test
@@ -200,7 +199,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: 4 HUs shall be created because we accept 5items/HU and we loaded 19
-		Assert.assertEquals("Invalid number of created HUs", 4, hus.size());
+		Assertions.assertEquals( 4,  hus.size(), "Invalid number of created HUs");
 
 		//
 		// Assert: loaded Qty to our HU is 19
@@ -211,10 +210,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));
+		Assertions.assertEquals( null,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)), "Invalid BPartner in " + hus.get(0));
+		Assertions.assertEquals( null,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)), "Invalid BPartner in " + hus.get(1));
+		Assertions.assertEquals( null,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)), "Invalid BPartner in " + hus.get(2));
+		Assertions.assertEquals( null,  IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)), "Invalid BPartner in " + hus.get(3));
 	}
 
 }

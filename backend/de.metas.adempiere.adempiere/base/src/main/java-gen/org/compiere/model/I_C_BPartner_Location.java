@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -31,7 +30,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -41,7 +39,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Get Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -119,6 +116,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName", null);
 	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
 
 	/**
 	 * Set Business Partner.
@@ -484,6 +502,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsCommissionToDefault = "IsCommissionToDefault";
 
 	/**
+	 * Set Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultVisitorAddress(boolean IsDefaultVisitorAddress);
+
+	/**
+	 * Get Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultVisitorAddress();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsDefaultVisitorAddress = new ModelColumn<>(I_C_BPartner_Location.class, "IsDefaultVisitorAddress", null);
+	String COLUMNNAME_IsDefaultVisitorAddress = "IsDefaultVisitorAddress";
+
+	/**
 	 * Set ISDN.
 	 * ISDN or modem line
 	 *
@@ -507,7 +548,8 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ISDN = "ISDN";
 
 	/**
-	 * Set Ephemeral.
+	 * Set One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -516,7 +558,8 @@ public interface I_C_BPartner_Location
 	void setIsEphemeral (boolean IsEphemeral);
 
 	/**
-	 * Get Ephemeral.
+	 * Get One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -572,7 +615,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
-	 * Set Zahlungs-Adresse.
+	 * Set Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -582,7 +625,7 @@ public interface I_C_BPartner_Location
 	void setIsPayFrom (boolean IsPayFrom);
 
 	/**
-	 * Get Zahlungs-Adresse.
+	 * Get Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -639,6 +682,31 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsReplicationLookupDefault = "IsReplicationLookupDefault";
 
 	/**
+	 * Set Shipper Has Routingcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsShipperHasRoutingcode (boolean IsShipperHasRoutingcode);
+
+	/**
+	 * Get Shipper Has Routingcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isShipperHasRoutingcode();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsShipperHasRoutingcode = new ModelColumn<>(I_C_BPartner_Location.class, "IsShipperHasRoutingcode", null);
+	String COLUMNNAME_IsShipperHasRoutingcode = "IsShipperHasRoutingcode";
+
+	/**
 	 * Set Ship Address.
 	 * Business Partner Shipment Address
 	 *
@@ -683,7 +751,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Abo Adresse.
+	 * Set isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -693,7 +761,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get Abo Adresse.
+	 * Get isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -725,6 +793,58 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsSubscriptionToDefault = new ModelColumn<>(I_C_BPartner_Location.class, "IsSubscriptionToDefault", null);
 	String COLUMNNAME_IsSubscriptionToDefault = "IsSubscriptionToDefault";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_BPartner_Location.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Routingcode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_RoutingCode_ID (int M_Shipper_RoutingCode_ID);
+
+	/**
+	 * Get Routingcode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_RoutingCode_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode();
+
+	void setM_Shipper_RoutingCode(@Nullable org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_M_Shipper_RoutingCode> COLUMN_M_Shipper_RoutingCode_ID = new ModelColumn<>(I_C_BPartner_Location.class, "M_Shipper_RoutingCode_ID", org.compiere.model.I_M_Shipper_RoutingCode.class);
+	String COLUMNNAME_M_Shipper_RoutingCode_ID = "M_Shipper_RoutingCode_ID";
 
 	/**
 	 * Set Name.
@@ -879,6 +999,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_BPartner_Location.class, "ValidFrom", null);
 	String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/**
+	 * Set VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID (@Nullable java.lang.String VATaxID);
+
+	/**
+	 * Get VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVATaxID();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
+	String COLUMNNAME_VATaxID = "VATaxID";
 
 	/**
 	 * Set Visitors Address.

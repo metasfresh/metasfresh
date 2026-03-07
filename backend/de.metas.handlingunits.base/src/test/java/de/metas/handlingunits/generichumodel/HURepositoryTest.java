@@ -7,9 +7,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -22,7 +19,10 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
@@ -39,7 +39,8 @@ import java.util.Properties;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 /*
  * #%L
@@ -119,7 +120,7 @@ class HURepositoryTest
 
 		final I_M_Attribute attrRecord = newInstance(I_M_Attribute.class);
 		attrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
+		attrRecord.setValue(AttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(attrRecord);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -149,7 +150,7 @@ class HURepositoryTest
 		// then
 		assertThat(result.getProductQtysInStockUOM()).hasSize(1);
 		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
-		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
+		assertThat(result.getAttributes().getValueAsString(AttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
 		assertThat(result.getAllPackaginGTINs()).containsExactly(
 				entry(BPartnerId.ofRepoId(10), "LU-GTIN1"),

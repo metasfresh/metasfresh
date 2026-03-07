@@ -64,6 +64,9 @@ public class JsonResponseComposite
 
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseBPBankAccount> bankAccounts;
+
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseBPartnerCreditLimit> creditLimits;
 	
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -72,13 +75,15 @@ public class JsonResponseComposite
 			@JsonProperty("bpartner") @NonNull final JsonResponseBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonResponseLocation> locations,
 			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts,
-			@JsonProperty("bankAccounts") @Singular final List<JsonResponseBPBankAccount> bankAccounts)
+			@JsonProperty("bankAccounts") @Singular final List<JsonResponseBPBankAccount> bankAccounts,
+			@JsonProperty("creditLimits") @Singular final List<JsonResponseBPartnerCreditLimit> creditLimits)
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
 		this.bankAccounts = coalesce(bankAccounts, ImmutableList.of());
+		this.creditLimits = coalesce(creditLimits, ImmutableList.of());
 	}
 
 	public ImmutableList<String> extractLocationGlns()

@@ -66,7 +66,7 @@ class LoginForm extends Component {
       Moment.locale(response.data['key']);
 
       // get user session and so on
-      dispatch(loginSuccess(auth.auth));
+      dispatch(loginSuccess());
 
       const redirect = auth.redirectRoute;
 

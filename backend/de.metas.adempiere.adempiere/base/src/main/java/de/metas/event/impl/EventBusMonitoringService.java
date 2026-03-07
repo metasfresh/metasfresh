@@ -25,19 +25,22 @@ package de.metas.event.impl;
 import de.metas.event.Event;
 import de.metas.event.Topic;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ISysConfigBL;
+
 import java.util.function.Consumer;
 
+@RequiredArgsConstructor
 public class EventBusMonitoringService
 {
-	private static final String PROP_TRACE_INFO_PREFIX = "traceInfo.";
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final PerformanceMonitoringService perfMonService;
 
-	@NonNull
-	private final PerformanceMonitoringService perfMonService;
-
-	public EventBusMonitoringService(final @NonNull PerformanceMonitoringService perfMonService)
+	public boolean isMonitorIncomingEvents()
 	{
-		this.perfMonService = perfMonService;
+		return sysConfigBL.getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
 	}
 
 	public void addInfosAndMonitorSpan(

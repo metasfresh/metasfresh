@@ -22,10 +22,12 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
@@ -34,6 +36,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.exp.CreateAttachmentRequest;
@@ -46,7 +49,7 @@ import java.util.List;
 
 public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 {
-	private final IInOutBL shipmentBL = Services.get(IInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	/**
@@ -62,12 +65,8 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 	@Override
 	public List<Exception> doExport()
 	{
-
-		final I_EDI_Document document = getDocument();
-		final I_M_InOut_Desadv_V desadvInOut = InterfaceWrapperHelper.create(document, I_M_InOut_Desadv_V.class);
-
-		final I_M_InOut shipment = InterfaceWrapperHelper.create(shipmentBL.getById(InOutId.ofRepoId(desadvInOut.getM_InOut_ID())), I_M_InOut.class);
-		shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
+		final I_M_InOut shipment = getShipmentRecord();
+		shipment.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		InterfaceWrapperHelper.save(shipment);
 
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(shipment.getEDI_Desadv_ID()));
@@ -85,10 +84,10 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
-			desadv.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
 			InterfaceWrapperHelper.save(desadv);
 
-			shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			shipment.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
 
 			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
 			shipment.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
@@ -98,5 +97,26 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		}
 
 		return Collections.emptyList();
+	}
+
+	@Override
+	@NonNull
+	public BPartnerId getBPartnerId()
+	{
+		return inOutBL.getEffectiveDropshipPartnerId(getShipmentRecord());
+	}
+
+	@NonNull
+	private I_M_InOut getShipmentRecord()
+	{
+		final I_M_InOut_Desadv_V desadvInOut = InterfaceWrapperHelper.create(getDocument(), I_M_InOut_Desadv_V.class);
+		return InterfaceWrapperHelper.create(inOutBL.getById(InOutId.ofRepoId(desadvInOut.getM_InOut_ID())), I_M_InOut.class);
+	}
+
+	@Override
+	@NonNull
+	public EDIType getEDIType()
+	{
+		return EDIType.DESADV;
 	}
 }

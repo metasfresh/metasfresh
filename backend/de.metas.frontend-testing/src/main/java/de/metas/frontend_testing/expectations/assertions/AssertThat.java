@@ -92,6 +92,20 @@ public class AssertThat<T>
 		return this;
 	}
 
+	public AssertThat<T> isNotEmpty()
+	{
+		final int actualSize = getSize();
+		if (actualSize <= 0)
+		{
+			fail("Expected " + what + " to be not empty but it is empty",
+					failure -> failure
+							.putContext("actual", actual)
+			);
+		}
+
+		return this;
+	}
+
 	@SuppressWarnings("SameParameterValue")
 	public AssertThat<T> hasSameSize(@NonNull final Collection<?> expected)
 	{

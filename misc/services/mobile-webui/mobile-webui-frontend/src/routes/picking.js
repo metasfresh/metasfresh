@@ -8,6 +8,11 @@ import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
 import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
 import { PickingTargetType } from '../constants/PickingTargetType';
+import { appLaunchersLocation } from './launchers';
+import { APPLICATION_ID_Picking } from '../apps/picking';
+
+export const pickingJobsListLocation = ({ applicationId = APPLICATION_ID_Picking } = {}) =>
+  appLaunchersLocation({ applicationId });
 
 const pickingJobLocation = ({ applicationId, wfProcessId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId });

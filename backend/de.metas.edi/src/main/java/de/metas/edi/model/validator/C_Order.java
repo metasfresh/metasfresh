@@ -24,41 +24,47 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import de.metas.edi.api.IDesadvBL;
-import de.metas.edi.api.IEDIInputDataSourceBL;
-import de.metas.edi.model.I_C_BPartner;
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.DesadvBL;
+import de.metas.edi.api.impl.EDIBPartnerConfigService;
 import de.metas.edi.model.I_C_Order;
-import de.metas.edi.model.I_EDI_Document;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order
 {
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final DesadvBL desadvBL;
+	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void assertReActivationAllowed(final I_C_Order order)
 	{
-		if (order.getEDI_Desadv_ID() <= 0)
+		final EDIDesadvId ediDesadvId = EDIDesadvId.ofRepoIdOrNull(order.getEDI_Desadv_ID());
+		if (ediDesadvId == null)
 		{
 			return;
 		}
-		final String desadvEDIStatus = order.getEDI_Desadv().getEDI_ExportStatus();
-		if (I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(desadvEDIStatus)
-				|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(desadvEDIStatus)
-				|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(desadvEDIStatus))
+		final EDIExportStatus desadvEDIStatus = EDIExportStatus.ofCode(desadvBL.getById(ediDesadvId).getEDI_ExportStatus());
+		if (desadvEDIStatus.isInProgressOrSend())
 		{
-			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")")
+			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus.name() + ")")
 					.markAsUserValidationError();
 		}
 	}
@@ -70,23 +76,19 @@ public class C_Order
 		{
 			return;
 		}
+
 		if (Check.isEmpty(order.getPOReference()))
 		{
 			return;
 		}
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiDesadvRecipient() )
+
+		final BPartnerId bpartnerId = orderBL.getEffectiveDropshipPartnerId(order);
+		if (!ediBpartnerConfigService.isEdiDesadvRecipient(bpartnerId))
 		{
 			return;
 		}
 
-		if (!order.isEdiEnabled())
-		{
-			// do not add to desadv if not edi enabled
-			return;
-		}
-
-		Services.get(IDesadvBL.class).addToDesadvCreateForOrderIfNotExist(order);
+		desadvBL.addToDesadvCreateForOrderIfNotExist(order);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
@@ -95,78 +97,9 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void removeFromDesadv(final I_C_Order order)
 	{
-		if (order.getEDI_Desadv_ID() > 0)
+		if (EDIDesadvId.ofRepoIdOrNull(order.getEDI_Desadv_ID()) != null)
 		{
-			Services.get(IDesadvBL.class).removeOrderFromDesadv(order);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setEdiEnabledForNewOrder(final I_C_Order order)
-	{
-		final boolean ediEnabledByInputDataSource;
-
-		if (order.getAD_InputDataSource_ID()<=0)
-		{
-			ediEnabledByInputDataSource = false;
-		}
-		else
-		{
-			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
-		}
-
-		final boolean ediEnabledByBPartner;
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
-		if (partner == null)
-		{
-			ediEnabledByBPartner = false;
-		}
-		else
-		{
-			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
-		}
-		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
-	}
-
-	/**
-	 * task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
-	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
-	public void updateEdiEnabled(final I_C_Order order)
-	{
-		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
-
-		if (orderInputDataSourceId <= 0)
-		{
-			// nothing to do
-			return;
-		}
-
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
-		if (isEdiEnabled)
-		{
-			order.setIsEdiEnabled(true);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void onPartnerChange(final I_C_Order order)
-	{
-
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
-		if (partner == null)
-		{
-			// nothing to do
-			return;
-		}
-
-		final boolean isEdiRecipient = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
-
-		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
-		// If the new bp is edi recipient, we leave it to the user to set the flag or not
-		if (!isEdiRecipient)
-		{
-			order.setIsEdiEnabled(false);
+			desadvBL.removeOrderFromDesadv(order);
 		}
 	}
 }

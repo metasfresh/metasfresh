@@ -8,10 +8,13 @@ import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cost.classification.CostClassificationCategoryId;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.elementvalue.ElementValue;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -171,6 +174,12 @@ public final class FactLineBuilder
 		//
 		final Doc<?> doc = fact.m_doc;
 		final AcctDocRequiredServicesFacade services = doc.getServices();
+		final ElementValue elementValue = services.getElementValueById(elementValueId);
+		final CostClassificationId costClassificationId = elementValue.getCostClassificationId();
+		final CostClassificationCategoryId costClassificationCategoryId = Optional.ofNullable(costClassificationId)
+				.map(services::getCostClassificationCategoryId)
+				.orElse(null);
+
 		final FactLine line = FactLine.builder()
 				.services(services)
 				.doc(doc)
@@ -183,6 +192,8 @@ public final class FactLineBuilder
 				.accountId(elementValueId)
 				.account(validCombination)
 				.accountConceptualName(accountConceptualName)
+				.costClassificationId(costClassificationId)
+				.costClassificationCategoryId(costClassificationCategoryId)
 				.productId(productId)
 				.qty(qty)
 				.orgTrxId(orgTrxId)
@@ -701,7 +712,6 @@ public final class FactLineBuilder
 	{
 		return fromLocationOfLocator(locatorId != null ? locatorId.getRepoId() : -1);
 	}
-
 
 	public FactLineBuilder toLocation(final Optional<LocationId> optionalLocationId)
 	{

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,14 +26,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPOJOs
 {
@@ -82,8 +82,8 @@ public class TestPOJOs
 								.billingAddressId("billingAddressId")
 								.orderNumber("orderNumber")
 								.currencyId("currencyId")
-								.orderDate(ZonedDateTime.now(ZoneId.of("UTC")))
-								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+								.orderDate(ZonedDateTime.now(ZoneId.of("Z")))
+								.createdAt(ZonedDateTime.now(ZoneId.of("Z")))
 								.stateMachine(JsonStateMachine.builder()
 													  .technicalName("open")
 													  .build()
@@ -105,8 +105,8 @@ public class TestPOJOs
 	private JsonOrderLine getMockJsonOrderLine()
 	{
 		return JsonOrderLine.builder()
-				.updatedAt(ZonedDateTime.now(ZoneId.of("UTC")))
-				.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+				.updatedAt(ZonedDateTime.now(ZoneId.of("Z")))
+				.createdAt(ZonedDateTime.now(ZoneId.of("Z")))
 				.description("description")
 				.id("id")
 				.parentId("parentId")
@@ -131,7 +131,7 @@ public class TestPOJOs
 																 .totalPrice(BigDecimal.valueOf(100))
 																 .build()
 												 )
-												 .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+												 .createdAt(ZonedDateTime.now(ZoneId.of("Z")))
 												 .stateMachine(JsonStateMachine.builder()
 																	   .technicalName("paid")
 																	   .build()

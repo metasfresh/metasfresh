@@ -7,6 +7,7 @@ CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT i.C_Invoice_ID                                                                                       AS EDI_Cctop_INVOIC_v_ID
      , i.C_Invoice_ID
      , i.C_Order_ID
+     , i.C_BPartner_ID
      , REGEXP_REPLACE(i.DocumentNo, '\s+$', '')                                                             AS Invoice_DocumentNo
      , i.DateInvoiced
      , i.DateAcct
@@ -39,6 +40,13 @@ SELECT i.C_Invoice_ID                                                           
         END)                                                                                                AS EANCOM_DocType
      , i.GrandTotal
      , i.TotalLines
+     , i.DocStatus
+     , i.ExternalId
+     , esystem.value                                                                                        AS ExternalSystemCode
+     , (CASE
+            WHEN dsource.internalname IS NOT NULL
+                THEN 'int-' || dsource.internalname
+        END)                                                                                                AS DataSource
     /* IF docSubType is CS, the we don't reference the original shipment*/
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.MovementDate, iomd.movementdate) END AS MovementDate
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END     AS Shipment_DocumentNo
@@ -107,6 +115,8 @@ FROM C_Invoice i
          LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID
          LEFT JOIN C_Country cc ON cc.C_Country_ID = l.C_Country_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
+         LEFT JOIN AD_InputDataSource dsource ON dsource.AD_InputDataSource_ID = i.AD_InputDataSource_ID
+         LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = i.externalsystem_id
          LEFT JOIN LATERAL ( SELECT i.c_invoice_id, MIN(o.dateordered) AS dateordered --only add values if there is only one unique value
                              FROM c_invoice i
                                       INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

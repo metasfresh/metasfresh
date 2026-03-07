@@ -70,7 +70,8 @@ CREATE TABLE report.fresh_product_statistics_report
   param_attributes character varying,
   ad_org_id numeric,
   iso_code char(3),
-  unionorder integer
+  unionorder integer,
+  c_bpartner_id numeric
 )
 WITH (
   OIDS=FALSE
@@ -91,12 +92,20 @@ CREATE OR REPLACE FUNCTION report.fresh_product_statistics_report
 	) 
   RETURNS SETOF report.fresh_product_statistics_report AS
 $BODY$
-	SELECT 
-		*, 1 AS UnionOrder
-	FROM 	
+	SELECT
+		bp_name, bp_value, pc_name, P_name, P_value, UOMSymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		Period1Sum, Period2Sum, Period3Sum, Period4Sum, Period5Sum, Period6Sum,
+		Period7Sum, Period8Sum, Period9Sum, Period10Sum, Period11Sum, Period12Sum,
+		TotalSum, TotalAmt,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,
+		ad_org_id, iso_code,
+		1 AS UnionOrder,
+		c_bpartner_id
+	FROM
 		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
-	SELECT 
+	SELECT
 		null, null, pc_name, P_name, P_value, UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 		SUM( Period1Sum ) AS Period1Sum, SUM( Period2Sum ) AS Period2Sum, SUM( Period3Sum ) AS Period3Sum,
@@ -104,9 +113,11 @@ UNION ALL
 		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
 		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
 		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
-		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
-		2 AS UnionOrder
-	FROM 	
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,
+		ad_org_id, iso_code,
+		2 AS UnionOrder,
+		NULL::numeric AS c_bpartner_id
+	FROM
 		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY
 		pc_name, P_name, P_value, UOMSymbol,

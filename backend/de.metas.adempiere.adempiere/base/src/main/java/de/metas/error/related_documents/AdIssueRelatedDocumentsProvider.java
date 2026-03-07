@@ -68,6 +68,11 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
+		if (!fromDocument.isSingleKeyRecord())
+		{
+			return ImmutableList.of();
+		}
+
 		//
 		// Get the Issues AD_Window_ID
 		final AdWindowId issuesWindowId = RecordWindowFinder.findAdWindowId(I_AD_Issue.Table_Name).orElse(null);

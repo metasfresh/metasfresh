@@ -18,23 +18,13 @@ package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
-import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,7 +34,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -52,7 +41,6 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -312,46 +300,6 @@ public class MOrderLine extends X_C_OrderLine
 
 		Services.get(IOrderLineBL.class).updatePrices(this);
 	}    // setPrice
-
-	/**
-	 * Set Tax or throw an exception if that was not possible
-	 */
-	public void setTax()
-	{
-		final TaxCategoryId taxCategoryId = Services.get(IOrderLineBL.class).getTaxCategoryId(this);
-
-		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
-		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
-
-		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(this).getBPartnerLocationAndCaptureId();
-
-		final boolean isSOTrx = getParent().isSOTrx();
-		final Timestamp taxDate = getDatePromised();
-		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
-				.fromCountryId(countryFromId)
-				.orgId(OrgId.ofRepoId(getAD_Org_ID()))
-				.bPartnerLocationId(bpLocationId)
-				.warehouseId(warehouseId)
-				.dateOfInterest(taxDate)
-				.taxCategoryId(taxCategoryId)
-				.soTrx(SOTrx.ofBoolean(isSOTrx))
-				.build());
-
-		if (tax == null)
-		{
-			TaxNotFoundException.builder()
-					.taxCategoryId(taxCategoryId)
-					.isSOTrx(isSOTrx)
-					.billDate(taxDate)
-					.billFromCountryId(countryFromId)
-					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
-					.build()
-					.throwOrLogWarning(true, log);
-		}
-
-		setC_Tax_ID(tax.getTaxId().getRepoId());
-		setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
-	}    // setTax
 
 	/**
 	 * Get Tax
@@ -793,7 +741,7 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		// metas: Steuer muss immer ermittelt werden, da durch eine Anschriftenaenderung im Kopf auch Steueraenderungen in Positionen auftreten.
-		setTax();
+		Services.get(IOrderLineBL.class).setTax(this);
 
 		// metas ende
 
@@ -1011,6 +959,17 @@ public class MOrderLine extends X_C_OrderLine
 			{
 				new AdempiereException("Updating GrandTotal failed for C_Order_IDs=" + orderIds);
 			}
+		}
+		// Update Order Header: TotalGrossWeightKg
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final String sql = "UPDATE C_Order o"
+				+ " SET " + I_C_Order.COLUMNNAME_TotalGrossWeightKg + "="
+				+ "(SELECT COALESCE(SUM(ol." + I_C_OrderLine.COLUMNNAME_GrossWeightKg +"),0) FROM C_OrderLine ol WHERE ol.C_Order_ID=o.C_Order_ID) "
+				+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 1)
+		{
+			new AdempiereException("Updating TotalGrossWeightKg failed for C_Order_IDs=" + orderIds);
 		}
 	}
 }    // MOrderLine

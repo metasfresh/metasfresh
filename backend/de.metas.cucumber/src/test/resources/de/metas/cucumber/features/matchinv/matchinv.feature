@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00750_eInvoicing_Postfinance
+@F00750
 @ghActions:run_on_executor4
 Feature: Match Invoice
+## F00750: Match Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -78,6 +82,9 @@ Feature: Match Invoice
     # ##################################################################################################################################################
   @Id:S0160_100
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00750_eInvoicing_Postfinance
+@F00750
   Scenario: Receipt, Invoice => MatchInv
     #
     # Create the sales order
@@ -125,7 +132,7 @@ Feature: Match Invoice
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice           | invoiceCand_1                     |
     And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | docStatus |
+      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | DocStatus |
       | vendorInvoice | bpartner_1    | l_1                    | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID  | C_Invoice_ID  | M_Product_ID | QtyInvoiced |

@@ -1,0 +1,96 @@
+PUT {{baseURL}}/api/v2/bpartner/001
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json
+
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "bpartnerComposite": {
+        "bpartner": {
+               "code":"test_code1",
+          "name": "test_name",
+          "companyName": "test_company",
+          "parentId": null,
+          "phone": null,
+          "language": "de",
+          "url": null,
+          "group": "test-group",
+                "vatId": "vatId_BPartner001"
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "gln-l11",
+              "location": {
+                "address1": "test_address1",
+                "address2": "test_address2",
+                "poBox": null,
+                "district": null,
+                "region": null,
+                "city": null,
+                "countryCode": "DE",
+                "gln": null,
+                        "postal":null,
+                        "vatId": null
+              }
+            },
+            {
+              "locationIdentifier": "gln-l22",
+              "location": {
+                "address1": null,
+                "address2": "test_address2",
+                "poBox": "test_poBox",
+                "district": null,
+                "region": "test_region",
+                "city": "test_city",
+                "countryCode": "DE",
+                "gln": null,
+                        "postal":null,
+                        "vatId": "vatId_Location_l22"
+              }
+            }
+          ]
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11",
+                "email": "test_email",
+                "fax": "fax",
+                "invoiceEmailEnabled": false,
+                "greeting": {
+                  "greetingInfo": {
+                    "greeting": "test_greeting_261023",
+                    "letterSalutation": "test_salutation_261023",
+                    "name": "test_name_261023"
+                  },
+                  "identifier": "ext-ALBERTA-greetingTest261023"
+                }
+              }
+            },
+            {
+              "contactIdentifier": "ext-ALBERTA-c22",
+              "contact": {
+                "code": "c22",
+                "name": "test_name_c22",
+                "email": null,
+                "fax": "test_fax",
+                "invoiceEmailEnabled": true
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}

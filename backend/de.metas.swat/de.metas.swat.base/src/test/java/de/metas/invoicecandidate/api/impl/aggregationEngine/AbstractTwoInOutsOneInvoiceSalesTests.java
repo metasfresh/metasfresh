@@ -22,20 +22,15 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.util.Collections;
-import java.util.List;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductPrice;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * <ul>
@@ -55,7 +50,7 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
 		// config-guard
-		assertThat(config_IsSOTrx(), is(true));
+		assertThat(config_IsSOTrx()).isTrue();
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
@@ -63,38 +58,60 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 		// Assume that the invoice is OK
 		{
 			final IInvoiceHeader invoice1 = invoices.remove(0);
-			assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
+			assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 			validateInvoiceHeader("Invoice", invoice1, ic);
 
 			final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-			assertEquals("We are expecting two invoice lines: " + invoiceLines1, 2, invoiceLines1.size());
+			assertThat(invoiceLines1)
+				.as("We are expecting two invoice lines: %s", invoiceLines1)
+				.hasSize(2);
 
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
-			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
+			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs()).hasSize(1);
 
 			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
 			final ProductPrice priceEntered = invoiceCandBL.getPriceEnteredEffective(ic);
 
-			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
-			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1_32));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1_32.multiply(TEN).multiply(priceActual.toBigDecimal()))/* uomQty is stockQty x 10 */);
+			assertThat(invoiceLine1.getPriceEntered().toBigDecimal())
+				.as("Invalid PriceEntered")
+				.isEqualByComparingTo(priceEntered.toBigDecimal());
+			assertThat(invoiceLine1.getPriceActual().toBigDecimal())
+				.as("Invalid PriceActual")
+				.isEqualByComparingTo(priceActual.toBigDecimal());
+			assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal())
+				.as("Invalid QtyToInvoice")
+				.isEqualByComparingTo(partialQty1_32);
+			assertThat(invoiceLine1.getNetLineAmt().toBigDecimal())
+				.as("Invalid NetLineAmt")
+				.isEqualByComparingTo(partialQty1_32.multiply(TEN).multiply(priceActual.toBigDecimal()))/* uomQty is stockQty x 10 */;
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, partialQty1_32);
 
 			final IInvoiceLineRW invoiceLine2 = getSingleForInOutLine(invoiceLines1, iol21);
-			assertThat("iol21 and iol22 have the same IInvoiceLineRW", getSingleForInOutLine(invoiceLines1, iol22), is(invoiceLine2));
-			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
-			assertThat("Invalid PriceEntered", invoiceLine2.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
-			assertThat("Invalid PriceActual", invoiceLine2.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8.add(partialQty3_4)));
-			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8.add(partialQty3_4).multiply(priceActual.toBigDecimal()).multiply(TEN))/* price=1 and uomQty is stockQty x 10 */);
+			assertThat(getSingleForInOutLine(invoiceLines1, iol22))
+				.as("iol21 and iol22 have the same IInvoiceLineRW")
+				.isSameAs(invoiceLine2);
+			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs()).hasSize(2);
+			assertThat(invoiceLine2.getPriceEntered().toBigDecimal())
+				.as("Invalid PriceEntered")
+				.isEqualByComparingTo(priceEntered.toBigDecimal());
+			assertThat(invoiceLine2.getPriceActual().toBigDecimal())
+				.as("Invalid PriceActual")
+				.isEqualByComparingTo(priceActual.toBigDecimal());
+			assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal())
+				.as("Invalid QtyToInvoice")
+				.isEqualByComparingTo(partialQty2_8.add(partialQty3_4));
+			assertThat(invoiceLine2.getNetLineAmt().toBigDecimal())
+				.as("Invalid NetLineAmt")
+				.isEqualByComparingTo(partialQty2_8.add(partialQty3_4).multiply(priceActual.toBigDecimal()).multiply(TEN))/* price=1 and uomQty is stockQty x 10 */;
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine2, partialQty2_8.add(partialQty3_4));
 		}
 
 		//
 		// Make sure all invoices were evaluated
-		assertEquals("All generated invoices should be evaluated", Collections.emptyList(), invoices);
+		assertThat(invoices)
+			.as("All generated invoices should be evaluated")
+			.isEmpty();
 	}
 }

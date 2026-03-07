@@ -1651,6 +1651,31 @@ public interface I_M_InOut
 	String COLUMNNAME_Ref_InOut_ID = "Ref_InOut_ID";
 
 	/**
+	 * Set Original Shipment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReturn_Origin_InOut_ID (int Return_Origin_InOut_ID);
+
+	/**
+	 * Get Original Shipment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReturn_Origin_InOut_ID();
+
+	@Nullable org.compiere.model.I_M_InOut getReturn_Origin_InOut();
+
+	void setReturn_Origin_InOut(@Nullable org.compiere.model.I_M_InOut Return_Origin_InOut);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_InOut> COLUMN_Return_Origin_InOut_ID = new ModelColumn<>(I_M_InOut.class, "Return_Origin_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_Return_Origin_InOut_ID = "Return_Origin_InOut_ID";
+
+	/**
 	 * Set Reversal ID.
 	 * ID of document reversal
 	 *
@@ -1844,4 +1869,25 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_Weight = new ModelColumn<>(I_M_InOut.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_InOut.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

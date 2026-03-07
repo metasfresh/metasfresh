@@ -34,12 +34,20 @@ public class DataTableRows
 		return ofListOfMaps(dataTable.asMaps());
 	}
 
+	public static DataTableRows of(@NonNull final DataTableRow row)
+	{
+		return new DataTableRows(ImmutableList.of(row));
+	}
+
 	public static DataTableRows ofListOfMaps(@NonNull final List<Map<String, String>> list)
 	{
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
 		return list
 				.stream()
-				.map(values -> new DataTableRow(nextLineNo.getAndIncrement(), values))
+				.map(values -> DataTableRow.builder()
+						.lineNo(nextLineNo.getAndIncrement())
+						.values(values)
+						.build())
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));
 	}
 
@@ -130,5 +138,16 @@ public class DataTableRows
 						LinkedHashMap::new,
 						GuavaCollectors.collectUsingListAccumulator(DataTableRows::ofRows)
 				));
+	}
+
+	public List<String> getColumnNames()
+	{
+		if (list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final DataTableRow firstRow = list.get(0);
+		return firstRow.getColumnNames();
 	}
 }

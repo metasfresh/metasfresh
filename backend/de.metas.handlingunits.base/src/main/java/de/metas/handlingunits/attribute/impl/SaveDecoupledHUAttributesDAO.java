@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -58,7 +59,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	public static final String SYSCONFIG_AutoFlushEnabledInitial = SaveDecoupledHUAttributesDAO.class.getName() + ".AutoflushEnabledInitial";
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(SaveDecoupledHUAttributesDAO.class);
+	private static final Logger logger = LogManager.getLogger(SaveDecoupledHUAttributesDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
@@ -217,6 +218,12 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	public Optional<String> extractCommonStringAttributeValue(final Collection<HuId> huIds, final AttributeId attributeId)
+	{
+		return db.extractCommonStringAttributeValue(huIds, attributeId);
+	}
+
+	@Override
 	public synchronized HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		final HUAttributesMap huAttributes = getHUAttributesMap(hu);
@@ -363,9 +370,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		final I_M_HU_Attribute modelOld = InterfaceWrapperHelper.createOld(huAttribute, I_M_HU_Attribute.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
-		final String modelChangeInfo = ""
-				+ Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(huAttribute.getM_Attribute_ID());
+		final String modelChangeInfo = Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
 				+ " - "
 				+ attribute.getValue() + "/" + attribute.getName()
 				+ ": "
@@ -376,7 +382,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		final String daoStatus = "IncrementalFlush=" + isIncrementalFlush() + ", IdsToSaveFromLastFlush=" + idsToSaveFromLastFlush;
 
-		logger.trace("" + message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
+		logger.trace(message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
 	}
 
 	private static class HUAttributesMap implements Iterable<I_M_HU_Attribute>

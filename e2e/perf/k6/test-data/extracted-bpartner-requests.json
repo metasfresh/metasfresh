@@ -1,0 +1,51 @@
+[
+  {
+    "syncAdvise": {
+      "ifExists": "UPDATE_MERGE",
+      "ifNotExists": "CREATE"
+    },
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-bp-0001",
+        "name": "Ext Company One",
+        "isActive": true,
+        "isCustomer": true,
+        "locations": [
+          {
+            "locationIdentifier": "ext-loc-0001",
+            "address1": "10 External Ave",
+            "city": "Berlin",
+            "postal": "10115",
+            "countryCode": "DE",
+            "isBillTo": true,
+            "isShipTo": true
+          }
+        ],
+        "contacts": [
+          {
+            "contactIdentifier": "ext-ct-0001",
+            "firstname": "Alex",
+            "lastname": "Muster",
+            "email": "alex.muster@example.com",
+            "phone": "+491701234567",
+            "isActive": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "syncAdvise": {
+      "ifExists": "UPDATE_MERGE",
+      "ifNotExists": "CREATE"
+    },
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-bp-0002",
+        "name": "Ext Company Two",
+        "isActive": true,
+        "isVendor": true
+      }
+    ]
+  }
+]

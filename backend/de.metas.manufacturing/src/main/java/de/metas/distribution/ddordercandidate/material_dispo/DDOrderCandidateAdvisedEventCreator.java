@@ -32,6 +32,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
@@ -86,11 +87,13 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final ProductPlanning productPlanningData)
 	{
+		final MinMaxDescriptor fromWarehouseMinMaxDescriptor = ddOrderCandidate.getFromWarehouseMinMaxDescriptor();
+		final boolean isDDOrderCreationRequiredByReplenish = fromWarehouseMinMaxDescriptor != null && fromWarehouseMinMaxDescriptor.isHighPriority();
 		return DDOrderCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrderCandidate(ddOrderCandidate)
-				.advisedToCreateDDOrder(productPlanningData.isCreatePlan())
+				.advisedToCreateDDOrder(productPlanningData.isCreatePlan() || isDDOrderCreationRequiredByReplenish)
 				.pickIfFeasible(productPlanningData.isPickDirectlyIfFeasible())
 				.build();
 	}
