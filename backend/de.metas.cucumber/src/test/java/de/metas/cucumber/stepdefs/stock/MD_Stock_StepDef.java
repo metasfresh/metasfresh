@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs.stock;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.event.model.I_AD_EventLog;
+import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
@@ -95,7 +97,86 @@ public class MD_Stock_StepDef
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
 				.firstOnly(I_MD_Stock.class);
+
+		if (mdStock == null || mdStock.getQtyOnHand().compareTo(qtyOnHand) != 0)
+		{
+			logEventLogDiagnostics(product.getM_Product_ID(), qtyOnHand, mdStock);
+		}
+
 		assertThat(mdStock).isNotNull();
 		assertThat(mdStock.getQtyOnHand()).isEqualTo(qtyOnHand);
+	}
+
+	@And("log AD_EventLog count for product {string}")
+	public void logAD_EventLog_count(@NonNull final String productIdentifier)
+	{
+		final I_M_Product product = productTable.get(productIdentifier);
+		final int productId = product.getM_Product_ID();
+		final String productIdPattern = "\"productId\" : " + productId;
+
+		final List<I_AD_EventLog> eventLogs = queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addStringLikeFilter(I_AD_EventLog.COLUMNNAME_EventData, "%" + productIdPattern + "%", /* ignoreCase */ false)
+				.orderBy(I_AD_EventLog.COLUMNNAME_Created)
+				.create()
+				.list();
+
+		logger.info("=== AD_EventLog count for M_Product_ID={} ({}): {} entries ===",
+				productId, product.getName(), eventLogs.size());
+		for (final I_AD_EventLog eventLog : eventLogs)
+		{
+			logger.info("  AD_EventLog_ID={}, EventName={}, IsError={}, Created={}",
+					eventLog.getAD_EventLog_ID(),
+					eventLog.getEventName(),
+					eventLog.isError(),
+					eventLog.getCreated());
+		}
+	}
+
+	private void logEventLogDiagnostics(final int productId, final BigDecimal expectedQty, final I_MD_Stock mdStock)
+	{
+		final BigDecimal actualQty = mdStock != null ? mdStock.getQtyOnHand() : null;
+		logger.warn("=== MD_Stock MISMATCH for M_Product_ID={} ===", productId);
+		logger.warn("  Expected QtyOnHand={}, Actual QtyOnHand={}", expectedQty, actualQty);
+
+		// Query recent AD_EventLog entries whose EventData contains the product ID
+		final String productIdPattern = "\"productId\" : " + productId;
+		final List<I_AD_EventLog> eventLogs = queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addStringLikeFilter(I_AD_EventLog.COLUMNNAME_EventData, "%" + productIdPattern + "%", /* ignoreCase */ false)
+				.orderByDescending(I_AD_EventLog.COLUMNNAME_Created)
+				.setLimit(10)
+				.create()
+				.list();
+
+		if (eventLogs.isEmpty())
+		{
+			logger.warn("  No AD_EventLog entries found containing productId={}", productId);
+			return;
+		}
+
+		logger.warn("  Found {} AD_EventLog entries for productId={}:", eventLogs.size(), productId);
+		for (final I_AD_EventLog eventLog : eventLogs)
+		{
+			logger.warn("  --- AD_EventLog_ID={}, EventType={}, IsError={}, Created={} ---",
+					eventLog.getAD_EventLog_ID(),
+					eventLog.getEventTypeName(),
+					eventLog.isError(),
+					eventLog.getCreated());
+
+			// Query entries (handler results) for this event log
+			final List<I_AD_EventLog_Entry> entries = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
+					.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID, eventLog.getAD_EventLog_ID())
+					.orderBy(I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_Entry_ID)
+					.create()
+					.list();
+
+			for (final I_AD_EventLog_Entry entry : entries)
+			{
+				logger.warn("    Handler={}, IsError={}, MsgText={}",
+						entry.getClassname(),
+						entry.isError(),
+						entry.getMsgText());
+			}
+		}
+		logger.warn("=== END MD_Stock diagnostics ===");
 	}
 }

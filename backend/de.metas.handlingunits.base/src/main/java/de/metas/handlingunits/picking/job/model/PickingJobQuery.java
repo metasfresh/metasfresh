@@ -27,11 +27,18 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentNoFilter;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacet;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PackageableQuery.PackageableQueryBuilder;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.user.UserId;
+import de.metas.workplace.WorkplaceId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,12 +60,14 @@ import java.util.Set;
 public class PickingJobQuery
 {
 	@NonNull UserId userId;
-	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
+	@NonNull @Builder.Default ShipmentScheduleAndJobScheduleIdSet excludeScheduleIds = ShipmentScheduleAndJobScheduleIdSet.EMPTY;
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
+	@Nullable WorkplaceId scheduledForWorkplaceId;
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 	@Nullable ResolvedScannedProductCodes scannedProductCodes;
+	@NonNull ZonedDateTime currentTime = SystemTime.asZonedDateTime();
 
 	@NonNull
 	public Set<BPartnerId> getOnlyCustomerIdsEffective()
@@ -92,16 +101,17 @@ public class PickingJobQuery
 		return facets != null ? facets.getHandoverLocationIds() : ImmutableSet.of();
 	}
 
-	public PackageableQuery toPackageableQuery()
+	public PackageableQueryBuilder toPackageableQueryBuilder()
 	{
-		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
+		final PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderDocumentNo(this.getSalesOrderDocumentNo())
 				.lockedBy(this.getUserId())
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
-				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
+				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
 				.scannedProductCodes(this.getScannedProductCodes())
+				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
@@ -134,7 +144,26 @@ public class PickingJobQuery
 			builder.warehouseId(workplaceWarehouseId);
 		}
 
-		return builder.build();
+		return builder;
+	}
+
+	public PickingJobScheduleQuery toPickingJobScheduleQuery()
+	{
+		if (this.scheduledForWorkplaceId == null)
+		{
+			throw new AdempiereException("Expected query to have scheduledForWorkplaceId set");
+		}
+
+		return PickingJobScheduleQuery.builder()
+				.workplaceId(this.scheduledForWorkplaceId)
+				.excludeJobScheduleIds(this.excludeScheduleIds.getJobScheduleIds())
+				.isProcessed(false)
+				.build();
+	}
+
+	public boolean isScheduledForWorkplaceOnly()
+	{
+		return this.scheduledForWorkplaceId != null;
 	}
 
 	//
@@ -152,22 +181,6 @@ public class PickingJobQuery
 		@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 		@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 		@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
-
-		public static Facets of(@NonNull PickingJobFacets.PickingJobFacet facet)
-		{
-			final PickingJobFacetGroup group = facet.getGroup();
-			switch (group)
-			{
-				case CUSTOMER:
-					return builder().customerId(facet.asType(PickingJobFacets.CustomerFacet.class).getBpartnerId()).build();
-				case DELIVERY_DATE:
-					return builder().deliveryDay(facet.asType(PickingJobFacets.DeliveryDayFacet.class).getDeliveryDate()).build();
-				case HANDOVER_LOCATION:
-					return builder().handoverLocationId(facet.asType(PickingJobFacets.HandoverLocationFacet.class).getBPartnerLocationId()).build();
-				default:
-					throw new AdempiereException("Unknown group: " + group);
-			}
-		}
 
 		public Facets add(@NonNull final Facets other)
 		{
@@ -206,20 +219,9 @@ public class PickingJobQuery
 					&& isHandoverLocationMatching(pickingJobReference);
 		}
 
-		public boolean isMatching(final PickingJobFacets.PickingJobFacet facet)
+		public boolean isMatching(final PickingJobFacet facet)
 		{
-			final PickingJobFacetGroup group = facet.getGroup();
-			switch (group)
-			{
-				case CUSTOMER:
-					return customerIds.contains(facet.asType(PickingJobFacets.CustomerFacet.class).getBpartnerId());
-				case DELIVERY_DATE:
-					return deliveryDays.contains(facet.asType(PickingJobFacets.DeliveryDayFacet.class).getDeliveryDate());
-				case HANDOVER_LOCATION:
-					return handoverLocationIds.contains(facet.asType(PickingJobFacets.HandoverLocationFacet.class).getBPartnerLocationId());
-				default:
-					throw new AdempiereException("Unknown group: " + group);
-			}
+			return PickingJobFacetHandlers.isMatching(facet, this);
 		}
 
 		private boolean isCustomerMatching(final PickingJobReference pickingJobReference) {return isCustomerMatching(pickingJobReference.getCustomerId());}
@@ -238,49 +240,7 @@ public class PickingJobQuery
 
 		private boolean isHandoverLocationMatching(final BPartnerLocationId handoverLocationId) {return handoverLocationIds.isEmpty() || handoverLocationIds.contains(handoverLocationId);}
 
-		public Facets retainFacetsOfGroup(@NonNull final PickingJobFacetGroup group) {return retainFacetsOfGroups(ImmutableSet.of(group));}
-
-		public Facets retainFacetsOfGroups(final Collection<PickingJobFacetGroup> groups)
-		{
-			if (groups.isEmpty())
-			{
-				return EMPTY;
-			}
-
-			final FacetsBuilder builder = Facets.builder();
-
-			for (final PickingJobFacetGroup group : groups)
-			{
-				switch (group)
-				{
-					case CUSTOMER:
-						builder.customerIds(this.customerIds);
-						break;
-					case DELIVERY_DATE:
-						builder.deliveryDays(this.deliveryDays);
-						break;
-					case HANDOVER_LOCATION:
-						builder.handoverLocationIds(this.handoverLocationIds);
-						break;
-					default:
-						throw new AdempiereException("Unknown group: " + group);
-				}
-			}
-
-			final Facets result = builder.build();
-			if (result.isEmpty())
-			{
-				return EMPTY;
-			}
-			else if (result.equals(this))
-			{
-				return this;
-			}
-			else
-			{
-				return result;
-			}
-		}
+		public Facets retainFacetsOfGroup(@NonNull final PickingJobFacetGroup group) {return PickingJobFacetHandlers.retainFacetsOfGroups(this, ImmutableSet.of(group));}
 
 		public Set<Facets> toSingleElementFacets()
 		{

@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -38,10 +39,12 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -52,13 +55,13 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -72,6 +75,12 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		return warehouseDAO.getById(warehouseId);
 	}
+
+	@Override
+	public I_M_Locator getLocatorById(@NonNull final LocatorId locatorId) {return warehouseDAO.getLocatorById(locatorId);}
+
+	@Override
+	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull final Class<T> modelClass) {return warehouseDAO.getLocatorById(locatorId, modelClass);}
 
 	@Override
 	public I_M_Locator getOrCreateDefaultLocator(@NonNull final I_M_Warehouse warehouse)
@@ -139,6 +148,12 @@ public class WarehouseBL implements IWarehouseBL
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
 		return warehouseDAO.createDefaultLocator(warehouseId);
+	}
+
+	@Override
+	public LocatorId createOrUpdateLocator(@NonNull final CreateOrUpdateLocatorRequest request)
+	{
+		return warehouseDAO.createOrUpdateLocator(request);
 	}
 
 	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
@@ -249,6 +264,12 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getLocatorIdsByWarehouseIds(ImmutableSet.of(warehouseId));
+	}
+
+	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
@@ -330,7 +351,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.retrieveOrgIdByLocatorId(locatorId);
 	}
 
-
 	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull final WarehouseId warehouseId)
@@ -352,4 +372,31 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
 		return LocatorQRCode.ofLocator(locator);
 	}
+
+	@Override
+	@NonNull
+	public ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue)
+	{
+		final List<I_M_Locator> locators = getActiveLocatorsByValue(locatorValue);
+		if (locators.isEmpty())
+		{
+			return ExplainedOptional.emptyBecause(AdempiereException.MSG_NotFound);
+		}
+		else if (locators.size() > 1)
+		{
+			return ExplainedOptional.emptyBecause(DBMoreThanOneRecordsFoundException.MSG_QueryMoreThanOneRecordsFound);
+		}
+		else
+		{
+			final I_M_Locator locator = locators.get(0);
+			return ExplainedOptional.of(LocatorQRCode.ofLocator(locator));
+		}
+	}
+
+	@Override
+	public List<I_M_Locator> getActiveLocatorsByValue(final @NotNull String locatorValue)
+	{
+		return warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+	}
+
 }

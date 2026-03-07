@@ -1,23 +1,21 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.compiere.util.Evaluatees;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Services;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Map;
 
 /*
  * #%L
@@ -46,7 +44,7 @@ public class DateStringExpressionSupportTest
 	private IExpressionFactory expressionFactory;
 	private ExpressionContext context;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		expressionFactory = Services.get(IExpressionFactory.class);
@@ -60,7 +58,7 @@ public class DateStringExpressionSupportTest
 	public void test_NullExpression()
 	{
 		final DateStringExpression expr = expressionFactory.compile("", DateStringExpression.class, context);
-		Assert.assertTrue("Expect null expression: " + expr, expr.isNullExpression());
+		Assertions.assertTrue(expr.isNullExpression(), "Expect null expression: " + expr);
 	}
 
 	@Test
@@ -69,7 +67,7 @@ public class DateStringExpressionSupportTest
 		final Date valueExpected = new GregorianCalendar(2016, Calendar.JANUARY, 31).getTime();
 		final DateStringExpression expr = expressionFactory.compile("2016-01-31", DateStringExpression.class, context);
 		final Date value = expr.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
-		Assert.assertEquals(valueExpected, value);
+		Assertions.assertEquals(valueExpected, value);
 	}
 
 	@Test
@@ -78,7 +76,7 @@ public class DateStringExpressionSupportTest
 		final Date valueExpected = new GregorianCalendar(2016, Calendar.JANUARY, 31).getTime();
 		final DateStringExpression expr = expressionFactory.compile("@Date@", DateStringExpression.class, context);
 		final Date value = expr.evaluate(Evaluatees.ofSingleton("Date", "2016-01-31"), OnVariableNotFound.Fail);
-		Assert.assertEquals(valueExpected, value);
+		Assertions.assertEquals(valueExpected, value);
 
 	}
 
@@ -89,7 +87,7 @@ public class DateStringExpressionSupportTest
 		final DateStringExpression expr = expressionFactory.compile("@Y@-@M@-@D@", DateStringExpression.class);
 		final Map<String, ? extends Object> ctx = ImmutableMap.of("Y", "2016", "M", "01", "D", 31);
 		final Date value = expr.evaluate(Evaluatees.ofMap(ctx), OnVariableNotFound.Fail);
-		Assert.assertEquals(valueExpected, value);
+		Assertions.assertEquals(valueExpected, value);
 	}
 
 }

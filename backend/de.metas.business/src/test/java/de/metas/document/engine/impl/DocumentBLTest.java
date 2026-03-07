@@ -22,8 +22,9 @@ package de.metas.document.engine.impl;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,13 +36,11 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_Test;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class DocumentBLTest
 {
@@ -75,7 +74,7 @@ public class DocumentBLTest
 
 	private PlainDocumentBL documentBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -105,16 +104,16 @@ public class DocumentBLTest
 		final IDocument document = documentBL.getDocumentOrNull(record);
 		if (expectDocument)
 		{
-			Assert.assertNotNull("Record " + record + " (class " + clazz + ") shall be an Document", document);
+			Assertions.assertNotNull(document, "Record " + record + " (class " + clazz + ") shall be an Document");
 		}
 		else
 		{
-			Assert.assertNull("Record " + record + " (class " + clazz + ") shall NOT be an Document", document);
+			Assertions.assertNull(document, "Record " + record + " (class " + clazz + ") shall NOT be an Document");
 		}
 	}
 
 	// NOTE: this test applies only for PlainDocumentBL
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_getDocument_NonDocument()
 	{
 		final Properties ctx = Env.getCtx();
@@ -122,7 +121,7 @@ public class DocumentBLTest
 		record.setDocumentNo("SomeDocumentNo");
 		InterfaceWrapperHelper.save(record);
 
-		documentBL.getDocument(record);
+		Assertions.assertThrows(AdempiereException.class, () -> documentBL.getDocument(record));
 	}
 
 	@Test
@@ -135,7 +134,7 @@ public class DocumentBLTest
 		InterfaceWrapperHelper.save(invoice);
 
 		final String documentNoActual = documentBL.getDocumentNo(invoice);
-		Assert.assertEquals("Invalid DocumentNo", documentNoExpected, documentNoActual);
+		Assertions.assertEquals(documentNoExpected, documentNoActual, "Invalid DocumentNo");
 	}
 
 	@Test
@@ -152,10 +151,10 @@ public class DocumentBLTest
 		InterfaceWrapperHelper.save(record);
 
 		final int recordId = InterfaceWrapperHelper.getId(record);
-		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
+		Assertions.assertTrue(recordId > 0, "Invalid recordId=" + recordId);
 
-		Assert.assertEquals("Invalid DocumentNo(1)", documentNoExpected, documentBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", documentNoExpected, documentBL.getDocumentNo(ctx, adTableId, recordId));
+		Assertions.assertEquals(documentNoExpected, documentBL.getDocumentNo(record), "Invalid DocumentNo(1)");
+		Assertions.assertEquals(documentNoExpected, documentBL.getDocumentNo(ctx, adTableId, recordId), "Invalid DocumentNo(2)");
 	}
 
 	@Test
@@ -171,15 +170,15 @@ public class DocumentBLTest
 		InterfaceWrapperHelper.save(record);
 
 		final int recordId = InterfaceWrapperHelper.getId(record);
-		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
+		Assertions.assertTrue(recordId > 0, "Invalid recordId=" + recordId);
 
-		Assert.assertEquals("Invalid DocumentNo(1)", "testName", documentBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", "testName", documentBL.getDocumentNo(ctx, adTableId, recordId));
+		Assertions.assertEquals("testName", documentBL.getDocumentNo(record), "Invalid DocumentNo(1)");
+		Assertions.assertEquals("testName", documentBL.getDocumentNo(ctx, adTableId, recordId), "Invalid DocumentNo(2)");
 
 		record.setValue("testValue");
 		InterfaceWrapperHelper.save(record);
-		Assert.assertEquals("Invalid DocumentNo", "testValue", documentBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", "testValue", documentBL.getDocumentNo(ctx, adTableId, recordId));
+		Assertions.assertEquals("testValue", documentBL.getDocumentNo(record), "Invalid DocumentNo");
+		Assertions.assertEquals("testValue", documentBL.getDocumentNo(ctx, adTableId, recordId), "Invalid DocumentNo(2)");
 	}
 
 	public void test_getDocStatusOrNull_WithDocument()
@@ -193,9 +192,9 @@ public class DocumentBLTest
 		InterfaceWrapperHelper.save(invoice);
 
 		final int recordId = InterfaceWrapperHelper.getId(invoice);
-		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
+		Assertions.assertTrue(recordId > 0, "Invalid recordId=" + recordId);
 
-		Assert.assertEquals("Invalid DocStatus", IDocument.STATUS_InProgress, documentBL.getDocStatusOrNull(invoice).getCode());
+		Assertions.assertEquals(IDocument.STATUS_InProgress, documentBL.getDocStatusOrNull(invoice).getCode(), "Invalid DocStatus");
 	}
 
 	public void test_getDocStatusOrNull_NonDocument()
@@ -208,15 +207,15 @@ public class DocumentBLTest
 		InterfaceWrapperHelper.save(record);
 
 		final int recordId = InterfaceWrapperHelper.getId(record);
-		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
+		Assertions.assertTrue(recordId > 0, "Invalid recordId=" + recordId);
 
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(record));
+		Assertions.assertNull(documentBL.getDocStatusOrNull(record), "Invalid DocStatus");
 	}
 
 	public void test_getDocStatusOrNull_InvalidParameters()
 	{
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(-1, -1)));
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(318, -1)));
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(-1, 1000)));
+		Assertions.assertNull(documentBL.getDocStatusOrNull(TableRecordReference.of(-1, -1)), "Invalid DocStatus");
+		Assertions.assertNull(documentBL.getDocStatusOrNull(TableRecordReference.of(318, -1)), "Invalid DocStatus");
+		Assertions.assertNull(documentBL.getDocStatusOrNull(TableRecordReference.of(-1, 1000)), "Invalid DocStatus");
 	}
 }

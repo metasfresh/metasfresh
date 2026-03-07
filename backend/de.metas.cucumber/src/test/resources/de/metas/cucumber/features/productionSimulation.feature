@@ -1,11 +1,16 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
 @ghActions:run_on_executor7
 Feature: create production simulation
+## F8034: Production Simulation
   As a user
   I want to simulate the production of a Sales Order's line
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
 
@@ -20,6 +25,9 @@ Feature: create production simulation
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario:  The simulation for qty 100 is created, with duration to produce 1 qty set to 1 day, having a stock of 99 after demand date and before 'finished production' date
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
@@ -132,6 +140,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   @Id:S0171.100
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
@@ -249,6 +260,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario:  The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having some stock before demand date, but not enough
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID.Identifier |
@@ -354,6 +368,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario: The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having enough stock before 'production finished' date
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID.Identifier |

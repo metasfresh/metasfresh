@@ -119,6 +119,159 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Restrict start to next job only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowStartNextJobOnly (boolean IsAllowStartNextJobOnly);
+
+	/**
+	 * Get Restrict start to next job only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowStartNextJobOnly();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsAllowStartNextJobOnly = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsAllowStartNextJobOnly", null);
+	String COLUMNNAME_IsAllowStartNextJobOnly = "IsAllowStartNextJobOnly";
+
+	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
+
+	/**
+	 * Set Navigate to List on Pick Complete.
+	 * Goes to the Jobs List after picking an entire order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNavigateToJobsListAfterPickFromComplete (boolean IsNavigateToJobsListAfterPickFromComplete);
+
+	/**
+	 * Get Navigate to List on Pick Complete.
+	 * Goes to the Jobs List after picking an entire order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNavigateToJobsListAfterPickFromComplete();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsNavigateToJobsListAfterPickFromComplete = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsNavigateToJobsListAfterPickFromComplete", null);
+	String COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete = "IsNavigateToJobsListAfterPickFromComplete";
+
+	/**
+	 * Set Is Require Product Code Scan.
+	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRequireScanningProductCode (boolean IsRequireScanningProductCode);
+
+	/**
+	 * Get Is Require Product Code Scan.
+	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequireScanningProductCode();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsRequireScanningProductCode = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsRequireScanningProductCode", null);
+	String COLUMNNAME_IsRequireScanningProductCode = "IsRequireScanningProductCode";
+
+	/**
+	 * Set Require Trolley.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRequireTrolley (boolean IsRequireTrolley);
+
+	/**
+	 * Get Require Trolley.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequireTrolley();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsRequireTrolley = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsRequireTrolley", null);
+	String COLUMNNAME_IsRequireTrolley = "IsRequireTrolley";
+
+	/**
+	 * Set Maximum Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMaxLaunchers (int MaxLaunchers);
+
+	/**
+	 * Get Maximum Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMaxLaunchers();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_MaxLaunchers = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "MaxLaunchers", null);
+	String COLUMNNAME_MaxLaunchers = "MaxLaunchers";
+
+	/**
+	 * Set Maximum Started Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxStartedLaunchers (int MaxStartedLaunchers);
+
+	/**
+	 * Get Maximum Started Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxStartedLaunchers();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_MaxStartedLaunchers = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "MaxStartedLaunchers", null);
+	String COLUMNNAME_MaxStartedLaunchers = "MaxStartedLaunchers";
+
+	/**
 	 * Set Mobile Distribution Profile.
 	 *
 	 * <br>Type: ID

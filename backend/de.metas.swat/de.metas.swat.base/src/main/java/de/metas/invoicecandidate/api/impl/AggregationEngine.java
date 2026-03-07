@@ -26,8 +26,9 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.impex.InputDataSourceId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -135,6 +136,7 @@ public final class AggregationEngine
 	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
+	private final boolean deliveryDateAsInvoiceDate;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -150,7 +152,8 @@ public final class AggregationEngine
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
+			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
+			final boolean deliveryDateAsInvoiceDate)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
@@ -167,6 +170,7 @@ public final class AggregationEngine
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
 	}
 
 	@Override
@@ -374,18 +378,7 @@ public final class AggregationEngine
 			final List<IInvoiceLineAttribute> invoiceLineAttributes = aggregationBL.extractInvoiceLineAttributes(inOutLine);
 			icAggregationRequestBuilder.addInvoiceLineAttributes(invoiceLineAttributes);
 
-			//
-			// Sales iols from different inOuts shall go into different invoice lines
-			// NOTE: this shall be configured in line aggregation definition.
-			// For legacy key builder we moved to de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD.buildAggregationKey(I_C_Invoice_Candidate)
-			// if (ic.isSOTrx())
-			// {
-			// icAggregationRequestBuilder.addLineAggregationKeyElement(inOutLine.getM_InOut_ID());
-			// }
-
-			// this is only relevant if iciol != null. Otherwise we allocate the full invoicable Qty anyways.
-			final boolean allocateRemainingQty = isLastIcIol && (icAggregationOrNull == null || !icAggregationOrNull.hasInvoicePerShipmentAttribute());
-			icAggregationRequestBuilder.setAllocateRemainingQty(allocateRemainingQty);
+			icAggregationRequestBuilder.setAllocateRemainingQty(isLastIcIol);
 		}
 
 		//
@@ -416,6 +409,7 @@ public final class AggregationEngine
 			}
 
 			invoiceHeader.setAD_InputDataSource_ID(InputDataSourceId.ofRepoIdOrNull(icRecord.getAD_InputDataSource_ID()));
+			invoiceHeader.setExternalSystemId(ExternalSystemId.ofRepoIdOrNull(icRecord.getExternalSystem_ID()));
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
@@ -520,9 +514,19 @@ public final class AggregationEngine
 		}
 	}
 
+	@Nullable
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDeliveryDate());
+					if (deliveryDateAsInvoiceDate && result != null)
+					{
+						logger.debug("computeDateInvoiced - returning ic's deliveryDate={} as dateInvoiced", result);
+						return result;
+					}
+					return null;
+				},
 				() -> {
 					if (dateInvoicedParam != null)
 					{

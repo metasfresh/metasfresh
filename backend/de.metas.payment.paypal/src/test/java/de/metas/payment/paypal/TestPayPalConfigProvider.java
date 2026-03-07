@@ -1,7 +1,5 @@
 package de.metas.payment.paypal;
 
-import org.junit.Ignore;
-
 import de.metas.email.templates.MailTemplateId;
 import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.paypal.config.PayPalConfigProvider;
@@ -9,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * #%L
@@ -31,7 +30,7 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Ignore
+@Disabled
 @ToString
 public class TestPayPalConfigProvider implements PayPalConfigProvider
 {

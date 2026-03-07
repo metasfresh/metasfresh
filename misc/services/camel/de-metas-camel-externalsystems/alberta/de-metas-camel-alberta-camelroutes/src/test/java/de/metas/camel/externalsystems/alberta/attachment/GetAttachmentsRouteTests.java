@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -203,7 +203,7 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 
 		template.sendBody("direct:" + GetAlbertaAttachmentRoute.GET_DOCUMENTS_ROUTE_ID, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(

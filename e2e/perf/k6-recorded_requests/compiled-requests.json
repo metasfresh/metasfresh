@@ -1,0 +1,18 @@
+[
+  {
+    "method": "POST",
+    "path": "/bpartner",
+    "body": {
+      "syncAdvise": {
+        "ifExists": "UPDATE_MERGE",
+        "ifNotExists": "CREATE"
+      },
+      "requestItems": [
+        {
+          "bpartnerIdentifier": "ext-bp-0002",
+          "name": "Ext Company Two"
+        }
+      ]
+    }
+  }
+]

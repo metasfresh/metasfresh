@@ -117,8 +117,12 @@ public class QuerySelectionToDeleteHelper
 			// 2. there is no delete-schedule record yet
 			sql.append("SELECT " + DB.TO_STRING(uuid));
 			sql.append(" FROM " + I_T_Query_Selection.Table_Name + " s");
-			sql.append(" FULL OUTER JOIN " + I_T_Query_Selection_Pagination.Table_Name + " p ON s.uuid=p.uuid");
-			sql.append(" WHERE " + DB.TO_STRING(uuid) + " IN (s.UUID, p.UUID)");
+			sql.append(" WHERE " + DB.TO_STRING(uuid) + " = s.UUID ");
+			sql.append(" AND NOT EXISTS (select 1 from " + I_T_Query_Selection_ToDelete.Table_Name + " e where e.uuid=" + DB.TO_STRING(uuid) + ")");
+			sql.append(" UNION ");
+			sql.append("SELECT " + DB.TO_STRING(uuid));
+			sql.append(" FROM " + I_T_Query_Selection_Pagination.Table_Name + " p ");
+			sql.append(" WHERE " + DB.TO_STRING(uuid) + " = p.UUID ");
 			sql.append(" AND NOT EXISTS (select 1 from " + I_T_Query_Selection_ToDelete.Table_Name + " e where e.uuid=" + DB.TO_STRING(uuid) + ")");
 
 			if (counter >= 1000)

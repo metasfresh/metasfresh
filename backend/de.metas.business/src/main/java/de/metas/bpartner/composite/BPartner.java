@@ -9,11 +9,14 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +24,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.isEmpty;
 
 /*
@@ -56,6 +59,7 @@ public class BPartner
 	public static final String NAME = "name";
 	public static final String NAME_2 = "name2";
 	public static final String NAME_3 = "name3";
+	public static final String GLN_LOOKUP_LABEL = "glnLookupLabel";
 	public static final String COMPANY_NAME = "companyName";
 	public static final String PARENT_ID = "parentId";
 	public static final String VALUE = "value";
@@ -65,17 +69,22 @@ public class BPartner
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
 	public static final String GROUP_ID = "groupId";
+	public static final String BPGROUPID = "bpGroupId";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String SALESTREPID = "salesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
 	public static final String GREETING_ID = "greetingId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
 	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
@@ -83,18 +92,20 @@ public class BPartner
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
-
+	
 	/**
 	 * May be null if the bpartner was not yet saved.
 	 */
-	private BPartnerId id;
+	private @Nullable BPartnerId id;
 
-	private ExternalId externalId;
+	private @Nullable ExternalId externalId;
+	private @Nullable String glnLookupLabel;
+	
 	private boolean active;
-	private String value;
-	private String name;
-	private String name2;
-	private String name3;
+	private @Nullable String value;
+	private @Nullable String name;
+	private @Nullable String name2;
+	private @Nullable String name3;
 	private final GreetingId greetingId;
 
 	private final DocTypeId soDocTypeTargetId;
@@ -104,48 +115,54 @@ public class BPartner
 	/**
 	 * non-empty value implies that the bpartner is also a company
 	 */
-	private String companyName;
+	private @Nullable String companyName;
 
 	/**
 	 * This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company.
 	 */
-	private BPartnerId parentId;
+	private @Nullable BPartnerId parentId;
 
 	/**
 	 * This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number.
 	 */
-	private String phone;
+	private @Nullable String phone;
 
-	private Language language;
+	private @Nullable Language language;
 
-	private String url;
+	private @Nullable String url;
 
-	private String url2;
+	private @Nullable String url2;
 
-	private String url3;
+	private @Nullable String url3;
 
-	private BPGroupId groupId;
+	private @Nullable BPGroupId groupId;
 
 	private boolean vendor;
 	private boolean customer;
 	private boolean company;
-	private String salesPartnerCode;
-	private SalesRep salesRep;
-	private PaymentRule paymentRule;
-	private String internalName;
+	private @Nullable String salesPartnerCode;
+	private @Nullable SalesRep salesRep;
+	private @Nullable PaymentRule paymentRule;
+	private @Nullable String internalName;
 
-	private InvoiceRule customerInvoiceRule;
-	private InvoiceRule vendorInvoiceRule;
+	private @Nullable InvoiceRule customerInvoiceRule;
+	private @Nullable InvoiceRule vendorInvoiceRule;
 
-	private String globalId;
+	private @Nullable String globalId;
 
-	private String vatId;
+	private @Nullable String vatId;
 
-	private OrgMappingId orgMappingId;
+	private @Nullable String eori;
+
+	private @Nullable String eInvoiceBuyerReference;
+
+	private @Nullable SalesRepContact salesRepContact;
+
+	private @Nullable OrgMappingId orgMappingId;
 
 	private final RecordChangeLog changeLog;
 
-	private String memo;
+	private @Nullable String memo;
 
 	/**
 	 * Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}.
@@ -160,6 +177,7 @@ public class BPartner
 
 	private final PaymentTermId customerPaymentTermId;
 	private final PricingSystemId customerPricingSystemId;
+	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
@@ -203,6 +221,9 @@ public class BPartner
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
+			@Nullable final String eori,
+			@Nullable final String eInvoiceBuyerReference,
+			@Nullable final SalesRepContact salesRepContact,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
@@ -210,6 +231,7 @@ public class BPartner
 			@Nullable final String memo,
 			@Nullable final PaymentTermId customerPaymentTermId,
 			@Nullable final PricingSystemId customerPricingSystemId,
+			@Nullable final  IncotermsId customerIncotermsId,
 			@Nullable final PaymentTermId vendorPaymentTermId,
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
@@ -219,12 +241,14 @@ public class BPartner
 			@Nullable final String firstName,
 			@Nullable final String lastName,
 			@Nullable final Integer creditorId,
-			@Nullable final Integer debtorId)
+			@Nullable final Integer debtorId,
+			@Nullable final String glnLookupLabel)
 	{
 		this.id = id;
 		this.externalId = externalId;
 		this.globalId = globalId;
-		this.active = coalesce(active, true);
+		this.glnLookupLabel = glnLookupLabel;
+		this.active = coalesceNotNull(active, true);
 		this.value = value;
 		this.name = name;
 		this.name2 = name2;
@@ -240,23 +264,26 @@ public class BPartner
 		this.groupId = groupId;
 		this.customerInvoiceRule = customerInvoiceRule;
 		this.vendorInvoiceRule = vendorInvoiceRule;
-		this.vendor = coalesce(vendor, false);
-		this.customer = coalesce(customer, false);
-		this.company = coalesce(company, false);
+		this.vendor = coalesceNotNull(vendor, false);
+		this.customer = coalesceNotNull(customer, false);
+		this.company = coalesceNotNull(company, false);
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.vatId = vatId;
-
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
+		this.salesRepContact = salesRepContact;
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;
-		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
+		this.identifiedByExternalReference = coalesceNotNull(identifiedByExternalReference, false);
 		this.memo = memo;
 
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.customerPricingSystemId = customerPricingSystemId;
+		this.customerIncotermsId = customerIncotermsId;
 
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.vendorPricingSystemId = vendorPricingSystemId;

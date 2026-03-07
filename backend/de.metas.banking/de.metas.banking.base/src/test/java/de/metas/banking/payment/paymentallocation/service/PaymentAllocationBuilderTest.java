@@ -61,7 +61,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Conversion_Rate;
@@ -73,6 +75,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -99,6 +102,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings({ "NestedAssignment", "SameParameterValue" })
+@ExtendWith(AdempiereTestWatcher.class)
 public class PaymentAllocationBuilderTest
 {
 	// services
@@ -232,7 +236,7 @@ public class PaymentAllocationBuilderTest
 		{
 			final Money invoiceGrandTotal = openAmt
 					.negateIf(type.isCreditMemo())
-					.negateIf(!type.isSales());
+					.negateIf(type.isPurchase());
 
 			final int invoiceId = nextInvoiceId++;
 			final I_C_DocType docType = getInvoiceDocType(type);
@@ -323,6 +327,7 @@ public class PaymentAllocationBuilderTest
 			@NonNull final TableRecordReference payableRef,
 			@Nullable final TableRecordReference paymentRef,
 			@NonNull final String date,
+			@Nullable final String dateAcct,
 			@Nullable final String allocatedAmt,
 			@Nullable final String discountAmt,
 			@Nullable final String writeOffAmt,
@@ -334,6 +339,8 @@ public class PaymentAllocationBuilderTest
 			boolean payableDocumentIsCreditMemo
 	)
 	{
+		final LocalDate dateTrxParsed = LocalDate.parse(date);
+		final LocalDate dateAcctParsed = dateAcct != null ? LocalDate.parse(dateAcct) : dateTrxParsed;
 		return AllocationLineCandidate.builder()
 				.type(type)
 				.orgId(adOrgId)
@@ -343,8 +350,8 @@ public class PaymentAllocationBuilderTest
 				.payableDocumentIsCreditMemo(payableDocumentIsCreditMemo)
 				.paymentDocumentRef(paymentRef)
 				//
-				.dateTrx(LocalDate.parse(date))
-				.dateAcct(LocalDate.parse(date))
+				.dateTrx(dateTrxParsed)
+				.dateAcct(dateAcctParsed)
 				//
 				.amounts(AllocationAmounts.builder()
 								 .payAmt(money(allocatedAmt, currency))
@@ -375,7 +382,7 @@ public class PaymentAllocationBuilderTest
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)
@@ -398,9 +405,11 @@ public class PaymentAllocationBuilderTest
 		final boolean ignoreProcessed = false;
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 
-		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
-		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
-		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(expectedPaymentStatus.isFullyPaid());
+		softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		softly.assertThat(invoice.getOpenAmt()).as("OpenAmt").isEqualTo(expectedOpenAmt);
+		softly.assertAll();
 	}
 
 	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)
@@ -605,6 +614,7 @@ public class PaymentAllocationBuilderTest
 						.payableRef(vendorInvoice1.getReference())
 						.discountAmt("-100").writeOffAmt("-200").overUnderAmt("-7700")
 						.date("2021-01-31")
+						.dateAcct("2021-01-22") // dateAcct uses the payable's dateAcct, not dateTrx
 						.build());
 
 		//
@@ -1150,6 +1160,7 @@ public class PaymentAllocationBuilderTest
 							.payableRef(invoice1.getReference())
 							.discountAmt("90")
 							.date(defaultDateTrx.toString())
+							.dateAcct("2021-01-10") // dateAcct uses the payable's dateAcct, not dateTrx
 							.build());
 		}
 
@@ -1169,6 +1180,7 @@ public class PaymentAllocationBuilderTest
 							.payableRef(invoice1.getReference())
 							.writeOffAmt("90")
 							.date(defaultDateTrx.toString())
+							.dateAcct("2021-01-10") // dateAcct uses the payable's dateAcct, not dateTrx
 							.build());
 		}
 	}
@@ -1202,6 +1214,7 @@ public class PaymentAllocationBuilderTest
 						.payableRef(customerInvoice1.getReference())
 						.writeOffAmt("90")
 						.date("2021-02-14")
+						.dateAcct("2021-02-10") // dateAcct uses the payable's dateAcct, not dateTrx
 						.build());
 
 		assertExpected(candidatesExpected, builder);
@@ -1244,6 +1257,7 @@ public class PaymentAllocationBuilderTest
 							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 							.overUnderAmt("98")
 							.date("2021-01-23")
+							.dateAcct("2021-01-11") // dateAcct uses the payable's dateAcct, not dateTrx
 							.build(),
 
 					allocation().type(InvoiceToPayment)
@@ -1305,6 +1319,7 @@ public class PaymentAllocationBuilderTest
 							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 							.overUnderAmt("90")
 							.date("2021-01-23")
+							.dateAcct("2021-01-03") // dateAcct uses the payable's dateAcct, not dateTrx
 							.build(),
 					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
 							.payableRef(customerCreditMemo.getReference())
@@ -1313,6 +1328,7 @@ public class PaymentAllocationBuilderTest
 							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 							.overUnderAmt("-110")
 							.date("2021-01-23")
+							.dateAcct("2021-01-04") // dateAcct uses the payable's dateAcct, not dateTrx
 							.build(),
 					allocation().type(InvoiceToCreditMemo)
 							.payableRef(customerInvoice.getReference())

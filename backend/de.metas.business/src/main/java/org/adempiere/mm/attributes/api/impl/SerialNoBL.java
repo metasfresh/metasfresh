@@ -61,7 +61,7 @@ public class SerialNoBL implements ISerialNoBL
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_SerialNo);
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_SerialNo);
 		return Optional.ofNullable(attributeId);
 	}
 }

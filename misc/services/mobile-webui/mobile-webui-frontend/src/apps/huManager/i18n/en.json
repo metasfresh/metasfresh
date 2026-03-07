@@ -1,6 +1,7 @@
 {
   "HU": "HU",
   "qrCode": "QR code",
+  "eanCode": "EAN Code",
   "locator": "Locator",
   "HUStatus": "Status",
   "numberOfAggregatedHUs": "Aggregated HUs count",

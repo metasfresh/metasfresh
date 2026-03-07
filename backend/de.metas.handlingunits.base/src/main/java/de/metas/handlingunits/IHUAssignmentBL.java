@@ -29,10 +29,10 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.util.Collection;
 import java.util.Properties;
-import java.util.Set;
 
 public interface IHUAssignmentBL extends ISingletonService
 {
@@ -119,5 +119,5 @@ public interface IHUAssignmentBL extends ISingletonService
 
 	void copyHUAssignments(Object sourceModel, Object targetModel);
 
-	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
+	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull TableRecordReferenceSet recordRefs);
 }

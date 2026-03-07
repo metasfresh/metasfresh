@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -27,7 +27,7 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 @RequiredArgsConstructor
 public class PickingShipmentService
 {
-	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
+	@NonNull private final MobileUIPickingUserProfileService profileService;
 	@NonNull private final IShipmentService shipmentService;
 
 	@VisibleForTesting
@@ -35,7 +35,7 @@ public class PickingShipmentService
 	{
 		Adempiere.assertUnitTestMode();
 		return new PickingShipmentService(
-				new MobileUIPickingUserProfileRepository(),
+				MobileUIPickingUserProfileService.newInstanceForUnitTesting(),
 				ShipmentService.getInstance()
 		);
 	}
@@ -67,7 +67,7 @@ public class PickingShipmentService
 			{
 				final CreateShipmentPolicy createShipmentPolicyEffective = CoalesceUtil.coalesceNotNull(
 						createShipmentPolicyOverride,
-						() -> configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy()
+						() -> profileService.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy()
 				);
 				if (!createShipmentPolicyEffective.isCreateShipment())
 				{
@@ -100,7 +100,7 @@ public class PickingShipmentService
 		}
 
 		shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-				.scheduleIds(shipmentCandidate.getShipmentScheduleIds())
+				.scheduleIds(shipmentCandidate.getScheduleIds())
 				.quantityTypeToUse(TYPE_PICKED_QTY)
 				.onlyLUIds(shipmentCandidate.getOnlyLUIds())
 				.onTheFlyPickToPackingInstructions(true)

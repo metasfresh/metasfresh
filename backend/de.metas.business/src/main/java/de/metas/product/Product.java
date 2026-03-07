@@ -44,15 +44,15 @@ public class Product
 	@NonNull UomId uomId;
 	@Nullable UomId packingUomId;
 	@NonNull String productNo;
-	@Nullable ProductCategoryId productCategoryId;
+	@NonNull ProductCategoryId productCategoryId;
 	@Nullable String productCategoryName;
 	@NonNull ITranslatableString name;
 	@Nullable String value;
 	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
 	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
 	@NonNull String productType;
-	@Nullable String ean;
 	@Nullable String gtin;
+	@Nullable String ean;
 	@Nullable Boolean discontinued;
 	@Nullable LocalDate discontinuedFrom;
 	@Nullable Boolean active;
@@ -62,4 +62,7 @@ public class Product
 	boolean stocked;
 	@Nullable CommodityNumberId commodityNumberId;
 	@Nullable String procurementStatus;
+	boolean selfPacked;
+	@NonNull PackageDimensions packageDimensions;
+
 }

@@ -22,15 +22,14 @@ package manual;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Test;
-
 import de.metas.printing.client.engine.PrintingEngine;
 import de.metas.printing.esb.api.PrintPackage;
 import de.metas.printing.esb.api.PrintPackageInfo;
+import org.junit.jupiter.api.Test;
+
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class AbstractMultiPageTestManual
 {

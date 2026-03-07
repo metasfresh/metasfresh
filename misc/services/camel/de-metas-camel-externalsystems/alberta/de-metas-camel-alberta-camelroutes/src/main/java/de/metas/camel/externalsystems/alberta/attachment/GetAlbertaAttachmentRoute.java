@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -96,7 +96,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 		//@formatter:off
 		from(direct(GET_DOCUMENTS_ROUTE_ID))
 				.routeId(GET_DOCUMENTS_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::prepareContext)
 				.process(new GetDocumentsProcessor()).id(RETRIEVE_DOCUMENTS_PROCESSOR_ID)

@@ -14,8 +14,6 @@ export const initialState = {
     unreadCount: 0,
     pending: false,
   },
-  keymap: {},
-  hotkeys: {},
   lastBackPage: '',
 };
 
@@ -63,10 +61,7 @@ export default function appHandler(state = initialState, action) {
       };
 
     case types.LOGOUT_SUCCESS:
-      return {
-        ...state,
-        isLogged: false,
-      };
+      return initialState;
 
     case types.ENABLE_TUTORIAL:
       return {
@@ -159,13 +154,27 @@ export default function appHandler(state = initialState, action) {
     }
 
     case types.NEW_NOTIFICATION: {
+      const { notification: newNotification, unreadCount } = action;
+      let added = false;
+      const notifications = state.inbox.notifications.map((item) => {
+        if (item.id === newNotification.id) {
+          added = true;
+          return newNotification;
+        } else {
+          return item;
+        }
+      });
+      if (!added) {
+        notifications.unshift(newNotification);
+      }
+
       return update(state, {
         inbox: {
           notifications: {
-            $unshift: [action.notification],
+            $set: notifications,
           },
           unreadCount: {
-            $set: action.unreadCount,
+            $set: unreadCount,
           },
         },
       });
@@ -240,33 +249,6 @@ export default function appHandler(state = initialState, action) {
       return {
         ...state,
         processStatus: 'saved',
-      };
-
-    case types.INIT_KEYMAP:
-      return {
-        ...state,
-        keymap: action.payload,
-      };
-    case types.UPDATE_KEYMAP:
-      return {
-        ...state,
-        keymap: {
-          ...state.keymap,
-          ...action.payload,
-        },
-      };
-    case types.INIT_HOTKEYS:
-      return {
-        ...state,
-        hotkeys: action.payload,
-      };
-    case types.UPDATE_HOTKEYS:
-      return {
-        ...state,
-        hotkeys: {
-          ...state.hotkeys,
-          ...action.payload,
-        },
       };
 
     default:

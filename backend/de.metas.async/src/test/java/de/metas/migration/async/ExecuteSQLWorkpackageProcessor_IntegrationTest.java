@@ -10,7 +10,7 @@ import de.metas.logging.LogManager;
 import de.metas.migration.async.MockedExecuteSQLWorkpackageProcessor.ExecuteSQLWorkpackageExpectation;
 import de.metas.util.Services;
 import org.compiere.util.Env;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 

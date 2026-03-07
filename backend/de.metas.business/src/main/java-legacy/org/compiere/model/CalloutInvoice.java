@@ -28,9 +28,9 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.invoice.paymentschedule.service.InvoicePayScheduleService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
@@ -91,7 +91,8 @@ public class CalloutInvoice extends CalloutEngine
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
-	
+	private final InvoicePayScheduleService invoicePayScheduleService = SpringContextHolder.instance.getBean(InvoicePayScheduleService.class);
+
 	/**
 	 * Invoice Header- BPartner.
 	 * - M_PriceList_ID (+ Context)
@@ -294,14 +295,8 @@ public class CalloutInvoice extends CalloutEngine
 			// nothing to do
 			return NO_ERROR;
 		}
-
-		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getRecordById(paymentTermId);
-
-		// TODO: Fix in next step (refactoring: Move the apply method from MPaymentTerm to a BL)
-		final MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);
-
-		final boolean valid = pt.apply(invoice);
-		invoice.setIsPayScheduleValid(valid);
+		
+		invoicePayScheduleService.createInvoicePaySchedules(invoice);
 
 		return NO_ERROR;
 	}    // paymentTerm
@@ -346,7 +341,7 @@ public class CalloutInvoice extends CalloutEngine
 		final boolean isSOTrx = invoice.isSOTrx();
 
 		final int bpartnerID = invoice.getC_BPartner_ID();
-			
+
 		final BigDecimal qty = invoiceLine.getQtyInvoiced();
 		final CountryId countryId = extractCountryIdOrNull(invoice);
 
@@ -676,7 +671,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				priceActual = priceStdMinusDiscount;
 				invoiceLine.setPriceActual(priceActual); // 08763 align the behavior to that of order line
-				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));	
+				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));
 				invoiceLine.setPriceEntered(priceStd); // 08763 align the behavior to that of order line
 
 				calloutField.putContext(CTX_DiscountSchema, pp.isDiscountSchema());

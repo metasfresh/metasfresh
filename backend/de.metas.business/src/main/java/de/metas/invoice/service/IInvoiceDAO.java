@@ -89,7 +89,7 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(I_M_InOutLine inoutLine);
 
 	List<I_C_LandedCost> retrieveLandedCosts(I_C_InvoiceLine invoiceLine,
-			String whereClause, String trxName);
+											 String whereClause, String trxName);
 
 	I_C_LandedCost createLandedCost(String trxName);
 
@@ -169,7 +169,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull InvoiceId invoiceId);
 
-	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
+	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
@@ -180,7 +180,7 @@ public interface IInvoiceDAO extends ISingletonService
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
 	<T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull InvoiceId invoiceId, @NonNull Class<T> clazz);
-	
+
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);

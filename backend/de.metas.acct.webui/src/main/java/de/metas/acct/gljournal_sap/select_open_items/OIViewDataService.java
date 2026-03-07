@@ -26,7 +26,6 @@ import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -39,7 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_SectionCode;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -53,7 +51,6 @@ class OIViewDataService
 	private final MoneyService moneyService;
 	private final LookupDataSource validCombinationsLookup;
 	private final LookupDataSource bpartnerLookup;
-	private final LookupDataSource sectionCodeLookup;
 	private final SAPGLJournalService glJournalService;
 	private final ElementValueService elementValueService;
 
@@ -71,7 +68,6 @@ class OIViewDataService
 		this.factAcctBL = factAcctBL;
 		this.validCombinationsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_ValidCombination.Table_Name);
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
-		this.sectionCodeLookup = lookupDataSourceFactory.searchInTableLookup(I_M_SectionCode.Table_Name);
 		this.acctSchemaBL = acctSchemaBL;
 		this.moneyService = moneyService;
 		this.glJournalService = glJournalService;
@@ -165,7 +161,6 @@ class OIViewDataService
 			final InSetPredicate<BPartnerId> bpartnerIds = bpartnerId != null ? InSetPredicate.only(bpartnerId) : InSetPredicate.any();
 
 			factAcctQueryBuilder.bpartnerIds(bpartnerIds)
-					.sectionCodeId(filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_M_SectionCode_ID, SectionCodeId::ofRepoIdOrNull))
 					.salesOrderId(filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_C_OrderSO_ID, OrderId::ofRepoIdOrNull))
 					.dateAcctGreaterOrEqualsTo(filter.getParameterValueAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
 					.dateAcctLessOrEqualsTo(filter.getParameterValueToAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
@@ -273,7 +268,6 @@ class OIViewDataService
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))
 				.documentNo(record.getDocumentNo())
 				.description(record.getDescription())
-				.sectionCode(sectionCodeLookup.findById(record.getM_SectionCode_ID()))
 				.userElementString1(record.getUserElementString1())
 				.openItemKey(openItemKey)
 				.dimension(IFactAcctBL.extractDimension(record))

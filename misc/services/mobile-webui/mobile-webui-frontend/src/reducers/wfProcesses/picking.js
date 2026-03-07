@@ -182,11 +182,12 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isLineLevelPickTarget = fromPickingJob.lineLevelPickTarget;
   draftActivityDataStored.luPickingTarget = fromPickingJob.luPickingTarget;
   draftActivityDataStored.tuPickingTarget = fromPickingJob.tuPickingTarget;
-  draftActivityDataStored.isPickWithNewLU = fromPickingJob.pickWithNewLU;
-  draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
+  draftActivityDataStored.allowedPickToStructures = fromPickingJob.allowedPickToStructures;
+  draftActivityDataStored.readAttributes = fromPickingJob.readAttributes ?? [];
   draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
   draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
+  draftActivityDataStored.isCompleteJobAutomatically = fromPickingJob.completeJobAutomatically;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //

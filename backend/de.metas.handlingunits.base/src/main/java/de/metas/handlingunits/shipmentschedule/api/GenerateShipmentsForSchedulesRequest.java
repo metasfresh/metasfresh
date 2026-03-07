@@ -25,17 +25,20 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 @Value
 @Builder
 public class GenerateShipmentsForSchedulesRequest
 {
 	@NonNull M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
-	@Nullable ImmutableSet<ShipmentScheduleId> scheduleIds;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	/**
@@ -56,4 +59,13 @@ public class GenerateShipmentsForSchedulesRequest
 	 * @see ShipmentService#generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest)
 	 */
 	@Builder.Default boolean waitForShipments = true;
+
+	@SuppressWarnings("unused")
+	public static class GenerateShipmentsForSchedulesRequestBuilder
+	{
+		public GenerateShipmentsForSchedulesRequestBuilder shipmentScheduleIds(@Nullable final Collection<ShipmentScheduleId> shipmentScheduleIds)
+		{
+			return scheduleIds(shipmentScheduleIds != null ? ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds) : null);
+		}
+	}
 }

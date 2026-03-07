@@ -56,7 +56,7 @@ import de.metas.util.Services;
 	{
 		super(
 				attributeStorage,
-				Services.get(IAttributeDAO.class).getAttributeById(attributeInstance.getM_Attribute_ID()));
+				Services.get(IAttributeDAO.class).getAttributeRecordById(attributeInstance.getM_Attribute_ID()));
 
 		this.attributeInstance = attributeInstance;
 	}

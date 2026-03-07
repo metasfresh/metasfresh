@@ -22,6 +22,9 @@
 
 package de.metas.common;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public abstract class MeasurableRequest
 {
 	public abstract int getSize();

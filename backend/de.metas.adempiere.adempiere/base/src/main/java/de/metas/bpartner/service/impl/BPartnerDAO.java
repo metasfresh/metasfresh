@@ -124,6 +124,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -141,6 +142,8 @@ public class BPartnerDAO implements IBPartnerDAO
 			.build();
 
 	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
+	public static final AdMessageKey MSG_BPARTNER_VALUE_NOT_UNIQUE = AdMessageKey.of("BPartner_Value_NotUnique");
+	public static final AdMessageKey MSG_BPARTNER_VALUE_NOT_UNIQUE_REST = AdMessageKey.of("BPartner_Value_NotUnique_REST");
 
 	@Override
 	public void save(@NonNull final I_C_BPartner bpartner)
@@ -573,6 +576,27 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveBPartnerLocations(bpartnerId, false);
 	}
 
+	@Cached(cacheName = I_C_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+	public ImmutableList<I_C_Location> retrieveLocations(@NonNull final BPartnerLocationId bpartnerLocationId, final boolean includeInactive)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationId);
+
+		if (!includeInactive)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
+
+		return queryBuilder
+				.andCollect(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, I_C_Location.class)
+				.create()
+				.listImmutable(I_C_Location.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
 	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId, final boolean includeInactive)
@@ -833,43 +857,34 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("No BPartner found for " + bpartnerId);
 		}
 
-		final Integer bpPricingSysId;
-		if (soTrx.isSales())
-		{
-			bpPricingSysId = bPartner.getM_PricingSystem_ID();
-		}
-		else
-		{
-			bpPricingSysId = bPartner.getPO_PricingSystem_ID();
-		}
-
-		if (bpPricingSysId > 0)
+		final PricingSystemId bpPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bPartner.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bPartner.getPO_PricingSystem_ID());
+		if (bpPricingSysId != null)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return PricingSystemId.ofRepoId(bpPricingSysId);
+			return bpPricingSysId;
 		}
 
-		final int bpGroupId = bPartner.getC_BP_Group_ID();
-		if (bpGroupId > 0)
-		{
-			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, I_C_BP_Group.class, trxName);
-			final Integer bpGroupPricingSysId;
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bPartner.getC_BP_Group_ID());
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(bpGroupId), I_C_BP_Group.class, trxName);
+		final PricingSystemId bpGroupPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bpGroup.getPO_PricingSystem_ID());
 
-			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in
-			// PO-Documents.
-			if (soTrx.isSales())
-			{
-				bpGroupPricingSysId = bpGroup.getM_PricingSystem_ID();
-			}
-			else
-			{
-				bpGroupPricingSysId = bpGroup.getPO_PricingSystem_ID();
-			}
+		// metas: end
+		if (bpGroupPricingSysId != null)
+		{
+			logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
+			return bpGroupPricingSysId;
+		}
+		final BPGroupId parentBPGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+		if (parentBPGroupId != null)
+		{
+			final I_C_BP_Group parentBpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(parentBPGroupId), I_C_BP_Group.class, trxName);
+			final PricingSystemId parentBpGroupPricingSystemId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(parentBpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(parentBpGroup.getPO_PricingSystem_ID());
+
 			// metas: end
-			if (bpGroupPricingSysId > 0)
+			if (parentBpGroupPricingSystemId != null)
 			{
-				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", parentBpGroupPricingSystemId, parentBpGroup);
+				return parentBpGroupPricingSystemId;
 			}
 		}
 
@@ -1499,13 +1514,13 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		// ..BPartner code (aka value)
-		if (!isEmpty(query.getBpartnerValue(), true))
+		if (isNotBlank(query.getBpartnerValue()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, query.getBpartnerValue());
 		}
 
 		// ..BPartner Name
-		if (!isEmpty(query.getBpartnerName(), true))
+		if (isNotBlank(query.getBpartnerName()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, query.getBpartnerName());
 		}
@@ -1543,7 +1558,6 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("@NotFound@ @C_BPartner_ID@")
 					.setParameter("query", query);
 		}
-
 		return bpartnerIds;
 	}
 
@@ -1557,6 +1571,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return GLNQuery.builder()
 				.glns(query.getGlns())
+				.glnLookupLabel(query.getGlnLookupLabel())
 				.onlyOrgIds(query.getOnlyOrgIds())
 				.build();
 	}
@@ -1589,8 +1604,75 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
 		}
 
-		final int bpartnerRepoId = queryBuilder.create().firstId();
-		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
+				.listIds(BPartnerId::ofRepoId);
+
+		return disambiguateOrThrow(candidates, query.getBpartnerValue(), query.getIsCustomerFilter(), query.getIsVendorFilter());
+	}
+
+	/**
+	 * Given a list of BPartner candidates, returns the single match or tries to disambiguate using IsCustomer/IsVendor flags.
+	 * Throws a user-friendly error if disambiguation fails (still ambiguous or no match after filtering).
+	 *
+	 * @param lookupKey the Value or Name used for the lookup (for error messages)
+	 */
+	private Optional<BPartnerId> disambiguateOrThrow(
+			@NonNull final ImmutableList<BPartnerId> candidates,
+			@Nullable final String lookupKey,
+			@Nullable final Boolean isCustomerFilter,
+			@Nullable final Boolean isVendorFilter)
+	{
+		if (candidates.isEmpty())
+		{
+			return Optional.empty();
+		}
+		if (candidates.size() == 1)
+		{
+			return Optional.of(candidates.get(0));
+		}
+
+		// Multiple results: try to disambiguate using IsCustomer/IsVendor flags
+		if (isCustomerFilter != null || isVendorFilter != null)
+		{
+			final Optional<BPartnerId> disambiguated = disambiguateByCustomerVendorFlag(candidates, isCustomerFilter, isVendorFilter);
+			if (disambiguated.isPresent())
+			{
+				return disambiguated;
+			}
+		}
+
+		// Still ambiguous: throw user-friendly error
+		throw new AdempiereException(MSG_BPARTNER_VALUE_NOT_UNIQUE, lookupKey, candidates.size())
+				.markAsUserValidationError();
+	}
+
+	private Optional<BPartnerId> disambiguateByCustomerVendorFlag(
+			@NonNull final List<BPartnerId> candidates,
+			@Nullable final Boolean isCustomer,
+			@Nullable final Boolean isVendor)
+	{
+		final ImmutableList<BPartnerId> filtered = candidates.stream()
+				.filter(id -> {
+					final I_C_BPartner bp = getById(id);
+					if (isCustomer != null && bp.isCustomer() != isCustomer)
+					{
+						return false;
+					}
+					if (isVendor != null && bp.isVendor() != isVendor)
+					{
+						return false;
+					}
+					return true;
+				})
+				.collect(ImmutableList.toImmutableList());
+
+		if (filtered.size() == 1)
+		{
+			return Optional.of(filtered.get(0));
+		}
+
+		// Still ambiguous or no match
+		return Optional.empty();
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByNameIfExists(@NonNull final BPartnerQuery query)
@@ -1604,9 +1686,10 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
 		}
 
-		final int bpartnerRepoId = queryBuilder.create()
-				.firstId();
-		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
+				.listIds(BPartnerId::ofRepoId);
+
+		return disambiguateOrThrow(candidates, query.getBpartnerName(), query.getIsCustomerFilter(), query.getIsVendorFilter());
 	}
 
 	private <T> IQueryBuilder<T> createQueryBuilder(
@@ -1979,5 +2062,24 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId)
+				.create()
+				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
+	}
+
+	@Override
+	public Optional<ShipperId> getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? ShipperId.optionalOfRepoId(bpLocation.getM_Shipper_ID()) : Optional.empty();
 	}
 }

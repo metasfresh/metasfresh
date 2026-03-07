@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor5
 Feature: Validate default address and contact is considered on invoice based on invoicing params
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -34,9 +38,9 @@ Feature: Validate default address and contact is considered on invoice based on 
       | bpLocation        | 0123456789011 | bpartner_1               | N                   | bpLocation        |
       | bpLocationDefault | 0123456789012 | bpartner_1               | Y                   | bpLocationDefault |
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name             | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
-      | bpContact             | bpContact        | bpartner_1                   | bpLocation                            | N                           |
-      | bpContactDefault      | bpContactDefault | bpartner_1                   | bpLocationDefault                     | Y                           |
+      | Identifier       | Name             | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
+      | bpContact        | bpContact        | bpartner_1                   | bpLocation                            | N                           |
+      | bpContactDefault | bpContactDefault | bpartner_1                   | bpLocationDefault                     | Y                           |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
       | o_1        | false   | bpartner_1               | bpLocation                            | 2022-08-16  | po_ref_mock     | POO             | bpLocation                      | bpContact                   |
@@ -80,7 +84,7 @@ Feature: Validate default address and contact is considered on invoice based on 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.AD_User_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.AD_User_ID.Identifier |
       | invoice_1               | bpartner_1               | bpLocationDefault                 | po_ref_mock     | 30 Tage netto | true      | CO        | bpContactDefault          |
 
   @Id:S0170_110
@@ -100,5 +104,5 @@ Feature: Validate default address and contact is considered on invoice based on 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.AD_User_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.AD_User_ID.Identifier |
       | invoice_1               | bpartner_1               | bpLocation                        | po_ref_mock     | 30 Tage netto | true      | CO        | bpContact                 |

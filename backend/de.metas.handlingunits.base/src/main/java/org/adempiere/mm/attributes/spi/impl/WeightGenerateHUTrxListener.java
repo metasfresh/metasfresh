@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -53,14 +54,16 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 {
 	public static final WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
 
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
 	{
 		//
 		// In case we are adjusting the HU Storage based on Weight attribute,
 		// then we shall not update the WeightNet attribute here again because we will double it. (08728)
-		final Boolean storageAdjustment = huContext.getProperty(IHUContext.PROPERTY_IsStorageAdjustmentFromWeightAttribute);
-		if (storageAdjustment != null && storageAdjustment)
+		final boolean storageAdjustment = huContext.isPropertyTrue(IHUContext.PROPERTY_IsStorageAdjustmentFromWeightAttribute);
+		if (storageAdjustment)
 		{
 			return;
 		}
@@ -127,7 +130,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		//
 		// Get Product's weight
-		final Quantity productWeight = Services.get(IProductBL.class).getNetWeight(product, qtyUOM).orElse(null);
+		final Quantity productWeight = productBL.getGrossWeight(product, qtyUOM).orElse(null);
 		if (productWeight == null || productWeight.signum() <= 0)
 		{
 			return Optional.empty();
@@ -139,6 +142,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		return Optional.of(trxWeightNet);
 	}
 
+	@Nullable
 	private IWeightable getWeightableIfApplies(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
 	{
 		//

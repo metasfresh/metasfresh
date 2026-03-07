@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 Feature: Shipment schedule updating
+## F00105: Shipment Schedule
   Verifies that M_ShipmentSchedule is properly updated on various cases
 
   Background:

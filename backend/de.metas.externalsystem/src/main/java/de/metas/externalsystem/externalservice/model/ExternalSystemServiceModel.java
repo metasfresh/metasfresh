@@ -80,7 +80,7 @@ public class ExternalSystemServiceModel implements IExternalSystemService
 	@Override
 	public String getExternalSystemTypeCode()
 	{
-		return externalSystemType.getCode();
+		return externalSystemType.getValue();
 	}
 
 

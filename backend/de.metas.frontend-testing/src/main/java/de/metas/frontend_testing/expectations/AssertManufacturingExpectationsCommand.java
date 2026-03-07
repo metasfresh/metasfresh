@@ -94,16 +94,37 @@ public class AssertManufacturingExpectationsCommand
 			softlyPutContext("expectation", expectation);
 			softlyPutContext("actual", actual);
 
+			if (expectation.getLu() != null)
+			{
+				final HuId luId = getLuId(actual);
+				context.putSameOrMissingId("lu", expectation.getLu(), luId, HuId.class);
+			}
 			if (expectation.getTu() != null)
 			{
 				final HuId tuId = getTuId(actual);
 				context.putSameOrMissingId("tu", expectation.getTu(), tuId, HuId.class);
 			}
+
 			if (expectation.getQty() != null)
 			{
 				assertThat(getQty(actual)).as("qty").isEqualTo(expectation.getQty().toQuantity());
 			}
 		});
+	}
+
+	private HuId getLuId(final I_PP_Order_Qty record)
+	{
+		final HuId huId = HuId.ofRepoId(record.getM_HU_ID());
+		return getLuId(huId);
+	}
+
+	@Nullable
+	private HuId getLuId(final HuId huId)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = services.handlingUnitsBL;
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(hu);
+		return lu != null ? HuId.ofRepoId(lu.getM_HU_ID()) : null;
 	}
 
 	private HuId getTuId(final I_PP_Order_Qty record)

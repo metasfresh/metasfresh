@@ -1,50 +1,31 @@
 package de.metas.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableMap;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CCacheTest
 {
 	public static class MyUncheckedException extends RuntimeException
 	{
 		private static final long serialVersionUID = 1L;
-	};
+	}
+
+	;
 
 	public static class MyError extends Error
 	{
 		private static final long serialVersionUID = 1L;
-	};
+	}
+
+	;
 
 	@Test
 	public void test_get_LoaderReturnsNull()
@@ -60,38 +41,37 @@ public class CCacheTest
 			}
 		});
 
-		Assert.assertNull(value);
-		Assert.assertFalse("value shall not be cached because supplier returned null", cache.containsKey("key1"));
+		Assertions.assertNull(value);
+		Assertions.assertFalse(cache.containsKey("key1"), "value shall not be cached because supplier returned null");
 	}
 
-	@Test(expected = MyUncheckedException.class)
+	@Test
 	public void test_get_LoaderThrowsUncheckedException()
 	{
 		CCache<String, String> cache = new CCache<String, String>("Test", 10);
-		cache.get("key1", new Supplier<String>()
+		Assertions.assertThrows(MyUncheckedException.class, () -> cache.get("key1", new Supplier<String>()
 		{
-
 			@Override
 			public String get()
 			{
 				throw new MyUncheckedException();
 			}
-		});
+		}));
 	}
 
-	@Test(expected = MyError.class)
+	@Test
 	public void test_get_LoaderThrowsError()
 	{
 		CCache<String, String> cache = new CCache<String, String>("Test", 10);
-		cache.get("key1", new Supplier<String>()
-		{
 
+		Assertions.assertThrows(MyError.class, () -> cache.get("key1", new Supplier<String>()
+		{
 			@Override
 			public String get()
 			{
 				throw new MyError();
 			}
-		});
+		}));
 	}
 
 	@Test
@@ -114,15 +94,15 @@ public class CCacheTest
 	private final <K, V> void testPutGet(final CCache<K, V> cache, final K key, final V value)
 	{
 		cache.put(key, value);
-		Assert.assertFalse("invalid isJustReset", cache.isReset());
+		Assertions.assertFalse(cache.isReset(), "invalid isJustReset");
 
 		// Test "get"
 		final V valueActual = cache.get(key);
-		Assert.assertEquals("Invalid cached value for key=" + key, value, valueActual);
+		Assertions.assertEquals(value, valueActual, "Invalid cached value for key=" + key);
 
 		// Test "containsKey"
 		final boolean containsKeyExpected = value != null;
-		Assert.assertEquals("Cache shall contain key=" + key, containsKeyExpected, cache.containsKey(key));
+		Assertions.assertEquals(containsKeyExpected, cache.containsKey(key), "Cache shall contain key=" + key);
 	}
 
 	private final <K, V> void assertEmpty(final CCache<K, V> cache)
@@ -134,21 +114,21 @@ public class CCacheTest
 	private final <K, V> void assertSize(final CCache<K, V> cache, final int sizeExpected)
 	{
 		final boolean emptyExpected = sizeExpected == 0;
-		Assert.assertEquals("Invalid isEmpty() result", emptyExpected, cache.isEmpty());
-		Assert.assertEquals("Invalid size() result", sizeExpected, cache.size());
+		Assertions.assertEquals(emptyExpected, cache.isEmpty(), "Invalid isEmpty() result");
+		Assertions.assertEquals(sizeExpected, cache.size(), "Invalid size() result");
 
-		Assert.assertEquals("Invalid keySet().isEmpty() result", emptyExpected, cache.keySet().isEmpty());
-		Assert.assertEquals("Invalid keySet().size() result", sizeExpected, cache.keySet().size());
+		Assertions.assertEquals(emptyExpected, cache.keySet().isEmpty(), "Invalid keySet().isEmpty() result");
+		Assertions.assertEquals(sizeExpected, cache.keySet().size(), "Invalid keySet().size() result");
 
-		Assert.assertEquals("Invalid values().isEmpty() result", emptyExpected, cache.values().isEmpty());
-		Assert.assertEquals("Invalid values().size() result", sizeExpected, cache.values().size());
+		Assertions.assertEquals(emptyExpected, cache.values().isEmpty(), "Invalid values().isEmpty() result");
+		Assertions.assertEquals(sizeExpected, cache.values().size(), "Invalid values().size() result");
 	}
 
 	@Test
 	public void test_IsEmpty()
 	{
 		final CCache<String, String> cache = new CCache<String, String>("Test", 10);
-		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
+		Assertions.assertEquals(true, cache.isReset(), "invalid isJustReset");
 		assertEmpty(cache);
 
 		// Add one element and test
@@ -165,14 +145,14 @@ public class CCacheTest
 
 		cache.reset();
 		assertEmpty(cache);
-		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
+		Assertions.assertEquals(true, cache.isReset(), "invalid isJustReset");
 	}
 
 	@Test
 	public void test_removeKey()
 	{
 		final CCache<String, String> cache = new CCache<String, String>("Test", 10);
-		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
+		Assertions.assertEquals(true, cache.isReset(), "invalid isJustReset");
 		assertEmpty(cache);
 
 		// Add one element and test
@@ -185,7 +165,7 @@ public class CCacheTest
 
 		// Remove the element and test
 		cache.remove("key1");
-		Assert.assertEquals("invalid isJustReset. We expect false because we just removed from cache.", false, cache.isReset());
+		Assertions.assertEquals(false, cache.isReset(), "invalid isJustReset. We expect false because we just removed from cache.");
 		assertEmpty(cache);
 	}
 
@@ -193,7 +173,7 @@ public class CCacheTest
 	public void test_clear()
 	{
 		final CCache<String, String> cache = new CCache<String, String>("Test", 10);
-		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
+		Assertions.assertEquals(true, cache.isReset(), "invalid isJustReset");
 		assertEmpty(cache);
 
 		// Add one element and test
@@ -202,14 +182,14 @@ public class CCacheTest
 
 		// Clear
 		cache.reset();
-		Assert.assertEquals("invalid isJustReset", true, cache.isReset());
+		Assertions.assertEquals(true, cache.isReset(), "invalid isJustReset");
 		assertEmpty(cache);
 	}
 
 	@Test
 	public void test_putAll()
 	{
-		final Map<String, String> valuesToPut = ImmutableMap.<String, String> builder()
+		final Map<String, String> valuesToPut = ImmutableMap.<String, String>builder()
 				.put("key1", "value1")
 				.put("key2", "value2")
 				.build();
@@ -220,13 +200,13 @@ public class CCacheTest
 		cache.putAll(valuesToPut);
 		assertSize(cache, valuesToPut.size());
 
-		Assert.assertEquals("Value shall exist", "value1", cache.get("key1"));
-		Assert.assertEquals("Value shall exist", "value2", cache.get("key2"));
+		Assertions.assertEquals("value1", cache.get("key1"), "Value shall exist");
+		Assertions.assertEquals("value2", cache.get("key2"), "Value shall exist");
 
 		//
 		// Test putAll shall override existing value
 		cache.putAll(Collections.singletonMap("key1", "value1_newValue"));
-		Assert.assertEquals("Value shall exist", "value1_newValue", cache.get("key1"));
+		Assertions.assertEquals("value1_newValue", cache.get("key1"), "Value shall exist");
 	}
 
 	@Test
@@ -234,7 +214,7 @@ public class CCacheTest
 	{
 		final HashMap<String, String> removedItems = new HashMap<>();
 
-		final CCache<String, String> cache = CCache.<String, String> builder()
+		final CCache<String, String> cache = CCache.<String, String>builder()
 				.removalListener(removedItems::put)
 				.build();
 

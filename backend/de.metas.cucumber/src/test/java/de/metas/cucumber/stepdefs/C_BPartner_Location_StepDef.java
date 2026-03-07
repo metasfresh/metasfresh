@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
@@ -35,6 +36,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
@@ -52,6 +54,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
+@RequiredArgsConstructor
 public class C_BPartner_Location_StepDef
 {
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -59,19 +62,11 @@ public class C_BPartner_Location_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
 
+	private final TestContext restTestContext;
+
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public C_BPartner_Location_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Location_StepDefData locationTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.locationTable = locationTable;
-	}
 
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
@@ -129,6 +124,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setIsShipTo(isShipTo);
 
 		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).ifPresent(bPartnerLocationRecord::setIsBillToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsRemitTo).ifPresent(bPartnerLocationRecord::setIsRemitTo);
 
 		final boolean isBillTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillTo).orElse(bPartnerLocationRecord.isBillToDefault());
 		bPartnerLocationRecord.setIsBillTo(isBillTo);
@@ -147,9 +143,17 @@ public class C_BPartner_Location_StepDef
 			final CountryId countryId = tableRow.getAsOptionalString("C_Country_ID")
 					.map(countryDAO::getCountryIdByCountryCode)
 					.orElse(StepDefConstants.COUNTRY_ID);
-			
+
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(countryId.getRepoId());
+
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_City).ifPresent(locationRecord::setCity);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Postal).ifPresent(locationRecord::setPostal);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address1).ifPresent(locationRecord::setAddress1);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address2).ifPresent(locationRecord::setAddress2);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address3).ifPresent(locationRecord::setAddress3);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address4).ifPresent(locationRecord::setAddress4);
+
 			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
@@ -187,8 +191,10 @@ public class C_BPartner_Location_StepDef
 
 		saveRecord(bPartnerLocationRecord);
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+		tableRow.getAsOptionalIdentifier("REST.Context.C_BPartner_Location_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerLocationRecord.getC_BPartner_Location_ID()));
+
+		bPartnerLocationTable.putOrReplace(tableRow.getAsIdentifier(), bPartnerLocationRecord);
 	}
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)

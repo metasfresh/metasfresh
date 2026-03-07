@@ -1,12 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import java.io.IOException;
-
-import org.junit.Assert;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.NonNull;
+import org.junit.jupiter.api.Assertions;
+
+import java.io.IOException;
 
 /*
  * #%L
@@ -53,7 +51,7 @@ public class JSONTestHelper
 
 		final String json = jsonObjectMapper.writeValueAsString(obj);
 		final Object obj2 = jsonObjectMapper.readValue(json, type);
-		Assert.assertEquals(obj, obj2);
+		Assertions.assertEquals(obj, obj2);
 	}
 
 }

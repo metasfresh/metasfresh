@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -44,20 +44,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Similar to {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but only the first InOut has two lines (one of them has <code>IsInDispute=Y</code>) <strike>and the iols of the two inOuts have
@@ -67,10 +63,9 @@ import static org.junit.Assert.assertThat;
  * <p>
  *
  * @author ts
- *
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TwoReceiptsOneInvoice_QualityDiscount2_Tests extends AbstractNewAggregationEngineTests
 {
@@ -97,6 +92,7 @@ public class TwoReceiptsOneInvoice_QualityDiscount2_Tests extends AbstractNewAgg
 	/** {@link IInvoiceLineAttribute}s expectations for all lines which are coming from {@link #inOut2} */
 	protected InvoiceLineAttributeExpectations<Object> ic_inout2_attributeExpectations;
 
+	@BeforeEach
 	@Override
 	public void init()
 	{
@@ -198,51 +194,50 @@ public class TwoReceiptsOneInvoice_QualityDiscount2_Tests extends AbstractNewAgg
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 
 		final IInvoiceHeader invoice1 = invoices.remove(0);
 
 		//
 		// guard
-		assertThat(invoice1.isSOTrx(), is(false));
+		assertThat(invoice1.isSOTrx()).isFalse();
 
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-		assertEquals("We are expecting two invoice lines: " + invoiceLines1, 2, invoiceLines1.size()); // because we have a document-relevant att with different values
-
+		assertThat(invoiceLines1).as("We are expecting two invoice lines: " + invoiceLines1).hasSize(2); // because we have a document-relevant att with different values
 		//
 		// expecting one line with the qty of the non-in-dispute iol icIol11
 		{
 			final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
-			assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
-			assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-			assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
+			assertThat(il1).as("Missing IInvoiceLineRW for iol11=" + iol11_three).isNotNull();
+			assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(THREE);
+			assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(THIRTY);
 
 			// Validate invoice line attributes
 			ic_inout1_attributeExpectations.assertExpected("invalid il1 attribute", il1.getInvoiceLineAttributes());
 
 			final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
-			assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-			assertThat(icIol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
+			assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal()).isEqualByComparingTo(THREE);
+			assertThat(icIol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(THIRTY);
 		}
 
 		//
 		// expecting one line with the qty of the non-in-dispute iol icIol11
 		{
 			final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol21_ten);
-			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21_ten, il2);
-			assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-			assertThat(il2.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
+			assertThat(il2).as("Missing IInvoiceLineRW for iol21=" + iol21_ten).isNotNull();
+			assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+			assertThat(il2.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(HUNDRET);
 
 			// Validate invoice line attributes
 			ic_inout2_attributeExpectations.assertExpected("invalid il2 attribute", il2.getInvoiceLineAttributes());
 
 			final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il2, iol21_ten);
-			assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-			assertThat(icIol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
+			assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+			assertThat(icIol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(HUNDRET);
 		}
 
 		//
 		// checking the in-dispute-iol
-		assertNull("Unexpected IInvoiceLineRW for iol12=" + iol12_five_disp, getSingleForInOutLine(invoiceLines1, iol12_five_disp));
+		assertThat(getSingleForInOutLine(invoiceLines1, iol12_five_disp)).as("Unexpected IInvoiceLineRW for iol12=" + iol12_five_disp).isNull();
 	}
 }

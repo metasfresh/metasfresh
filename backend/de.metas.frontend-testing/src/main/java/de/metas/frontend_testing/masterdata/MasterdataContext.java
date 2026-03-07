@@ -1,5 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -9,11 +12,16 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -23,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
@@ -53,7 +62,7 @@ public class MasterdataContext
 	{
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(id.getClass(), identifier);
 		final RepoIdAware prevId = identifiers.get(typeAndIdentifier);
-		if (prevId != null)
+		if (prevId != null && !RepoIdAwares.equals(prevId, id))
 		{
 			throw new IllegalArgumentException("Identifier already exists: " + typeAndIdentifier
 					+ "\n prevId=" + prevId
@@ -61,6 +70,24 @@ public class MasterdataContext
 		}
 
 		identifiers.put(typeAndIdentifier, id);
+	}
+
+	public <T extends RepoIdAware> void putIdentifierIfAbsent(@NonNull final Identifier identifier, @NonNull final T id)
+	{
+		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(id.getClass(), identifier);
+		if (identifiers.containsKey(typeAndIdentifier))
+		{
+			return;
+		}
+
+		identifiers.put(typeAndIdentifier, id);
+	}
+
+	public <T extends RepoIdAware> ImmutableSet<T> getIds(@NonNull final Set<Identifier> identifiers, final Class<T> idClass)
+	{
+		return identifiers.stream()
+				.map(identifier -> this.getId(identifier, idClass))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)
@@ -80,6 +107,58 @@ public class MasterdataContext
 		//noinspection unchecked
 		final T id = (T)identifiers.get(typeAndIdentifier);
 		return Optional.ofNullable(id);
+	}
+
+	/**
+	 * Suffix used when registering a BPartner's single default location.
+	 * When a BPartner is created without explicit locations, a default location
+	 * is created and registered with this suffix appended to the BPartner identifier.
+	 *
+	 * @see de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand
+	 */
+	public static final String SINGLE_BP_LOCATION_SUFFIX = "_singleBPLocationI";
+
+	/**
+	 * Resolves a BPartnerLocationId by identifier, with automatic fallback to the
+	 * {@code _singleBPLocationI} suffix for BPartners that have a single default location.
+	 * <p>
+	 * When a BPartner is created without explicit locations, a default location is created
+	 * and registered with the identifier {@code <bpIdentifier>_singleBPLocationI}.
+	 * This method handles that pattern transparently.
+	 *
+	 * @param identifier the identifier to resolve (can be either a direct BPartnerLocationId
+	 *                   identifier or a BPartnerId identifier that has a single default location)
+	 * @return the resolved BPartnerLocationId, or empty if not found
+	 */
+	public Optional<BPartnerLocationId> getOptionalBPartnerLocationId(@NonNull final Identifier identifier)
+	{
+		// Try direct lookup first
+		final Optional<BPartnerLocationId> directLookup = getOptionalId(identifier, BPartnerLocationId.class);
+		if (directLookup.isPresent())
+		{
+			return directLookup;
+		}
+
+		// Fallback: try with _singleBPLocationI suffix (for single-location BPartners)
+		return getOptionalId(
+				Identifier.ofString(identifier.getAsString() + SINGLE_BP_LOCATION_SUFFIX),
+				BPartnerLocationId.class);
+	}
+
+	/**
+	 * Resolves a BPartnerLocationId by identifier, throwing if not found.
+	 *
+	 * @param identifier the identifier to resolve
+	 * @return the resolved BPartnerLocationId
+	 * @throws IllegalArgumentException if no BPartnerLocationId is found for the identifier
+	 * @see #getOptionalBPartnerLocationId(Identifier)
+	 */
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final Identifier identifier)
+	{
+		return getOptionalBPartnerLocationId(identifier)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"No BPartnerLocationId found for identifier: " + identifier
+								+ " (also tried: " + identifier.getAsString() + SINGLE_BP_LOCATION_SUFFIX + ")"));
 	}
 
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
@@ -183,9 +262,74 @@ public class MasterdataContext
 	{
 		final HashMap<String, Object> result = new HashMap<>();
 
-		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.getIdentifier().getAsString(), id.getRepoId()));
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.toJsonString(), convertIdToJson(id)));
 
 		return result;
+	}
+
+	public void putFromJson(@Nullable Map<String, Object> json)
+	{
+		if (json == null || json.isEmpty())
+		{
+			return;
+		}
+
+		json.forEach((key, value) -> {
+			final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.ofJsonString(key);
+			final RepoIdAware id = convertJsonToId(value, typeAndIdentifier.getType());
+			putIdentifier(typeAndIdentifier.getIdentifier(), id);
+		});
+	}
+
+	private static Object convertIdToJson(@Nullable RepoIdAware id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+		else if (id instanceof LocatorId)
+		{
+			return ((LocatorId)id).toJson();
+		}
+		else if (id instanceof BPartnerLocationId)
+		{
+			final BPartnerLocationId bpLocationId = (BPartnerLocationId)id;
+			return bpLocationId.getBpartnerId().getRepoId() + "_" + bpLocationId.getRepoId();
+		}
+		else
+		{
+			return id.getRepoId();
+		}
+	}
+
+	@NonNull
+	private static RepoIdAware convertJsonToId(@Nullable Object json, @NonNull final Class<? extends RepoIdAware> type)
+	{
+		if (Check.isEmpty(json))
+		{
+			throw new AdempiereException("Empty identifier not allowed: " + type);
+		}
+
+		try
+		{
+			if (type.isAssignableFrom(LocatorId.class))
+			{
+				return LocatorId.fromJson(json.toString());
+			}
+			else if (type.isAssignableFrom(BPartnerLocationId.class))
+			{
+				final String[] parts = json.toString().split("_");
+				return BPartnerLocationId.ofRepoId(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+			}
+			else
+			{
+				return RepoIdAwares.ofObject(json, type);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + json + "` to " + type);
+		}
 	}
 
 	public <T extends RepoIdAware> String describeId(@Nullable final T id)
@@ -228,6 +372,35 @@ public class MasterdataContext
 		public boolean isTypeMatch(@NonNull final Class<? extends RepoIdAware> type)
 		{
 			return this.type.equals(type);
+		}
+
+		@NonNull
+		@JsonCreator
+		public static TypeAndIdentifier ofJsonString(@NonNull final String json)
+		{
+			final int idx = json.indexOf(":");
+			if (idx <= 0)
+			{
+				throw new IllegalArgumentException("Invalid json string: " + json);
+			}
+
+			try
+			{
+				final String className = json.substring(0, idx);
+				final Identifier identifier = Identifier.ofString(json.substring(idx + 1));
+				final Class<? extends RepoIdAware> type = Util.loadClass(RepoIdAware.class, className);
+				return of(type, identifier);
+			}
+			catch (Exception ex)
+			{
+				throw new IllegalArgumentException("Invalid json string: " + json, ex);
+			}
+		}
+
+		@JsonValue
+		public String toJsonString()
+		{
+			return type.getName() + ":" + identifier.getAsString();
 		}
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.banking.service;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
@@ -69,7 +70,13 @@ public interface IBankStatementBL extends ISingletonService
 
 	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
+	void markAsReconciledWithGLJournalLine(
+			@NonNull BankStatementLineId lineId,
+			@NonNull SAPGLJournalLineId glJournalLineId);
+
 	void assertBankStatementIsDraftOrInProcessOrCompleted(I_C_BankStatement bankStatement);
+
+	void unreconcile(@NonNull BankStatementLineId bankStatementLineId);
 
 	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
 

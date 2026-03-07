@@ -22,16 +22,16 @@ public class TestMailCommand
 	public void execute()
 	{
 		final ILoggable loggable = request.getLoggable() != null ? request.getLoggable() : Loggables.getLoggableOrLogger(logger, Level.INFO);
-		
+
 		mailService.sendEMail(EMailRequest.builder()
 				.debugLoggable(loggable)
-				.mailboxQuery(MailboxQuery.builder()
+				.mailbox(mailService.findMailbox(MailboxQuery.builder()
 						.clientId(request.getClientId())
 						.orgId(request.getOrgId())
 						.adProcessId(request.getProcessId())
 						.customType(request.getEmailCustomType())
 						.fromUserId(request.getFromUserId())
-						.build())
+						.build()))
 				.to(request.getMailTo())
 				.subject(request.getSubject())
 				.message(request.getMessage())

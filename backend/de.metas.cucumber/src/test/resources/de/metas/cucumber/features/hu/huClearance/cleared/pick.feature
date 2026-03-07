@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -65,8 +69,8 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | location_1 | 0442283371291 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -103,8 +107,8 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | location_1 | 0120087122881 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -134,3 +138,17 @@ Feature: Cleared HU can be picked on the fly and manually picked
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.ClearanceStatus | OPT.ClearanceNote |
       | createdCU          | packingVersionCU              | S        | locatorHauptlager           | C                   | Cleared HU        |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_2                            | P            | true                | false       |
+
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_2                            | s_1_09242025          |
+
+    And the shipment identified by s_1_09242025 is reversed
+
+    And after not more than 120s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed |
+      | s_s_2                            | false        | false         |
