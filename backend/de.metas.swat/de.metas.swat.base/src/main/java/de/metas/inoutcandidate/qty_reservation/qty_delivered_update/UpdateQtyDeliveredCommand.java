@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.qty_reservation.commands;
+package de.metas.inoutcandidate.qty_reservation.qty_delivered_update;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutBL;
@@ -20,29 +20,29 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class QtyDeliveredAllocateCommand
+class UpdateQtyDeliveredCommand
 {
 	// services
 	@NonNull private final QtyReservationRepository qtyReservationRepository;
 	@NonNull private final IInOutBL inOutBL;
 
 	// params
-	@NonNull private final InOutId triggeringShipmentLineId;
+	@NonNull private final InOutId triggeringShipmentId;
 
 	// state
 	private ImmutableSet<OrderLineId> _orderLineIds;
 	private HashMap<OrderLineId, MixedQuantity> _remainingQtyDeliveredByOrderLineId;
 
 	@Builder
-	private QtyDeliveredAllocateCommand(
+	private UpdateQtyDeliveredCommand(
 			@NonNull final QtyReservationRepository qtyReservationRepository,
 			@NonNull final IInOutBL inOutBL,
 			//
-			@NonNull final InOutId triggeringShipmentLineId)
+			@NonNull final UpdateQtyDeliveredRequest request)
 	{
 		this.qtyReservationRepository = qtyReservationRepository;
 		this.inOutBL = inOutBL;
-		this.triggeringShipmentLineId = triggeringShipmentLineId;
+		this.triggeringShipmentId = request.getShipmentId();
 	}
 
 	public void execute()
@@ -79,9 +79,9 @@ public class QtyDeliveredAllocateCommand
 	{
 		if (_orderLineIds == null)
 		{
-			_orderLineIds = inOutBL.getLines(triggeringShipmentLineId)
+			_orderLineIds = inOutBL.getLines(triggeringShipmentId)
 					.stream()
-					.map(QtyDeliveredAllocateCommand::extractSalesOrderLineIdOrNull)
+					.map(UpdateQtyDeliveredCommand::extractSalesOrderLineIdOrNull)
 					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 		}
@@ -104,7 +104,7 @@ public class QtyDeliveredAllocateCommand
 				.filter(I_M_InOutLine::isProcessed)
 				.filter(shipmentLine -> extractSalesOrderLineIdOrNull(shipmentLine) != null)
 				.collect(Collectors.groupingBy(
-						QtyDeliveredAllocateCommand::extractSalesOrderLineId,
+						UpdateQtyDeliveredCommand::extractSalesOrderLineId,
 						MixedQuantity.collectAndSum(inOutBL::getMovementQty)));
 	}
 

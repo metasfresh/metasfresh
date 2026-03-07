@@ -121,6 +121,6 @@ public class M_InOut_Shipment
 	{
 		if (!inoutRecord.isSOTrx()) {return;}
 
-		qtyReservationService.updateQtyDeliveredFromShipment(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
+		qtyReservationService.scheduleUpdateQtyDelivered(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
 	}
 }
