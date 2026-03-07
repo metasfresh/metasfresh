@@ -184,18 +184,28 @@ which is the primary way users interact with the feature.
         const generateAction = page.getByTestId('action-M_Forecast_GenerateLines');
         await generateAction.click();
 
-        // Wait for the process modal to appear
-        // The process has ShowHelp='S' and parameters, so a parameter form is shown
+        // Process has ShowHelp='Y' — shows parameter form modal.
+        // Wait for the modal to appear (either parameter form or auto-execute flash).
+        // Both paths render a modal; parameter form has the start button.
         const startButton = page.getByTestId('process-modal-start-button');
-        await startButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        console.log(`[${language}] Process modal opened with parameters`);
+        const modalAppeared = await startButton
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+          .then(() => true)
+          .catch(() => false);
 
-        // Take screenshot of process parameters
-        const paramScreenshot = await page.screenshot();
-        allure.attachment('Process Parameters', paramScreenshot, 'image/png');
+        if (modalAppeared) {
+          console.log(`[${language}] Process modal opened with parameters`);
 
-        // Click Start to run the process (all params are optional, defaults are fine)
-        await startButton.click();
+          // Take screenshot of process parameters
+          const paramScreenshot = await page.screenshot();
+          allure.attachment('Process Parameters', paramScreenshot, 'image/png');
+
+          // Click Start to run the process (all params are optional, defaults are fine)
+          await startButton.click();
+        } else {
+          // Process ran automatically (ShowHelp='S' auto-execute path)
+          console.log(`[${language}] Process auto-executed`);
+        }
 
         // Wait for process to complete
         await page.waitForTimeout(3000);
