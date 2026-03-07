@@ -3,7 +3,7 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.time.Instant;
 @Builder
 public class CreateQtyReservationRequest
 {
-	@NonNull OrderLineId orderLineId;
+	@NonNull OrderAndLineId orderAndLineId;
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
 	@Nullable BPartnerId vendorBPartnerId;

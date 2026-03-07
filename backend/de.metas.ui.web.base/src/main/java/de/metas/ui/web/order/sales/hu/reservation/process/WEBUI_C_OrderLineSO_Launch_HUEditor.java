@@ -6,6 +6,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
@@ -231,8 +232,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	private MaterialCockpitViewContext createMaterialCockpitViewContext()
 	{
 		return MaterialCockpitViewContext.builder()
-				.salesOrderId(getOrderId())
-				.salesOrderLineId(getSingleOrderLineId())
+				.salesOrderAndLineId(OrderAndLineId.of(getOrderId(), getSingleOrderLineId()))
 				.build();
 	}
 }

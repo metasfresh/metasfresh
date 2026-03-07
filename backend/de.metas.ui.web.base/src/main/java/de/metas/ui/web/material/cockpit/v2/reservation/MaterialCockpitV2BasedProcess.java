@@ -2,7 +2,7 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.ui.web.order.sales.hu.reservation.process.MaterialCockpitSalesOrderLine;
 import de.metas.ui.web.order.sales.hu.reservation.process.MaterialCockpitViewContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -29,15 +29,15 @@ public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemp
 
 	private MaterialCockpitSalesOrderLine retrieveSalesOrderLine()
 	{
-		final OrderLineId salesOrderLineId = getSalesOrderLineId();
+		final OrderAndLineId salesOrderLineId = getSalesOrderAndLineId();
 		I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(salesOrderLineId, I_C_OrderLine.class);
 		return MaterialCockpitSalesOrderLine.of(orderLineRecord);
 	}
 
 	@NonNull
-	protected final OrderLineId getSalesOrderLineId()
+	protected final OrderAndLineId getSalesOrderAndLineId()
 	{
-		return getMaterialCockpitViewContext().getSalesOrderLineId();
+		return getMaterialCockpitViewContext().getSalesOrderAndLineId();
 	}
 
 	protected final MaterialCockpitViewContext getMaterialCockpitViewContext()

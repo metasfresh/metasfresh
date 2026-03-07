@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -12,7 +13,7 @@ import java.time.Instant;
 @Builder
 public class DeleteQtyReservationRequest
 {
-	@NonNull OrderLineId orderLineId;
+	@NonNull OrderAndLineId orderAndLineId;
 	@NonNull SupplyType supplyType;
 	@Nullable Instant datePromised;
 }

@@ -1,7 +1,7 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.QtyTU;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -25,7 +25,8 @@ public class QtyReservationRepository
 	public void createReservation(@NonNull final CreateQtyReservationRequest request)
 	{
 		final I_M_QtyReservation record = newInstance(I_M_QtyReservation.class);
-		record.setC_OrderLine_ID(request.getOrderLineId().getRepoId());
+		record.setC_Order_ID(request.getOrderAndLineId().getOrderRepoId());
+		record.setC_OrderLine_ID(request.getOrderAndLineId().getOrderLineRepoId());
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		if (request.getVendorBPartnerId() != null)
@@ -58,7 +59,7 @@ public class QtyReservationRepository
 
 	private IQueryBuilder<I_M_QtyReservation> toSqlQuery(@NonNull final DeleteQtyReservationRequest request)
 	{
-		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(request.getOrderLineId())
+		final IQueryBuilder<I_M_QtyReservation> sqlQueryBuilder = queryNotProcessedByOrderLine(request.getOrderAndLineId())
 				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_SupplyType, request.getSupplyType().getCode());
 
 		if (request.getDatePromised() != null)
@@ -69,17 +70,18 @@ public class QtyReservationRepository
 		return sqlQueryBuilder;
 	}
 
-	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)
+	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
 	{
 		return getReservedQtyTU(queryNotProcessedByOrderLine(orderLineId));
 	}
 
-	private IQueryBuilder<I_M_QtyReservation> queryNotProcessedByOrderLine(final @NotNull OrderLineId orderLineId)
+	private IQueryBuilder<I_M_QtyReservation> queryNotProcessedByOrderLine(final @NotNull OrderAndLineId orderAndLineId)
 	{
 		return queryBL.createQueryBuilder(I_M_QtyReservation.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId);
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_Order_ID, orderAndLineId.getOrderId())
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderAndLineId.getOrderLineId());
 	}
 
 	private static QtyTU getReservedQtyTU(@NonNull final IQueryBuilder<I_M_QtyReservation> queryBuilder)

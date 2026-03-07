@@ -71,7 +71,7 @@ public class MD_CockpitV2_DeleteQtyReservation
 
 		return ExplainedOptional.of(
 				DeleteQtyReservationRequest.builder()
-						.orderLineId(getSalesOrderLineId())
+						.orderAndLineId(getSalesOrderAndLineId())
 						.supplyType(rowVO.getSupplyType())
 						.datePromised(rowVO.getSupplyType().isPlannedSupply() ? rowVO.getDatePromised() : null)
 						.build()

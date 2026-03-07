@@ -87,7 +87,7 @@ public class MD_CockpitV2_MakeQtyReservation
 		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
 		qtyReservationService.makeReservation(
 				CreateQtyReservationRequest.builder()
-						.orderLineId(getSalesOrderLineId())
+						.orderAndLineId(getSalesOrderAndLineId())
 						.productId(rowVO.getProductId())
 						.warehouseId(rowVO.getWarehouseId())
 						.supplyType(rowVO.getSupplyType())
