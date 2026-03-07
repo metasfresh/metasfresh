@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -160,6 +161,7 @@ public class ForecastLineGeneratorService
 			result.add(ProductPlanningForForecast.builder()
 					.productId(productId)
 					.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(warehouseId))
+					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(pp.getM_AttributeSetInstance_ID()))
 					.forecastCalculationMethod(ForecastCalculationMethod.ofNullableCode(pp.getForecast_CalculationMethod()))
 					.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(pp.getForecast_PrecisionUnit()))
 					.forecastFrequency(extractForecastIntOrNull(pp.getForecast_Frequency()))
@@ -238,6 +240,7 @@ public class ForecastLineGeneratorService
 		line.setM_Forecast_ID(forecast.getM_Forecast_ID());
 		line.setM_Product_ID(pp.getProductId().getRepoId());
 		line.setM_Warehouse_ID(pp.getWarehouseId().getRepoId());
+		line.setM_AttributeSetInstance_ID(pp.getAttributeSetInstanceId().getRepoId());
 		line.setQty(qty);
 		line.setQtyCalculated(qty);
 		line.setDatePromised(forecast.getDatePromised());

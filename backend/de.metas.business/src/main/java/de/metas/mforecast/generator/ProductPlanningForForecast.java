@@ -4,6 +4,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -47,6 +48,7 @@ public class ProductPlanningForForecast
 {
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 	/** Which historical period to compare against. {@code null} means "not configured — skip this product". */
 	@Nullable ForecastCalculationMethod forecastCalculationMethod;
