@@ -2261,13 +2261,34 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, compatibility-images ]
     steps:
-      - name: dispatch-workflow
+      - name: dispatch-to-mf15-private-extensions
         env:
           CICD_RUN_ID: ${{ github.run_id }}
           TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
           SOURCE_BRANCH: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.CICD_TRIGGER_DISPATCH }}
-          CICD_DISPATCH_REPO: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).repo }}
-          CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
+        run: |
+          # Dispatch to mf15-private-extensions which will build private libs
+          # and then call me03-gh-automation for context-aware dispatch to customers
+          echo "Dispatching to mf15-private-extensions..."
+          echo "  Version (TAG_FIXED): ${TAG_FIXED}"
+          echo "  CICD Run ID: ${CICD_RUN_ID}"
+          echo "  Branch: ${BRANCH}"
+
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/metasfresh/mf15-private-extensions/dispatches \
+            -f "event_type=update_base_version" \
+            -F "client_payload[version]=${TAG_FIXED}" \
+            -F "client_payload[cicd_run_id]=${CICD_RUN_ID}" \
+            -F "client_payload[ref]=${BRANCH}"
+
+      - name: produce-dispatch-summary
+        env:
+          TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
+          CICD_RUN_ID: ${{ github.run_id }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
