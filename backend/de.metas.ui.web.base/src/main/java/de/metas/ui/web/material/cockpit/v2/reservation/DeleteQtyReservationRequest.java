@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
