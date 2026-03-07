@@ -45,10 +45,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_InOut_Shipment
 {
-	final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	@NonNull private final QtyReservationService qtyReservationService;
 
 	@DocValidate(timings = {

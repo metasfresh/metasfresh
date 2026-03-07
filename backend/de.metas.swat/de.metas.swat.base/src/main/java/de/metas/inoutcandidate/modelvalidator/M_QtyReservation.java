@@ -7,6 +7,7 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -22,10 +23,11 @@ import org.springframework.stereotype.Component;
  */
 @Validator(I_M_QtyReservation.class)
 @Component
+@RequiredArgsConstructor
 public class M_QtyReservation
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_BEFORE_DELETE })
 	public void invalidateShipmentSchedules(@NonNull final I_M_QtyReservation record)
