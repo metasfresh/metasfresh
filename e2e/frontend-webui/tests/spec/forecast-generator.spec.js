@@ -129,8 +129,9 @@ which is the primary way users interact with the feature.
 
       // Step 5: Fill mandatory fields (Name is auto-generated, DatePromised needs to be set)
       await test.step('Set DatePromised field', async () => {
-        // DatePromised is a date widget
-        const dateInput = page.locator('#DatePromised input');
+        // DatePromised is a Date widget — rendered inside a form-group with class form-field-DatePromised
+        // Date widgets do NOT get a #lookup_ prefix (that's only for Lookup widgets)
+        const dateInput = page.locator('.form-field-DatePromised input[type="text"]');
         await dateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await dateInput.click();
         await page.waitForTimeout(300);
