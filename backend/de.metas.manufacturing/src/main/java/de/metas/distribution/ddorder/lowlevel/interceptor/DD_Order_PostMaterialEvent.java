@@ -3,8 +3,13 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfoRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -13,6 +18,8 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.validator.PP_Order;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
@@ -26,16 +33,42 @@ import org.springframework.stereotype.Component;
 public class DD_Order_PostMaterialEvent
 {
 	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final IProductPlanningDAO productPlanningDAO;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
-	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrder)
+	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrderRecord)
 	{
+		final DocStatus newDocStatus = DocStatus.ofCode(ddOrderRecord.getDocStatus());
+
+		final DDOrder ddOrder = loadDDOrderOrNull(ddOrderRecord, newDocStatus);
+
 		materialEventService.enqueueEventAfterNextCommit(
 				DDOrderDocStatusChangedEvent.builder()
-						.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
-						.ddOrderId(ddOrder.getDD_Order_ID())
-						.newDocStatus(DocStatus.ofCode(ddOrder.getDocStatus()))
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrderRecord.getAD_Client_ID(), ddOrderRecord.getAD_Org_ID()))
+						.ddOrderId(ddOrderRecord.getDD_Order_ID())
+						.newDocStatus(newDocStatus)
+						.ddOrder(ddOrder)
 						.build()
 		);
+	}
+
+	@Nullable
+	private DDOrder loadDDOrderOrNull(@NonNull final I_DD_Order ddOrderRecord, @NonNull final DocStatus newDocStatus)
+	{
+		if (!newDocStatus.isCompleted())
+		{
+			return null;
+		}
+
+		return DDOrderLoader.builder()
+				.productPlanningDAO(productPlanningDAO)
+				.distributionNetworkRepository(distributionNetworkRepository)
+				.ddOrderLowLevelService(ddOrderLowLevelService)
+				.replenishInfoRepository(replenishInfoRepository)
+				.build()
+				.load(ddOrderRecord);
 	}
 }

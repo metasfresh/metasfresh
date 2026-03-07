@@ -9,7 +9,6 @@ import de.metas.distribution.ddorder.DDOrderAndLineId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
-import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLoader;
 import de.metas.distribution.event.DDOrderUserNotificationProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -17,21 +16,14 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
-import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -47,7 +39,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -78,8 +69,6 @@ class DDOrderCandidateProcessCommand
 	// services
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
-	@NonNull private final PostMaterialEventService materialEventService;
-	@NonNull private final DDOrderLoader ddOrderLoader;
 	@NonNull private final IOrgDAO orgDAO;
 	@NonNull private final IDocTypeDAO docTypeDAO;
 	@NonNull final IDocumentBL documentBL;
@@ -106,9 +95,6 @@ class DDOrderCandidateProcessCommand
 	private DDOrderCandidateProcessCommand(
 			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
 			@NonNull final DDOrderCandidateService ddOrderCandidateService,
-			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final ReplenishInfoRepository replenishInfoRepository,
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final IDocTypeDAO docTypeDAO,
 			@NonNull final IDocumentBL documentBL,
@@ -122,7 +108,6 @@ class DDOrderCandidateProcessCommand
 	{
 		this.ddOrderLowLevelService = ddOrderLowLevelService;
 		this.ddOrderCandidateService = ddOrderCandidateService;
-		this.materialEventService = materialEventService;
 		this.orgDAO = orgDAO;
 		this.docTypeDAO = docTypeDAO;
 		this.documentBL = documentBL;
@@ -131,12 +116,6 @@ class DDOrderCandidateProcessCommand
 		this.warehouseBL = warehouseBL;
 		this.uomConversionBL = uomConversionBL;
 		this.orderLineBL = orderLineBL;
-		this.ddOrderLoader = DDOrderLoader.builder()
-				.productPlanningDAO(productPlanningDAO)
-				.distributionNetworkRepository(distributionNetworkRepository)
-				.ddOrderLowLevelService(ddOrderLowLevelService)
-				.replenishInfoRepository(replenishInfoRepository)
-				.build();
 
 		this.ddOrderUserNotificationProducer = DDOrderUserNotificationProducer.newInstance();
 		this.aggregationConfig = aggregationConfig;
@@ -193,15 +172,6 @@ class DDOrderCandidateProcessCommand
 		{
 			return;
 		}
-
-		final DDOrderId ddOrderId = DDOrderId.ofRepoId(headerRecord.getDD_Order_ID());
-
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
-				ClientAndOrgId.ofClientAndOrg(headerRecord.getAD_Client_ID(), headerRecord.getAD_Org_ID()),
-				userId,
-				headerAggregate.getKey().getTraceId());
-
-		fireDDOrderCreatedEvent(ddOrderId, eventDescriptor);
 
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -347,24 +317,6 @@ class DDOrderCandidateProcessCommand
 				.collect(DDOrderCandidateAllocList.collect());
 
 		ddOrderCandidateService.saveAndUpdateCandidates(allocations);
-	}
-
-	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId,
-										 @NonNull final EventDescriptor eventDescriptor)
-	{
-		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, eventDescriptor));
-	}
-
-	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
-	{
-		final I_DD_Order ddOrderRecord = ddOrderHeaderRecords.get(ddOrderId);
-		if (ddOrderRecord == null)
-		{
-			throw new AdempiereException("No DDOrder was created for " + ddOrderId);
-		}
-
-		return ddOrderLoader.load(ddOrderRecord, ddOrderLineRecords.get(ddOrderId));
 	}
 
 	//
