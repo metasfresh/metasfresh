@@ -126,11 +126,17 @@ public class ForecastLineGeneratorService
 		for (final I_PP_Product_Planning pp : planningRecords)
 		{
 			final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
+			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+
+			// Skip discontinued products — no point forecasting products that are no longer available
+			if (product.isDiscontinued())
+			{
+				continue;
+			}
 
 			// Check product category filter
 			if (request.getProductCategoryId() != null)
 			{
-				final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 				if (product.getM_Product_Category_ID() != request.getProductCategoryId().getRepoId())
 				{
 					continue;
@@ -138,7 +144,7 @@ public class ForecastLineGeneratorService
 			}
 
 			// Check product category exclusion
-			if (isProductCategoryExcluded(productId))
+			if (isProductCategoryExcluded(product))
 			{
 				continue;
 			}
@@ -163,9 +169,8 @@ public class ForecastLineGeneratorService
 		return result.build();
 	}
 
-	private boolean isProductCategoryExcluded(@NonNull final ProductId productId)
+	private boolean isProductCategoryExcluded(@NonNull final I_M_Product product)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 		final I_M_Product_Category category = InterfaceWrapperHelper.load(product.getM_Product_Category_ID(), I_M_Product_Category.class);
 		if (category == null)
 		{
