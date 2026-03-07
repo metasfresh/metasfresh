@@ -205,6 +205,57 @@ export class AdvancedEdit {
   }
 
   /**
+   * Set a list/dropdown field value inside the Advanced Edit modal.
+   * Clicks the dropdown trigger, waits for options, and selects the matching one.
+   *
+   * @param {string} fieldName - Database column name (e.g., 'C_PromotionCode_ID')
+   * @param {string} optionText - Text of the option to select
+   * @param {Object} options - Optional settings
+   * @param {boolean} options.exactMatch - Require exact text match (default: false)
+   */
+  static async setListField(fieldName, optionText, { exactMatch = false } = {}) {
+    return await test.step(`AdvancedEdit - Set list ${fieldName} to "${optionText}"`, async () => {
+      const page = getPage();
+      const container = this._getFieldContainer(fieldName);
+
+      // Click the dropdown trigger (the container or chevron icon)
+      const dropdownTrigger = container.locator('.input-dropdown, input, [class*="dropdown"]').first();
+      await dropdownTrigger.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await dropdownTrigger.click();
+
+      // Wait for dropdown to appear
+      const dropdown = page.locator('.input-dropdown-list');
+      await dropdown.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Select the matching option
+      if (exactMatch) {
+        await dropdown.locator('.input-dropdown-list-option').getByText(optionText, { exact: true }).first().click();
+      } else {
+        await dropdown.locator('.input-dropdown-list-option').getByText(optionText).first().click();
+      }
+
+      // Wait for dropdown to close
+      await WidgetCommon.waitForDropdownClosed();
+      await page.waitForTimeout(500);
+    });
+  }
+
+  /**
+   * Get the displayed value of a list/dropdown field inside the Advanced Edit modal.
+   *
+   * @param {string} fieldName - Database column name
+   * @returns {Promise<string>} The displayed text value
+   */
+  static async getListFieldValue(fieldName) {
+    return await test.step(`AdvancedEdit - Get list ${fieldName} value`, async () => {
+      const container = this._getFieldContainer(fieldName);
+      const input = container.locator('input').first();
+      await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      return await input.inputValue();
+    });
+  }
+
+  /**
    * Check if a lookup field is readonly inside the Advanced Edit modal.
    *
    * @param {string} fieldName - Database column name

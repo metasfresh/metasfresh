@@ -174,11 +174,11 @@ via the Advanced Edit modal and propagate correctly to invoice candidates.
             expect(promoFieldVisible).toBeTruthy();
             console.log(`[${language}] C_PromotionCode_ID field visible in Advanced Edit`);
 
-            // Set the promotion code using typeahead search
-            await AdvancedEdit.setLookupField('C_PromotionCode_ID', promoValue);
+            // Set the promotion code using dropdown selection
+            await AdvancedEdit.setListField('C_PromotionCode_ID', promoValue);
 
             // Verify the value was set by reading it back
-            const setPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+            const setPromoValue = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
             expect(setPromoValue).toContain(promoValue);
             console.log(`[${language}] C_PromotionCode_ID set to: ${setPromoValue}`);
 
@@ -207,7 +207,7 @@ via the Advanced Edit modal and propagate correctly to invoice candidates.
             // Step 8: Verify promotion code persisted on completed SO via Advanced Edit
             await AdvancedEdit.open();
 
-            const soPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+            const soPromoValue = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
             expect(soPromoValue).toContain(promoValue);
             console.log(`[${language}] SO C_PromotionCode_ID verified after completion: ${soPromoValue}`);
 
@@ -243,7 +243,7 @@ via the Advanced Edit modal and propagate correctly to invoice candidates.
 
                 const icPromoFieldVisible = await AdvancedEdit.isFieldVisible('C_PromotionCode_ID');
                 if (icPromoFieldVisible) {
-                    const icPromoValue = await AdvancedEdit.getLookupFieldValue('C_PromotionCode_ID');
+                    const icPromoValue = await AdvancedEdit.getListFieldValue('C_PromotionCode_ID');
                     expect(icPromoValue).toContain(promoValue);
                     console.log(`[${language}] IC C_PromotionCode_ID verified: ${icPromoValue}`);
                 } else {
