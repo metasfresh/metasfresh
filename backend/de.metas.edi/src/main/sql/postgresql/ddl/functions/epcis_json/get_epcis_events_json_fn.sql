@@ -124,6 +124,7 @@ BEGIN
                                JSONB_BUILD_OBJECT(
                                        'tuGTIN', pi_item.gtin_tu_packingmaterial,
                                        'quantity', pi_item.qtycuspertu,
+                                       'movementqty', pi_item.movementqty,
                                        'productValue', prod.value,
                                        'productNetWeight', prod.weight,
                                        'productGrossWeight', prod.grossweight,
