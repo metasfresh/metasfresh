@@ -6,8 +6,10 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="149"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="846"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -24,8 +26,8 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_id}, $P{doctype}, $P{bp_loc_id}, $P{RECORD_ID} )
+		<![CDATA[SELECT 	r.*, (SELECT value FROM AD_Org WHERE ad_org_id=$P{org_id}) as org_value
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_id}, $P{doctype}, $P{bp_loc_id}, $P{RECORD_ID} )r
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
@@ -80,6 +82,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_i
 		<property name="com.jaspersoft.studio.field.name" value="addressblock"/>
 		<property name="com.jaspersoft.studio.field.label" value="addressblock"/>
 	</field>
+	<field name="org_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_value"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -87,19 +93,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_i
 		<band height="114" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="0" y="16" width="300" height="98" uuid="6622332f-b31d-40fc-add3-777b8f875905">
+				<reportElement x="0" y="16" width="270" height="98" uuid="6622332f-b31d-40fc-add3-777b8f875905">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font fontName="Arial" size="11" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="400" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="270" height="16" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a">
+					<printWhenExpression><![CDATA[$F{org_value}.endsWith( "BB" )]]></printWhenExpression>
+				</reportElement>
 				<textElement>
-					<font fontName="Arial" size="9" isBold="false" isUnderline="true"/>
+					<font fontName="Arial" size="7" isBold="true" isUnderline="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
 			</textField>

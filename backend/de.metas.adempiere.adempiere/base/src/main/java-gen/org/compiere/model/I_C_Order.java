@@ -3037,8 +3037,26 @@ public interface I_C_Order
 	 * <br>Virtual Column: false
 	 */
 	void setPublicProcurementCommitmentNo (@Nullable java.lang.String PublicProcurementCommitmentNo);
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
 
 	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
+
+	/**
+	 * Set Promotion Code 2.
 	 * Get Public Procurement Commitment No..
 	 *
 	 * <br>Type: String
@@ -3053,11 +3071,23 @@ public interface I_C_Order
 	/**
 	 * Set Public Procurement Market No..
 	 *
-	 * <br>Type: String
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setPublicProcurementMarketNo (@Nullable java.lang.String PublicProcurementMarketNo);
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
 
 	/**
 	 * Get Public Procurement Market No..
@@ -3070,6 +3100,10 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_PublicProcurementMarketNo = new ModelColumn<>(I_C_Order.class, "PublicProcurementMarketNo", null);
 	String COLUMNNAME_PublicProcurementMarketNo = "PublicProcurementMarketNo";
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
 
 	/**
 	 * Set Qty without Trading Unit.

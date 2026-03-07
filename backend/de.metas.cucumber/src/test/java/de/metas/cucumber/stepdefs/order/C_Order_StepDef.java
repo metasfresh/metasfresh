@@ -67,6 +67,7 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
