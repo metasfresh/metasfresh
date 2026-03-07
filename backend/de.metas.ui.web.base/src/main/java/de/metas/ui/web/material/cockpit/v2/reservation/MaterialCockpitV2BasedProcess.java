@@ -15,6 +15,7 @@ public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemp
 
 	private MaterialCockpitViewContext _viewContext;
 	private MaterialCockpitSalesOrderLine _salesOrderLine;
+	private MaterialCockpitV2RowVO _singleSelectedRow;
 
 	@NonNull
 	protected final MaterialCockpitSalesOrderLine getSalesOrderLine()
@@ -55,14 +56,10 @@ public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemp
 
 	protected final MaterialCockpitV2RowVO getSingleSelectedMaterialCockpitRow()
 	{
-		return MaterialCockpitV2RowVO.ofViewRow(getSingleSelectedRow());
+		if (_singleSelectedRow == null)
+		{
+			_singleSelectedRow = MaterialCockpitV2RowVO.ofViewRow(getSingleSelectedRow());
+		}
+		return _singleSelectedRow;
 	}
-
-	protected final MaterialCockpitV2RowVO getSingleSelectedMaterialCockpitRowOrNull()
-	{
-		return isSingleSelectedRow()
-				? getSingleSelectedMaterialCockpitRow()
-				: null;
-	}
-
 }

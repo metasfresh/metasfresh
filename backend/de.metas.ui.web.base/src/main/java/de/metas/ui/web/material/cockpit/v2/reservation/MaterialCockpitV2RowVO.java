@@ -14,7 +14,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -66,22 +65,19 @@ public class MaterialCockpitV2RowVO
 	@NonNull
 	private static SupplyType extractSupplyType(@NonNull final IViewRow row)
 	{
-		final Object value = row.getFieldNameAndJsonValues().get(COLUMNNAME_SupplyType);
-		return value instanceof String ? SupplyType.ofNullableCode((String)value) : SupplyType.ON_HAND;
+		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_SupplyType, SupplyType.class);
 	}
 
 	@NonNull
 	private static AvailabilityType extractAvailabilityType(@NonNull final IViewRow row)
 	{
-		final Object value = row.getFieldNameAndJsonValues().get(COLUMNNAME_AvailabilityStatus);
-		return value instanceof String ? AvailabilityType.ofCode((String)value) : AvailabilityType.AVAILABLE;
+		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_AvailabilityStatus, AvailabilityType.class);
 	}
 
 	@Nullable
 	private static Instant extractDatePromised(@NonNull final IViewRow row)
 	{
-		final Object value = row.getFieldNameAndJsonValues().get(COLUMNNAME_DatePromised);
-		return TimeUtil.asInstant(value);
+		return row.getFieldNameAndJsonValues().getAsInstant(COLUMNNAME_DatePromised);
 	}
 
 	@Nullable
@@ -99,6 +95,10 @@ public class MaterialCockpitV2RowVO
 		{
 			final String str = (String)value;
 			return str.isEmpty() ? null : AttributesKey.ofString(str);
+		}
+		else if (value instanceof AttributesKey)
+		{
+			return (AttributesKey)value;
 		}
 		else
 		{
@@ -125,5 +125,12 @@ public class MaterialCockpitV2RowVO
 		return availabilityType == AvailabilityType.AVAILABLE
 				&& qtyTU.isPositive();
 	}
+
+	public boolean isAvailableForUnReservation()
+	{
+		return availabilityType == AvailabilityType.RESERVED
+				&& qtyTU.isPositive();
+	}
+
 }
 

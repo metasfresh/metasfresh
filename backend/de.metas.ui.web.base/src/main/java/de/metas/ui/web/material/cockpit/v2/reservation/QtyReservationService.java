@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,14 +25,14 @@ public class QtyReservationService
 		repository.createReservation(request);
 	}
 
-	public void deleteReservation(@NonNull final QtyReservationId reservationId)
+	public void deleteReservation(@NonNull final DeleteQtyReservationRequest request)
 	{
-		repository.deleteById(reservationId);
+		repository.deleteReservation(request);
 	}
 
-	public void deleteReservationsForOrderLine(@NonNull final OrderLineId orderLineId)
+	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
 	{
-		repository.deleteByOrderLineId(orderLineId);
+		return repository.getReservedQtyTU(request);
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)

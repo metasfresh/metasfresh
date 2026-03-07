@@ -1,28 +1,35 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public enum AvailabilityType
+@RequiredArgsConstructor
+@Getter
+public enum AvailabilityType implements ReferenceListAwareEnum
 {
 	AVAILABLE("A"),
-	RESERVED("R");
+	RESERVED("R"),
+	;
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<AvailabilityType> index = ReferenceListAwareEnums.index(values());
 
-	AvailabilityType(@NonNull final String code) {this.code = code;}
+	@NonNull private final String code;
 
 	@NonNull
+	@JsonCreator
 	public static AvailabilityType ofCode(@NonNull final String code)
 	{
-		for (final AvailabilityType value : values())
-		{
-			if (value.code.equals(code))
-			{
-				return value;
-			}
-		}
-		throw new IllegalArgumentException("No AvailabilityType for code: " + code);
+		return index.ofCode(code);
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return code;
 	}
 }

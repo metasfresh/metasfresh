@@ -1,38 +1,39 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public enum SupplyType
+@RequiredArgsConstructor
+@Getter
+public enum SupplyType implements ReferenceListAwareEnum
 {
 	ON_HAND("OH"),
 	PLANNED_SUPPLY("PS");
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<SupplyType> index = ReferenceListAwareEnums.index(values());
 
-	SupplyType(@NonNull final String code) {this.code = code;}
+	@NonNull private final String code;
 
 	@NonNull
+	@JsonCreator
 	public static SupplyType ofCode(@NonNull final String code)
 	{
-		for (final SupplyType value : values())
-		{
-			if (value.code.equals(code))
-			{
-				return value;
-			}
-		}
-		throw new IllegalArgumentException("No SupplyType for code: " + code);
+		return index.ofCode(code);
 	}
 
-	@NonNull
-	public static SupplyType ofNullableCode(final String code)
+	@JsonValue
+	public String toJson()
 	{
-		if (code == null || code.isEmpty())
-		{
-			return ON_HAND;
-		}
-		return ofCode(code);
+		return code;
+	}
+
+	public boolean isPlannedSupply()
+	{
+		return this == PLANNED_SUPPLY;
 	}
 }

@@ -1,6 +1,8 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
-import de.metas.order.OrderLineId;
+import de.metas.handlingunits.QtyTU;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,22 +17,24 @@ public class MD_CockpitV2_DeleteQtyReservation
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final OrderLineId orderLineId = getSalesOrderLineId();
-		if (!qtyReservationService.hasReservation(orderLineId))
+		final ExplainedOptional<QtyTU> optionalQtyToUnReserveTU = getQtyToUnReserveTU();
+		if (!optionalQtyToUnReserveTU.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservations to delete");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(optionalQtyToUnReserveTU.getExplanation());
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		final QtyTU qtyToUnReserveTU = optionalQtyToUnReserveTU.get();
+
+		return ProcessPreconditionsResolution.accept()
+				.withCaptionMapper(caption -> TranslatableStrings.builder()
+						.append(caption).append(" (").append(qtyToUnReserveTU.toInt()).append(")")
+						.build());
 	}
 
 	@Override
 	protected String doIt()
 	{
-		qtyReservationService.deleteReservationsForOrderLine(getSalesOrderLineId());
-
-		invalidateView();
-
+		qtyReservationService.deleteReservation(createDeleteQtyReservationRequest().orElseThrow());
 		return MSG_OK;
 	}
 
@@ -40,4 +44,38 @@ public class MD_CockpitV2_DeleteQtyReservation
 		if (!success) {return;}
 		invalidateViewSelection();
 	}
+
+	private ExplainedOptional<QtyTU> getQtyToUnReserveTU()
+	{
+		final ExplainedOptional<QtyTU> result = createDeleteQtyReservationRequest().map(qtyReservationService::getReservedQtyTU);
+		if (result.isPresent() && result.get().isZero())
+		{
+			return ExplainedOptional.emptyBecause("Nothing to unreserve");
+		}
+
+		return result;
+	}
+
+	private ExplainedOptional<DeleteQtyReservationRequest> createDeleteQtyReservationRequest()
+	{
+		if (!isSingleSelectedRow())
+		{
+			return ExplainedOptional.emptyBecause("Exactly one row must be selected");
+		}
+
+		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
+		if (!rowVO.isAvailableForUnReservation())
+		{
+			return ExplainedOptional.emptyBecause("Not eligible for unreservation");
+		}
+
+		return ExplainedOptional.of(
+				DeleteQtyReservationRequest.builder()
+						.orderLineId(getSalesOrderLineId())
+						.supplyType(rowVO.getSupplyType())
+						.datePromised(rowVO.getSupplyType().isPlannedSupply() ? rowVO.getDatePromised() : null)
+						.build()
+		);
+	}
+
 }

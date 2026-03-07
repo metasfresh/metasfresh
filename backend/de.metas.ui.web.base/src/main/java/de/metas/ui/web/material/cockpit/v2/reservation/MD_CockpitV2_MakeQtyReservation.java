@@ -21,8 +21,16 @@ public class MD_CockpitV2_MakeQtyReservation
 {
 	@Autowired private QtyReservationService qtyReservationService;
 
-	private static final String PARAM_QTY_TU = "QtyTU";
-	@Param(parameterName = PARAM_QTY_TU, mandatory = true)
+	private static final String PARAM_QtyOrderedNotReserved_TU = "QtyOrderedNotReserved_TU";
+	@Param(parameterName = PARAM_QtyOrderedNotReserved_TU)
+	private BigDecimal p_QtyOrderedNotReserved_TU;
+
+	private static final String PARAM_QtyAvailableTU = "QtyAvailableTU";
+	@Param(parameterName = PARAM_QtyAvailableTU)
+	private BigDecimal p_QtyAvailableTU;
+
+	private static final String PARAM_QtyTU = "QtyTU";
+	@Param(parameterName = PARAM_QtyTU, mandatory = true)
 	private BigDecimal p_qtyToReserveTU;
 
 	private QtyTU _qtyToReserveMaxTU;
@@ -41,15 +49,30 @@ public class MD_CockpitV2_MakeQtyReservation
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No available TU quantity");
 		}
 
+		if (!getQtyOrderedNotReservedTU().isPositive())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Nothing more to reserve");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QTY_TU.equals(parameter.getColumnName()))
+		final String parameterName = parameter.getColumnName();
+
+		if (PARAM_QtyOrderedNotReserved_TU.equals(parameterName))
 		{
-			return getMaxQtyToAllocateTU().toBigDecimal();
+			return getQtyOrderedNotReservedTU().toInt();
+		}
+		else if (PARAM_QtyAvailableTU.equals(parameterName))
+		{
+			return getQtyAvailableToReserveTU().toInt();
+		}
+		else if (PARAM_QtyTU.equals(parameterName))
+		{
+			return getMaxQtyToAllocateTU().toInt();
 		}
 		else
 		{
@@ -113,8 +136,7 @@ public class MD_CockpitV2_MakeQtyReservation
 
 	private QtyTU computeMaxQtyToAllocateTU()
 	{
-		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
-		final QtyTU qtyAvailableToReserveTU = rowVO.getQtyTU();
+		final QtyTU qtyAvailableToReserveTU = getQtyAvailableToReserveTU();
 		if (!qtyAvailableToReserveTU.isPositive())
 		{
 			return QtyTU.ZERO;
@@ -126,5 +148,19 @@ public class MD_CockpitV2_MakeQtyReservation
 		final QtyTU qtyToReserveTU = qtyOrderedTU.subtractOrZero(qtyReservedTU);
 
 		return qtyToReserveTU.min(qtyAvailableToReserveTU);
+	}
+
+	private QtyTU getQtyOrderedNotReservedTU()
+	{
+		final MaterialCockpitSalesOrderLine salesOrderLine = getSalesOrderLine();
+		final QtyTU qtyOrderedTU = salesOrderLine.getQtyOrderedTU();
+		final QtyTU qtyReservedTU = qtyReservationService.getReservedQtyTU(salesOrderLine.getId());
+		return qtyOrderedTU.subtractOrZero(qtyReservedTU);
+	}
+
+	private QtyTU getQtyAvailableToReserveTU()
+	{
+		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
+		return rowVO.getQtyTU();
 	}
 }
