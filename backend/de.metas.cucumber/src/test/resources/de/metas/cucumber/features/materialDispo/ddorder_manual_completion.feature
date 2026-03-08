@@ -10,7 +10,7 @@ Feature: Manual DD_Order completion creates MD_Candidates
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-05-17T13:30:13+00:00
 
     And metasfresh contains M_Products:
       | Identifier |
@@ -49,6 +49,6 @@ Feature: Manual DD_Order completion creates MD_Candidates
 
     # Verify SUPPLY + DEMAND candidates were created
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected            | Qty | M_Warehouse_ID  | DD_Order_ID |
-      | supply_1   | SUPPLY            | DISTRIBUTION              | p_manual     | 2022-05-20T00:00:00.00Z  | 10  | targetWH_manual | ddOrder_man |
-      | demand_1   | DEMAND            | DISTRIBUTION              | p_manual     | 2022-05-20T00:00:00.00Z  | 10  | sourceWH_manual | ddOrder_man |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | Qty_AvailableToPromise | M_Warehouse_ID  | DD_Order_ID |
+      | supply_1   | SUPPLY            | DISTRIBUTION              | p_manual     | 2022-05-20T00:00:00.00Z | 10  | 10                     | targetWH_manual | ddOrder_man |
+      | demand_1   | DEMAND            | DISTRIBUTION              | p_manual     | 2022-05-20T00:00:00.00Z | -10 | -10                    | sourceWH_manual | ddOrder_man |
