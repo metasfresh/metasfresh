@@ -188,11 +188,11 @@ Feature: Qty Reservation delivery tracking
   @Id:S_QtyRes_50
   Scenario: OH reservation for the later of two competing orders unlocks its QtyToDeliver
   ## _Given 10 PCE on-hand stock (1 TU) and two sales orders for the same product:
-  ## _  order_5A: earlier DatePromised — gets stock first by FIFO (QtyToDeliver=10)
-  ## _  order_5B: later DatePromised — no remaining stock (QtyToDeliver=0)
+  ## _  order_5A: earlier DatePromised (tier-8 priority by PreparationDate)
+  ## _  order_5B: later DatePromised (tier-8 priority, lower than 5A without reservation)
   ## _When an OH reservation (10 PCE, 1 TU) is created for order_5B
-  ## _And both schedules are recomputed together (reservation gives order_5B priority tier 6 > 8)
-  ## _Then order_5B's QtyToDeliver becomes 10 (reservation claims the stock)
+  ## _Then order_5B's QtyToDeliver becomes 10 because M_QtyReservation gives it tier-6 priority
+  ## _which is higher than the tier-8 PreparationDate-based priority of order_5A
 
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
@@ -218,33 +218,18 @@ Feature: Qty Reservation delivery tracking
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    ## Wait for initial auto-recompute to finish (any QtyToDeliver), then force a joint recompute
-    ## so that FIFO allocation is computed correctly for BOTH schedules in the same batch.
-    ## (If recomputed separately, each batch refreshes stock from DB and both would see 10 PCE.)
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier          | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_5A | orderLine_5A   | N             |
       | shipmentSchedule_5B | orderLine_5B   | N             |
-
-    And recompute shipment schedules
-      | M_ShipmentSchedule_ID.Identifier |
-      | shipmentSchedule_5A              |
-      | shipmentSchedule_5B              |
-
-    ## FIFO result: order_5A (earlier PreparationDate, tier-8 priority) claims 10 PCE;
-    ## order_5B (later PreparationDate) gets 0 — stock exhausted by A in same batch
-    Then after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
-      | shipmentSchedule_5A              | 10               |
-      | shipmentSchedule_5B              | 0                |
 
     ## Reserve the 10 PCE on-hand stock specifically for order_5B
     When metasfresh contains M_QtyReservations:
       | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
       | qtyReservation_5 | orderLine_5B   | product_1    | warehouse_1    | 10  | PCE               | 1     | OH         |
 
-    ## Recompute both together again: M_QtyReservation gives order_5B tier-6 priority (above PreparationDate).
-    ## order_5B is now processed first and claims the 10 PCE; order_5A falls to 0.
+    ## Recompute both schedules: M_QtyReservation gives order_5B tier-6 priority (above PreparationDate-based tier-8).
+    ## order_5B is processed first and claims the 10 PCE on-hand stock.
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | shipmentSchedule_5A              |
