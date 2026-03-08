@@ -2,6 +2,7 @@ package de.metas.mforecast.generator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.product.ProductCategoryId;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.organization.OrgId;
@@ -12,6 +13,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,6 +25,9 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -112,6 +118,7 @@ public class ForecastLineGeneratorService
 	{
 		final ImmutableList.Builder<ProductPlanningForForecast> result = ImmutableList.builder();
 		final OrgId orgId = OrgId.ofRepoId(forecast.getAD_Org_ID());
+		final Set<ProductId> seenProducts = new HashSet<>();
 
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
@@ -123,11 +130,24 @@ public class ForecastLineGeneratorService
 			queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, request.getProductId());
 		}
 
+		// Order by SeqNo to match the standard PP_Product_Planning selection logic:
+		// for each product, only the record with the lowest SeqNo is used.
+		queryBuilder.orderBy()
+				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
+				.endOrderBy();
+
 		final List<I_PP_Product_Planning> planningRecords = queryBuilder.create().list();
 
 		for (final I_PP_Product_Planning pp : planningRecords)
 		{
 			final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
+
+			// Only use the first (lowest SeqNo) PP_Product_Planning record per product
+			if (!seenProducts.add(productId))
+			{
+				continue;
+			}
+
 			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
 			// Skip products that are discontinued as of the forecast's reference date.
