@@ -1,6 +1,5 @@
 package de.metas.distribution.ddordercandidate;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -87,8 +86,6 @@ class DDOrderCandidateProcessCommand
 	//
 	// State
 	private final LinkedHashMap<HeaderAggregationKey, HeaderAggregate> aggregates = new LinkedHashMap<>();
-	private final LinkedHashMap<DDOrderId, I_DD_Order> ddOrderHeaderRecords = new LinkedHashMap<>();
-	private final ArrayListMultimap<DDOrderId, I_DD_OrderLine> ddOrderLineRecords = ArrayListMultimap.create();
 	private final AggregationConfig aggregationConfig;
 
 	@Builder
@@ -233,7 +230,6 @@ class DDOrderCandidateProcessCommand
 		record.setC_Order_ID(OrderId.toRepoId(salesOrderId));
 
 		ddOrderLowLevelService.save(record);
-		ddOrderHeaderRecords.put(DDOrderId.ofRepoId(record.getDD_Order_ID()), record);
 
 		return record;
 	}
@@ -307,7 +303,6 @@ class DDOrderCandidateProcessCommand
 		// Save DD Order Line
 		ddOrderLowLevelService.save(lineRecord);
 		final DDOrderAndLineId ddOrderAndLineId = DDOrderAndLineId.ofRepoIds(lineRecord.getDD_Order_ID(), lineRecord.getDD_OrderLine_ID());
-		ddOrderLineRecords.put(ddOrderAndLineId.getDdOrderId(), lineRecord);
 
 		final DDOrderCandidateAllocList allocations = lineAggregate.getAllocations()
 				.stream()

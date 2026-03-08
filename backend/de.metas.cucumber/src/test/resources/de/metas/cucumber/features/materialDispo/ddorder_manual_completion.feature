@@ -36,7 +36,7 @@ Feature: Manual DD_Order completion creates MD_Candidates
     # Create DD_Order directly (NOT via the planning pipeline / DD_Order_Candidate)
     Given metasfresh contains DD_Orders:
       | Identifier  | M_Warehouse_ID.From | M_Warehouse_ID.To | M_Warehouse_ID.Transit | DatePromised             |
-      | ddOrder_man | sourceWH_manual     | targetWH_manual   | inTransit_manual       | 2022-05-20T00:00:00.00Z |
+      | ddOrder_man | sourceWH_manual     | targetWH_manual   | inTransit_manual       | 2022-05-20T00:00:00Z |
     And metasfresh contains DD_OrderLines:
       | Identifier   | DD_Order_ID | M_Product_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
       | ddLine_man   | ddOrder_man | p_manual     | 10         | fromLocator_man | toLocator_man   |

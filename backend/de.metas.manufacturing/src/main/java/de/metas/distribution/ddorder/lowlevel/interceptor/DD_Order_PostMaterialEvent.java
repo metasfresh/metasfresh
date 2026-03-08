@@ -13,6 +13,7 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -28,6 +29,7 @@ import javax.annotation.Nullable;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@Slf4j
 @Interceptor(I_DD_Order.class)
 @Component
 @RequiredArgsConstructor
@@ -65,12 +67,21 @@ public class DD_Order_PostMaterialEvent
 			return null;
 		}
 
-		return DDOrderLoader.builder()
-				.productPlanningDAO(productPlanningDAO)
-				.distributionNetworkRepository(distributionNetworkRepository)
-				.ddOrderLowLevelService(ddOrderLowLevelService)
-				.replenishInfoRepository(replenishInfoRepository)
-				.build()
-				.load(ddOrderRecord);
+		try
+		{
+			return DDOrderLoader.builder()
+					.productPlanningDAO(productPlanningDAO)
+					.distributionNetworkRepository(distributionNetworkRepository)
+					.ddOrderLowLevelService(ddOrderLowLevelService)
+					.replenishInfoRepository(replenishInfoRepository)
+					.build()
+					.load(ddOrderRecord);
+		}
+		catch (final Exception ex)
+		{
+			log.warn("Failed to load DDOrder DTO for DD_Order_ID={}; event will be sent without DDOrder payload and candidates won't be auto-created",
+					ddOrderRecord.getDD_Order_ID(), ex);
+			return null;
+		}
 	}
 }
