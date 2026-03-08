@@ -45,8 +45,10 @@ VALUES (592198, 0, 0, 'Y', TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'
         'N', 'N', 'N', 'N', 'N', 'N',
         'Y', 'NP');
 
--- Physical column
-INSERT INTO t_alter_column VALUES ('C_CompensationGroup_Schema', 'IsInheritPackingInstruction', 'CHAR(1)', 'NOT NULL', 'N');
+-- Physical column (add new column, then enforce constraints)
+ALTER TABLE C_CompensationGroup_Schema ADD COLUMN IF NOT EXISTS IsInheritPackingInstruction CHAR(1) DEFAULT 'N';
+UPDATE C_CompensationGroup_Schema SET IsInheritPackingInstruction = 'N' WHERE IsInheritPackingInstruction IS NULL;
+ALTER TABLE C_CompensationGroup_Schema ALTER COLUMN IsInheritPackingInstruction SET NOT NULL;
 
 -- AD_Field on tab 541041 (Schema tab)
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
