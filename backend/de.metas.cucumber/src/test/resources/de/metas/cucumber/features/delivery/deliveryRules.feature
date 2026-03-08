@@ -513,7 +513,6 @@ Feature: Delivery rules with and without quantity in stock
       | shipmentScheduleQtyPicked_2                | 5         | true      | true                        | hu_fifo_second        |
       | shipmentScheduleQtyPicked_3                | 5         | true      | true                        | hu_fifo_third         |
 
-  @flaky
   @from:cucumber
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00104

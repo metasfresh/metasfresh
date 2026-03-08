@@ -87,7 +87,6 @@ Feature: create multiple production candidates
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
 @F8033
-  @flaky
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand.
@@ -260,7 +259,6 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
-  @flaky
   @from:cucumber
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product

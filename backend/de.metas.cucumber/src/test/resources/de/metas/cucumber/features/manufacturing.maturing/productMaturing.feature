@@ -47,7 +47,6 @@ Feature: Maturing scenarios
 @allure.label.feature:F8031_Manufacturing_Workflows
 @F8031
   @Id:S0382_100
-  @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
     When metasfresh contains M_Inventories:
       | M_Inventory_ID | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -121,7 +120,6 @@ Feature: Maturing scenarios
 @allure.label.feature:F8031_Manufacturing_Workflows
 @F8031
   @Id:S0382_200
-  @flaky
   Scenario: Maturing candidate created, then HU qty is adjusted. Maturing candidate is updated
     When metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | DocumentNo   | M_Warehouse_ID    |
@@ -172,7 +170,6 @@ Feature: Maturing scenarios
       | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
 
-  @flaky
   @from:cucumber
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8031_Manufacturing_Workflows

@@ -126,7 +126,6 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier | QtyEntered |
       | oc_1                             | 2          |
 
-  @flaky
   @Id:S0129.2_190
   @from:cucumber
 @allure.label.epic:E0160_Manufacturing_Execution
