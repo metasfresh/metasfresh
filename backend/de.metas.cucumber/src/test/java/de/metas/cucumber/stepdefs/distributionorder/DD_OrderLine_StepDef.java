@@ -155,7 +155,8 @@ public class DD_OrderLine_StepDef
 	 * Required columns:
 	 * <ul>
 	 *   <li>{@code DD_OrderLine_ID.Identifier} — identifier of the DD_OrderLine</li>
-	 *   <li>{@code QtyPicked} — expected picked quantity on the move schedule</li>
+	 *   <li>{@code QtyPicked} — expected quantity (note: feature file column is {@code QtyPicked}
+	 *       but the assertion compares against {@code QtyToPick} — this is a pre-existing mismatch)</li>
 	 * </ul>
 	 */
 	@And("validate DD_Order_MoveSchedule")

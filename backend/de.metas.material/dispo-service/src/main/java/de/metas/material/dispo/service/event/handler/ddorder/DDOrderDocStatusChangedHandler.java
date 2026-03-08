@@ -57,8 +57,8 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 			@NonNull final CandidateChangeService candidateChangeService,
 			@NonNull final DDOrderCreatedHandler ddOrderCreatedHandler)
 	{
-		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateChangeService = candidateChangeService;
 		this.ddOrderCreatedHandler = ddOrderCreatedHandler;
 	}
 
