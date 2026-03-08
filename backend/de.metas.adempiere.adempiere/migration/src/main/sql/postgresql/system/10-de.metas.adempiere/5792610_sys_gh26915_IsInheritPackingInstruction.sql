@@ -27,9 +27,22 @@ SET Name         = 'Packvorschrift vererben',
 WHERE AD_Element_ID = 584629
   AND AD_Language = 'de_DE';
 
+-- English translation
+UPDATE AD_Element_Trl
+SET Name         = 'Inherit Packing Instruction',
+    PrintName    = 'Inherit Packing Instruction',
+    Description  = 'If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template.',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy    = 100
+WHERE AD_Element_ID = 584629
+  AND AD_Language = 'en_US';
+
 -- propagate element translations
 SELECT update_ad_element_on_ad_element_trl_update(584629, 'de_DE');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584629, 'de_DE');
+SELECT update_ad_element_on_ad_element_trl_update(584629, 'en_US');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584629, 'en_US');
 
 -- AD_Column on C_CompensationGroup_Schema (AD_Table_ID=540940)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -107,4 +120,4 @@ VALUES (648505, 0, 0, 'Y', TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'
                   JOIN AD_UI_Section us ON uc.AD_UI_Section_ID = us.AD_UI_Section_ID
          WHERE us.AD_Tab_ID = 541041 AND lower(eg.Name) = 'flags'
          ORDER BY eg.SeqNo LIMIT 1),
-        774855, 541041, 10, 'Y', 'N', 'N', 'Inherit Packing Instruction');
+        774855, 541041, 20, 'Y', 'N', 'N', 'Inherit Packing Instruction');
