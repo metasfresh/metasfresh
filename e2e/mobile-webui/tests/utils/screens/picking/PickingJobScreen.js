@@ -22,6 +22,7 @@ const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with Pick
 export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     getPickingJobId: async () => {
