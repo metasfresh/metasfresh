@@ -214,6 +214,19 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
+	@Test
+	public void ddOrderChangedDocStatusEvent_withDDOrder()
+	{
+		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.ddOrderId(20)
+				.newDocStatus(DocStatus.Completed)
+				.ddOrder(newDDOrder())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
 	private static DDOrder newDDOrder()
 	{
 		final Instant supplyDate = SystemTime.asInstant();

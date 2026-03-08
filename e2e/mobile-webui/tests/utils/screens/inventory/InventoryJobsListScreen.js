@@ -8,8 +8,9 @@ const NAME = 'InventoryJobsListScreen';
 const containerElement = () => page.locator('#WFLaunchersScreen');
 
 export const InventoryJobsListScreen = {
-    waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
