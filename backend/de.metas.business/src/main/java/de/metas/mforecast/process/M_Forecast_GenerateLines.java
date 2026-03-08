@@ -3,7 +3,6 @@ package de.metas.mforecast.process;
 import de.metas.mforecast.generator.ForecastCalculationMethod;
 import de.metas.mforecast.generator.ForecastGeneratorRequest;
 import de.metas.mforecast.generator.ForecastLineGeneratorService;
-import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -27,9 +26,6 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 
 	@Param(parameterName = "Forecast_CalculationMethod")
 	private String p_calculationMethod;
-
-	@Param(parameterName = "Forecast_PrecisionUnit")
-	private String p_precisionUnit;
 
 	@Param(parameterName = "IsDeleteExistingLines")
 	private boolean p_deleteExistingLines;
@@ -57,7 +53,6 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(p_productCategoryId))
 				.productId(ProductId.ofRepoIdOrNull(p_productId))
 				.calculationMethodOverride(ForecastCalculationMethod.ofNullableCode(p_calculationMethod))
-				.precisionUnitOverride(ForecastPrecisionUnit.ofNullableCode(p_precisionUnit))
 				.deleteExistingLines(p_deleteExistingLines)
 				.build();
 
