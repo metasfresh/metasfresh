@@ -421,6 +421,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		to.setC_Incoterms_ID(from.getC_Incoterms_ID());
 		to.setIncotermLocation(from.getIncotermLocation());
+		to.setC_PromotionCode_ID(from.getC_PromotionCode_ID());
+		to.setC_PromotionCode2_ID(from.getC_PromotionCode2_ID());
 
 		InterfaceWrapperHelper.save(to);
 
@@ -722,6 +724,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		invoice2.setC_Incoterms_ID(order2.getC_Incoterms_ID());
 		invoice2.setIncotermLocation(order2.getIncotermLocation());
+		invoice2.setC_PromotionCode_ID(order2.getC_PromotionCode_ID());
+		invoice2.setC_PromotionCode2_ID(order2.getC_PromotionCode2_ID());
 
 		invoice2.setBPartnerAddress(order2.getBillToAddress());
 		invoice2.setIsUseBPartnerAddress(order2.isUseBillToAddress());

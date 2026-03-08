@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Outbound_Endpoint
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Outbound_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1515673395L;
+	private static final long serialVersionUID = -551340614L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Outbound_Endpoint (final Properties ctx, final int ExternalSystem_Outbound_Endpoint_ID, @Nullable final String trxName)
@@ -35,13 +35,13 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setAuthToken (final @Nullable String AuthToken)
+	public void setAuthToken (final @Nullable java.lang.String AuthToken)
 	{
 		set_Value (COLUMNNAME_AuthToken, AuthToken);
 	}
 
 	@Override
-	public String getAuthToken() 
+	public java.lang.String getAuthToken() 
 	{
 		return get_ValueAsString(COLUMNNAME_AuthToken);
 	}
@@ -60,49 +60,72 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	/** SAS = SAS */
 	public static final String AUTHTYPE_SAS = "SAS";
 	@Override
-	public void setAuthType (final String AuthType)
+	public void setAuthType (final java.lang.String AuthType)
 	{
 		set_Value (COLUMNNAME_AuthType, AuthType);
 	}
 
 	@Override
-	public String getAuthType() 
+	public java.lang.String getAuthType() 
 	{
 		return get_ValueAsString(COLUMNNAME_AuthType);
 	}
 
 	@Override
-	public void setClientId (final @Nullable String ClientId)
+	public void setClientId (final @Nullable java.lang.String ClientId)
 	{
 		set_Value (COLUMNNAME_ClientId, ClientId);
 	}
 
 	@Override
-	public String getClientId() 
+	public java.lang.String getClientId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClientId);
 	}
 
 	@Override
-	public void setClientSecret (final @Nullable String ClientSecret)
+	public void setClientSecret (final @Nullable java.lang.String ClientSecret)
 	{
 		set_Value (COLUMNNAME_ClientSecret, ClientSecret);
 	}
 
 	@Override
-	public String getClientSecret() 
+	public java.lang.String getClientSecret() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClientSecret);
 	}
 
+	/** 
+	 * ContentType AD_Reference_ID=542065
+	 * Reference name: ExternalSystemOutboundEndpointContentType
+	 */
+	public static final int CONTENTTYPE_AD_Reference_ID=542065;
+	/** application_json = application/json */
+	public static final String CONTENTTYPE_Application_json = "application/json";
+	/** application_xml = application/xml */
+	public static final String CONTENTTYPE_Application_xml = "application/xml";
+	/** text_xml = text/xml */
+	public static final String CONTENTTYPE_Text_xml = "text/xml";
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setContentType (final java.lang.String ContentType)
+	{
+		set_Value (COLUMNNAME_ContentType, ContentType);
+	}
+
+	@Override
+	public java.lang.String getContentType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ContentType);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription() 
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -123,61 +146,84 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setLoginUsername (final @Nullable String LoginUsername)
+	public void setLoginUsername (final @Nullable java.lang.String LoginUsername)
 	{
 		set_Value (COLUMNNAME_LoginUsername, LoginUsername);
 	}
 
 	@Override
-	public String getLoginUsername() 
+	public java.lang.String getLoginUsername() 
 	{
 		return get_ValueAsString(COLUMNNAME_LoginUsername);
 	}
 
 	@Override
-	public void setOutboundHttpEP (final String OutboundHttpEP)
+	public void setOutboundHttpEP (final java.lang.String OutboundHttpEP)
 	{
 		set_Value (COLUMNNAME_OutboundHttpEP, OutboundHttpEP);
 	}
 
 	@Override
-	public String getOutboundHttpEP() 
+	public java.lang.String getOutboundHttpEP() 
 	{
 		return get_ValueAsString(COLUMNNAME_OutboundHttpEP);
 	}
 
+	/** 
+	 * OutboundHttpMethod AD_Reference_ID=541306
+	 * Reference name: Http_Method
+	 */
+	public static final int OUTBOUNDHTTPMETHOD_AD_Reference_ID=541306;
+	/** GET = GET */
+	public static final String OUTBOUNDHTTPMETHOD_GET = "GET";
+	/** POST = POST */
+	public static final String OUTBOUNDHTTPMETHOD_POST = "POST";
+	/** PUT = PUT */
+	public static final String OUTBOUNDHTTPMETHOD_PUT = "PUT";
+	/** DELETE = DELETE */
+	public static final String OUTBOUNDHTTPMETHOD_DELETE = "DELETE";
+	/** OPTIONS = OPTIONS */
+	public static final String OUTBOUNDHTTPMETHOD_OPTIONS = "OPTIONS";
+	/** PATCH = PATCH */
+	public static final String OUTBOUNDHTTPMETHOD_PATCH = "PATCH";
+	/** HEAD = HEAD */
+	public static final String OUTBOUNDHTTPMETHOD_HEAD = "HEAD";
+	/** TRACE = TRACE */
+	public static final String OUTBOUNDHTTPMETHOD_TRACE = "TRACE";
+	/** CONNECT = CONNECT */
+	public static final String OUTBOUNDHTTPMETHOD_CONNECT = "CONNECT";
 	@Override
-	public void setOutboundHttpMethod (final String OutboundHttpMethod)
+	public void setOutboundHttpMethod (final java.lang.String OutboundHttpMethod)
 	{
 		set_Value (COLUMNNAME_OutboundHttpMethod, OutboundHttpMethod);
 	}
 
 	@Override
-	public String getOutboundHttpMethod() 
+	public java.lang.String getOutboundHttpMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_OutboundHttpMethod);
 	}
 
 	@Override
-	public void setPassword (final @Nullable String Password)
+	public void setPassword (final @Nullable java.lang.String Password)
 	{
 		set_Value (COLUMNNAME_Password, Password);
 	}
 
 	@Override
-	public String getPassword() 
+	public java.lang.String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
 	}
 
 	@Override
-	public void setSasSignature (final @Nullable String SasSignature)
+	public void setSasSignature (final @Nullable java.lang.String SasSignature)
 	{
 		set_Value (COLUMNNAME_SasSignature, SasSignature);
 	}
 
 	@Override
-	public String getSasSignature() 
+	public java.lang.String getSasSignature() 
 	{
 		return get_ValueAsString(COLUMNNAME_SasSignature);
 	}
@@ -198,25 +244,25 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	/** TCP = TCP */
 	public static final String TYPE_TCP = "TCP";
 	@Override
-	public void setType (final String Type)
+	public void setType (final java.lang.String Type)
 	{
 		set_Value (COLUMNNAME_Type, Type);
 	}
 
 	@Override
-	public String getType() 
+	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override
-	public void setValue (final String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
 	@Override
-	public String getValue() 
+	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

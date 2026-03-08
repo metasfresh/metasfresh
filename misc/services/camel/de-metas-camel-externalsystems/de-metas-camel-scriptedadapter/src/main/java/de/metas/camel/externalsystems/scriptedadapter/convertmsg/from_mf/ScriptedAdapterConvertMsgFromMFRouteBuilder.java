@@ -44,6 +44,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
@@ -56,9 +57,11 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
@@ -123,6 +126,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					.process(this::prepareHttpRequestForOAuth)
 				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 					.process(this::prepareHttpRequestForSasAuth)
+				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
+				.process(this::prepareHttpRequestForBasicAuth)
 				.otherwise()
 					.throwException(new RuntimeCamelException("Unsupported authentication type"))
 			.end()
@@ -224,7 +229,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, endpointParameters.getToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
-		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
@@ -238,7 +243,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl() + "&sig=" + endpointParameters.getSasSignature());
-		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
@@ -260,7 +265,28 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, "Bearer " + accessToken.getAccessToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
-		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForBasicAuth(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.Basic);
+
+		final String username = endpointParameters.getUser();
+		final String password = endpointParameters.getPassword();
+
+		final String credentials = username + ":" + password;
+		final String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, "Basic " + encoded);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
@@ -272,6 +298,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				.clientId(endpointParameters.getClientId())
 				.username(endpointParameters.getUser())
 				.build();
+	}
+
+	@NonNull
+	private static MediaType resolveContentType(@NonNull final JsonExternalSystemOutboundEndpoint endpointParameters)
+	{
+		return Optional.ofNullable(StringUtils.trimBlankToNull(endpointParameters.getContentType()))
+				.map(MediaType::parseMediaType)
+				.orElse(MediaType.APPLICATION_JSON);
 	}
 
 	@NonNull

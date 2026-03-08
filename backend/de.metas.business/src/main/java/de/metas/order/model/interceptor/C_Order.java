@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -50,6 +50,7 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -248,6 +249,19 @@ public class C_Order
 		}
 
 		orderBL.setIncoterms(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_PromotionCode_ID, I_C_Order.COLUMNNAME_C_PromotionCode2_ID })
+	public void validateNoDuplicatePromotionCode(@NonNull final I_C_Order order)
+	{
+		final PromotionCodeId code1 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode_ID());
+		final PromotionCodeId code2 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode2_ID());
+		if (code1 != null && code2 != null && code1.equals(code2))
+		{
+			throw new AdempiereException("@C_PromotionCode_DuplicateError@")
+					.markAsUserValidationError();
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })

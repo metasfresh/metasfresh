@@ -127,6 +127,18 @@ export const PAYMENT_TERM_WINDOW_ID = 141;
 export const PAYMENT_WINDOW_ID = 195;
 
 // ============================================================================
+// PLANNING WINDOWS
+// ============================================================================
+
+/**
+ * Forecast window (Prognose)
+ * Table: M_Forecast (AD_Table_ID=720)
+ * Window ID: 328
+ * Description: Forecast management with forecast line generation
+ */
+export const FORECAST_WINDOW_ID = 328;
+
+// ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
 
