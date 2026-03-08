@@ -182,3 +182,59 @@ Feature: Qty Reservation delivery tracking
     Then validate M_QtyReservations:
       | Identifier       | Qty | QtyDelivered | Processed |
       | qtyReservation_4 | 20  | 20           | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_50
+  Scenario: OH reservation for the later of two competing orders unlocks its QtyToDeliver
+  ## _Given 10 PCE on-hand stock (1 TU) and two sales orders for the same product:
+  ## _  order_5A: earlier DatePromised (gets stock first by FIFO logic, QtyToDeliver=10)
+  ## _  order_5B: later DatePromised (no remaining stock, QtyToDeliver=0)
+  ## _When an OH reservation (10 PCE, 1 TU) is created for order_5B
+  ## _And shipment schedule for order_5B is recomputed
+  ## _Then order_5B's QtyToDeliver becomes 10 (supplied from the reservation)
+
+    Given metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_50   | warehouse_1    | 2026-03-01   | product_1    | 0 PCE   | 10 PCE   | huPIP_TU_10PCE          |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised        | DeliveryRule | M_Warehouse_ID |
+      | order_5A   | true    | bp_1          | 2026-03-01  | 2026-03-05T00:00:00 | A            | warehouse_1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_5A | order_5A   | product_1    | 10         |
+    And the order identified by order_5A is completed
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised        | DeliveryRule | M_Warehouse_ID |
+      | order_5B   | true    | bp_1          | 2026-03-01  | 2026-03-15T00:00:00 | A            | warehouse_1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_5B | order_5B   | product_1    | 10         |
+    And the order identified by order_5B is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    ## Both schedules recomputed with stock-availability logic:
+    ## order_5A (earlier date) gets all 10 PCE; order_5B (later date) gets nothing
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute | OPT.QtyToDeliver |
+      | shipmentSchedule_5A | orderLine_5A   | N             | 10               |
+      | shipmentSchedule_5B | orderLine_5B   | N             | 0                |
+
+    ## Reserve the 10 PCE on-hand stock specifically for order_5B
+    When metasfresh contains M_QtyReservations:
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
+      | qtyReservation_5 | orderLine_5B   | product_1    | warehouse_1    | 10  | PCE               | 1     | OH         |
+
+    And recompute shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | shipmentSchedule_5B              |
+
+    ## After reservation + recompute: order_5B's schedule gets QtyToDeliver=10 from its reservation
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
+      | shipmentSchedule_5B              | 10               |
