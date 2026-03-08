@@ -1,6 +1,7 @@
 package de.metas.mforecast.generator;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.organization.OrgId;
@@ -66,7 +67,7 @@ public class ForecastLineGeneratorService
 				continue; // no comparison method configured, skip
 			}
 
-			final ForecastPrecisionUnit precisionUnit = pp.getForecastPrecisionUnit() != null ? pp.getForecastPrecisionUnit() : ForecastPrecisionUnit.WEEK;
+			final ForecastPrecisionUnit precisionUnit = CoalesceUtil.coalesce(pp.getForecastPrecisionUnit(), ForecastPrecisionUnit.WEEK);
 
 			final int horizonUnits = computeForecastHorizon(pp, precisionUnit);
 			if (horizonUnits <= 0)
