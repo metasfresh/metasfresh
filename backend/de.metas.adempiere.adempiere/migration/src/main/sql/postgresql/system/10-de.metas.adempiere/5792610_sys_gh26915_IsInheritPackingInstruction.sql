@@ -99,7 +99,7 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_UI_ElementGroup eg
 
 -- AD_UI_Element for IsInheritPackingInstruction
 INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_UI_ElementGroup_ID, AD_Field_ID, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name)
+                           AD_UI_ElementGroup_ID, AD_Field_ID, AD_Tab_ID, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name)
 VALUES (648505, 0, 0, 'Y', TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'), 100,
         (SELECT eg.AD_UI_ElementGroup_ID
          FROM AD_UI_ElementGroup eg
@@ -107,4 +107,4 @@ VALUES (648505, 0, 0, 'Y', TO_TIMESTAMP('2026-03-07 10:00', 'YYYY-MM-DD HH24:MI'
                   JOIN AD_UI_Section us ON uc.AD_UI_Section_ID = us.AD_UI_Section_ID
          WHERE us.AD_Tab_ID = 541041 AND lower(eg.Name) = 'flags'
          ORDER BY eg.SeqNo LIMIT 1),
-        774855, 10, 'Y', 'N', 'N', 'Inherit Packing Instruction');
+        774855, 541041, 10, 'Y', 'N', 'N', 'Inherit Packing Instruction');
