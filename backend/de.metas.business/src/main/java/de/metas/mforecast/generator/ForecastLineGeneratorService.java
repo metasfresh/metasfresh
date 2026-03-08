@@ -2,7 +2,8 @@ package de.metas.mforecast.generator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.product.ProductCategoryId;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.organization.OrgId;
@@ -13,10 +14,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -26,13 +26,12 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -41,6 +40,7 @@ public class ForecastLineGeneratorService
 {
 	@NonNull private final ForecastCalculationStrategyFactory strategyFactory;
 	@NonNull private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
+	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -118,8 +118,59 @@ public class ForecastLineGeneratorService
 	{
 		final ImmutableList.Builder<ProductPlanningForForecast> result = ImmutableList.builder();
 		final OrgId orgId = OrgId.ofRepoId(forecast.getAD_Org_ID());
-		final Set<ProductId> seenProducts = new HashSet<>();
 
+		// Collect distinct product IDs that have forecast-eligible PP_Product_Planning records
+		final List<ProductId> productIds = collectEligibleProductIds(orgId, request, referenceDate);
+
+		for (final ProductId productId : productIds)
+		{
+			// Use the standard best-match logic (lowest SeqNo, ASI matching, org/warehouse fallback)
+			final Optional<ProductPlanning> bestMatch = productPlanningDAO.find(
+					IProductPlanningDAO.ProductPlanningQuery.builder()
+							.orgId(orgId)
+							.productId(productId)
+							.build());
+
+			if (!bestMatch.isPresent())
+			{
+				continue;
+			}
+
+			final ProductPlanning pp = bestMatch.get();
+
+			if (pp.isExcludeFromForecast())
+			{
+				continue;
+			}
+
+			final WarehouseId warehouseId = CoalesceUtil.coalesce(
+					pp.getWarehouseId(),
+					WarehouseId.ofRepoIdOrNull(forecast.getM_Warehouse_ID()));
+			if (warehouseId == null)
+			{
+				continue;
+			}
+
+			result.add(ProductPlanningForForecast.builder()
+					.productId(productId)
+					.warehouseId(warehouseId)
+					.attributeSetInstanceId(CoalesceUtil.coalesce(pp.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE))
+					.forecastCalculationMethod(pp.getForecastCalculationMethod())
+					.forecastPrecisionUnit(pp.getForecastPrecisionUnit())
+					.forecastFrequency(pp.getForecastFrequency())
+					.forecastBufferTime(pp.getForecastBufferTime())
+					.deliveryTimePromised(pp.getLeadTimeDays() > 0 ? BigDecimal.valueOf(pp.getLeadTimeDays()) : null)
+					.build());
+		}
+
+		return result.build();
+	}
+
+	private List<ProductId> collectEligibleProductIds(
+			@NonNull final OrgId orgId,
+			@NonNull final ForecastGeneratorRequest request,
+			@NonNull final LocalDate referenceDate)
+	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId)
@@ -130,64 +181,32 @@ public class ForecastLineGeneratorService
 			queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, request.getProductId());
 		}
 
-		// Order by SeqNo to match the standard PP_Product_Planning selection logic:
-		// for each product, only the record with the lowest SeqNo is used.
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
-				.endOrderBy();
+		final List<Integer> productRepoIds = queryBuilder.create()
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, Integer.class);
 
-		final List<I_PP_Product_Planning> planningRecords = queryBuilder.create().list();
-
-		for (final I_PP_Product_Planning pp : planningRecords)
+		final ImmutableList.Builder<ProductId> result = ImmutableList.builder();
+		for (final int productRepoId : productRepoIds)
 		{
-			final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
-
-			// Only use the first (lowest SeqNo) PP_Product_Planning record per product
-			if (!seenProducts.add(productId))
-			{
-				continue;
-			}
-
+			final ProductId productId = ProductId.ofRepoId(productRepoId);
 			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
-			// Skip products that are discontinued as of the forecast's reference date.
-			// A product with DiscontinuedFrom in the future is still eligible for forecasting until that date.
 			if (productBL.isDiscontinuedAt(product, referenceDate))
 			{
 				continue;
 			}
 
-			// Check product category filter
-			if (request.getProductCategoryId() != null)
+			if (request.getProductCategoryId() != null
+					&& product.getM_Product_Category_ID() != request.getProductCategoryId().getRepoId())
 			{
-				if (product.getM_Product_Category_ID() != request.getProductCategoryId().getRepoId())
-				{
-					continue;
-				}
+				continue;
 			}
 
-			// Check product category exclusion
 			if (isProductCategoryExcluded(product))
 			{
 				continue;
 			}
 
-			final int warehouseId = pp.getM_Warehouse_ID() > 0 ? pp.getM_Warehouse_ID() : forecast.getM_Warehouse_ID();
-			if (warehouseId <= 0)
-			{
-				continue; // no warehouse, skip
-			}
-
-			result.add(ProductPlanningForForecast.builder()
-					.productId(productId)
-					.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(warehouseId))
-					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(pp.getM_AttributeSetInstance_ID()))
-					.forecastCalculationMethod(ForecastCalculationMethod.ofNullableCode(pp.getForecast_CalculationMethod()))
-					.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(pp.getForecast_PrecisionUnit()))
-					.forecastFrequency(extractForecastIntOrNull(pp.getForecast_Frequency()))
-					.forecastBufferTime(extractForecastIntOrNull(pp.getForecast_BufferTime()))
-					.deliveryTimePromised(pp.getDeliveryTime_Promised())
-					.build());
+			result.add(productId);
 		}
 
 		return result.build();
