@@ -23,21 +23,12 @@
 package de.metas.cucumber.stepdefs.qtyreservation;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
-import org.compiere.model.I_M_QtyReservation;
 
-public class M_QtyReservation_StepDefData extends StepDefData<I_M_QtyReservation>
-		implements StepDefDataGetIdAware<QtyReservationId, I_M_QtyReservation>
+public class M_QtyReservation_StepDefData extends StepDefData<QtyReservationId>
 {
 	public M_QtyReservation_StepDefData()
 	{
-		super(I_M_QtyReservation.class);
-	}
-
-	@Override
-	public QtyReservationId extractIdFromRecord(final I_M_QtyReservation record)
-	{
-		return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
+		super(QtyReservationId.class);
 	}
 }

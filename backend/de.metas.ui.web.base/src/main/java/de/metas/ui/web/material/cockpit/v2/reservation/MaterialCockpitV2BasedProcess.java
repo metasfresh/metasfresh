@@ -3,15 +3,19 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2Service;
 import de.metas.ui.web.order.sales.hu.reservation.process.MaterialCockpitSalesOrderLine;
 import de.metas.ui.web.order.sales.hu.reservation.process.MaterialCockpitViewContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemplate
 {
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull @Autowired private MaterialCockpitV2Service materialCockpitV2Service;
 
 	private MaterialCockpitViewContext _viewContext;
 	private MaterialCockpitSalesOrderLine _salesOrderLine;
@@ -47,6 +51,12 @@ public abstract class MaterialCockpitV2BasedProcess extends ViewBasedProcessTemp
 			_viewContext = MaterialCockpitViewContext.of(getView());
 		}
 		return _viewContext;
+	}
+
+	protected final void recreateSelection()
+	{
+		materialCockpitV2Service.recreateSourceSelection(getMaterialCockpitViewContext());
+		invalidateViewSelection();
 	}
 
 	protected final void invalidateViewSelection()

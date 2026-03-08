@@ -3,6 +3,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 import com.google.common.collect.ImmutableMap;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
 import de.metas.ui.web.view.IView;
 import lombok.Builder;
 import lombok.NonNull;
@@ -17,6 +18,7 @@ public class MaterialCockpitViewContext
 {
 	@NonNull public static final String VIEW_PARAMETER_NAME = "MaterialCockpitViewContext";
 
+	@NonNull PInstanceId sourceSelectionId;
 	@NonNull OrderAndLineId salesOrderAndLineId;
 
 	@NonNull

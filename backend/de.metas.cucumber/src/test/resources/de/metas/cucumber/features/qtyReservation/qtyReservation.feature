@@ -63,16 +63,16 @@ Feature: Qty Reservation delivery tracking
       | Identifier         | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_1 | orderLine_1    | N             |
     And metasfresh contains M_QtyReservations:
-      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU |
-      | qtyReservation_1 | orderLine_1    | product_1    | warehouse_1    | 10  | PCE               | 1     |
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_1 | orderLine_1    | product_1    | warehouse_1    | 10 PCE | 1     |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_1    | D            | true                | false       |
 
     Then validate M_QtyReservations:
-      | Identifier       | Qty | QtyDelivered | Processed |
-      | qtyReservation_1 | 10  | 10           | true      |
+      | Identifier       | Qty    | QtyDelivered | Processed |
+      | qtyReservation_1 | 10 PCE | 10 PCE       | true      |
 
 
   @from:cucumber
@@ -93,16 +93,16 @@ Feature: Qty Reservation delivery tracking
       | Identifier         | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_2 | orderLine_2    | N             |
     And metasfresh contains M_QtyReservations:
-      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU |
-      | qtyReservation_2 | orderLine_2    | product_1    | warehouse_1    | 10  | PCE               | 2     |
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_2 | orderLine_2    | product_1    | warehouse_1    | 10 PCE | 2     |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_2    | D            | true                | false       |
 
     Then validate M_QtyReservations:
-      | Identifier       | Qty | QtyDelivered | Processed |
-      | qtyReservation_2 | 10  | 5            | false     |
+      | Identifier       | Qty    | QtyDelivered | Processed |
+      | qtyReservation_2 | 10 PCE | 5 PCE        | false     |
 
 
   @from:cucumber
@@ -124,18 +124,18 @@ Feature: Qty Reservation delivery tracking
       | Identifier         | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_3 | orderLine_3    | N             |
     And metasfresh contains M_QtyReservations:
-      | Identifier          | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
-      | qtyReservation_3_OH | orderLine_3    | product_1    | warehouse_1    | 6   | PCE               | 1     | OH         |
-      | qtyReservation_3_PS | orderLine_3    | product_1    | warehouse_1    | 4   | PCE               | 1     | PS         |
+      | Identifier          | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty   | QtyTU | SupplyType |
+      | qtyReservation_3_OH | orderLine_3    | product_1    | warehouse_1    | 6 PCE | 1     | OH         |
+      | qtyReservation_3_PS | orderLine_3    | product_1    | warehouse_1    | 4 PCE | 1     | PS         |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_3    | D            | true                | false       |
 
     Then validate M_QtyReservations:
-      | Identifier          | Qty | QtyDelivered | Processed |
-      | qtyReservation_3_OH | 6   | 6            | true      |
-      | qtyReservation_3_PS | 4   | 4            | true      |
+      | Identifier          | Qty   | QtyDelivered | Processed |
+      | qtyReservation_3_OH | 6 PCE | 6 PCE        | true      |
+      | qtyReservation_3_PS | 4 PCE | 4 PCE        | true      |
 
 
   @from:cucumber
@@ -168,20 +168,20 @@ Feature: Qty Reservation delivery tracking
       | shipmentSchedule_4 | orderLine_4    | N             |
 
     And metasfresh contains M_QtyReservations:
-      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
-      | qtyReservation_4 | orderLine_4    | product_1    | warehouse_1    | 20  | PCE               | 2     | OH         |
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | SupplyType |
+      | qtyReservation_4 | orderLine_4    | product_1    | warehouse_1    | 20 PCE | 2     | OH         |
 
     Then validate M_QtyReservations:
-      | Identifier       | Qty | QtyTU | Processed |
-      | qtyReservation_4 | 20  | 2     | false     |
+      | Identifier       | Qty    | QtyTU | Processed |
+      | qtyReservation_4 | 20 PCE | 2     | false     |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_4    | D            | true                | false       |
 
     Then validate M_QtyReservations:
-      | Identifier       | Qty | QtyDelivered | Processed |
-      | qtyReservation_4 | 20  | 20           | true      |
+      | Identifier       | Qty    | QtyDelivered | Processed |
+      | qtyReservation_4 | 20 PCE | 20 PCE       | true      |
 
 
   @from:cucumber
@@ -232,18 +232,15 @@ Feature: Qty Reservation delivery tracking
 
     ## Reserve the 10 PCE on-hand stock specifically for order_5B
     When metasfresh contains M_QtyReservations:
-      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
-      | qtyReservation_5 | orderLine_5B   | product_1    | warehouse_1    | 10  | PCE               | 1     | OH         |
-
-    ## Recompute both schedules: M_QtyReservation gives order_5B tier-6 priority (above PreparationDate-based tier-8).
-    ## order_5B is processed first and claims the 10 PCE on-hand stock.
-    And recompute shipment schedules
-      | M_ShipmentSchedule_ID.Identifier |
-      | shipmentSchedule_5A              |
-      | shipmentSchedule_5B              |
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | SupplyType |
+      | qtyReservation_5 | orderLine_5B   | product_1    | warehouse_1    | 10 PCE | 1     | OH         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_5A   |
+      | shipmentSchedule_5B   |
 
     ## After reservation: order_5B gets QtyToDeliver=10 (reservation elevated its priority)
-    Then after not more than 60s, validate shipment schedules:
+    Then after not more than 5s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
       | shipmentSchedule_5A              | 0                |
       | shipmentSchedule_5B              | 10               |

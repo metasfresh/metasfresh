@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import de.metas.handlingunits.QtyTU;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -92,10 +93,12 @@ class QtyReservationLoaderAndSaver
 	static QtyReservation fromRecord(@NonNull final I_M_QtyReservation record)
 	{
 		return QtyReservation.builder()
+				.id(QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()))
 				.orderLineId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.attributesKey(AttributesKey.ofString(record.getAttributesKey()))
+				.qtyTU(QtyTU.ofBigDecimal(record.getQtyTU()))
 				.qty(Quantitys.of(record, I_M_QtyReservation::getQty, I_M_QtyReservation::getC_UOM_ID))
 				.qtyDelivered(Quantitys.of(record, I_M_QtyReservation::getQtyDelivered, I_M_QtyReservation::getC_UOM_ID))
 				.build();

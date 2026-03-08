@@ -12,7 +12,7 @@ public class MaterialCockpitV2FilterConverterDecorator implements SqlDocumentFil
 	@Override
 	public WindowId getWindowId()
 	{
-		return MaterialCockpitV2Util.WINDOWID_MaterialCockpitV2;
+		return MaterialCockpitV2Service.WINDOWID_MaterialCockpitV2;
 	}
 
 	@Override

@@ -107,7 +107,7 @@ public class MD_CockpitV2_MakeQtyReservation
 	protected void postProcess(final boolean success)
 	{
 		if (!success) {return;}
-		invalidateViewSelection();
+		recreateSelection();
 	}
 
 	private @NotNull QtyTU getAndValidateQtyToReserveTUParam()

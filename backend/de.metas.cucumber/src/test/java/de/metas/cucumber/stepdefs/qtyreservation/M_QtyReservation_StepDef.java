@@ -28,7 +28,11 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.quantity.Quantity;
+import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.inoutcandidate.qty_reservation.SupplyType;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,14 +40,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_QtyReservation;
-import org.compiere.model.I_M_Warehouse;
-
-import java.math.BigDecimal;
 
 /**
  * Step definitions for {@code M_QtyReservation}.
@@ -89,6 +88,7 @@ import java.math.BigDecimal;
 public class M_QtyReservation_StepDef
 {
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	@NonNull private final M_QtyReservation_StepDefData qtyReservationTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
@@ -107,27 +107,28 @@ public class M_QtyReservation_StepDef
 
 	private void createReservation(@NonNull final DataTableRow row)
 	{
-		final I_C_OrderLine orderLine = row.getAsIdentifier("C_OrderLine_ID").lookupNotNullIn(orderLineTable);
-		final I_M_Product product = row.getAsIdentifier("M_Product_ID").lookupNotNullIn(productTable);
-		final I_M_Warehouse warehouse = row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIn(warehouseTable);
+		final QtyReservationId qtyReservationId = qtyReservationService.makeReservation(CreateQtyReservationRequest.builder()
+				.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
+				.productId(row.getAsIdentifier("M_Product_ID").lookupNotNullIdIn(productTable))
+				.warehouseId(row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIdIn(warehouseTable))
+				.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
+				.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
+				.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
+				.build());
 
-		final Quantity qty = row.getAsQuantity("Qty", "C_UOM_ID.X12DE355", uomDAO::getByX12DE355);
-		final BigDecimal qtyTU = row.getAsBigDecimal("QtyTU");
-		final String supplyType = row.getAsOptionalString("SupplyType").orElse("OH");
+		// final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);
+		// record.setC_Order_ID(orderLine.getC_Order_ID());
+		// record.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		// record.setM_Product_ID(productId);
+		// record.setM_Warehouse_ID(warehouseId);
+		// record.setQty(qty.toBigDecimal());
+		// record.setQtyDelivered(BigDecimal.ZERO);
+		// record.setQtyTU(qtyTU);
+		// record.setC_UOM_ID(qty.getUomId().getRepoId());
+		// record.setSupplyType(supplyType);
+		// InterfaceWrapperHelper.saveRecord(record);
 
-		final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);
-		record.setC_Order_ID(orderLine.getC_Order_ID());
-		record.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		record.setM_Product_ID(product.getM_Product_ID());
-		record.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		record.setQty(qty.toBigDecimal());
-		record.setQtyDelivered(BigDecimal.ZERO);
-		record.setQtyTU(qtyTU);
-		record.setC_UOM_ID(qty.getUomId().getRepoId());
-		record.setSupplyType(supplyType);
-		InterfaceWrapperHelper.saveRecord(record);
-
-		row.getAsOptionalIdentifier().ifPresent(id -> qtyReservationTable.putOrReplace(id, record));
+		row.getAsOptionalIdentifier().ifPresent(id -> qtyReservationTable.putOrReplace(id, qtyReservationId));
 	}
 
 	/**
@@ -145,30 +146,30 @@ public class M_QtyReservation_StepDef
 	private void validateReservation(@NonNull final DataTableRow row) throws InterruptedException
 	{
 		StepDefUtil.tryAndWaitForData(() -> {
-					final I_M_QtyReservation record = qtyReservationTable.get(row.getAsIdentifier());
-					InterfaceWrapperHelper.refresh(record);
-					return record;
+					final QtyReservationId qtyReservationId = qtyReservationTable.get(row.getAsIdentifier());
+					return qtyReservationService.getById(qtyReservationId);
 				})
-				.validateUsingConsumer(record -> {
+				.validateUsingConsumer(qtyReservation -> {
 					final SoftAssertions softly = new SoftAssertions();
-					row.getAsOptionalBigDecimal("Qty").ifPresent(expectedQty ->
-							softly.assertThat(record.getQty())
-									.as("M_QtyReservation[%d].Qty", record.getM_QtyReservation_ID())
-									.isEqualByComparingTo(expectedQty));
-
-					row.getAsOptionalBigDecimal("QtyDelivered").ifPresent(expectedQtyDelivered ->
-							softly.assertThat(record.getQtyDelivered())
-									.as("M_QtyReservation[%d].QtyDelivered", record.getM_QtyReservation_ID())
-									.isEqualByComparingTo(expectedQtyDelivered));
-
-					row.getAsOptionalBigDecimal("QtyTU").ifPresent(expectedQtyTU ->
-							softly.assertThat(record.getQtyTU())
-									.as("M_QtyReservation[%d].QtyTU", record.getM_QtyReservation_ID())
-									.isEqualByComparingTo(expectedQtyTU));
-
+					row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355)
+							.ifPresent(expectedQty ->
+									softly.assertThat(qtyReservation.getQty())
+											.as("M_QtyReservation[%d].Qty", qtyReservation.getId().getRepoId())
+											.isEqualTo(expectedQty));
+					row.getAsOptionalQuantity("QtyDelivered", uomDAO::getByX12DE355)
+							.ifPresent(expectedQtyDelivered ->
+									softly.assertThat(qtyReservation.getQtyDelivered())
+											.as("M_QtyReservation[%d].QtyDelivered", qtyReservation.getId().getRepoId())
+											.isEqualTo(expectedQtyDelivered));
+					row.getAsOptionalInt("QtyTU")
+							.map(QtyTU::ofInt)
+							.ifPresent(expectedQtyTU ->
+									softly.assertThat(qtyReservation.getQtyTU())
+											.as("M_QtyReservation[%d].QtyTU", qtyReservation.getId().getRepoId())
+											.isEqualTo(expectedQtyTU));
 					row.getAsOptionalBoolean("Processed").ifPresent(expectedProcessed ->
-							softly.assertThat(record.isProcessed())
-									.as("M_QtyReservation[%d].Processed", record.getM_QtyReservation_ID())
+							softly.assertThat(qtyReservation.isFullyDelivered())
+									.as("M_QtyReservation[%d].Processed", qtyReservation.getId().getRepoId())
 									.isEqualTo(expectedProcessed));
 
 					softly.assertAll();

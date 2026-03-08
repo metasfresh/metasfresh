@@ -30,6 +30,16 @@ public class QtyReservationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public QtyReservation getById(@NonNull QtyReservationId id)
+	{
+		final I_M_QtyReservation record = queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, id)
+				.create()
+				.firstOnlyNotNull();
+		return QtyReservationLoaderAndSaver.fromRecord(record);
+	}
+
 	/**
 	 * Load all active, unprocessed reservations (unfulfilled qty) for the given product IDs.
 	 * <p>
@@ -68,7 +78,7 @@ public class QtyReservationRepository
 		loaderAndSaver.updateByOrderLineIds(orderLineIds, updater);
 	}
 
-	public void createReservation(@NonNull final CreateQtyReservationRequest request)
+	public QtyReservationId createReservation(@NonNull final CreateQtyReservationRequest request)
 	{
 		final I_M_QtyReservation record = newInstance(I_M_QtyReservation.class);
 		record.setC_Order_ID(request.getOrderAndLineId().getOrderRepoId());
@@ -90,12 +100,13 @@ public class QtyReservationRepository
 		record.setAttributesKey(request.getAttributesKey() != null ? request.getAttributesKey().getAsString() : null);
 		saveRecord(record);
 
-		// return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
+		return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
 	}
 
-	public void deleteReservation(@NonNull final DeleteQtyReservationRequest request)
+	public boolean deleteReservation(@NonNull final DeleteQtyReservationRequest request)
 	{
-		toSqlQuery(request).create().delete();
+		final int deleteCount = toSqlQuery(request).create().delete();
+		return deleteCount > 0;
 	}
 
 	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)

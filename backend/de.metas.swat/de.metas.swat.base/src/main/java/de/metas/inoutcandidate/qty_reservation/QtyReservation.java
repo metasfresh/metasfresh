@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import de.metas.handlingunits.QtyTU;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -18,12 +19,15 @@ import org.adempiere.warehouse.WarehouseId;
 @Builder(toBuilder = true)
 public class QtyReservation
 {
+	@NonNull QtyReservationId id;
+	
 	@NonNull OrderLineId orderLineId;
 
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
 	@NonNull AttributesKey attributesKey;
 
+	@NonNull QtyTU qtyTU;
 	@NonNull Quantity qty;
 	@NonNull Quantity qtyDelivered;
 
