@@ -27,6 +27,7 @@ import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoin
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 
@@ -56,6 +57,8 @@ public class ExternalSystemOutboundEndpoint
 	
 	@Nullable String sasSignature;
 
+	@NonNull MediaType contentType;
+
 	@NonNull
 	public JsonExternalSystemOutboundEndpoint toJson()
 	{
@@ -70,6 +73,7 @@ public class ExternalSystemOutboundEndpoint
 				.user(user)
 				.password(password)
 				.sasSignature(sasSignature)
+				.contentType(contentType.toString())
 				.build();
 	}
 }

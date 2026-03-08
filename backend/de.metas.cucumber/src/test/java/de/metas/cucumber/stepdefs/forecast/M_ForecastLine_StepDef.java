@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.forecast;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.product.ProductId;
@@ -34,6 +35,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Warehouse;
@@ -51,15 +53,18 @@ public class M_ForecastLine_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_Forecast_StepDefData forecastTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public M_ForecastLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_Forecast_StepDefData forecastTable)
+			@NonNull final M_Forecast_StepDefData forecastTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.warehouseTable = warehouseTable;
 		this.forecastTable = forecastTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains M_ForecastLines:")
@@ -94,7 +99,12 @@ public class M_ForecastLine_StepDef
 					forecastLine.setQty(tableRow.getAsBigDecimal(I_M_ForecastLine.COLUMNNAME_Qty));
 					forecastLine.setM_Warehouse_ID(warehouseId);
 					forecastLine.setC_UOM_ID(UomId.toRepoId(uomId));
-					
+
+					tableRow.getAsOptionalIdentifier(I_M_ForecastLine.COLUMNNAME_M_AttributeSetInstance_ID)
+							.map(attributeSetInstanceTable::getId)
+							.map(AttributeSetInstanceId::getRepoId)
+							.ifPresent(forecastLine::setM_AttributeSetInstance_ID);
+
 					saveRecord(forecastLine);
 				});
 	}
