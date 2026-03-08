@@ -123,6 +123,8 @@ Feature: Shipment schedule export rest-api
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
@@ -216,6 +218,8 @@ Feature: Shipment schedule export rest-api
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
