@@ -37,8 +37,8 @@ Feature: Promotion Code Evaluation Report (gh#28565)
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | InvoiceRule |
       | customer_1 | N        | Y          | pricingSys_1       | I           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | location_1 | customer_1    | Y               | Y               |
+      | Identifier | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | location_1 | 0285656789099 | customer_1    | Y               | Y               |
 
   @from:cucumber
   Scenario: Report returns invoiced order with both promotion codes
