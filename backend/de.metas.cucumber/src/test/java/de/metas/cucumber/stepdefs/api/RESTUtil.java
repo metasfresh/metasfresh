@@ -61,6 +61,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.model.I_AD_Issue;
@@ -122,11 +123,23 @@ public class RESTUtil
 		return userAuthTokenRecord.getAuthToken();
 	}
 
+	private static final int HTTP_CONNECT_TIMEOUT_MS = 30_000; // 30s
+	private static final int HTTP_SOCKET_TIMEOUT_MS = 120_000; // 120s
+	private static final int HTTP_CONNECTION_REQUEST_TIMEOUT_MS = 10_000; // 10s
+
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
 		final HttpRequestBase httpRequest = createHttpRequest(apiRequest);
 
-		try (final CloseableHttpClient httpClient = HttpClients.createDefault())
+		final RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(HTTP_CONNECT_TIMEOUT_MS)
+				.setSocketTimeout(HTTP_SOCKET_TIMEOUT_MS)
+				.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT_MS)
+				.build();
+
+		try (final CloseableHttpClient httpClient = HttpClients.custom()
+				.setDefaultRequestConfig(requestConfig)
+				.build())
 		{
 			final HttpResponse httpResponse = httpClient.execute(httpRequest);
 			final APIResponse apiResponse = extractAPIResponse(httpResponse, apiRequest);

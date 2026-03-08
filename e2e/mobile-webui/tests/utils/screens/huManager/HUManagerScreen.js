@@ -14,7 +14,8 @@ const containerElement = () => page.locator('#HUManagerScreen');
 
 export const HUManagerScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {

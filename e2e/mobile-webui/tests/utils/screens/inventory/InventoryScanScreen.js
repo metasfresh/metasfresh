@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { page, step } from "../../common";
+import { page, SLOW_ACTION_TIMEOUT, step } from "../../common";
 import { expect } from '@playwright/test';
 import { InventoryJobScreen } from './InventoryJobScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
@@ -10,11 +10,11 @@ const containerElement = () => page.locator(`#${NAME}`);
 
 export const InventoryScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitForPanel: async (panel) => await test.step(`${NAME} - Wait for panel '${panel}'`, async () => {
-        await page.locator(`.panel-${panel}`).waitFor();
+        await page.locator(`.panel-${panel}`).waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
