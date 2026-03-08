@@ -11,35 +11,37 @@ CREATE OR REPLACE FUNCTION report.report_promotion_code_evaluation(
 )
     RETURNS TABLE
             (
-                PromotionCode1            varchar,
-                PromotionCode1Description varchar,
-                PromotionCode2            varchar,
-                PromotionCode2Description varchar,
-                OrderDocumentNo           varchar,
-                DateOrdered               date,
-                CustomerNo                varchar,
-                CustomerName              varchar,
-                OrderGrandTotal           numeric,
-                Invoiced                  char(1),
-                InvoiceDocumentNo         varchar,
-                DateInvoiced              date,
-                InvoiceGrandTotal         numeric
+                -- Column aliases = AD_Element.ColumnName or AD_Message.Value
+                -- used by IsTranslateExcelHeaders to produce translated column titles
+                "C_PromotionCode_ID"  varchar,   -- AD_Element 584619: Aktionskennzeichen / Promotion Code
+                "ValidTo"             date,      -- AD_Element 618: Gültig bis / Valid to
+                "C_PromotionCode2_ID" varchar,   -- AD_Element 584620: Aktionskennzeichen 2 / Promotion Code 2
+                "ValidTo2"            date,      -- AD_Message 545641: Gültig bis 2 / Valid to 2
+                "OrderDocumentNo"     varchar,   -- AD_Element: Auftragsnr. / Order Document No
+                "DateOrdered"         date,      -- AD_Element 268: Auftragsdatum
+                "CustomerNo"          varchar,   -- AD_Element 1261: Kundennummer / Customer No
+                "Name"                varchar,   -- AD_Element 469: Name
+                "GrandTotal"          numeric,   -- AD_Element 316: Summe Gesamt / Grand Total
+                "IsInvoiced"          char(1),   -- AD_Element: Fakturiert / Invoiced
+                "InvoiceDocumentNo"   varchar,   -- AD_Element: Rechnungsnummer / Invoice Document No
+                "DateInvoiced"        date,      -- AD_Element 267: Rechnungsdatum
+                "InvoiceGrandTotal"   numeric    -- AD_Message 545642: Rechnungssumme / Invoice Grand Total
             )
 AS
 $$
-SELECT pc1.Value                                                       AS PromotionCode1,
-       pc1.Description                                                 AS PromotionCode1Description,
-       pc2.Value                                                       AS PromotionCode2,
-       pc2.Description                                                 AS PromotionCode2Description,
-       o.DocumentNo                                                    AS OrderDocumentNo,
-       o.DateOrdered::date                                             AS DateOrdered,
-       bp_order.Value                                                  AS CustomerNo,
-       bp_order.Name                                                   AS CustomerName,
-       o.GrandTotal                                                    AS OrderGrandTotal,
-       CASE WHEN inv.C_Invoice_ID IS NOT NULL THEN 'Y' ELSE 'N' END   AS Invoiced,
-       inv.DocumentNo                                                  AS InvoiceDocumentNo,
-       inv.DateInvoiced::date                                          AS DateInvoiced,
-       inv.GrandTotal                                                  AS InvoiceGrandTotal
+SELECT pc1.Value                                                       AS "C_PromotionCode_ID",
+       pc1.ValidTo::date                                               AS "ValidTo",
+       pc2.Value                                                       AS "C_PromotionCode2_ID",
+       pc2.ValidTo::date                                               AS "ValidTo2",
+       o.DocumentNo                                                    AS "OrderDocumentNo",
+       o.DateOrdered::date                                             AS "DateOrdered",
+       bp_order.Value                                                  AS "CustomerNo",
+       bp_order.Name                                                   AS "Name",
+       o.GrandTotal                                                    AS "GrandTotal",
+       CASE WHEN inv.C_Invoice_ID IS NOT NULL THEN 'Y' ELSE 'N' END   AS "IsInvoiced",
+       inv.DocumentNo                                                  AS "InvoiceDocumentNo",
+       inv.DateInvoiced::date                                          AS "DateInvoiced",
+       inv.GrandTotal                                                  AS "InvoiceGrandTotal"
 FROM C_Order o
          LEFT JOIN C_PromotionCode pc1 ON o.C_PromotionCode_ID = pc1.C_PromotionCode_ID
          LEFT JOIN C_PromotionCode pc2 ON o.C_PromotionCode2_ID = pc2.C_PromotionCode_ID
@@ -69,4 +71,4 @@ $$
     LANGUAGE sql STABLE;
 
 COMMENT ON FUNCTION report.report_promotion_code_evaluation(numeric, numeric, char) IS
-    'gh#28565: Promotion Code Evaluation Report — shows completed/closed orders with promotion codes, their descriptions, and invoice status';
+    'gh#28565: Promotion Code Evaluation Report — shows completed/closed orders with promotion codes and invoice status. Column aliases use AD_Element/AD_Message keys for IsTranslateExcelHeaders.';

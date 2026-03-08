@@ -1,20 +1,37 @@
-package de.metas.order.model.interceptor;
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.location.IDocumentLocationBL;
-import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+package de.metas.promotioncode;
+
+import de.metas.adempiere.model.I_C_Order;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.adempiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class C_Order_PromotionCodeTest
 {
@@ -24,13 +41,7 @@ class C_Order_PromotionCodeTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		interceptor = new C_Order(
-				mock(IBPartnerBL.class),
-				mock(OrderLineDetailRepository.class),
-				mock(IDocumentLocationBL.class),
-				mock(BPartnerSupplierApprovalService.class),
-				mock(PurchaseOrderToShipperTransportationService.class),
-				mock(OrderPayScheduleService.class));
+		interceptor = new C_Order();
 	}
 
 	@Test
