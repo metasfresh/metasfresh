@@ -49,7 +49,7 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
       | ps_intra    | intra_pricing_system     | intra_pricing_system_val  |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_intra   | ps_intra                      | DE                        | EUR                 | intra_price_list  | true  | false         | 2              |
+      | pl_intra   | ps_intra                      | FR                        | EUR                 | intra_price_list  | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name         | ValidFrom  |
       | plv_intra  | pl_intra                  | intra_PLV    | 2025-01-01 |
@@ -58,13 +58,13 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
       | pp_1       | plv_intra                         | p_intra_1               | 100.0    | PCE               | Normal                        |
       | pp_2       | plv_intra                         | p_intra_2               | 200.0    | PCE               | Normal                        |
 
-    # --- Customer in a foreign country (DE) shipping from AT org ---
+    # --- Customer in a foreign country (FR) — must differ from org country (AT or DE) for cross-border filter ---
     And metasfresh contains C_BPartners:
       | Identifier     | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule | OPT.VATaxID      |
-      | bp_intra       | Intrastat Test Partner | N            | Y              | ps_intra                      | D               | DE123456789       |
+      | bp_intra       | Intrastat Test Partner | N            | Y              | ps_intra                      | D               | FR123456789       |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault | C_Country_ID |
-      | bpl_intra  | 9012345678901 | bp_intra                 | Y                   | Y                   | DE           |
+      | bpl_intra  | 9012345678901 | bp_intra                 | Y                   | Y                   | FR           |
 
     # --- Sales order with 2 lines ---
     And metasfresh contains C_Orders:

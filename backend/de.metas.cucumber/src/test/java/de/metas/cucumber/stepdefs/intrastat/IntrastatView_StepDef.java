@@ -82,12 +82,17 @@ public class IntrastatView_StepDef
 			final I_M_Product product = productTable.get(row.getAsIdentifier("M_Product_ID"));
 			final String value = row.getAsString("CommodityNumberValue");
 
-			final int cnId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_CommodityNumber_Seq')");
-			DB.executeUpdateAndThrowExceptionOnFail(
-					"INSERT INTO M_CommodityNumber (M_CommodityNumber_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, Name)"
-							+ " VALUES (" + cnId + ", 1000000, 0, 'Y', now(), 100, now(), 100, "
-							+ sqlQuote(value) + ", " + sqlQuote(value) + ")",
-					ITrx.TRXNAME_None);
+			int cnId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+					"SELECT M_CommodityNumber_ID FROM M_CommodityNumber WHERE Value=" + sqlQuote(value));
+			if (cnId <= 0)
+			{
+				cnId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_CommodityNumber_Seq')");
+				DB.executeUpdateAndThrowExceptionOnFail(
+						"INSERT INTO M_CommodityNumber (M_CommodityNumber_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, Name)"
+								+ " VALUES (" + cnId + ", 1000000, 0, 'Y', now(), 100, now(), 100, "
+								+ sqlQuote(value) + ", " + sqlQuote(value) + ")",
+						ITrx.TRXNAME_None);
+			}
 
 			DB.executeUpdateAndThrowExceptionOnFail(
 					"UPDATE M_Product SET M_CommodityNumber_ID=" + cnId + " WHERE M_Product_ID=" + product.getM_Product_ID(),
@@ -110,12 +115,17 @@ public class IntrastatView_StepDef
 			final I_M_Product product = productTable.get(row.getAsIdentifier("M_Product_ID"));
 			final String value = row.getAsString("CustomsTariffValue");
 
-			final int ctId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_CustomsTariff_Seq')");
-			DB.executeUpdateAndThrowExceptionOnFail(
-					"INSERT INTO M_CustomsTariff (M_CustomsTariff_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, Name)"
-							+ " VALUES (" + ctId + ", 1000000, 0, 'Y', now(), 100, now(), 100, "
-							+ sqlQuote(value) + ", " + sqlQuote(value) + ")",
-					ITrx.TRXNAME_None);
+			int ctId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+					"SELECT M_CustomsTariff_ID FROM M_CustomsTariff WHERE Value=" + sqlQuote(value));
+			if (ctId <= 0)
+			{
+				ctId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_CustomsTariff_Seq')");
+				DB.executeUpdateAndThrowExceptionOnFail(
+						"INSERT INTO M_CustomsTariff (M_CustomsTariff_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, Name)"
+								+ " VALUES (" + ctId + ", 1000000, 0, 'Y', now(), 100, now(), 100, "
+								+ sqlQuote(value) + ", " + sqlQuote(value) + ")",
+						ITrx.TRXNAME_None);
+			}
 
 			DB.executeUpdateAndThrowExceptionOnFail(
 					"UPDATE M_Product SET M_CustomsTariff_ID=" + ctId + " WHERE M_Product_ID=" + product.getM_Product_ID(),
