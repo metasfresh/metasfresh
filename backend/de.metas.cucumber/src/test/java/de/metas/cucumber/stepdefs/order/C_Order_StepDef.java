@@ -82,6 +82,7 @@ import de.metas.project.service.ProjectRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -432,6 +433,14 @@ public class C_Order_StepDef
 				.ifPresent(order::setC_Project_ID);
 
 		saveRecord(order);
+
+		//
+		// Set the values again to make sure they are permanent and not overriden by some beforeSave BLs
+		{
+			tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).map(StringUtils::trimBlankToNull).ifPresent(order::setDeliveryRule);
+
+			saveRecord(order);
+		}
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderTable.putOrReplace(identifier, order));
