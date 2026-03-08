@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { GetDocumentNoDialog } from "../../dialogs/GetDocumentNoDialog";
 import { PickingJobsListScreen, PickingJobsListScreen as PickingJobListScreen } from './PickingJobsListScreen';
 import { expect } from '@playwright/test';
@@ -10,11 +10,11 @@ const containerElement = () => page.locator('#WFLaunchersFiltersScreen');
 
 export const PickingJobsListFiltersScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitLoadingDone: async () => await test.step(`${NAME} - Wait for loading done`, async () => {
-        await page.locator('.loading').waitFor({ state: 'detached' });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
@@ -47,7 +47,7 @@ export const PickingJobsListFiltersScreen = {
 
     clickFacet: async ({ facetId }) => await test.step(`${NAME} - Click facet ${facetId}`, async () => {
         const facetButton = page.locator(`button[data-testid="${facetId}"]`);
-        await facetButton.waitFor({ state: 'attached' });
+        await facetButton.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
         await facetButton.tap();
     }),
 
