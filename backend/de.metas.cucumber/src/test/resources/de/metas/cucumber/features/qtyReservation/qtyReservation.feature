@@ -43,7 +43,7 @@ Feature: Qty Reservation delivery tracking
       | plv_1                  | product_1    | 10.00    | PCE               |
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID | DeliveryRule |
-      | bp_1       | true       | ps_1               | F            |
+      | bp_1       | true       | ps_1               | A            |
 
   @from:cucumber
   @Id:S_QtyRes_10
@@ -53,8 +53,8 @@ Feature: Qty Reservation delivery tracking
   ## _Then QtyDelivered on the reservation equals 10 and Processed is true
 
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | order_1    | true    | bp_1          | 2026-03-01  | warehouse_1    |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_1    | true    | bp_1          | 2026-03-01  | warehouse_1    | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine_1 | order_1    | product_1    | 10         |
@@ -83,8 +83,8 @@ Feature: Qty Reservation delivery tracking
   ## _Then QtyDelivered on the reservation equals 5 and Processed stays false (5 PCE still outstanding)
 
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | order_2    | true    | bp_1          | 2026-03-01  | warehouse_1    |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_2    | true    | bp_1          | 2026-03-01  | warehouse_1    | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine_2 | order_2    | product_1    | 5          |
@@ -114,8 +114,8 @@ Feature: Qty Reservation delivery tracking
   ## _Allocation priority: OH before PS (alphabetical order by SupplyType code)
 
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | order_3    | true    | bp_1          | 2026-03-01  | warehouse_1    |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_3    | true    | bp_1          | 2026-03-01  | warehouse_1    | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine_3 | order_3    | product_1    | 10         |
@@ -222,6 +222,13 @@ Feature: Qty Reservation delivery tracking
       | Identifier          | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_5A | orderLine_5A   | N             |
       | shipmentSchedule_5B | orderLine_5B   | N             |
+    
+    ## Before reservation: order_5A gets QtyToDeliver=10 (in the normal order of priorities, by Date in this case)
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
+      | shipmentSchedule_5A              | 10               |
+      | shipmentSchedule_5B              | 0                |
+
 
     ## Reserve the 10 PCE on-hand stock specifically for order_5B
     When metasfresh contains M_QtyReservations:
@@ -238,4 +245,5 @@ Feature: Qty Reservation delivery tracking
     ## After reservation: order_5B gets QtyToDeliver=10 (reservation elevated its priority)
     Then after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
+      | shipmentSchedule_5A              | 0                |
       | shipmentSchedule_5B              | 10               |
