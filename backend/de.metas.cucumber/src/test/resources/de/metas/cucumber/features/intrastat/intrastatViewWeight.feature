@@ -76,15 +76,15 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
       | ol_2       | o_intra               | p_intra_2               | 5          |
     When the order identified by o_intra is completed
 
-    # --- Generate shipment ---
+    # --- Generate shipment (batch mode: both products merge into one M_InOut) ---
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | ss_1       | ol_1                      | N             |
       | ss_2       | ol_2                      | N             |
-    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | ss_1                             | D            | true                | false       |
-      | ss_2                             | D            | true                | false       |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_1                             |
+      | ss_2                             |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | ss_1                             | ship_intra            |
@@ -106,6 +106,6 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
     # Before the fix, both would show 40 kg (total shipment weight).
     When M_InOut_V is queried for shipment "ship_intra"
     Then M_InOut_V result contains:
-      | productname              | weight | movementqty |
-      | Intrastat Test Product A | 25     | 10          |
-      | Intrastat Test Product B | 15     | 5           |
+      | M_Product_ID.Identifier | weight | movementqty |
+      | p_intra_1               | 25     | 10          |
+      | p_intra_2               | 15     | 5           |

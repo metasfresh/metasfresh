@@ -182,28 +182,36 @@ public class IntrastatView_StepDef
 	}
 
 	/**
-	 * Validates the M_InOut_V results contain the expected rows, matched by productname.
+	 * Validates the M_InOut_V results contain the expected rows, matched by product identifier.
 	 * The critical assertion is that weight is per-product, not the total shipment weight.
 	 *
+	 * <p>Uses M_Product_ID.Identifier to look up the product's actual Name,
+	 * then matches it against the view's productname column. This avoids
+	 * dependence on hardcoded product names and isolates test runs from
+	 * stale data in the view (which aggregates globally by productname).
+	 *
 	 * <pre>
-	 * | productname | weight | movementqty |
-	 * | Product A   | 25     | 10          |
-	 * | Product B   | 15     | 5           |
+	 * | M_Product_ID.Identifier | weight | movementqty |
+	 * | p_intra_1               | 25     | 10          |
+	 * | p_intra_2               | 15     | 5           |
 	 * </pre>
 	 */
 	@Then("M_InOut_V result contains:")
 	public void verifyResults(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> expectedRows = dataTable.asMaps();
+		final DataTableRows rows = DataTableRows.of(dataTable);
 		final SoftAssertions softly = new SoftAssertions();
 
 		softly.assertThat(viewResults)
 				.as("M_InOut_V should return rows")
 				.isNotEmpty();
 
-		for (final Map<String, String> expectedRow : expectedRows)
-		{
-			final String expectedProductName = expectedRow.get("productname");
+		final int[] expectedCount = {0};
+		rows.forEach(row -> {
+			expectedCount[0]++;
+			final String expectedProductName = row.getAsOptionalIdentifier("M_Product_ID")
+					.map(id -> productTable.get(id).getName())
+					.orElseGet(() -> row.getAsString("productname"));
 
 			final Map<String, String> actualRow = viewResults.stream()
 					.filter(r -> expectedProductName.equals(r.get("productname")))
@@ -216,29 +224,23 @@ public class IntrastatView_StepDef
 
 			if (actualRow == null)
 			{
-				continue;
+				return;
 			}
 
-			final String expectedWeight = expectedRow.get("weight");
-			if (expectedWeight != null && !expectedWeight.isEmpty())
-			{
-				softly.assertThat(new BigDecimal(actualRow.get("weight")))
-						.as("weight for " + expectedProductName)
-						.isEqualByComparingTo(new BigDecimal(expectedWeight));
-			}
+			row.getAsOptionalBigDecimal("weight")
+					.ifPresent(expectedWeight -> softly.assertThat(new BigDecimal(actualRow.get("weight")))
+							.as("weight for " + expectedProductName)
+							.isEqualByComparingTo(expectedWeight));
 
-			final String expectedMovementqty = expectedRow.get("movementqty");
-			if (expectedMovementqty != null && !expectedMovementqty.isEmpty())
-			{
-				softly.assertThat(new BigDecimal(actualRow.get("movementqty")))
-						.as("movementqty for " + expectedProductName)
-						.isEqualByComparingTo(new BigDecimal(expectedMovementqty));
-			}
-		}
+			row.getAsOptionalBigDecimal("movementqty")
+					.ifPresent(expectedQty -> softly.assertThat(new BigDecimal(actualRow.get("movementqty")))
+							.as("movementqty for " + expectedProductName)
+							.isEqualByComparingTo(expectedQty));
+		});
 
 		softly.assertThat(viewResults)
 				.as("M_InOut_V should have exactly one row per expected product (no row multiplication)")
-				.hasSize(expectedRows.size());
+				.hasSize(expectedCount[0]);
 
 		softly.assertAll();
 	}
