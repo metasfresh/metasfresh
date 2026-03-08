@@ -73,8 +73,15 @@ import java.util.Map;
  *   <li>{@code M_Warehouse_ID} — warehouse identifier</li>
  *   <li>{@code M_AttributeSetInstance_ID} — ASI identifier</li>
  *   <li>{@code simulated} — whether the candidate is simulated (defaults to false)</li>
- *   <li>Production detail columns: {@code PP_Order_Candidate_ID}, {@code PP_Order_ID}, etc.</li>
- *   <li>Distribution detail columns: {@code DD_Order_Candidate_ID}, {@code DD_Order_ID}, etc.</li>
+ *   <li>Production detail columns: {@code PP_Order_Candidate_ID}, {@code PP_OrderLine_Candidate_ID},
+ *       {@code PP_Order_ID}, {@code PP_Order_BOMLine_ID}</li>
+ *   <li>Distribution detail columns (stored in MD_Candidate_Dist_Detail):
+ *       {@code DD_Order_Candidate_ID} — identifier of the DD_Order_Candidate that created this candidate,
+ *       {@code DD_Order_ID} — identifier of the completed DD_Order,
+ *       {@code DD_OrderLine_ID} — identifier of the DD_OrderLine</li>
+ *   <li>Distribution forward PP_Order columns:
+ *       {@code Forward_PP_Order_Candidate_ID}, {@code Forward_PP_OrderLine_Candidate_ID},
+ *       {@code Forward_PP_Order_ID}, {@code Forward_PP_Order_BOMLine_ID}</li>
  * </ul>
  */
 @RequiredArgsConstructor
