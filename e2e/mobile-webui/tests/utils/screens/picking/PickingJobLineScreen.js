@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobStepScreen } from "./PickingJobStepScreen";
 import { GetQuantityDialog } from "./GetQuantityDialog";
@@ -12,7 +12,8 @@ const containerElement = () => page.locator('#PickLineScreen');
 
 export const PickingJobLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     clickManufactureButton: async () => await test.step(`${NAME} - Click Manufacture button`, async () => {

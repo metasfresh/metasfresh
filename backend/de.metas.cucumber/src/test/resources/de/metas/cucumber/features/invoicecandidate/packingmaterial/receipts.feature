@@ -1011,6 +1011,8 @@ Feature: Packing material invoice candidates: receipts
       | receiptLine_1             | material_receipt_1    | packingProduct          | 1064        | true      | 1064           |
       | receiptLine_2             | material_receipt_1    | loadingProduct          | 14          | true      | 14             |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 1064             | 1064         | receiptLine_1                 |
@@ -1021,6 +1023,8 @@ Feature: Packing material invoice candidates: receipts
       | material_receipt_1    | CO        |
 
     When the material receipt identified by material_receipt_1 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1526,6 +1530,8 @@ Feature: Packing material invoice candidates: receipts
       | M_InOut_ID.Identifier | M_Product_ID.Identifier |
       | material_receipt_1    | loadingProduct          |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
@@ -1538,6 +1544,8 @@ Feature: Packing material invoice candidates: receipts
       | material_receipt_1    | CO        |
 
     When the material receipt identified by material_receipt_1 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1552,6 +1560,8 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
     When the material receipt identified by material_receipt_1 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |

@@ -77,6 +77,8 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | maturing_hus_10 | rawgood_hu_10 | rawGood      | 10  |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
     Then after not more than 60s, PP_Order_Candidates are found
@@ -161,6 +163,8 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | Qty |
       | rawgood_hus_20  | 15  |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
     Then after not more than 60s, PP_Order_Candidates are found
@@ -203,6 +207,8 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | rawgood_hus_30  | rawgood_hu_30 | rawGood      | 30  |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
@@ -212,6 +218,8 @@ Feature: Maturing scenarios
     And M_HU are disposed:
       | M_HU_ID       | MovementDate         |
       | rawgood_hu_30 | 2024-01-01T21:00:00Z |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
