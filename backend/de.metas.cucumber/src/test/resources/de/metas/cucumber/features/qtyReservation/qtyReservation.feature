@@ -25,7 +25,19 @@ Feature: Qty Reservation delivery tracking
       | warehouse_1 |
     And metasfresh contains M_Products:
       | Identifier | IsStocked |
-      | product_1  | false     |
+      | product_1  | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_TU           | huPI_TU    | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_TU     | huPIV_TU           | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_TU_10PCE          | huPIItem_TU     | product_1    | 10 PCE |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv_1                  | product_1    | 10.00    | PCE               |
@@ -124,3 +136,49 @@ Feature: Qty Reservation delivery tracking
       | Identifier          | Qty | QtyDelivered | Processed |
       | qtyReservation_3_OH | 6   | 6            | true      |
       | qtyReservation_3_PS | 4   | 4            | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_40
+  Scenario: Inventory-backed OH reservation — real TU stock, reserved portion tracked, shipment closes reservation
+  ## _Given 3 TUs (30 PCE) of on-hand stock via inventory
+  ## _And a sales order for 20 PCE
+  ## _When an M_QtyReservation is created for 2 TU (20 PCE) against warehouse_1
+  ## _Then completing the shipment sets QtyDelivered=20 and Processed=true
+
+    Given metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_40   | warehouse_1    | 2026-03-01   | product_1    | 0 PCE   | 30 PCE   | huPIP_TU_10PCE          |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyStockCurrent_AtDate |
+      | cp_40      | product_1               | 2026-03-01  | 30                         |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order_4    | true    | bp_1          | 2026-03-01  | warehouse_1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_4 | order_4    | product_1    | 20         |
+    And the order identified by order_4 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier         | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_4 | orderLine_4    | N             |
+
+    And metasfresh contains M_QtyReservations:
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty | C_UOM_ID.X12DE355 | QtyTU | SupplyType |
+      | qtyReservation_4 | orderLine_4    | product_1    | warehouse_1    | 20  | PCE               | 2     | OH         |
+
+    Then validate M_QtyReservations:
+      | Identifier       | Qty | QtyTU | Processed |
+      | qtyReservation_4 | 20  | 2     | false     |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_4    | D            | true                | false       |
+
+    Then validate M_QtyReservations:
+      | Identifier       | Qty | QtyDelivered | Processed |
+      | qtyReservation_4 | 20  | 20           | true      |

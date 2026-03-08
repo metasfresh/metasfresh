@@ -116,6 +116,7 @@ public class M_QtyReservation_StepDef
 		final String supplyType = row.getAsOptionalString("SupplyType").orElse("OH");
 
 		final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);
+		record.setC_Order_ID(orderLine.getC_Order_ID());
 		record.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
@@ -159,6 +160,11 @@ public class M_QtyReservation_StepDef
 							softly.assertThat(record.getQtyDelivered())
 									.as("M_QtyReservation[%d].QtyDelivered", record.getM_QtyReservation_ID())
 									.isEqualByComparingTo(expectedQtyDelivered));
+
+					row.getAsOptionalBigDecimal("QtyTU").ifPresent(expectedQtyTU ->
+							softly.assertThat(record.getQtyTU())
+									.as("M_QtyReservation[%d].QtyTU", record.getM_QtyReservation_ID())
+									.isEqualByComparingTo(expectedQtyTU));
 
 					row.getAsOptionalBoolean("Processed").ifPresent(expectedProcessed ->
 							softly.assertThat(record.isProcessed())
