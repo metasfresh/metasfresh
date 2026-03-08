@@ -66,8 +66,7 @@ public class ForecastLineGeneratorService
 				continue; // no comparison method configured, skip
 			}
 
-			final ForecastPrecisionUnit precisionUnit = request.getPrecisionUnitOverride()
-					.orElse(pp.getForecastPrecisionUnit() != null ? pp.getForecastPrecisionUnit() : ForecastPrecisionUnit.WEEK);
+			final ForecastPrecisionUnit precisionUnit = pp.getForecastPrecisionUnit() != null ? pp.getForecastPrecisionUnit() : ForecastPrecisionUnit.WEEK;
 
 			final int horizonUnits = computeForecastHorizon(pp, precisionUnit);
 			if (horizonUnits <= 0)
