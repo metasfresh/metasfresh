@@ -3,7 +3,6 @@ package de.metas.mforecast.generator;
 import de.metas.product.ProductId;
 import de.metas.product.ProductCategoryId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -13,7 +12,7 @@ import java.util.Optional;
  * Parameters for the M_Forecast_GenerateLines process, capturing the user's filter and override choices.
  * <p>
  * The process can optionally restrict which products are included ({@code productCategoryId}, {@code productId})
- * and override the per-product forecast settings ({@code calculationMethodOverride}, {@code precisionUnitOverride}).
+ * and override the per-product calculation method ({@code calculationMethodOverride}).
  * When an override is set, it takes precedence over the value configured in PP_Product_Planning for every product.
  */
 @Value
@@ -29,9 +28,6 @@ public class ForecastGeneratorRequest
 	/** If set, overrides the per-product Forecast_CalculationMethod from PP_Product_Planning. */
 	@Nullable ForecastCalculationMethod calculationMethodOverride;
 
-	/** If set, overrides the per-product Forecast_PrecisionUnit from PP_Product_Planning. */
-	@Nullable ForecastPrecisionUnit precisionUnitOverride;
-
 	/** If {@code true}, all existing M_ForecastLine records for this forecast are deleted before generating new ones. */
 	boolean deleteExistingLines;
 
@@ -40,8 +36,4 @@ public class ForecastGeneratorRequest
 		return Optional.ofNullable(calculationMethodOverride);
 	}
 
-	public Optional<ForecastPrecisionUnit> getPrecisionUnitOverride()
-	{
-		return Optional.ofNullable(precisionUnitOverride);
-	}
 }
