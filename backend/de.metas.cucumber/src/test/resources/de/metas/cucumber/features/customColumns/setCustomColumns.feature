@@ -57,6 +57,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | ChargeableQty | true                      |
 
     And the metasfresh cache is reset
+    And we wait for 2000 ms
 
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |
