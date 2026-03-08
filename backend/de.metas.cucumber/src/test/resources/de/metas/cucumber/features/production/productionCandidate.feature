@@ -189,6 +189,8 @@ Feature: Production dispo scenarios
 
     And the order identified by o_2 is reactivated
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
       | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
