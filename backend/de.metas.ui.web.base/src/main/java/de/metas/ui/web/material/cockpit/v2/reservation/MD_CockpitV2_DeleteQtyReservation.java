@@ -3,6 +3,7 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inoutcandidate.qty_reservation.DeleteQtyReservationRequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ public class MD_CockpitV2_DeleteQtyReservation
 		extends MaterialCockpitV2BasedProcess
 		implements IProcessPrecondition
 {
-	@Autowired private QtyReservationService qtyReservationService;
+	@Autowired private de.metas.inoutcandidate.qty_reservation.QtyReservationService qtyReservationService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

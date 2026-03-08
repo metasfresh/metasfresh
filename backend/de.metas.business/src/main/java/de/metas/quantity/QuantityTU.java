@@ -1,16 +1,14 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -22,12 +20,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +34,12 @@ import lombok.NonNull;
 
 /**
  * Quantity of TUs (Transport Units).
+ *
+ * @deprecated Consider using {@link de.metas.handlingunits.QtyTU}
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @EqualsAndHashCode
+@Deprecated
 public final class QuantityTU implements Comparable<QuantityTU>
 {
 	@JsonCreator

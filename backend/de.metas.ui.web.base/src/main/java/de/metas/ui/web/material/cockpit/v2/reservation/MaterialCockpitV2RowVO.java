@@ -23,8 +23,8 @@ public class MaterialCockpitV2RowVO
 {
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
-	@NonNull SupplyType supplyType;
-	@NonNull AvailabilityType availabilityType;
+	@NonNull de.metas.inoutcandidate.qty_reservation.SupplyType supplyType;
+	@NonNull de.metas.inoutcandidate.qty_reservation.AvailabilityType availabilityType;
 	@Nullable Instant datePromised;
 	@Nullable BPartnerId vendorBPartnerId;
 	@Nullable AttributesKey attributesKey;
@@ -47,13 +47,13 @@ public class MaterialCockpitV2RowVO
 
 	public boolean isAvailableForReservation()
 	{
-		return availabilityType == AvailabilityType.AVAILABLE
+		return availabilityType == de.metas.inoutcandidate.qty_reservation.AvailabilityType.AVAILABLE
 				&& qtyTU.isPositive();
 	}
 
 	public boolean isAvailableForUnReservation()
 	{
-		return availabilityType == AvailabilityType.RESERVED
+		return availabilityType == de.metas.inoutcandidate.qty_reservation.AvailabilityType.RESERVED
 				&& qtyTU.isPositive();
 	}
 

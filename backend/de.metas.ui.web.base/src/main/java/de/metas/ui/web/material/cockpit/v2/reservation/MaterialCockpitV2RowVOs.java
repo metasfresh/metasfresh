@@ -50,15 +50,15 @@ public class MaterialCockpitV2RowVOs
 	}
 
 	@NonNull
-	private static SupplyType extractSupplyType(@NonNull final IViewRow row)
+	private static de.metas.inoutcandidate.qty_reservation.SupplyType extractSupplyType(@NonNull final IViewRow row)
 	{
-		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_SupplyType, SupplyType.class);
+		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_SupplyType, de.metas.inoutcandidate.qty_reservation.SupplyType.class);
 	}
 
 	@NonNull
-	private static AvailabilityType extractAvailabilityType(@NonNull final IViewRow row)
+	private static de.metas.inoutcandidate.qty_reservation.AvailabilityType extractAvailabilityType(@NonNull final IViewRow row)
 	{
-		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_AvailabilityStatus, AvailabilityType.class);
+		return row.getFieldNameAndJsonValues().getAsEnum(COLUMNNAME_AvailabilityStatus, de.metas.inoutcandidate.qty_reservation.AvailabilityType.class);
 	}
 
 	@Nullable

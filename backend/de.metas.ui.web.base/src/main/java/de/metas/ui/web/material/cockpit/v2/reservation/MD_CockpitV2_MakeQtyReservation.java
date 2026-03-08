@@ -1,6 +1,7 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -19,7 +20,7 @@ public class MD_CockpitV2_MakeQtyReservation
 		extends MaterialCockpitV2BasedProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Autowired private QtyReservationService qtyReservationService;
+	@Autowired private de.metas.inoutcandidate.qty_reservation.QtyReservationService qtyReservationService;
 
 	private static final String PARAM_QtyOrderedNotReserved_TU = "QtyOrderedNotReserved_TU";
 	@Param(parameterName = PARAM_QtyOrderedNotReserved_TU)

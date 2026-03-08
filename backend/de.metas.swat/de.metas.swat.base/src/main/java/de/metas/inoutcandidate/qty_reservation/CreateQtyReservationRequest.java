@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.v2.reservation;
+package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.QtyTU;

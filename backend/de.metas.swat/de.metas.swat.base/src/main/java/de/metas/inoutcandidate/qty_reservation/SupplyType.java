@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.v2.reservation;
+package de.metas.inoutcandidate.qty_reservation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -10,19 +10,18 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum AvailabilityType implements ReferenceListAwareEnum
+public enum SupplyType implements ReferenceListAwareEnum
 {
-	AVAILABLE("A"),
-	RESERVED("R"),
-	;
+	ON_HAND("OH"),
+	PLANNED_SUPPLY("PS");
 
-	private static final ReferenceListAwareEnums.ValuesIndex<AvailabilityType> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<SupplyType> index = ReferenceListAwareEnums.index(values());
 
 	@NonNull private final String code;
 
 	@NonNull
 	@JsonCreator
-	public static AvailabilityType ofCode(@NonNull final String code)
+	public static SupplyType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
@@ -31,5 +30,10 @@ public enum AvailabilityType implements ReferenceListAwareEnum
 	public String toJson()
 	{
 		return code;
+	}
+
+	public boolean isPlannedSupply()
+	{
+		return this == PLANNED_SUPPLY;
 	}
 }

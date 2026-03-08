@@ -27,7 +27,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.inoutcandidate.qty_reservation.qty_delivered_update.UpdateQtyDeliveredDispatcher;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,7 +49,7 @@ public class M_InOut_Shipment
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
-	@NonNull private final QtyReservationService qtyReservationService;
+	@NonNull private final UpdateQtyDeliveredDispatcher updateQtyDeliveredDispatcher;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_REACTIVATE,
@@ -121,6 +121,7 @@ public class M_InOut_Shipment
 	{
 		if (!inoutRecord.isSOTrx()) {return;}
 
-		qtyReservationService.scheduleUpdateQtyDelivered(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
+		final InOutId shipmentId = InOutId.ofRepoId(inoutRecord.getM_InOut_ID());
+		updateQtyDeliveredDispatcher.fireShipmentChanged(shipmentId);
 	}
 }

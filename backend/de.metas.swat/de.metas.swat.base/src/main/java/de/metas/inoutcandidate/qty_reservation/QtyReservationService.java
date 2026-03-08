@@ -1,23 +1,55 @@
 package de.metas.inoutcandidate.qty_reservation;
 
-import de.metas.inout.InOutId;
-import de.metas.inoutcandidate.qty_reservation.qty_delivered_update.UpdateQtyDeliveredDispatcher;
+import de.metas.handlingunits.QtyTU;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_OrderLine;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-/**
- * Synchronizes QtyDelivered on M_QtyReservation records
- * based on actual shipment completions (M_InOut).
- */
 @Service
 @RequiredArgsConstructor
 public class QtyReservationService
 {
-	@NonNull private final UpdateQtyDeliveredDispatcher updateQtyDeliveredDispatcher;
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final QtyReservationRepository repository;
 
-	public void scheduleUpdateQtyDelivered(@NonNull final InOutId shipmentId)
+	public void makeReservation(@NonNull final CreateQtyReservationRequest request)
 	{
-		updateQtyDeliveredDispatcher.fireShipmentChanged(shipmentId);
+		validateProductMatchesSalesOrderLine(request);
+		repository.createReservation(request);
+	}
+
+	public void deleteReservation(@NonNull final DeleteQtyReservationRequest request)
+	{
+		repository.deleteReservation(request);
+	}
+
+	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
+	{
+		return repository.getReservedQtyTU(request);
+	}
+
+	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
+	{
+		return repository.getReservedQtyTU(orderLineId);
+	}
+
+	private void validateProductMatchesSalesOrderLine(@NonNull final CreateQtyReservationRequest request)
+	{
+		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(request.getOrderAndLineId());
+		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		if (!ProductId.equals(request.getProductId(), orderLineProductId))
+		{
+			throw new AdempiereException("Product mismatch: reservation product "
+					+ request.getProductId().getRepoId()
+					+ " != order line product "
+					+ orderLineProductId.getRepoId());
+		}
 	}
 }
