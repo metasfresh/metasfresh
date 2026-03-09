@@ -429,14 +429,24 @@ export class RawLookup extends Component {
    * @method resolveItems
    * @summary Given the typeahead results, auto-select if exactly one match,
    * beep if no match, or beep and keep dropdown open if multiple matches.
+   *
+   * When `enterRequiresSingleMatch` is false (sysconfig N), multiple matches
+   * will select the currently highlighted item (or the first one) instead of
+   * keeping the dropdown open.
    */
   resolveItems = (items) => {
     if (items.length === 1) {
       this.handleAutoSelectAndAdvance(items[0]);
     } else if (items.length > 1) {
-      // Multiple matches: beep and keep dropdown open so user can pick
-      if (this.props.beepOnInvalidProduct) {
-        playBeep();
+      if (!this.props.enterRequiresSingleMatch) {
+        // Select the highlighted item (arrow-key navigated) or the first one
+        const selected = this.state.selected || items[0];
+        this.handleAutoSelectAndAdvance(selected);
+      } else {
+        // Default: beep and keep dropdown open so user can pick
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
       }
     } else {
       // No match
@@ -946,6 +956,11 @@ const mapStateToProps = (state) => ({
     'quickinput.beepOnInvalidProduct',
     false
   ),
+  enterRequiresSingleMatch: getSettingFromStateAsBoolean(
+    state,
+    'webui.frontend.quickinput.enterRequiresSingleMatch',
+    false
+  ),
 });
 
 RawLookup.propTypes = {
@@ -1004,6 +1019,7 @@ RawLookup.propTypes = {
     boundingRect: PropTypes.object,
   }),
   beepOnInvalidProduct: PropTypes.bool,
+  enterRequiresSingleMatch: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
