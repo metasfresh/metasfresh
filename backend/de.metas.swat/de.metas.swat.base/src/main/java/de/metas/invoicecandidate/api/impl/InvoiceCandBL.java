@@ -2816,7 +2816,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 
 			ic.setC_Project_ID(ProjectId.toRepoId(projectId));
-			InterfaceWrapperHelper.save(ic);
+			invoiceCandDAO.save(ic);
 			logger.debug("Updated C_Project_ID={} on C_Invoice_Candidate_ID={} from C_OrderLine_ID={}", projectId, ic.getC_Invoice_Candidate_ID(), orderLineId);
 		}
 	}

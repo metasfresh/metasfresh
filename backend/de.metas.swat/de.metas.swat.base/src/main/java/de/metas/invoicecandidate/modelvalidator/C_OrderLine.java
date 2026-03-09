@@ -18,6 +18,11 @@ import javax.annotation.Nullable;
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
 			, ifColumnsChanged = {
 					I_C_OrderLine.COLUMNNAME_QtyOrdered // task 08452: make sure the IC gets invalidated when we sort of "close" a single line
@@ -27,13 +32,13 @@ public class C_OrderLine
 			})
 	public void invalidateInvoiceCandidates(final I_C_OrderLine ol)
 	{
-		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(ol);
+		invoiceCandidateHandlerBL.invalidateCandidatesFor(ol);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteInvoiceCandidates(final I_C_OrderLine ol)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(ol);
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(ol);
 	}
 
 	/**
@@ -49,7 +54,7 @@ public class C_OrderLine
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		@Nullable final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
 
-		Services.get(IInvoiceCandBL.class).updateProjectId(orderLineId, projectId);
-		Services.get(IShipmentScheduleBL.class).updateProjectId(orderLineId, projectId);
+		invoiceCandBL.updateProjectId(orderLineId, projectId);
+		shipmentScheduleBL.updateProjectId(orderLineId, projectId);
 	}
 }
