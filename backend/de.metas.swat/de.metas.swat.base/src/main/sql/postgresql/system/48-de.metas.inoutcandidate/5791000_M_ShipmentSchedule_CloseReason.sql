@@ -37,7 +37,7 @@ AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Lang
 -- 3) AD_Ref_List values (9 reasons)
 -- 3a) Manual
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544135,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Manuell',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Manual','Manual')
+VALUES (0,0,542061,544135,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Manuell',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'MA','MA')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -57,7 +57,7 @@ WHERE AD_Ref_List_ID=544135 AND AD_Language='en_US'
 
 -- 3b) OrderReactivated
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544136,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Bestellung reaktiviert',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'OrderReactivated','OrderReactivated')
+VALUES (0,0,542061,544136,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Bestellung reaktiviert',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'OR','OR')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -77,7 +77,7 @@ WHERE AD_Ref_List_ID=544136 AND AD_Language='en_US'
 
 -- 3c) PartiallyShipped
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544137,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Teilweise geliefert',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'PartiallyShipped','PartiallyShipped')
+VALUES (0,0,542061,544137,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Teilweise geliefert',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'PS','PS')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -97,7 +97,7 @@ WHERE AD_Ref_List_ID=544137 AND AD_Language='en_US'
 
 -- 3d) InvoiceCandidateClosed
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544138,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Rechnungskandidat geschlossen',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'InvoiceCandidateClosed','InvoiceCandidateClosed')
+VALUES (0,0,542061,544138,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Rechnungskandidat geschlossen',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'IC','IC')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -117,7 +117,7 @@ WHERE AD_Ref_List_ID=544138 AND AD_Language='en_US'
 
 -- 3e) FlatrateTerm
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544139,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Pauschalvertrag',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'FlatrateTerm','FlatrateTerm')
+VALUES (0,0,542061,544139,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Pauschalvertrag',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'FT','FT')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -137,7 +137,7 @@ WHERE AD_Ref_List_ID=544139 AND AD_Language='en_US'
 
 -- 3f) ContractPause
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544140,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Vertragspause',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'ContractPause','ContractPause')
+VALUES (0,0,542061,544140,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Vertragspause',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'CP','CP')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -157,7 +157,7 @@ WHERE AD_Ref_List_ID=544140 AND AD_Language='en_US'
 
 -- 3g) ShipmentProcessed
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544141,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Lieferung verarbeitet',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'ShipmentProcessed','ShipmentProcessed')
+VALUES (0,0,542061,544141,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Lieferung verarbeitet',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'SP','SP')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -177,7 +177,7 @@ WHERE AD_Ref_List_ID=544141 AND AD_Language='en_US'
 
 -- 3h) PickingRejected
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544142,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Kommissionierung abgelehnt',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'PickingRejected','PickingRejected')
+VALUES (0,0,542061,544142,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Kommissionierung abgelehnt',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'PR','PR')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -197,7 +197,7 @@ WHERE AD_Ref_List_ID=544142 AND AD_Language='en_US'
 
 -- 3i) OutOfStock
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542061,544143,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Nicht auf Lager',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'OutOfStock','OutOfStock')
+VALUES (0,0,542061,544143,TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inoutcandidate','Y','Nicht auf Lager',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'OS','OS')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
@@ -225,7 +225,7 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
     IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,
     Updated,UpdatedBy,Version)
 VALUES (0,592115,584599,0,17,542061,500221,
-    'CloseReason',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.inoutcandidate',0,40,
+    'CloseReason',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.inoutcandidate',0,2,
     'Y','N','Y','N','N','N',
     'N','N','N','N','N','N',
     'N','N','N','N','N','N','N',
@@ -245,18 +245,18 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 ;
 
 -- 5) DDL: add column to table (using db_alter_table wrapper)
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule','ALTER TABLE public.M_ShipmentSchedule ADD COLUMN CloseReason VARCHAR(40)')
+/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule','ALTER TABLE public.M_ShipmentSchedule ADD COLUMN CloseReason VARCHAR(2)')
 ;
 
 -- 6) Check constraint for List reference column
 /* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule',
-    $$ALTER TABLE public.M_ShipmentSchedule ADD CONSTRAINT CloseReason_Check CHECK (CloseReason IS NULL OR CloseReason IN ('Manual','OrderReactivated','PartiallyShipped','InvoiceCandidateClosed','FlatrateTerm','ContractPause','ShipmentProcessed','PickingRejected','OutOfStock'))$$)
+    $$ALTER TABLE public.M_ShipmentSchedule ADD CONSTRAINT CloseReason_Check CHECK (CloseReason IS NULL OR CloseReason IN ('MA','OR','PS','IC','FT','CP','SP','PR','OS'))$$)
 ;
 
 -- 7) AD_Field on tab 500221
 INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,
     Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,AD_Column_ID,Name,AD_Org_ID,EntityType)
-VALUES (500221,'Y',40,'N','N','N','N',0,'Y',
+VALUES (500221,'Y',2,'N','N','N','N',0,'Y',
     TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,774764,592115,'Schlussgrund',0,'de.metas.inoutcandidate')
 ;
 

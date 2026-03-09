@@ -92,6 +92,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -546,15 +547,29 @@ public class M_ShipmentSchedule_StepDef
 		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
-	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)$")
-	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action)
+	/**
+	 * Close or reopen a shipment schedule.
+	 * When closing, an optional close reason can be provided (e.g., "closed with reason Manual").
+	 * When no reason is provided, calls the no-reason overload (backward compatible).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the M_ShipmentSchedule identified by sched_1 is closed
+	 * When the M_ShipmentSchedule identified by sched_1 is closed with reason Manual
+	 * When the M_ShipmentSchedule identified by sched_1 is reactivated
+	 * </pre>
+	 */
+	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)(?: with reason (.*))?$")
+	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action, @Nullable final String closeReasonCode)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case closed:
-				shipmentScheduleBL.closeShipmentSchedule(schedule);
+				final ShipmentScheduleCloseReason closeReason = ShipmentScheduleCloseReason.ofNullableCode(closeReasonCode);
+				shipmentScheduleBL.closeShipmentSchedule(schedule, closeReason);
 				break;
 			case reactivated:
 				shipmentScheduleBL.openShipmentSchedule(schedule);
@@ -757,8 +772,22 @@ public class M_ShipmentSchedule_StepDef
 
 		if (isClosed != null)
 		{
-			assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
+			softly.assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
 		}
+
+		final String closeReasonCode = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_CloseReason);
+		if (closeReasonCode != null)
+		{
+			if (Check.isBlank(closeReasonCode))
+			{
+				softly.assertThat(shipmentSchedule.getCloseReason()).as("CloseReason for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isNull();
+			}
+			else
+			{
+				softly.assertThat(shipmentSchedule.getCloseReason()).as("CloseReason for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(closeReasonCode);
+			}
+		}
+
 		if (isProcessed != null)
 		{
 			softly.assertThat(shipmentSchedule.isProcessed()).as("Processed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isProcessed);

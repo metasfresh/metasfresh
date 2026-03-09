@@ -351,24 +351,24 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
-	/** Manual = Manual */
-	public static final String CLOSEREASON_Manual = "Manual";
-	/** OrderReactivated = OrderReactivated */
-	public static final String CLOSEREASON_OrderReactivated = "OrderReactivated";
-	/** PartiallyShipped = PartiallyShipped */
-	public static final String CLOSEREASON_PartiallyShipped = "PartiallyShipped";
-	/** InvoiceCandidateClosed = InvoiceCandidateClosed */
-	public static final String CLOSEREASON_InvoiceCandidateClosed = "InvoiceCandidateClosed";
-	/** FlatrateTerm = FlatrateTerm */
-	public static final String CLOSEREASON_FlatrateTerm = "FlatrateTerm";
-	/** ContractPause = ContractPause */
-	public static final String CLOSEREASON_ContractPause = "ContractPause";
-	/** ShipmentProcessed = ShipmentProcessed */
-	public static final String CLOSEREASON_ShipmentProcessed = "ShipmentProcessed";
-	/** PickingRejected = PickingRejected */
-	public static final String CLOSEREASON_PickingRejected = "PickingRejected";
-	/** OutOfStock = OutOfStock */
-	public static final String CLOSEREASON_OutOfStock = "OutOfStock";
+	/** Manual = MA */
+	public static final String CLOSEREASON_Manual = "MA";
+	/** OrderReactivated = OR */
+	public static final String CLOSEREASON_OrderReactivated = "OR";
+	/** PartiallyShipped = PS */
+	public static final String CLOSEREASON_PartiallyShipped = "PS";
+	/** InvoiceCandidateClosed = IC */
+	public static final String CLOSEREASON_InvoiceCandidateClosed = "IC";
+	/** FlatrateTerm = FT */
+	public static final String CLOSEREASON_FlatrateTerm = "FT";
+	/** ContractPause = CP */
+	public static final String CLOSEREASON_ContractPause = "CP";
+	/** ShipmentProcessed = SP */
+	public static final String CLOSEREASON_ShipmentProcessed = "SP";
+	/** PickingRejected = PR */
+	public static final String CLOSEREASON_PickingRejected = "PR";
+	/** OutOfStock = OS */
+	public static final String CLOSEREASON_OutOfStock = "OS";
 	@Override
 	public void setCloseReason (final @Nullable java.lang.String CloseReason)
 	{
