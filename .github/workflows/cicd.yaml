@@ -1324,7 +1324,7 @@ jobs:
       max-parallel: 10
       fail-fast: false
       matrix:
-        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, flaky, catchall ]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, catchall ]
         include:
           - profile: profile1
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor1"
@@ -1342,8 +1342,6 @@ jobs:
             params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor7"
           - profile: report
             params: -DexcludedGroups="ignore,flaky" -Dgroups="report"
-          - profile: flaky
-            params: -DexcludedGroups="ignore" -Dgroups="flaky"
           - profile: catchall
             params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,report,flaky"
     steps:
