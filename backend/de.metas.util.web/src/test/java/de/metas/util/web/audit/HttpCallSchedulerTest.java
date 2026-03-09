@@ -20,7 +20,7 @@ class HttpCallSchedulerTest
 	{
 		final HttpCallScheduler scheduler = new HttpCallScheduler();
 
-		final ApiResponse expectedResponse = ApiResponse.builder().statusCode(200).build();
+		final ApiResponse expectedResponse = new ApiResponse(200, null, null);
 		final CompletableFuture<ApiResponse> future = new CompletableFuture<>();
 		final ScheduledRequest request = new ScheduledRequest(future, () -> expectedResponse);
 
@@ -39,7 +39,7 @@ class HttpCallSchedulerTest
 		final List<HttpCallScheduler> schedulers = new ArrayList<>();
 		final List<CompletableFuture<ApiResponse>> futures = new ArrayList<>();
 
-		final ApiResponse dummyResponse = ApiResponse.builder().statusCode(200).build();
+		final ApiResponse dummyResponse = new ApiResponse(200, null, null);
 
 		for (int i = 0; i < schedulerCount; i++)
 		{
@@ -85,7 +85,7 @@ class HttpCallSchedulerTest
 		// Verifies that after the thread exits from idleness (corePoolSize=0),
 		// the scheduler can still process new requests
 		final HttpCallScheduler scheduler = new HttpCallScheduler();
-		final ApiResponse dummyResponse = ApiResponse.builder().statusCode(200).build();
+		final ApiResponse dummyResponse = new ApiResponse(200, null, null);
 
 		// First request
 		final CompletableFuture<ApiResponse> future1 = new CompletableFuture<>();
@@ -105,7 +105,7 @@ class HttpCallSchedulerTest
 	void exceptionInRequestDoesNotBreakScheduler() throws Exception
 	{
 		final HttpCallScheduler scheduler = new HttpCallScheduler();
-		final ApiResponse dummyResponse = ApiResponse.builder().statusCode(200).build();
+		final ApiResponse dummyResponse = new ApiResponse(200, null, null);
 
 		// First request throws
 		final CompletableFuture<ApiResponse> failingFuture = new CompletableFuture<>();
