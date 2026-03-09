@@ -31,10 +31,14 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.contracts.ConditionsId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -196,7 +200,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return orderLineQuickInput.getQty();
 	}
 
-	private static void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
+	private void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
 	{
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(quickInputModel.getM_HU_PI_Item_Product_ID());
@@ -205,11 +209,25 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			return;
 		}
 
+		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final HUPIItemProduct mainPiItemProduct = piItemProductDAO.getById(piItemProductId);
+		final HuPackingInstructionsItemId piItemId = mainPiItemProduct.getPiItemId();
+		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.load(piItemId.getRepoId(), I_M_HU_PI_Item.class);
+
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+
 		for (final GroupRegularLine regularLine : group.getRegularLines())
 		{
 			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), de.metas.handlingunits.model.I_C_OrderLine.class);
-			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
-			InterfaceWrapperHelper.save(orderLine);
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+			final I_M_HU_PI_Item_Product matchingPiItemProduct = piItemProductDAO.retrievePIMaterialItemProduct(piItem, bpartnerId, productId, null);
+			if (matchingPiItemProduct != null)
+			{
+				orderLine.setM_HU_PI_Item_Product_ID(matchingPiItemProduct.getM_HU_PI_Item_Product_ID());
+				InterfaceWrapperHelper.save(orderLine);
+			}
 		}
 	}
 
