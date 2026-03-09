@@ -72,16 +72,29 @@ public class ShipmentScheduleUpdatedHandler implements MaterialEventHandler<Ship
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 
-		final Candidate candidate = candidateRepository.retrieveLatestMatchOrNull(candidatesQuery);
-		final Candidate updatedCandidate;
+		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(candidatesQuery);
 
 		final DemandDetail demandDetail = DemandDetail.forDocumentLine(
 				event.getShipmentScheduleId(),
 				event.getDocumentLineDescriptor(),
 				event.getMaterialDescriptor().getQuantity());
 
-		if (candidate == null)
+		final boolean materialDescriptorChanged = event.getShipmentScheduleDetail().getOldShipmentScheduleData() != null;
+
+		// When the material descriptor changed (ASI, date, product, or warehouse),
+		// delete the old candidate so its STOCK child (keyed to the old attributes)
+		// is properly removed and its ATP delta is propagated for the old AttributesKey.
+		// Then create a fresh candidate with the new descriptor below.
+		if (materialDescriptorChanged && existingCandidate != null)
 		{
+			candidateChangeHandler.onCandidateDelete(existingCandidate);
+		}
+
+		final Candidate updatedCandidate;
+		if (existingCandidate == null || materialDescriptorChanged)
+		{
+			// Create brand new candidate: either no prior candidate existed,
+			// or the old one was just deleted due to material descriptor change.
 			updatedCandidate = Candidate
 					.builderForEventDescriptor(event.getEventDescriptor())
 					.materialDescriptor(event.getMaterialDescriptor())
@@ -93,7 +106,8 @@ public class ShipmentScheduleUpdatedHandler implements MaterialEventHandler<Ship
 		}
 		else
 		{
-			updatedCandidate = candidate.toBuilder()
+			// Simple update (no material descriptor change): update qty/minmax in place.
+			updatedCandidate = existingCandidate.toBuilder()
 					.materialDescriptor(event.getMaterialDescriptor())
 					.minMaxDescriptor(event.getMinMaxDescriptor())
 					.businessCaseDetail(demandDetail)
