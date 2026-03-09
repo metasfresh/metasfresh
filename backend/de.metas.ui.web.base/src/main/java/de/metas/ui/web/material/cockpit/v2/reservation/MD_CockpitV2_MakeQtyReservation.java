@@ -95,6 +95,7 @@ public class MD_CockpitV2_MakeQtyReservation
 						.datePromised(rowVO.getDatePromised())
 						.vendorBPartnerId(rowVO.getVendorBPartnerId())
 						.attributesKey(rowVO.getAttributesKey())
+						.projectId(getMaterialCockpitViewContext().getProjectId())
 						.qtyTU(qtyToReserveTU)
 						.qty(rowVO.computeQtyCUToReserve(qtyToReserveTU))
 						.build()

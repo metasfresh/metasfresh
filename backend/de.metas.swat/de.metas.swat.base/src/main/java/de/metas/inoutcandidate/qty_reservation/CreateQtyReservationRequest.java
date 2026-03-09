@@ -5,6 +5,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,4 +28,5 @@ public class CreateQtyReservationRequest
 	@NonNull QtyTU qtyTU;
 	@NonNull Quantity qty;
 	@Nullable AttributesKey attributesKey;
+	@Nullable ProjectId projectId;
 }

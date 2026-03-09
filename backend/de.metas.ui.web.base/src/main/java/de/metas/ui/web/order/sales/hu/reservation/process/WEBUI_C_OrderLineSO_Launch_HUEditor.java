@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -12,6 +13,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.project.ProjectId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2Service;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
@@ -26,7 +28,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -61,6 +63,10 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	@NonNull private final HUReservationDocumentFilterService huReservationDocumentFilterService = SpringContextHolder.instance.getBean(HUReservationDocumentFilterService.class);
 	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 	@NonNull private final MaterialCockpitV2Service materialCockpitV2Service = SpringContextHolder.instance.getBean(MaterialCockpitV2Service.class);
+
+	// state
+	private I_C_Order _salesOrder;
+	private I_C_OrderLine _salesOrderLine;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -157,7 +163,46 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	{
 		return MaterialCockpitViewContext.builder()
 				.sourceSelectionId(getPinstanceId())
-				.salesOrderAndLineId(OrderAndLineId.of(getOrderId(), getSingleOrderLineId()))
+				.salesOrderAndLineId(getSalesOrderAndLineId())
+				.projectId(getProjectId())
 				.build();
+	}
+
+	private ProjectId getProjectId()
+	{
+		final I_C_OrderLine salesOrderLine = getSalesOrderLine();
+		final ProjectId lineProjectId = ProjectId.ofRepoIdOrNull(salesOrderLine.getC_Project_ID());
+		if (lineProjectId != null)
+		{
+			return lineProjectId;
+		}
+
+		final I_C_Order salesOrder = getSalesOrder();
+		return ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
+	}
+
+	private I_C_Order getSalesOrder()
+	{
+		if (_salesOrder == null)
+		{
+			final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+			_salesOrder = orderBL.getById(salesOrderAndLineId.getOrderId());
+		}
+		return _salesOrder;
+	}
+
+	private I_C_OrderLine getSalesOrderLine()
+	{
+		if (_salesOrderLine == null)
+		{
+			final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+			_salesOrderLine = orderBL.getLineById(salesOrderAndLineId);
+		}
+		return _salesOrderLine;
+	}
+
+	private @NotNull OrderAndLineId getSalesOrderAndLineId()
+	{
+		return OrderAndLineId.of(getOrderId(), getSingleOrderLineId());
 	}
 }
