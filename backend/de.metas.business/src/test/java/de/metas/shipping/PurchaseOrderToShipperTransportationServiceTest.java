@@ -230,6 +230,84 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	}
 
+	/**
+	 * Verify that {@link PurchaseOrderToShipperTransportationService#hasProcessedShipperTransportation}
+	 * returns false when the transport order is not processed, and true when it is.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void hasProcessedShipperTransportation_returnsCorrectly()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner3", "address3");
+		final OrderId order = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(
+				ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
+				Collections.singletonList(order));
+
+		// Verify shipping packages exist
+		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		assertThat(shippingPackages).hasSize(1);
+
+		// Not processed yet
+		assertThat(service.hasProcessedShipperTransportation(order)).isFalse();
+
+		// Mark transport order as processed
+		shipperTransportation.setProcessed(true);
+		save(shipperTransportation);
+
+		// Now it's processed
+		assertThat(service.hasProcessedShipperTransportation(order)).isTrue();
+	}
+
+	/**
+	 * Verify that shipping packages are NOT deleted when using hasProcessedShipperTransportation
+	 * (the check-only method used during PO reactivation), regardless of processed state.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void shippingPackages_survivePOReactivationCheck()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner4", "address4");
+		final OrderId order = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom1),
+				Money.of(20, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order));
+
+		// Verify packages exist
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+
+		// Simulate what happens on PO reactivation (the new code only checks, doesn't delete)
+		final boolean hasProcessed = service.hasProcessedShipperTransportation(order);
+		assertThat(hasProcessed).isFalse();
+
+		// Shipping packages must still exist after the check
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+				.as("Shipping packages must survive PO reactivation (not be deleted)")
+				.hasSize(1);
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();

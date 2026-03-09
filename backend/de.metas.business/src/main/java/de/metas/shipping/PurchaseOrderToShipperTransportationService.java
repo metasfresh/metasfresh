@@ -291,18 +291,22 @@ public class PurchaseOrderToShipperTransportationService
 		return result.getReportData();
 	}
 
-	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	public boolean hasProcessedShipperTransportation(@NonNull final OrderId orderId)
 	{
-		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+		return shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderId(orderId)
 				.processed(true)
 				.build());
-		if (isDeletePossible)
-		{
-			repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
-		}
+	}
 
-		return isDeletePossible;
+	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	{
+		if (hasProcessedShipperTransportation(orderId))
+		{
+			return false;
+		}
+		repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		return true;
 	}
 
 	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
