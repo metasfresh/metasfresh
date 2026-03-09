@@ -73,6 +73,7 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(AttributeConstants.ATTR_Project.getCode());
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
+		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
 	}
 
