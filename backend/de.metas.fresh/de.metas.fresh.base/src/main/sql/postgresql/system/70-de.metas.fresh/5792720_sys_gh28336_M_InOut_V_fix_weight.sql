@@ -1,6 +1,16 @@
-DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.M_InOut_V;
+-- gh#28336: Fix M_InOut_V weight calculation for Intrastat
+--
+-- Bug: weight came from Docs_Sales_InOut_Sum_Weight() which returns the TOTAL
+-- shipment weight (sum of all lines). Since the inner subquery iterates per
+-- M_InOutLine but the function aggregates at M_InOut level, every commodity
+-- group received the full shipment weight instead of its per-line share.
+--
+-- Fix: compute weight per line (same logic as the function, minus the SUM),
+-- then SUM(weight) in the outer query instead of GROUP BY weight.
 
-CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.M_InOut_V AS
+DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.m_inout_v$new;
+
+CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.m_inout_v$new AS
 select commoditynumber,
        productName,
        productDescription,
@@ -75,7 +85,7 @@ from (
                 per.c_year_id
          from M_InOut io
                   join AD_Org o on io.ad_org_id = o.ad_org_id
-                  -- Org's country via AD_OrgInfo → OrgBP_Location → C_Location → C_Country
+                  -- Org's country via AD_OrgInfo -> OrgBP_Location -> C_Location -> C_Country
                   join AD_OrgInfo org_info on io.ad_org_id = org_info.ad_org_id
                   left join C_BPartner_Location org_bpl on org_info.OrgBP_Location_ID = org_bpl.C_BPartner_Location_ID
                   left join C_Location org_loc on org_bpl.C_Location_ID = org_loc.C_Location_ID
@@ -137,3 +147,13 @@ group by commoditynumber,
          vataxid,
          c_year_id
 order by deliveryCountry, commoditynumber;
+
+SELECT db_alter_view(
+    'de_metas_endcustomer_fresh_reports.m_inout_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('m_inout_v$new')
+       AND lower(views.table_schema) = lower('de_metas_endcustomer_fresh_reports'))
+);
+
+DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.m_inout_v$new;
