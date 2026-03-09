@@ -42,6 +42,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
+import de.metas.project.ProjectId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -53,6 +54,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -1018,5 +1021,35 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.shipmentSchedulePA(shipmentSchedulePA)
 				.modelClass(modelClass)
 				.build();
+	}
+
+	@Override
+	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule;
+		try
+		{
+			shipmentSchedule = getByOrderLineId(orderLineId);
+		}
+		catch (final AdempiereException e)
+		{
+			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip project propagation", orderLineId, e);
+			return;
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			return;
+		}
+
+		final ProjectId schedProjectId = ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
+		if (ProjectId.equals(schedProjectId, projectId))
+		{
+			return;
+		}
+
+		shipmentSchedule.setC_Project_ID(ProjectId.toRepoId(projectId));
+		InterfaceWrapperHelper.save(shipmentSchedule);
+		logger.debug("Updated C_Project_ID={} on M_ShipmentSchedule_ID={} from C_OrderLine_ID={}", projectId, shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId);
 	}
 }
