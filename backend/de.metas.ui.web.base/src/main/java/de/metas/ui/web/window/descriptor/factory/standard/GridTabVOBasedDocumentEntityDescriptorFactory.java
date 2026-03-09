@@ -538,6 +538,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
+				.setHelp(gridFieldVO.getHelpTrls(), gridFieldVO.getHelp())
 				//
 				.setKey(keyColumn)
 				.setParentLink(isParentLinkColumn, parentLinkFieldName)
