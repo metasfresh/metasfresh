@@ -416,7 +416,6 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_2                                 | cp_2                     | ol_2                      | 10             | 10              |
 
 
-  @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_700
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
@@ -571,7 +570,6 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
       | cp_dd_2                                 | cp_1                     | ol_2                      | 10             | 10              |
 
-  @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_900
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
@@ -654,7 +652,6 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
-  @ignore
   @Id:S0189_1000
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
@@ -711,7 +708,6 @@ Feature: sales order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-  @ignore #QtyStockCurrentAtDate doesn't update correctly on attributes change
   @Id:S0189_1100
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
