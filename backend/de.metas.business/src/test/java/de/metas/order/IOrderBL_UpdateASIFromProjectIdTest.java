@@ -113,7 +113,9 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	@Nullable
 	private String getProjectValueFromASI(final AttributeSetInstanceId asiId)
 	{
-		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId).getValueAsString(AttributeConstants.ATTR_Project);
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId)
+				.getValueAsStringIfExists(AttributeConstants.ATTR_Project)
+				.orElse(null);
 	}
 
 	@Test
