@@ -137,6 +137,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.qty(extractQty(quickInput))
 				.createGroup(orderId, contractConditionsId);
 
+		if (groupTemplate.isInheritPackingInstruction())
+		{
+			applyPackingInstructionFromQuickInput(quickInput, group);
+		}
+
 		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
 		group.getRegularLines()
 				.stream()
@@ -189,6 +194,23 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	{
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		return orderLineQuickInput.getQty();
+	}
+
+	private static void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
+	{
+		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(quickInputModel.getM_HU_PI_Item_Product_ID());
+		if (!HUPIItemProductId.isRegular(piItemProductId))
+		{
+			return;
+		}
+
+		for (final GroupRegularLine regularLine : group.getRegularLines())
+		{
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), de.metas.handlingunits.model.I_C_OrderLine.class);
+			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+			InterfaceWrapperHelper.save(orderLine);
+		}
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)
