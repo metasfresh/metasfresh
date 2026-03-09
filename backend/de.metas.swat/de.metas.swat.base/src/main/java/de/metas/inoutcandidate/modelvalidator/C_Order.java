@@ -53,14 +53,17 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
 	{
-		// Makes sense only for sales orders
-		if (!order.isSOTrx())
+		// For sales orders, check the bill partner; for purchase orders, check the vendor
+		final int partnerIdToCheck = order.isSOTrx()
+				? order.getBill_BPartner_ID()
+				: order.getC_BPartner_ID();
+
+		if (partnerIdToCheck <= 0)
 		{
 			return;
 		}
 
-		final int billPartnerId = order.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(billPartnerId);
+		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(partnerIdToCheck);
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
 		if (isDeliveryStop)
 		{

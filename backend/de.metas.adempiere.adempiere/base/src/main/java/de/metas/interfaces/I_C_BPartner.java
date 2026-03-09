@@ -42,4 +42,17 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public void setCustomer_Group_ID(int Customer_Group_ID);
 
 	public I_C_BP_Group getCustomer_Group();
+
+	// Delivery / order stop (gh#28631)
+	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
+
+	void setIsDeliveryStop(boolean IsDeliveryStop);
+
+	boolean isDeliveryStop();
+
+	String COLUMNNAME_DeliveryStopReason = "DeliveryStopReason";
+
+	void setDeliveryStopReason(String DeliveryStopReason);
+
+	String getDeliveryStopReason();
 }
