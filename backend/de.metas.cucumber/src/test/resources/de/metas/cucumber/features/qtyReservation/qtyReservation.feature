@@ -244,3 +244,41 @@ Feature: Qty Reservation delivery tracking
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
       | shipmentSchedule_5A              | 0                |
       | shipmentSchedule_5B              | 10               |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_60
+  Scenario: Reservation with project propagates C_Project_ID to the sales order line
+  ## _Given a C_Project and a sales order line with no project set
+  ## _When an M_QtyReservation is created with C_Project_ID referencing that project
+  ## _Then QtyReservationService.makeReservation() propagates the C_Project_ID to the order line
+
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | project_60 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_6    | true    | bp_1          | 2026-03-01  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_6 | order_6    | product_1    | 10         |
+    And the order identified by order_6 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier         | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_6 | orderLine_6    | N             |
+
+    ## Order line has no project yet
+    Then validate C_OrderLine:
+      | Identifier  | C_Project_ID |
+      | orderLine_6 | null         |
+
+    ## Create reservation referencing the project
+    When metasfresh contains M_QtyReservations:
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | C_Project_ID |
+      | qtyReservation_6 | orderLine_6    | product_1    | warehouse_1    | 10 PCE | 1     | project_60   |
+
+    ## The service must have propagated C_Project_ID to the order line
+    Then validate C_OrderLine:
+      | Identifier  | C_Project_ID |
+      | orderLine_6 | project_60   |

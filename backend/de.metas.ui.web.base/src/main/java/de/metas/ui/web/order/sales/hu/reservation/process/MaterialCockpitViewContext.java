@@ -4,15 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
-import de.metas.project.ProjectId;
 import de.metas.ui.web.view.IView;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -23,7 +20,6 @@ public class MaterialCockpitViewContext
 
 	@NonNull PInstanceId sourceSelectionId;
 	@NonNull OrderAndLineId salesOrderAndLineId;
-	@Nullable ProjectId projectId;
 
 	@NonNull
 	public static MaterialCockpitViewContext of(@NonNull final IView view)
