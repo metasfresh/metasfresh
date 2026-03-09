@@ -94,7 +94,7 @@ public final class Debouncer<T>
 		// Allow the core thread to terminate after 60s of idleness.
 		// Without this, each Debouncer instance keeps its thread alive forever,
 		// even after shutdown(). Since ProcessExecutionResult creates a new Debouncer
-		// per process execution, this leaked ~1 thread per execution (gh#28688).
+		// per process execution, this leaked ~1 thread per execution.
 		//
 		// This is safe for long-lived singleton debouncers (e.g. WebsocketSender):
 		// the executor stays alive and automatically creates a new thread when
