@@ -31,18 +31,22 @@ CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Report(p_DateFrom   ti
 
     RETURNS TABLE
             (
-                DocumentNo             varchar,
-                MovementDate           date,
-                CountryCode            varchar,
-                Product                varchar,
-                MovementQty            numeric,
-                UOMSymbol              varchar,
-                Weight                 numeric,
-                ProductGroup           varchar,
-                SmallPackagingMaterial varchar,
-                SmallPackagingWeight   numeric,
-                OuterPackagingMaterial varchar,
-                OuterPackagingWeight   numeric
+                DocumentNo                 varchar,
+                MovementDate               date,
+                CountryCode                varchar,
+                ProductValue               varchar,
+                ProductName                varchar,
+                MovementQty                numeric,
+                PurchaseQty                numeric,
+                UOMSymbol                  varchar,
+                Weight                     numeric,
+                ProductGroup               varchar,
+                MaterialType               varchar,
+                SmallPackagingMaterial     varchar,
+                SmallPackagingWeight       numeric,
+                OuterPackagingMaterial     varchar,
+                OuterPackagingWeight       numeric,
+                PackagingInstructionFactor numeric
             )
 
 AS
@@ -51,15 +55,33 @@ $$
 SELECT io.DocumentNo,
        io.MovementDate,
        c.CountryCode,
-       p.value || ' ' || p.name                                                                AS Product,
+       p.value                                                                                 AS ProductValue,
+       p.name                                                                                  AS ProductName,
        (CASE WHEN io.movementtype = 'C-' THEN iol.MovementQty * (-1) ELSE iol.MovementQty END) AS MovementQty,
+       (CASE WHEN io.IsSoTrx = 'N' THEN iol.MovementQty END)                                   AS PurchaseQty,
        uom.UOMSymbol,
        p.weight                                                                                AS Weight,
        pp.value                                                                                AS ProductGroup,
+       -- NEW: MaterialType (replaces ProductGroup; comma-separated when multiple)
+       (SELECT STRING_AGG(pp.Name, ', ' ORDER BY pp.Name)
+        FROM M_Product_PackageLicensing_ProductGroup pppg
+                 JOIN M_PackageLicensing_ProductGroup pp
+                      ON pp.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
+                          AND pp.IsActive = 'Y'
+                          AND (p_Country_id IS NULL OR pp.C_Country_ID = p_Country_id)
+        WHERE pppg.M_Product_ID = p.M_Product_ID
+          AND pppg.IsActive = 'Y')                                                             AS MaterialType,
        plmp1.name                                                                              AS SmallPackagingMaterial,
        p.SmallPackagingWeight,
        plmp2.name                                                                              AS OuterPackagingMaterial,
-       p.OuterPackagingWeight
+       p.OuterPackagingWeight,
+       -- NEW: Packaging instruction factor (default PI preferred)
+       (SELECT piip.Qty
+        FROM M_HU_PI_Item_Product piip
+        WHERE piip.M_Product_ID = p.M_Product_ID
+          AND piip.IsActive = 'Y'
+        ORDER BY piip.IsDefaultForProduct DESC, piip.Created DESC
+        LIMIT 1)                                                                               AS PackagingInstructionFactor
 
 FROM m_inout io
          INNER JOIN m_inoutline iol ON io.m_inout_id = iol.m_inout_id
