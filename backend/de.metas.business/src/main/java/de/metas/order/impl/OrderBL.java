@@ -1507,6 +1507,11 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
 	{
+		if (!attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+		{
+			return;
+		}
+
 		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
 
