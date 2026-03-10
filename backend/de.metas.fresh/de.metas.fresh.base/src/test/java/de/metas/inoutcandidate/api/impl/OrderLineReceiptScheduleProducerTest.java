@@ -147,4 +147,44 @@ public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBas
 				.as("POReference should be set from order on initial creation")
 				.isEqualTo("NEW-ORDER-REF");
 	}
+
+	/**
+	 * Verify that when the receipt schedule's POReference is blank,
+	 * the order's POReference IS synced on update.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void poReference_isSyncedFromOrderWhenBlank()
+	{
+		final I_M_Warehouse orderWarehouse = createWarehouse("WH_Order");
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM4");
+		final I_M_Product product = createProduct("Test Product 4", UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), null);
+
+		// Create order without POReference initially
+		final I_C_Order order = createOrder(orderWarehouse);
+		InterfaceWrapperHelper.save(order);
+
+		createOrderLine(order, product);
+
+		// Create the receipt schedule (initial creation — POReference is blank)
+		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
+		final List<I_M_ReceiptSchedule> receiptSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(receiptSchedules).hasSize(1);
+
+		final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+		assertThat(receiptSchedule.getPOReference()).isNullOrEmpty();
+
+		// Now set POReference on the order (simulating PO reactivation + edit + re-complete)
+		order.setPOReference("LATE-REF-001");
+		InterfaceWrapperHelper.save(order);
+
+		// Update: since the receipt schedule's POReference is blank, it should sync from order
+		final List<I_M_ReceiptSchedule> updatedSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(updatedSchedules).hasSize(1);
+
+		assertThat(updatedSchedules.get(0).getPOReference())
+				.as("Blank POReference should be synced from order on update")
+				.isEqualTo("LATE-REF-001");
+	}
 }

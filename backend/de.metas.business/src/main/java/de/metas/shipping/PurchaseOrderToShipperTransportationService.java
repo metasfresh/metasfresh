@@ -47,12 +47,15 @@ import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -307,6 +310,33 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
 		return true;
+	}
+
+	public void syncShippingPackagesFromOrder(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Collection<I_M_ShippingPackage> shippingPackages = repo.getBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		if (shippingPackages.isEmpty())
+		{
+			return;
+		}
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
+
+		for (final I_M_ShippingPackage sp : shippingPackages)
+		{
+			sp.setC_BPartner_ID(bPartnerId.getRepoId());
+			sp.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+			InterfaceWrapperHelper.save(sp);
+
+			// Also sync the underlying M_Package
+			final I_M_Package mPackage = InterfaceWrapperHelper.load(sp.getM_Package_ID(), I_M_Package.class);
+			mPackage.setShipDate(order.getDatePromised());
+			mPackage.setC_BPartner_ID(bPartnerId.getRepoId());
+			mPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+			InterfaceWrapperHelper.save(mPackage);
+		}
 	}
 
 	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)

@@ -308,6 +308,69 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.hasSize(1);
 	}
 
+	/**
+	 * Verify that after re-completion, meaningful order changes (DatePromised, BPartner Location)
+	 * are synced to existing shipping packages.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_syncsDatePromisedAndLocation()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner5", "address5");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(3), product1, uom1),
+				Money.of(15, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		// Verify package exists with original ShipDate
+		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesBefore).hasSize(1);
+
+		// Now simulate order re-completion with changed DatePromised and BPartner Location
+		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		final java.time.LocalDate newDate = LocalDate.of(2025, 3, 15);
+		order.setDatePromised(TimeUtil.asTimestamp(newDate, orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
+
+		// Create a new location
+		final BPartnerLocationId newLocation = createBPartnerAndLocation("Partner5b", "address5-new");
+		order.setC_BPartner_ID(newLocation.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(newLocation.getRepoId());
+		save(order);
+
+		// Sync shipping packages from order
+		service.syncShippingPackagesFromOrder(order);
+
+		// Verify synced
+		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesAfter).hasSize(1);
+
+		final I_M_ShippingPackage sp = packagesAfter.get(0);
+		assertThat(sp.getC_BPartner_Location_ID())
+				.as("BPartner Location should be synced from order")
+				.isEqualTo(newLocation.getRepoId());
+		assertThat(sp.getC_BPartner_ID())
+				.as("BPartner should be synced from order")
+				.isEqualTo(newLocation.getBpartnerId().getRepoId());
+
+		// Check M_Package.ShipDate
+		final org.compiere.model.I_M_Package mPackage = org.adempiere.model.InterfaceWrapperHelper.load(sp.getM_Package_ID(), org.compiere.model.I_M_Package.class);
+		assertThat(mPackage.getShipDate())
+				.as("M_Package.ShipDate should be synced from order.DatePromised")
+				.isNotNull();
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();

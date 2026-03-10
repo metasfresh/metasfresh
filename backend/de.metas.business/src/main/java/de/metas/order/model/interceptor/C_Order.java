@@ -389,6 +389,16 @@ public class C_Order
 		}
 	}
 
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void syncShippingPackagesFromOrder(final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
+		purchaseOrderToShipperTransportationService.syncShippingPackagesFromOrder(order);
+	}
+
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
 	public void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder, @NonNull final ICalloutField calloutField)
 	{
