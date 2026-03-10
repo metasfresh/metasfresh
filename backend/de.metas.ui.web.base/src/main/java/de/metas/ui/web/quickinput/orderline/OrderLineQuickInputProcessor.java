@@ -34,7 +34,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -97,6 +97,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final OrderGroupPIInheritanceService piInheritanceService = new OrderGroupPIInheritanceService();
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -196,7 +197,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return orderLineQuickInput.getQty();
 	}
 
-	private static void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
+	private void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
 	{
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(quickInputModel.getM_HU_PI_Item_Product_ID());
@@ -205,12 +206,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			return;
 		}
 
-		for (final GroupRegularLine regularLine : group.getRegularLines())
-		{
-			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), de.metas.handlingunits.model.I_C_OrderLine.class);
-			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
-			InterfaceWrapperHelper.save(orderLine);
-		}
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		piInheritanceService.applyPackingInstructionInheritance(order, group, piItemProductId);
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)
