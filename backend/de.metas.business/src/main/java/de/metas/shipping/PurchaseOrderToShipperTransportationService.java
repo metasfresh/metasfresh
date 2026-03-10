@@ -49,6 +49,7 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Check;
@@ -321,11 +322,25 @@ public class PurchaseOrderToShipperTransportationService
 			return;
 		}
 
+		// Collect current order line IDs to detect removed lines
+		final ImmutableSet<Integer> currentOrderLineIds = orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 
 		for (final I_M_ShippingPackage sp : shippingPackages)
 		{
+			// Remove packages for order lines that no longer exist (deleted during reactivation)
+			if (sp.getC_OrderLine_ID() > 0 && !currentOrderLineIds.contains(sp.getC_OrderLine_ID()))
+			{
+				repo.deleteFromShipperTransportation(ImmutableSet.of(PackageId.ofRepoId(sp.getM_Package_ID())));
+				continue;
+			}
+
+			// Sync header-level fields
 			sp.setC_BPartner_ID(bPartnerId.getRepoId());
 			sp.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
 			InterfaceWrapperHelper.save(sp);
