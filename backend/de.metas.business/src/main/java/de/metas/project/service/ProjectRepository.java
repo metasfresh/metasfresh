@@ -62,7 +62,7 @@ public class ProjectRepository
 	public ProjectId getIdByValueOrNull(@NonNull final ProjectValue value)
 	{
 		return queryBL.createQueryBuilder(I_C_Project.class)
-				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value.getAsString())
 				.orderByDescending(I_C_Project.COLUMNNAME_IsActive)
 				.orderByDescending(I_C_Project.COLUMNNAME_C_Project_ID)
 				.create()
