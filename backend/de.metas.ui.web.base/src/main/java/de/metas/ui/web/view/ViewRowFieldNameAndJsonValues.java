@@ -200,6 +200,29 @@ public final class ViewRowFieldNameAndJsonValues
 		return TimeUtil.asInstant(valueObj);
 	}
 
+	@Nullable
+	public String getAsString(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+
+		if (valueObj == null || JSONNullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		else if (valueObj instanceof LookupValue)
+		{
+			return ((LookupValue)valueObj).getIdAsString();
+		}
+		else if (valueObj instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)valueObj).getCode();
+		}
+		else
+		{
+			return valueObj.toString();
+		}
+	}
+
 	public boolean isEmpty(@NonNull final String fieldName)
 	{
 		final Object valueObj = map.get(fieldName);
