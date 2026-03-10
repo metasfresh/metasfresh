@@ -225,3 +225,26 @@ SET ReadOnlyLogic='', Updated=TO_TIMESTAMP('2026-03-10 14:22:56.036000', 'YYYY-M
 WHERE AD_Column_ID = 12868
 ;
 
+-- UI Element: Lieferantenrücklieferung(53098,D) -> Lieferantenrücklieferung(53276,D) -> advanced edit -> 10 -> advanced edit.Ursprüngliche Lieferung
+-- Column: M_InOut.Return_Origin_InOut_ID
+-- 2026-03-10T14:44:52.419Z
+DELETE
+FROM AD_UI_Element
+WHERE AD_UI_Element_ID = 648541
+;
+
+-- UI Element: Lieferantenrücklieferung(53098,D) -> Lieferantenrücklieferung(53276,D) -> main -> 10 -> default.Ursprüngliche Wareneingänge
+-- Column: M_InOut.Return_Origin_InOut_ID
+-- 2026-03-10T14:45:35.414Z
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 774826, 0, 53276, 540744, 648543, 'F', TO_TIMESTAMP('2026-03-10 14:45:35.175000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Ursprüngliche Wareneingänge', 30, 0, 0, TO_TIMESTAMP('2026-03-10 14:45:35.175000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100)
+;
+
+-- Tab: Lieferantenrücklieferung(53098,D) -> Handling Unit Assignment
+-- Table: M_HU_Assignment
+-- 2026-03-10T14:48:29.762Z
+UPDATE AD_Tab
+SET TabLevel=1, Updated=TO_TIMESTAMP('2026-03-10 14:48:29.761000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
+WHERE AD_Tab_ID = 540794
+;
+
