@@ -17,7 +17,6 @@ import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -28,6 +27,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -186,17 +186,22 @@ public class M_Product
 				});
 	}
 
-	private void normalizeProductCodeFields(@NonNull I_M_Product record)
+	private void normalizeProductCodeFields(@NonNull final I_M_Product record)
 	{
 		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
 
-		if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
+		if (!syncEANAndGTIN)
+		{
+			return;
+		}
+
+		if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
 			productBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
 		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
-		else if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
 			productBL.setProductCodeFieldsFromGTIN(record, gtin);
