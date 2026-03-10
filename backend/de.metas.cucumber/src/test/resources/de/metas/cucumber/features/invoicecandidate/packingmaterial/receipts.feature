@@ -1811,6 +1811,8 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |

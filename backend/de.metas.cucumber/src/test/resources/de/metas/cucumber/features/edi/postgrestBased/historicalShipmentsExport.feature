@@ -61,6 +61,8 @@ Feature: Shipments export via postgREST
 
     And the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -205,6 +207,8 @@ Feature: Shipments export via postgREST
 
     And the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -344,6 +348,8 @@ Feature: Shipments export via postgREST
       | ol_1       | o_1                   | product_S0475_030 | 100        | externalLineId_S0475_030 |
 
     And the order identified by o_1 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -485,6 +491,8 @@ Feature: Shipments export via postgREST
 
     And the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -625,6 +633,8 @@ Feature: Shipments export via postgREST
       | ol_2       | o_1                   | product_S0475_050 | 100        | externalLineId_S0475_050_2 |
 
     And the order identified by o_1 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -882,6 +892,8 @@ Feature: Shipments export via postgREST
 
     And the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1028,6 +1040,8 @@ Feature: Shipments export via postgREST
 
     And the order identified by o_1 is completed
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1173,6 +1187,8 @@ Feature: Shipments export via postgREST
       | ol_2       | o_2                   | product_S0475_080_2 | 100        | externalLineId_S0475_080_2 |
 
     And the order identified by o_2 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
