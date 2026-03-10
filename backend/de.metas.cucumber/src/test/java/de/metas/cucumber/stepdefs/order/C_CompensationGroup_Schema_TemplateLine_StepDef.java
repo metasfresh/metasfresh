@@ -64,6 +64,12 @@ public class C_CompensationGroup_Schema_TemplateLine_StepDef
 	private final @NonNull C_CompensationGroup_Schema_TemplateLine_StepDefData templateLineTable;
 	private final @NonNull M_Product_StepDefData productTable;
 
+	/**
+	 * Creates template line records that define which sub-article products (and quantities) are added
+	 * when a compensation group is generated from the parent schema.
+	 * <p>
+	 * Note: {@code C_UOM_ID} expects an X12DE355 code (e.g., "PCE", "KGM"), not an identifier reference.
+	 */
 	@Given("metasfresh contains C_CompensationGroup_Schema_TemplateLine:")
 	public void createTemplateLines(@NonNull final DataTable dataTable)
 	{

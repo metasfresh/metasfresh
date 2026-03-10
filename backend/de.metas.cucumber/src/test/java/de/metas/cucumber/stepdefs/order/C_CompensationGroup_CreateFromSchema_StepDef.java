@@ -22,15 +22,11 @@
 
 package de.metas.cucumber.stepdefs.order;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
-import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuPackingInstructionsItemId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupRegularLine;
@@ -39,8 +35,6 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -55,18 +49,33 @@ import java.math.BigDecimal;
 /**
  * Step definitions for creating compensation groups from schema templates and applying PI inheritance.
  * <p>
- * This tests the same logic path as the Quick Input flow in {@code OrderLineQuickInputProcessor},
- * but without requiring the WebUI Quick Input abstraction.
+ * Uses {@link OrderGroupRepository} to create group order lines from a {@link GroupTemplate},
+ * then optionally applies packing instruction (PI) inheritance by calling the production code in
+ * {@link OrderGroupPIInheritanceService#applyPackingInstructionInheritance}.
  * <p>
- * DataTable columns for "create compensation group from schema template":
+ * <b>Prerequisites</b>:
+ * <ul>
+ *     <li>The schema must already have {@link de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine} records
+ *         (created via "metasfresh contains C_CompensationGroup_Schema_TemplateLine:" step)</li>
+ *     <li>The target order must exist (created via "metasfresh contains C_Orders:" step)</li>
+ *     <li>All template-line products must have prices in the order's price list</li>
+ * </ul>
+ * <p>
+ * <b>DataTable columns</b> for {@code "create compensation group from schema template:"}:
  * <ul>
  *     <li>{@code C_Order_ID} (required) — identifier of the target order</li>
  *     <li>{@code C_CompensationGroup_Schema_ID} (required) — identifier of the schema</li>
  *     <li>{@code Qty} (optional, default 1) — number of template sets to create</li>
  *     <li>{@code M_HU_PI_Item_Product_ID} (optional) — identifier of the main article's PI Item Product.
- *         If the schema has IsInheritPackingInstruction=Y and this is provided, PI inheritance is applied
- *         to all template-created order lines.</li>
+ *         When the schema has {@code IsInheritPackingInstruction=Y} and this is provided,
+ *         each created order line gets a <b>per-product compatible</b> {@code M_HU_PI_Item_Product}
+ *         resolved via {@link IHUPIItemProductDAO#retrievePIMaterialItemProduct} for the same TU type.
+ *         If no compatible PI exists for a sub-article, that line is skipped (keeps default PI=101).</li>
  * </ul>
+ * <p>
+ * <b>Output identifiers</b>: Created order lines are stored in {@link C_OrderLine_StepDefData}
+ * as {@code schema_ol_1}, {@code schema_ol_2}, etc., following the template line sequence order.
+ * Use these identifiers in subsequent "validate C_OrderLine:" steps.
  */
 @RequiredArgsConstructor
 public class C_CompensationGroup_CreateFromSchema_StepDef
@@ -78,13 +87,20 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
+	private final OrderGroupPIInheritanceService piInheritanceService = new OrderGroupPIInheritanceService();
 
 	/**
 	 * Creates a compensation group from a schema template on the given order, then optionally
-	 * applies PI inheritance if the schema has IsInheritPackingInstruction=Y.
+	 * applies PI inheritance if the schema has {@code IsInheritPackingInstruction=Y}.
 	 * <p>
-	 * Created order lines are stored in {@link C_OrderLine_StepDefData} using generated identifiers
-	 * of the form {@code schema_ol_1}, {@code schema_ol_2}, etc.
+	 * Created order lines are registered in {@link C_OrderLine_StepDefData} as
+	 * {@code schema_ol_1}, {@code schema_ol_2}, etc. (1-based, following template line {@code SeqNo} order).
+	 * These identifiers can be used in subsequent verification steps, e.g.:
+	 * <pre>{@code
+	 * Then validate C_OrderLine:
+	 *   | C_OrderLine_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
+	 *   | schema_ol_1    | subProduct1  | piProd_sub1                             |
+	 * }</pre>
 	 */
 	@When("create compensation group from schema template:")
 	public void createGroupFromSchemaTemplate(@NonNull final DataTable dataTable)
@@ -107,7 +123,7 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 					.qty(qty)
 					.createGroup(orderId, null);
 
-			// Apply PI inheritance if the schema flag is set and a PI was provided
+			// Apply PI inheritance using the production code path (OrderLineQuickInputProcessor)
 			if (groupTemplate.isInheritPackingInstruction())
 			{
 				row.getAsOptionalIdentifier("M_HU_PI_Item_Product_ID")
@@ -115,7 +131,7 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 							final I_M_HU_PI_Item_Product mainPiItemProductRecord = piIdentifier.lookupNotNullIn(huPiItemProductTable);
 							final HUPIItemProductId mainPiItemProductId = HUPIItemProductId.ofRepoId(mainPiItemProductRecord.getM_HU_PI_Item_Product_ID());
 
-							applyPackingInstructionInheritance(order, group, mainPiItemProductId);
+							piInheritanceService.applyPackingInstructionInheritance(order, group, mainPiItemProductId);
 						});
 			}
 
@@ -128,39 +144,5 @@ public class C_CompensationGroup_CreateFromSchema_StepDef
 				lineIndex++;
 			}
 		});
-	}
-
-	/**
-	 * Applies PI inheritance: resolves a compatible M_HU_PI_Item_Product for each sub-article
-	 * using the same M_HU_PI_Item (TU type) as the main article's PI.
-	 * <p>
-	 * This mirrors the logic in {@code OrderLineQuickInputProcessor.applyPackingInstructionFromQuickInput()}.
-	 */
-	private static void applyPackingInstructionInheritance(
-			@NonNull final I_C_Order order,
-			@NonNull final Group group,
-			@NonNull final HUPIItemProductId mainPiItemProductId)
-	{
-		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-		final HUPIItemProduct mainPiItemProduct = piItemProductDAO.getById(mainPiItemProductId);
-		final HuPackingInstructionsItemId piItemId = mainPiItemProduct.getPiItemId();
-		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.load(piItemId.getRepoId(), I_M_HU_PI_Item.class);
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-
-		for (final GroupRegularLine regularLine : group.getRegularLines())
-		{
-			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.load(
-					regularLine.getRepoId(), de.metas.handlingunits.model.I_C_OrderLine.class);
-			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-
-			final I_M_HU_PI_Item_Product matchingPiItemProduct = piItemProductDAO.retrievePIMaterialItemProduct(
-					piItem, bpartnerId, productId, null);
-			if (matchingPiItemProduct != null)
-			{
-				orderLine.setM_HU_PI_Item_Product_ID(matchingPiItemProduct.getM_HU_PI_Item_Product_ID());
-				InterfaceWrapperHelper.save(orderLine);
-			}
-		}
 	}
 }

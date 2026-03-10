@@ -52,6 +52,7 @@ public class C_CompensationGroup_Schema_StepDef
 {
 	private final @NonNull C_CompensationGroup_Schema_StepDefData schemaTable;
 
+	/** Creates compensation group schema records. Add template lines via the separate TemplateLine step. */
 	@Given("metasfresh contains C_CompensationGroup_Schema:")
 	public void createSchemas(@NonNull final DataTable dataTable)
 	{
