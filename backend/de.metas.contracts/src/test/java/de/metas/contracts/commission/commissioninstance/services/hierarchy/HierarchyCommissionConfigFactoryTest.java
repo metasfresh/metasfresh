@@ -49,7 +49,7 @@ import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -103,7 +103,7 @@ public class HierarchyCommissionConfigFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone();

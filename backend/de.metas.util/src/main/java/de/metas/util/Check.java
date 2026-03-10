@@ -608,6 +608,7 @@ public final class Check
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+	@Contract("null -> true")
 	public static boolean isBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isBlank(str);

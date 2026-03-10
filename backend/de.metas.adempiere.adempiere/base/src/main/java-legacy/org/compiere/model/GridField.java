@@ -17,25 +17,18 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.beans.PropertyChangeListener;
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.swing.SwingUtilities;
-
-import de.metas.common.util.time.SystemTime;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -60,16 +53,21 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.process.IProcessDefaultParameter;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.TableAccessLevel;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.beans.PropertyChangeListener;
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.function.Supplier;
 
 /**
  * Grid Field Model.
@@ -211,17 +209,9 @@ public class GridField
 			final MLookupInfo lookupInfo = vo.getLookupInfo();
 			if (lookupInfo == null)
 			{
-				log.error("(" + vo.getColumnName() + ") - No LookupInfo");
+				log.error("({}) - No LookupInfo", vo.getColumnName());
 				return null;
 			}
-			// Prevent loading of CreatedBy/UpdatedBy
-			if (displayType == DisplayType.Table
-					&& (columnName.equals("CreatedBy") || columnName.equals("UpdatedBy")))
-			{
-				lookupInfo.setCreatedUpdatedBy(true);
-				lookupInfo.setDisplayType(DisplayType.Search);
-			}
-			//
 			return new MLookup(getCtx(), vo.getAD_Column_ID(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached

@@ -90,7 +90,7 @@ public class DocumentLocation
 				.build();
 	}
 
-	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
 	{
 		return builder()
 				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())

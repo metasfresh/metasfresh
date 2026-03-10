@@ -593,15 +593,6 @@ public abstract class Lookup extends AbstractListModel
 	}
 
 	/**
-	 * Get custom info factory class
-	 * @return info factory class name
-	 */
-	public String getInfoFactoryClass()
-	{
-		return "";
-	}
-
-	/**
 	 * Returns a list of parameters on which this lookup depends.
 	 *
 	 * Those parameters will be fetched from context on validation time.

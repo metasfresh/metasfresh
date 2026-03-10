@@ -47,7 +47,7 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * Create {@link IValidationRule} for given AD_ValRule_ID, context table and column name
 	 *
 	 */
-	IValidationRule create(@NonNull String tableName, @NonNull AdValRuleId adValRuleId, @Nullable String ctxTableName, @Nullable String ctxColumnName);
+	IValidationRule create(@NonNull String tableName, @Nullable AdValRuleId adValRuleId, @Nullable String ctxTableName, @Nullable String ctxColumnName);
 
 	IValidationRule createSQLValidationRule(@Nullable String whereClause);
 

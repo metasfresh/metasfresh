@@ -3,6 +3,7 @@ import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 import classnames from 'classnames';
+import { setMomentToEndOfDay } from '../../../utils/dateHelpers';
 
 // TODO: This monkeypatching that's happening here has to go at some point.
 class TetheredDateTime extends DateTime {
@@ -43,10 +44,7 @@ class TetheredDateTime extends DateTime {
       dateAtEndOfDay = this.localMoment();
     }
 
-    dateAtEndOfDay.hours(23);
-    dateAtEndOfDay.minutes(59);
-    dateAtEndOfDay.seconds(59);
-    dateAtEndOfDay.milliseconds(999);
+    setMomentToEndOfDay(dateAtEndOfDay);
 
     return dateAtEndOfDay;
   };

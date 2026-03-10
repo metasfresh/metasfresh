@@ -21,6 +21,7 @@ public class SplitShipmentView_Launcher extends JavaProcess implements IProcessP
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
 	private static final AdMessageKey PRECONDITION_MSG_ONLY_OPEN_STATUS = AdMessageKey.of("de.metas.ui.web.split_shipment.SplitShipmentView_Launcher.OnlyOpenedStatusSelection");
+	private static final AdMessageKey PRECONDITION_MSG_SHIPPING_NOTIFICATION_REQUIRED = AdMessageKey.of("de.metas.ui.web.split_shipment.SplitShipmentView_Launcher.ShippingNotificationRequired");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -36,6 +37,11 @@ public class SplitShipmentView_Launcher extends JavaProcess implements IProcessP
 		if (shipmentScheduleRecord.isClosed())
 		{
 			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_ONLY_OPEN_STATUS);
+		}
+
+		if(shipmentScheduleRecord.isShippingNotificationRequired() && shipmentScheduleRecord.getPhysicalClearanceDate() == null)
+		{
+			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_SHIPPING_NOTIFICATION_REQUIRED);
 		}
 
 		return ProcessPreconditionsResolution.accept();

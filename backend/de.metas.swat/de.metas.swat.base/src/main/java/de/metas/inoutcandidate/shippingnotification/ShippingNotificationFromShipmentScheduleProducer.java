@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 
 import java.time.Instant;
@@ -48,6 +50,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 	private final IOrderBL orderBL;
 	private final DocTypeService docTypeService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final IWarehouseBL warehouseBL;
 
 	public ProcessPreconditionsResolution checkCanCreateShippingNotification(@NonNull final OrderId salesOrderId)
 	{
@@ -65,6 +68,11 @@ public class ShippingNotificationFromShipmentScheduleProducer
 		if (salesOrders.stream().anyMatch(salesOrder -> !isCompleted(salesOrder)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
+		}
+
+		if(salesOrders.stream().anyMatch(orderBL::isProformaSO))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only non proforma sales orders");
 		}
 
 		if (!shipmentScheduleBL.anyMatchByOrderIds(salesOrderIds))
@@ -117,6 +125,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 			}
 
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(salesOrderRecord.getAD_Client_ID(), salesOrderRecord.getAD_Org_ID());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(salesOrderRecord.getM_Warehouse_ID());
 			final ShippingNotification shippingNotification = ShippingNotification.builder()
 					.clientAndOrgId(clientAndOrgId)
 					.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, clientAndOrgId.getOrgId()))
@@ -126,7 +135,9 @@ public class ShippingNotificationFromShipmentScheduleProducer
 					.auctionId(salesOrderRecord.getC_Auction_ID())
 					.dateAcct(physicalClearanceDate)
 					.physicalClearanceDate(physicalClearanceDate)
-					.locatorId(LocatorId.ofRepoId(salesOrderRecord.getM_Warehouse_ID(), salesOrderRecord.getM_Locator_ID()))
+					.locatorId(LocatorId.ofRepoId(warehouseId, salesOrderRecord.getM_Locator_ID()))
+					.shipFromBPartnerAndLocationId(warehouseBL.getBPartnerLocationId(warehouseId))
+					.shipFromContactId(warehouseBL.getBPartnerContactId(warehouseId))
 					.harvestingYearId(extractHarvestingYearId(salesOrderRecord).orElse(null))
 					.poReference(salesOrderRecord.getPOReference())
 					.description(salesOrderRecord.getDescription())
@@ -136,6 +147,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 					.build();
 
 			shippingNotification.updateBPAddress(documentLocationBL::computeRenderedAddressString);
+			shippingNotification.updateShipFromBPAddress(documentLocationBL::computeRenderedAddressString);
 			shippingNotification.renumberLines();
 
 			shippingNotificationService.completeIt(shippingNotification);
@@ -143,7 +155,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 	}
 
 	@NonNull
-	private static Optional<YearAndCalendarId> extractHarvestingYearId(final I_C_Order salesOrderRecord)
+	private static Optional<YearAndCalendarId> extractHarvestingYearId(@NonNull final I_C_Order salesOrderRecord)
 	{
 		return Optional.ofNullable(YearAndCalendarId.ofRepoIdOrNull(salesOrderRecord.getHarvesting_Year_ID(), salesOrderRecord.getC_Harvesting_Calendar_ID()));
 	}
@@ -158,5 +170,4 @@ public class ShippingNotificationFromShipmentScheduleProducer
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID()))
 				.build();
 	}
-
 }

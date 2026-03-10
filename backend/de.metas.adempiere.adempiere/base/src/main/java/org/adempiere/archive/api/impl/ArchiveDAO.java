@@ -89,6 +89,7 @@ public class ArchiveDAO implements IArchiveDAO
 			@NonNull final QueryLimit limit)
 	{
 		return retrieveArchivesQuery(ctx, recordRef)
+				.orderByDescending(I_AD_Archive.COLUMNNAME_IsMainArchive)
 				.orderByDescending(I_AD_Archive.COLUMNNAME_Created)
 				.setLimit(limit)
 				.create()
@@ -141,12 +142,6 @@ public class ArchiveDAO implements IArchiveDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 		return InterfaceWrapperHelper.create(ctx, tableName, recordId, modelClass, trxName);
-	}
-
-	@Override
-	public I_AD_Archive retrieveArchive(@NonNull final ArchiveId archiveId)
-	{
-		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
 	}
 
 	@Override

@@ -42,6 +42,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,7 +77,7 @@ public class ModularContractLogEntry
 	ProductId initialProductId;
 	@NonNull
 	String productName;
-	@Nullable
+	@NonNull
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
@@ -112,7 +113,16 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	LocalDateAndOrgId physicalClearanceDate;
+
+	@Nullable
 	Integer storageDays;
+
+	@Nullable
+	Integer interestDays;
+
+	@Nullable
+	Percent interestPercent;
 
 	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
@@ -130,6 +140,7 @@ public class ModularContractLogEntry
 	boolean isBillable;
 
 	@NonNull ModularContractModuleId modularContractModuleId;
+	@Nullable ModularContractModuleId baseModularContractModuleId;
 
 	@Nullable BigDecimal userElementNumber1;
 	@Nullable BigDecimal userElementNumber2;
@@ -143,7 +154,7 @@ public class ModularContractLogEntry
 			@Nullable final ProductId productId,
 			@Nullable final ProductId initialProductId,
 			@NonNull final String productName,
-			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final BPartnerId collectionPointBPartnerId,
 			@Nullable final BPartnerId producerBPartnerId,
@@ -155,14 +166,18 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
+			@Nullable final Integer interestDays,
+			@Nullable final Percent interestPercent,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			final boolean isBillable,
-			final @NonNull ModularContractModuleId modularContractModuleId,
+			@NonNull final ModularContractModuleId modularContractModuleId,
+			@Nullable final ModularContractModuleId baseModularContractModuleId,
 			final @Nullable BigDecimal userElementNumber1,
 			final @Nullable BigDecimal userElementNumber2
 			)
@@ -196,7 +211,10 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
+		this.interestDays = interestDays;
+		this.interestPercent = interestPercent;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
@@ -204,6 +222,7 @@ public class ModularContractLogEntry
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
+		this.baseModularContractModuleId = baseModularContractModuleId;
 		this.userElementNumber1 = userElementNumber1;
 		this.userElementNumber2 = userElementNumber2;
 	}

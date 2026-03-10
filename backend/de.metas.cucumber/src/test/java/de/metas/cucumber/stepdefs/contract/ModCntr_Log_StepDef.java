@@ -30,6 +30,8 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogsRecomputationService;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -55,7 +57,9 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMDAO;
@@ -91,6 +95,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -110,6 +115,7 @@ public class ModCntr_Log_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final LogsRecomputationService recomputeLogsService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
+	private final static Logger logger = LogManager.getLogger(ModCntr_Log_StepDef.class);
 
 	@NonNull
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -238,6 +244,7 @@ public class ModCntr_Log_StepDef
 
 	private void validateModCntr_Log(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
+		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
 
@@ -247,24 +254,17 @@ public class ModCntr_Log_StepDef
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
 
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int recordId;
-		switch (tableName)
-		{
-			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
-			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
-			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
-			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
-			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
-			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
-			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
-			case I_I_ModCntr_Log.Table_Name -> recordId = importModCntrTable.get(recordIdentifier).getI_ModCntr_Log_ID();
-			default -> throw new AdempiereException("Unsupported TableName !")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
+		final int recordId =
+				getRecordIdForTable(tableName, recordIdentifier);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
+
+		final String modCntrBaseModuleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ModularContractModuleId moduleId = ModularContractModuleId.ofRepoIdOrNull(modCntrBaseModuleIdentifier == null ? null : modCntrModuleTable.get(modCntrBaseModuleIdentifier).getModCntr_Module_ID());
 
 		final ItemProvider<I_ModCntr_Log> locateLog = () -> queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
@@ -273,17 +273,22 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Qty, quantity)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, modCntrTypeRecord.getModCntr_Type_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, moduleId)
 				.create()
 				.firstOnlyOptional()
 				.map(ItemProvider.ProviderResult::resultWasFound)
 				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(buildMessageWitAllLogs(tableRow)));
 
-		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog);
+		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog, () -> logger.error("Can't find log for {}", modCntrLogIdentifier));
 
 		final SoftAssertions softly = new SoftAssertions();
 
 		final String contractType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ContractType);
 		softly.assertThat(modCntrLogRecord.getContractType()).as(I_ModCntr_Log.COLUMNNAME_ContractType).isEqualTo(contractType);
+
+		final String initialProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Initial_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		softly.assertThat(modCntrLogRecord.getInitial_Product_ID()).as(I_ModCntr_Log.COLUMNNAME_Initial_Product_ID).isEqualTo(productTable.get(initialProductIdentifier).getM_Product_ID());
 
 		final String collectionPointBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_CollectionPoint_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(collectionPointBPartnerIdentifier))
@@ -318,13 +323,6 @@ public class ModCntr_Log_StepDef
 		{
 			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandidateTable.get(invoiceCandidateIdentifier);
 			softly.assertThat(modCntrLogRecord.getC_Invoice_Candidate_ID()).as(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID).isEqualTo(invoiceCandidateRecord.getC_Invoice_Candidate_ID());
-		}
-
-		final String modCntrTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(modCntrTypeIdentifier))
-		{
-			final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
-			softly.assertThat(modCntrLogRecord.getModCntr_Type_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID).isEqualTo(modCntrTypeRecord.getModCntr_Type_ID());
 		}
 
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Processed);
@@ -430,10 +428,51 @@ public class ModCntr_Log_StepDef
 			}
 		}
 
+		final String productName = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ProductName);
+		if (Check.isNotBlank(productName))
+		{
+			softly.assertThat(modCntrLogRecord.getProductName()).as(I_ModCntr_Log.COLUMNNAME_ProductName).isEqualTo(productName);
+		}
+
+		final Boolean isBillable = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_IsBillable);
+		if (isBillable != null)
+		{
+			softly.assertThat(modCntrLogRecord.isBillable()).as(I_ModCntr_Log.COLUMNNAME_IsBillable).isEqualTo(isBillable);
+		}
+
+		final Integer storageDays = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_StorageDays);
+		if (storageDays != null)
+		{
+			softly.assertThat(modCntrLogRecord.getStorageDays()).as(I_ModCntr_Log.COLUMNNAME_StorageDays).isEqualTo(storageDays);
+		}
+
+		final Integer interestDays = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_InterestDays);
+		if (interestDays != null)
+		{
+			softly.assertThat(modCntrLogRecord.getInterestDays()).as(I_ModCntr_Log.COLUMNNAME_InterestDays).isEqualTo(interestDays);
+		}
+
 		softly.assertAll();
 
-		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
 		modCntrLogTable.putOrReplace(modCntrLogIdentifier, modCntrLogRecord);
+	}
+
+	private int getRecordIdForTable(final String tableName, final String recordIdentifier)
+	{
+		return switch (tableName)
+		{
+			case I_C_OrderLine.Table_Name -> orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
+			case I_M_InventoryLine.Table_Name -> inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
+			case I_M_InOutLine.Table_Name -> inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
+			case I_PP_Order.Table_Name -> manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
+			case I_C_InvoiceLine.Table_Name -> invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
+			case I_C_Flatrate_Term.Table_Name -> flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
+			case I_M_Shipping_NotificationLine.Table_Name -> shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
+			case I_I_ModCntr_Log.Table_Name -> importModCntrTable.get(recordIdentifier).getI_ModCntr_Log_ID();
+			default -> throw new AdempiereException("Unsupported TableName !")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
+		};
 	}
 
 	private void validateNoModCntr_LogFound(@NonNull final Map<String, String> tableRow)
@@ -442,20 +481,7 @@ public class ModCntr_Log_StepDef
 		final int tableId = tableDAO.retrieveTableId(tableName);
 
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int recordId;
-		switch (tableName)
-		{
-			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
-			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
-			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
-			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
-			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
-			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
-			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
-			default -> throw new AdempiereException("Unsupported TableName !")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
+		final int recordId = getRecordIdForTable(tableName, recordIdentifier);
 
 		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
@@ -480,9 +506,12 @@ public class ModCntr_Log_StepDef
 						.append(I_ModCntr_Log.COLUMNNAME_Record_ID).append("=").append(logRecord.getRecord_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_AD_Table_ID).append("=").append(logRecord.getAD_Table_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID).append("=").append(logRecord.getC_Flatrate_Term_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID).append("=").append(logRecord.getModCntr_Type_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID).append("=").append(logRecord.getModCntr_BaseModule_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_Qty).append("=").append(logRecord.getQty()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_C_UOM_ID).append("=").append(logRecord.getC_UOM_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_M_Product_ID).append("=").append(logRecord.getM_Product_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_IsBillable).append("=").append(logRecord.isBillable()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_Processed).append("=").append(logRecord.isProcessed()).append(";")
 				);
 
@@ -537,7 +566,7 @@ public class ModCntr_Log_StepDef
 				final IQueryFilter<I_C_Flatrate_Term> filter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 						.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID());
 
-				recomputeLogsService.recomputeForFlatrate(filter);
+				recomputeLogsService.recomputeForFlatrateInNewTrx(filter);
 			}
 			case I_M_Shipping_Notification.Table_Name ->
 			{
@@ -551,5 +580,36 @@ public class ModCntr_Log_StepDef
 					.setParameter("TableName", tableName);
 		}
 
+	}
+
+	@And("^after not more than (.*)s, ModCntr_Logs are marked as invoiced:$")
+	public void noModCntr_Logs_marked_as_invoiced(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		Thread.sleep(timeoutSec);
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			validateModCntr_Logs_marked_as_invoiced(row);
+		}
+	}
+
+	private void validateModCntr_Logs_marked_as_invoiced(@NonNull final Map<String, String> tableRow)
+	{
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidateTable.get(invoiceCandidateIdentifier).getC_Invoice_Candidate_ID());
+
+		final String logIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ModularContractLogEntryId logId = ModularContractLogEntryId.ofRepoId(modCntrLogTable.get(logIdentifier).getModCntr_Log_ID());
+
+		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, true)
+				.create()
+				.firstOnly(I_ModCntr_Log.class);
+
+		assertThat(modCntrLogRecord).as("The log %s isn't marked as invoiced", logIdentifier).isNotNull();
 	}
 }

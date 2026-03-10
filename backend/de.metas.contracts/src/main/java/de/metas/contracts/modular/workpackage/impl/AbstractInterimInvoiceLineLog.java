@@ -34,9 +34,9 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -84,17 +84,17 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	public AbstractInterimInvoiceLineLog(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModularContractLogRepository contractLogRepo,
 			final @NonNull ModularContractLogService modularContractLogService,
 			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
 		super(modularContractService);
-		this.contractLogDAO = contractLogDAO;
+		this.contractLogRepo = contractLogRepo;
 		this.modularContractLogService = modularContractLogService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 	}
@@ -200,7 +200,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		final TableRecordReference invoiceLineRef = createLogRequest.getRecordRef();
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
+		final Quantity quantity = contractLogRepo.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))

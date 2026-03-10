@@ -43,7 +43,7 @@ public class C_Invoice_PO_CreateAdjustmentCharge extends JavaProcess implements 
 
 		final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest = AdjustmentChargeCreateRequest.builder()
 				.invoiceID(InvoiceId.ofRepoId(getRecord_ID()))
-				.docBaseAndSubTYpe(docBaseAndSubType)
+				.docBaseAndSubType(docBaseAndSubType)
 				.isSOTrx(false)
 				.build();
 

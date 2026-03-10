@@ -27,7 +27,6 @@ import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 @Value
 @Builder
@@ -49,6 +48,5 @@ public class GenerateShipmentsForSchedulesRequest
 	@NonNull
 	Boolean isCompleteShipment;
 
-	@Nullable
-	Boolean isShipDateToday;
+	@NonNull @Builder.Default ShipmentDateRule shipmentDateRule = ShipmentDateRule.DeliveryDateOrToday;
 }

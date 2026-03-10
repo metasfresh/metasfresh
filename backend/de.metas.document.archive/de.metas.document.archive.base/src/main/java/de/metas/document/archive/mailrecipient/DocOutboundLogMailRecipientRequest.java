@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.mailrecipient;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -47,4 +48,7 @@ public class DocOutboundLogMailRecipientRequest
 
 	@Nullable
 	DocTypeId docTypeId;
+
+	@Nullable
+	BPartnerId bPartnerId;
 }

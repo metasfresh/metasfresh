@@ -31,24 +31,30 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
-@Validator(I_C_Order.class)
+@Interceptor(I_C_Order.class)
+@Component
 public class C_Order_ReceiptSchedule
 {
 	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
+
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull  private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
 	{
@@ -77,7 +83,6 @@ public class C_Order_ReceiptSchedule
 
 		// services
 		final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
 		// Generate receipt schedules from this order.
@@ -90,7 +95,7 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleProducer receiptScheduleProducer = receiptScheduleProducerFactory.createProducer(I_C_OrderLine.Table_Name, createReceiptSchedulesAsync);
 
 		// Iterate order lines and call the producer for each of them.
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final List<I_M_ReceiptSchedule> previousSchedules = Collections.emptyList();
@@ -137,7 +142,7 @@ public class C_Order_ReceiptSchedule
 
 	private boolean hasReceipts(final I_C_Order order)
 	{
-		final List<I_M_InOut> inouts = Services.get(IOrderDAO.class).retrieveInOutsForMatchingOrderLines(order);
+		final List<I_M_InOut> inouts = orderBL.retrieveInOutsForMatchingOrderLines(order);
 
 		if (inouts.isEmpty())
 		{
@@ -180,13 +185,11 @@ public class C_Order_ReceiptSchedule
 		}
 	}
 
-	public boolean hasProcessedReceiptSchedules(final I_C_Order order)
+	private boolean hasProcessedReceiptSchedules(final I_C_Order order)
 	{
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order);
 		for (I_C_OrderLine orderLine : orderLines)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
@@ -209,15 +212,10 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleBL.retrieveForRecord(orderLine);
 
 			if (receiptSchedule == null || receiptScheduleBL.isClosed(receiptSchedule))
 			{
@@ -225,6 +223,33 @@ public class C_Order_ReceiptSchedule
 			}
 
 			receiptScheduleBL.close(receiptSchedule);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {I_C_Order.COLUMNNAME_DocStatus})
+	public void afterOpen(@NonNull final I_C_Order orderRecord)
+	{
+		if(orderBL.isNotJustOpened(orderRecord))
+		{
+			return;
+		}
+
+		if (!isEligibleForReceiptSchedule(orderRecord))
+		{
+			return;
+		}
+
+		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(orderRecord);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleBL.retrieveForRecord(orderLine);
+
+			if (receiptSchedule == null || !receiptScheduleBL.isClosed(receiptSchedule))
+			{
+				continue;
+			}
+
+			receiptScheduleBL.reopen(receiptSchedule);
 		}
 	}
 }

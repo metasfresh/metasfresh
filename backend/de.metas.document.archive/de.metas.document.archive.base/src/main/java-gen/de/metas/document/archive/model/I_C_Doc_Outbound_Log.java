@@ -18,6 +18,27 @@ public interface I_C_Doc_Outbound_Log
 
 
 	/**
+	 * Set Archive.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Archive_ID (int AD_Archive_ID);
+
+	/**
+	 * Get Archive.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Archive_ID();
+
+	String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
+
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *

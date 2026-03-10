@@ -8,6 +8,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -76,7 +77,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.TODAY;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -436,7 +437,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH); // needed for notifications
 
-			createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialDelivery));
+			createDocType(DocBaseAndSubType.of(DocBaseType.Shipment));
 			bpartnerAndLocationId = bpartnerAndLocation("BP");
 			warehouseId = warehouse("WH");
 

@@ -11,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -54,13 +55,22 @@ public class EDIDocOutBoundLogService
 			return Optional.empty();
 		}
 
-		final I_C_Doc_Outbound_Log logRecord = create(docOutboundDAO.retrieveLog(recordReference), I_C_Doc_Outbound_Log.class);
-		if (logRecord != null)
+		final List<de.metas.document.archive.model.I_C_Doc_Outbound_Log> logs = docOutboundDAO.retrieveLog(recordReference);
+		if (logs.isEmpty())
 		{
-			final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
-			logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
+			return Optional.empty();
 		}
-		return Optional.ofNullable(logRecord);
+		else
+		{
+			final I_C_Doc_Outbound_Log logRecord = create(logs.get(0), I_C_Doc_Outbound_Log.class);
+			if (logRecord != null)
+			{
+				final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
+				logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
+			}
+			return Optional.ofNullable(logRecord);
+		}
+
 	}
 
 	public I_C_Doc_Outbound_Log retreiveById(@NonNull final DocOutboundLogId docOutboundLogId)

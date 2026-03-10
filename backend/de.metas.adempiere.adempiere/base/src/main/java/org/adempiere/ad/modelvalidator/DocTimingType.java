@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Getter;
 import org.compiere.model.ModelValidator;
 
 import java.util.Map;
@@ -41,8 +42,13 @@ public enum DocTimingType implements TimingType
 	//
 
 	private final int timing;
+	
+	@Getter
 	private final String docAction;
+	
+	@Getter
 	private final String docStatus;
+	
 	private final BeforeAfterType beforeAfter;
 
 	DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
@@ -57,16 +63,6 @@ public enum DocTimingType implements TimingType
 	public int toInt()
 	{
 		return timing;
-	}
-
-	public String getDocAction()
-	{
-		return docAction;
-	}
-
-	public String getDocStatus()
-	{
-		return docStatus;
 	}
 
 	public boolean isDocAction(final String docAction)
@@ -136,4 +132,9 @@ public enum DocTimingType implements TimingType
 				|| this == BEFORE_REVERSEACCRUAL || this == AFTER_REVERSEACCRUAL;
 	}
 
+	public boolean isReactivate()
+	{
+		return this == BEFORE_REACTIVATE || this == AFTER_REACTIVATE;
+	}
+	
 }

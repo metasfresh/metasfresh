@@ -181,7 +181,7 @@ public class HUInternalUseInventoryProducer
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
 						.docBaseType(DocBaseType.MaterialPhysicalInventory)
-						.docSubType(InventoryDocSubType.InternalUseInventory.toDocSubTypeString())
+						.docSubType(InventoryDocSubType.InternalUseInventory.getDocSubType())
 						.adClientId(warehouse.getAD_Client_ID())
 						.adOrgId(warehouse.getAD_Org_ID())
 						.build());

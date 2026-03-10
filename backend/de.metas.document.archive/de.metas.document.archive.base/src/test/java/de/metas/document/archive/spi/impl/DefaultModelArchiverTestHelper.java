@@ -22,20 +22,10 @@
 
 package de.metas.document.archive.spi.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.invoice.service.InvoiceDocumentReportAdvisor;
 import de.metas.process.AdProcessId;
-import de.metas.report.DefaultPrintFormatsRepository;
-import de.metas.report.DocTypePrintOptionsRepository;
-import de.metas.report.DocumentPrintOptionDescriptorsRepository;
-import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.PrintFormatId;
-import de.metas.report.PrintFormatRepository;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,6 +37,7 @@ import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 
 import javax.annotation.Nullable;
 

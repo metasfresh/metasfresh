@@ -195,7 +195,7 @@ public class ShipmentScheduleWithHUService
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService()),
-				new ModularContractProvider()
+				ModularContractProvider.newInstanceForJUnitTesting()
 		);
 	}
 

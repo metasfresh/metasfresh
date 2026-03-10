@@ -227,4 +227,9 @@ public abstract class StepDefData<T>
 		}
 
 	}
+
+	public void remove(@NonNull final String identifier)
+	{
+		records.remove(identifier);
+	}
 }

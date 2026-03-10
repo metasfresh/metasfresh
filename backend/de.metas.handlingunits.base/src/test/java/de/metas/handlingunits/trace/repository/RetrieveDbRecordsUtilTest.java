@@ -8,6 +8,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceRepositoryTests;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inout.InOutId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -25,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.OptionalInt;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -100,7 +101,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.inOutId(10)
+				.inOutId(InOutId.ofRepoId(10))
 				.topLevelHuId(HuId.ofRepoId(101))
 				.vhuId(HuId.ofRepoId(11))
 				.build();
@@ -108,7 +109,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.BOTH)
-				.inOutId(20).build();
+				.inOutId(InOutId.ofRepoId(20)).build();
 
 		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
 		assertThat(selectionId).isNotNull();
@@ -128,7 +129,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.BOTH)
-				.inOutId(10).build();
+				.inOutId(InOutId.ofRepoId(10)).build();
 		final List<I_M_HU_Trace> result = invoke_queryToSelection(query);
 
 		assertThat(result).hasSize(4);
@@ -139,12 +140,11 @@ public class RetrieveDbRecordsUtilTest
 		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
 		assertThat(selectionId).isNotNull();
 
-		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Trace.class)
 				.setOnlySelection(selectionId)
 				.create()
 				.list();
-		return result;
 	}
 
 	@Test
@@ -154,15 +154,14 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.BOTH)
-				.inOutId(10).build();
+				.inOutId(InOutId.ofRepoId(10)).build();
 		final List<HUTraceEvent> result = invoke_query(query);
 		assertThat(result).hasSize(4);
 	}
 
 	private List<HUTraceEvent> invoke_query(final HUTraceEventQuery query)
 	{
-		final List<HUTraceEvent> result = RetrieveDbRecordsUtil.query(query);
-		return result;
+		return RetrieveDbRecordsUtil.query(query);
 	}
 
 	private void createFourEvents()
@@ -171,7 +170,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEvent event2_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.inOutId(10)
+				.inOutId(InOutId.ofRepoId(10))
 				.topLevelHuId(HuId.ofRepoId(202))
 				.vhuId(HuId.ofRepoId(21))
 				.build();
@@ -190,7 +189,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.inOutId(10)
+				.inOutId(InOutId.ofRepoId(10))
 				.topLevelHuId(HuId.ofRepoId(101))
 				.vhuId(HuId.ofRepoId(11))
 				.build();
@@ -212,7 +211,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.BOTH)
-				.inOutId(10).build();
+				.inOutId(InOutId.ofRepoId(10)).build();
 		final List<I_M_HU_Trace> result = invoke_queryToSelection(query);
 
 		assertThat(result).hasSize(2);
@@ -225,7 +224,7 @@ public class RetrieveDbRecordsUtilTest
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.BOTH)
-				.inOutId(10).build();
+				.inOutId(InOutId.ofRepoId(10)).build();
 		final List<HUTraceEvent> result = invoke_query(query);
 
 		assertThat(result).hasSize(2);
@@ -235,7 +234,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final HUTraceEvent event1_1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
-				.inOutId(10)
+				.inOutId(InOutId.ofRepoId(10))
 				.topLevelHuId(HuId.ofRepoId(101))
 				.vhuId(HuId.ofRepoId(11))
 				.build();

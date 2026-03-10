@@ -51,8 +51,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final IBPartnerDAO bPartnerDAO  = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final TaxId taxId)
@@ -415,6 +415,19 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@NonNull
+	public Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull final String name)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_Name, name)
 				.create()
 				.firstOnlyOptional(I_C_TaxCategory.class)
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)

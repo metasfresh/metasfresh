@@ -36,6 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -100,7 +101,16 @@ public class LogEntryCreateRequest
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	LocalDateAndOrgId physicalClearanceDate;
+
+	@Nullable
 	Integer storageDays;
+
+	@Nullable
+	Integer interestDays;
+
+	@Nullable
+	Percent interestPercent;
 
 	@Nullable
 	BigDecimal userElementNumber1;
@@ -116,11 +126,14 @@ public class LogEntryCreateRequest
 	@Nullable
 	String description;
 
-	@Nullable
+	@NonNull
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
 	ModularContractModuleId configModuleId;
+
+	@Nullable
+	ModularContractModuleId baseConfigModuleId;
 
 	@Nullable
 	ProductPrice priceActual;
@@ -150,7 +163,10 @@ public class LogEntryCreateRequest
 				.quantity(entry.getQuantity())
 				.amount(entry.getAmount())
 				.transactionDate(entry.getTransactionDate())
+				.physicalClearanceDate(entry.getPhysicalClearanceDate())
 				.storageDays(entry.getStorageDays())
+				.interestDays(entry.getInterestDays())
+				.interestPercent(entry.getInterestPercent())
 				.invoiceCandidateId(entry.getInvoiceCandidateId())
 				.year(entry.getYear())
 				.description(entry.getDescription())
@@ -181,17 +197,21 @@ public class LogEntryCreateRequest
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
+			@Nullable final Integer interestDays,
+			@Nullable final Percent interestPercent,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
-			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final ModularContractModuleId configModuleId,
+			@Nullable final ModularContractModuleId baseConfigModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable,
-			@Nullable BigDecimal userElementNumber1,
-			@Nullable BigDecimal userElementNumber2)
+			@Nullable final BigDecimal userElementNumber1,
+			@Nullable final BigDecimal userElementNumber2)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -220,12 +240,16 @@ public class LogEntryCreateRequest
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
+		this.interestDays = interestDays;
+		this.interestPercent = interestPercent;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
 		this.modularContractTypeId = modularContractTypeId;
 		this.configModuleId = configModuleId;
+		this.baseConfigModuleId = baseConfigModuleId;
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;

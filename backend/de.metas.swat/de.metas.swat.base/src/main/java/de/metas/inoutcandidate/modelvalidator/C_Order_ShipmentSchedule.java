@@ -6,7 +6,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -25,28 +25,56 @@ import java.util.Set;
 @Component
 public class C_Order_ShipmentSchedule
 {
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
-	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)
+	public void closeExistingSchedsOnReactivate(@NonNull final I_C_Order orderRecord)
 	{
-		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
+		closeExistingScheds(orderRecord, true);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)
+	public void closeExistingSchedsOnClose(@NonNull final I_C_Order orderRecord)
+	{
+		closeExistingScheds(orderRecord, false);
+	}
+
+	private void  closeExistingScheds(@NonNull final I_C_Order orderRecord, final boolean isErrorIfProcessed)
+	{
+		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderBL
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
 				.map(OrderAndLineId::getOrderLineId)
 				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
 				.collect(ImmutableList.toImmutableList());
 
-		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRecordRefs);
+		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRecordRefs, isErrorIfProcessed);
 	}
-
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void openExistingScheds(@NonNull final I_C_Order orderRecord)
 	{
-		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
+		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderBL
+				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
+				.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
+				.collect(ImmutableList.toImmutableList());
+
+		shipmentScheduleBL.openShipmentSchedulesFor(orderLineRecordRefs);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {I_C_Order.COLUMNNAME_DocStatus})
+	public void afterOpen(@NonNull final I_C_Order orderRecord)
+	{
+		if(orderBL.isNotJustOpened(orderRecord))
+		{
+			return;
+		}
+
+		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderBL
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
 				.map(OrderAndLineId::getOrderLineId)

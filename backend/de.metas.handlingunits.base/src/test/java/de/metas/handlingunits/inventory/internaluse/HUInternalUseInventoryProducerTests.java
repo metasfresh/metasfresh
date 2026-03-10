@@ -25,7 +25,7 @@ package de.metas.handlingunits.inventory.internaluse;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
@@ -130,7 +130,7 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
 

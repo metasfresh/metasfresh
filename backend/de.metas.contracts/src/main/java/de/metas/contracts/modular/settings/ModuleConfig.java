@@ -22,8 +22,9 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
+import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -49,16 +50,15 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
+	@NonNull
 	public ModularContractSettingsId getModularContractSettingsId() {return id.getModularContractSettingsId();}
+
+	@NonNull
+	public ModularContractModuleId getModularContractModuleId() {return id.getModularContractModuleId();}
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return modularContractType.isMatching(computingMethodType);
-	}
-
-	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
-	{
-		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
 	}
 
 	public boolean isMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
@@ -84,4 +84,11 @@ public class ModuleConfig
 	{
 		return modularContractType.getColumnOption();
 	}
+
+	public boolean isMatching(@Nullable final ColumnOption columnOption)
+	{
+		return ColumnOption.equals(getColumnOption(), columnOption);
+	}
+
+	public boolean isMatching(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId) {return ModuleConfigAndSettingsId.equals(id, moduleConfigAndSettingsId);}
 }

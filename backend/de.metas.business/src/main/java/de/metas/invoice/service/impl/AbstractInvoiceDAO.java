@@ -14,6 +14,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -554,12 +555,16 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 		final DocBaseType docBaseType = docType.getDocBaseType();
-		final String docSubType = docType.getDocSubType();
+		final DocSubType docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-		if (Check.isNotBlank(docSubType))
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
 		{
 			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
 		}

@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.cucumber.stepdefs.auction.C_Auction_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
@@ -39,6 +40,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -76,7 +78,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Auction;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -136,9 +137,11 @@ public class C_Order_StepDef
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
+	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
@@ -392,18 +395,12 @@ public class C_Order_StepDef
 				order.setSalesRep_ID(salesRepID);
 			}
 
-			final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(harvestingCalendarIdentifier))
-			{
-				final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
-				order.setC_Harvesting_Calendar_ID(harvestingCalendarRecord.getC_Calendar_ID());
-			}
-
 			final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(harvestingYearIdentifier))
 			{
 				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
 				order.setHarvesting_Year_ID(harvestingYearRecord.getC_Year_ID());
+				order.setC_Harvesting_Calendar_ID(harvestingYearRecord.getC_Calendar_ID());
 			}
 
 			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -473,6 +470,29 @@ public class C_Order_StepDef
 					.appendParametersToMessage()
 					.setParameter("action:", action);
 		}
+	}
+
+	@And("^the modular order identified by (.*) is opened$")
+	public void modular_order_open(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		modularContractService.openOrder(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
+	@And("^the modular order identified by (.*) is opened expecting error$")
+	public void modular_order_open_expecting_error(@NonNull final String orderIdentifier)
+	{
+		boolean errorThrown = false;
+		try
+		{
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			modularContractService.openOrder(OrderId.ofRepoId(order.getC_Order_ID()));
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+		}
+		assertThat(errorThrown).isTrue();
 	}
 
 	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided|reversed) expecting error$")
@@ -704,7 +724,7 @@ public class C_Order_StepDef
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 						.docBaseType(docBaseType)
-						.docSubType(docSubType)
+						.docSubType(DocSubType.ofNullableCode(docSubType))
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())
 						.build();
@@ -799,7 +819,7 @@ public class C_Order_StepDef
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		softly.assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 
-		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
+		final I_C_DocType docType = docTypeDAO.getById(orderBL.getDocTypeIdEffectiveOrNull(order));
 		softly.assertThat(docType).isNotNull();
 		softly.assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
 

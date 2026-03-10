@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -36,7 +37,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -64,16 +64,19 @@ public class ModularContractSettings
 	@Nullable ProductId processedProductId;
 	@Nullable ProductId coProductId;
 	@NonNull @Singular ImmutableList<ModuleConfig> moduleConfigs;
+	@NonNull @Singular ImmutableList<BaseModuleConfig> baseModuleConfigs;
 
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
+	int freeStorageCostDays;
+	int freeInterestDays;
 	int additionalInterestDays;
-	@Builder.Default @Getter
-	@NonNull Percent interestPercent = Percent.ZERO;
 
-	@Builder.Default @Getter
-	@NonNull Percent interimPricePercent = Percent.ZERO;
+	@NonNull LocalDateAndOrgId addedValueReceiptEndDate;
+
+	@NonNull Percent interestPercent;
+	@NonNull Percent interimPricePercent;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
@@ -118,6 +121,17 @@ public class ModularContractSettings
 	}
 
 	@NonNull
+	public ModuleConfig getModuleConfigById(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatching(moduleConfigAndSettingsId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No matching ModuleConfig found")
+						.setParameter("ID", moduleConfigAndSettingsId));
+	}
+
+	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		Check.assumeNotEmpty(computingMethodTypes, "ComputingMethodTypes shouldn't be empty");
@@ -136,9 +150,19 @@ public class ModularContractSettings
 				.toList();
 	}
 
-	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	public boolean contains(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
+	}
+
+	public boolean containsBaseModuleConfig(@NonNull final ModuleConfig moduleConfig)
+	{
+		return baseModuleConfigs.stream().anyMatch(config -> config.isConfigFor(moduleConfig));
+	}
+
+	public List<BaseModuleConfig> getBaseModuleConfigsByBaseModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return baseModuleConfigs.stream().filter(config -> config.isConfigWithBaseConfig(modularContractModuleId)).toList();
 	}
 
 	public long countMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)
@@ -148,10 +172,10 @@ public class ModularContractSettings
 				.count();
 	}
 
-	public long countMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	public long countMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		return moduleConfigs.stream()
-				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
+				.filter(config -> config.isMatchingAnyOf(computingMethodTypes))
 				.count();
 	}
 

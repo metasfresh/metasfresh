@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ProductPriceWithFlags;
@@ -31,11 +30,9 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -43,9 +40,6 @@ import org.springframework.stereotype.Component;
 @Component
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ReceiptComputingMethod computingMethod,

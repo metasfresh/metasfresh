@@ -2,7 +2,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
@@ -46,7 +46,7 @@ class ShipmentScheduleWithHUServiceTest
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		bPartner = BusinessTestHelper.createBPartner("bpartner");

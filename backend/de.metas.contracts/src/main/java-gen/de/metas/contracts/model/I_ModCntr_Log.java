@@ -1,7 +1,6 @@
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -364,6 +363,48 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Initial_Product_ID = "Initial_Product_ID";
 
 	/**
+	 * Set Interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterestDays (int InterestDays);
+
+	/**
+	 * Get Interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getInterestDays();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_InterestDays = new ModelColumn<>(I_ModCntr_Log.class, "InterestDays", null);
+	String COLUMNNAME_InterestDays = "InterestDays";
+
+	/**
+	 * Set Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInterestRate (@Nullable BigDecimal InterestRate);
+
+	/**
+	 * Get Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterestRate();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Log.class, "InterestRate", null);
+	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -429,6 +470,31 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Log.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Base Modules.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_BaseModule_ID (int ModCntr_BaseModule_ID);
+
+	/**
+	 * Get Base Modules.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_BaseModule_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Module getModCntr_BaseModule();
+
+	void setModCntr_BaseModule(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_BaseModule);
+
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_BaseModule_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_BaseModule_ID", de.metas.contracts.model.I_ModCntr_Module.class);
+	String COLUMNNAME_ModCntr_BaseModule_ID = "ModCntr_BaseModule_ID";
 
 	/**
 	 * Set Invoice Group.
@@ -590,6 +656,27 @@ public interface I_ModCntr_Log
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+
+	/**
+	 * Get Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_ModCntr_Log.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
 
 	/**
 	 * Set Manufacturing Cost Collector.
@@ -814,7 +901,7 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementNumber1.
+	 * Set HL.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -823,7 +910,7 @@ public interface I_ModCntr_Log
 	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
 
 	/**
-	 * Get UserElementNumber1.
+	 * Get HL.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -831,11 +918,11 @@ public interface I_ModCntr_Log
 	 */
 	BigDecimal getUserElementNumber1();
 
-	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(org.compiere.model.I_M_InOutLine.class, "UserElementNumber1", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_ModCntr_Log.class, "UserElementNumber1", null);
 	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
 
 	/**
-	 * Set UserElementNumber2.
+	 * Set Protein.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -844,7 +931,7 @@ public interface I_ModCntr_Log
 	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
 
 	/**
-	 * Get UserElementNumber2.
+	 * Get Protein.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -852,7 +939,6 @@ public interface I_ModCntr_Log
 	 */
 	BigDecimal getUserElementNumber2();
 
-	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber2", null);
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_ModCntr_Log.class, "UserElementNumber2", null);
 	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
-
 }

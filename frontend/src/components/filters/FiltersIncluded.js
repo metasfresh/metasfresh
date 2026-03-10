@@ -119,6 +119,8 @@ class FiltersIncluded extends PureComponent {
       panelCaption = captions[1];
     }
 
+    const isActive = activeFilter?.isActive && !allChildFiltersCleared;
+
     return (
       <div className="filter-wrapper filters-not-frequent">
         <button
@@ -128,10 +130,7 @@ class FiltersIncluded extends PureComponent {
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
-              'btn-active':
-                activeFilter && !allChildFiltersCleared
-                  ? activeFilter.isActive
-                  : false,
+              'btn-active': isActive,
             }
           )}
           title={buttonCaption}

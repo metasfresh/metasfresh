@@ -77,8 +77,6 @@ public interface IArchiveDAO extends ISingletonService
 	@Nullable
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
 
-	I_AD_Archive retrieveArchive(ArchiveId archiveId);
-
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 
 	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);

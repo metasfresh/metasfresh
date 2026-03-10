@@ -41,4 +41,5 @@ public class ComputingResponse
 	@NonNull ProductPrice price;
 	@Nullable InvoiceCandidateId invoiceCandidateId;
 	@NonNull ImmutableSet<ModularContractLogEntryId> ids;
+	boolean hidePriceAndAmountOnPrint;
 }

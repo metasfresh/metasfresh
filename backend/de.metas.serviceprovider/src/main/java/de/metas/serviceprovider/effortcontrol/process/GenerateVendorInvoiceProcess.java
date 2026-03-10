@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.effortcontrol.process;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -40,7 +41,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
-import org.compiere.model.X_C_DocType;
 
 public class GenerateVendorInvoiceProcess extends JavaProcess
 {
@@ -67,7 +67,7 @@ public class GenerateVendorInvoiceProcess extends JavaProcess
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(getClientID().getRepoId())
 				.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-				.docSubType(X_C_DocType.DOCSUBTYPE_InternalVendorInvoice)
+				.docSubType(DocSubType.InternalVendorInvoice)
 				.isSOTrx(false)
 				.build();
 

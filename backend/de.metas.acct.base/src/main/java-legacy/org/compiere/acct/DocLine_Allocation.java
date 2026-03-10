@@ -467,7 +467,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
 				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
-				if (DocBaseType.APPayment.equals(docBaseType))
+				if (DocBaseType.PurchasePayment.equals(docBaseType))
 				{
 					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
 				}

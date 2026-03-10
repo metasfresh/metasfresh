@@ -39,6 +39,7 @@ public class InvoiceAndLineId implements RepoIdAware
 	@NonNull
 	InvoiceId invoiceId;
 
+	@Nullable
 	public static InvoiceAndLineId cast(@Nullable final RepoIdAware repoIdAware)
 	{
 		return (InvoiceAndLineId)repoIdAware;
@@ -54,6 +55,7 @@ public class InvoiceAndLineId implements RepoIdAware
 		return new InvoiceAndLineId(InvoiceId.ofRepoId(invoiceId), invoiceLineId);
 	}
 
+	@Nullable
 	public static InvoiceAndLineId ofRepoIdOrNull(
 			@Nullable final Integer invoiceId,
 			@Nullable final Integer invoiceLineId)
@@ -63,6 +65,7 @@ public class InvoiceAndLineId implements RepoIdAware
 				: null;
 	}
 
+	@Nullable
 	public static InvoiceAndLineId ofRepoIdOrNull(
 			@Nullable final InvoiceId bpartnerId,
 			final int bpartnerLocationId)
@@ -76,14 +79,14 @@ public class InvoiceAndLineId implements RepoIdAware
 		this.invoiceId = invoiceId;
 	}
 
-	public static int toRepoId(final InvoiceAndLineId invoiceAndLineId)
+	public static int toRepoId(@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		return toRepoIdOr(invoiceAndLineId, -1);
 	}
 
-	public static int toRepoIdOr(final InvoiceAndLineId bpLocationId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final InvoiceAndLineId invoiceAndLineId, final int defaultValue)
 	{
-		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
+		return invoiceAndLineId != null ? invoiceAndLineId.getRepoId() : defaultValue;
 	}
 
 	public static boolean equals(final InvoiceAndLineId id1, final InvoiceAndLineId id2)

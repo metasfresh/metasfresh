@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;

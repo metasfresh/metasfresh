@@ -93,7 +93,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 																				 X_C_DocType.DOCSUBTYPE_POSOrder,
 																				 X_C_DocType.DOCSUBTYPE_FrameAgrement,
 																				 X_C_DocType.DOCSUBTYPE_CostEstimate,
-																				 X_C_DocType.DOCSUBTYPE_ProFormaSO)));
+																				 X_C_DocType.DOCSUBTYPE_ProForma)));
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);

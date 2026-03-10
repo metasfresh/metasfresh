@@ -1325,6 +1325,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
+	{
+		if (ModCntr_Settings_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
+	}
+
+	@Override
+	public int getModCntr_Settings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
+	}
+
+	@Override
 	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1) 
