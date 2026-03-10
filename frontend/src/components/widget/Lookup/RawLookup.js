@@ -15,7 +15,7 @@ import {
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
-import { isBlank, doThen } from '../../../utils';
+import { doThen, isBlank } from '../../../utils';
 import { getViewFieldTypeahead } from '../../../api/view';
 import { getSettingFromStateAsBoolean } from '../../../utils/settings';
 
@@ -382,6 +382,7 @@ export class RawLookup extends Component {
     if (e.key === 'Enter' && subentity === 'quickInput') {
       e.preventDefault();
       e.stopPropagation();
+
       this.resolveAndSelectOnEnter();
     }
   };
@@ -393,15 +394,11 @@ export class RawLookup extends Component {
    * After selection, advance focus to the next field in the quick input form.
    */
   resolveAndSelectOnEnter = () => {
-    const query = this.inputSearch.value;
-    if (!query || !query.trim()) {
-      return;
-    }
-
     const { list, loading } = this.state;
 
-    // If typeahead results are already loaded for this exact query, use them
-    if (!loading && this.typeaheadQuery === query && list.length > 0) {
+    // If typeahead results are already loaded, use them — even for blank/space
+    // queries (e.g. user pressed space to open the list, then Enter to confirm).
+    if (!loading && list.length > 0) {
       const regularItems = list.filter(
         (item) =>
           item.key !== KEY_New &&
@@ -409,6 +406,11 @@ export class RawLookup extends Component {
           !isNoneItem(item)
       );
       this.resolveItems(regularItems);
+      return;
+    }
+
+    const query = this.inputSearch.value;
+    if (!query || !query.trim()) {
       return;
     }
 
@@ -958,7 +960,7 @@ const mapStateToProps = (state) => ({
   ),
   enterRequiresSingleMatch: getSettingFromStateAsBoolean(
     state,
-    'webui.frontend.quickinput.enterRequiresSingleMatch',
+    'quickinput.enterRequiresSingleMatch',
     false
   ),
 });
