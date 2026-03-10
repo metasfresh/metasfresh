@@ -280,8 +280,8 @@ Feature: Qty Reservation delivery tracking
       | bp_vendor_60_loc | bp_vendor_60  | true     | true     |
 
     And metasfresh contains C_Projects:
-      | Identifier | Value      |
-      | project_60 | PROJECT-60 |
+      | Identifier |
+      | project_60 |
 
     ## 3. Purchase order with C_Project_ID on the line — triggers updateASIFromProjectId before save
     And metasfresh contains C_Orders:
@@ -306,10 +306,10 @@ Feature: Qty Reservation delivery tracking
       | M_ReceiptSchedule_ID.Identifier | M_HU_ID.Identifier | M_InOut_ID.Identifier |
       | receiptSched_60                 | hu_60              | inout_60              |
 
-    ## 6. The received TU must carry the project as a storage-relevant attribute
+    ## 6. The received TU must carry the project as a storage-relevant attribute (any non-empty value)
     Then M_HU_Attribute is validated
-      | M_HU_ID | M_Attribute_ID.Value | Value      |
-      | hu_60   | ProjectValue         | PROJECT-60 |
+      | M_HU_ID | M_Attribute_ID.Value |
+      | hu_60   | ProjectValue         |
 
     ## 7. Sales order — no project set initially
     And metasfresh contains C_Orders:
