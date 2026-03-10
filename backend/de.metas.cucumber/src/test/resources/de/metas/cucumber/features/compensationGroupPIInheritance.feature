@@ -86,10 +86,10 @@ Feature: Compensation Group PI Inheritance
       | order_pi   | schema_1                      | 1   | piProd_main             |
 
     # -- Verify: both sub-article order lines got their own compatible PI --
-    Then metasfresh has C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | schema_ol_1 | order_pi   | subProduct1  | piProd_sub1                             |
-      | schema_ol_2 | order_pi   | subProduct2  | piProd_sub2                             |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | schema_ol_1    | subProduct1  | piProd_sub1                             |
+      | schema_ol_2    | subProduct2  | piProd_sub2                             |
 
   @from:cucumber
   @Id:S0468_050
@@ -160,11 +160,11 @@ Feature: Compensation Group PI Inheritance
       | order_pi2  | schema_2                      | 1   | piProd_main2            |
 
     # -- Verify: subWithPI got PI, subWithoutPI kept default (101 = Virtual/No Packing Item) --
-    Then metasfresh has C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | schema_ol_1 | order_pi2  | subWithPI    | piProd_subWithPI                        |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | schema_ol_1    | subWithPI    | piProd_subWithPI                        |
     # subWithoutPI should NOT have piProd_subWithPI — it should have the default (101)
     # We verify it exists but don't check PI (no compatible PI was found, so it stays at default)
-    And metasfresh has C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID |
-      | schema_ol_2 | order_pi2  | subWithoutPI |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | M_Product_ID |
+      | schema_ol_2    | subWithoutPI |
