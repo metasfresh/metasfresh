@@ -371,6 +371,95 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.isNotNull();
 	}
 
+	/**
+	 * Verify that shipping packages for deleted order lines are removed during sync,
+	 * while packages for surviving lines are kept.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_removesPackagesForDeletedLines()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner6", "address6");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		// Create two order lines
+		final I_C_OrderLine line1 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(3), product1, uom1),
+				Money.of(15, chf)
+		);
+		final I_C_OrderLine line2 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product2, uom1),
+				Money.of(25, chf)
+		);
+
+		// Add order to transportation — should create 2 packages (one per line)
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesBefore).hasSize(2);
+
+		// Simulate: delete line2 during reactivation
+		org.adempiere.model.InterfaceWrapperHelper.delete(line2);
+
+		// Sync
+		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		service.syncShippingPackagesFromOrder(order);
+
+		// Only 1 package should remain (for line1)
+		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesAfter)
+				.as("Package for deleted line should be removed, surviving line's package should remain")
+				.hasSize(1);
+		assertThat(packagesAfter.get(0).getC_OrderLine_ID())
+				.as("Remaining package should belong to the surviving order line")
+				.isEqualTo(line1.getC_OrderLine_ID());
+	}
+
+	/**
+	 * Verify that when ALL order lines are removed, ALL shipping packages are cleaned up.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_removesAllPackagesWhenAllLinesDeleted()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner7", "address7");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		final I_C_OrderLine line1 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+
+		// Delete the only line
+		org.adempiere.model.InterfaceWrapperHelper.delete(line1);
+
+		// Sync
+		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		service.syncShippingPackagesFromOrder(order);
+
+		// All packages should be gone
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+				.as("All packages should be removed when all order lines are deleted")
+				.isEmpty();
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();
