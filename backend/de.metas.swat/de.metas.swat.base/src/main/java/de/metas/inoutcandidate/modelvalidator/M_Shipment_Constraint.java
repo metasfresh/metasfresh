@@ -3,15 +3,18 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
+import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.util.Services;
 
@@ -51,6 +54,51 @@ public class M_Shipment_Constraint
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesInvalidator.flagSegmentForRecompute(affectedStorageSegments);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
+	public void updateReceiptScheduleDeliveryStop(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
+	{
+		final Set<Integer> affectedBPartnerIds = extractAffectedBPartnerIds(constraint, changeType);
+		if (affectedBPartnerIds.isEmpty())
+		{
+			return;
+		}
+
+		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+
+		for (final int bpartnerId : affectedBPartnerIds)
+		{
+			final boolean isDeliveryStop = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(bpartnerId) > 0;
+
+			Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_ReceiptSchedule.class)
+					.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID, bpartnerId)
+					.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+					.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop)
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop)
+					.execute();
+		}
+	}
+
+	private static Set<Integer> extractAffectedBPartnerIds(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
+	{
+		final Set<Integer> bpartnerIds = new LinkedHashSet<>();
+		if (changeType.isNewOrChange() && constraint.getBill_BPartner_ID() > 0)
+		{
+			bpartnerIds.add(constraint.getBill_BPartner_ID());
+		}
+		if (changeType.isChangeOrDelete())
+		{
+			final I_M_Shipment_Constraint constraintOld = InterfaceWrapperHelper.createOld(constraint, I_M_Shipment_Constraint.class);
+			if (constraintOld.getBill_BPartner_ID() > 0)
+			{
+				bpartnerIds.add(constraintOld.getBill_BPartner_ID());
+			}
+		}
+		return bpartnerIds;
 	}
 
 	private static final Set<IShipmentScheduleSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)

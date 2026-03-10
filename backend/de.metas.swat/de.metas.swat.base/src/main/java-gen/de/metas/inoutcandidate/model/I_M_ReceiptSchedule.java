@@ -1039,6 +1039,27 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Delivery Stop.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryStop (boolean IsDeliveryStop);
+
+	/**
+	 * Get Delivery Stop.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryStop();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsDeliveryStop = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsDeliveryStop", null);
+	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
+
+	/**
 	 * Set B/L Received.
 	 * Has the bill of lading been received?
 	 *
