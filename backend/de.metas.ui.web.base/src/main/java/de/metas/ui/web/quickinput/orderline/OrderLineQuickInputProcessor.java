@@ -34,6 +34,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
