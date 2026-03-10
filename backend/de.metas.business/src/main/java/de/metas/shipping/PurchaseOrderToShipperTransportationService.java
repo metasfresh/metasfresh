@@ -47,7 +47,9 @@ import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Check;
@@ -291,18 +293,62 @@ public class PurchaseOrderToShipperTransportationService
 		return result.getReportData();
 	}
 
-	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	public boolean hasProcessedShipperTransportation(@NonNull final OrderId orderId)
 	{
-		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+		return shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderId(orderId)
 				.processed(true)
 				.build());
-		if (isDeletePossible)
+	}
+
+	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	{
+		if (hasProcessedShipperTransportation(orderId))
 		{
-			repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
+			return false;
+		}
+		repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		return true;
+	}
+
+	public void syncShippingPackagesFromOrder(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Collection<I_M_ShippingPackage> shippingPackages = repo.getBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		if (shippingPackages.isEmpty())
+		{
+			return;
 		}
 
-		return isDeletePossible;
+		// Collect current order line IDs to detect removed lines
+		final ImmutableSet<Integer> currentOrderLineIds = orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
+
+		final ImmutableSet.Builder<PackageId> packageIdsToDelete = ImmutableSet.builder();
+		for (final I_M_ShippingPackage sp : shippingPackages)
+		{
+			// Collect packages for order lines that no longer exist (deleted during reactivation)
+			if (sp.getC_OrderLine_ID() > 0 && !currentOrderLineIds.contains(sp.getC_OrderLine_ID()))
+			{
+				packageIdsToDelete.add(PackageId.ofRepoId(sp.getM_Package_ID()));
+				continue;
+			}
+
+			// Sync header-level fields to both M_ShippingPackage and M_Package
+			repo.updateShippingPackageAndPackage(sp, bPartnerId, bPartnerLocationId, order.getDatePromised());
+		}
+
+		// Batch-delete packages for removed order lines
+		final ImmutableSet<PackageId> toDelete = packageIdsToDelete.build();
+		if (!toDelete.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(toDelete);
+		}
 	}
 
 	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
