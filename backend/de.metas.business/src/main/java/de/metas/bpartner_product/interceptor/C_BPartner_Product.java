@@ -10,6 +10,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -55,6 +56,9 @@ public class C_BPartner_Product
 	private final static AdMessageKey MSG_C_BPartner_Product_Duplicate_ASI = AdMessageKey.of("C_BPartner_Product_Duplicate_ASI");
 
 	private final IBPartnerProductBL bpartnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_SyncEANAndGTIN = "M_Product.SyncEANAndGTIN";
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onASISet(final I_C_BPartner_Product bpProduct)
@@ -116,19 +120,21 @@ public class C_BPartner_Product
 			ifColumnsChanged = { I_C_BPartner_Product.COLUMNNAME_GTIN, I_C_BPartner_Product.COLUMNNAME_EAN_CU, I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode })
 	private void normalizeProductCodeFields(@NonNull I_C_BPartner_Product record)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_GTIN))
+		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_GTIN))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
 			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
-		else if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_EAN_CU))
+		else if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_EAN_CU))
 		{
 			final EAN13 ean13 = EAN13.ofNullableString(record.getEAN_CU());
 			final GTIN gtin = ean13 != null ? ean13.toGTIN() : null;
 			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
 		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
-		else if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_UPC))
+		else if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_UPC))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
 			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);

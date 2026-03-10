@@ -17,6 +17,7 @@ import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -73,6 +74,9 @@ public class M_Product
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_SyncEANAndGTIN = "M_Product.SyncEANAndGTIN";
 
 	@Init
 	public void registerCallouts()
@@ -184,13 +188,15 @@ public class M_Product
 
 	private void normalizeProductCodeFields(@NonNull I_M_Product record)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
+		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
 			productBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
 		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
-		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
+		else if (syncEANAndGTIN && InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
 			productBL.setProductCodeFieldsFromGTIN(record, gtin);
