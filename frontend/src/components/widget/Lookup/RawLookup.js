@@ -382,7 +382,24 @@ export class RawLookup extends Component {
     if (e.key === 'Enter' && subentity === 'quickInput') {
       e.preventDefault();
       e.stopPropagation();
-      this.resolveAndSelectOnEnter();
+
+      // If the dropdown is open and a regular item is highlighted (arrow-key
+      // navigation or default first item), select it directly.
+      // This fixes the workflow: space → list opens → arrow-key → Enter confirms.
+      // resolveAndSelectOnEnter() returns early for blank/space input, so the
+      // highlighted item must be selected here instead.
+      const { selected } = this.state;
+      if (
+        isOpen &&
+        selected &&
+        selected.key !== KEY_None &&
+        selected.key !== KEY_New &&
+        selected.key !== KEY_AdvancedSearch
+      ) {
+        this.handleAutoSelectAndAdvance(selected);
+      } else {
+        this.resolveAndSelectOnEnter();
+      }
     }
   };
 
