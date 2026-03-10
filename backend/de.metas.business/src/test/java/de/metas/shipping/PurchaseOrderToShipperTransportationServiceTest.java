@@ -30,6 +30,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -42,6 +43,8 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -338,7 +341,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(packagesBefore).hasSize(1);
 
 		// Now simulate order re-completion with changed DatePromised and BPartner Location
-		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		final I_C_Order order = load(orderId, I_C_Order.class);
 		final java.time.LocalDate newDate = LocalDate.of(2025, 3, 15);
 		order.setDatePromised(TimeUtil.asTimestamp(newDate, orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
 
@@ -365,7 +368,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.isEqualTo(newLocation.getBpartnerId().getRepoId());
 
 		// Check M_Package.ShipDate
-		final org.compiere.model.I_M_Package mPackage = org.adempiere.model.InterfaceWrapperHelper.load(sp.getM_Package_ID(), org.compiere.model.I_M_Package.class);
+		final I_M_Package mPackage = load(sp.getM_Package_ID(), I_M_Package.class);
 		assertThat(mPackage.getShipDate())
 				.as("M_Package.ShipDate should be synced from order.DatePromised")
 				.isNotNull();
@@ -406,10 +409,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(packagesBefore).hasSize(2);
 
 		// Simulate: delete line2 during reactivation
-		org.adempiere.model.InterfaceWrapperHelper.delete(line2);
+		delete(line2);
 
 		// Sync
-		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		final I_C_Order order = load(orderId, I_C_Order.class);
 		service.syncShippingPackagesFromOrder(order);
 
 		// Only 1 package should remain (for line1)
@@ -448,10 +451,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
 
 		// Delete the only line
-		org.adempiere.model.InterfaceWrapperHelper.delete(line1);
+		delete(line1);
 
 		// Sync
-		final I_C_Order order = org.adempiere.model.InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		final I_C_Order order = load(orderId, I_C_Order.class);
 		service.syncShippingPackagesFromOrder(order);
 
 		// All packages should be gone

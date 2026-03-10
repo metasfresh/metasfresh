@@ -55,14 +55,14 @@ import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Package;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -331,12 +331,13 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 
+		final ImmutableSet.Builder<PackageId> packageIdsToDelete = ImmutableSet.builder();
 		for (final I_M_ShippingPackage sp : shippingPackages)
 		{
-			// Remove packages for order lines that no longer exist (deleted during reactivation)
+			// Collect packages for order lines that no longer exist (deleted during reactivation)
 			if (sp.getC_OrderLine_ID() > 0 && !currentOrderLineIds.contains(sp.getC_OrderLine_ID()))
 			{
-				repo.deleteFromShipperTransportation(ImmutableSet.of(PackageId.ofRepoId(sp.getM_Package_ID())));
+				packageIdsToDelete.add(PackageId.ofRepoId(sp.getM_Package_ID()));
 				continue;
 			}
 
@@ -351,6 +352,13 @@ public class PurchaseOrderToShipperTransportationService
 			mPackage.setC_BPartner_ID(bPartnerId.getRepoId());
 			mPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
 			InterfaceWrapperHelper.save(mPackage);
+		}
+
+		// Batch-delete packages for removed order lines
+		final ImmutableSet<PackageId> toDelete = packageIdsToDelete.build();
+		if (!toDelete.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(toDelete);
 		}
 	}
 

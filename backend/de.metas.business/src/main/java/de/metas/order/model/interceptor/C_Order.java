@@ -380,6 +380,10 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void blockReactivationIfProcessedTransportationOrder(final I_C_Order order)
 	{
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
 		// Block reactivation when the transport order is already processed,
 		// but do NOT delete shipping packages — they must be preserved so the
 		// transport order link on receipt schedules (virtual column via M_ShippingPackage) survives.
