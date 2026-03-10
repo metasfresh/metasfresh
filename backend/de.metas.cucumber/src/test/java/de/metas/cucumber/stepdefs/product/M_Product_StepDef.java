@@ -51,6 +51,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -414,9 +415,9 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).map(M_Product::emptyToNull).ifPresent(productRecord::setGTIN);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).map(M_Product::emptyToNull).ifPresent(productRecord::setUPC);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).map(M_Product::emptyToNull).ifPresent(productRecord::setEAN13_ProductCode);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setGTIN);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setUPC);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setEAN13_ProductCode);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
