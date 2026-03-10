@@ -276,8 +276,8 @@ Feature: Qty Reservation delivery tracking
       | Identifier   | IsVendor | M_PricingSystem_ID |
       | bp_vendor_60 | true     | psP_60             |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID |
-      | bp_vendor_60_loc | bp_vendor_60  |
+      | Identifier       | C_BPartner_ID | IsShipTo | IsBillTo |
+      | bp_vendor_60_loc | bp_vendor_60  | true     | true     |
 
     And metasfresh contains C_Projects:
       | Identifier | Value      |
