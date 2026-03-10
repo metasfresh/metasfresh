@@ -7,6 +7,10 @@ on:
       - '**/README.md'
   workflow_dispatch:
 
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   packages: read
