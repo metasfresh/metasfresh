@@ -9,6 +9,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -26,6 +27,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,9 +101,11 @@ public class VendorReturnFromReceiptHUHandler
 			// Assign split HUs to the return line
 			huAssignmentBL.assignHUs(returnLine, splitHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
 
-			// Queue for snapshot and collection
+			// Mark new HUs as Shipped and queue for snapshot
 			for (final I_M_HU hu : splitHUs)
 			{
+				hu.setHUStatus(X_M_HU.HUSTATUS_Shipped);
+				InterfaceWrapperHelper.save(hu);
 				snapshotProducer.addModel(hu);
 			}
 			allSplitHUs.addAll(splitHUs);
@@ -209,7 +213,7 @@ public class VendorReturnFromReceiptHUHandler
 			}
 
 			// Navigate to the VHU level if this is a TU
-			final I_M_HU cuHU = findCUForProduct(sourceHU, productId, storageFactory);
+			final I_M_HU cuHU = findCUForProductOrNull(sourceHU, productId, storageFactory);
 			if (cuHU == null)
 			{
 				continue;
@@ -229,9 +233,18 @@ public class VendorReturnFromReceiptHUHandler
 			final Quantity splitQuantity = Quantity.of(splitQty, productStorage.getC_UOM());
 
 			final List<I_M_HU> splitResult = huTransformService.cuToNewCU(cuHU, splitQuantity);
+
 			allSplitHUs.addAll(splitResult);
 
 			remainingQty = remainingQty.subtract(splitQty);
+
+			// Check if the source HU was fully consumed and mark it as Destroyed
+			final IHUStorage updatedStorage = storageFactory.getStorage(cuHU);
+			if (updatedStorage.isEmpty())
+			{
+				cuHU.setHUStatus(X_M_HU.HUSTATUS_Destroyed);
+				InterfaceWrapperHelper.save(cuHU);
+			}
 		}
 
 		if (remainingQty.signum() > 0 && !isPickAvailableHUsOnTheFly())
@@ -243,7 +256,8 @@ public class VendorReturnFromReceiptHUHandler
 		return allSplitHUs;
 	}
 
-	private I_M_HU findCUForProduct(
+	@Nullable
+	private I_M_HU findCUForProductOrNull(
 			@NonNull final I_M_HU hu,
 			@NonNull final ProductId productId,
 			@NonNull final IHUStorageFactory storageFactory)
@@ -279,7 +293,7 @@ public class VendorReturnFromReceiptHUHandler
 					}
 				}
 				// Recurse for nested TUs
-				final I_M_HU found = findCUForProduct(childHU, productId, storageFactory);
+				final I_M_HU found = findCUForProductOrNull(childHU, productId, storageFactory);
 				if (found != null)
 				{
 					return found;

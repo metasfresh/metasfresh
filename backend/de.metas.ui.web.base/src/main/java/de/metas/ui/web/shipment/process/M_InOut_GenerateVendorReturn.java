@@ -48,7 +48,7 @@ public class M_InOut_GenerateVendorReturn extends JavaProcess implements IProces
 	{
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
 		final InOutId receiptId = context.getSingleSelectedRecordId(InOutId.class);
