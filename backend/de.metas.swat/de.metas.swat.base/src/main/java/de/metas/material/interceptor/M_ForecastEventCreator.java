@@ -144,7 +144,7 @@ public class M_ForecastEventCreator
 		}
 
 		// forecast line has no ASI — look up PP_Product_Planning for a fallback ASI
-		final AttributeSetInstanceId planningAsiId = resolvePlanningAsiId(forecastLine);
+		final AttributeSetInstanceId planningAsiId = resolvePlanningAsiId(forecastLine, forecastAsiId);
 		if (!planningAsiId.isNone())
 		{
 			return productDescriptorFactory.createProductDescriptor(
@@ -155,13 +155,15 @@ public class M_ForecastEventCreator
 		return productDescriptorFactory.createProductDescriptor(forecastLine);
 	}
 
-	private AttributeSetInstanceId resolvePlanningAsiId(@NonNull final I_M_ForecastLine forecastLine)
+	private AttributeSetInstanceId resolvePlanningAsiId(
+			@NonNull final I_M_ForecastLine forecastLine,
+			@NonNull final AttributeSetInstanceId forecastAsiId)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.productId(ProductId.ofRepoId(forecastLine.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoIdOrNull(forecastLine.getM_Warehouse_ID()))
 				.orgId(OrgId.ofRepoId(forecastLine.getAD_Org_ID()))
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.attributeSetInstanceId(forecastAsiId)
 				.build();
 
 		return productPlanningDAO.find(query)
