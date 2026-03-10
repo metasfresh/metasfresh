@@ -22,10 +22,10 @@
 
 package de.metas.cucumber.stepdefs.project;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
-import de.metas.util.CoalesceUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -48,12 +48,10 @@ public class C_Project_StepDef
 	 * Create C_Project records with minimal required fields.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>Identifier</b> — (required) alias to store the project under<br>
-	 *   <b>Name</b> — (required) project name<br>
-	 *   <b>Value</b> — (optional) project value/search key, defaults to Name if not specified<br>
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.columns <b>Identifier</b> — (required) alias to store the project under<br>
+	 * <b>Name</b> — (required) project name<br>
+	 * <b>Value</b> — (optional) project value/search key, defaults to Name if not specified<br>
+	 * @cucumber.example <pre>
 	 * Given metasfresh contains C_Projects:
 	 *   | Identifier | Name         | Value        |
 	 *   | project_1  | TestProject1 | PROJ_001     |
@@ -81,7 +79,7 @@ public class C_Project_StepDef
 		project.setName(valueAndName.getName());
 		project.setValue(valueAndName.getValue());
 
-		project.setC_Currency_ID( row.getAsOptionalInt(I_C_Project.COLUMNNAME_C_Currency_ID)
+		project.setC_Currency_ID(row.getAsOptionalInt(I_C_Project.COLUMNNAME_C_Currency_ID)
 				.orElse(DEFAULT_CURRENCY_ID));
 
 		saveRecord(project);
