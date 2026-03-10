@@ -1,6 +1,7 @@
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderAndLineId;
@@ -102,6 +103,23 @@ public class PurchaseOrderToShipperTransportationRepository
 			shippingPackage.setPackageWeight(request.getGrossWeightInKg());
 		}
 		save(shippingPackage);
+	}
+
+	public void updateShippingPackageAndPackage(
+			@NonNull final I_M_ShippingPackage shippingPackage,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
+			@NonNull final java.sql.Timestamp datePromised)
+	{
+		shippingPackage.setC_BPartner_ID(bPartnerId.getRepoId());
+		shippingPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+		save(shippingPackage);
+
+		final I_M_Package mPackage = load(shippingPackage.getM_Package_ID(), I_M_Package.class);
+		mPackage.setShipDate(datePromised);
+		mPackage.setC_BPartner_ID(bPartnerId.getRepoId());
+		mPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+		save(mPackage);
 	}
 
 	public void deleteFromShipperTransportation(@NonNull final Collection<PackageId> packageIdsToDelete)
