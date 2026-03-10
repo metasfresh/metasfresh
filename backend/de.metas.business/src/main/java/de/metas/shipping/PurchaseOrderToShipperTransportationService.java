@@ -59,10 +59,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Package;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -341,17 +339,8 @@ public class PurchaseOrderToShipperTransportationService
 				continue;
 			}
 
-			// Sync header-level fields
-			sp.setC_BPartner_ID(bPartnerId.getRepoId());
-			sp.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
-			InterfaceWrapperHelper.save(sp);
-
-			// Also sync the underlying M_Package
-			final I_M_Package mPackage = InterfaceWrapperHelper.load(sp.getM_Package_ID(), I_M_Package.class);
-			mPackage.setShipDate(order.getDatePromised());
-			mPackage.setC_BPartner_ID(bPartnerId.getRepoId());
-			mPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
-			InterfaceWrapperHelper.save(mPackage);
+			// Sync header-level fields to both M_ShippingPackage and M_Package
+			repo.updateShippingPackageAndPackage(sp, bPartnerId, bPartnerLocationId, order.getDatePromised());
 		}
 
 		// Batch-delete packages for removed order lines
