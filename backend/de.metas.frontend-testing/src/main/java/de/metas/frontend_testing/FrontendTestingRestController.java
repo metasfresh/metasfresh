@@ -175,6 +175,8 @@ public class FrontendTestingRestController
 	}
 
 	@Value
+	@lombok.Builder
+	@lombok.extern.jackson.Jacksonized
 	public static class JsonReverseShipmentRequest
 	{
 		Integer shipmentId;
