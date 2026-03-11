@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_CustomerLabelName;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_Description;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_EAN_CU;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason;
@@ -209,12 +211,13 @@ public class C_BPartner_Product_StepDef
 	private void updateBPartnerProduct(@NonNull final DataTableRow row)
 	{
 		final I_C_BPartner_Product record = row.getAsIdentifier().lookupIn(bpartnerProductRawTable);
+		assertThat(record).isNotNull();
 		InterfaceWrapperHelper.refresh(record);
 
-		row.getAsOptionalString(COLUMNNAME_GTIN).map(C_BPartner_Product_StepDef::emptyToNull).ifPresent(record::setGTIN);
-		row.getAsOptionalString(COLUMNNAME_EAN_CU).map(C_BPartner_Product_StepDef::emptyToNull).ifPresent(record::setEAN_CU);
-		row.getAsOptionalString(COLUMNNAME_UPC).map(C_BPartner_Product_StepDef::emptyToNull).ifPresent(record::setUPC);
-		row.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode).map(C_BPartner_Product_StepDef::emptyToNull).ifPresent(record::setEAN13_ProductCode);
+		row.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(value -> record.setGTIN(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_UPC).ifPresent(value -> record.setUPC(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_EAN_CU).ifPresent(value -> record.setEAN_CU(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_EAN13_ProductCode).ifPresent(value -> record.setEAN13_ProductCode(nullToken2Null(value)));
 
 		saveRecord(record);
 		bpartnerProductRawTable.putOrReplace(row.getAsIdentifier(), record);
@@ -236,6 +239,7 @@ public class C_BPartner_Product_StepDef
 	private void verifyBPartnerProductFields(@NonNull final DataTableRow row)
 	{
 		final I_C_BPartner_Product record = row.getAsIdentifier().lookupIn(bpartnerProductRawTable);
+		assertThat(record).isNotNull();
 		InterfaceWrapperHelper.refresh(record);
 
 		row.getAsOptionalString(COLUMNNAME_GTIN)
@@ -248,15 +252,10 @@ public class C_BPartner_Product_StepDef
 				.ifPresent(expected -> assertThat(record.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
 	}
 
-	@javax.annotation.Nullable
+	@Nullable
 	private static String nullToken2Null(@NonNull final String value)
 	{
 		return "null".equals(value) ? null : value;
 	}
 
-	@javax.annotation.Nullable
-	private static String emptyToNull(@NonNull final String value)
-	{
-		return value.isEmpty() ? null : value;
-	}
 }

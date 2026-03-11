@@ -51,7 +51,6 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -71,6 +70,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -415,9 +415,9 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setGTIN);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setUPC);
-		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).map(StringUtils::trimBlankToNull).ifPresent(productRecord::setEAN13_ProductCode);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
@@ -441,6 +441,7 @@ public class M_Product_StepDef
 	private void verifyMProductFields(@NonNull final DataTableRow row)
 	{
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
 		InterfaceWrapperHelper.refresh(productRecord);
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN)
@@ -451,15 +452,9 @@ public class M_Product_StepDef
 				.ifPresent(expected -> assertThat(productRecord.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
 	}
 
-	@javax.annotation.Nullable
+	@Nullable
 	private static String nullToken2Null(@NonNull final String value)
 	{
 		return "null".equals(value) ? null : value;
-	}
-
-	@javax.annotation.Nullable
-	private static String emptyToNull(@NonNull final String value)
-	{
-		return value.isEmpty() ? null : value;
 	}
 }
