@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -164,12 +165,12 @@ public class FrontendTestingRestController
 			InterfaceWrapperHelper.refresh(shipment);
 			documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
-			return Map.of(
-					"shipmentId", shipment.getM_InOut_ID(),
-					"documentNo", shipment.getDocumentNo(),
-					"docStatus", shipment.getDocStatus(),
-					"reversalId", shipment.getReversal_ID()
-			);
+			final Map<String, Object> result = new HashMap<>();
+			result.put("shipmentId", shipment.getM_InOut_ID());
+			result.put("documentNo", shipment.getDocumentNo());
+			result.put("docStatus", shipment.getDocStatus());
+			result.put("reversalId", shipment.getReversal_ID());
+			return result;
 		});
 	}
 
