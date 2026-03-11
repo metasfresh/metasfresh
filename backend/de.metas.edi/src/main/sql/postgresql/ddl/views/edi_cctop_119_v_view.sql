@@ -73,7 +73,7 @@ FROM (
                          COALESCE(p_wh.ReferenceNo, p_vend.ReferenceNo)                         AS Vendor_ReferenceNo,
                          COALESCE(pl_wh.bpartnername, pl_vend.bpartnername)                     AS SiteName,
                          COALESCE(pl_wh.Setup_Place_No, pl_vend.Setup_Place_No)                 AS Setup_Place_No,
-                         COALESCE(REGEXP_REPLACE(pl_wh.GLN, '\s+$', ''), REGEXP_REPLACE(pl_vend.GLN, '\s+$', '')) AS GLN_Override,
+                         COALESCE(NULLIF(REGEXP_REPLACE(pl_wh.GLN, '\s+$', ''), ''), NULLIF(REGEXP_REPLACE(pl_vend.GLN, '\s+$', ''), '')) AS GLN_Override,
                          i.CreatedBy
                   FROM C_Invoice i
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID

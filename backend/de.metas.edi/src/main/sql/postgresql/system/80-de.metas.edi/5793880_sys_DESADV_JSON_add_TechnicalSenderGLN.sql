@@ -13,6 +13,7 @@ SELECT io.m_inout_id,
                                       WHERE sl.c_bpartner_id = org.org_bpartner_id
                                         AND sl.isremitto = 'Y'
                                         AND sl.gln IS NOT NULL
+                                        AND sl.gln <> ''
                                         AND sl.isactive = 'Y'
                                       ORDER BY sl.c_bpartner_location_id
                                       LIMIT 1),

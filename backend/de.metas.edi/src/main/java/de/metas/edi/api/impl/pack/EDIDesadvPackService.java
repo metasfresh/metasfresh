@@ -38,9 +38,6 @@ import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
@@ -120,9 +117,6 @@ public class EDIDesadvPackService
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
 
@@ -495,7 +489,7 @@ public class EDIDesadvPackService
 	private CreateEDIDesadvPackItemRequest buildCreateDesadvPackItemRequest(
 			@NonNull final RequestParameters parameters)
 	{
-		final Quantity qtyCUInStockUOM = computeQtyCUsPerTU(parameters.topLevelHU, parameters.productId);
+		final Quantity qtyCUInStockUOM = parameters.topLevelHU.extractMedianCUQtyPerChildHU(parameters.productId);
 
 		final Timestamp bestBefore = extractBestBeforeDate(parameters.getInOutLineRecord()).orElse(null);
 
@@ -507,7 +501,7 @@ public class EDIDesadvPackService
 						.line(parameters.packItemLineSequence.next())
 						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
 						.bestBeforeDate(bestBefore)
-						.qtyTu(getLogicalTUCount(parameters.topLevelHU));
+						.qtyTu(parameters.topLevelHU.getChildHUs().size());
 
 		final String lotNumber = extractLotNumber(parameters.getInOutLineRecord()).orElse(null);
 
@@ -713,58 +707,6 @@ public class EDIDesadvPackService
 		{
 			createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(tuPackagingGTIN);
 		}
-	}
-
-	/**
-	 * Gets the logical TU count for a top-level HU (LU or aggregate TU).
-	 * For aggregate HUs, bridges to {@link IHandlingUnitsBL#getTUsCount(I_M_HU)}
-	 * which reads the parent item's Qty field (ItemType='HA') instead of counting child objects.
-	 * For non-aggregate HUs, returns the child HU count from the generic model.
-	 */
-	private int getLogicalTUCount(@NonNull final HU topLevelHU)
-	{
-		final ImmutableList<HU> childHUs = topLevelHU.getChildHUs();
-		if (childHUs.isEmpty())
-		{
-			return 1; // single TU with no children
-		}
-
-		final I_M_HU huRecord = handlingUnitsDAO.getById(topLevelHU.getId());
-		if (handlingUnitsBL.isAggregateHU(huRecord))
-		{
-			return handlingUnitsBL.getTUsCount(huRecord).toInt();
-		}
-
-		return childHUs.size();
-	}
-
-	/**
-	 * Computes the CU quantity per TU for a top-level HU.
-	 * For aggregate HUs, derives from totalCUQty / logicalTUCount.
-	 * For non-aggregate HUs, uses the generic model's median calculation.
-	 */
-	private Quantity computeQtyCUsPerTU(@NonNull final HU topLevelHU, @NonNull final ProductId productId)
-	{
-		final ImmutableList<HU> childHUs = topLevelHU.getChildHUs();
-		if (childHUs.isEmpty())
-		{
-			// Single TU — return total CU qty as the "per TU" qty
-			return topLevelHU.getProductQtysInStockUOM().get(productId);
-		}
-
-		final I_M_HU huRecord = handlingUnitsDAO.getById(topLevelHU.getId());
-		if (handlingUnitsBL.isAggregateHU(huRecord))
-		{
-			final int logicalTUCount = handlingUnitsBL.getTUsCount(huRecord).toInt();
-			final Quantity totalCUQty = topLevelHU.getProductQtysInStockUOM().get(productId);
-			if (logicalTUCount > 0 && totalCUQty != null)
-			{
-				return totalCUQty.divide(logicalTUCount);
-			}
-		}
-
-		// Non-aggregate: use the existing median calculation
-		return topLevelHU.extractMedianCUQtyPerChildHU(productId);
 	}
 
 	/**
