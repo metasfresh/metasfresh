@@ -2804,7 +2804,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 		final List<I_C_Invoice_Candidate> updatedInvoiceCandidates = invoiceCandidates.stream()
 				.filter(ic -> !ic.isProcessed())
-				.filter(ic -> ProjectId.equals(ProjectId.ofRepoIdOrNull(ic.getC_Project_ID()), projectId))
+				.filter(ic -> !ProjectId.equals(ProjectId.ofRepoIdOrNull(ic.getC_Project_ID()), projectId))
 				.peek(ic -> ic.setC_Project_ID(ProjectId.toRepoId(projectId)))
 				.collect(Collectors.toList());
 		invoiceCandDAO.saveAll(updatedInvoiceCandidates);
