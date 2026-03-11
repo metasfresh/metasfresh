@@ -2802,22 +2802,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
-		{
-			if (ic.isProcessed())
-			{
-				continue;
-			}
-
-			final ProjectId icProjectId = ProjectId.ofRepoIdOrNull(ic.getC_Project_ID());
-			if (ProjectId.equals(icProjectId, projectId))
-			{
-				continue;
-			}
-
-			ic.setC_Project_ID(ProjectId.toRepoId(projectId));
-			invoiceCandDAO.save(ic);
-			logger.debug("Updated C_Project_ID={} on C_Invoice_Candidate_ID={} from C_OrderLine_ID={}", projectId, ic.getC_Invoice_Candidate_ID(), orderLineId);
-		}
+		final List<I_C_Invoice_Candidate> updatedInvoiceCandidates = invoiceCandidates.stream()
+				.filter(ic -> !ic.isProcessed())
+				.filter(ic -> ProjectId.equals(ProjectId.ofRepoIdOrNull(ic.getC_Project_ID()), projectId))
+				.peek(ic -> ic.setC_Project_ID(ProjectId.toRepoId(projectId)))
+				.collect(Collectors.toList());
+		invoiceCandDAO.saveAll(updatedInvoiceCandidates);
+		logger.debug("Updated C_Project_ID={} on {} C_Invoice_Candidates for C_OrderLine_ID={}", projectId, updatedInvoiceCandidates.size(), orderLineId);
 	}
 }

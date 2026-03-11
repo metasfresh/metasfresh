@@ -87,6 +87,10 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 
 	private void saveAllForUserId(@NonNull final ProjectCreatedEvent event, @NonNull final Set<I_C_OrderLine> updatedOrderLines)
 	{
+		if (updatedOrderLines.isEmpty())
+		{
+			return;
+		}
 		final I_C_OrderLine firstOrderLine = CollectionUtils.first(updatedOrderLines);
 		final Properties properties = Env.copyCtx(InterfaceWrapperHelper.getCtx(firstOrderLine, true));
 		Env.setLoggedUserId(properties, event.getByUserId());
