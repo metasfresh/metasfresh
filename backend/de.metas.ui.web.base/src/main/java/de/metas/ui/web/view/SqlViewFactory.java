@@ -177,7 +177,8 @@ public class SqlViewFactory implements IViewFactory
 						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
-				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
+				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents())
+				.setParameters(request.getParameters());
 
 		final DocumentFilterList filters = request.getFiltersUnwrapped(viewDataRepository.getViewFilterDescriptors());
 		viewBuilder.setFilters(filters);

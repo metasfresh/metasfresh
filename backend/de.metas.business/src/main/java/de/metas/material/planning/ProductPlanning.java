@@ -26,6 +26,8 @@ import de.metas.material.maturing.MaturingConfigId;
 import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.mforecast.generator.ForecastCalculationMethod;
+import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
@@ -97,6 +99,14 @@ public class ProductPlanning
 	// Distribution
 	@Nullable DistributionNetworkId distributionNetworkId;
 
+	//
+	// Forecast
+	@Nullable ForecastCalculationMethod forecastCalculationMethod;
+	@Nullable ForecastPrecisionUnit forecastPrecisionUnit;
+	@Nullable Integer forecastFrequency;
+	@Nullable Integer forecastBufferTime;
+	boolean isExcludeFromForecast;
+
 	public ProductPlanning(final boolean disallowSaving,
 						   @Nullable final ProductPlanningId id,
 						   @Nullable final ProductPlanningSchemaId productPlanningSchemaId,
@@ -125,7 +135,12 @@ public class ProductPlanning
 						   final boolean isPickDirectlyIfFeasible,
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
-						   @Nullable final DistributionNetworkId distributionNetworkId)
+						   @Nullable final DistributionNetworkId distributionNetworkId,
+						   @Nullable final ForecastCalculationMethod forecastCalculationMethod,
+						   @Nullable final ForecastPrecisionUnit forecastPrecisionUnit,
+						   @Nullable final Integer forecastFrequency,
+						   @Nullable final Integer forecastBufferTime,
+						   final boolean isExcludeFromForecast)
 	{
 		if (isMatured)
 		{
@@ -163,6 +178,11 @@ public class ProductPlanning
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;
 		this.manufacturingAggregationId = manufacturingAggregationId;
+		this.forecastCalculationMethod = forecastCalculationMethod;
+		this.forecastPrecisionUnit = forecastPrecisionUnit;
+		this.forecastFrequency = forecastFrequency;
+		this.forecastBufferTime = forecastBufferTime;
+		this.isExcludeFromForecast = isExcludeFromForecast;
 	}
 
 	public ProductPlanningId getIdNotNull()

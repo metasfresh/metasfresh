@@ -1,44 +1,34 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import de.metas.document.engine.DocStatus;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.logging.LogManager;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2SelectionFilterConverter;
+import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2Service;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.order.sales.hu.reservation.HUsReservationViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Set;
 
 /*
@@ -67,14 +57,11 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	@NonNull private static final Logger logger = LogManager.getLogger(WEBUI_C_OrderLineSO_Launch_HUEditor.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
 	@NonNull private final HUReservationDocumentFilterService huReservationDocumentFilterService = SpringContextHolder.instance.getBean(HUReservationDocumentFilterService.class);
 	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-
-	public static final String VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID = "WEBUI_C_OrderLineSO_ID";
-	private static final String MATERIAL_COCKPIT_FUNCTION_NAME_PATTERN = "%MaterialCockpit_SelectForOrderLine";
+	@NonNull private final MaterialCockpitV2Service materialCockpitV2Service = SpringContextHolder.instance.getBean(MaterialCockpitV2Service.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -127,6 +114,12 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		return MSG_OK;
 	}
 
+	@NonNull
+	private OrderId getOrderId()
+	{
+		return getRecordIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
+	}
+
 	private OrderLineId getSingleOrderLineId()
 	{
 		return CollectionUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class, OrderLineId::ofRepoId));
@@ -134,7 +127,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 
 	private ViewId createView()
 	{
-		final ViewId viewId = createMaterialCockpitView();
+		final ViewId viewId = materialCockpitV2Service.createMaterialCockpitView(createMaterialCockpitViewContext());
 		if (viewId != null)
 		{
 			return viewId;
@@ -142,67 +135,6 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 
 		// fallback
 		return createHUEditorView();
-	}
-
-	/**
-	 * Discover a custom DB function matching {@code %MaterialCockpit_SelectForOrderLine} in pg_proc.
-	 * If multiple are found, log a warning and use the first one (alphabetically).
-	 *
-	 * @return the function name, or {@code null} if none found
-	 */
-	private static String findMaterialCockpitFunction()
-	{
-		final List<String> functionNames = DB.getFunctionsLike(MATERIAL_COCKPIT_FUNCTION_NAME_PATTERN);
-
-		if (functionNames.isEmpty())
-		{
-			return null;
-		}
-
-		if (functionNames.size() > 1)
-		{
-			logger.warn("Found multiple MaterialCockpit_SelectForOrderLine functions: {}. Using the first one: {}", functionNames, functionNames.get(0));
-		}
-
-		return functionNames.get(0);
-	}
-
-	@Nullable
-	private ViewId createMaterialCockpitView()
-	{
-		final String functionName = findMaterialCockpitFunction();
-		if (functionName == null)
-		{
-			return null;
-		}
-
-		final AdWindowId adWindowId = RecordWindowFinder.findAdWindowId(I_QtyDemand_QtySupply_V.Table_Name)
-				.orElseThrow(() -> new AdempiereException("No window found for " + I_QtyDemand_QtySupply_V.Table_Name));
-
-		final PInstanceId selectionId = getPinstanceId();
-
-		callMaterialCockpitSelectionFunction(functionName, selectionId);
-
-		final DocumentFilter selectionFilter = MaterialCockpitV2SelectionFilterConverter.createSelectionFilter(selectionId);
-		
-		final IView view = viewsRepo.createView(CreateViewRequest
-				.builder(WindowId.of(adWindowId))
-				.addStickyFilters(selectionFilter)
-				.build());
-
-		return view.getViewId();
-	}
-
-	private void callMaterialCockpitSelectionFunction(
-			@NonNull final String functionName,
-			@NonNull final PInstanceId selectionId)
-	{
-		final OrderLineId orderLineId = getSingleOrderLineId();
-
-		DB.executeFunctionCallEx(
-				ITrx.TRXNAME_None,
-				"SELECT " + functionName + "(p_C_OrderLine_ID => ?, p_AD_PInstance_ID => ?)",
-				new Object[] { orderLineId.getRepoId(), selectionId.getRepoId() });
 	}
 
 	/**
@@ -217,8 +149,21 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 				.createView(CreateViewRequest
 						.builder(HUsReservationViewFactory.WINDOW_ID)
 						.addStickyFilters(stickyFilters)
-						.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
+						.setParameter(MaterialCockpitViewContext.VIEW_PARAMETER_NAME, createMaterialCockpitViewContext())
 						.build());
 		return view.getViewId();
+	}
+
+	private MaterialCockpitViewContext createMaterialCockpitViewContext()
+	{
+		return MaterialCockpitViewContext.builder()
+				.sourceSelectionId(getPinstanceId())
+				.salesOrderAndLineId(getSalesOrderAndLineId())
+				.build();
+	}
+
+	private @NotNull OrderAndLineId getSalesOrderAndLineId()
+	{
+		return OrderAndLineId.of(getOrderId(), getSingleOrderLineId());
 	}
 }

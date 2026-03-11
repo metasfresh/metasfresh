@@ -959,12 +959,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
-  @flaky
   @Id:S0160_230
   @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
 @F00701
+  @ghActions:run_on_executor3
   Scenario: Reactivate receipt similar with case 160
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -1011,6 +1011,8 @@ Feature: Packing material invoice candidates: receipts
       | receiptLine_1             | material_receipt_1    | packingProduct          | 1064        | true      | 1064           |
       | receiptLine_2             | material_receipt_1    | loadingProduct          | 14          | true      | 14             |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 1064             | 1064         | receiptLine_1                 |
@@ -1021,6 +1023,8 @@ Feature: Packing material invoice candidates: receipts
       | material_receipt_1    | CO        |
 
     When the material receipt identified by material_receipt_1 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1463,12 +1467,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
-  @flaky
   @Id:S0160_270
   @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00701_Sales_Invoice_Candidates
 @F00701
+  @ghActions:run_on_executor1
   Scenario: Complete receipt similar with case 200
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1526,6 +1530,8 @@ Feature: Packing material invoice candidates: receipts
       | M_InOut_ID.Identifier | M_Product_ID.Identifier |
       | material_receipt_1    | loadingProduct          |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
@@ -1538,6 +1544,8 @@ Feature: Packing material invoice candidates: receipts
       | material_receipt_1    | CO        |
 
     When the material receipt identified by material_receipt_1 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1552,6 +1560,8 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
     When the material receipt identified by material_receipt_1 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |

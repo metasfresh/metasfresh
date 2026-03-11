@@ -56,6 +56,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
+	I_C_OrderLine getOrderLineById(@NonNull OrderAndLineId orderLineId);
+
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);

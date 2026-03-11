@@ -100,7 +100,7 @@ public class ShipmentDeclarationCreator
 		}
 
 		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-		final Set<InOutAndLineId> allShipmentLineIds = inoutsRepo.retrieveLinesForInOutId(shipmentId);
+		final Set<InOutAndLineId> allShipmentLineIds = inoutsRepo.retrieveLineIdsByInOutId(shipmentId);
 
 		for (final ShipmentDeclarationConfig config : configs)
 		{

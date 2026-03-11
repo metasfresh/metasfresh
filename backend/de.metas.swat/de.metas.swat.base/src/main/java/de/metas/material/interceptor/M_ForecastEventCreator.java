@@ -11,11 +11,17 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -49,6 +55,7 @@ import java.util.Optional;
 public class M_ForecastEventCreator
 {
 	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
@@ -107,7 +114,7 @@ public class M_ForecastEventCreator
 			@NonNull final I_M_ForecastLine forecastLine,
 			@NonNull final I_M_Forecast forecast)
 	{
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
+		final ProductDescriptor productDescriptor = createProductDescriptorWithPlanningFallback(forecastLine);
 
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));
 
@@ -123,5 +130,45 @@ public class M_ForecastEventCreator
 				.forecastLineId(forecastLine.getM_ForecastLine_ID())
 				.materialDescriptor(materialDescriptor)
 				.build();
+	}
+
+	private ProductDescriptor createProductDescriptorWithPlanningFallback(@NonNull final I_M_ForecastLine forecastLine)
+	{
+		final AttributeSetInstanceId forecastAsiId = AttributeSetInstanceId
+				.ofRepoIdOrNone(forecastLine.getM_AttributeSetInstance_ID());
+
+		if (!forecastAsiId.isNone())
+		{
+			// forecast line has explicit ASI — use it directly, no enrichment needed
+			return productDescriptorFactory.createProductDescriptor(forecastLine);
+		}
+
+		// forecast line has no ASI — look up PP_Product_Planning for a fallback ASI
+		final AttributeSetInstanceId planningAsiId = resolvePlanningAsiId(forecastLine, forecastAsiId);
+		if (!planningAsiId.isNone())
+		{
+			return productDescriptorFactory.createProductDescriptor(
+					forecastLine.getM_Product_ID(), planningAsiId);
+		}
+
+		// no ASI anywhere — default NONE behavior
+		return productDescriptorFactory.createProductDescriptor(forecastLine);
+	}
+
+	private AttributeSetInstanceId resolvePlanningAsiId(
+			@NonNull final I_M_ForecastLine forecastLine,
+			@NonNull final AttributeSetInstanceId forecastAsiId)
+	{
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.productId(ProductId.ofRepoId(forecastLine.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(forecastLine.getM_Warehouse_ID()))
+				.orgId(OrgId.ofRepoId(forecastLine.getAD_Org_ID()))
+				.attributeSetInstanceId(forecastAsiId)
+				.build();
+
+		return productPlanningDAO.find(query)
+				.map(ProductPlanning::getAttributeSetInstanceId)
+				.filter(asiId -> !asiId.isNone())
+				.orElse(AttributeSetInstanceId.NONE);
 	}
 }

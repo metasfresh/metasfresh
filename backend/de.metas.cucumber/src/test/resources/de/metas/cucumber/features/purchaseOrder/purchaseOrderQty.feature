@@ -477,3 +477,40 @@ Feature: Purchase order
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 50         | 10           | 0           | 10    | 0        | EUR          | true      | 40              |
     And set sys config boolean value false for sys config PO_AllowReactivationIfReceiptsCreated
+
+  @from:cucumber
+  @Id:S0156_600
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  Scenario: Reactivate PO preserves receipt schedules (closed, not deleted); re-complete reopens them
+    Given metasfresh contains C_Orders:
+      | Identifier               | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_rs_close_reopen | N       | supplier_PO              | 2022-06-10  | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier                   | C_Order_ID.Identifier    | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_rs_close_reopen | order_PO_rs_close_reopen | product_PO_17062022     | 10         |
+
+    # 1. Complete the PO
+    And the order identified by order_PO_rs_close_reopen is completed
+
+    # 2. Validate M_ReceiptSchedule created: IsClosed=false, Processed=false
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier    | C_OrderLine_ID.Identifier    | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.Processed | OPT.IsClosed |
+      | rs_PO_close_reopen              | order_PO_rs_close_reopen | orderLine_PO_rs_close_reopen | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | false         | false        |
+
+    # 3. Reactivate the PO
+    When the order identified by order_PO_rs_close_reopen is reactivated
+
+    # 4. Validate M_ReceiptSchedule STILL EXISTS and is closed: IsClosed=true, Processed=true
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier    | C_OrderLine_ID.Identifier    | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.Processed | OPT.IsClosed |
+      | rs_PO_close_reopen              | order_PO_rs_close_reopen | orderLine_PO_rs_close_reopen | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | true          | true         |
+
+    # 5. Re-complete the PO
+    And the order identified by order_PO_rs_close_reopen is completed
+
+    # 6. Validate M_ReceiptSchedule reopened: IsClosed=false, Processed=false
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier    | C_OrderLine_ID.Identifier    | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.Processed | OPT.IsClosed |
+      | rs_PO_close_reopen              | order_PO_rs_close_reopen | orderLine_PO_rs_close_reopen | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | false         | false        |

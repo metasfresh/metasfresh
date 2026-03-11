@@ -62,6 +62,7 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
@@ -82,6 +83,7 @@ import de.metas.project.service.ProjectRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -197,6 +199,7 @@ public class C_Order_StepDef
 	@NonNull private final C_PaymentTerm_StepDef paymentTermStepDef;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -219,6 +222,15 @@ public class C_Order_StepDef
 		completeOrder(order);
 	}
 
+	/**
+	 * Creates {@code C_Order} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
@@ -431,7 +443,22 @@ public class C_Order_StepDef
 				.map(ProjectId::getRepoId)
 				.ifPresent(order::setC_Project_ID);
 
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode_ID(promoCode.getC_PromotionCode_ID()));
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode2_ID(promoCode.getC_PromotionCode_ID()));
+
 		saveRecord(order);
+
+		//
+		// Set the values again to make sure they are permanent and not overriden by some beforeSave BLs
+		{
+			tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).map(StringUtils::trimBlankToNull).ifPresent(order::setDeliveryRule);
+
+			saveRecord(order);
+		}
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderTable.putOrReplace(identifier, order));
@@ -640,6 +667,15 @@ public class C_Order_StepDef
 				.ifPresent(orderIdentifier -> orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord));
 	}
 
+	/**
+	 * Validates {@code C_Order} records against expected values.
+	 * <p>
+	 * gh#28565: Added validation for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
@@ -847,6 +883,17 @@ public class C_Order_StepDef
 				.ifPresent(incotermValue -> softly.assertThat(IncotermsId.equals(incotermsRepository.getByValue(incotermValue, orgId).getId(), IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID())))
 						.as("C_Incoterms_ID for value %s", incotermValue).isTrue());
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(incotermLocation -> softly.assertThat(order.getIncotermLocation()).as(COLUMNNAME_IncotermLocation).isEqualTo(incotermLocation));
+
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode_ID())
+						.as("C_PromotionCode_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode2_ID())
+						.as("C_PromotionCode2_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
 
 		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
 		if (projectIdentifier != null)

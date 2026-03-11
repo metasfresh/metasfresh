@@ -107,6 +107,13 @@ import java.util.Set;
 				.externalHeaderId(orderAggregationKey.getExternalId())
 				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
+		if (orderAggregationKey.isDropShip())
+		{
+			orderFactory.dropShip(
+					orderAggregationKey.getDropShipBPartnerId(),
+					orderAggregationKey.getDropShipLocationId(),
+					orderAggregationKey.getDropShipUserId());
+		}
 
 		if (docType != null)
 		{
@@ -127,6 +134,9 @@ import java.util.Set;
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.piItemProductId(purchaseOrderItem.getHuPIItemProductId());
+		orderLineBuilder.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+		orderLineBuilder.qtyEnteredTU(purchaseOrderItem.getQtyEnteredTU());
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
 		{

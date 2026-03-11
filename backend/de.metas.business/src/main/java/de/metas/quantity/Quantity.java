@@ -32,14 +32,16 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
- * Immutable Quantity.
+ * Immutable Quantity (value + UOM).
  * <p>
- * Besides quantity value ({@link #getQty()}) and it's uom ({@link #getUOM()} this object contains also source quantity/uom.
+ * Besides quantity value ({@link #getQty()}) and its UOM ({@link #getUOM()}) this object contains also source quantity/uom.
  * <p>
  * The actual meaning of source quantity/uom depends on who constructs the {@link Quantity} object but the general meaning is: the quantity/uom in some source or internal UOM.
  * <p>
  * e.g. when you ask a storage to allocate a quantity/uom that method could return a quantity object containing how much was allocated (in requested UOM), but the source quantity/uom is the quantity
  * in storage's UOM.
+ * <p>
+ * To create instances, use the factory methods in {@link Quantitys}.
  *
  * @author tsa
  */

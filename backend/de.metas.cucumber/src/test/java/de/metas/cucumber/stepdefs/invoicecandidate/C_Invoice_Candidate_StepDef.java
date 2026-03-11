@@ -41,6 +41,7 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
@@ -173,6 +174,7 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Project_StepDefData projectTable;
+	private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -185,7 +187,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final C_Project_StepDefData projectTable)
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_PromotionCode_StepDefData promotionCodeTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -198,6 +201,7 @@ public class C_Invoice_Candidate_StepDef
 		this.inoutLineTable = inoutLineTable;
 		this.shipmentTable = shipmentTable;
 		this.projectTable = projectTable;
+		this.promotionCodeTable = promotionCodeTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -224,6 +228,15 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * Finds and validates {@code C_Invoice_Candidate} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code validation columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
@@ -471,6 +484,14 @@ public class C_Invoice_Candidate_StepDef
 						{
 							assertThat(updatedInvoiceCandidate.getQtyWithIssues_Effective()).isEqualTo(qtyWithIssuesEffective);
 						}
+
+						final I_C_Invoice_Candidate icForPromoCodeCheck = updatedInvoiceCandidate;
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode_ID()).as("C_PromotionCode_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode2_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode2_ID()).as("C_PromotionCode2_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
 
 						final LocalDate deliveryDate = TimeUtil.asLocalDate(updatedInvoiceCandidate.getDeliveryDate());
 						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)

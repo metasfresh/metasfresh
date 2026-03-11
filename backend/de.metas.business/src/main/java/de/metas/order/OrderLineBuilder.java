@@ -79,6 +79,7 @@ public class OrderLineBuilder
 	@Nullable private BigDecimal manualPrice;
 	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
+	@Nullable private BigDecimal qtyEnteredTU;
 
 	@Nullable
 	private String description;
@@ -143,6 +144,11 @@ public class OrderLineBuilder
 		if (!Check.isBlank(description))
 		{
 			orderLine.setDescription(description);
+		}
+
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
 		}
 
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
@@ -271,6 +277,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.manualDiscount = manualDiscount;
+		return this;
+	}
+
+	public OrderLineBuilder qtyEnteredTU(@Nullable final BigDecimal qtyEnteredTU)
+	{
+		assertNotBuilt();
+		this.qtyEnteredTU = qtyEnteredTU;
 		return this;
 	}
 
