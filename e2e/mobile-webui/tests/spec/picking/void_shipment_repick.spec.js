@@ -136,12 +136,13 @@ test('Void shipment and re-pick same HUs for different order', async ({ page: _p
 // Helper: Void shipment via WebUI REST API
 //
 async function voidShipmentViaWebUI({ salesOrderId }) {
-    // 1. Find the shipment via DB query through the backend
+    // 1. Determine WebUI base URL
     const backendBaseUrl = await getBackendBaseUrl();
-    // The backendBaseUrl is like http://localhost:8282/api/v2
-    // Extract the host for WebUI (port 8080)
     const appUrl = new URL(backendBaseUrl);
-    const webuiBaseUrl = `${appUrl.protocol}//${appUrl.hostname}:8080`;
+    // In CI Docker: app server is "app-test", webapi is "webapi-test"
+    // Locally: both are on "localhost" with different ports (8282 and 8080)
+    const webuiHost = appUrl.hostname === 'app-test' ? 'webapi-test' : appUrl.hostname;
+    const webuiBaseUrl = `${appUrl.protocol}//${webuiHost}:8080`;
 
     // 2. Login to WebUI
     const authResponse = await page.request.post(`${webuiBaseUrl}/rest/api/login/authenticate`, {
