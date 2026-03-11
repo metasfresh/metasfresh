@@ -78,8 +78,8 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | pip_S0500               | pii_TU_S0500    | p_S0500      | 2   | 2020-01-01 |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_S0500    | true    | bp_S0500      | 2026-03-11  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference        |
+      | o_S0500    | true    | bp_S0500      | 2026-03-11  | po_ref_S0500_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | ol_S0500   | o_S0500    | p_S0500      | 4          | pip_S0500               |
@@ -163,8 +163,8 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | pip_S0500_020           | pii_TU_S0500_020 | p_S0500_020  | 10  | 2020-01-01 |
 
     And metasfresh contains C_Orders:
-      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_S0500_020  | true    | bp_S0500_020  | 2026-03-11  |
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
+      | o_S0500_020  | true    | bp_S0500_020  | 2026-03-11  | po_ref_S0500_020_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID  | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | ol_S0500_020  | o_S0500_020 | p_S0500_020  | 50         | pip_S0500_020           |
@@ -226,8 +226,8 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | bp_S0500_030  | p_S0500_030  |
 
     And metasfresh contains C_Orders:
-      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_S0500_030  | true    | bp_S0500_030  | 2026-03-11  |
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
+      | o_S0500_030  | true    | bp_S0500_030  | 2026-03-11  | po_ref_S0500_030_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID  | M_Product_ID | QtyEntered |
       | ol_S0500_030  | o_S0500_030 | p_S0500_030  | 10         |
@@ -312,8 +312,8 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | pip_S0500_040           | pii_TU_S0500_040 | p_S0500_040  | 5   | 2020-01-01 | hpc_LU_S0500_040                  | 5412345000013                    |
 
     And metasfresh contains C_Orders:
-      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_S0500_040  | true    | bp_S0500_040  | 2026-03-11  |
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
+      | o_S0500_040  | true    | bp_S0500_040  | 2026-03-11  | po_ref_S0500_040_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID  | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | ol_S0500_040  | o_S0500_040 | p_S0500_040  | 10         | pip_S0500_040           |
@@ -396,8 +396,8 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | pip_S0500_050           | pii_TU_S0500_050 | p_S0500_050  | 2   | 2020-01-01 |
 
     And metasfresh contains C_Orders:
-      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_S0500_050  | true    | bp_S0500_050  | 2026-03-11  |
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
+      | o_S0500_050  | true    | bp_S0500_050  | 2026-03-11  | po_ref_S0500_050_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID  | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | ol_S0500_050  | o_S0500_050 | p_S0500_050  | 20         | pip_S0500_050           |
