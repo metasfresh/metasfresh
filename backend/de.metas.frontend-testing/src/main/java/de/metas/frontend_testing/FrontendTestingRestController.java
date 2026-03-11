@@ -1,6 +1,8 @@
 package de.metas.frontend_testing;
 
 import de.metas.Profiles;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
@@ -9,6 +11,7 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingSer
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
@@ -18,9 +21,15 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -31,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -112,5 +122,61 @@ public class FrontendTestingRestController
 				.expectations(jsonExpectations)
 				.build()
 				.execute();
+	}
+
+	@PostMapping("reverseShipment")
+	public Map<String, Object> reverseShipment(@RequestBody @NonNull final JsonReverseShipmentRequest request)
+	{
+		return callInContext(() -> {
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+			final I_M_InOut shipment;
+			if (request.getShipmentId() != null)
+			{
+				shipment = InterfaceWrapperHelper.load(request.getShipmentId(), I_M_InOut.class);
+			}
+			else if (request.getSalesOrderId() != null)
+			{
+				// Find shipment via order lines → inout lines → inout
+				final InOutId shipmentId = queryBL.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID,
+								queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+										.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, request.getSalesOrderId())
+										.create())
+						.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOut.class)
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO")
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+						.create()
+						.firstIdOnly(InOutId::ofRepoIdOrNull);
+
+				if (shipmentId == null)
+				{
+					throw new AdempiereException("No completed shipment found for salesOrderId=" + request.getSalesOrderId());
+				}
+				shipment = InterfaceWrapperHelper.load(shipmentId, I_M_InOut.class);
+			}
+			else
+			{
+				throw new AdempiereException("Either shipmentId or salesOrderId must be provided");
+			}
+
+			InterfaceWrapperHelper.refresh(shipment);
+			documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+			return Map.of(
+					"shipmentId", shipment.getM_InOut_ID(),
+					"documentNo", shipment.getDocumentNo(),
+					"docStatus", shipment.getDocStatus(),
+					"reversalId", shipment.getReversal_ID()
+			);
+		});
+	}
+
+	@Value
+	public static class JsonReverseShipmentRequest
+	{
+		Integer shipmentId;
+		Integer salesOrderId;
 	}
 }

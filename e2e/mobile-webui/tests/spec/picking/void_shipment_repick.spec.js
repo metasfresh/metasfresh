@@ -14,7 +14,7 @@ import { page } from "../../utils/common";
  * Flow:
  * 1. Create 2 sales orders + 1 HU
  * 2. Pick HU for SO1, complete (generates shipment via createShipmentPolicy=CL)
- * 3. Void the shipment via WebUI REST API
+ * 3. Reverse-correct the shipment via frontendTesting API
  * 4. Pick the same HU for SO2
  */
 test('Void shipment and re-pick same HUs for different order', async ({ page: _page }) => {
@@ -102,10 +102,10 @@ test('Void shipment and re-pick same HUs for different order', async ({ page: _p
         });
     });
 
-    // Step 3: Void the shipment via WebUI REST API
+    // Step 3: Reverse-correct the shipment via frontendTesting API
     await test.step('Void the shipment for SO1', async () => {
-        const shipmentId = await voidShipmentViaWebUI({ salesOrderId: masterdata.salesOrders.SO1.id });
-        console.log(`Voided shipment ID: ${shipmentId}`);
+        const result = await reverseShipment({ salesOrderId: masterdata.salesOrders.SO1.id });
+        console.log(`Reversed shipment: id=${result.shipmentId}, docNo=${result.documentNo}, status=${result.docStatus}`);
     });
 
     // Step 4: Pick the same HU for SO2
@@ -133,103 +133,19 @@ test('Void shipment and re-pick same HUs for different order', async ({ page: _p
 });
 
 //
-// Helper: Void shipment via WebUI REST API
+// Helper: Reverse-correct a shipment via the frontendTesting API (app server, port 8282)
 //
-async function voidShipmentViaWebUI({ salesOrderId }) {
-    // 1. Determine WebUI base URL
+async function reverseShipment({ salesOrderId }) {
     const backendBaseUrl = await getBackendBaseUrl();
-    const appUrl = new URL(backendBaseUrl);
-    // In CI Docker: app server is "app-test", webapi is "webapi-test"
-    // Locally: both are on "localhost" with different ports (8282 and 8080)
-    const webuiHost = appUrl.hostname === 'app-test' ? 'webapi-test' : appUrl.hostname;
-    const webuiBaseUrl = `${appUrl.protocol}//${webuiHost}:8080`;
-
-    // 2. Login to WebUI
-    const authResponse = await page.request.post(`${webuiBaseUrl}/rest/api/login/authenticate`, {
-        data: { type: 'password', username: 'metasfresh', password: 'metasfresh' },
-    });
-    const authBody = await authResponse.json();
-    if (!authBody.roles?.length) throw new Error('WebUI login failed: no roles');
-
-    const role = authBody.roles.find(r => r.roleId === 540024) || authBody.roles[0];
-    await page.request.post(`${webuiBaseUrl}/rest/api/login/loginComplete`, {
-        data: role,
+    // backendBaseUrl is like http://localhost:8282/api/v2 or http://app-test:8282/api/v2
+    const response = await page.request.post(`${backendBaseUrl}/frontendTesting/reverseShipment`, {
+        data: { salesOrderId },
     });
 
-    // 3. Find the shipment ID via SQL query on the database
-    // We query through the WebUI's view API - find the shipment for this sales order
-    // Alternative: use the app server's DB access
-    // Since we don't have direct DB access from Playwright, we'll search via WebUI
-    // Window 169 = Lieferung (Shipment)
-
-    // Create a view to find the shipment
-    const viewResponse = await page.request.post(`${webuiBaseUrl}/rest/api/documentView/169`, {
-        data: {
-            windowId: '169',
-            viewType: 'grid',
-            filters: [],
-            queryPageLength: 100,
-        },
-    });
-    const viewBody = await viewResponse.json();
-    const viewId = viewBody.viewId;
-    if (!viewId) throw new Error('Failed to create shipment view: ' + JSON.stringify(viewBody).substring(0, 300));
-
-    // Get view rows
-    const rowsResponse = await page.request.get(
-        `${webuiBaseUrl}/rest/api/documentView/169/${viewId}?firstRow=0&pageLength=100`
-    );
-    const rowsBody = await rowsResponse.json();
-    const rows = rowsBody.result || [];
-
-    // Find the completed shipment linked to our sales order
-    // We look for the most recent CO (completed) shipment
-    let shipmentRowId = null;
-    for (const row of rows) {
-        const docStatus = row.fieldsByName?.DocStatus?.value;
-        if (docStatus?.key === 'CO' || docStatus === 'CO') {
-            shipmentRowId = row.id;
-            break;
-        }
+    if (!response.ok()) {
+        const body = await response.text();
+        throw new Error(`reverseShipment failed: ${response.status()} ${body.substring(0, 300)}`);
     }
 
-    if (!shipmentRowId) {
-        // If view search didn't work, try direct document access with known IDs
-        console.log('Could not find shipment in view. Rows:', rows.length);
-        throw new Error('Could not find completed shipment for the sales order');
-    }
-
-    // 4. Void the shipment by setting DocAction=RC (Reverse-Correct)
-    const patchResponse = await page.request.patch(`${webuiBaseUrl}/rest/api/window/169/${shipmentRowId}`, {
-        data: [
-            { op: 'replace', path: 'DocAction', value: { key: 'RC', caption: 'Reverse - Correct' } }
-        ],
-    });
-
-    if (!patchResponse.ok()) {
-        const patchBody = await patchResponse.text();
-        throw new Error(`Failed to void shipment: ${patchResponse.status()} ${patchBody.substring(0, 300)}`);
-    }
-
-    // Wait for the void to be processed
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Verify the shipment is now reversed
-    const docResponse = await page.request.get(`${webuiBaseUrl}/rest/api/window/169/${shipmentRowId}`);
-    const docBody = await docResponse.json();
-    const docStatus = docBody[0]?.fieldsByName?.DocStatus?.value?.key;
-    if (docStatus !== 'RE') {
-        console.log(`Warning: Shipment status is ${docStatus}, expected RE`);
-    }
-
-    // Cleanup: logout from WebUI (so we can continue with mobile)
-    // The mobile uses a different auth mechanism (token), so this shouldn't matter
-    // but let's be clean
-    try {
-        await page.request.get(`${webuiBaseUrl}/rest/api/login/logout`);
-    } catch (e) {
-        // Ignore logout errors
-    }
-
-    return shipmentRowId;
+    return await response.json();
 }
