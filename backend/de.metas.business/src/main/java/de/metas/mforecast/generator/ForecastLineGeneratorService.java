@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.mforecast.generator;
 
 import com.google.common.collect.ImmutableList;
@@ -16,8 +38,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Product;
@@ -25,7 +47,6 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
-
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -51,6 +72,9 @@ public class ForecastLineGeneratorService
 
 	public int generateLines(@NonNull final ForecastId forecastId, @NonNull final ForecastGeneratorRequest request)
 	{
+		// TODO polish_forecast: create Forecast and ForecastLine domain objects.
+		//  Create a dedicated rep. Try to avoid model classes outside of repos or DAO-services
+		//  You'll find examples in the code to see what I mean.
 		final I_M_Forecast forecast = forecastDAO.getById(forecastId);
 
 		if (request.isDeleteExistingLines())
@@ -73,7 +97,7 @@ public class ForecastLineGeneratorService
 				continue; // no comparison method configured, skip
 			}
 
-			final ForecastPrecisionUnit precisionUnit = CoalesceUtil.coalesce(pp.getForecastPrecisionUnit(), ForecastPrecisionUnit.WEEK);
+			final ForecastPrecisionUnit precisionUnit = CoalesceUtil.coalesceNotNull(pp.getForecastPrecisionUnit(), ForecastPrecisionUnit.WEEK);
 
 			final int horizonUnits = computeForecastHorizon(pp, precisionUnit);
 			if (horizonUnits <= 0)
@@ -102,6 +126,7 @@ public class ForecastLineGeneratorService
 		return count;
 	}
 
+	// // TODO polish_forecast: make sure it will be logged to AD_Pinstance if and how many liese were deleted
 	private void deleteExistingLines(@NonNull final ForecastId forecastId)
 	{
 		final List<I_M_ForecastLine> existingLines = forecastDAO.retrieveLinesByForecastId(forecastId);
@@ -124,11 +149,17 @@ public class ForecastLineGeneratorService
 
 		for (final ProductId productId : productIds)
 		{
+			// TODO polish_forecast: we already accessed PP_Product_Planning in collectEligibleProductIds.
+			//  We need to implement the standard best match logic, but without creating a big n+1 problem like we do it here.
+			//  Please figure out how to do it.
+			//  Make sure to provide sufficient test-coverage.
+
 			// Use the standard best-match logic (lowest SeqNo, ASI matching, org/warehouse fallback)
 			final Optional<ProductPlanning> bestMatch = productPlanningDAO.find(
 					IProductPlanningDAO.ProductPlanningQuery.builder()
 							.orgId(orgId)
 							.productId(productId)
+							// TODO polish_forecast: add warehouse to ForecastGeneratorRequest and use it here
 							.build());
 
 			if (!bestMatch.isPresent())
@@ -154,7 +185,7 @@ public class ForecastLineGeneratorService
 			result.add(ProductPlanningForForecast.builder()
 					.productId(productId)
 					.warehouseId(warehouseId)
-					.attributeSetInstanceId(CoalesceUtil.coalesce(pp.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE))
+					.attributeSetInstanceId(CoalesceUtil.coalesceNotNull(pp.getAttributeSetInstanceId(), AttributeSetInstanceId.NONE))
 					.forecastCalculationMethod(pp.getForecastCalculationMethod())
 					.forecastPrecisionUnit(pp.getForecastPrecisionUnit())
 					.forecastFrequency(pp.getForecastFrequency())
@@ -166,6 +197,10 @@ public class ForecastLineGeneratorService
 		return result.build();
 	}
 
+	// TODO polish_forecast: *all* products shall be eligible, if 
+	//  - they are not discontinued at referenceDate
+	//  - they are not somehow excluded (eg by product category)
+	//  - the PP_Product_Planning record that matches them does not exclude them from forecasting by not having rerquired parameters etc 
 	private List<ProductId> collectEligibleProductIds(
 			@NonNull final OrgId orgId,
 			@NonNull final ForecastGeneratorRequest request,
@@ -176,6 +211,8 @@ public class ForecastLineGeneratorService
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsExcludeFromForecast, false);
 
+		// TODO polish_forecast: note, this was just a quick workaround, to prevent an exception with records that have no product.
+		queryBuilder.addNotNull(I_PP_Product_Planning.COLUMNNAME_M_Product_ID);
 		if (request.getProductId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, request.getProductId());
@@ -237,7 +274,7 @@ public class ForecastLineGeneratorService
 			@NonNull final ForecastPrecisionUnit precisionUnit)
 	{
 		// Use forecast frequency if set, else derive from lead time
-		int frequency;
+		final int frequency;
 		if (pp.getForecastFrequency() != null && pp.getForecastFrequency() > 0)
 		{
 			frequency = pp.getForecastFrequency();
@@ -270,11 +307,15 @@ public class ForecastLineGeneratorService
 		}
 	}
 
+	// TODO polish_forecast: this of need to be in the repo
 	private void createForecastLine(
 			@NonNull final I_M_Forecast forecast,
 			@NonNull final ProductPlanningForForecast pp,
 			@NonNull final BigDecimal qty)
 	{
+		// TODO polish_forecast: make sure that the fields for all columns in the forecast-window are properly described.
+		//  particularly Qty and QtyCalculated were confusing to me on the first glimpse
+		// make sure that the previous UI improvements are also displayed properly (like "Stichtag")
 		final I_M_ForecastLine line = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class);
 		line.setM_Forecast_ID(forecast.getM_Forecast_ID());
 		line.setM_Product_ID(pp.getProductId().getRepoId());

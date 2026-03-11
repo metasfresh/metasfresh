@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.mforecast.process;
 
 import de.metas.mforecast.generator.ForecastCalculationMethod;
@@ -44,6 +66,8 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	// TODO polish_forecast: add logging so one can see from the AD_Pinstance-Log what the process did, and why
+	//  Be sure to understand, how to do this (ILoggable)
 	@Override
 	protected String doIt()
 	{
