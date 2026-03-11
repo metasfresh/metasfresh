@@ -124,7 +124,7 @@ services:
       start_period: 60s
       retries: 30
     environment:
-      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet -DPO_AllowReactivationIfReceiptsCreated=Y"
       - "SPRING_RABBITMQ_HOST=rabbitmq"
       - "SPRING_RABBITMQ_PORT=5672"
       - "SPRING_RABBITMQ_USERNAME=metasfresh"

@@ -15,7 +15,7 @@ import {
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
-import { isBlank, doThen } from '../../../utils';
+import { doThen, isBlank } from '../../../utils';
 import { getViewFieldTypeahead } from '../../../api/view';
 import { getSettingFromStateAsBoolean } from '../../../utils/settings';
 
@@ -382,6 +382,7 @@ export class RawLookup extends Component {
     if (e.key === 'Enter' && subentity === 'quickInput') {
       e.preventDefault();
       e.stopPropagation();
+
       this.resolveAndSelectOnEnter();
     }
   };
@@ -393,15 +394,11 @@ export class RawLookup extends Component {
    * After selection, advance focus to the next field in the quick input form.
    */
   resolveAndSelectOnEnter = () => {
-    const query = this.inputSearch.value;
-    if (!query || !query.trim()) {
-      return;
-    }
-
     const { list, loading } = this.state;
 
-    // If typeahead results are already loaded for this exact query, use them
-    if (!loading && this.typeaheadQuery === query && list.length > 0) {
+    // If typeahead results are already loaded, use them — even for blank/space
+    // queries (e.g. user pressed space to open the list, then Enter to confirm).
+    if (!loading && list.length > 0) {
       const regularItems = list.filter(
         (item) =>
           item.key !== KEY_New &&
@@ -409,6 +406,11 @@ export class RawLookup extends Component {
           !isNoneItem(item)
       );
       this.resolveItems(regularItems);
+      return;
+    }
+
+    const query = this.inputSearch.value;
+    if (!query || !query.trim()) {
       return;
     }
 
@@ -429,14 +431,24 @@ export class RawLookup extends Component {
    * @method resolveItems
    * @summary Given the typeahead results, auto-select if exactly one match,
    * beep if no match, or beep and keep dropdown open if multiple matches.
+   *
+   * When `enterRequiresSingleMatch` is false (sysconfig N), multiple matches
+   * will select the currently highlighted item (or the first one) instead of
+   * keeping the dropdown open.
    */
   resolveItems = (items) => {
     if (items.length === 1) {
       this.handleAutoSelectAndAdvance(items[0]);
     } else if (items.length > 1) {
-      // Multiple matches: beep and keep dropdown open so user can pick
-      if (this.props.beepOnInvalidProduct) {
-        playBeep();
+      if (!this.props.enterRequiresSingleMatch) {
+        // Select the highlighted item (arrow-key navigated) or the first one
+        const selected = this.state.selected || items[0];
+        this.handleAutoSelectAndAdvance(selected);
+      } else {
+        // Default: beep and keep dropdown open so user can pick
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
       }
     } else {
       // No match
@@ -946,6 +958,11 @@ const mapStateToProps = (state) => ({
     'quickinput.beepOnInvalidProduct',
     false
   ),
+  enterRequiresSingleMatch: getSettingFromStateAsBoolean(
+    state,
+    'quickinput.enterRequiresSingleMatch',
+    false
+  ),
 });
 
 RawLookup.propTypes = {
@@ -1004,6 +1021,7 @@ RawLookup.propTypes = {
     boundingRect: PropTypes.object,
   }),
   beepOnInvalidProduct: PropTypes.bool,
+  enterRequiresSingleMatch: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

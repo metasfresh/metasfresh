@@ -8,7 +8,7 @@ const containerElement = () => page.getByTestId('ChangeHUQtyDialog');
 
 export const ChangeHUQtyDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait to open`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitForDialogToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {

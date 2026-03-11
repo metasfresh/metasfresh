@@ -9,14 +9,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.async.DDOrderCandidateEnqueueService;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.material.event.MaterialEventObserver;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
-import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
@@ -46,9 +39,6 @@ public class DDOrderCandidateService
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateEnqueueService ddOrderCandidateEnqueueService;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
-	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
-	@NonNull private final PostMaterialEventService materialEventService;
-	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -63,21 +53,11 @@ public class DDOrderCandidateService
 	{
 		final DDOrderCandidateRepository ddOrderCandidateRepository = new DDOrderCandidateRepository();
 
-		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
-		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
-				materialEventConverter,
-				PlainEventBusFactory.newInstance(),
-				new MaterialEventObserver());
-		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
-
 		return new DDOrderCandidateService(
 				ddOrderCandidateRepository,
 				new DDOrderCandidateAllocRepository(),
 				new DDOrderCandidateEnqueueService(ddOrderCandidateRepository),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
-				new DistributionNetworkRepository(),
-				postMaterialEventService,
-				new ReplenishInfoRepository()
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO())
 		);
 	}
 
@@ -118,9 +98,6 @@ public class DDOrderCandidateService
 		return DDOrderCandidateProcessCommand.builder()
 				.ddOrderLowLevelService(ddOrderLowLevelService)
 				.ddOrderCandidateService(this)
-				.distributionNetworkRepository(distributionNetworkRepository)
-				.materialEventService(materialEventService)
-				.replenishInfoRepository(replenishInfoRepository)
 				.orgDAO(orgDAO)
 				.docTypeDAO(docTypeDAO)
 				.documentBL(documentBL)

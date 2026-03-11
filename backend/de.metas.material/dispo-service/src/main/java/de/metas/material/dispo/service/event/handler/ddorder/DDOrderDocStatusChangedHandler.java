@@ -8,9 +8,11 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
-import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -41,19 +43,23 @@ import java.util.List;
  * #L%
  */
 
+@Slf4j
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOrderDocStatusChangedEvent>
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateChangeService candidateChangeService;
+	private final DDOrderCreatedHandler ddOrderCreatedHandler;
 
 	public DDOrderDocStatusChangedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final CandidateChangeService candidateChangeService)
+			@NonNull final CandidateChangeService candidateChangeService,
+			@NonNull final DDOrderCreatedHandler ddOrderCreatedHandler)
 	{
-		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateChangeService = candidateChangeService;
+		this.ddOrderCreatedHandler = ddOrderCreatedHandler;
 	}
 
 	@Override
@@ -63,22 +69,48 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 	}
 
 	@Override
-	public void handleEvent(@NonNull final DDOrderDocStatusChangedEvent ddOrderChangedDocStatusEvent)
+	public void handleEvent(@NonNull final DDOrderDocStatusChangedEvent event)
 	{
-		final List<Candidate> candidatesForDDOrderId = DDOrderUtil
+		final List<Candidate> candidates = DDOrderUtil
 				.retrieveCandidatesForDDOrderId(
 						candidateRepositoryRetrieval,
-						ddOrderChangedDocStatusEvent.getDdOrderId());
+						event.getDdOrderId());
 
-		Check.errorIf(candidatesForDDOrderId.isEmpty(),
-				"No Candidates found for PP_Order_ID={} ",
-				ddOrderChangedDocStatusEvent.getDdOrderId());
+		if (candidates.isEmpty())
+		{
+			createCandidatesIfPossible(event);
+			return;
+		}
 
-		final DocStatus newDocStatusFromEvent = ddOrderChangedDocStatusEvent.getNewDocStatus();
+		updateExistingCandidates(event, candidates);
+	}
+
+	private void createCandidatesIfPossible(@NonNull final DDOrderDocStatusChangedEvent event)
+	{
+		final DDOrder ddOrder = event.getDdOrder();
+		if (ddOrder == null)
+		{
+			log.warn("No candidates found for DD_Order_ID={} and no DDOrder data in event; skipping.", event.getDdOrderId());
+			return;
+		}
+
+		final DDOrderCreatedEvent createdEvent = DDOrderCreatedEvent.builder()
+				.eventDescriptor(event.getEventDescriptor())
+				.ddOrder(ddOrder)
+				.build();
+
+		ddOrderCreatedHandler.handleEvent(createdEvent);
+	}
+
+	private void updateExistingCandidates(
+			@NonNull final DDOrderDocStatusChangedEvent event,
+			@NonNull final List<Candidate> candidates)
+	{
+		final DocStatus newDocStatusFromEvent = event.getNewDocStatus();
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
-		for (final Candidate candidateForDDOrderId : candidatesForDDOrderId)
+		for (final Candidate candidateForDDOrderId : candidates)
 		{
 			final BigDecimal newQuantity = computeNewQuantity(newDocStatusFromEvent, candidateForDDOrderId);
 

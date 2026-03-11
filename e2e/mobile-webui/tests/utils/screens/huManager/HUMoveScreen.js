@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { HUManagerScreen } from './HUManagerScreen';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
@@ -10,7 +10,7 @@ const containerElement = () => page.locator('#HUMoveScreen');
 
 export const HUMoveScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
