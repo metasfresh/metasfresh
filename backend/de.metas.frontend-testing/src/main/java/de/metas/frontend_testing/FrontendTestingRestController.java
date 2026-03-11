@@ -141,7 +141,9 @@ public class FrontendTestingRestController
 			{
 				// Find shipment via order lines → inout lines → inout
 				final InOutId shipmentId = queryBL.createQueryBuilder(I_M_InOutLine.class)
-						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID,
+						.addInSubQueryFilter(
+								I_M_InOutLine.COLUMNNAME_C_OrderLine_ID,
+								org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
 								queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
 										.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, request.getSalesOrderId())
 										.create())
