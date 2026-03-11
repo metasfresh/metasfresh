@@ -1,7 +1,9 @@
+-- Add TechnicalSenderGLN to DESADV JSON export view
+-- Uses the same logic as Invoice_Sender_Tec_GLN in INVOIC: remit-to location GLN of the org's business partner
 
--- Main view that uses the functions and other views
-drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
-CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V$new;
+
+CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V$new AS
 SELECT io.m_inout_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
@@ -45,7 +47,7 @@ SELECT io.m_inout_id,
                'DatePromised', o.datepromised)
        ) as embedded_json
                          FROM m_inout io
-                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id 
+                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
                          JOIN edi_desadv d ON io.edi_desadv_id = d.edi_desadv_id
                          JOIN c_bpartner buyer ON d.c_bpartner_id = buyer.c_bpartner_id
     -- Joins for other lookup objects
@@ -68,5 +70,11 @@ SELECT io.m_inout_id,
   AND io.docstatus IN ('CO', 'CL')
 ;
 
--- Example query
---select * from M_InOut_Export_EDI_DESADV_JSON_V where m_inout_id=1001857;
+SELECT db_alter_view(
+    'M_InOut_Export_EDI_DESADV_JSON_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('M_InOut_Export_EDI_DESADV_JSON_V$new'))
+);
+
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V$new;
