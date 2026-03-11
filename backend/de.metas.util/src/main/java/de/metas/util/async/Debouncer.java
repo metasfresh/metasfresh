@@ -222,11 +222,6 @@ public final class Debouncer<T>
 		}
 	}
 
-	public void shutdown()
-	{
-		executor.shutdown();
-	}
-
 	public void purgeBuffer()
 	{
 		synchronized (lock)
@@ -239,7 +234,6 @@ public final class Debouncer<T>
 	{
 		executor.shutdown();
 	}
-
 	/*
 	public static void main(String[] args) throws InterruptedException
 	{
