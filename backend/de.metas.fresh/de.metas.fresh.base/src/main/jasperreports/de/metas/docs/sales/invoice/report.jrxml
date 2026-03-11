@@ -140,7 +140,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA["N".equals($F{isheaderqrhidden}) && ("N".equals($F{showesr_qr}) || !"CH".equals($F{countrycode}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[ "N".equals($F{isheaderqrhidden}) && ("N".equals($F{showqrbill}) || ("Y".equals($F{showqrbill}) && !"CH".equals($F{countrycode}) && !"LI".equals($F{countrycode})))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_invoice_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
