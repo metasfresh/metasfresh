@@ -1026,14 +1026,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule;
-		try
+		final I_M_ShipmentSchedule shipmentSchedule = getByOrderLineId(orderLineId);
+		if (shipmentSchedule == null)
 		{
-			shipmentSchedule = getByOrderLineId(orderLineId);
-		}
-		catch (final AdempiereException e)
-		{
-			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip project propagation", orderLineId, e);
+			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip project propagation", orderLineId);
 			return;
 		}
 

@@ -23,9 +23,6 @@ public class C_OrderLine
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-	/** Guard against recursive interceptor invocation when saving IC/ShipmentSchedule triggers C_OrderLine model change */
-	private static final ThreadLocal<Boolean> PROPAGATING_PROJECT_ID = ThreadLocal.withInitial(() -> false);
-
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
 			, ifColumnsChanged = {
 					I_C_OrderLine.COLUMNNAME_QtyOrdered // task 08452: make sure the IC gets invalidated when we sort of "close" a single line
@@ -47,30 +44,15 @@ public class C_OrderLine
 	/**
 	 * When C_Project_ID changes on an order line (e.g. inherited back from a dropship purchase order),
 	 * propagate it to the corresponding invoice candidates and shipment schedule.
-	 *
-	 * @see <a href="https://github.com/metasfresh/me03/issues/28709">me03#28709</a>
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Project_ID)
 	public void propagateProjectIdToICAndShipmentSchedule(@NonNull final I_C_OrderLine orderLine)
 	{
-		if (PROPAGATING_PROJECT_ID.get())
-		{
-			return;
-		}
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		@Nullable final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
 
-		PROPAGATING_PROJECT_ID.set(true);
-		try
-		{
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
-			@Nullable final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-
-			invoiceCandBL.updateProjectId(orderLineId, projectId);
-			shipmentScheduleBL.updateProjectId(orderLineId, projectId);
-		}
-		finally
-		{
-			PROPAGATING_PROJECT_ID.set(false);
-		}
+		invoiceCandBL.updateProjectId(orderLineId, projectId);
+		shipmentScheduleBL.updateProjectId(orderLineId, projectId);
 	}
 }
