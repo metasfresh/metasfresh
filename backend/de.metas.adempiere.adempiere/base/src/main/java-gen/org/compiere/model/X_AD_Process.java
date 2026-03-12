@@ -351,6 +351,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setIsIncludeCSVHeaderRow (final boolean IsIncludeCSVHeaderRow)
+	{
+		set_Value (COLUMNNAME_IsIncludeCSVHeaderRow, IsIncludeCSVHeaderRow);
+	}
+
+	@Override
+	public boolean isIncludeCSVHeaderRow()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsIncludeCSVHeaderRow);
+	}
+
+	@Override
 	public void setIsLogWarning (final boolean IsLogWarning)
 	{
 		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
