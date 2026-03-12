@@ -56,8 +56,15 @@ BEGIN
 
     -- ==========================================
     -- Step 2: Consolidate duplicates
+    -- (Intentionally global — no AD_Client/AD_Org filter.
+    --  This is a one-time migration tool meant to run across
+    --  all records in the database.)
     -- ==========================================
     IF p_consolidate THEN
+        -- Clean up temp tables in case of re-run after error
+        DROP TABLE IF EXISTS tmp_consolidation_groups;
+        DROP TABLE IF EXISTS tmp_survivors;
+
         -- 2a: Find consolidation groups (same Product + GTIN + PI_Item, multiple active records)
         CREATE TEMP TABLE tmp_consolidation_groups AS
         SELECT M_Product_ID,
@@ -150,20 +157,25 @@ BEGIN
                 RAISE NOTICE 'Backup FK table: %', v_backup_name;
 
                 -- Update FK references from non-survivors to survivors
-                EXECUTE format(
-                        'UPDATE %I SET %I = s.survivor_id, Updated = now(), UpdatedBy = 99
-                         FROM tmp_survivors s
-                         JOIN M_HU_PI_Item_Product p ON p.M_Product_ID = s.M_Product_ID
-                             AND p.GTIN = s.GTIN AND p.M_HU_PI_Item_ID = s.M_HU_PI_Item_ID
-                             AND p.M_HU_PI_Item_Product_ID != s.survivor_id AND p.IsActive = ''Y''
-                         WHERE %I.%I = p.M_HU_PI_Item_Product_ID',
-                        v_fk_record.fk_table, v_fk_record.fk_column,
-                        v_fk_record.fk_table, v_fk_record.fk_column
-                        );
-                GET DIAGNOSTICS v_count = ROW_COUNT;
-                IF v_count > 0 THEN
-                    RAISE NOTICE 'Updated % FK references in %.%', v_count, v_fk_record.fk_table, v_fk_record.fk_column;
-                END IF;
+                BEGIN
+                    EXECUTE format(
+                            'UPDATE %I SET %I = s.survivor_id, Updated = now(), UpdatedBy = 99
+                             FROM tmp_survivors s
+                             JOIN M_HU_PI_Item_Product p ON p.M_Product_ID = s.M_Product_ID
+                                 AND p.GTIN = s.GTIN AND p.M_HU_PI_Item_ID = s.M_HU_PI_Item_ID
+                                 AND p.M_HU_PI_Item_Product_ID != s.survivor_id AND p.IsActive = ''Y''
+                             WHERE %I.%I = p.M_HU_PI_Item_Product_ID',
+                            v_fk_record.fk_table, v_fk_record.fk_column,
+                            v_fk_record.fk_table, v_fk_record.fk_column
+                            );
+                    GET DIAGNOSTICS v_count = ROW_COUNT;
+                    IF v_count > 0 THEN
+                        RAISE NOTICE 'Updated % FK references in %.%', v_count, v_fk_record.fk_table, v_fk_record.fk_column;
+                    END IF;
+                EXCEPTION
+                    WHEN unique_violation THEN
+                        RAISE NOTICE 'WARNING: Could not update FK references in %.% due to unique constraint violation — skipping', v_fk_record.fk_table, v_fk_record.fk_column;
+                END;
             END LOOP;
 
         -- 2e: Update survivors with widest date range and clear C_BPartner_ID
