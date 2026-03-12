@@ -1,3 +1,8 @@
+-- gh#28336: Add EU membership filter to Intrastat_Report_V.
+-- Only intra-EU trade is Intrastat-reportable. Non-EU partners (CN, HK, VN, etc.)
+-- are customs declarations, not Intrastat. Uses C_CountryArea_Assign with date-based
+-- validity (respects Brexit: GB excluded for invoices after 2020-12-31).
+
 DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.Intrastat_Report_V;
 
 CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.Intrastat_Report_V AS
@@ -120,10 +125,6 @@ from (
          where io.isactive = 'Y'
            and iol.ispackagingmaterial = 'N'
            -- Exclude lines with no customs tariff AND zero invoice value.
-           -- These are typically packaging materials (e.g. EUR pallets) that were added
-           -- as regular shipment lines rather than packaging lines (ispackagingmaterial='N').
-           -- Lines with a missing tariff but non-zero value are kept so the gap is visible
-           -- in the Intrastat export, prompting the user to assign the correct CN8 code.
            and not (ct.M_CustomsTariff_ID is null and il.linenetamt = 0)
            -- Only international shipments: partner country differs from org/warehouse country.
            and coalesce(wlc.countrycode, org_country.countrycode) is not null
