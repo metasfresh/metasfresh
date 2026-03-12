@@ -1918,11 +1918,18 @@ jobs:
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$REPORTS_SERVER_SSH_PORT" -H "$REPORTS_SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
-          Host reports-server
+          Host reports-storage
             HostName $REPORTS_SERVER_HOSTNAME
             User $REPORTS_SERVER_USER
             Port $REPORTS_SERVER_SSH_PORT
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+
+          Host reports-server
+            HostName test-reports.metasfresh.com
+            User ci-reports
             IdentityFile ~/.ssh/reports_key
             StrictHostKeyChecking accept-new
           EOF
@@ -1989,7 +1996,7 @@ jobs:
             echo "Uploading ${report_type} report..."
             rsync -az --delete \
               "reports/${report_type}/" \
-              "reports-server:${BASE_PATH}/${report_type}/"
+              "reports-storage:${BASE_PATH}/${report_type}/"
             echo "✓ ${report_type} uploaded"
           done
 
