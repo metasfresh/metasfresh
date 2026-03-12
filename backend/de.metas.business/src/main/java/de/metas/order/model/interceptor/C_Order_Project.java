@@ -50,6 +50,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -187,6 +188,7 @@ public class C_Order_Project
 		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
 				.projectId(newProjectId)
 				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
+				.byUserId(Env.getLoggedUserId())
 				.build());
 	}
 }
