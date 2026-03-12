@@ -40,13 +40,13 @@ const createMasterdata = async () => {
             },
             packingInstructions: {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
-                "PI2": { lu: "LU2", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
-                "PI3": { lu: "LU3", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 4 },
+                "PI2": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
+                "PI3": { lu: "LU", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
-                "HU2": { product: 'P2', warehouse: 'wh', packingInstructions: 'PI2' },
-                "HU3": { product: 'P3', warehouse: 'wh', packingInstructions: 'PI3' },
+                "HU1": { product: 'P1', warehouse: 'wh', qty: 200 },
+                "HU2": { product: 'P2', warehouse: 'wh', qty: 200 },
+                "HU3": { product: 'P3', warehouse: 'wh', qty: 200 },
             },
             salesOrders: {
                 "SO1": {
@@ -96,7 +96,6 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
     await test.step("Pick line 1 (P1) - completely", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU1.qrCode,
-            isScanDirectly: true,
             expectQtyEntered: '3',
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
