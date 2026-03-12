@@ -67,12 +67,6 @@ const createMasterdata = async () => {
     return masterdata;
 }
 
-test.afterAll(async ({ page: _page }) => {
-    if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-        await Backend.setSysconfigs(previousSysconfigs);
-    }
-});
-
 // noinspection JSUnusedLocalSymbols
 test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped schedules are closed', async ({ page }) => {
     // === ALLURE METADATA ===
@@ -157,5 +151,11 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
                 }
             },
         });
+    });
+
+    await test.step("Restore sysconfigs", async () => {
+        if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
+            await Backend.setSysconfigs(previousSysconfigs);
+        }
     });
 });
