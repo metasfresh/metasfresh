@@ -63,20 +63,20 @@ the correct parameters with descriptions.
         await page.locator('body').click();
         await page.waitForTimeout(200);
         await page.keyboard.press('Alt+2');
-        await expect(page.locator('.navigation-menu-overlay')).toBeVisible({
+        await expect(page.locator('.menu-overlay')).toBeVisible({
           timeout: SLOW_ACTION_TIMEOUT,
         });
       });
 
       // === SEARCH FOR THE PROCESS ===
       await test.step(`Search for "${menuName}"`, async () => {
-        const searchInput = page.locator('.navigation-menu-overlay input[type="text"]');
+        const searchInput = page.locator('.menu-overlay input.input-field');
         await expect(searchInput).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await searchInput.fill(menuName);
         await page.waitForTimeout(500);
 
         // Verify the menu entry appears in search results
-        const menuItem = page.locator('.navigation-menu-overlay').getByText(menuName, { exact: false });
+        const menuItem = page.locator('.menu-overlay').getByText(menuName, { exact: false });
         await expect(menuItem).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
 
         // Click the menu entry to open the process dialog
