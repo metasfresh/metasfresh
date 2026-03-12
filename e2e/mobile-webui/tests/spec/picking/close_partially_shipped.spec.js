@@ -99,7 +99,7 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
             isScanDirectly: true,
             expectQtyEntered: '3',
         });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
     });
 
     await test.step("Pick line 2 (P2) - partially (2 TUs out of 3)", async () => {
@@ -109,7 +109,7 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
             expectQtyEntered: "3",
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
-        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '8 Stk', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
     });
 
     await test.step("Skip line 3 (P3) - do not pick", async () => {
