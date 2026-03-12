@@ -31,7 +31,9 @@ import java.util.Map;
 public class JsonCreateMasterdataResponse
 {
 	@Nullable Map<String, Object> context;
-	
+
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
+
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
