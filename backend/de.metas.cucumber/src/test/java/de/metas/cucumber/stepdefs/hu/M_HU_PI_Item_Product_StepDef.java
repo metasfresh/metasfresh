@@ -132,7 +132,10 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		huPiItemProductRecord.setIsActive(active);
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
+		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU).ifPresent(huPiItemProductRecord::setEAN_TU);
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
+		tableRow.getAsOptionalLocalDate(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo)
+				.ifPresent(validTo -> huPiItemProductRecord.setValidTo(TimeUtil.asTimestamp(validTo)));
 
 		huPiItemProductRecord.setIsInfiniteCapacity(isInfiniteCapacity);
 		if (isInfiniteCapacity)
