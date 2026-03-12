@@ -568,4 +568,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return ImmutableSet.copyOf(orderIds);
 	}
 
+	@NonNull
+	@Override
+	public List<I_M_ShipmentSchedule> getByFilter(final IQueryFilter<I_M_ShipmentSchedule> filter)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter(filter)
+				.create()
+				.stream()
+				.toList();
+	}
 }

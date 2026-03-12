@@ -28,7 +28,7 @@ import java.util.Properties;
 public class OrderDAO extends AbstractOrderDAO
 {
 	@Override
-	public List<I_M_InOut> retrieveInOutsForMatchingOrderLines(final I_C_Order order)
+	public List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull final I_C_Order order)
 	{
 		//
 		// TODO 05768 keep legacy logic; this stuff should be upgraded, but it's out of scope here

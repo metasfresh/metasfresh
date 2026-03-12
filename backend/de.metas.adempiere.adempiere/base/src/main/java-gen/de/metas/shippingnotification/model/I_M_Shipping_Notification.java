@@ -159,6 +159,31 @@ public interface I_M_Shipping_Notification
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_M_Shipping_Notification, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -657,6 +682,93 @@ public interface I_M_Shipping_Notification
 
 	ModelColumn<I_M_Shipping_Notification, Object> COLUMN_ShipFromAddress = new ModelColumn<>(I_M_Shipping_Notification.class, "ShipFromAddress", null);
 	String COLUMNNAME_ShipFromAddress = "ShipFromAddress";
+
+	/**
+	 * Set Location.
+	 * Indentifies Ship From address
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipFrom_Location_ID (int ShipFrom_Location_ID);
+
+	/**
+	 * Get Location.
+	 * Indentifies Ship From address
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getShipFrom_Location_ID();
+
+	String COLUMNNAME_ShipFrom_Location_ID = "ShipFrom_Location_ID";
+
+	/**
+	 * Set Location (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipFrom_Location_Value_ID (int ShipFrom_Location_Value_ID);
+
+	/**
+	 * Get Location (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getShipFrom_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getShipFrom_Location_Value();
+
+	void setShipFrom_Location_Value(@Nullable org.compiere.model.I_C_Location ShipFrom_Location_Value);
+
+	ModelColumn<I_M_Shipping_Notification, org.compiere.model.I_C_Location> COLUMN_ShipFrom_Location_Value_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "ShipFrom_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_ShipFrom_Location_Value_ID = "ShipFrom_Location_Value_ID";
+
+	/**
+	 * Set Ship From Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipFrom_Partner_ID (int ShipFrom_Partner_ID);
+
+	/**
+	 * Get Ship From Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getShipFrom_Partner_ID();
+
+	String COLUMNNAME_ShipFrom_Partner_ID = "ShipFrom_Partner_ID";
+
+	/**
+	 * Set ShipFrom User.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipFrom_User_ID (int ShipFrom_User_ID);
+
+	/**
+	 * Get ShipFrom User.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getShipFrom_User_ID();
+
+	String COLUMNNAME_ShipFrom_User_ID = "ShipFrom_User_ID";
 
 	/**
 	 * Get Updated.

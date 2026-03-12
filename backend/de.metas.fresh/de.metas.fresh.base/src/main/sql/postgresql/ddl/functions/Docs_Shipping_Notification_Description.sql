@@ -20,12 +20,12 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(record_id   numeric,
-                                                                                                  ad_language character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(p_record_id   numeric,
+                                                                                                  p_ad_language character varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(record_id   numeric,
-                                                                                          ad_language character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(p_record_id   numeric,
+                                                                                          p_ad_language character varying)
     RETURNS TABLE
             (
                 Document_name         character varying,
@@ -51,27 +51,11 @@ SELECT
        sn.description
 
 FROM M_Shipping_Notification sn
-         -- DeliveryFrom (warehouse partner and location)
-         INNER JOIN m_warehouse w ON sn.m_warehouse_id = w.m_warehouse_id
-         INNER JOIN c_bpartner wbp ON w.c_bpartner_id = wbp.c_bpartner_id
-         INNER JOIN c_bpartner_location wbpl ON wbp.c_bpartner_id = wbpl.c_bpartner_id
-         INNER JOIN c_location wbploc ON wbploc.c_location_id = wbpl.c_location_id
-         INNER JOIN C_Country wbpc ON wbploc.C_Country_ID = wbpc.C_Country_ID
-
-    -- DeliveryTo -> BPartner Address
-
-         INNER JOIN c_bpartner snbp ON sn.c_bpartner_id = snbp.c_bpartner_id
-         INNER JOIN c_bpartner_location snbpl ON snbpl.c_bpartner_id = snbp.c_bpartner_id
-         INNER JOIN c_location snbploc ON snbploc.c_location_id = snbpl.c_location_id
-         INNER JOIN C_Country snbpc ON snbploc.C_Country_ID = snbpc.C_Country_ID
-
          INNER JOIN c_order o ON sn.c_order_id = o.c_order_id
          INNER JOIN c_year year ON o.harvesting_year_id = year.c_year_id
-
          INNER JOIN C_DocType dt ON sn.c_doctype_id = dt.c_doctype_id
          LEFT OUTER JOIN C_DocType_trl dt_trl ON dt.c_doctype_id = dt_trl.c_doctype_id
-    AND dt_trl.ad_language = $2
-WHERE sn.m_shipping_notification_id = $1
-  AND sn.isActive = 'Y'
+    AND dt_trl.ad_language = p_ad_language
+WHERE sn.m_shipping_notification_id = p_record_id
 $$
 ;

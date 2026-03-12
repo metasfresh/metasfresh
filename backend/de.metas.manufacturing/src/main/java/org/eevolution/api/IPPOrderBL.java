@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import de.metas.document.DocSubType;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -74,9 +75,9 @@ public interface IPPOrderBL extends ISingletonService
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
 	void setDocType(
-			I_PP_Order ppOrder,
-			PPOrderDocBaseType docBaseType,
-			@Nullable String docSubType);
+			@NonNull I_PP_Order ppOrder,
+			@NonNull PPOrderDocBaseType docBaseType,
+			@NonNull DocSubType docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
 

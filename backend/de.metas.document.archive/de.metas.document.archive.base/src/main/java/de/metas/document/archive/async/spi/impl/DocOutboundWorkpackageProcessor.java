@@ -112,20 +112,25 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		final boolean isInvoiceEmailEnabledEffective = computeInvoiceEmailEnabledFromRecord(record);
 
-		final ArchiveResult archiveResult = DefaultModelArchiver.builder()
+		final List<ArchiveResult> archiveResultList = DefaultModelArchiver.builder()
 				.record(record)
 				.flavor(isInvoiceEmailEnabledEffective ? DocumentReportFlavor.EMAIL : DocumentReportFlavor.PRINT)
 				.reportProcessId(getReportProcessIdToUse(record))
 				.build()
 				.archive();
-		if (archiveResult.isNoArchive())
+
+		for (final ArchiveResult archiveResult : archiveResultList)
 		{
-			Loggables.addLog("Created *no* AD_Archive for record={}", record);
-		}
-		else
-		{
-			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
-			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
+			if (archiveResultList.isEmpty())
+			{
+				Loggables.addLog("Created *no* AD_Archive for record={}", record);
+			}
+			else
+			{
+				Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
+				archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
+			}
+
 		}
 	}
 

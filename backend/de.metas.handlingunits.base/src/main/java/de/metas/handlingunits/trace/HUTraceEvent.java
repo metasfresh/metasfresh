@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
@@ -12,6 +13,9 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mmovement.MovementId;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -79,17 +83,16 @@ public class HUTraceEvent
 
 	HuId vhuSourceId;
 
-	int inOutId;
+	InOutId inOutId;
 
 	ShipmentScheduleId shipmentScheduleId;
 
-	int movementId;
+	MovementId movementId;
 
+	PPCostCollectorId ppCostCollectorId;
 	InventoryId inventoryId;
 
-	int ppCostCollectorId;
-
-	int ppOrderId;
+	PPOrderId ppOrderId;
 
 	String docStatus;
 

@@ -25,12 +25,13 @@ package de.metas.contracts.modular.settings.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lang.SOTrx;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -66,7 +67,7 @@ public class ModCntr_Settings
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	@NonNull private final ModularContractSettingsService modularContractSettingsService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE }, ignoreColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_IsActive })
 	public void validateSettings(@NonNull final I_ModCntr_Settings record)
 	{
 		modularContractSettingsService.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
@@ -77,17 +78,11 @@ public class ModCntr_Settings
 			ifUIAction = true)
 	public void upsertInformativeLogsModule(@NonNull final I_ModCntr_Settings record)
 	{
-		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
-
-		if (rawProductId == null)
-		{
-			// nothing to do
-			return;
-		}
-
+		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+		final SOTrx soTrx = SOTrx.ofYesNoString(record.getIsSOTrx());
 
-		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
+		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId, soTrx);
 
 	}
 
@@ -97,18 +92,19 @@ public class ModCntr_Settings
 			ifUIAction = true)
 	public void upsertDefinitiveInvoiceModule(@NonNull final I_ModCntr_Settings record)
 	{
-		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
-
-		if (rawProductId == null)
+		final SOTrx soTrx = SOTrx.ofYesNoString(record.getIsSOTrx());
+		if(!soTrx.isPurchase())
 		{
-			// nothing to do
 			return;
 		}
+
+		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
+
 		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
-		modularContractSettingsService.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
+		modularContractSettingsService.upsertDefinitiveInvoiceSalesModule(modularContractSettingsId, rawProductId, processedProductId);
 
 	}
 
@@ -116,7 +112,7 @@ public class ModCntr_Settings
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID })
 	public void updateModulesRawProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
-		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(ComputingMethodType.Receipt, ComputingMethodType.SalesOnRawProduct);
+		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(ComputingMethodType.Receipt, ComputingMethodType.SalesOnRawProduct, ComputingMethodType.Sales);
 		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), rawComputingMethods, ProductId.ofRepoId(record.getM_Raw_Product_ID()));
 	}
 

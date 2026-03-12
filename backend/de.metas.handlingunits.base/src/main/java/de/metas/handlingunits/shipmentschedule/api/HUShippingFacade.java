@@ -147,10 +147,9 @@ public class HUShippingFacade
 		return shipmentsGenerateResult.getInOuts();
 	}
 
-	public InOutGenerateResult generateShippingDocuments()
+	public void generateShippingDocuments()
 	{
 		trxManager.runInThreadInheritedTrx(this::generateShippingDocuments0);
-		return shipmentsGenerateResult;
 	}
 
 	private void generateShippingDocuments0()
@@ -197,7 +196,7 @@ public class HUShippingFacade
 		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
 				.scheduleIds(candidatesIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
-				.isShipDateToday(true)
+				.shipmentDateRule(ShipmentDateRule.Today)
 				.isCompleteShipment(completeShipments)
 				.onTheFlyPickToPackingInstructions(false) /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */
 				.build();

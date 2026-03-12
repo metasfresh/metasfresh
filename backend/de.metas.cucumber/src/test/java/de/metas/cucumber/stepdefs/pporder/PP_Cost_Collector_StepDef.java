@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
@@ -99,10 +99,12 @@ public class PP_Cost_Collector_StepDef
 		assertThat(product).isNotNull();
 
 		final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
+		final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_MovementQty);
 
 		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_M_Product_ID, ppOrder.getM_Product_ID())
+				.addEqualsFilter(COLUMNNAME_MovementQty, movementQty)
 				.addEqualsFilter(COLUMNNAME_DocStatus, status)
 				.create()
 				.firstOnlyOptional(I_PP_Cost_Collector.class);

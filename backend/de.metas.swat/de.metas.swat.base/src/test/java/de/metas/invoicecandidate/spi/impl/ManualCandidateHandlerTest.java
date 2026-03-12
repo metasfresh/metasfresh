@@ -785,7 +785,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 
 		final I_C_Tax tax = tax(new BigDecimal("4"));
-		docType(DocBaseType.ARInvoice, null);
+		docType(DocBaseType.SalesInvoice, null);
 
 		final I_AD_User user = user("1");
 		user.setC_BPartner_ID(bpartner("1").getC_BPartner_ID());

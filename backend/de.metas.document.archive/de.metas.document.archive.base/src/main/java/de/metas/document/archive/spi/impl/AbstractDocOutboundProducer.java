@@ -29,7 +29,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.async.spi.impl.ProcessPrintingQueueWorkpackageProcessor;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -39,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -47,12 +47,11 @@ import java.util.Properties;
 
 /**
  * {@link IDocOutboundProducer} base implementation.
- *
+ * <p>
  * Mainly all business logic is implemented but the life-cycle management methods are left unimplemented (see {@link #init(IDocOutboundProducerService)}, {@link #destroy(IDocOutboundProducerService)}
  * ).
  *
  * @author tsa
- *
  */
 public abstract class AbstractDocOutboundProducer implements IDocOutboundProducer
 {
@@ -174,13 +173,13 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 				.map(asyncBatchBL::getAsyncBatchById)
 				.orElse(null);
 
-			workPackageQueueFactory
-					.getQueueForEnqueuing(ctx, packageProcessorClass)
-					.newWorkPackage()
-					.bindToThreadInheritedTrx()
-					.addElement(model)
-					.setC_Async_Batch(asyncBatch)
-					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-					.buildAndEnqueue();
+		workPackageQueueFactory
+				.getQueueForEnqueuing(ctx, packageProcessorClass)
+				.newWorkPackage()
+				.bindToThreadInheritedTrx()
+				.addElement(model)
+				.setC_Async_Batch(asyncBatch)
+				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+				.buildAndEnqueue();
 	}
 }

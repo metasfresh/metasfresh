@@ -41,6 +41,7 @@ public class InOutId implements RepoIdAware
 		return new InOutId(repoId);
 	}
 
+	@Nullable
 	public static InOutId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InOutId(repoId) : null;
@@ -70,5 +71,5 @@ public class InOutId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable InOutId id1, @Nullable InOutId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final InOutId id1, @Nullable final InOutId id2) {return Objects.equals(id1, id2);}
 }

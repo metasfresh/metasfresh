@@ -5,8 +5,8 @@ import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -105,7 +105,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		}
 
 		final String docBaseType = newDocType.getDocBaseType();
-		final String docSubType = CoalesceUtil.coalesce(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
+		final String docSubType = CoalesceUtil.coalesceNotNull(newDocType.getDocSubType(), DOCSUBTYPE_NONE);
 		final boolean isSOTrx = newDocType.isSOTrx();
 		final boolean hasChanges = newDocType.isHasCharges();
 

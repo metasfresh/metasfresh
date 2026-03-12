@@ -51,21 +51,20 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 
 public class M_HU_CreateReceipt_StepDef
@@ -121,7 +120,7 @@ public class M_HU_CreateReceipt_StepDef
 			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
 		}
 	}
-	
+
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{
@@ -153,8 +152,10 @@ public class M_HU_CreateReceipt_StepDef
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
+			final Timestamp movementDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_InOut.COLUMNNAME_MovementDate);
+			final ReceiptMovementDateRule currentDate = movementDate == null ? ReceiptMovementDateRule.CURRENT_DATE : ReceiptMovementDateRule.fixedDate(movementDate.toInstant());
 			final IHUReceiptScheduleBL.CreateReceiptsParameters parameters = IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
-					.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
+					.movementDateRule(currentDate)
 					.ctx(Env.getCtx())
 					.receiptSchedules(ImmutableList.of(receiptSchedule))
 					.selectedHuIds(huIdSet)

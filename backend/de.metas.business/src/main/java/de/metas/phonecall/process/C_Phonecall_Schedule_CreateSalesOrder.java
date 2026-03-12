@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -26,7 +27,6 @@ import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import java.time.LocalDate;
@@ -72,7 +72,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+				.docSubType(DocSubType.StandardOrder)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 

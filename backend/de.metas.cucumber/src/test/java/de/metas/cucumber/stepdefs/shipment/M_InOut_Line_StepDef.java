@@ -152,6 +152,9 @@ public class M_InOut_Line_StepDef
 				lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent);
 			}
 
+			final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
+			lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, movementqty);
+
 			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
 					.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
@@ -303,7 +306,7 @@ public class M_InOut_Line_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
+
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
@@ -315,7 +318,6 @@ public class M_InOut_Line_StepDef
 		}
 
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

@@ -204,7 +204,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		inoutLinesWithMissingInvoiceCandidateRepo.addAdditionalFilter(filter);
 
 		final IQuery<I_C_DocType> docSubTypeNotProFormaSO = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addNotEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_ProFormaSO)
+				.addNotEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_ProForma)
 				.create();
 
 		final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)

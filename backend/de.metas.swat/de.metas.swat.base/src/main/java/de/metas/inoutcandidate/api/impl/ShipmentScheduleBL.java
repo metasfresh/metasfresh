@@ -78,6 +78,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
@@ -185,6 +186,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IWarehouseBL warehouseBL =Services.get(IWarehouseBL.class);
+
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -680,7 +683,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs, final boolean isThrowErrorIfAlreadyProcessed)
 	{
 		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
@@ -689,7 +692,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				continue;
 			}
-			if (record.isProcessed())
+			if (isThrowErrorIfAlreadyProcessed && record.isProcessed())
 			{
 				throw new AdempiereException(
 						Services.get(IMsgBL.class)
@@ -1000,7 +1003,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				this,
 				orderBL,
 				SpringContextHolder.instance.getBean(DocTypeService.class),
-				SpringContextHolder.instance.getBean(IDocumentLocationBL.class)
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
+				warehouseBL
 		);
 	}
 
@@ -1012,5 +1016,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
 			shipmentSchedulePA.save(shipmentSchedule);
 		});
+	}
+
+	@NonNull
+	@Override
+	public List<I_M_ShipmentSchedule> getByFilter(final IQueryFilter<I_M_ShipmentSchedule> filter)
+	{
+		return shipmentSchedulePA.getByFilter(filter);
 	}
 }

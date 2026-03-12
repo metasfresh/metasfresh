@@ -115,7 +115,7 @@ public class SupportInfo
 			sb.append("StartTime=").append(new Date(runtimeMXBean.getStartTime())).append(NL);
 			sb.append("UpTime=").append(runtimeMXBean.getUptime()).append("ms").append(NL);
 			sb.append("Java Home=").append(System.getProperty("java.home", "?")).append(NL);
-			sb.append("BootClassPath=").append(runtimeMXBean.getBootClassPath()).append(NL);
+			// sb.append("BootClassPath=").append(runtimeMXBean.getBootClassPath()).append(NL);
 			sb.append("ClassPath=").append(runtimeMXBean.getClassPath()).append(NL);
 			sb.append("LibraryPath=").append(runtimeMXBean.getLibraryPath()).append(NL);
 

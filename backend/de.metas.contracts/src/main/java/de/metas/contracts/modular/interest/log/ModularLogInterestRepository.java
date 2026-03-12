@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interest.log;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.model.I_ModCntr_Log;
@@ -143,6 +144,18 @@ public class ModularLogInterestRepository
 				.create()
 				.iterateAndStream()
 				.map(ModularLogInterestRepository::ofRecord);
+	}
+
+	@VisibleForTesting
+	public List<ModularLogInterest> getModularLogInterestsForRun(@NonNull final InterestRunId interestRunId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Interest.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_Run_ID, interestRunId)
+				.create()
+				.stream()
+				.map(ModularLogInterestRepository::ofRecord)
+				.toList();
 	}
 
 	@NonNull

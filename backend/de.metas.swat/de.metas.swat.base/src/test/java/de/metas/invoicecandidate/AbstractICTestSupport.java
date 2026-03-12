@@ -420,14 +420,14 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_ARI.setName("ARI");
-		docType_ARI.setDocBaseType(DocBaseType.ARInvoice.getCode());
+		docType_ARI.setDocBaseType(DocBaseType.SalesInvoice.getCode());
 		docType_ARI.setIsSOTrx(true);
 		docType_ARI.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_ARI);
 
 		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_API.setName("API");
-		docType_API.setDocBaseType(DocBaseType.APInvoice.getCode());
+		docType_API.setDocBaseType(DocBaseType.PurchaseInvoice.getCode());
 		docType_API.setIsSOTrx(false);
 		docType_API.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_API);

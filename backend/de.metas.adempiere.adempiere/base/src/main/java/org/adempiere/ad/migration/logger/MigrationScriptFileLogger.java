@@ -166,18 +166,17 @@ class MigrationScriptFileLogger
 
 			try
 			{
-				final String fileHeader = "-- Run mode: " + Ini.getRunMode() + "\n\n";
-				Files.writeString(path, fileHeader, CHARSET, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-
-				//
 				// Make sure the directories exist
 				Files.createDirectories(path.getParent());
+
+				final String fileHeader = "-- Run mode: " + Ini.getRunMode() + "\n\n";
+				Files.writeString(path, fileHeader, CHARSET, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 			}
 			catch (final IOException ex)
 			{
 				throw AdempiereException.wrapIfNeeded(ex);
 			}
-
+			
 			_path = path;
 		}
 		return _path;

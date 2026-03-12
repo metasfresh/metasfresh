@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
-import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -45,6 +44,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -66,6 +66,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -74,7 +75,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -357,9 +358,22 @@ public class M_PriceList_StepDef
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+		final Optional<TaxCategoryId> taxCategoryId;
 
-		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
-		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		final String taxCategoryInternalName = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
+		final String taxCategoryName = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_Name);
+		if (Check.isNotBlank(taxCategoryInternalName))
+		{
+			taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		}
+		else if (Check.isNotBlank(taxCategoryName))
+		{
+			taxCategoryId = taxBL.getTaxCategoryIdByName(taxCategoryName);
+		}
+		else
+		{
+			taxCategoryId = Optional.of(taxBL.retrieveRegularTaxCategoryId());
+		}
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
@@ -389,6 +403,12 @@ public class M_PriceList_StepDef
 			productPrice.setUseScalePrice(useScalePrice);
 		}
 
+		final String scalePriceQtyFrom = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom);
+		if (Check.isNotBlank(scalePriceQtyFrom))
+		{
+			productPrice.setScalePriceQuantityFrom(scalePriceQtyFrom);
+		}
+
 		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 		if (Check.isNotBlank(invoiceableQtyBasedOn))
 		{
@@ -404,10 +424,7 @@ public class M_PriceList_StepDef
 		}
 
 		final Boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_IsAttributeDependant, false);
-		if (isAttributeDependant != null)
-		{
-			productPrice.setIsAttributeDependant(isAttributeDependant);
-		}
+		productPrice.setIsAttributeDependant(isAttributeDependant);
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
@@ -428,6 +445,7 @@ public class M_PriceList_StepDef
 		productPriceTable.putOrReplace(recordIdentifier, productPrice);
 	}
 
+	@Nullable
 	private I_M_ProductPrice lookupForProductPrice(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -459,7 +477,7 @@ public class M_PriceList_StepDef
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
 				.map(huPiItemProductId -> queryBuilder.addEqualsFilter(de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, huPiItemProductId));
 
-		Optional.ofNullable(isAttributeDependant)
+		Optional.of(isAttributeDependant)
 				.map(attrDependant -> queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant, attrDependant));
 
 		return queryBuilder
@@ -471,7 +489,6 @@ public class M_PriceList_StepDef
 				.orElse(null);
 	}
 
-	@NonNull
 	private boolean filterProductPriceByASI(@NonNull final Map<String, String> tableRow, @NonNull final I_M_ProductPrice productPrice)
 	{
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

@@ -5,46 +5,60 @@ import classnames from 'classnames';
 import DevicesWidget from './Devices/DevicesWidget';
 
 export default class Amount extends PureComponent {
-  componentDidMount() {
-    const { isFilterActive, updateItems, widgetData } = this.props;
-
-    if (widgetData) {
-      !isFilterActive &&
-        updateItems &&
-        updateItems({
-          widgetField: widgetData[0].field,
-          value: widgetData[0].defaultValue,
-        });
-    }
-  }
-
   render() {
     const {
-      getClassNames,
-      widgetProperties,
       widgetField,
-      subentity,
-      fields,
+      value,
+      step,
+      devices,
+      //
+      id,
+      autoComplete,
+      className,
+      inputClassName,
+      disabled,
+      placeholder,
+      tabIndex,
+      title,
+      //
+      onChange,
+      onFocus,
+      onBlur,
+      onKeyDown,
       onPatch,
     } = this.props;
-    const widgetData = this.props.widgetData[0];
 
     return (
-      <div className={classnames(getClassNames(), 'number-field')}>
+      <div
+        className={classnames(
+          typeof className === 'function' ? className() : className,
+          'number-field'
+        )}
+      >
         <input
-          {...widgetProperties}
           type="number"
+          value={value}
           min={0}
-          precision={widgetField === 'CableLength' ? 2 : 1}
-          step={subentity === 'quickInput' ? 'any' : 1}
+          step={step}
+          id={id}
+          autoComplete={autoComplete}
+          className={inputClassName}
+          disabled={disabled}
+          placeholder={placeholder}
+          tabIndex={tabIndex}
+          title={title}
+          onChange={onChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onKeyDown={onKeyDown}
         />
-        {widgetData.devices && (
+        {devices && (
           <div className="device-widget-wrapper">
             <DevicesWidget
-              devices={widgetData.devices}
+              devices={devices}
               tabIndex={1}
-              handleChange={(value) =>
-                onPatch && onPatch(fields[0].field, value)
+              handleChange={(valueFromDevice) =>
+                onPatch?.(widgetField, valueFromDevice)
               }
             />
           </div>
@@ -55,13 +69,23 @@ export default class Amount extends PureComponent {
 }
 
 Amount.propTypes = {
-  widgetData: PropTypes.array.isRequired,
   widgetField: PropTypes.string.isRequired,
-  fields: PropTypes.array.isRequired,
-  subentity: PropTypes.string,
-  widgetProperties: PropTypes.object.isRequired,
-  getClassNames: PropTypes.func.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  step: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  devices: PropTypes.any,
+  //
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  autoComplete: PropTypes.string,
+  className: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
+  inputClassName: PropTypes.string,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  tabIndex: PropTypes.number,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  //
+  onChange: PropTypes.func.isRequired,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func,
   onPatch: PropTypes.func.isRequired,
-  isFilterActive: PropTypes.bool,
-  updateItems: PropTypes.func,
 };

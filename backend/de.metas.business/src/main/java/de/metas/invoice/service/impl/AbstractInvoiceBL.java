@@ -263,9 +263,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotBePaid,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+                        invoice.getDocumentNo());
 			}
 
 			//
@@ -278,9 +276,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotHaveOpenAmtZero,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+                        invoice.getDocumentNo());
 			}
 
 		}
@@ -316,11 +312,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final DocBaseType docBaseType;
 		if (invoice.isSOTrx())
 		{
-			docBaseType = DocBaseType.ARCreditMemo;
+			docBaseType = DocBaseType.SalesCreditMemo;
 		}
 		else
 		{
-			docBaseType = DocBaseType.APCreditMemo;
+			docBaseType = DocBaseType.PurchaseCreditMemo;
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
@@ -1620,6 +1616,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isFinalInvoiceOrFinalCreditMemo(final InvoiceId invoiceId)
+	{
+		return isFinalInvoiceOrFinalCreditMemo(getById(invoiceId));
+	}
+
+	@Override
 	public final boolean isFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
@@ -1631,6 +1633,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
 		return docTypeId != null && docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId);
+	}
+
+	@Override
+	public final boolean isSalesFinalInvoiceOrFinalCreditMemo(final InvoiceId invoiceId)
+	{
+		return isSalesFinalInvoiceOrFinalCreditMemo(getById(invoiceId));
+	}
+
+	@Override
+	public final boolean isSalesFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isSalesFinalInvoiceOrFinalCreditMemo(docTypeId);
 	}
 
 	@Override
@@ -1747,7 +1762,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(@NonNull final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getById(adjustmentChargeCreateRequest.getInvoiceID());
-		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubTYpe();
+		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubType();
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()

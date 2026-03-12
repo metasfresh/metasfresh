@@ -2,6 +2,7 @@ package de.metas.inout;
 
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -60,7 +61,11 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOut> getByIds(@NonNull Set<InOutId> inoutIds);
 
+	I_M_InOut getByLineIdInTrx(@NonNull InOutLineId inoutLineId);
+
 	void save(I_M_InOut inout);
+
+	void save(@NonNull I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
@@ -189,6 +194,8 @@ public interface IInOutBL extends ISingletonService
 
 	I_C_Order getOrderByInOutLine(I_M_InOutLine inoutLine);
 
+	Optional<OrderId> getOrderIdForLineId(@NonNull InOutLineId inoutLineId);
+
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
@@ -210,4 +217,8 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
+
+    boolean isProformaShipment(@NonNull InOutId inOutId);
+
+	boolean isProformaShipment(@NonNull I_M_InOut inOutRecord);
 }

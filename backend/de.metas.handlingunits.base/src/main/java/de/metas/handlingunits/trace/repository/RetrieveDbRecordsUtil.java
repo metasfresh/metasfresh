@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
@@ -392,6 +393,7 @@ public class RetrieveDbRecordsUtil
 			}
 		}
 
+	@Nullable
 		@VisibleForTesting
 		static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 		{
@@ -453,12 +455,12 @@ public class RetrieveDbRecordsUtil
 				queryBuilder.addInArrayFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getTopLevelHuIds());
 				queryIsEmpty = false;
 			}
-			if (query.getInOutId() > 0)
+		if (query.getInOutId() != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_InOut_ID, query.getInOutId());
 				queryIsEmpty = false;
 			}
-			if (query.getMovementId() > 0)
+		if (query.getMovementId() != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Movement_ID, query.getMovementId());
 				queryIsEmpty = false;
@@ -469,12 +471,13 @@ public class RetrieveDbRecordsUtil
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Inventory_ID, query.getInventoryId());
 				queryIsEmpty = false;
 			}
-			if (query.getPpCostCollectorId() > 0)
+
+		if (query.getPpCostCollectorId() != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getPpCostCollectorId());
 				queryIsEmpty = false;
 			}
-			if (query.getPpOrderId() > 0)
+		if (query.getPpOrderId() != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getPpOrderId());
 				queryIsEmpty = false;
@@ -499,7 +502,17 @@ public class RetrieveDbRecordsUtil
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 				queryIsEmpty = false;
 			}
+		if (query.getAnyHuId() != null)
+		{
+			final ICompositeQueryFilter<I_M_HU_Trace> anyHuFilter = queryBL.createCompositeQueryFilter(I_M_HU_Trace.class)
+					.setJoinOr()
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, query.getAnyHuId())
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_ID, query.getAnyHuId())
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, query.getAnyHuId());
 
+			queryBuilder.addFilter(anyHuFilter);
+			queryIsEmpty = false;
+		}
 		if (!Check.isEmpty(query.getHuValue()))
 		{
 			final IQuery<I_M_HU> huValueQuery = queryBL.createQueryBuilder(I_M_HU.class)
@@ -509,8 +522,6 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addInSubQueryFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, I_M_HU.COLUMNNAME_M_HU_ID, huValueQuery);
 			queryIsEmpty = false;
 		}
-
-
 			if (queryIsEmpty)
 			{
 				return null;

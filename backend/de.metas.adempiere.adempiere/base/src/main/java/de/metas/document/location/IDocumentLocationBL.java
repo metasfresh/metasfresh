@@ -26,6 +26,7 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.document.location.adapter.IDocumentShipFromLocationAdapter;
 import lombok.NonNull;
 
 import java.util.Optional;
@@ -48,6 +49,8 @@ public interface IDocumentLocationBL
 
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentHandOverLocationAdapter locationAdapter);
 
+	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentShipFromLocationAdapter locationAdapter);
+
 	void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
 	void updateCapturedLocation(IDocumentLocationAdapter locationAdapter);
@@ -63,4 +66,8 @@ public interface IDocumentLocationBL
 	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
 	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
+
+	void updateRenderedAddressAndCapturedLocation(IDocumentShipFromLocationAdapter locationAdapter);
+
+	void updateCapturedLocation(IDocumentShipFromLocationAdapter locationAdapter);
 }

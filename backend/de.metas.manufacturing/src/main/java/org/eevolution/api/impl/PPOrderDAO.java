@@ -183,6 +183,11 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
+		if(query.getModularFlatrateTermId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_Modular_Flatrate_Term_ID, query.getModularFlatrateTermId());
+		}
+
 		//
 		// Order BYs
 		queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo);

@@ -1,7 +1,8 @@
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ModCntr_Module
  *  @author metasfresh (generated) 
@@ -145,6 +146,29 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Generated.
+	 * This Line is generated
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsGenerated (boolean IsGenerated);
+
+	/**
+	 * Get Generated.
+	 * This Line is generated
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isGenerated();
+
+	ModelColumn<I_ModCntr_Module, Object> COLUMN_IsGenerated = new ModelColumn<>(I_ModCntr_Module.class, "IsGenerated", null);
+	String COLUMNNAME_IsGenerated = "IsGenerated";
+
+	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: ID
@@ -257,27 +281,6 @@ public interface I_ModCntr_Module
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Module.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setProcessed (boolean Processed);
-
-	/**
-	 * Get Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isProcessed();
-
-	ModelColumn<I_ModCntr_Module, Object> COLUMN_Processed = new ModelColumn<>(I_ModCntr_Module.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set SeqNo.

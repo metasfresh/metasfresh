@@ -159,6 +159,25 @@ public class C_Order
 		order.setIsTaxIncluded(pl.isTaxIncluded());
 	}
 
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
+			I_C_Order.COLUMNNAME_C_DocType_ID
+	})
+	public void removeFlatRateConditionsForCallOrderAndProformaOrder(final I_C_Order order)
+	{
+		if (orderBL.isCallOrder(order) || orderBL.isProformaSO(order))
+		{
+			orderDAO.retrieveOrderLines(order)
+					.forEach(line -> {
+						line.setC_Flatrate_Conditions_ID(-1);
+						orderDAO.save(line);
+					});
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeChange_updateLocationAndRenderedAddress(final I_C_Order order)
 	{

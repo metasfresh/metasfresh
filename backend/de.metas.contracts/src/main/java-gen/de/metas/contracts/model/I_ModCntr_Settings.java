@@ -1,7 +1,8 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for ModCntr_Settings
  *  @author metasfresh (generated) 
@@ -151,6 +152,48 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFreeInterestDays (int FreeInterestDays);
+
+	/**
+	 * Get Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getFreeInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_FreeInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "FreeInterestDays", null);
+	String COLUMNNAME_FreeInterestDays = "FreeInterestDays";
+
+	/**
+	 * Set Free Storage Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFreeStorageCostDays (int FreeStorageCostDays);
+
+	/**
+	 * Get Free Storage Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getFreeStorageCostDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_FreeStorageCostDays = new ModelColumn<>(I_ModCntr_Settings.class, "FreeStorageCostDays", null);
+	String COLUMNNAME_FreeStorageCostDays = "FreeStorageCostDays";
+
+	/**
 	 * Set Interest rate.
 	 *
 	 * <br>Type: Number
@@ -221,21 +264,21 @@ public interface I_ModCntr_Settings
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOTrx (boolean IsSOTrx);
+	void setIsSOTrx (java.lang.String IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
 	 * This is a Sales Transaction
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSOTrx();
+	java.lang.String getIsSOTrx();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
@@ -322,7 +365,7 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_M_Processed_Product_ID = "M_Processed_Product_ID";
 
 	/**
-	 * Set Raw Product.
+	 * Set Raw-/Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -331,7 +374,7 @@ public interface I_ModCntr_Settings
 	void setM_Raw_Product_ID (int M_Raw_Product_ID);
 
 	/**
-	 * Get Raw Product.
+	 * Get Raw-/Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -361,6 +404,27 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Settings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReceiptAVEndDate (java.sql.Timestamp ReceiptAVEndDate);
+
+	/**
+	 * Get Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getReceiptAVEndDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_ReceiptAVEndDate = new ModelColumn<>(I_ModCntr_Settings.class, "ReceiptAVEndDate", null);
+	String COLUMNNAME_ReceiptAVEndDate = "ReceiptAVEndDate";
 
 	/**
 	 * Set Storage Cost Start Date.

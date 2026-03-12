@@ -36,7 +36,6 @@ import de.metas.util.TypedAccessor;
 import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
@@ -52,7 +51,6 @@ import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -63,7 +61,6 @@ public class CalendarBL implements ICalendarBL
 	public static final AdMessageKey MSG_YEAR_HAS_NO_PERIOD = AdMessageKey.of("de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public boolean isLengthOneYear(final I_C_Year year)

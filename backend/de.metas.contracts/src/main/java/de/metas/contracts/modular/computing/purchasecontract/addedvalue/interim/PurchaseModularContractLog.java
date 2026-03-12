@@ -25,7 +25,6 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
@@ -35,8 +34,9 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import de.metas.contracts.modular.workpackage.impl.AbstractContractLog;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ExplainedOptional;
@@ -71,7 +71,7 @@ import java.math.BigDecimal;
 
 @Component
 @Getter
-public class PurchaseModularContractLog extends AbstractPurchaseContractHandler
+public class PurchaseModularContractLog extends AbstractContractLog
 {
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -79,7 +79,6 @@ public class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -88,14 +87,16 @@ public class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 	@NonNull private final AVInterimComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
 	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
-	private final ModularContractLogService modularContractLogService;
+	@NonNull private final ModularContractLogService modularContractLogService;
 
 	public PurchaseModularContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final AVInterimComputingMethod computingMethod, final ModularContractLogService modularContractLogService)
+			@NonNull final ModularContractLogRepository contractLogRepo,
+			@NonNull final AVInterimComputingMethod computingMethod,
+			@NonNull final ModularContractLogService modularContractLogService)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository, contractLogRepo);
 		this.computingMethod = computingMethod;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.modularContractLogService = modularContractLogService;

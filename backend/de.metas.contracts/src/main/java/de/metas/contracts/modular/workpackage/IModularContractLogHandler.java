@@ -28,8 +28,8 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ProductPriceWithFlags;
+import de.metas.contracts.modular.computing.ColumnOption;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -47,6 +47,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,6 +56,7 @@ import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.function.IntFunction;
 
 public interface IModularContractLogHandler
 {
@@ -79,14 +81,18 @@ public interface IModularContractLogHandler
 	@NonNull
 	IComputingMethodHandler getComputingMethod();
 
+	@Nullable
+	default ComputingMethodType getBaseComputingMethodType() {return null;}
+
 	@NonNull
-	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final CreateLogRequest request)
 	{
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(handleLogsRequest.getTableRecordReference())
-				.flatrateTermId(handleLogsRequest.getContractId())
+				.referencedModel(request.getRecordRef())
+				.flatrateTermId(request.getContractId())
 				.logEntryContractType(getLogEntryContractType())
-				.modularContractModuleId(modularContractModuleId)
+				.modularContractModuleId(request.getModularContractModuleId())
+				.baseModularContractModuleId(request.getBaseModularContractModuleId())
 				.build();
 	}
 
@@ -143,9 +149,8 @@ public interface IModularContractLogHandler
 	{
 		@NonNull HandleLogsRequest handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
-		@NonNull String productName;
 		@NonNull ModuleConfig moduleConfig;
-		@NonNull ModularContractTypeId typeId;
+		@Nullable ModuleConfig baseModuleConfig;
 
 		public YearId getYearId() {return getModularContractSettings().getYearId();}
 
@@ -167,7 +172,13 @@ public interface IModularContractLogHandler
 		@NonNull
 		public ModularContractModuleId getModularContractModuleId()
 		{
-			return getConfigId().getModularContractModuleId();
+			return moduleConfig.getModularContractModuleId();
+		}
+
+		@Nullable
+		public ModularContractModuleId getBaseModularContractModuleId()
+		{
+			return baseModuleConfig != null ? baseModuleConfig.getModularContractModuleId() : null;
 		}
 
 		public boolean isCostsType()
@@ -185,6 +196,25 @@ public interface IModularContractLogHandler
 		public ColumnOption getColumnOption()
 		{
 			return getModuleConfig().getModularContractType().getColumnOption();
+		}
+
+		public <T extends RepoIdAware> T getRecordRepoId(final IntFunction<T> idMapper) {return idMapper.apply(getRecordRef().getRecord_ID());}
+
+		@NonNull
+		public ModularContractTypeId getTypeId() {return moduleConfig.getModularContractTypeId();}
+
+		@NonNull
+		public String getProductName() {return moduleConfig.getName();}
+
+		@NonNull
+		public CreateLogRequest toBaseModuleCreateLogRequest()
+		{
+			return CreateLogRequest
+					.builder()
+					.handleLogsRequest(handleLogsRequest)
+					.modularContractSettings(modularContractSettings)
+					.moduleConfig(Check.assumeNotNull(baseModuleConfig, "parentModuleConfig shouldn't be null"))
+					.build();
 		}
 	}
 

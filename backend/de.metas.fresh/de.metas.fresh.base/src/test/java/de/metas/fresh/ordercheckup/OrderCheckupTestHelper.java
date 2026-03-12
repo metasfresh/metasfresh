@@ -14,6 +14,7 @@ import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
@@ -58,6 +59,7 @@ public class OrderCheckupTestHelper
 		ctx = Env.getCtx();
 
 		SpringContextHolder.registerJUnitBean(ResourceService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.class, DocOutboundConfigRepository.instance);
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
 

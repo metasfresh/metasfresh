@@ -22,9 +22,6 @@ package de.metas.contracts;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.util.ISingletonService;
@@ -33,12 +30,16 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.sql.Timestamp;
+
 public interface IContractChangeBL extends ISingletonService
 {
 
 	String ChangeTerm_ACTION_SwitchContract = "SC";
 	String ChangeTerm_ACTION_Cancel = "CA";
 	String ChangeTerm_ACTION_VoidSingleContract = "VO";
+
+	void openContract(@NonNull I_C_Flatrate_Term currentTerm);
 
 	/**
 	 *

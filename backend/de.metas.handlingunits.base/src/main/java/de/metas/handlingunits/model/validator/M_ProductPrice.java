@@ -121,6 +121,8 @@ public class M_ProductPrice
 
 	private void validatePriceUOM(@NonNull final I_M_ProductPrice productPrice)
 	{
+		if(productBL.getById(ProductId.ofRepoId(productPrice.getM_Product_ID())).isSkipPriceUOMValidation()){return;}
+
 		final UomId productPriceUOMId = UomId.ofRepoId(productPrice.getC_UOM_ID());
 
 		final UOMConversionsMap uomConversionsMap = uomConversionDAO.getProductConversions(ProductId.ofRepoId(productPrice.getM_Product_ID()));

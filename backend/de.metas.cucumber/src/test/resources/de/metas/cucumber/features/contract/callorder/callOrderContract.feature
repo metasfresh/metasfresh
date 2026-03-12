@@ -42,8 +42,8 @@ Feature: Call order contract
       | callOrderConditions                 | CallOrderTest_so | CallOrder       | callOrderPricingSystem            | Ca                       |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.C_BPartner_Location_ID.Identifier |
-      | order_1    | true    | bpartner_1               | 2022-03-03  | SOO             | SO             | bpartnerLocation_1                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.C_BPartner_Location_ID.Identifier |OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-03  | SOO             | SO             | bpartnerLocation_1                    |testPOReference |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | orderLine_1 | order_1               | call_order_product      | 1000       | callOrderConditions                     |
@@ -59,8 +59,8 @@ Feature: Call order contract
       | orderLine_1               | order_1               | 2022-03-03  | call_order_product      | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual |
-      | callOrder_contract_1          | callOrderConditions                 | bpartner_1                  | call_order_product      | orderLine_1                        | order_1                        | call_order_product          | PCE                   | 1000                  | 2.00            |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual |OPT.POReference|
+      | callOrder_contract_1          | callOrderConditions                 | bpartner_1                  | call_order_product      | orderLine_1                        | order_1                        | call_order_product          | PCE                   | 1000                  | 2.00            |testPOReference|
 
     And validate created C_CallOrderSummary:
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | IsSOTrx |

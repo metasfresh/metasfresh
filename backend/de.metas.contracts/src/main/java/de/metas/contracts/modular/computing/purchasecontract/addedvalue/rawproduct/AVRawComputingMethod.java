@@ -24,13 +24,13 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawprod
 
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.AbstractRawComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.purchasecontract.AbstractReceiptComputingMethod;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AVRawComputingMethod extends AbstractRawComputingMethod
+public class AVRawComputingMethod extends AbstractReceiptComputingMethod
 {
 	public AVRawComputingMethod(
 			@NonNull final ModularContractProvider contractProvider,

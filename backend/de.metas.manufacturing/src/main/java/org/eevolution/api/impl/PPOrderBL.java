@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -98,7 +99,6 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -175,7 +175,7 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
-		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, /* docSubType */null);
+		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -323,7 +323,7 @@ public class PPOrderBL implements IPPOrderBL
 	public void setDocType(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final PPOrderDocBaseType docBaseType,
-			@Nullable final String docSubType)
+			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docBaseType.toDocBaseType())

@@ -1005,3 +1005,22 @@ table {
 .input-qr-scanner-wrapper {
   padding: 20px 30px 20px 28px;
 }
+
+.input-range-container {
+  display: flex;
+  flex-flow: row nowrap;
+  
+  .input-range-from {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .input-range-separator {
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: .3rem .50rem;
+  }
+  .input-range-to {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+}

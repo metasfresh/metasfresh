@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Country extends org.compiere.model.PO implements I_C_Country, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1162965645L;
+	private static final long serialVersionUID = -691739430L;
 
     /** Standard Constructor */
     public X_C_Country (final Properties ctx, final int C_Country_ID, @Nullable final String trxName)
@@ -76,18 +76,6 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	}
 
 	@Override
-	public void setCaptureSequence (final @Nullable java.lang.String CaptureSequence)
-	{
-		set_Value (COLUMNNAME_CaptureSequence, CaptureSequence);
-	}
-
-	@Override
-	public java.lang.String getCaptureSequence() 
-	{
-		return get_ValueAsString(COLUMNNAME_CaptureSequence);
-	}
-
-	@Override
 	public void setC_Country_ID (final int C_Country_ID)
 	{
 		if (C_Country_ID < 1) 
@@ -115,6 +103,18 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	public int getC_Currency_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public void setCaptureSequence (final @Nullable java.lang.String CaptureSequence)
+	{
+		set_Value (COLUMNNAME_CaptureSequence, CaptureSequence);
+	}
+
+	@Override
+	public java.lang.String getCaptureSequence() 
+	{
+		return get_ValueAsString(COLUMNNAME_CaptureSequence);
 	}
 
 	@Override
@@ -283,6 +283,18 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	public boolean isEnforceCorrectionInvoice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEnforceCorrectionInvoice);
+	}
+
+	@Override
+	public void setMaxLineChars (final int MaxLineChars)
+	{
+		set_Value (COLUMNNAME_MaxLineChars, MaxLineChars);
+	}
+
+	@Override
+	public int getMaxLineChars() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxLineChars);
 	}
 
 	@Override

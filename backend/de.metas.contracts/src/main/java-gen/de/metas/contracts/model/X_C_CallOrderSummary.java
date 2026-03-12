@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_CallOrderSummary
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_CallOrderSummary extends org.compiere.model.PO implements I_C_CallOrderSummary, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1724394900L;
+	private static final long serialVersionUID = -701972653L;
 
     /** Standard Constructor */
     public X_C_CallOrderSummary (final Properties ctx, final int C_CallOrderSummary_ID, @Nullable final String trxName)
@@ -203,8 +203,7 @@ public class X_C_CallOrderSummary extends org.compiere.model.PO implements I_C_C
 	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		set_Value (COLUMNNAME_POReference, POReference);
-	}
+		throw new IllegalArgumentException ("POReference is virtual column");	}
 
 	@Override
 	public java.lang.String getPOReference() 

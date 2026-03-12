@@ -67,8 +67,7 @@ import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMN
 import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
 import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -177,7 +176,7 @@ class C_InvoiceFacadeServiceTest
 				.createDocType(DocTypeCreateRequest.builder()
 						.ctx(Env.getCtx())
 						.name("creditmemo")
-						.docBaseType(DocBaseType.ARCreditMemo)
+						.docBaseType(DocBaseType.SalesCreditMemo)
 						.glCategoryId(GLCategoryId.ofRepoId(123))
 						.build());
 
