@@ -134,14 +134,48 @@ VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO
         541632 /*From ID Server*/, 540508, 585596 /*From ID Server*/, 'de.metas.handlingunits');
 
 -- =============================================
--- 5. AD_Menu
+-- 5. AD_Element for the process menu entry
+-- =============================================
+INSERT INTO AD_Element (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                        AD_Element_ID, ColumnName, Name, PrintName, EntityType)
+VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
+        584662 /*From ID Server*/,
+        'M_HU_PI_Item_Product_Consolidate',
+        'CU-TU Zuordnung konsolidieren',
+        'CU-TU Zuordnung konsolidieren',
+        'de.metas.handlingunits');
+
+-- AD_Element_Trl: de_DE
+INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                            AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
+VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
+        584662 /*From ID Server*/,
+        'CU-TU Zuordnung konsolidieren', 'CU-TU Zuordnung konsolidieren', NULL, NULL, 'N');
+
+-- AD_Element_Trl: de_CH
+INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                            AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
+VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
+        584662 /*From ID Server*/,
+        'CU-TU Zuordnung konsolidieren', 'CU-TU Zuordnung konsolidieren', NULL, NULL, 'N');
+
+-- AD_Element_Trl: en_US
+INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                            AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
+VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
+        584662 /*From ID Server*/,
+        'Consolidate CU-TU Allocation', 'Consolidate CU-TU Allocation', NULL, NULL, 'Y');
+
+-- =============================================
+-- 6. AD_Menu
 -- =============================================
 INSERT INTO AD_Menu (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                     AD_Menu_ID, Name, Action, AD_Process_ID, EntityType, IsSOTrx, IsSummary, IsReadOnly)
+                     AD_Menu_ID, Name, InternalName, Action, AD_Process_ID, AD_Element_ID, EntityType, IsSOTrx, IsSummary, IsReadOnly)
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         542306 /*From ID Server*/,
         'CU-TU Zuordnung konsolidieren',
-        'P', 585596 /*From ID Server*/, 'de.metas.handlingunits', 'N', 'N', 'N');
+        'M_HU_PI_Item_Product_Consolidate',
+        'P', 585596 /*From ID Server*/, 584662 /*From ID Server*/, 'de.metas.handlingunits', 'N', 'N', 'N');
 
 -- AD_Menu_Trl: de_DE
 INSERT INTO AD_Menu_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -165,7 +199,7 @@ VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI
         'Consolidate CU-TU Allocation', NULL, 'Y');
 
 -- =============================================
--- 6. AD_TreeNodeMM (place menu entry under parent 1000016)
+-- 7. AD_TreeNodeMM (place menu entry under parent 1000016)
 -- =============================================
 INSERT INTO AD_TreeNodeMM (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                            AD_Tree_ID, Node_ID, Parent_ID, SeqNo)
