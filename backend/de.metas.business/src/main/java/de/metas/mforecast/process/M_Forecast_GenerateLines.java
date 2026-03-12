@@ -66,8 +66,6 @@ public class M_Forecast_GenerateLines extends JavaProcess implements IProcessPre
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	// TODO polish_forecast: add logging so one can see from the AD_Pinstance-Log what the process did, and why
-	//  Be sure to understand, how to do this (ILoggable)
 	@Override
 	protected String doIt()
 	{
