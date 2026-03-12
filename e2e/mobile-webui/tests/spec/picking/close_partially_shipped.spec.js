@@ -44,9 +44,9 @@ const createMasterdata = async () => {
                 "PI3": { lu: "LU3", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', qty: 1000, packingInstructions: 'PI' },
-                "HU2": { product: 'P2', warehouse: 'wh', qty: 1000, packingInstructions: 'PI2' },
-                "HU3": { product: 'P3', warehouse: 'wh', qty: 1000, packingInstructions: 'PI3' },
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                "HU2": { product: 'P2', warehouse: 'wh', packingInstructions: 'PI2' },
+                "HU3": { product: 'P3', warehouse: 'wh', packingInstructions: 'PI3' },
             },
             salesOrders: {
                 "SO1": {
