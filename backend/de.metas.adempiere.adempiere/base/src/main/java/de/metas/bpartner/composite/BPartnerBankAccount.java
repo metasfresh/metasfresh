@@ -136,13 +136,13 @@ public class BPartnerBankAccount
 			@Nullable final Boolean active,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final BPBankAcctUse bpBankAcctUse,
 			@Nullable final BankId bankId,
 			@Nullable final String accountName,
 			@Nullable final String accountStreet,
 			@Nullable final String accountZip,
 			@Nullable final String accountCity,
-			@Nullable final String accountCountry)
+			@Nullable final String accountCountry,
+			@Nullable final BPBankAcctUse bpBankAcctUse)
 	{
 		setId(id);
 		this.iban = iban;
