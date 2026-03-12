@@ -1909,6 +1909,10 @@ jobs:
 
       - name: Setup SSH
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        env:
+          REPORTS_SERVER_HOSTNAME: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).HostName }}
+          REPORTS_SERVER_USER: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).User }}
+          REPORTS_SERVER_PORT: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).SSH_Port }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
@@ -1916,8 +1920,9 @@ jobs:
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
           Host reports-server
-            HostName test-reports.metasfresh.com
-            User ci-reports
+            HostName $REPORTS_SERVER_HOSTNAME
+            User $REPORTS_SERVER_USER
+            Port $REPORTS_SERVER_PORT
             IdentityFile ~/.ssh/reports_key
             StrictHostKeyChecking accept-new
           EOF
@@ -1973,8 +1978,9 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          REPORTS_SERVER_BASE_PATH: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).BASE_PATH }}
         run: |
-          BASE_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
+          BASE_PATH="${REPORTS_SERVER_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
 
           # Create target directories on server
           ssh reports-server "mkdir -p ${BASE_PATH}"
