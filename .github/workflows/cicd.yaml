@@ -1910,9 +1910,9 @@ jobs:
       - name: Setup SSH
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
         env:
-          REPORTS_SERVER_HOSTNAME: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).HostName }}
-          REPORTS_SERVER_USER: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).User }}
-          REPORTS_SERVER_PORT: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).SSH_Port }}
+          REPORTS_SERVER_HOSTNAME: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          REPORTS_SERVER_USER: ${{ secrets.TESTREPORTS_USER }}
+          REPORTS_SERVER_SSH_PORT: ${{ secrets.TESTREPORTS_SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
@@ -1922,7 +1922,7 @@ jobs:
           Host reports-server
             HostName $REPORTS_SERVER_HOSTNAME
             User $REPORTS_SERVER_USER
-            Port $REPORTS_SERVER_PORT
+            Port $REPORTS_SERVER_SSH_PORT
             IdentityFile ~/.ssh/reports_key
             StrictHostKeyChecking accept-new
           EOF
@@ -1978,7 +1978,7 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
-          REPORTS_SERVER_BASE_PATH: ${{ fromJson(secrets.TESTREPORTS_UPLOAD).BASE_PATH }}
+          REPORTS_SERVER_BASE_PATH: ${{ secrets.TESTREPORTS_BASE_PATH }}
         run: |
           BASE_PATH="${REPORTS_SERVER_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
 
