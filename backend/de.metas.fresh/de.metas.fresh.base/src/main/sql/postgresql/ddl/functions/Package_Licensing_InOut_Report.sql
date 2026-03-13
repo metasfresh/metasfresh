@@ -38,6 +38,7 @@ CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Report(p_DateFrom   ti
                 ProductName                varchar,
                 MovementQty                numeric,
                 PurchaseQty                numeric,
+                ForeignSalesQty            numeric,
                 UOMSymbol                  varchar,
                 Weight                     numeric,
                 ProductGroup               varchar,
@@ -59,6 +60,8 @@ SELECT io.DocumentNo,
        p.name                                                                                  AS ProductName,
        (CASE WHEN io.movementtype = 'C-' THEN iol.MovementQty * (-1) ELSE iol.MovementQty END) AS MovementQty,
        (CASE WHEN io.IsSoTrx = 'N' THEN iol.MovementQty END)                                   AS PurchaseQty,
+       (CASE WHEN io.movementtype = 'C-' AND bc.c_country_id != p_Country_id
+             THEN iol.MovementQty END)                                                          AS ForeignSalesQty,
        uom.UOMSymbol,
        p.weight                                                                                AS Weight,
        pp.value                                                                                AS ProductGroup,
@@ -93,11 +96,11 @@ FROM m_inout io
 
     -- Product group and packaging
          LEFT JOIN m_product_packagelicensing_productgroup ppp ON ppp.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_ProductGroup pp ON pp.M_PackageLicensing_ProductGroup_id = ppp.M_PackageLicensing_ProductGroup_ID AND pp.c_country_id = l.c_country_id
+         LEFT JOIN M_PackageLicensing_ProductGroup pp ON pp.M_PackageLicensing_ProductGroup_id = ppp.M_PackageLicensing_ProductGroup_ID AND pp.c_country_id = p_Country_id
          LEFT JOIN M_Product_SmallPackagingMaterial pspm ON pspm.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_MaterialGroup plmp1 ON pspm.M_PackageLicensing_MaterialGroup_id = plmp1.m_packagelicensing_materialgroup_id AND plmp1.c_country_id = l.c_country_id
+         LEFT JOIN M_PackageLicensing_MaterialGroup plmp1 ON pspm.M_PackageLicensing_MaterialGroup_id = plmp1.m_packagelicensing_materialgroup_id AND plmp1.c_country_id = p_Country_id
          LEFT JOIN M_Product_OuterPackagingMaterial popm ON popm.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_MaterialGroup plmp2 ON popm.M_PackageLicensing_MaterialGroup_id = plmp2.m_packagelicensing_materialgroup_id AND plmp2.c_country_id = l.c_country_id
+         LEFT JOIN M_PackageLicensing_MaterialGroup plmp2 ON popm.M_PackageLicensing_MaterialGroup_id = plmp2.m_packagelicensing_materialgroup_id AND plmp2.c_country_id = p_Country_id
 
     -- Shipment destination
          LEFT JOIN c_bpartner_location bpl ON bpl.c_bpartner_location_id = io.c_bpartner_location_id
@@ -105,16 +108,8 @@ FROM m_inout io
          LEFT JOIN c_country bc ON bc.c_country_id = bl.c_country_id
 
 
-WHERE (
-    -- Case 1: Receipts into local warehouses
-    (io.movementtype = 'V+' AND l.c_country_id = p_Country_id)
-        OR
-
-        -- Case 2: Shipments into foreign countries
-    (io.movementtype = 'C-' AND bc.c_country_id != p_Country_id)
-    )
-
-  AND io.movementdate BETWEEN p_DateFrom AND p_DateTo
+WHERE io.movementdate BETWEEN p_DateFrom AND p_DateTo
+  AND io.DocStatus IN ('CO', 'CL')
   AND (plmp1.name IS NOT NULL OR plmp2.name IS NOT NULL)
   AND pp.value IS NOT NULL
 ORDER BY io.movementdate, io.documentno, p.value
