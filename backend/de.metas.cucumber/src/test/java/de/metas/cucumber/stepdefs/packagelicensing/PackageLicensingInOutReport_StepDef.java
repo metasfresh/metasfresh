@@ -436,9 +436,9 @@ public class PackageLicensingInOutReport_StepDef
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_Locator_seq')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Locator (M_Locator_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "M_Warehouse_ID, Value, X, Y, Z, IsDefault) "
+						+ "M_Warehouse_ID, Value, X, Y, Z, IsDefault, PriorityNo) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ warehouseId + ", 'Default', '0', '0', '0', 'Y')",
+						+ warehouseId + ", 'Default', '0', '0', '0', 'Y', 50)",
 				ITrx.TRXNAME_None);
 		return id;
 	}
