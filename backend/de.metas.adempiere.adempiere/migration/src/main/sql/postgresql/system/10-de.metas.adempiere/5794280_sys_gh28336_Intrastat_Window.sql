@@ -51,7 +51,7 @@ VALUES (584665 /*From ID Server*/, 'en_US', 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, 'Y',
     'Delivered From Country', 'Delivered From Country');
 
--- 1d. DeliveryCountry
+-- 1f. DeliveryCountry
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     ColumnName, EntityType, Name, PrintName)
@@ -66,7 +66,22 @@ VALUES (584666 /*From ID Server*/, 'en_US', 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, 'Y',
     'Delivery Country', 'Delivery Country');
 
--- 1e. OriginCountry
+-- 1e. Intrastat (for AD_Window and AD_Tab — both require AD_Element_ID NOT NULL)
+INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
+    Created, CreatedBy, Updated, UpdatedBy,
+    ColumnName, EntityType, Name, PrintName)
+VALUES (584668 /*From ID Server*/, 0, 0, 'Y',
+    TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
+    'Intrastat', 'D', 'Intrastat', 'Intrastat');
+
+INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
+    Created, CreatedBy, Updated, UpdatedBy, IsTranslated,
+    Name, PrintName)
+VALUES (584668 /*From ID Server*/, 'en_US', 0, 0, 'Y',
+    TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, 'Y',
+    'Intrastat', 'Intrastat');
+
+-- 1g. OriginCountry
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     ColumnName, EntityType, Name, PrintName)
@@ -87,17 +102,15 @@ VALUES (584667 /*From ID Server*/, 'en_US', 0, 0, 'Y',
 INSERT INTO AD_Table (AD_Table_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     Name, TableName, EntityType, AccessLevel,
-    IsView, IsHighVolume, IsDeletable, IsChangeLog,
-    IsDeleteable, IsSecurityEnabled, IsDocument,
-    PersonalDataCategory, Version,
-    AD_Window_ID)
+    IsView, IsHighVolume, IsChangeLog,
+    IsDeleteable, IsSecurityEnabled,
+    PersonalDataCategory)
 VALUES (542587 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
     'Intrastat_Report_Detail_V', 'Intrastat_Report_Detail_V', 'D', '3',
-    'Y', 'Y', 'N', 'N',
-    'N', 'N', 'N',
-    'NP', 0,
-    542107 /*From ID Server*/);
+    'Y', 'Y', 'N',
+    'N', 'N',
+    'NP');
 
 -- =====================================================================
 -- 3. AD_Columns (27 columns)
@@ -343,20 +356,22 @@ VALUES (592229 /*From ID Server*/, 0, 0, 'Y',
     'Y', 'N',
     10, 0, 'NP');
 
--- Col 16: DateInvoiced
+-- Col 16: DateInvoiced (selection column with Between filter for date-range filtering)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     AD_Element_ID, AD_Table_ID, AD_Reference_ID,
     ColumnName, Name, EntityType,
     IsKey, IsMandatory, IsUpdateable, IsParent,
     IsSelectionColumn, IsIdentifier,
+    SelectionColumnSeqNo, FilterOperator,
     FieldLength, Version, PersonalDataCategory)
 VALUES (592230 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
     267, 542587, 15,
     'DateInvoiced', 'Rechnungsdatum', 'D',
     'N', 'N', 'N', 'N',
-    'N', 'N',
+    'Y', 'N',
+    25, 'B',
     29, 0, 'NP');
 
 -- Col 17: CommodityNumber
@@ -541,28 +556,37 @@ VALUES (592241 /*From ID Server*/, 0, 0, 'Y',
 INSERT INTO AD_Window (AD_Window_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     Name, EntityType, WindowType, IsDefault, IsSOTrx,
-    Processing)
+    Processing, AD_Element_ID)
 VALUES (542107 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
     'Intrastat', 'D', 'M', 'N', 'N',
-    'N');
+    'N', 584668);
+
+-- Now link the table to its window (deferred from AD_Table INSERT to avoid FK order issue)
+UPDATE AD_Table SET AD_Window_ID = 542107 WHERE AD_Table_ID = 542587;
 
 -- =====================================================================
 -- 5. AD_Tab
 -- =====================================================================
 INSERT INTO AD_Tab (AD_Tab_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
-    Name, AD_Table_ID, AD_Window_ID, EntityType,
+    Name, AD_Table_ID, AD_Window_ID, EntityType, AD_Element_ID,
     TabLevel, SeqNo, IsSingleRow, IsReadOnly,
     IsInsertRecord, IsAdvancedTab,
     IsSearchCollapsed, HasTree, IsInfoTab,
-    IsTranslationTab, IsSortTab)
+    IsTranslationTab, IsSortTab,
+    AllowQuickInput, IncludedTabNewRecordInputMode,
+    IsAutodetectDefaultDateFilter, IsGridModeOnly,
+    IsRefreshAllOnActivate, IsRefreshViewOnChangeEvents)
 VALUES (549082 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
-    'Detail', 542587, 542107, 'D',
+    'Detail', 542587, 542107, 'D', 584668,
     0, 10, 'N', 'Y',
     'N', 'N',
     'Y', 'N', 'N',
+    'N', 'N',
+    'N', 'A',
+    'Y', 'N',
     'N', 'N');
 
 -- =====================================================================
@@ -1155,11 +1179,13 @@ VALUES (648565 /*From ID Server*/, 0, 0, 'Y',
 INSERT INTO AD_Menu (AD_Menu_ID, AD_Client_ID, AD_Org_ID, IsActive,
     Created, CreatedBy, Updated, UpdatedBy,
     Name, Action, AD_Window_ID, EntityType,
-    IsSummary, IsSOTrx, IsReadOnly)
+    IsSummary, IsSOTrx, IsReadOnly,
+    AD_Element_ID, InternalName)
 VALUES (542307 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-12 12:00','YYYY-MM-DD HH24:MI'), 100,
     'Intrastat', 'W', 542107, 'D',
-    'N', 'N', 'N');
+    'N', 'N', 'N',
+    584668, 'intrastat');
 
 -- Place in menu tree under "Auftraege" (Orders, Node_ID=457)
 INSERT INTO AD_TreeNodeMM (AD_Client_ID, AD_Org_ID, IsActive,
@@ -1175,7 +1201,8 @@ FROM AD_Tree t
 WHERE t.AD_Client_ID = 0
   AND t.IsActive = 'Y'
   AND t.IsAllNodes = 'Y'
-  AND t.AD_Table_ID = 116;
+  AND t.AD_Table_ID = 116
+ON CONFLICT (AD_Tree_ID, Node_ID) DO NOTHING;
 
 -- Propagate menu translations from AD_Element
 SELECT update_menu_translation_from_ad_element(542307);
