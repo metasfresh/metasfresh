@@ -22,6 +22,9 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
@@ -44,6 +47,9 @@ public class ExternalSystemScriptedImportConversionService
 	private final UserAuthTokenRepository userAuthTokenRepository;
 
 	@NonNull
+	private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
+
+	@NonNull
 	public Map<String, String> getParameters(@NonNull final ExternalSystemScriptedImportConversionConfig config)
 	{
 		final Map<String, String> parameters = new HashMap<>();
@@ -53,6 +59,43 @@ public class ExternalSystemScriptedImportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, config.getEndpointName());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
+
+		// Add SFTP endpoint parameters if endpoint is configured
+		if (config.getExternalSystemEndpointId() != null)
+		{
+			final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
+			if (endpoint.getTransportType() == TransportType.SFTP)
+			{
+				parameters.put("sftpHost", endpoint.getSftpHost());
+				parameters.put("sftpPort", String.valueOf(endpoint.getSftpPort()));
+				parameters.put("sftpUsername", endpoint.getSftpUsername());
+				parameters.put("sftpAuthType", endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
+				if (endpoint.getPassword() != null)
+				{
+					parameters.put("sftpPassword", endpoint.getPassword());
+				}
+				if (endpoint.getSshPrivateKey() != null)
+				{
+					parameters.put("sshPrivateKey", endpoint.getSshPrivateKey());
+				}
+				if (endpoint.getSftpRemotePath() != null)
+				{
+					parameters.put("sftpRemotePath", endpoint.getSftpRemotePath());
+				}
+				if (config.getSftpPollingIntervalMs() != null)
+				{
+					parameters.put("sftpPollingIntervalMs", String.valueOf(config.getSftpPollingIntervalMs()));
+				}
+				if (config.getSftpProcessedDirectory() != null)
+				{
+					parameters.put("sftpProcessedDirectory", config.getSftpProcessedDirectory());
+				}
+				if (config.getSftpErrorDirectory() != null)
+				{
+					parameters.put("sftpErrorDirectory", config.getSftpErrorDirectory());
+				}
+			}
+		}
 
 		return parameters;
 	}
