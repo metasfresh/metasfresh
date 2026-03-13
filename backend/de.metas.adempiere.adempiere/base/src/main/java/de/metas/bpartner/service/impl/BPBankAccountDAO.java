@@ -181,6 +181,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.accountZip(record.getA_Zip())
 				.accountCity(record.getA_City())
 				.accountCountry(record.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(record.getBPBankAcctUse()))
 				//.changeLog()
 				.build();
 	}
