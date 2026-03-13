@@ -7,11 +7,6 @@
 CREATE INDEX IF NOT EXISTS M_HU_M_Locator_ID ON M_HU (M_Locator_ID);
 
 --
--- M_HU: active HU filtering used in virtually every mobile flow
---
-CREATE INDEX IF NOT EXISTS M_HU_HUStatus_Active ON M_HU (HUStatus) WHERE HUStatus = 'A';
-
---
 -- M_HU_QRCode_Assignment: QR code scan -> HU lookup (critical path for every scan operation)
 -- Table may not exist on older seed DBs — guard with DO block
 --
