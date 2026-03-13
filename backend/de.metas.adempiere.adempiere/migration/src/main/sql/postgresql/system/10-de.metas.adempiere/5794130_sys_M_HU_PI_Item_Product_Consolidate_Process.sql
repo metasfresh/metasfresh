@@ -12,8 +12,8 @@ VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO
         585596 /*From ID Server*/,
         'M_HU_PI_Item_Product_Consolidate_Report',
         'CU-TU Zuordnung konsolidieren',
-        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht ueber Konflikte.',
-        'Dieser Prozess fuehrt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschaeftspartner zusammen. Beide Schritte muessen explizit aktiviert werden. Betroffene Tabellen werden vor Aenderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
+        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht über Konflikte.',
+        'Dieser Prozess führt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschäftspartner zusammen. Beide Schritte müssen explizit aktiviert werden. Betroffene Tabellen werden vor Änderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
         'de.metas.handlingunits.process.M_HU_PI_Item_Product_Consolidate_Report',
         'N', '3', 'de.metas.handlingunits', 'Y', 'Java');
 
@@ -23,8 +23,8 @@ INSERT INTO AD_Process_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Crea
 VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         585596 /*From ID Server*/,
         'CU-TU Zuordnung konsolidieren',
-        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht ueber Konflikte.',
-        'Dieser Prozess fuehrt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschaeftspartner zusammen. Beide Schritte muessen explizit aktiviert werden. Betroffene Tabellen werden vor Aenderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
+        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht über Konflikte.',
+        'Dieser Prozess führt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschäftspartner zusammen. Beide Schritte müssen explizit aktiviert werden. Betroffene Tabellen werden vor Änderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
         'N');
 
 -- AD_Process_Trl: de_CH
@@ -33,8 +33,8 @@ INSERT INTO AD_Process_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Crea
 VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         585596 /*From ID Server*/,
         'CU-TU Zuordnung konsolidieren',
-        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht ueber Konflikte.',
-        'Dieser Prozess fuehrt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschaeftspartner zusammen. Beide Schritte muessen explizit aktiviert werden. Betroffene Tabellen werden vor Aenderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
+        'Normalisiert GTIN/EAN und konsolidiert doppelte Packvorschrift-Zuordnungen. Erstellt einen Excel-Bericht über Konflikte.',
+        'Dieser Prozess führt zwei optionale Schritte aus: (1) GTIN/EAN Normalisierung: Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN. (2) Konsolidierung: Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zu einem Eintrag ohne Geschäftspartner zusammen. Beide Schritte müssen explizit aktiviert werden. Betroffene Tabellen werden vor Änderungen gesichert. Der Prozess erstellt immer einen Excel-Bericht mit verbleibenden Konflikten.',
         'N');
 
 -- AD_Process_Trl: en_US
@@ -56,7 +56,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID, AD_Org_ID, IsActive, Created, Created
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543156 /*From ID Server*/, 585596 /*From ID Server*/, 584660 /*From ID Server*/,
         'IsNormalizeGTIN', 'GTIN/EAN normalisieren',
-        'Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN',
+        'Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN',
         20, 'N', 10, 'Y', 1, 'N', 'de.metas.handlingunits', 'Y');
 
 -- AD_Process_Para_Trl: de_DE
@@ -65,7 +65,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
 VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543156 /*From ID Server*/,
         'GTIN/EAN normalisieren',
-        'Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN',
+        'Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN',
         NULL, 'N');
 
 -- AD_Process_Para_Trl: de_CH
@@ -74,7 +74,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
 VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543156 /*From ID Server*/,
         'GTIN/EAN normalisieren',
-        'Kopiert EAN in GTIN wenn GTIN leer ist, loescht EAN wenn identisch mit GTIN',
+        'Kopiert EAN in GTIN wenn GTIN leer ist, löscht EAN wenn identisch mit GTIN',
         NULL, 'N');
 
 -- AD_Process_Para_Trl: en_US
@@ -94,7 +94,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID, AD_Org_ID, IsActive, Created, Created
                              AD_Reference_ID, DefaultValue, SeqNo, IsMandatory, FieldLength, IsRange, EntityType, IsCentrallyMaintained)
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543157 /*From ID Server*/, 585596 /*From ID Server*/, 584661 /*From ID Server*/,
-        'IsConsolidate', 'Doppelte Eintraege konsolidieren',
+        'IsConsolidate', 'Doppelte Einträge konsolidieren',
         'Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zusammen',
         20, 'N', 20, 'Y', 1, 'N', 'de.metas.handlingunits', 'Y');
 
@@ -103,7 +103,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
                                  AD_Process_Para_ID, Name, Description, Help, IsTranslated)
 VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543157 /*From ID Server*/,
-        'Doppelte Eintraege konsolidieren',
+        'Doppelte Einträge konsolidieren',
         'Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zusammen',
         NULL, 'N');
 
@@ -112,7 +112,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive,
                                  AD_Process_Para_ID, Name, Description, Help, IsTranslated)
 VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-12 14:00', 'YYYY-MM-DD HH24:MI'), 0,
         543157 /*From ID Server*/,
-        'Doppelte Eintraege konsolidieren',
+        'Doppelte Einträge konsolidieren',
         'Fasst doppelte Packvorschrift-Zuordnungen mit gleicher GTIN zusammen',
         NULL, 'N');
 

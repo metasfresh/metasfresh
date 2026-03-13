@@ -22,7 +22,7 @@ test.describe('M_HU_PI_Item_Product Consolidation Process', () => {
       : 'Consolidate CU-TU Allocation';
 
     const paramLabels = language === 'de_DE'
-      ? ['GTIN/EAN normalisieren', 'Doppelte Eintraege konsolidieren']
+      ? ['GTIN/EAN normalisieren', 'Doppelte Einträge konsolidieren']
       : ['Normalize GTIN/EAN', 'Consolidate duplicates'];
 
     test(`Menu entry exists and process dialog opens (${language})`, async ({ page }) => {
