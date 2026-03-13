@@ -206,18 +206,18 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	}
 
 	@Override
-	public void setExternalSystem_Outbound_Endpoint_ID (final int ExternalSystem_Outbound_Endpoint_ID)
+	public void setExternalSystem_Endpoint_ID (final int ExternalSystem_Endpoint_ID)
 	{
-		if (ExternalSystem_Outbound_Endpoint_ID < 1) 
-			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, null);
-		else 
-			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, ExternalSystem_Outbound_Endpoint_ID);
+		if (ExternalSystem_Endpoint_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Outbound_Endpoint_ID() 
+	public int getExternalSystem_Endpoint_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
