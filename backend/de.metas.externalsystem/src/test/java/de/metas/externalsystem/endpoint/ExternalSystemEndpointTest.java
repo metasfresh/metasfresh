@@ -24,12 +24,10 @@ package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class ExternalSystemEndpointTest
 {
@@ -59,6 +57,7 @@ class ExternalSystemEndpointTest
 
 		// then
 		assertThat(json.getValue()).isEqualTo("TestEndpoint");
+		assertThat(json.getTransportType()).isEqualTo("HTTP");
 		assertThat(json.getEndpointUrl()).isEqualTo("https://example.com/api");
 		assertThat(json.getMethod()).isEqualTo("POST");
 		assertThat(json.getAuthType()).isEqualTo(EndpointAuthType.OAuth.toJson());
@@ -101,7 +100,7 @@ class ExternalSystemEndpointTest
 	}
 
 	@Test
-	void toJson_throwsForSftpTransport()
+	void toJson_sftpEndpoint_mapsCorrectly()
 	{
 		// given
 		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
@@ -111,11 +110,28 @@ class ExternalSystemEndpointTest
 				.authType(EndpointAuthType.Basic)
 				.sftpHost("sftp.example.com")
 				.sftpPort(22)
+				.sftpUsername("sftpuser")
+				.sftpAuthType(SftpAuthType.PASSWORD)
+				.password("secret")
+				.sftpRemotePath("/outbound")
+				.sftpFilenamePattern("DESADV_{documentno}.json")
 				.build();
 
-		// when / then
-		assertThatThrownBy(endpoint::toJson)
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("HTTP transport");
+		// when
+		final JsonExternalSystemEndpoint json = endpoint.toJson();
+
+		// then
+		assertThat(json.getValue()).isEqualTo("SftpEndpoint");
+		assertThat(json.getTransportType()).isEqualTo("SFTP");
+		assertThat(json.getSftpHost()).isEqualTo("sftp.example.com");
+		assertThat(json.getSftpPort()).isEqualTo(22);
+		assertThat(json.getSftpUsername()).isEqualTo("sftpuser");
+		assertThat(json.getSftpAuthType()).isEqualTo("PASSWORD");
+		assertThat(json.getPassword()).isEqualTo("secret");
+		assertThat(json.getSftpRemotePath()).isEqualTo("/outbound");
+		assertThat(json.getSftpFilenamePattern()).isEqualTo("DESADV_{documentno}.json");
+		// HTTP-specific fields are null
+		assertThat(json.getEndpointUrl()).isNull();
+		assertThat(json.getMethod()).isNull();
 	}
 }

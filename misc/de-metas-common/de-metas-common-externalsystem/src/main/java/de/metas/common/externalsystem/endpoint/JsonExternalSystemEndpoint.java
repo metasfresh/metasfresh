@@ -37,11 +37,17 @@ public class JsonExternalSystemEndpoint
 {
 	@NonNull String value;
 
-	@NonNull String endpointUrl;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String transportType;  // "HTTP" or "SFTP"
 
-	@NonNull String method;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String endpointUrl;
 
-	@NonNull JsonEndpointAuthType authType;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String method;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonEndpointAuthType authType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String clientId;
@@ -63,4 +69,27 @@ public class JsonExternalSystemEndpoint
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String contentType;
+
+	// SFTP transport fields
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sftpHost;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Integer sftpPort;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sftpUsername;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sftpAuthType;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sshPrivateKey;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sftpRemotePath;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sftpFilenamePattern;
 }

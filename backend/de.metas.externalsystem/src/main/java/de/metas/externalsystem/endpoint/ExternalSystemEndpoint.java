@@ -24,11 +24,9 @@ package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
@@ -81,24 +79,17 @@ public class ExternalSystemEndpoint
 	@Nullable String sftpFilenamePattern;
 
 	/**
-	 * Converts this endpoint to a JSON DTO for HTTP-transport endpoints.
-	 * <p>
-	 * NOTE: {@link JsonExternalSystemEndpoint} currently only supports HTTP transport.
-	 * SFTP fields will be added to the DTO in Task 9.
-	 * Calling this method on an SFTP endpoint will throw.
+	 * Converts this endpoint to a JSON DTO.
+	 * Supports both HTTP and SFTP transport types.
 	 */
 	@NonNull
 	public JsonExternalSystemEndpoint toJson()
 	{
-		if (transportType != TransportType.HTTP)
-		{
-			throw new AdempiereException("toJson() is only supported for HTTP transport type; got " + transportType + ". Awaiting DTO extension.");
-		}
-
 		return JsonExternalSystemEndpoint.builder()
 				.value(value)
-				.endpointUrl(Check.assumeNotNull(endpointUrl, "endpointUrl must be set for HTTP transport endpoints"))
-				.method(Check.assumeNotNull(method, "method must be set for HTTP transport endpoints").getCode())
+				.transportType(transportType.getCode())
+				.endpointUrl(endpointUrl)
+				.method(method != null ? method.getCode() : null)
 				.authType(authType.toJson())
 				.clientId(clientId)
 				.clientSecret(clientSecret)
@@ -107,6 +98,13 @@ public class ExternalSystemEndpoint
 				.password(password)
 				.sasSignature(sasSignature)
 				.contentType(contentType != null ? contentType.toString() : null)
+				.sftpHost(sftpHost)
+				.sftpPort(sftpPort > 0 ? sftpPort : null)
+				.sftpUsername(sftpUsername)
+				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)
+				.sshPrivateKey(sshPrivateKey)
+				.sftpRemotePath(sftpRemotePath)
+				.sftpFilenamePattern(sftpFilenamePattern)
 				.build();
 	}
 }

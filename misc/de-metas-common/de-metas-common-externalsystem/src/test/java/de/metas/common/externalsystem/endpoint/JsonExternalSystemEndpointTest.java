@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonExternalSystemEndpointTest
 {
-	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -49,10 +49,30 @@ class JsonExternalSystemEndpointTest
 				.clientId("clientId")
 				.build();
 
-		final String string = mapper.writeValueAsString(request);
+		final String string = objectMapper.writeValueAsString(request);
 
-		final JsonExternalSystemEndpoint result = mapper.readValue(string, JsonExternalSystemEndpoint.class);
+		final JsonExternalSystemEndpoint result = objectMapper.readValue(string, JsonExternalSystemEndpoint.class);
 
 		assertThat(result).isEqualTo(request);
+	}
+
+	@Test
+	void sftpEndpoint_serializeDeserialize() throws Exception
+	{
+		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+				.value("sftp-test")
+				.transportType("SFTP")
+				.sftpHost("sftp.example.com")
+				.sftpPort(22)
+				.sftpUsername("user")
+				.sftpAuthType("PASSWORD")
+				.password("secret")
+				.sftpRemotePath("/outbound")
+				.sftpFilenamePattern("DESADV_{documentno}.json")
+				.build();
+
+		final String json = objectMapper.writeValueAsString(endpoint);
+		final JsonExternalSystemEndpoint deserialized = objectMapper.readValue(json, JsonExternalSystemEndpoint.class);
+		assertThat(deserialized).isEqualTo(endpoint);
 	}
 }
