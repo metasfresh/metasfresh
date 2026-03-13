@@ -1894,8 +1894,9 @@ jobs:
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
     permissions:
-      actions: write    # trigger reports-cleanup workflow when disk space is low
+      actions: write       # trigger reports-cleanup workflow when disk space is low
       contents: read
+      pull-requests: write # post Allure report links as PR comments
     steps:
       - name: Check for report server secret
         id: check-secret
