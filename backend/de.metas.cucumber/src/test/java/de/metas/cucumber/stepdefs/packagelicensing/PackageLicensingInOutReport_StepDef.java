@@ -450,9 +450,9 @@ public class PackageLicensingInOutReport_StepDef
 				"SELECT C_BP_Group_ID FROM C_BP_Group WHERE AD_Client_ID=" + clientId + " AND IsActive='Y' ORDER BY IsDefault DESC, C_BP_Group_ID LIMIT 1");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO C_BPartner (C_BPartner_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "Value, Name, IsCustomer, IsVendor, C_BP_Group_ID) "
+						+ "Value, Name, IsCustomer, IsVendor, C_BP_Group_ID, SO_CreditLimit, SOCreditStatus) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", 'Y', 'Y', " + bpGroupId + ")",
+						+ sqlQuote(value) + ", " + sqlQuote(value) + ", 'Y', 'Y', " + bpGroupId + ", 999999, 'O')",
 				ITrx.TRXNAME_None);
 		return id;
 	}
