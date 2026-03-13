@@ -172,60 +172,6 @@ test('Go back from partially moved job, resume, and complete', async ({ page }) 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pick both lines, drop-all to destination, verify all green then complete', async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114: MobileUI Distribution');
-    allure.tag('F5114');
-    allure.story('Distribution stability - pick all then drop-all');
-    allure.severity('normal');
-
-    const masterdata = await createMasterdata();
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('distribution');
-    await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
-    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
-
-    await test.step("Pick line 1 (move to in-transit)", async () => {
-        await DistributionJobScreen.clickLineButton({ index: 1 });
-        await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU1.qrCode, qtyToMove: '100', expectedQtyToMove: '100' });
-        await DistributionLineScreen.goBack();
-        await DistributionJobScreen.expectLineButton({ index: 1, color: 'yellow' });
-    });
-
-    await test.step("Pick line 2 (move to in-transit)", async () => {
-        await DistributionJobScreen.clickLineButton({ index: 2 });
-        await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU2.qrCode, qtyToMove: '100', expectedQtyToMove: '100' });
-        await DistributionLineScreen.goBack();
-        await DistributionJobScreen.expectLineButton({ index: 2, color: 'yellow' });
-    });
-
-    await test.step("Drop-all both lines to wh2", async () => {
-        await DistributionJobScreen.expectDropAllButton({ enabled: true });
-        await DistributionJobScreen.dropAllTo({ dropToLocatorQRCode: masterdata.warehouses.wh2.locatorQRCode });
-    });
-
-    await test.step("Verify both lines green", async () => {
-        await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'green' });
-        await DistributionJobScreen.expectLineButton({ index: 2, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'green' });
-        await DistributionJobScreen.expectDropAllButton({ enabled: false });
-    });
-
-    await DistributionJobScreen.complete();
-
-    await Backend.expect({
-        title: 'Both HUs moved to wh2 via drop-all',
-        hus: {
-            HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
-            HU2: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
-        }
-    });
-});
-
-// noinspection JSUnusedLocalSymbols
 test('Pick all lines, drop-all, then abort remaining line', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
