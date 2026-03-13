@@ -1212,3 +1212,29 @@ SELECT update_menu_translation_from_ad_element(542307);
 -- =====================================================================
 UPDATE AD_Tab SET OrderByClause = 'DateInvoiced DESC'
 WHERE AD_Tab_ID = 549082;
+
+-- =====================================================================
+-- 11. Fix en_US translations: propagate from AD_Element_Trl to AD_Field_Trl
+-- =====================================================================
+-- The auto-generated AD_Field_Trl records copy base language (de_DE) text
+-- with IsTranslated='N'. WebAPI uses AD_Field_Trl for view layout captions,
+-- so without this the English view shows German column headers.
+
+-- First fix CustomsTariff element translation (IsTranslated was 'N' in preloaded DB)
+UPDATE AD_Element_Trl
+SET IsTranslated = 'Y'
+WHERE AD_Element_ID = (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'CustomsTariff')
+  AND AD_Language = 'en_US'
+  AND IsTranslated = 'N';
+
+-- Propagate en_US translations from AD_Element_Trl to AD_Field_Trl for all Intrastat fields
+UPDATE AD_Field_Trl
+SET Name = et.Name, Description = et.Description, Help = et.Help, IsTranslated = 'Y'
+FROM AD_Field f
+JOIN AD_Column c ON c.AD_Column_ID = f.AD_Column_ID
+JOIN AD_Element_Trl et ON et.AD_Element_ID = c.AD_Element_ID AND et.AD_Language = 'en_US'
+WHERE AD_Field_Trl.AD_Field_ID = f.AD_Field_ID
+  AND f.AD_Tab_ID = 549082
+  AND AD_Field_Trl.AD_Language = 'en_US'
+  AND AD_Field_Trl.IsTranslated = 'N'
+  AND et.IsTranslated = 'Y';
