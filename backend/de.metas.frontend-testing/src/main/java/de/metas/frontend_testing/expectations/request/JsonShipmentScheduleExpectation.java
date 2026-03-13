@@ -16,5 +16,6 @@ public class JsonShipmentScheduleExpectation
 	@Nullable Boolean isScheduledForPicking;
 	@Nullable BigDecimal qtyScheduledForPicking;
 	@Nullable BigDecimal qtyScheduledForPickingOfProcessed;
+	@Nullable Boolean isClosed;
 	@Nullable List<JsonShipmentScheduleQtyPickedExpectation> qtyPicked;
 }
