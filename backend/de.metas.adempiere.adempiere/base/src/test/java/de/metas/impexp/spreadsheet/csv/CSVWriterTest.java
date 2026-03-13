@@ -48,6 +48,17 @@ class CSVWriterTest
 				.build();
 	}
 
+	private CSVWriter createWriter(final List<String> header, final String fieldQualifier, final Boolean includeHeader)
+	{
+		return CSVWriter.builder()
+				.outputFile(outputFile)
+				.header(header)
+				.adLanguage("en_US")
+				.fieldQualifier(fieldQualifier)
+				.includeHeader(includeHeader)
+				.build();
+	}
+
 	private String readOutput() throws IOException
 	{
 		final String raw = new String(Files.readAllBytes(outputFile.toPath()), StandardCharsets.UTF_8);
@@ -229,5 +240,81 @@ class CSVWriterTest
 
 		assertThat(lines[0]).isEqualTo("Col1\tCol2");
 		assertThat(lines[1]).isEqualTo("no tab\talso clean");
+	}
+
+	// -------------------------------------------------------------------
+	// MUST: includeHeader=false suppresses the header row
+	// -------------------------------------------------------------------
+
+	@Test
+	void includeHeaderFalse_dataRowsOnly() throws IOException
+	{
+		final CSVWriter writer = createWriter(Arrays.asList("Col1", "Col2"), "\"", false);
+		writer.appendRow(Arrays.asList("a", "b"));
+		writer.appendRow(Arrays.asList("c", "d"));
+		writer.close();
+
+		final String content = readOutput();
+		final String[] lines = content.split("\n");
+
+		// No header line — only data rows
+		assertThat(lines).hasSize(2);
+		assertThat(lines[0]).isEqualTo("\"a\";\"b\"");
+		assertThat(lines[1]).isEqualTo("\"c\";\"d\"");
+	}
+
+	@Test
+	void includeHeaderFalse_noDataRows_emptyOutput() throws IOException
+	{
+		final CSVWriter writer = createWriter(Arrays.asList("Col1"), "\"", false);
+		// No rows appended, just close
+		writer.close();
+
+		// File should contain only the UTF-8 BOM (stripped by readOutput), so empty
+		final String content = readOutput();
+		assertThat(content).isEmpty();
+	}
+
+	@Test
+	void includeHeaderFalse_emptyQualifier_dataOnly() throws IOException
+	{
+		// RTIC scenario: no header, no quotes
+		final CSVWriter writer = createWriter(Arrays.asList("Col1", "Col2"), "", false);
+		writer.appendRow(Arrays.asList("val1", "val2"));
+		writer.close();
+
+		final String content = readOutput();
+		final String[] lines = content.split("\n");
+
+		assertThat(lines).hasSize(1);
+		assertThat(lines[0]).isEqualTo("val1;val2");
+	}
+
+	@Test
+	void includeHeaderNull_defaultIncludesHeader() throws IOException
+	{
+		// null defaults to true (backward compat)
+		final CSVWriter writer = createWriter(Arrays.asList("Col1"), "\"", null);
+		writer.appendRow(Arrays.asList("val"));
+		writer.close();
+
+		final String content = readOutput();
+		final String[] lines = content.split("\n");
+
+		assertThat(lines).hasSize(2);
+		assertThat(lines[0]).isEqualTo("\"Col1\"");
+		assertThat(lines[1]).isEqualTo("\"val\"");
+	}
+
+	@Test
+	void includeHeaderFalse_linesWroteCountsOnlyDataRows() throws IOException
+	{
+		final CSVWriter writer = createWriter(Arrays.asList("Col1", "Col2"), "\"", false);
+		writer.appendRow(Arrays.asList("a", "b"));
+		writer.appendRow(Arrays.asList("c", "d"));
+		writer.close();
+
+		// linesWrote should count only data rows (no header line)
+		assertThat(writer.getLinesWrote()).isEqualTo(2);
 	}
 }
