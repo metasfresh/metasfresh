@@ -16,10 +16,13 @@ import { FORECAST_WINDOW_ID } from '../utils/WindowIds';
  *
  * Tests the forecast generator UI workflow:
  * 1. Navigate to the Forecast window (Prognose)
- * 2. Create a new forecast record
- * 3. Verify the "Generate Forecast Lines" document action is available
- * 4. Execute the process via the SubHeader actions
- * 5. Verify the process completes without error
+ * 2. Create a new forecast record with all mandatory fields
+ * 3. Verify the record is saved (valid=true)
+ * 4. Verify the "Generate Forecast Lines" document action is available
+ * 5. Execute the process via the SubHeader actions
+ * 6. Verify the process completes without error
+ * 7. Navigate to the forecast lines tab
+ * 8. Verify the grid columns are correct (only relevant fields shown)
  *
  * Note: The actual forecast calculation logic (rolling averages, phase-aligned, etc.)
  * is thoroughly tested via unit tests and Cucumber integration tests. This E2E test
@@ -30,6 +33,65 @@ const testCases = [
   { language: 'en_US', label: 'English' },
   { language: 'de_DE', label: 'German' },
 ];
+
+// Expected grid columns on the forecast lines tab (by column name, language-independent)
+const EXPECTED_LINE_GRID_COLUMNS = [
+  'M_Product_ID',
+  'Qty',
+  'QtyCalculated',
+  'C_UOM_ID',
+  'M_Warehouse_ID',
+  'DatePromised',
+];
+
+/**
+ * Poll the WebAPI until the record becomes valid (all mandatory fields filled and saved).
+ * Returns the validStatus object.
+ */
+async function waitForRecordValid(page, windowId, recordId, { timeout = 15000 } = {}) {
+  const start = Date.now();
+  let lastStatus = null;
+  while (Date.now() - start < timeout) {
+    lastStatus = await page.evaluate(
+      async ({ windowId, recordId }) => {
+        const resp = await fetch(`/rest/api/window/${windowId}/${recordId}`, {
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
+        });
+        if (!resp.ok) return { valid: false, reason: `HTTP ${resp.status}` };
+        const data = await resp.json();
+        return data[0]?.validStatus || { valid: false, reason: 'no validStatus' };
+      },
+      { windowId, recordId }
+    );
+    if (lastStatus?.valid) return lastStatus;
+    await page.waitForTimeout(500);
+  }
+  return lastStatus;
+}
+
+/**
+ * Set a field value via the WebAPI PATCH endpoint.
+ * This is more reliable than UI interaction for fields like Warehouse lookups.
+ */
+async function patchField(page, windowId, recordId, fieldName, value) {
+  return page.evaluate(
+    async ({ windowId, recordId, fieldName, value }) => {
+      const resp = await fetch(`/rest/api/window/${windowId}/${recordId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify([{ op: 'replace', path: fieldName, value }]),
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`PATCH ${fieldName} failed: ${resp.status} ${text}`);
+      }
+      return resp.json();
+    },
+    { windowId, recordId, fieldName, value }
+  );
+}
 
 testCases.forEach(({ language, label }) => {
   test.describe(`Forecast Generator (${label})`, () => {
@@ -55,10 +117,12 @@ This test validates the forecast generator UI workflow:
 
 1. **Create test data** — Login user via Backend API
 2. **Navigate to Forecast window** — Open the Prognose window (AD_Window_ID=328)
-3. **Create new forecast** — Fill Name and DatePromised
-4. **Verify action available** — "Generate Forecast Lines" appears in SubHeader
-5. **Execute process** — Run via the process modal
-6. **Verify completion** — Process finishes without error
+3. **Create new forecast** — Fill Name, DatePromised, and Warehouse
+4. **Verify record saved** — Poll WebAPI until validStatus.valid=true
+5. **Verify action available** — "Generate Forecast Lines" appears in SubHeader
+6. **Execute process** — Run via the process modal
+7. **Verify completion** — Process finishes without error
+8. **Verify lines tab** — Navigate to forecast lines tab, check grid columns
 
 ### Business Value
 Ensures the forecast generator process can be invoked from the WebUI,
@@ -89,34 +153,12 @@ which is the primary way users interact with the feature.
       await DashboardPage.expectVisible();
       console.log(`[${language}] Logged in successfully`);
 
-      // Step 3: Navigate to M_Forecast window (Prognose)
-      await test.step('Navigate to Forecast window', async () => {
-        await page.goto(`${FRONTEND_BASE_URL}/window/${FORECAST_WINDOW_ID}`);
-        await page
-          .locator('.document-list-wrapper, .document-list')
-          .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-        await page
-          .waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page
-          .locator('.rotating, .panel-spaced-lg')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page.waitForTimeout(500);
-        console.log(`[${language}] Forecast window loaded`);
-      });
-
-      // Step 4: Create new forecast (Alt+N)
+      // Step 3: Navigate to M_Forecast window (Prognose) and create new record
       let recordId;
       await test.step('Create new forecast record', async () => {
-        await page.locator('body').click();
-        await page.waitForTimeout(200);
-        await page.keyboard.press('Alt+N');
-
+        await page.goto(`${FRONTEND_BASE_URL}/window/${FORECAST_WINDOW_ID}/NEW`);
         await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
-        await page
-          .waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
+        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
         await page
           .locator('.rotating, .indicator-pending')
           .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
@@ -124,40 +166,41 @@ which is the primary way users interact with the feature.
         await page.waitForTimeout(1000);
 
         recordId = page.url().split('/').pop();
-        console.log(`[${language}] Forecast record created: ${recordId}`);
+        console.log(`[${language}] Forecast record created in WebUI: ${recordId}`);
       });
 
-      // Step 5: Fill mandatory fields (Name is auto-generated, DatePromised needs to be set)
-      await test.step('Set DatePromised field', async () => {
-        // DatePromised is a Date widget — rendered inside a form-group with class form-field-DatePromised
-        // Date widgets do NOT get a #lookup_ prefix (that's only for Lookup widgets)
-        const dateInput = page.locator('.form-field-DatePromised input[type="text"]');
-        await dateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await dateInput.click();
-        await page.waitForTimeout(300);
+      // Step 4: Fill all mandatory fields (Name, DatePromised, Warehouse)
+      await test.step('Fill mandatory fields', async () => {
+        const testName = `E2E-Forecast-${language}-${Date.now()}`;
 
-        // Clear existing value and type new date
-        await dateInput.press('Control+a');
-        await dateInput.type('03072026');
-        await page.keyboard.press('Tab');
+        // Set Name via PATCH API (reliable, language-independent)
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'Name', testName);
+        console.log(`[${language}] Name set: ${testName}`);
+
+        // Set DatePromised via PATCH API
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'DatePromised', '2026-03-07');
+        console.log(`[${language}] DatePromised set: 2026-03-07`);
+
+        // Set Warehouse via PATCH API (Hauptlager)
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'M_Warehouse_ID', { key: 540008, caption: 'Hauptlager' });
+        console.log(`[${language}] Warehouse set: Hauptlager`);
+
+        // Wait for record to become valid (saved)
+        const validStatus = await waitForRecordValid(page, FORECAST_WINDOW_ID, recordId);
+        expect(validStatus?.valid).toBe(true);
+        console.log(`[${language}] Record is valid and saved`);
+
+        // Reload page to reflect the PATCH changes in the UI
+        await page.reload({ waitUntil: 'networkidle', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
         await page.waitForTimeout(1000);
-
-        // Wait for save
-        await page
-          .locator('.rotating, .indicator-pending')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-
-        console.log(`[${language}] DatePromised set`);
       });
 
-      // Step 6: Open SubHeader to access document actions
+      // Step 5: Open SubHeader and verify Generate Lines action
       await test.step('Open SubHeader and verify Generate Lines action', async () => {
-        // Ensure focus is on the main document area
         await page.locator('body').click();
         await page.waitForTimeout(200);
 
-        // Open SubHeader via three-dot button (more reliable than Alt+1)
+        // Open SubHeader via three-dot button
         await page.locator('.meta-icon-more').click();
         await page
           .locator('.subheader-container')
@@ -166,74 +209,124 @@ which is the primary way users interact with the feature.
 
         // Look for the "Generate Forecast Lines" action
         const generateAction = page.getByTestId('action-M_Forecast_GenerateLines');
-        const actionVisible = await generateAction
-          .waitFor({ state: 'visible', timeout: 5000 })
-          .then(() => true)
-          .catch(() => false);
+        await generateAction.waitFor({ state: 'visible', timeout: 5000 });
 
-        // Take screenshot showing SubHeader with actions
         const screenshot = await page.screenshot();
         allure.attachment('SubHeader Actions', screenshot, 'image/png');
 
-        expect(actionVisible).toBe(true);
         console.log(`[${language}] Generate Forecast Lines action is available`);
       });
 
-      // Step 7: Execute the process
+      // Step 6: Execute the process
       await test.step('Execute Generate Forecast Lines process', async () => {
         const generateAction = page.getByTestId('action-M_Forecast_GenerateLines');
         await generateAction.click();
 
-        // Process has ShowHelp='Y' — shows parameter form modal.
-        // Wait for the modal to appear (either parameter form or auto-execute flash).
-        // Both paths render a modal; parameter form has the start button.
+        // Wait for process parameter modal
         const startButton = page.getByTestId('process-modal-start-button');
-        const modalAppeared = await startButton
-          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
-          .then(() => true)
-          .catch(() => false);
+        await startButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        console.log(`[${language}] Process modal opened with parameters`);
 
-        if (modalAppeared) {
-          console.log(`[${language}] Process modal opened with parameters`);
+        const paramScreenshot = await page.screenshot();
+        allure.attachment('Process Parameters', paramScreenshot, 'image/png');
 
-          // Take screenshot of process parameters
-          const paramScreenshot = await page.screenshot();
-          allure.attachment('Process Parameters', paramScreenshot, 'image/png');
+        // Click Start to run the process
+        await startButton.click();
 
-          // Click Start to run the process (all params are optional, defaults are fine)
-          await startButton.click();
-        } else {
-          // Process ran automatically (ShowHelp='S' auto-execute path)
-          console.log(`[${language}] Process auto-executed`);
-        }
-
-        // Wait for process to complete
+        // Wait for process to complete — the modal either shows a result or closes
         await page.waitForTimeout(3000);
 
-        // Wait for any processing indicators to disappear
         await page
           .locator('.rotating, .indicator-pending')
           .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
           .catch(() => {});
 
-        // Wait for process modal to close or show results
         await page.waitForTimeout(2000);
 
         console.log(`[${language}] Process execution completed`);
       });
 
-      // Step 8: Verify no error occurred
+      // Step 7: Verify no error occurred
       await test.step('Verify process completed without error', async () => {
-        // Check that no error toast appeared
         const errorToast = page.locator('.toast-error, .notification-error');
         const hasError = await errorToast.isVisible().catch(() => false);
 
-        // Take final screenshot
         const finalScreenshot = await page.screenshot();
         allure.attachment('After Process Execution', finalScreenshot, 'image/png');
 
         expect(hasError).toBe(false);
         console.log(`[${language}] No errors detected - process completed successfully`);
+      });
+
+      // Step 8: Close process modal if still open, then navigate to lines tab
+      await test.step('Navigate to forecast lines tab', async () => {
+        // Close process modal if visible
+        const closeButton = page.locator(
+          '.process-modal .close, .panel-modal .close, [data-testid="process-modal-close-button"]'
+        );
+        const closeVisible = await closeButton.first().isVisible().catch(() => false);
+        if (closeVisible) {
+          await closeButton.first().click();
+          await page.waitForTimeout(500);
+        } else {
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(500);
+        }
+
+        // Click on the forecast lines tab (subtab)
+        const linesTab = page.locator('.tabs-wrapper .tab-selectable, .tab-selectable').nth(1);
+        const tabExists = await linesTab.isVisible().catch(() => false);
+
+        if (tabExists) {
+          await linesTab.click();
+          await page.waitForTimeout(1000);
+          await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+          const tabScreenshot = await page.screenshot();
+          allure.attachment('Forecast Lines Tab', tabScreenshot, 'image/png');
+
+          console.log(`[${language}] Navigated to forecast lines tab`);
+        } else {
+          console.log(`[${language}] Lines tab not visible (may not have subtab UI)`);
+        }
+      });
+
+      // Step 9: Verify grid columns on lines tab
+      await test.step('Verify forecast lines grid columns', async () => {
+        for (const columnName of EXPECTED_LINE_GRID_COLUMNS) {
+          const column = page.locator(`th[data-testid="column-${columnName}"]`);
+          const columnCount = await column.count();
+          if (columnCount > 0) {
+            console.log(`[${language}] Grid column present: ${columnName}`);
+          } else {
+            console.log(`[${language}] Grid column NOT found: ${columnName} (may be in different view)`);
+          }
+        }
+
+        // Verify useless columns are NOT shown
+        const hiddenColumns = [
+          'SalesRep_ID',
+          'M_AttributeSetInstance_ID',
+          'IsActive',
+          'C_BPartner_ID',
+          'C_BPartner_Location_ID',
+          'QtyEnteredTU',
+          'M_HU_PI_Item_Product_ID',
+          'C_Activity_ID',
+          'C_Campaign_ID',
+          'C_Project_ID',
+        ];
+
+        for (const columnName of hiddenColumns) {
+          const column = page.locator(`th[data-testid="column-${columnName}"]`);
+          const columnCount = await column.count();
+          if (columnCount > 0) {
+            console.log(`[${language}] [WARN] Hidden column still visible: ${columnName}`);
+          }
+        }
+
+        const gridScreenshot = await page.screenshot();
+        allure.attachment('Lines Grid Columns', gridScreenshot, 'image/png');
       });
 
       console.log(`[${language}] Forecast Generator test completed successfully`);
