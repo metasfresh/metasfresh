@@ -1895,6 +1895,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
+    permissions:
+      actions: write    # trigger reports-cleanup workflow when disk space is low
+      contents: read
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -1908,12 +1911,24 @@ jobs:
 
       - name: Setup SSH
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        env:
+          REPORTS_SERVER_HOSTNAME: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          REPORTS_SERVER_USER: ${{ secrets.TESTREPORTS_USER }}
+          REPORTS_SERVER_SSH_PORT: ${{ secrets.TESTREPORTS_SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$REPORTS_SERVER_SSH_PORT" -H "$REPORTS_SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
+          Host reports-storage
+            HostName $REPORTS_SERVER_HOSTNAME
+            User $REPORTS_SERVER_USER
+            Port $REPORTS_SERVER_SSH_PORT
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+
           Host reports-server
             HostName test-reports.metasfresh.com
             User ci-reports
@@ -1972,17 +1987,22 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          STORAGEBOX_BASE_PATH: ${{ secrets.TESTREPORTS_BASE_PATH }}
         run: |
-          BASE_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
+          # Two different base paths -- same content, different mount points:
+          #   STORAGEBOX_PATH: used by rsync to reports-storage (storagebox internal path)
+          #   SERVER_PATH:     used by ssh to reports-server (test server mount point)
+          STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
+          SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
 
           # Create target directories on server
-          ssh reports-server "mkdir -p ${BASE_PATH}"
+          ssh reports-server "mkdir -p ${SERVER_PATH}"
 
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "Uploading ${report_type} report..."
             rsync -az --delete \
               "reports/${report_type}/" \
-              "reports-server:${BASE_PATH}/${report_type}/"
+              "reports-storage:${STORAGEBOX_PATH}/${report_type}/"
             echo "✓ ${report_type} uploaded"
           done
 
@@ -1991,7 +2011,7 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             REPORT_LINKS="${REPORT_LINKS}<li><a href=\"${report_type}/\">${report_type}</a></li>"
           done
-          ssh reports-server "cat > ${BASE_PATH}/index.html" <<EOF
+          ssh reports-server "cat > ${SERVER_PATH}/index.html" <<EOF
           <!DOCTYPE html>
           <html><head><title>Allure Reports — ${VERSION}</title>
           <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
@@ -2003,20 +2023,23 @@ jobs:
           </body></html>
           EOF
 
-      - name: Update branch metadata
+      - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
           ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os
+          import json, sys, os, shutil
           from datetime import datetime, timezone
+
+          MAX_BUILDS_PER_BRANCH = 3
 
           branch = sys.argv[1]
           version = sys.argv[2]
           metadata_dir = "/var/www/test-reports/_metadata"
           metadata_file = os.path.join(metadata_dir, f"{branch}.json")
+          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
 
           os.makedirs(metadata_dir, exist_ok=True)
 
@@ -2039,11 +2062,21 @@ jobs:
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           })
 
-          # Keep only last 20 builds
-          data["builds"] = data["builds"][:20]
+          # Cap metadata and collect evicted versions
+          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
+          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
 
           with open(metadata_file, "w") as f:
               json.dump(data, f, indent=2)
+
+          # Delete build directories for evicted versions
+          for ver in evicted:
+              build_path = os.path.join(builds_dir, ver)
+              if os.path.isdir(build_path):
+                  shutil.rmtree(build_path)
+                  print(f"Pruned old build: {branch}/{ver}")
+
+          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
           PYEOF
 
       - name: Update landing page
@@ -2141,8 +2174,8 @@ jobs:
                       const buildsDiv = document.createElement('div');
                       buildsDiv.className = 'builds';
 
-                      // Show newest 10 builds (metadata is already sorted newest-first)
-                      const builds = branchData.builds.slice(0, 10);
+                      // Show all builds (metadata is capped to 3 per branch at publish time)
+                      const builds = branchData.builds;
                       builds.forEach(function(build) {
                           buildsDiv.appendChild(createBuildElement(branchData.branch, build));
                       });
@@ -2194,6 +2227,23 @@ jobs:
           </html>
           HTMLEOF
 
+      - name: Check disk space and trigger cleanup
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          AVAIL_KB=$(ssh reports-server "df --output=avail /var/www/test-reports | tail -1 | tr -d ' '")
+          AVAIL_MB=$((AVAIL_KB / 1024))
+          AVAIL_GB=$(echo "scale=1; $AVAIL_KB / 1048576" | bc)
+          echo "Available disk space: ${AVAIL_GB} GB (${AVAIL_MB} MB)"
+
+          THRESHOLD_KB=2097152  # 2 GB
+          if [ "$AVAIL_KB" -lt "$THRESHOLD_KB" ]; then
+            echo "::warning::Disk space below 2 GB (${AVAIL_GB} GB) — triggering reports-cleanup workflow"
+            gh workflow run reports-cleanup.yml --repo "$GITHUB_REPOSITORY"
+          fi
+
       - name: Produce summary
         if: always()
         env:
@@ -2222,6 +2272,7 @@ jobs:
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'
         run: rm -rf ~/.ssh/reports_key
+
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
