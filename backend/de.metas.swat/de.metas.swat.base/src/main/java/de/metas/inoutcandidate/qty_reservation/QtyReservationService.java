@@ -1,10 +1,12 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class QtyReservationService
 {
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	@NonNull private final QtyReservationRepository repository;
 
@@ -45,9 +48,12 @@ public class QtyReservationService
 		if (request.getProjectId() != null)
 		{
 			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
-			// assume the ProjectValue attribute will be automatically set/updated in ASI 
+			// assume the ProjectValue attribute will be automatically set/updated in ASI
 			orderLineBL.save(orderLine);
 		}
+
+		final OrderLineId orderLineId = request.getOrderAndLineId().getOrderLineId();
+		shipmentScheduleBL.updateASIFromReservationAttributesKey(orderLineId, request.getAttributesKey());
 
 		invalidateShipmentSchedulesForSalesOrderLine(orderLine);
 

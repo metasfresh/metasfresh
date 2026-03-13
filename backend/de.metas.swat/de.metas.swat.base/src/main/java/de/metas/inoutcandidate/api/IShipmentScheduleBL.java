@@ -32,6 +32,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
@@ -214,4 +215,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Updates C_Project_ID on the shipment schedule for the given order line, if not yet processed.
 	 */
 	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
+
+	/**
+	 * Merges the attributes from the given reservation attributes key into the shipment schedule's ASI,
+	 * for the shipment schedule linked to the given order line.
+	 * Existing ASI attributes not covered by the attributes key are preserved.
+	 */
+	void updateASIFromReservationAttributesKey(@NonNull OrderLineId orderLineId, @Nullable AttributesKey attributesKey);
 }

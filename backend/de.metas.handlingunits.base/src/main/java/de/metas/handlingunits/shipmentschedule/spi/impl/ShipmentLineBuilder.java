@@ -420,7 +420,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			newAsiId = AttributeSetInstanceId.NONE;
+			// No HU attribute values available (e.g. no HUs were picked on-the-fly).
+			// Fall back to the shipment schedule's own ASI so that storage attributes
+			// (e.g. Herkunft, Kaliber) are still propagated to the shipment line.
+			newAsiId = candidates.stream()
+					.map(c -> AttributeSetInstanceId.ofRepoIdOrNone(c.getM_AttributeSetInstance_ID()))
+					.filter(id -> id.isRegular())
+					.findFirst()
+					.orElse(AttributeSetInstanceId.NONE);
 		}
 		else
 		{
