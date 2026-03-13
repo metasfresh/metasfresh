@@ -138,19 +138,19 @@ public interface I_ExternalSystem_Endpoint
 	 * Set Content type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setContentType (java.lang.String ContentType);
+	void setContentType (@Nullable java.lang.String ContentType);
 
 	/**
 	 * Get Content type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getContentType();
+	@Nullable java.lang.String getContentType();
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ContentType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ContentType", null);
 	String COLUMNNAME_ContentType = "ContentType";
@@ -271,20 +271,20 @@ public interface I_ExternalSystem_Endpoint
 	 * URL to which the data will be sent
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOutboundHttpEP (java.lang.String OutboundHttpEP);
+	void setOutboundHttpEP (@Nullable java.lang.String OutboundHttpEP);
 
 	/**
 	 * Get Outbound HTTP Endpoint.
 	 * URL to which the data will be sent
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getOutboundHttpEP();
+	@Nullable java.lang.String getOutboundHttpEP();
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OutboundHttpEP = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OutboundHttpEP", null);
 	String COLUMNNAME_OutboundHttpEP = "OutboundHttpEP";
@@ -294,20 +294,20 @@ public interface I_ExternalSystem_Endpoint
 	 * HTTP method to use when sending data (e.g. POST, PUT)
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOutboundHttpMethod (java.lang.String OutboundHttpMethod);
+	void setOutboundHttpMethod (@Nullable java.lang.String OutboundHttpMethod);
 
 	/**
 	 * Get Outbound HTTP Method.
 	 * HTTP method to use when sending data (e.g. POST, PUT)
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getOutboundHttpMethod();
+	@Nullable java.lang.String getOutboundHttpMethod();
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OutboundHttpMethod = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OutboundHttpMethod", null);
 	String COLUMNNAME_OutboundHttpMethod = "OutboundHttpMethod";
@@ -426,4 +426,172 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_Value = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Transport Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTransportType (java.lang.String TransportType);
+
+	/**
+	 * Get Transport Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportType();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_TransportType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "TransportType", null);
+	String COLUMNNAME_TransportType = "TransportType";
+
+	/**
+	 * Set SFTP Host.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpHost (@Nullable java.lang.String SftpHost);
+
+	/**
+	 * Get SFTP Host.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpHost();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpHost = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpHost", null);
+	String COLUMNNAME_SftpHost = "SftpHost";
+
+	/**
+	 * Set SFTP Port.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpPort (int SftpPort);
+
+	/**
+	 * Get SFTP Port.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSftpPort();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPort = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPort", null);
+	String COLUMNNAME_SftpPort = "SftpPort";
+
+	/**
+	 * Set SFTP Username.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpUsername (@Nullable java.lang.String SftpUsername);
+
+	/**
+	 * Get SFTP Username.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpUsername();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpUsername = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpUsername", null);
+	String COLUMNNAME_SftpUsername = "SftpUsername";
+
+	/**
+	 * Set SFTP Authentication Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpAuthType (@Nullable java.lang.String SftpAuthType);
+
+	/**
+	 * Get SFTP Authentication Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpAuthType();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpAuthType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpAuthType", null);
+	String COLUMNNAME_SftpAuthType = "SftpAuthType";
+
+	/**
+	 * Set SSH Private Key.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSshPrivateKey (@Nullable java.lang.String SshPrivateKey);
+
+	/**
+	 * Get SSH Private Key.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSshPrivateKey();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SshPrivateKey = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SshPrivateKey", null);
+	String COLUMNNAME_SshPrivateKey = "SshPrivateKey";
+
+	/**
+	 * Set SFTP Remote Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpRemotePath (@Nullable java.lang.String SftpRemotePath);
+
+	/**
+	 * Get SFTP Remote Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpRemotePath();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpRemotePath = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpRemotePath", null);
+	String COLUMNNAME_SftpRemotePath = "SftpRemotePath";
+
+	/**
+	 * Set SFTP Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpFilenamePattern (@Nullable java.lang.String SftpFilenamePattern);
+
+	/**
+	 * Get SFTP Filename Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpFilenamePattern();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpFilenamePattern = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpFilenamePattern", null);
+	String COLUMNNAME_SftpFilenamePattern = "SftpFilenamePattern";
 }

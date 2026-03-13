@@ -107,7 +107,7 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	/** text_xml = text/xml */
 	public static final String CONTENTTYPE_Text_xml = "text/xml";
 	@Override
-	public void setContentType (final java.lang.String ContentType)
+	public void setContentType (final @Nullable java.lang.String ContentType)
 	{
 		set_Value (COLUMNNAME_ContentType, ContentType);
 	}
@@ -158,7 +158,7 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setOutboundHttpEP (final java.lang.String OutboundHttpEP)
+	public void setOutboundHttpEP (final @Nullable java.lang.String OutboundHttpEP)
 	{
 		set_Value (COLUMNNAME_OutboundHttpEP, OutboundHttpEP);
 	}
@@ -193,7 +193,7 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	/** CONNECT = CONNECT */
 	public static final String OUTBOUNDHTTPMETHOD_CONNECT = "CONNECT";
 	@Override
-	public void setOutboundHttpMethod (final java.lang.String OutboundHttpMethod)
+	public void setOutboundHttpMethod (final @Nullable java.lang.String OutboundHttpMethod)
 	{
 		set_Value (COLUMNNAME_OutboundHttpMethod, OutboundHttpMethod);
 	}
@@ -265,5 +265,119 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public java.lang.String getValue()
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
+	}
+
+	/**
+	 * TransportType AD_Reference_ID=542069
+	 * Reference name: ExternalSystem_Endpoint_TransportType
+	 */
+	public static final int TRANSPORTTYPE_AD_Reference_ID=542069;
+	/** HTTP = HTTP */
+	public static final String TRANSPORTTYPE_HTTP = "HTTP";
+	/** SFTP = SFTP */
+	public static final String TRANSPORTTYPE_SFTP = "SFTP";
+	@Override
+	public void setTransportType (final java.lang.String TransportType)
+	{
+		set_Value (COLUMNNAME_TransportType, TransportType);
+	}
+
+	@Override
+	public java.lang.String getTransportType()
+	{
+		return get_ValueAsString(COLUMNNAME_TransportType);
+	}
+
+	@Override
+	public void setSftpHost (final @Nullable java.lang.String SftpHost)
+	{
+		set_Value (COLUMNNAME_SftpHost, SftpHost);
+	}
+
+	@Override
+	public java.lang.String getSftpHost()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpHost);
+	}
+
+	@Override
+	public void setSftpPort (final int SftpPort)
+	{
+		set_Value (COLUMNNAME_SftpPort, SftpPort);
+	}
+
+	@Override
+	public int getSftpPort()
+	{
+		return get_ValueAsInt(COLUMNNAME_SftpPort);
+	}
+
+	@Override
+	public void setSftpUsername (final @Nullable java.lang.String SftpUsername)
+	{
+		set_Value (COLUMNNAME_SftpUsername, SftpUsername);
+	}
+
+	@Override
+	public java.lang.String getSftpUsername()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpUsername);
+	}
+
+	/**
+	 * SftpAuthType AD_Reference_ID=542070
+	 * Reference name: ExternalSystem_Endpoint_SftpAuthType
+	 */
+	public static final int SFTPAUTHTYPE_AD_Reference_ID=542070;
+	/** PASSWORD = PASSWORD */
+	public static final String SFTPAUTHTYPE_PASSWORD = "PASSWORD";
+	/** SSH_KEY = SSH_KEY */
+	public static final String SFTPAUTHTYPE_SSH_KEY = "SSH_KEY";
+	@Override
+	public void setSftpAuthType (final @Nullable java.lang.String SftpAuthType)
+	{
+		set_Value (COLUMNNAME_SftpAuthType, SftpAuthType);
+	}
+
+	@Override
+	public java.lang.String getSftpAuthType()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpAuthType);
+	}
+
+	@Override
+	public void setSshPrivateKey (final @Nullable java.lang.String SshPrivateKey)
+	{
+		set_Value (COLUMNNAME_SshPrivateKey, SshPrivateKey);
+	}
+
+	@Override
+	public java.lang.String getSshPrivateKey()
+	{
+		return get_ValueAsString(COLUMNNAME_SshPrivateKey);
+	}
+
+	@Override
+	public void setSftpRemotePath (final @Nullable java.lang.String SftpRemotePath)
+	{
+		set_Value (COLUMNNAME_SftpRemotePath, SftpRemotePath);
+	}
+
+	@Override
+	public java.lang.String getSftpRemotePath()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpRemotePath);
+	}
+
+	@Override
+	public void setSftpFilenamePattern (final @Nullable java.lang.String SftpFilenamePattern)
+	{
+		set_Value (COLUMNNAME_SftpFilenamePattern, SftpFilenamePattern);
+	}
+
+	@Override
+	public java.lang.String getSftpFilenamePattern()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpFilenamePattern);
 	}
 }
