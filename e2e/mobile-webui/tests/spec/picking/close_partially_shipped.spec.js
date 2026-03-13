@@ -12,54 +12,55 @@ let previousSysconfigs = null;
 
 const createMasterdata = async () => {
     const masterdata = await Backend.createMasterdata({
-        language: "en_US",
-        request: {
-            sysconfigs: {
+      language: "en_US",
+      request: {
+        sysconfigs: {
                 "M_ShipmentSchedule_Close_PartiallyShipped": "Y",
-            },
-            login: {
+        },
+        login: {
                 user: { language: "en_US" },
-            },
-            mobileConfig: {
-                picking: {
-                    aggregationType: "sales_order",
-                    allowPickingAnyCustomer: true,
+        },
+        mobileConfig: {
+          picking: {
+            aggregationType: "sales_order",
+            allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CO',
-                    allowPickingAnyHU: true,
+            allowPickingAnyHU: true,
                     pickTo: ['LU_TU'],
-                    allowCompletingPartialPickingJob: true,
-                }
-            },
+            allowCompletingPartialPickingJob: true,
+            allowSkippingRejectedReason: true
+          }
+        },
             bpartners: { "BP1": {} },
             warehouses: { "wh": {} },
-            pickingSlots: { slot1: {} },
-            products: {
+        pickingSlots: { slot1: {} },
+        products: {
                 "P1": { price: 1, gtin: generateEAN13().ean13 },
                 "P2": { price: 1, gtin: generateEAN13().ean13 },
                 "P3": { price: 1, gtin: generateEAN13().ean13 },
-            },
-            packingInstructions: {
+        },
+        packingInstructions: {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
                 "PI2": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
                 "PI3": { lu: "LU", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 4 },
-            },
-            handlingUnits: {
+        },
+        handlingUnits: {
                 "HU1": { product: 'P1', warehouse: 'wh', qty: 200 },
                 "HU2": { product: 'P2', warehouse: 'wh', qty: 200 },
                 "HU3": { product: 'P3', warehouse: 'wh', qty: 200 },
-            },
-            salesOrders: {
+        },
+        salesOrders: {
                 "SO1": {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [
+                  lines: [
                         { product: 'P1', qty: 12, piItemProduct: 'TU' },
                         { product: 'P2', qty: 12, piItemProduct: 'TU2' },
                         { product: 'P3', qty: 12, piItemProduct: 'TU3' },
                     ]
                 }
-            },
+        },
         }
     });
 
