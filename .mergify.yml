@@ -9,10 +9,14 @@
 #                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
 # ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
 # ops:no_auto_port           — (reserved for future use)
+# ops:allow_protected_merge  — Override the protection rule that blocks direct merges
+#                               between protected branches. Use sparingly and only when
+#                               auto-port merge/ branches are not feasible.
 #
 # Protection: PRs that merge directly from one protected branch (*_hotfix,
 # *_release, *_uat) into another are automatically closed. Use auto-port
 # merge/ branches instead — they test the merged result via CI first.
+# Set ops:allow_protected_merge label to override this for a specific PR.
 # =============================================================================
 
 # "Merge Gate" is the CI gate — a workflow_run-based commit status set by
@@ -143,6 +147,7 @@ pull_request_rules:
     conditions:
       - -merged
       - -closed
+      - -label=ops:allow_protected_merge
       - or:
           - or: *ALL_BASE_BRANCHES
       - or:
