@@ -27,7 +27,7 @@ test.describe('M_HU_PI_Item_Product Consolidation Process', () => {
 
     test(`Menu entry exists and process dialog opens (${language})`, async ({ page }) => {
       allure.epic('E0193: Handling Units');
-      allure.tag('F5001: CU-TU Consolidation');
+      allure.tag('F5001.1: Consolidate CU-TU Allocation');
       allure.story('Process menu entry and dialog');
       allure.severity('normal');
       allure.parameter('Language', language);
