@@ -61,10 +61,10 @@ const computeHUStatusCaption = (handlingUnitInfo) => {
 };
 
 const computeLocatorCaption = ({ handlingUnitInfo, currentLocatorQRCode }) => {
-  if (handlingUnitInfo?.locatorValue) {
-    return handlingUnitInfo.locatorValue;
-  } else if (currentLocatorQRCode?.displayable) {
+  if (currentLocatorQRCode?.displayable) {
     return '(' + currentLocatorQRCode?.displayable + ')';
+  } else if (handlingUnitInfo?.locatorValue) {
+    return handlingUnitInfo.locatorValue;
   } else {
     return '-';
   }

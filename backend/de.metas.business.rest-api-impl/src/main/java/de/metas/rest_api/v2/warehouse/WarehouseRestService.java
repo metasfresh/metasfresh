@@ -45,10 +45,13 @@ import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.v2.warehouse.json.JsonLocator;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -60,6 +63,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.Warehouse;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_AD_Org;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -156,10 +160,10 @@ public class WarehouseRestService
 		}
 
 		handleWarehouseExternalReference(org,
-										 externalIdentifier,
-										 JsonMetasfreshId.of(warehouseId.getRepoId()),
-										 jsonRequestWarehouseUpsertItem.getExternalVersion(),
-										 jsonRequestWarehouseUpsertItem.getExternalReferenceUrl());
+				externalIdentifier,
+				JsonMetasfreshId.of(warehouseId.getRepoId()),
+				jsonRequestWarehouseUpsertItem.getExternalVersion(),
+				jsonRequestWarehouseUpsertItem.getExternalReferenceUrl());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -209,10 +213,10 @@ public class WarehouseRestService
 			@NonNull final I_AD_Org org)
 	{
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
-		
+
 		return resolveWarehouseExternalIdentifier(warehouseIdentifier, orgId);
 	}
-	
+
 	@NonNull
 	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
 			@NonNull final ExternalIdentifier warehouseIdentifier,
@@ -318,8 +322,8 @@ public class WarehouseRestService
 		final BPartnerLocationId bPartnerLocationId = resolveBPartnerLocationExternalIdentifier(externalIdentifier, bPartnerOrgId)
 				.orElseThrow(() -> new AdempiereException("No BPartnerLocationId found for external identifier")
 						.appendParametersToMessage()
-						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue())); 
-		
+						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue()));
+
 		if (!bPartnerLocationId.getBpartnerId().equals(bPartnerId))
 		{
 			throw new AdempiereException("Found BPartnerLocationId does not belong to the current Org BPartner !")
@@ -328,7 +332,7 @@ public class WarehouseRestService
 					.setParameter("BPartnerLocationID", bPartnerLocationId)
 					.setParameter("Org BPartnerId", bPartnerOrgId);
 		}
-		
+
 		return bPartnerLocationId;
 	}
 
@@ -401,6 +405,40 @@ public class WarehouseRestService
 					.build()
 					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 		}
+	}
+
+	@NonNull
+	public JsonLocator resolveLocatorScannedCode(@NonNull final ScannedCode scannedCode)
+	{
+		//
+		// Try as global QR code
+		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();
+		if (globalQRCode != null)
+		{
+			if (LocatorQRCode.isTypeMatching(globalQRCode))
+			{
+				final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(globalQRCode);
+				return toJsonLocator(locatorQRCode);
+			}
+			else
+			{
+				throw new AdempiereException("Invalid Global Locator QR code");
+			}
+		}
+
+		//
+		// Try as Locator Value
+		return warehouseBL.getLocatorQRCodeByValue(scannedCode.getAsString())
+				.map(WarehouseRestService::toJsonLocator)
+				.orElseThrow();
+	}
+
+	private static JsonLocator toJsonLocator(final LocatorQRCode locatorQRCode)
+	{
+		return JsonLocator.builder()
+				.caption(locatorQRCode.getCaption())
+				.qrCode(locatorQRCode.toGlobalQRCodeJsonString())
+				.build();
 	}
 }
 

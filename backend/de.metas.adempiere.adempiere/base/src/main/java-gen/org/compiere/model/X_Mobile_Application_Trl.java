@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I_Mobile_Application_Trl, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 788521793L;
+	private static final long serialVersionUID = -1615893719L;
 
     /** Standard Constructor */
     public X_Mobile_Application_Trl (final Properties ctx, final int Mobile_Application_Trl_ID, @Nullable final String trxName)
@@ -64,6 +64,18 @@ public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I
 	}
 
 	@Override
+	public void setDescription_Customized (final @Nullable java.lang.String Description_Customized)
+	{
+		set_Value (COLUMNNAME_Description_Customized, Description_Customized);
+	}
+
+	@Override
+	public java.lang.String getDescription_Customized() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description_Customized);
+	}
+
+	@Override
 	public void setIsTranslated (final boolean IsTranslated)
 	{
 		set_Value (COLUMNNAME_IsTranslated, IsTranslated);
@@ -73,6 +85,18 @@ public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I
 	public boolean isTranslated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTranslated);
+	}
+
+	@Override
+	public void setIsUseCustomization (final boolean IsUseCustomization)
+	{
+		set_Value (COLUMNNAME_IsUseCustomization, IsUseCustomization);
+	}
+
+	@Override
+	public boolean isUseCustomization() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUseCustomization);
 	}
 
 	@Override
@@ -112,5 +136,17 @@ public class X_Mobile_Application_Trl extends org.compiere.model.PO implements I
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setName_Customized (final @Nullable java.lang.String Name_Customized)
+	{
+		set_Value (COLUMNNAME_Name_Customized, Name_Customized);
+	}
+
+	@Override
+	public java.lang.String getName_Customized() 
+	{
+		return get_ValueAsString(COLUMNNAME_Name_Customized);
 	}
 }

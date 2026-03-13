@@ -653,6 +653,16 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public List<I_M_Locator> retrieveActiveLocatorsByValue(@NonNull final String locatorValue)
+	{
+		return queryBL.createQueryBuilder(I_M_Locator.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
+				.create()
+				.list();
+	}
+
+	@Override
 	public String getWarehouseName(final WarehouseId warehouseId)
 	{
 		if (warehouseId == null)

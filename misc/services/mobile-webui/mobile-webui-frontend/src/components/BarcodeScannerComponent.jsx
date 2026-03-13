@@ -46,6 +46,7 @@ const useConfigParams = () => {
       0
     ),
     textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
+    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
   };
 };
 
@@ -60,6 +61,7 @@ const BarcodeScannerComponent = ({
     isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
+    scanDuplicatesIntervalMillis,
     okBeepParams,
     errorBeepParams,
   } = useConfigParams();
@@ -68,6 +70,7 @@ const BarcodeScannerComponent = ({
   //   isInputTextReadonly,
   //   triggerOnChangeIfLengthGreaterThan,
   //   textChangedDebounceMillis,
+  //   scanDuplicatesIntervalMillis,
   // });
 
   const mountedRef = useRef(true);
@@ -75,6 +78,7 @@ const BarcodeScannerComponent = ({
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
+  const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
   useEffect(() => {
     mountedRef.current = true;
@@ -110,10 +114,12 @@ const BarcodeScannerComponent = ({
     onReadDone: (barcode) => {
       console.log('onReadDone', barcode);
       validateScannedBarcodeAndForward({ scannedBarcode: barcode });
-      inputTextRef.current.value = '';
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = '';
+      }
     },
     onReadInProgress: (barcode) => {
-      if (inputTextRef.current) {
+      if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }
     },
@@ -127,9 +133,11 @@ const BarcodeScannerComponent = ({
 
     const scanningStatus = scanningStatusRef.current;
     if (scanningStatus.running || scanningStatus.done) {
+      uiTrace.putContext({ isIgnored: true, ignoreReason: `scanning is already running or done` });
       console.log('Ignore scanned barcode because we are already running or done', { scannedBarcode, scanningStatus });
       return;
     }
+
     scanningStatus.running = true;
     setProcessing(true);
 
@@ -141,6 +149,13 @@ const BarcodeScannerComponent = ({
     // });
 
     try {
+      if (trackDuplicateScan({ scannedBarcode })) {
+        beep(errorBeepParams);
+        uiTrace.putContext({ isIgnored: true, ignoreReason: 'duplicate' });
+        console.log('Ignore scanned barcode because it is a duplicate', { scannedBarcode });
+        return;
+      }
+
       let resolvedResult;
       if (resolveScannedBarcode) {
         resolvedResult = await resolveScannedBarcode({ scannedBarcode });
@@ -184,6 +199,7 @@ const BarcodeScannerComponent = ({
       isInputTextReadonly,
       triggerOnChangeIfLengthGreaterThan,
       textChangedDebounceMillis,
+      scanDuplicatesIntervalMillis,
     })
   );
 
@@ -259,3 +275,36 @@ BarcodeScannerComponent.propTypes = {
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+const useDuplicateScansGuard = ({ scanDuplicatesIntervalMillis }) => {
+  const lastScanRef = useRef(null);
+  // console.log('useDuplicateScansGuard', { lastScan: lastScanRef.current, scanDuplicatesIntervalMillis });
+
+  const trackDuplicateScan = ({ scannedBarcode }) => {
+    const lastScan = lastScanRef.current;
+    const thisScan = { scannedBarcode, timestamp: Date.now() };
+    const isDuplicateScan =
+      scanDuplicatesIntervalMillis > 0 &&
+      lastScan &&
+      lastScan.scannedBarcode === thisScan.scannedBarcode &&
+      thisScan.timestamp - lastScan.timestamp < scanDuplicatesIntervalMillis;
+
+    if (isDuplicateScan) {
+      uiTrace.putContext({ duplicateIntervalMillis: thisScan.timestamp - lastScan?.timestamp });
+    }
+
+    lastScanRef.current = thisScan;
+
+    return isDuplicateScan;
+  };
+
+  return {
+    trackDuplicateScan,
+  };
+};

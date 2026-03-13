@@ -120,6 +120,27 @@ public interface I_Mobile_Application_Trl
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Customized Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription_Customized (@Nullable java.lang.String Description_Customized);
+
+	/**
+	 * Get Customized Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription_Customized();
+
+	ModelColumn<I_Mobile_Application_Trl, Object> COLUMN_Description_Customized = new ModelColumn<>(I_Mobile_Application_Trl.class, "Description_Customized", null);
+	String COLUMNNAME_Description_Customized = "Description_Customized";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -166,6 +187,27 @@ public interface I_Mobile_Application_Trl
 	String COLUMNNAME_IsTranslated = "IsTranslated";
 
 	/**
+	 * Set Use customizations.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUseCustomization (boolean IsUseCustomization);
+
+	/**
+	 * Get Use customizations.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUseCustomization();
+
+	ModelColumn<I_Mobile_Application_Trl, Object> COLUMN_IsUseCustomization = new ModelColumn<>(I_Mobile_Application_Trl.class, "IsUseCustomization", null);
+	String COLUMNNAME_IsUseCustomization = "IsUseCustomization";
+
+	/**
 	 * Set Mobile Application.
 	 *
 	 * <br>Type: Search
@@ -210,6 +252,27 @@ public interface I_Mobile_Application_Trl
 
 	ModelColumn<I_Mobile_Application_Trl, Object> COLUMN_Name = new ModelColumn<>(I_Mobile_Application_Trl.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Customized Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setName_Customized (@Nullable java.lang.String Name_Customized);
+
+	/**
+	 * Get Customized Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getName_Customized();
+
+	ModelColumn<I_Mobile_Application_Trl, Object> COLUMN_Name_Customized = new ModelColumn<>(I_Mobile_Application_Trl.class, "Name_Customized", null);
+	String COLUMNNAME_Name_Customized = "Name_Customized";
 
 	/**
 	 * Get Updated.

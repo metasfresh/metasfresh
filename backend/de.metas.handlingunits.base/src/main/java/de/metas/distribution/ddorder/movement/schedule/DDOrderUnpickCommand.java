@@ -1,12 +1,12 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -104,15 +104,15 @@ class DDOrderUnpickCommand
 		ddOrderMoveScheduleRepository.deleteNotStarted(schedule.getId());
 	}
 
-	private GlobalQRCode getTargetQRCode()
+	private ScannedCode getTargetQRCode()
 	{
 		if (unpickToTargetQRCode != null)
 		{
-			return unpickToTargetQRCode.toGlobalQRCode();
+			return unpickToTargetQRCode.toScannedCode();
 		}
 		else
 		{
-			return warehouseBL.getLocatorQRCode(schedule.getPickFromLocatorId()).toGlobalQRCode();
+			return warehouseBL.getLocatorQRCode(schedule.getPickFromLocatorId()).toScannedCode();
 		}
 	}
 }

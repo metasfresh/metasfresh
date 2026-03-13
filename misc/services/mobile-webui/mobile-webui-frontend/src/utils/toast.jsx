@@ -66,6 +66,8 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
       } else if (axiosError.response.data.error) {
         return extractUserFriendlyErrorSingleErrorObject({ error: axiosError.response.data.error, fallbackMessageKey });
       }
+    } else if (axiosError.message) {
+      return extractUserFriendlyErrorSingleErrorObject({ error: axiosError, fallbackMessageKey });
     }
   }
 
