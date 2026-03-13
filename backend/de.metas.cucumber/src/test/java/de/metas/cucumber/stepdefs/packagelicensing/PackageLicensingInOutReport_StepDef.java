@@ -487,12 +487,12 @@ public class PackageLicensingInOutReport_StepDef
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_InOut_seq')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_InOut (M_InOut_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "DocumentNo, C_DocType_ID, C_DocType_Target_ID, MovementDate, DateAcct, "
+						+ "DocumentNo, C_DocType_ID, MovementDate, DateAcct, "
 						+ "MovementType, IsSOTrx, DocStatus, DocAction, "
 						+ "M_Warehouse_ID, C_BPartner_ID, C_BPartner_Location_ID, "
 						+ "Posted, SendEMail, DeliveryRule, DeliveryViaRule, FreightCostRule, PriorityRule, Processed, IsInDispute) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(documentNo) + ", " + docTypeId + ", " + docTypeId + ", "
+						+ sqlQuote(documentNo) + ", " + docTypeId + ", "
 						+ sqlQuote(movementDate) + "::date, " + sqlQuote(movementDate) + "::date, "
 						+ sqlQuote(movementType) + ", " + sqlQuote(isSOTrx) + ", " + sqlQuote(docStatus) + ", 'CO', "
 						+ warehouseId + ", " + bpartnerId + ", " + bpartnerLocationId + ", "
