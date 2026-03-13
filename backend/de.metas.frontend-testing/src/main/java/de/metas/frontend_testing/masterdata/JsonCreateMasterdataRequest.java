@@ -31,7 +31,9 @@ import java.util.Map;
 public class JsonCreateMasterdataRequest
 {
 	@Nullable Map<String, Object> context;
-	
+
+	@Nullable Map<String, String> sysconfigs;
+
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
