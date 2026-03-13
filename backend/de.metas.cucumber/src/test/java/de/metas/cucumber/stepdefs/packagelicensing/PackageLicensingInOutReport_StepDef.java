@@ -145,16 +145,18 @@ public class PackageLicensingInOutReport_StepDef
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
+		// Create BPartner first (needed for both warehouse and InOut)
+		final int bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
+
 		// Resolve or create warehouse location in the specified country
 		final int warehouseCountryId = getCountryIdByCode(warehouseCountryCode);
 		final int warehouseLocationId = createLocation(warehouseCountryId);
-		final int warehouseId = createWarehouse(clientId, orgId, documentNo + "_WH", warehouseLocationId);
+		final int warehouseId = createWarehouse(clientId, orgId, documentNo + "_WH", warehouseLocationId, bpartnerId);
 		final int locatorId = createLocator(clientId, orgId, warehouseId);
 
-		// Resolve or create BPartner + location in destination country
+		// Create BPartner location in destination country
 		final int destCountryId = getCountryIdByCode(destinationCountryCode);
 		final int bpLocationId = createLocation(destCountryId);
-		final int bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
 		final int bpartnerLocationId = createBPartnerLocation(clientId, orgId, bpartnerId, bpLocationId);
 
 		// Resolve C_DocType
@@ -196,7 +198,7 @@ public class PackageLicensingInOutReport_StepDef
 					"INSERT INTO M_HU_PI_Item (M_HU_PI_Item_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
 							+ "M_HU_PI_Version_ID, ItemType) "
 							+ "VALUES (" + huPiItemId + ", " + Env.getAD_Client_ID(Env.getCtx()) + ", " + Env.getAD_Org_ID(Env.getCtx())
-							+ ", 'Y', now(), 100, now(), 100, " + huPiVersionId + ", 'PM')",
+							+ ", 'Y', now(), 100, now(), 100, " + huPiVersionId + ", 'MI')",
 					ITrx.TRXNAME_None);
 
 			final int piipId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_HU_PI_Item_Product_seq')");
@@ -416,14 +418,14 @@ public class PackageLicensingInOutReport_StepDef
 		return id;
 	}
 
-	private static int createWarehouse(final int clientId, final int orgId, @NonNull final String value, final int locationId)
+	private static int createWarehouse(final int clientId, final int orgId, @NonNull final String value, final int locationId, final int bpartnerId)
 	{
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_Warehouse_seq')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Warehouse (M_Warehouse_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "Value, Name, Separator, C_Location_ID) "
+						+ "Value, Name, Separator, C_Location_ID, C_BPartner_ID) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", '*', " + locationId + ")",
+						+ sqlQuote(value) + ", " + sqlQuote(value) + ", '*', " + locationId + ", " + bpartnerId + ")",
 				ITrx.TRXNAME_None);
 		return id;
 	}
