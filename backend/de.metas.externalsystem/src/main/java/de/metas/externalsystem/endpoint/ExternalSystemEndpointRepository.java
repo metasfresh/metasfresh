@@ -25,11 +25,14 @@ package de.metas.externalsystem.endpoint;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 @Repository
 public class ExternalSystemEndpointRepository
@@ -60,8 +63,12 @@ public class ExternalSystemEndpointRepository
 		return ExternalSystemEndpoint.builder()
 				.id(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
 				.value(endpointRecord.getValue())
+				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
+				// HTTP transport fields (nullable — only set for HTTP transport)
 				.endpointUrl(endpointRecord.getOutboundHttpEP())
-				.method(HttpMethod.ofCode(endpointRecord.getOutboundHttpMethod()))
+				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
+				.contentType(parseMediaType(endpointRecord.getContentType()))
+				// HTTP authentication fields
 				.authType(EndpointAuthType.ofCode(endpointRecord.getAuthType()))
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())
@@ -69,7 +76,44 @@ public class ExternalSystemEndpointRepository
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.sasSignature(endpointRecord.getSasSignature())
-				.contentType(MediaType.parseMediaType(endpointRecord.getContentType()))
+				// SFTP transport fields (nullable — only set for SFTP transport)
+				.sftpHost(endpointRecord.getSftpHost())
+				.sftpPort(endpointRecord.getSftpPort())
+				.sftpUsername(endpointRecord.getSftpUsername())
+				.sftpAuthType(parseSftpAuthType(endpointRecord.getSftpAuthType()))
+				.sshPrivateKey(endpointRecord.getSshPrivateKey())
+				.sftpRemotePath(endpointRecord.getSftpRemotePath())
+				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.build();
+	}
+
+	@Nullable
+	private static HttpMethod parseHttpMethod(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+		return HttpMethod.ofCode(code);
+	}
+
+	@Nullable
+	private static MediaType parseMediaType(@Nullable final String contentType)
+	{
+		if (Check.isBlank(contentType))
+		{
+			return null;
+		}
+		return MediaType.parseMediaType(contentType);
+	}
+
+	@Nullable
+	private static SftpAuthType parseSftpAuthType(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+		return SftpAuthType.ofCode(code);
 	}
 }

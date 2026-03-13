@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.endpoint.interceptor;
 
+import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,45 @@ public class ExternalSystem_Endpoint
 		endpoint.setPassword(null);
 		endpoint.setClientId(null);
 		endpoint.setClientSecret(null);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_TransportType)
+	public void resetTransportSpecificFields(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	{
+		final String newTransportType = endpoint.getTransportType();
+		if (TransportType.HTTP.getCode().equals(newTransportType))
+		{
+			// Switching to HTTP — clear SFTP-specific fields
+			endpoint.setSftpHost(null);
+			endpoint.setSftpPort(0);
+			endpoint.setSftpUsername(null);
+			endpoint.setSftpAuthType(null);
+			endpoint.setSshPrivateKey(null);
+			endpoint.setSftpRemotePath(null);
+			endpoint.setSftpFilenamePattern(null);
+		}
+		else if (TransportType.SFTP.getCode().equals(newTransportType))
+		{
+			// Switching to SFTP — clear HTTP-specific fields
+			endpoint.setOutboundHttpEP(null);
+			endpoint.setOutboundHttpMethod(null);
+			endpoint.setContentType(null);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType)
+	public void resetSftpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	{
+		final String newSftpAuthType = endpoint.getSftpAuthType();
+		if (de.metas.externalsystem.endpoint.SftpAuthType.PASSWORD.getCode().equals(newSftpAuthType))
+		{
+			// Switching to password auth — clear SSH key
+			endpoint.setSshPrivateKey(null);
+		}
+		else if (de.metas.externalsystem.endpoint.SftpAuthType.SSH_KEY.getCode().equals(newSftpAuthType))
+		{
+			// Switching to SSH key auth — clear password
+			endpoint.setPassword(null);
+		}
 	}
 }

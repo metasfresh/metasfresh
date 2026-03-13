@@ -24,10 +24,12 @@ package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class ExternalSystemEndpointTest
 {
@@ -39,6 +41,7 @@ class ExternalSystemEndpointTest
 		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
 				.id(ExternalSystemEndpointId.ofRepoId(1))
 				.value("TestEndpoint")
+				.transportType(TransportType.HTTP)
 				.endpointUrl("https://example.com/api")
 				.method(HttpMethod.POST)
 				.authType(EndpointAuthType.OAuth)
@@ -64,5 +67,55 @@ class ExternalSystemEndpointTest
 		assertThat(json.getToken()).isEqualTo("test-token");
 		assertThat(json.getUser()).isEqualTo("test@example.com");
 		assertThat(json.getPassword()).isEqualTo("test-password");
+	}
+
+	@Test
+	void build_sftpEndpoint_withAllSftpFields()
+	{
+		// given / when
+		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(2))
+				.value("SftpEndpoint")
+				.transportType(TransportType.SFTP)
+				.authType(EndpointAuthType.Basic)
+				.sftpHost("sftp.example.com")
+				.sftpPort(22)
+				.sftpUsername("sftpuser")
+				.sftpAuthType(SftpAuthType.PASSWORD)
+				.sftpRemotePath("/upload/edi")
+				.sftpFilenamePattern("order_{date}.edi")
+				.build();
+
+		// then
+		assertThat(endpoint.getTransportType()).isEqualTo(TransportType.SFTP);
+		assertThat(endpoint.getSftpHost()).isEqualTo("sftp.example.com");
+		assertThat(endpoint.getSftpPort()).isEqualTo(22);
+		assertThat(endpoint.getSftpUsername()).isEqualTo("sftpuser");
+		assertThat(endpoint.getSftpAuthType()).isEqualTo(SftpAuthType.PASSWORD);
+		assertThat(endpoint.getSftpRemotePath()).isEqualTo("/upload/edi");
+		assertThat(endpoint.getSftpFilenamePattern()).isEqualTo("order_{date}.edi");
+		// HTTP fields are null for SFTP endpoints
+		assertThat(endpoint.getEndpointUrl()).isNull();
+		assertThat(endpoint.getMethod()).isNull();
+		assertThat(endpoint.getContentType()).isNull();
+	}
+
+	@Test
+	void toJson_throwsForSftpTransport()
+	{
+		// given
+		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(3))
+				.value("SftpEndpoint")
+				.transportType(TransportType.SFTP)
+				.authType(EndpointAuthType.Basic)
+				.sftpHost("sftp.example.com")
+				.sftpPort(22)
+				.build();
+
+		// when / then
+		assertThatThrownBy(endpoint::toJson)
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("HTTP transport");
 	}
 }
