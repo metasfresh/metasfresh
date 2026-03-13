@@ -524,6 +524,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
+	public boolean isStorageRelevant(@NonNull final AttributeCode attributeCode)
+	{
+		return attributeDAO.isStorageRelevant(attributeCode);
+	}
+
+	@Override
 	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
 	{
 		if (asiId.isNone())

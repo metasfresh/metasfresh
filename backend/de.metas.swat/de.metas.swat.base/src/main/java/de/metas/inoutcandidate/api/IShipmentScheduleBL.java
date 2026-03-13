@@ -35,6 +35,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.project.ProjectId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
@@ -42,6 +43,8 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+
+import javax.annotation.Nullable;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -206,4 +209,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 	ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache();
 
 	<T extends I_M_ShipmentSchedule> ShipmentScheduleLoadingCache<T> newLoadingCache(@NonNull Class<T> modelClass);
+
+	/**
+	 * Updates C_Project_ID on the shipment schedule for the given order line, if not yet processed.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
 }

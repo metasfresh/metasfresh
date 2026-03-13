@@ -239,7 +239,6 @@ public final class Debouncer<T>
 	{
 		executor.shutdown();
 	}
-
 	/*
 	public static void main(String[] args) throws InterruptedException
 	{

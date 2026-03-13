@@ -1894,8 +1894,9 @@ jobs:
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
     permissions:
-      actions: write    # trigger reports-cleanup workflow when disk space is low
+      actions: write       # trigger reports-cleanup workflow when disk space is low
       contents: read
+      pull-requests: write # post Allure report links as PR comments
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -1909,12 +1910,24 @@ jobs:
 
       - name: Setup SSH
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        env:
+          REPORTS_SERVER_HOSTNAME: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          REPORTS_SERVER_USER: ${{ secrets.TESTREPORTS_USER }}
+          REPORTS_SERVER_SSH_PORT: ${{ secrets.TESTREPORTS_SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$REPORTS_SERVER_SSH_PORT" -H "$REPORTS_SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
+          Host reports-storage
+            HostName $REPORTS_SERVER_HOSTNAME
+            User $REPORTS_SERVER_USER
+            Port $REPORTS_SERVER_SSH_PORT
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+
           Host reports-server
             HostName test-reports.metasfresh.com
             User ci-reports
@@ -1973,17 +1986,22 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          STORAGEBOX_BASE_PATH: ${{ secrets.TESTREPORTS_BASE_PATH }}
         run: |
-          BASE_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
+          # Two different base paths — same content, different mount points:
+          #   STORAGEBOX_PATH: used by rsync to reports-storage (storagebox internal path)
+          #   SERVER_PATH:     used by ssh to reports-server (test server mount point)
+          STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
+          SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
 
-          # Create target directories on server
-          ssh reports-server "mkdir -p ${BASE_PATH}"
+          # Create target directories on test server (mkdir needs the server-side path)
+          ssh reports-server "mkdir -p ${SERVER_PATH}"
 
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "Uploading ${report_type} report..."
             rsync -az --delete \
               "reports/${report_type}/" \
-              "reports-server:${BASE_PATH}/${report_type}/"
+              "reports-storage:${STORAGEBOX_PATH}/${report_type}/"
             echo "✓ ${report_type} uploaded"
           done
 
@@ -1992,7 +2010,7 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             REPORT_LINKS="${REPORT_LINKS}<li><a href=\"${report_type}/\">${report_type}</a></li>"
           done
-          ssh reports-server "cat > ${BASE_PATH}/index.html" <<EOF
+          ssh reports-server "cat > ${SERVER_PATH}/index.html" <<EOF
           <!DOCTYPE html>
           <html><head><title>Allure Reports — ${VERSION}</title>
           <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
@@ -2250,9 +2268,51 @@ jobs:
             echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
 
+      - name: Post report link on PR
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+          if [ -z "$PR" ]; then
+            echo "No open PR for branch ${{ github.ref_name }} — skipping comment"
+            exit 0
+          fi
+
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          done
+
+          MARKER="<!-- allure-reports -->"
+          BODY="${MARKER}
+          ### 📊 Allure Test Reports
+
+          **Build:** \`${VERSION}\`
+
+          | Report | Link |
+          |--------|------|
+          ${REPORT_LINKS}
+          _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+
+          # Find existing comment with marker, update or create
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
+            echo "Updated existing comment ${COMMENT_ID} on PR #${PR}"
+          else
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Posted new comment on PR #${PR}"
+          fi
+
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'
         run: rm -rf ~/.ssh/reports_key
+
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true

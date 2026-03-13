@@ -5,6 +5,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectValue;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.ui.web.view.IViewRow;
@@ -25,6 +26,7 @@ public class MaterialCockpitV2RowVOs
 	private static final String COLUMNNAME_AvailabilityStatus = "AvailabilityStatus";
 	private static final String COLUMNNAME_DatePromised = "DatePromised";
 	private static final String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
+	private static final String COLUMNNAME_ProjectValue = "ProjectValue";
 
 	@NonNull
 	public static MaterialCockpitV2RowVO ofViewRow(@NonNull final IViewRow row)
@@ -37,6 +39,7 @@ public class MaterialCockpitV2RowVOs
 				.datePromised(extractDatePromised(row))
 				.vendorBPartnerId(extractVendorBPartnerId(row))
 				.attributesKey(extractAttributesKey(row))
+				.projectValue(extractProjectValue(row))
 				.qtyTU(QtyTU.ofBigDecimal(row.getFieldValueAsBigDecimal(COLUMNNAME_QtyTU, BigDecimal.ZERO)))
 				.qtyStock(extractQtyStock(row))
 				.build();
@@ -92,4 +95,11 @@ public class MaterialCockpitV2RowVOs
 			return null;
 		}
 	}
+
+	@Nullable
+	private static ProjectValue extractProjectValue(@NonNull final IViewRow row)
+	{
+		return ProjectValue.ofNullableString(row.getFieldNameAndJsonValues().getAsString(COLUMNNAME_ProjectValue));
+	}
+
 }
