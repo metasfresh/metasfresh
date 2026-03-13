@@ -1,7 +1,14 @@
--- View: EDI_Cctop_119_v
+-- Migration script ID: 5793820
+-- Name: INVOIC SU GLN — COALESCE across warehouse and RemitTo location tiers
+-- URL: https://github.com/metasfresh/metasfresh/issues/28672
+--
+-- When the warehouse BPartner location has no GLN, fall back to the org's RemitTo location GLN
+-- for the SU (supplier) partner in INVOIC EDI export.
+-- Also adds GLN_Override column to all union subqueries (NULL for non-vend types).
 
-DROP VIEW IF EXISTS EDI_Cctop_119_v;
-CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
+DROP VIEW IF EXISTS EDI_Cctop_119_v$new;
+
+CREATE OR REPLACE VIEW EDI_Cctop_119_v$new AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
        lookup.C_Invoice_ID       AS EDI_Cctop_INVOIC_v_ID,
@@ -59,8 +66,7 @@ FROM (
                                                                     (CASE
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
-                                                                             i.C_BPartner_Location_ID
+                                                                             ELSE i.C_BPartner_Location_ID
                                                                      END)
                        --
                   UNION
@@ -99,14 +105,12 @@ FROM (
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
                            LEFT JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
-                           LEFT JOIN M_InOutline sl ON ( -- try to join directly from C_InvoiceLine
+                           LEFT JOIN M_InOutline sl ON (
                                                                    sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
-                      -- fallback and try to join from C_OrderLine if (and only if) it's missing in C_InvoiceLine
                       OR (sl.C_OrderLine_ID = il.C_OrderLine_ID AND (il.M_InOutLine_ID IS NULL OR il.M_InOutLine_ID = 0))
                            LEFT JOIN M_InOut s ON s.M_InOut_ID = sl.M_InOut_ID
-
                            LEFT JOIN C_BPartner_Location pl_ship ON pl_ship.C_BPartner_Location_ID =
-                                                                    (CASE -- Could use COALESCE(NULLIF(.., ..), ..) here, but it gets messy, so I prefer CASE
+                                                                    (CASE
                                                                          WHEN o.HandOver_Location_ID IS NOT NULL AND o.HandOver_Location_ID != 0::INTEGER
                                                                              THEN o.HandOver_Location_ID
                                                                          WHEN s.C_BPartner_Location_ID IS NOT NULL AND s.C_BPartner_Location_ID != 0::INTEGER
@@ -115,8 +119,7 @@ FROM (
                                                                              THEN o.DropShip_Location_ID
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
-                                                                             i.C_BPartner_Location_ID
+                                                                             ELSE i.C_BPartner_Location_ID
                                                                      END)
                        --
                   UNION
@@ -140,7 +143,7 @@ FROM (
                                   'snum'::TEXT AS Type_V,
                                   pl_snum.C_BPartner_Location_ID,
                                   i.C_Invoice_ID,
-                                  0::numeric as M_InOut_ID, -- don't return the s.M_InOut_ID, bc there might be many and we don't need them here
+                                  0::numeric as M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
                                   pl_snum.bpartnername AS SiteName,
                                   pl_snum.Setup_Place_No,
@@ -150,21 +153,19 @@ FROM (
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
                            LEFT JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
-                           LEFT JOIN M_InOutline sl ON ( -- try to join directly from C_InvoiceLine
+                           LEFT JOIN M_InOutline sl ON (
                                                                    sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
-                      -- fallback and try to join from C_OrderLine if (and only if) it's missing in C_InvoiceLine
                       OR (sl.C_OrderLine_ID = il.C_OrderLine_ID AND (il.M_InOutLine_ID IS NULL OR il.M_InOutLine_ID = 0))
                            LEFT JOIN M_InOut s ON s.M_InOut_ID = sl.M_InOut_ID
                            LEFT JOIN C_BPartner_Location pl_snum ON pl_snum.C_BPartner_Location_ID =
-                                                                    (CASE -- Could use COALESCE(NULLIF(.., ..), ..) here, but it gets messy, so I prefer CASE
+                                                                    (CASE
                                                                          WHEN s.C_BPartner_Location_ID IS NOT NULL AND s.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN s.C_BPartner_Location_ID
                                                                          WHEN o.DropShip_Location_ID IS NOT NULL AND o.DropShip_Location_ID != 0::INTEGER
                                                                              THEN o.DropShip_Location_ID
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
-                                                                             i.C_BPartner_Location_ID
+                                                                             ELSE i.C_BPartner_Location_ID
                                                                      END)
               ) union_lookup
          ORDER BY union_lookup.SeqNo, union_lookup.Type_V, union_lookup.C_BPartner_Location_ID, C_Invoice_ID, M_InOut_ID
@@ -175,7 +176,6 @@ FROM (
          LEFT JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
          LEFT JOIN AD_User u ON u.AD_User_ID = lookup.CreatedBy
 WHERE TRUE
-  --  AND p.VATaxID IS NOT NULL -- VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
   AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)
 ORDER BY (
           lookup.C_Invoice_ID,
@@ -187,3 +187,12 @@ ORDER BY (
               WHEN 'snum'::TEXT THEN 'SN'::TEXT
                                 ELSE 'Error EANCOM_Type'::TEXT
           END);
+
+SELECT db_alter_view(
+    'EDI_Cctop_119_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('EDI_Cctop_119_v$new'))
+);
+
+DROP VIEW IF EXISTS EDI_Cctop_119_v$new;
