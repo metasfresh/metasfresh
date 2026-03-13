@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cache.CCache;
-import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,37 +32,37 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ExternalSystemOutboundEndpointRepository
+public class ExternalSystemEndpointRepository
 {
-	CCache<ExternalSystemOutboundEndpointId, ExternalSystemOutboundEndpoint> endpointsCache = CCache.<ExternalSystemOutboundEndpointId, ExternalSystemOutboundEndpoint>builder().tableName(I_ExternalSystem_Outbound_Endpoint.Table_Name)
+	CCache<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsCache = CCache.<ExternalSystemEndpointId, ExternalSystemEndpoint>builder().tableName(I_ExternalSystem_Endpoint.Table_Name)
 			.build();
 
 	@NonNull
-	public ExternalSystemOutboundEndpoint getById(@NonNull final ExternalSystemOutboundEndpointId id)
+	public ExternalSystemEndpoint getById(@NonNull final ExternalSystemEndpointId id)
 	{
 		return endpointsCache.getOrLoad(id, this::retrieveById);
 	}
 
 	@NonNull
-	private ExternalSystemOutboundEndpoint retrieveById(@NonNull final ExternalSystemOutboundEndpointId id)
+	private ExternalSystemEndpoint retrieveById(@NonNull final ExternalSystemEndpointId id)
 	{
-		final I_ExternalSystem_Outbound_Endpoint endpointRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Outbound_Endpoint.class);
+		final I_ExternalSystem_Endpoint endpointRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Endpoint.class);
 		if (endpointRecord == null)
 		{
-			throw new AdempiereException("No Outbound Endpoint found for " + id);
+			throw new AdempiereException("No Endpoint found for " + id);
 		}
 		return fromRecord(endpointRecord);
 	}
 
 	@NonNull
-	private static ExternalSystemOutboundEndpoint fromRecord(@NonNull final I_ExternalSystem_Outbound_Endpoint endpointRecord)
+	private static ExternalSystemEndpoint fromRecord(@NonNull final I_ExternalSystem_Endpoint endpointRecord)
 	{
-		return ExternalSystemOutboundEndpoint.builder()
-				.id(ExternalSystemOutboundEndpointId.ofRepoId(endpointRecord.getExternalSystem_Outbound_Endpoint_ID()))
+		return ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
 				.value(endpointRecord.getValue())
 				.endpointUrl(endpointRecord.getOutboundHttpEP())
 				.method(HttpMethod.ofCode(endpointRecord.getOutboundHttpMethod()))
-				.authType(OutboundEndpointAuthType.ofCode(endpointRecord.getAuthType()))
+				.authType(EndpointAuthType.ofCode(endpointRecord.getAuthType()))
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())
 				.token(endpointRecord.getAuthToken())

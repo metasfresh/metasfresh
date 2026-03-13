@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
-import de.metas.externalsystem.model.X_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -35,19 +35,19 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
-public enum OutboundEndpointAuthType implements ReferenceListAwareEnum
+public enum EndpointAuthType implements ReferenceListAwareEnum
 {
-	Token(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Token),
-	OAuth(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_OAuth),
-	SAS(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_SAS),
-	Basic(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Basic)
+	Token(X_ExternalSystem_Endpoint.AUTHTYPE_Token),
+	OAuth(X_ExternalSystem_Endpoint.AUTHTYPE_OAuth),
+	SAS(X_ExternalSystem_Endpoint.AUTHTYPE_SAS),
+	Basic(X_ExternalSystem_Endpoint.AUTHTYPE_Basic)
 	;
 
-	private static final ReferenceListAwareEnums.ValuesIndex<OutboundEndpointAuthType> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<EndpointAuthType> index = ReferenceListAwareEnums.index(values());
 
 	@NonNull private final String code;
 
-	public static OutboundEndpointAuthType ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static EndpointAuthType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	public JsonEndpointAuthType toJson()
 	{

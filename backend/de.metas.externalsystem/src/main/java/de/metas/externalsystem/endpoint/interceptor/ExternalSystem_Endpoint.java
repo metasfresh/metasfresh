@@ -20,9 +20,9 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint.interceptor;
+package de.metas.externalsystem.endpoint.interceptor;
 
-import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -30,13 +30,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_ExternalSystem_Outbound_Endpoint.class)
+@Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
 @RequiredArgsConstructor
-public class ExternalSystem_Outbound_Endpoint
+public class ExternalSystem_Endpoint
 {
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Outbound_Endpoint.COLUMNNAME_AuthType)
-	public void resetCredentials(@NonNull final I_ExternalSystem_Outbound_Endpoint endpoint)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_AuthType)
+	public void resetCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
 		endpoint.setAuthToken(null);
 		endpoint.setLoginUsername(null);

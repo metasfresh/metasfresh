@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
@@ -33,9 +33,9 @@ import javax.annotation.Nullable;
 
 @Builder
 @Value
-public class ExternalSystemOutboundEndpoint
+public class ExternalSystemEndpoint
 {
-	@NonNull ExternalSystemOutboundEndpointId id;
+	@NonNull ExternalSystemEndpointId id;
 
 	@NonNull String value;
 
@@ -43,7 +43,7 @@ public class ExternalSystemOutboundEndpoint
 
 	@NonNull HttpMethod method;
 
-	@NonNull OutboundEndpointAuthType authType;
+	@NonNull EndpointAuthType authType;
 
 	@Nullable String clientId;
 
@@ -54,7 +54,7 @@ public class ExternalSystemOutboundEndpoint
 	@Nullable String user;
 
 	@Nullable String password;
-	
+
 	@Nullable String sasSignature;
 
 	@NonNull MediaType contentType;
