@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.qty_reservation;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.QtyTU;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -107,6 +108,22 @@ public class QtyReservationRepository
 	{
 		final int deleteCount = toSqlQuery(request).create().delete();
 		return deleteCount > 0;
+	}
+
+	/**
+	 * Returns the attributesKey from any remaining active reservation for the given order line,
+	 * or {@link AttributesKey#NONE} if no reservation remains.
+	 */
+	@NonNull
+	public AttributesKey getFirstRemainingAttributesKeyByOrderLineId(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return queryNotProcessedByOrderLine(orderAndLineId)
+				.create()
+				.stream()
+				.map(record -> AttributesKey.ofString(record.getAttributesKey()))
+				.filter(key -> !key.isNone())
+				.findFirst()
+				.orElse(AttributesKey.NONE);
 	}
 
 	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)

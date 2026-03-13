@@ -222,4 +222,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Existing ASI attributes not covered by the attributes key are preserved.
 	 */
 	void updateASIFromReservationAttributesKey(@NonNull OrderLineId orderLineId, @Nullable AttributesKey attributesKey);
+
+	/**
+	 * Resets the shipment schedule's ASI back to the ASI of the linked order line.
+	 * Used when all reservations for an order line are deleted, to undo any reservation-driven ASI updates.
+	 */
+	void resetSSASIFromOrderLine(@NonNull OrderLineId orderLineId);
 }

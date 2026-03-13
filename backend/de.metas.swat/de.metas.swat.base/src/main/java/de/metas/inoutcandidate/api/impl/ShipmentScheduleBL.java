@@ -1085,4 +1085,30 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		logger.debug("Updated ASI on M_ShipmentSchedule_ID={} from C_OrderLine_ID={} with attributesKey={}",
 				shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId, attributesKey);
 	}
+
+	@Override
+	public void resetSSASIFromOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getByOrderLineId(orderLineId);
+		if (shipmentSchedule == null)
+		{
+			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip ASI reset", orderLineId);
+			return;
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			return;
+		}
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(orderLineId.getRepoId(), I_C_OrderLine.class);
+		if (orderLine == null)
+		{
+			return;
+		}
+
+		shipmentSchedule.setM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID());
+		shipmentSchedulePA.save(shipmentSchedule);
+		logger.debug("Reset ASI on M_ShipmentSchedule_ID={} to orderline ASI from C_OrderLine_ID={}", shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId);
+	}
 }

@@ -4,6 +4,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
@@ -66,6 +67,18 @@ public class QtyReservationService
 
 		if (deleted)
 		{
+			final OrderLineId orderLineId = request.getOrderAndLineId().getOrderLineId();
+			final AttributesKey remainingAttributesKey = repository.getFirstRemainingAttributesKeyByOrderLineId(request.getOrderAndLineId());
+			if (!remainingAttributesKey.isNone())
+			{
+				// Another reservation still exists — re-apply its attributes to the SS ASI
+				shipmentScheduleBL.updateASIFromReservationAttributesKey(orderLineId, remainingAttributesKey);
+			}
+			else
+			{
+				// No reservations left — reset SS ASI back to the orderline's original ASI
+				shipmentScheduleBL.resetSSASIFromOrderLine(orderLineId);
+			}
 			invalidateShipmentSchedulesForSalesOrderLineId(request.getOrderAndLineId());
 		}
 	}
