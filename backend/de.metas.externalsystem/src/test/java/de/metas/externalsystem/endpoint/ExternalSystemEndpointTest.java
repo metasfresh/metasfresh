@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
@@ -29,19 +29,19 @@ import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class ExternalSystemOutboundEndpointTest
+class ExternalSystemEndpointTest
 {
 
 	@Test
 	void toJson_withAllFields()
 	{
 		// given
-		final ExternalSystemOutboundEndpoint endpoint = ExternalSystemOutboundEndpoint.builder()
-				.id(ExternalSystemOutboundEndpointId.ofRepoId(1))
+		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(1))
 				.value("TestEndpoint")
 				.endpointUrl("https://example.com/api")
 				.method(HttpMethod.POST)
-				.authType(OutboundEndpointAuthType.OAuth)
+				.authType(EndpointAuthType.OAuth)
 				.clientId("test-client-id")
 				.clientSecret("test-client-secret")
 				.token("test-token")
@@ -58,7 +58,7 @@ class ExternalSystemOutboundEndpointTest
 		assertThat(json.getValue()).isEqualTo("TestEndpoint");
 		assertThat(json.getEndpointUrl()).isEqualTo("https://example.com/api");
 		assertThat(json.getMethod()).isEqualTo("POST");
-		assertThat(json.getAuthType()).isEqualTo(OutboundEndpointAuthType.OAuth.toJson());
+		assertThat(json.getAuthType()).isEqualTo(EndpointAuthType.OAuth.toJson());
 		assertThat(json.getClientId()).isEqualTo("test-client-id");
 		assertThat(json.getClientSecret()).isEqualTo("test-client-secret");
 		assertThat(json.getToken()).isEqualTo("test-token");
