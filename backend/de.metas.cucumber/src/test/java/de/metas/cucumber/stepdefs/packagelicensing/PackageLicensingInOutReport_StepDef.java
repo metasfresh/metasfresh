@@ -445,11 +445,13 @@ public class PackageLicensingInOutReport_StepDef
 	private static int createBPartner(final int clientId, final int orgId, @NonNull final String value)
 	{
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('C_BPartner_seq')");
+		final int bpGroupId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT C_BP_Group_ID FROM C_BP_Group WHERE AD_Client_ID=" + clientId + " AND IsActive='Y' ORDER BY IsDefault DESC, C_BP_Group_ID LIMIT 1");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO C_BPartner (C_BPartner_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "Value, Name, IsCustomer, IsVendor) "
+						+ "Value, Name, IsCustomer, IsVendor, C_BP_Group_ID) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", 'Y', 'Y')",
+						+ sqlQuote(value) + ", " + sqlQuote(value) + ", 'Y', 'Y', " + bpGroupId + ")",
 				ITrx.TRXNAME_None);
 		return id;
 	}
