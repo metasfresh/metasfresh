@@ -23,7 +23,7 @@
 package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,9 +60,9 @@ public class ExternalSystemEndpoint
 	@NonNull MediaType contentType;
 
 	@NonNull
-	public JsonExternalSystemOutboundEndpoint toJson()
+	public JsonExternalSystemEndpoint toJson()
 	{
-		return JsonExternalSystemOutboundEndpoint.builder()
+		return JsonExternalSystemEndpoint.builder()
 				.value(value)
 				.endpointUrl(endpointUrl)
 				.method(method.getCode())

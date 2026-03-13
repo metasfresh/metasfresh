@@ -33,7 +33,7 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonExternalSystemOutboundEndpoint
+public class JsonExternalSystemEndpoint
 {
 	@NonNull String value;
 
@@ -57,7 +57,7 @@ public class JsonExternalSystemOutboundEndpoint
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String password;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String sasSignature;
 

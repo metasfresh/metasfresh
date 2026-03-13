@@ -37,7 +37,7 @@ import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthIdentity;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
@@ -152,7 +152,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 		final Map<String, String> parameters = request.getParameters();
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = deserializeEndpointParameters(parameters);
+		final JsonExternalSystemEndpoint endpointParameters = deserializeEndpointParameters(parameters);
 
 		// Extract and set error context header for error handling
 		final String errorContext = parameters.get(PARAM_ERROR_CONTEXT);
@@ -173,7 +173,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.setProperty(ROUTE_MSG_FROM_MF_CONTEXT, msgFromMfContext);
 	}
 
-	private JsonExternalSystemOutboundEndpoint deserializeEndpointParameters(@NonNull final Map<String, String> parameters)
+	private JsonExternalSystemEndpoint deserializeEndpointParameters(@NonNull final Map<String, String> parameters)
 	{
 		final String jsonString = parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS);
 		if (Check.isBlank(jsonString))
@@ -183,7 +183,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		try
 		{
-			return mapper.readValue(jsonString, JsonExternalSystemOutboundEndpoint.class);
+			return mapper.readValue(jsonString, JsonExternalSystemEndpoint.class);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -223,7 +223,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.Token);
 
 		exchange.getIn().removeHeaders("CamelHttp*");
@@ -238,7 +238,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.SAS);
 
 		exchange.getIn().removeHeaders("CamelHttp*");
@@ -252,7 +252,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth);
 
 		final OAuthAccessToken accessToken = oauthTokenManager.getAccessToken(
@@ -274,7 +274,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.Basic);
 
 		final String username = endpointParameters.getUser();
@@ -291,7 +291,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
 
-	private static OAuthIdentity extractOAuthIdentity(final JsonExternalSystemOutboundEndpoint endpointParameters)
+	private static OAuthIdentity extractOAuthIdentity(final JsonExternalSystemEndpoint endpointParameters)
 	{
 		return OAuthIdentity.builder()
 				.tokenUrl(extractBaseUrl(endpointParameters.getEndpointUrl()) + "/login")
@@ -301,7 +301,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	}
 
 	@NonNull
-	private static MediaType resolveContentType(@NonNull final JsonExternalSystemOutboundEndpoint endpointParameters)
+	private static MediaType resolveContentType(@NonNull final JsonExternalSystemEndpoint endpointParameters)
 	{
 		return Optional.ofNullable(StringUtils.trimBlankToNull(endpointParameters.getContentType()))
 				.map(MediaType::parseMediaType)
@@ -334,7 +334,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
-		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 
 		// Invalidate the cached token so the next request will get a fresh token
 		oauthTokenManager.invalidateToken(extractOAuthIdentity(endpointParameters));

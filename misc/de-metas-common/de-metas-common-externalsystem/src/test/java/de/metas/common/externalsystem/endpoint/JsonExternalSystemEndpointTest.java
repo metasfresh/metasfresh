@@ -29,14 +29,14 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JsonExternalSystemOutboundEndpointTest
+class JsonExternalSystemEndpointTest
 {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Test
 	public void serializeDeserialize() throws IOException
 	{
-		final JsonExternalSystemOutboundEndpoint request = JsonExternalSystemOutboundEndpoint.builder()
+		final JsonExternalSystemEndpoint request = JsonExternalSystemEndpoint.builder()
 				.value("value")
 				.authType(JsonEndpointAuthType.OAuth)
 				.token("token")
@@ -51,7 +51,7 @@ class JsonExternalSystemOutboundEndpointTest
 
 		final String string = mapper.writeValueAsString(request);
 
-		final JsonExternalSystemOutboundEndpoint result = mapper.readValue(string, JsonExternalSystemOutboundEndpoint.class);
+		final JsonExternalSystemEndpoint result = mapper.readValue(string, JsonExternalSystemEndpoint.class);
 
 		assertThat(result).isEqualTo(request);
 	}

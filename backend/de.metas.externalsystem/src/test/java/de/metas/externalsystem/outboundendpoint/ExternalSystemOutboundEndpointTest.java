@@ -23,7 +23,7 @@
 package de.metas.externalsystem.outboundendpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -52,7 +52,7 @@ class ExternalSystemOutboundEndpointTest
 				.build();
 
 		// when
-		final JsonExternalSystemOutboundEndpoint json = endpoint.toJson();
+		final JsonExternalSystemEndpoint json = endpoint.toJson();
 
 		// then
 		assertThat(json.getValue()).isEqualTo("TestEndpoint");
