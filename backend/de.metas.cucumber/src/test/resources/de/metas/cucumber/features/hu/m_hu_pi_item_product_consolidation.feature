@@ -1,4 +1,4 @@
-@from:developer
+@from:cucumber
 @ignore
 Feature: M_HU_PI_Item_Product consolidation SQL function tests
   Verifies that the m_hu_pi_item_product_consolidate() and
@@ -31,7 +31,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
       | Identifier      | M_HU_PI_Version_ID | ItemType |
       | consol_pi_item  | consol_pi_ver      | MI       |
 
-  @from:developer
+  @from:cucumber
   Scenario: GTIN normalization — EAN_TU copied to GTIN, then EAN_TU cleared
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | EAN_TU        |
@@ -39,7 +39,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     When M_HU_PI_Item_Product consolidation is called with p_normalize_gtin_ean='true' and p_consolidate='false'
     Then M_HU_PI_Item_Product identified by 'pip_ean1' has GTIN='4006381333931' and EAN_TU=null
 
-  @from:developer
+  @from:cucumber
   Scenario: GTIN normalization — EAN_TU cleared when same as GTIN
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | GTIN          | EAN_TU        |
@@ -47,7 +47,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     When M_HU_PI_Item_Product consolidation is called with p_normalize_gtin_ean='true' and p_consolidate='false'
     Then M_HU_PI_Item_Product identified by 'pip_dup1' has GTIN='4006381333931' and EAN_TU=null
 
-  @from:developer
+  @from:cucumber
   Scenario: Consolidation — identical records merged, partner-less record survives
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | GTIN          |
@@ -63,7 +63,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     And M_HU_PI_Item_Product identified by 'pip_bp1' has IsActive='N'
     And M_HU_PI_Item_Product identified by 'pip_bp2' has IsActive='N'
 
-  @from:developer
+  @from:cucumber
   Scenario: Consolidation — different date ranges produce widest range on survivor
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | GTIN          | ValidFrom  | ValidTo    | C_BPartner_ID |
@@ -74,7 +74,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     When M_HU_PI_Item_Product consolidation is called with p_normalize_gtin_ean='false' and p_consolidate='true'
     Then the surviving M_HU_PI_Item_Product for GTIN '4015400346353' has ValidFrom='2020-01-01' and ValidTo='2026-06-30'
 
-  @from:developer
+  @from:cucumber
   Scenario: Consolidation skipped — different Qty creates a field conflict
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier   | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | GTIN          | C_BPartner_ID |
@@ -86,7 +86,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     Then M_HU_PI_Item_Product identified by 'pip_qty_10' has IsActive='Y'
     And M_HU_PI_Item_Product identified by 'pip_qty_20' has IsActive='Y'
 
-  @from:developer
+  @from:cucumber
   Scenario: Report — different PI conflict detected for same GTIN
     Given metasfresh contains M_HU_PI:
       | Identifier  | Name              |
@@ -106,7 +106,7 @@ Feature: M_HU_PI_Item_Product consolidation SQL function tests
     When M_HU_PI_Item_Product consolidation report is called
     Then the consolidation report contains a conflict row for GTIN '4005900036131'
 
-  @from:developer
+  @from:cucumber
   Scenario: Both flags off — no changes made
     Given metasfresh contains M_HU_PI_Item_Product:
       | Identifier   | M_Product_ID   | M_HU_PI_Item_ID | Qty | C_UOM_ID.X12DE355 | GTIN          | EAN_TU        |
