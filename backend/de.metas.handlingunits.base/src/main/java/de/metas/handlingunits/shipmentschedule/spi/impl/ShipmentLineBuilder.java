@@ -420,14 +420,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			// No HU attribute values available (e.g. no HUs were picked on-the-fly).
-			// Fall back to the shipment schedule's own ASI so that storage attributes
-			// (e.g. Herkunft, Kaliber) are still propagated to the shipment line.
-			newAsiId = candidates.stream()
-					.map(c -> AttributeSetInstanceId.ofRepoIdOrNone(c.getM_AttributeSetInstance_ID()))
-					.filter(id -> id.isRegular())
-					.findFirst()
-					.orElse(AttributeSetInstanceId.NONE);
+			newAsiId = getShipmentScheduleAsiFromCandidates();
 		}
 		else
 		{
@@ -697,6 +690,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	public List<ShipmentScheduleWithHU> getCandidates()
 	{
 		return ImmutableList.copyOf(candidates);
+	}
+
+	/**
+	 * When no HU attribute values are available (e.g. no HUs were picked on-the-fly),
+	 * fall back to the shipment schedule's own ASI so that storage attributes
+	 * (e.g. Herkunft, Kaliber) are still propagated to the shipment line.
+	 */
+	private AttributeSetInstanceId getShipmentScheduleAsiFromCandidates()
+	{
+		return candidates.stream()
+				.map(c -> AttributeSetInstanceId.ofRepoIdOrNone(c.getM_AttributeSetInstance_ID()))
+				.filter(id -> id.isRegular())
+				.findFirst()
+				.orElse(AttributeSetInstanceId.NONE);
 	}
 
 	/**

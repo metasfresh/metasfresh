@@ -492,10 +492,7 @@ public class ShipmentScheduleWithHUService
 		if (remainingQtyToAllocate.isPositive())
 		{
 			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(
-					ShipmentScheduleAndQtyReservation.builder()
-							.shipmentSchedule(scheduleRecord)
-							.qtyReservation(null)
-							.build());
+					ShipmentScheduleAndQtyReservation.of(scheduleRecord));
 			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
 		}
 
@@ -630,7 +627,7 @@ public class ShipmentScheduleWithHUService
 				.builder()
 				.shipmentSchedule(scheduleRecord)
 				.onlyTopLevelHUs(true)
-				.onlyIfAttributesMatchWithShipmentSchedules(matchAttributes)
+				.onlyIfAttributesMatchWithShipmentSchedules(matchAttributes) // TODO make contingent on HU attribute propagation (iol-handler!)
 				.attributesKeyOverride(attributesKeyOverride)
 				.excludeAllReserved(true) // we already have the reserved HUs; make sure to not load them again.
 				.build();

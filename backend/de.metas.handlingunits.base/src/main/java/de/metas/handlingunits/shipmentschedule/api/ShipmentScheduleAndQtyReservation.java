@@ -21,4 +21,12 @@ public class ShipmentScheduleAndQtyReservation
 {
 	@NonNull I_M_ShipmentSchedule shipmentSchedule;
 	@Nullable QtyReservation qtyReservation;
+
+	/**
+	 * Convenience factory for the fallback case: no specific reservation, use SS ASI.
+	 */
+	public static ShipmentScheduleAndQtyReservation of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return builder().shipmentSchedule(shipmentSchedule).build();
+	}
 }
