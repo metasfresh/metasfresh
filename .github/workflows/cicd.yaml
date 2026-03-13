@@ -1894,8 +1894,9 @@ jobs:
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
     permissions:
-      actions: write    # trigger reports-cleanup workflow when disk space is low
+      actions: write       # trigger reports-cleanup workflow when disk space is low
       contents: read
+      pull-requests: write # post Allure report links as PR comments
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -2266,6 +2267,47 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
+
+      - name: Post report link on PR
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+          if [ -z "$PR" ]; then
+            echo "No open PR for branch ${{ github.ref_name }} — skipping comment"
+            exit 0
+          fi
+
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          done
+
+          MARKER="<!-- allure-reports -->"
+          BODY="${MARKER}
+          ### 📊 Allure Test Reports
+
+          **Build:** \`${VERSION}\`
+
+          | Report | Link |
+          |--------|------|
+          ${REPORT_LINKS}
+          _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+
+          # Find existing comment with marker, update or create
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
+            echo "Updated existing comment ${COMMENT_ID} on PR #${PR}"
+          else
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Posted new comment on PR #${PR}"
+          fi
 
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'
