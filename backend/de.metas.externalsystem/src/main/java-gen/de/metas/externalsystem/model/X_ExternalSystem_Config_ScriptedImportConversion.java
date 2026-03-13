@@ -72,6 +72,21 @@ public class X_ExternalSystem_Config_ScriptedImportConversion extends org.compie
 	}
 
 	@Override
+	public void setExternalSystem_Endpoint_ID (final int ExternalSystem_Endpoint_ID)
+	{
+		if (ExternalSystem_Endpoint_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, ExternalSystem_Endpoint_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Endpoint_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Endpoint_ID);
+	}
+
+	@Override
 	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -135,6 +150,42 @@ public class X_ExternalSystem_Config_ScriptedImportConversion extends org.compie
 	public String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setSftpPollingIntervalMs (final int SftpPollingIntervalMs)
+	{
+		set_Value (COLUMNNAME_SftpPollingIntervalMs, SftpPollingIntervalMs);
+	}
+
+	@Override
+	public int getSftpPollingIntervalMs()
+	{
+		return get_ValueAsInt(COLUMNNAME_SftpPollingIntervalMs);
+	}
+
+	@Override
+	public void setSftpProcessedDirectory (final @Nullable String SftpProcessedDirectory)
+	{
+		set_Value (COLUMNNAME_SftpProcessedDirectory, SftpProcessedDirectory);
+	}
+
+	@Override
+	public @Nullable String getSftpProcessedDirectory()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpProcessedDirectory);
+	}
+
+	@Override
+	public void setSftpErrorDirectory (final @Nullable String SftpErrorDirectory)
+	{
+		set_Value (COLUMNNAME_SftpErrorDirectory, SftpErrorDirectory);
+	}
+
+	@Override
+	public @Nullable String getSftpErrorDirectory()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpErrorDirectory);
 	}
 
 	@Override
