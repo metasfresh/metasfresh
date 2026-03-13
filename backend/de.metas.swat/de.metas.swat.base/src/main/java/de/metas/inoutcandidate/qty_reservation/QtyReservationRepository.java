@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.qty_reservation;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.QtyTU;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -111,19 +110,21 @@ public class QtyReservationRepository
 	}
 
 	/**
-	 * Returns the attributesKey from any remaining active reservation for the given order line,
-	 * or {@link AttributesKey#NONE} if no reservation remains.
+	 * Returns all active, unprocessed reservations for the given order line.
+	 * Used by the HU picker to honor each reservation's attributes when picking on-the-fly.
 	 */
 	@NonNull
-	public AttributesKey getFirstRemainingAttributesKeyByOrderLineId(@NonNull final OrderAndLineId orderAndLineId)
+	public ImmutableList<QtyReservation> getActiveByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return queryNotProcessedByOrderLine(orderAndLineId)
+		return queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.orderBy(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID)
 				.create()
 				.stream()
-				.map(record -> AttributesKey.ofString(record.getAttributesKey()))
-				.filter(key -> !key.isNone())
-				.findFirst()
-				.orElse(AttributesKey.NONE);
+				.map(QtyReservationLoaderAndSaver::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)

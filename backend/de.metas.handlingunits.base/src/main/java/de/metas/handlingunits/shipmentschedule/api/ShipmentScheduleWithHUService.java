@@ -67,6 +67,9 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.inoutcandidate.qty_reservation.QtyReservation;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -145,10 +148,14 @@ public class ShipmentScheduleWithHUService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final HUReservationService huReservationService;
+	private final QtyReservationRepository qtyReservationRepository;
 
-	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService)
+	public ShipmentScheduleWithHUService(
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final QtyReservationRepository qtyReservationRepository)
 	{
 		this.huReservationService = huReservationService;
+		this.qtyReservationRepository = qtyReservationRepository;
 	}
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
@@ -156,7 +163,9 @@ public class ShipmentScheduleWithHUService
 		Adempiere.enableUnitTestMode();
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
-				() -> new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()))
+				() -> new ShipmentScheduleWithHUService(
+						new HUReservationService(new HUReservationRepository()),
+						new QtyReservationRepository())
 		);
 	}
 
@@ -431,32 +440,63 @@ public class ShipmentScheduleWithHUService
 
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
-		final Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
+		Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
 
 		if (remainingQtyToAllocate.signum() <= 0)
 		{
 			return result.build();
 		}
 
-		final boolean firstHU = true;
-
+		// Pass 1: M_HU_Reservation HUs (physically reserved VHUs)
+		boolean anyHUProcessed = false;
 		final List<I_M_HU> reservedHUs = retrieveReservedHUs(scheduleRecord);
-		final Quantity remainingQtyToAllocateAfterReserved;
-		if (reservedHUs.isEmpty())
+		if (!reservedHUs.isEmpty())
 		{
-			remainingQtyToAllocateAfterReserved = remainingQtyToAllocate;
-		}
-		else
-		{
-			remainingQtyToAllocateAfterReserved = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, firstHU, result, true);
+			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true);
+			anyHUProcessed = true;
 		}
 
-		if (remainingQtyToAllocateAfterReserved.isPositive())
+		// Pass 2: For each M_QtyReservation, pick HUs filtered by the reservation's attributesKey
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (remainingQtyToAllocate.isPositive() && orderLineId != null)
 		{
-			// if we have HUs on stock, get them now
-			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(scheduleRecord);
+			final ImmutableList<QtyReservation> qtyReservations = qtyReservationRepository.getActiveByOrderLineId(orderLineId);
+			for (final QtyReservation qtyReservation : qtyReservations)
+			{
+				if (remainingQtyToAllocate.signum() <= 0)
+				{
+					break;
+				}
+				final Quantity effectiveQty = qtyReservation.getEffectiveQty();
+				if (effectiveQty.signum() <= 0)
+				{
+					continue;
+				}
+				final Quantity qtyCapForThisReservation = effectiveQty.min(remainingQtyToAllocate);
+				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(
+						ShipmentScheduleAndQtyReservation.builder()
+								.shipmentSchedule(scheduleRecord)
+								.qtyReservation(qtyReservation)
+								.build());
+				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false);
+				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
+				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
+				if (actuallyPicked.isPositive())
+				{
+					anyHUProcessed = true;
+				}
+			}
+		}
 
-			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocateAfterReserved, loggableWithLogger, reservedHUs.isEmpty(), result, false);
+		// Pass 3: Fallback — remaining qty using the shipment schedule's own ASI (no specific attributesKey)
+		if (remainingQtyToAllocate.isPositive())
+		{
+			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(
+					ShipmentScheduleAndQtyReservation.builder()
+							.shipmentSchedule(scheduleRecord)
+							.qtyReservation(null)
+							.build());
+			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
 		}
 
 		return result.build();
@@ -560,20 +600,38 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@NonNull
-	private List<I_M_HU> retrievePickOnTheFlySourceHUs(final @NonNull I_M_ShipmentSchedule scheduleRecord)
+	private List<I_M_HU> retrievePickOnTheFlySourceHUs(
+			@NonNull final ShipmentScheduleAndQtyReservation scheduleAndReservation)
 	{
-		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
-		final boolean matchAttributes = sysConfigBL.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY_MATCH_ATTRIBS,
-				true,
-				scheduleRecord.getAD_Client_ID(),
-				scheduleRecord.getAD_Org_ID());
+		final I_M_ShipmentSchedule scheduleRecord = scheduleAndReservation.getShipmentSchedule();
+		final QtyReservation qtyReservation = scheduleAndReservation.getQtyReservation();
 
-		// second, get all unreserved HUs that are available for picking
+		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
+
+		// When a qty reservation is present, use its attributesKey to filter HUs.
+		// When null (fallback pass), use the shipment schedule's own ASI-based attribute matching.
+		final AttributesKey attributesKeyOverride;
+		final boolean matchAttributes;
+		if (qtyReservation != null)
+		{
+			attributesKeyOverride = qtyReservation.getAttributesKey();
+			matchAttributes = false; // overridden by attributesKeyOverride
+		}
+		else
+		{
+			attributesKeyOverride = null;
+			matchAttributes = sysConfigBL.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY_MATCH_ATTRIBS,
+					true,
+					scheduleRecord.getAD_Client_ID(),
+					scheduleRecord.getAD_Org_ID());
+		}
+
 		final IHUPickingSlotBL.PickingHUsQuery pickingHUsQuery = IHUPickingSlotBL.PickingHUsQuery
 				.builder()
 				.shipmentSchedule(scheduleRecord)
 				.onlyTopLevelHUs(true)
-				.onlyIfAttributesMatchWithShipmentSchedules(matchAttributes) // TODO make contingent on HU attribute propagation (iol-handler!)
+				.onlyIfAttributesMatchWithShipmentSchedules(matchAttributes)
+				.attributesKeyOverride(attributesKeyOverride)
 				.excludeAllReserved(true) // we already have the reserved HUs; make sure to not load them again.
 				.build();
 		result.addAll(huPickingSlotBL.retrieveAvailableHUsToPick(pickingHUsQuery));
