@@ -151,7 +151,8 @@ public class PackageLicensingInOutReport_StepDef
 		// Resolve or create warehouse location in the specified country
 		final int warehouseCountryId = getCountryIdByCode(warehouseCountryCode);
 		final int warehouseLocationId = createLocation(warehouseCountryId);
-		final int warehouseId = createWarehouse(clientId, orgId, documentNo + "_WH", warehouseLocationId, bpartnerId);
+		final int warehouseBPLocationId = createBPartnerLocation(clientId, orgId, bpartnerId, warehouseLocationId);
+		final int warehouseId = createWarehouse(clientId, orgId, documentNo + "_WH", warehouseLocationId, bpartnerId, warehouseBPLocationId);
 		final int locatorId = createLocator(clientId, orgId, warehouseId);
 
 		// Create BPartner location in destination country
@@ -418,14 +419,14 @@ public class PackageLicensingInOutReport_StepDef
 		return id;
 	}
 
-	private static int createWarehouse(final int clientId, final int orgId, @NonNull final String value, final int locationId, final int bpartnerId)
+	private static int createWarehouse(final int clientId, final int orgId, @NonNull final String value, final int locationId, final int bpartnerId, final int bpartnerLocationId)
 	{
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_Warehouse_seq')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Warehouse (M_Warehouse_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
-						+ "Value, Name, Separator, C_Location_ID, C_BPartner_ID) "
+						+ "Value, Name, Separator, C_Location_ID, C_BPartner_ID, C_BPartner_Location_ID) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", '*', " + locationId + ", " + bpartnerId + ")",
+						+ sqlQuote(value) + ", " + sqlQuote(value) + ", '*', " + locationId + ", " + bpartnerId + ", " + bpartnerLocationId + ")",
 				ITrx.TRXNAME_None);
 		return id;
 	}
