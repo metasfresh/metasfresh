@@ -38,6 +38,16 @@ import java.util.Map;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PASSWORD;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR;
 
 @Service
 @RequiredArgsConstructor
@@ -66,33 +76,33 @@ public class ExternalSystemScriptedImportConversionService
 			final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 			if (endpoint.getTransportType() == TransportType.SFTP)
 			{
-				parameters.put("sftpHost", endpoint.getSftpHost());
-				parameters.put("sftpPort", String.valueOf(endpoint.getSftpPort()));
-				parameters.put("sftpUsername", endpoint.getSftpUsername());
-				parameters.put("sftpAuthType", endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
 				if (endpoint.getPassword() != null)
 				{
-					parameters.put("sftpPassword", endpoint.getPassword());
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PASSWORD, endpoint.getPassword());
 				}
 				if (endpoint.getSshPrivateKey() != null)
 				{
-					parameters.put("sshPrivateKey", endpoint.getSshPrivateKey());
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY, endpoint.getSshPrivateKey());
 				}
 				if (endpoint.getSftpRemotePath() != null)
 				{
-					parameters.put("sftpRemotePath", endpoint.getSftpRemotePath());
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, endpoint.getSftpRemotePath());
 				}
 				if (config.getSftpPollingIntervalMs() != null)
 				{
-					parameters.put("sftpPollingIntervalMs", String.valueOf(config.getSftpPollingIntervalMs()));
+					parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(config.getSftpPollingIntervalMs()));
 				}
 				if (config.getSftpProcessedDirectory() != null)
 				{
-					parameters.put("sftpProcessedDirectory", config.getSftpProcessedDirectory());
+					parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, config.getSftpProcessedDirectory());
 				}
 				if (config.getSftpErrorDirectory() != null)
 				{
-					parameters.put("sftpErrorDirectory", config.getSftpErrorDirectory());
+					parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, config.getSftpErrorDirectory());
 				}
 			}
 		}
