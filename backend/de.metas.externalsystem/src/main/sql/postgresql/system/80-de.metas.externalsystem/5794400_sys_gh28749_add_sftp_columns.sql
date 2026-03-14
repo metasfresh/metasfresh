@@ -725,6 +725,13 @@ ALTER TABLE ExternalSystem_Endpoint ADD COLUMN IF NOT EXISTS SshPrivateKey TEXT;
 ALTER TABLE ExternalSystem_Endpoint ADD COLUMN IF NOT EXISTS SftpRemotePath VARCHAR(1024);
 ALTER TABLE ExternalSystem_Endpoint ADD COLUMN IF NOT EXISTS SftpFilenamePattern VARCHAR(255);
 
+-- CHECK constraints to enforce valid reference list values at DB level
+ALTER TABLE ExternalSystem_Endpoint ADD CONSTRAINT ck_endpoint_transporttype
+	CHECK (TransportType IN ('HTTP', 'SFTP'));
+
+ALTER TABLE ExternalSystem_Endpoint ADD CONSTRAINT ck_endpoint_sftpauthtype
+	CHECK (SftpAuthType IS NULL OR SftpAuthType IN ('PASSWORD', 'SSH_KEY'));
+
 -- =============================================================================
 -- 6. Make existing HTTP columns nullable (AD_Column + physical DDL)
 -- =============================================================================

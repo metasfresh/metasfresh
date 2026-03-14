@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -38,7 +39,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 
@@ -58,8 +63,8 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
 @Component
 public class SftpDeliveryProcessor implements Processor
 {
-	private static final String AUTH_TYPE_PASSWORD = "PASSWORD";
-	private static final String AUTH_TYPE_SSH_KEY = "SSH_KEY";
+	private static final String AUTH_TYPE_PASSWORD = ExternalSystemConstants.SFTP_AUTH_TYPE_PASSWORD;
+	private static final String AUTH_TYPE_SSH_KEY = ExternalSystemConstants.SFTP_AUTH_TYPE_SSH_KEY;
 
 	@Override
 	public void process(@NonNull final Exchange exchange) throws Exception
@@ -170,8 +175,9 @@ public class SftpDeliveryProcessor implements Processor
 
 		sb.append("&stepwise=false");
 		sb.append("&disconnect=true");
-		sb.append("&knownHostsFile=/dev/null");
+		// NOTE: Host key verification is disabled for convenience. Consider making this configurable for production use.
 		sb.append("&strictHostKeyChecking=no");
+		sb.append("&useUserKnownHostsFile=false");
 
 		return sb.toString();
 	}
@@ -179,7 +185,9 @@ public class SftpDeliveryProcessor implements Processor
 	@NonNull
 	private static Path writeSshKeyToTempFile(@NonNull final String sshPrivateKey) throws IOException
 	{
-		final Path tempFile = Files.createTempFile("sftp_key_", ".pem");
+		final Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
+		final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(ownerOnly);
+		final Path tempFile = Files.createTempFile("sftp_key_", ".pem", attr);
 		Files.writeString(tempFile, sshPrivateKey, StandardCharsets.UTF_8);
 		log.debug("Wrote SSH private key to temp file: {}", tempFile);
 		return tempFile;

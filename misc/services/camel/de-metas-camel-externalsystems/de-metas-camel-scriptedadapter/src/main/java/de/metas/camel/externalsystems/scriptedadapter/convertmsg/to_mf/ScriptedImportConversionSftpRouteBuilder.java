@@ -32,6 +32,7 @@ import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.status.JsonExternalStatus;
 import de.metas.common.externalsystem.status.JsonStatusRequest;
+import jakarta.annotation.PreDestroy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
@@ -41,7 +42,11 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
@@ -71,6 +76,23 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 	private final ConcurrentHashMap<String, Path> sshKeyTempFiles = new ConcurrentHashMap<>();
 
 	private JavaScriptExecutorService javaScriptExecutorService;
+
+	@PreDestroy
+	public void cleanupSshKeyTempFiles()
+	{
+		sshKeyTempFiles.forEach((name, path) -> {
+			try
+			{
+				Files.deleteIfExists(path);
+				log.info("Cleaned up SSH key temp file for route '{}': {}", name, path);
+			}
+			catch (final java.io.IOException e)
+			{
+				log.warn("Failed to clean up SSH key temp file for route '{}': {}", name, path, e);
+			}
+		});
+		sshKeyTempFiles.clear();
+	}
 
 	@Override
 	public void configure()
@@ -117,6 +139,20 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final String sftpPort = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT);
 		final String sftpUsername = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME);
 		final String sftpAuthType = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE);
+
+		// Validate mandatory parameters
+		if (sftpHost == null || sftpHost.isBlank())
+		{
+			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST + "' is required!");
+		}
+		if (sftpUsername == null || sftpUsername.isBlank())
+		{
+			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME + "' is required!");
+		}
+		if (sftpAuthType == null || sftpAuthType.isBlank())
+		{
+			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE + "' is required!");
+		}
 		final String sftpRemotePath = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "/");
 		final String pollingIntervalMs = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "60000");
 		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR, ".done");
@@ -133,10 +169,12 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		sftpUri.append("?username=").append(sftpUsername);
 
 		// Auth: password or SSH key
-		if ("SSH_KEY".equals(sftpAuthType))
+		if (ExternalSystemConstants.SFTP_AUTH_TYPE_SSH_KEY.equals(sftpAuthType))
 		{
 			final String sshPrivateKey = params.get(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY);
-			final Path tempKeyFile = Files.createTempFile("sftp_key_" + endpointName + "_", ".pem");
+			final Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
+			final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(ownerOnly);
+			final Path tempKeyFile = Files.createTempFile("sftp_key_" + endpointName + "_", ".pem", attr);
 			Files.writeString(tempKeyFile, sshPrivateKey);
 			sshKeyTempFiles.put(endpointName, tempKeyFile);
 			sftpUri.append("&privateKeyFile=").append(tempKeyFile.toAbsolutePath());
@@ -152,6 +190,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		sftpUri.append("&moveFailed=").append(errorDir);
 		sftpUri.append("&stepwise=false");
 		sftpUri.append("&disconnect=true");
+		// NOTE: Host key verification is disabled for convenience. Consider making this configurable for production use.
 		sftpUri.append("&strictHostKeyChecking=no");
 		sftpUri.append("&useUserKnownHostsFile=false");
 

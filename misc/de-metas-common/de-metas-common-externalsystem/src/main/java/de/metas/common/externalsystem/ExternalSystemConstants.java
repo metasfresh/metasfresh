@@ -221,5 +221,9 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_POLLING_INTERVAL_MS = "sftpPollingIntervalMs";
 	public static final String PARAM_SFTP_POLLING_PROCESSED_DIR = "sftpProcessedDirectory";
 	public static final String PARAM_SFTP_POLLING_ERROR_DIR = "sftpErrorDirectory";
+
+	// Shared SFTP auth type values (used by both backend enum and Camel routes)
+	public static final String SFTP_AUTH_TYPE_PASSWORD = "PASSWORD";
+	public static final String SFTP_AUTH_TYPE_SSH_KEY = "SSH_KEY";
 }
 

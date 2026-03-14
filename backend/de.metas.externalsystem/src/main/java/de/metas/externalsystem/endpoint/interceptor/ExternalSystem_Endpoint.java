@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.endpoint.interceptor;
 
+import de.metas.externalsystem.endpoint.SftpAuthType;
 import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import lombok.NonNull;
@@ -74,12 +75,12 @@ public class ExternalSystem_Endpoint
 	public void resetSftpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
 		final String newSftpAuthType = endpoint.getSftpAuthType();
-		if (de.metas.externalsystem.endpoint.SftpAuthType.PASSWORD.getCode().equals(newSftpAuthType))
+		if (SftpAuthType.PASSWORD.getCode().equals(newSftpAuthType))
 		{
 			// Switching to password auth — clear SSH key
 			endpoint.setSshPrivateKey(null);
 		}
-		else if (de.metas.externalsystem.endpoint.SftpAuthType.SSH_KEY.getCode().equals(newSftpAuthType))
+		else if (SftpAuthType.SSH_KEY.getCode().equals(newSftpAuthType))
 		{
 			// Switching to SSH key auth — clear password
 			endpoint.setPassword(null);

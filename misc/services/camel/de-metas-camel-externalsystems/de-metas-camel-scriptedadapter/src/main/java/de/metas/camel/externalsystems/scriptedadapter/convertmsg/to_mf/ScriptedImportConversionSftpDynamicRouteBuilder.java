@@ -38,18 +38,18 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ScriptedImportConversionSftpDynamicRouteBuilder extends RouteBuilder
 {
-	private static final Logger logger = Logger.getLogger(ScriptedImportConversionSftpDynamicRouteBuilder.class.getName());
 
 	@NonNull private final String endpointName;
 	@NonNull private final String sftpUri;
@@ -100,7 +100,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends RouteBuilde
 		}
 		catch (final Exception e)
 		{
-			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
+			log.warn("Exception caught when handling request: {}", request, e);
 			exchange.getMessage().setBody(getErrorMessage(e));
 		}
 	}

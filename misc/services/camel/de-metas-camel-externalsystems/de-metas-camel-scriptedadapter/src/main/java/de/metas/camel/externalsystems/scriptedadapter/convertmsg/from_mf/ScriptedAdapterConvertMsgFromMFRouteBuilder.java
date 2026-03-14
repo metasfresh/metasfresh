@@ -395,6 +395,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	{
 		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
+		if (Check.isBlank(msgFromMfContext.getOutboundRecordId()) || Check.isBlank(msgFromMfContext.getOutboundRecordTableName()))
+		{
+			log.warn("No outbound record ID or table name — skipping SFTP delivery log attachment");
+			return;
+		}
+
 		final String fileContent = "=== Scripted Adapter Log (SFTP) ===\n"
 				+ "Timestamp: " + LocalDateTime.now() + "\n"
 				+ "Script Name: " + msgFromMfContext.getScriptIdentifier() + "\n"
