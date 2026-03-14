@@ -156,6 +156,7 @@ pull_request_rules:
           - head~=_release$
           - head=release
       - -head~=^merge/
+      - -head~=^patch/
     actions:
       comment:
         message: |
