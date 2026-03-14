@@ -70,7 +70,6 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 	// Track SSH key temp files for cleanup on disable
 	private final ConcurrentHashMap<String, Path> sshKeyTempFiles = new ConcurrentHashMap<>();
 
-	private JavaScriptRepo javaScriptRepo;
 	private JavaScriptExecutorService javaScriptExecutorService;
 
 	@Override
@@ -78,7 +77,6 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 	{
 		CamelRouteUtil.setupProperties(getContext());
 
-		javaScriptRepo = new JavaScriptRepo(getContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
 		javaScriptExecutorService = new JavaScriptExecutorService();
 
 		//@formatter:off
@@ -154,9 +152,13 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		sftpUri.append("&moveFailed=").append(errorDir);
 		sftpUri.append("&stepwise=false");
 		sftpUri.append("&disconnect=true");
+		sftpUri.append("&strictHostKeyChecking=no");
+		sftpUri.append("&useUserKnownHostsFile=false");
 
-		// Add the dynamic route
+		// Add the dynamic route (resolve script repo path lazily at enable time, not at configure time)
 		final String finalSftpUri = sftpUri.toString();
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
+				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
 				endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate));
 

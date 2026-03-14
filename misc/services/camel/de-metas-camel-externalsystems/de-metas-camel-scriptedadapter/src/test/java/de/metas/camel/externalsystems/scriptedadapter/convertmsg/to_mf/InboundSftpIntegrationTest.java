@@ -77,8 +77,13 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	private EmbeddedSftpServer sftpServer;
 
 	@BeforeEach
-	void setUp() throws Exception
+	void setUpSftpEnvironment() throws Exception
 	{
+		// Set the scriptRepoDir property now that @TempDir has been injected
+		context.getPropertiesComponent().addOverrideProperty(
+				"metasfresh.scriptedadapter.repo.baseDir",
+				scriptRepoDir.toAbsolutePath().toString());
+
 		// Create SFTP directories
 		Files.createDirectories(sftpRootDir.resolve("inbound"));
 		Files.createDirectories(sftpRootDir.resolve("inbound/.done"));
@@ -133,6 +138,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
 	{
+		// Load base properties; scriptRepoDir is not available yet (@TempDir injected after construction),
+		// so the baseDir property is set later in setUpSftpEnvironment()
 		final Properties properties = new Properties();
 		try
 		{
@@ -142,10 +149,6 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		{
 			throw new RuntimeException(e);
 		}
-
-		// Point the scripting repo base dir to our temp directory containing the test script
-		properties.setProperty("metasfresh.scriptedadapter.repo.baseDir", scriptRepoDir.toAbsolutePath().toString());
-
 		return properties;
 	}
 
