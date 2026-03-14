@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN record_id  numeric,
-                                                                                          IN p_language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN p_record_id numeric,
+                                                                                          IN p_language  Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(record_id  numeric,
-                                                                                             p_language character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(p_record_id numeric,
+                                                                                             p_language  character varying)
     RETURNS TABLE
             (
                 description        character varying,
@@ -106,7 +106,7 @@ FROM C_Invoice i
         -- proposal order
              LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
 
-    WHERE il.C_Invoice_ID = record_id
+    WHERE il.C_Invoice_ID = p_record_id
     ) o ON TRUE
 
          LEFT JOIN LATERAL
@@ -118,14 +118,14 @@ FROM C_Invoice i
              JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID
              JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
 
-    WHERE il.C_Invoice_ID = record_id
+    WHERE il.C_Invoice_ID = p_record_id
     ) io ON TRUE
 
     -- warehouse
          LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
     -- project
          LEFT JOIN c_project pr ON i.c_project_id = pr.c_project_id
-WHERE i.C_Invoice_ID = record_id
+WHERE i.C_Invoice_ID = p_record_id
 
 $$
 ;

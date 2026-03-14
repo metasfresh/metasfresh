@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_BOMLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Order_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1884950035L;
+	private static final long serialVersionUID = -921327590L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (final Properties ctx, final int PP_Order_BOMLine_ID, @Nullable final String trxName)
@@ -789,6 +789,33 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public boolean isShowSubBOMIngredients() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_ShowSubBOMIngredients);
+	}
+
+	@Override
+	public void setToleranceChanged (final @Nullable java.sql.Timestamp ToleranceChanged)
+	{
+		set_Value (COLUMNNAME_ToleranceChanged, ToleranceChanged);
+	}
+
+	@Override
+	public java.sql.Timestamp getToleranceChanged() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ToleranceChanged);
+	}
+
+	@Override
+	public void setToleranceChangedBy_ID (final int ToleranceChangedBy_ID)
+	{
+		if (ToleranceChangedBy_ID < 1) 
+			set_Value (COLUMNNAME_ToleranceChangedBy_ID, null);
+		else 
+			set_Value (COLUMNNAME_ToleranceChangedBy_ID, ToleranceChangedBy_ID);
+	}
+
+	@Override
+	public int getToleranceChangedBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ToleranceChangedBy_ID);
 	}
 
 	@Override
