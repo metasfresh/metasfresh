@@ -64,21 +64,49 @@ SELECT io.DocumentNo,
              THEN iol.MovementQty END)                                                          AS ForeignSalesQty,
        uom.UOMSymbol,
        p.weight                                                                                AS Weight,
-       pp.value                                                                                AS ProductGroup,
-       -- NEW: MaterialType (replaces ProductGroup; comma-separated when multiple)
-       (SELECT STRING_AGG(pp.Name, ', ' ORDER BY pp.Name)
+       -- ProductGroup (first matching for country)
+       (SELECT pg.value
         FROM M_Product_PackageLicensing_ProductGroup pppg
-                 JOIN M_PackageLicensing_ProductGroup pp
-                      ON pp.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
-                          AND pp.IsActive = 'Y'
-                          AND (p_Country_id IS NULL OR pp.C_Country_ID = p_Country_id)
+                 JOIN M_PackageLicensing_ProductGroup pg
+                      ON pg.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
+                          AND pg.IsActive = 'Y'
+                          AND pg.C_Country_ID = p_Country_id
+        WHERE pppg.M_Product_ID = p.M_Product_ID
+          AND pppg.IsActive = 'Y'
+        ORDER BY pg.M_PackageLicensing_ProductGroup_ID
+        LIMIT 1)                                                                               AS ProductGroup,
+       -- MaterialType (comma-separated when multiple)
+       (SELECT STRING_AGG(pg.Name, ', ' ORDER BY pg.Name)
+        FROM M_Product_PackageLicensing_ProductGroup pppg
+                 JOIN M_PackageLicensing_ProductGroup pg
+                      ON pg.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
+                          AND pg.IsActive = 'Y'
+                          AND (p_Country_id IS NULL OR pg.C_Country_ID = p_Country_id)
         WHERE pppg.M_Product_ID = p.M_Product_ID
           AND pppg.IsActive = 'Y')                                                             AS MaterialType,
-       plmp1.name                                                                              AS SmallPackagingMaterial,
+       -- SmallPackagingMaterial (resolved by country parameter)
+       (SELECT mg.name
+        FROM M_Product_SmallPackagingMaterial spm
+                 JOIN M_PackageLicensing_MaterialGroup mg
+                      ON mg.M_PackageLicensing_MaterialGroup_ID = spm.M_PackageLicensing_MaterialGroup_ID
+                          AND mg.IsActive = 'Y'
+                          AND mg.C_Country_ID = p_Country_id
+        WHERE spm.M_Product_ID = p.M_Product_ID
+          AND spm.IsActive = 'Y'
+        LIMIT 1)                                                                               AS SmallPackagingMaterial,
        p.SmallPackagingWeight,
-       plmp2.name                                                                              AS OuterPackagingMaterial,
+       -- OuterPackagingMaterial (resolved by country parameter)
+       (SELECT mg.name
+        FROM M_Product_OuterPackagingMaterial opm
+                 JOIN M_PackageLicensing_MaterialGroup mg
+                      ON mg.M_PackageLicensing_MaterialGroup_ID = opm.M_PackageLicensing_MaterialGroup_ID
+                          AND mg.IsActive = 'Y'
+                          AND mg.C_Country_ID = p_Country_id
+        WHERE opm.M_Product_ID = p.M_Product_ID
+          AND opm.IsActive = 'Y'
+        LIMIT 1)                                                                               AS OuterPackagingMaterial,
        p.OuterPackagingWeight,
-       -- NEW: Packaging instruction factor (default PI preferred)
+       -- Packaging instruction factor (default PI preferred)
        (SELECT piip.Qty
         FROM M_HU_PI_Item_Product piip
         WHERE piip.M_Product_ID = p.M_Product_ID
@@ -94,14 +122,6 @@ FROM m_inout io
          INNER JOIN c_location l ON l.c_location_id = wh.c_location_id
          INNER JOIN c_country c ON c.c_country_id = l.c_country_id
 
-    -- Product group and packaging
-         LEFT JOIN m_product_packagelicensing_productgroup ppp ON ppp.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_ProductGroup pp ON pp.M_PackageLicensing_ProductGroup_id = ppp.M_PackageLicensing_ProductGroup_ID AND pp.c_country_id = p_Country_id
-         LEFT JOIN M_Product_SmallPackagingMaterial pspm ON pspm.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_MaterialGroup plmp1 ON pspm.M_PackageLicensing_MaterialGroup_id = plmp1.m_packagelicensing_materialgroup_id AND plmp1.c_country_id = p_Country_id
-         LEFT JOIN M_Product_OuterPackagingMaterial popm ON popm.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_MaterialGroup plmp2 ON popm.M_PackageLicensing_MaterialGroup_id = plmp2.m_packagelicensing_materialgroup_id AND plmp2.c_country_id = p_Country_id
-
     -- Shipment destination
          LEFT JOIN c_bpartner_location bpl ON bpl.c_bpartner_location_id = io.c_bpartner_location_id
          LEFT JOIN c_location bl ON bl.c_location_id = bpl.c_location_id
@@ -110,8 +130,31 @@ FROM m_inout io
 
 WHERE io.movementdate BETWEEN p_DateFrom AND p_DateTo
   AND io.DocStatus IN ('CO', 'CL')
-  AND (plmp1.name IS NOT NULL OR plmp2.name IS NOT NULL)
-  AND pp.value IS NOT NULL
+  -- Must have packaging data for the given country
+  AND EXISTS (SELECT 1
+              FROM M_Product_PackageLicensing_ProductGroup pppg
+                       JOIN M_PackageLicensing_ProductGroup pg
+                            ON pg.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
+                                AND pg.IsActive = 'Y'
+                                AND pg.C_Country_ID = p_Country_id
+              WHERE pppg.M_Product_ID = p.M_Product_ID
+                AND pppg.IsActive = 'Y')
+  AND (EXISTS (SELECT 1
+               FROM M_Product_SmallPackagingMaterial spm
+                        JOIN M_PackageLicensing_MaterialGroup mg
+                             ON mg.M_PackageLicensing_MaterialGroup_ID = spm.M_PackageLicensing_MaterialGroup_ID
+                                 AND mg.IsActive = 'Y'
+                                 AND mg.C_Country_ID = p_Country_id
+               WHERE spm.M_Product_ID = p.M_Product_ID
+                 AND spm.IsActive = 'Y')
+    OR EXISTS (SELECT 1
+               FROM M_Product_OuterPackagingMaterial opm
+                        JOIN M_PackageLicensing_MaterialGroup mg
+                             ON mg.M_PackageLicensing_MaterialGroup_ID = opm.M_PackageLicensing_MaterialGroup_ID
+                                 AND mg.IsActive = 'Y'
+                                 AND mg.C_Country_ID = p_Country_id
+               WHERE opm.M_Product_ID = p.M_Product_ID
+                 AND opm.IsActive = 'Y'))
 ORDER BY io.movementdate, io.documentno, p.value
     ;
 
