@@ -25,24 +25,29 @@ CREATE OR REPLACE FUNCTION ad_user_fts_trigger_function()
 AS
 $$
 BEGIN
-    IF (TG_OP = 'UPDATE') THEN
-        -- If the bpartner ID differs, refresh both old and new. Otherwise, refresh only once.
-        IF NEW.c_bpartner_id IS DISTINCT FROM OLD.c_bpartner_id THEN
+    IF TG_OP = 'UPDATE' THEN
+
+        IF OLD.c_bpartner_id IS NOT NULL
+            AND OLD.c_bpartner_id IS DISTINCT FROM NEW.c_bpartner_id THEN
             PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
-            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
-        ELSE
+        END IF;
+
+        IF NEW.c_bpartner_id IS NOT NULL THEN
             PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         END IF;
-    ELSIF (TG_OP = 'DELETE') THEN
+
+    ELSIF TG_OP = 'DELETE' AND OLD.c_bpartner_id IS NOT NULL THEN
         PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
-    ELSIF (TG_OP = 'INSERT') THEN
+
+    ELSIF TG_OP = 'INSERT' AND NEW.c_bpartner_id IS NOT NULL THEN
         PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
+
     END IF;
+
     RETURN NULL;
 END;
 $$
-    LANGUAGE plpgsql
-;
+    LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION ad_user_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when an AD_User is updated.'
 ;
