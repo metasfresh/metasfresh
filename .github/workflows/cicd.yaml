@@ -19,9 +19,29 @@ jobs:
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
+      skip-testspace: ${{ steps.skip-checks.outputs.skip-testspace }}
+      skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
     steps:
+      - name: Determine skip flags
+        id: skip-checks
+        env:
+          SKIP_TESTSPACE_VAR: ${{ vars.SKIP_TESTSPACE }}
+        run: |
+          # Skip testspace for tmp-mergify/ branches or when SKIP_TESTSPACE var is set
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]] || [[ "$SKIP_TESTSPACE_VAR" == "true" ]]; then
+            echo "skip-testspace=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-testspace=false" >> $GITHUB_OUTPUT
+          fi
+          # Skip publish-reports for tmp-mergify/ branches only
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]]; then
+            echo "skip-publish-reports=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
+        if: steps.skip-checks.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -83,6 +103,7 @@ jobs:
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
+        if: steps.skip-checks.outputs.skip-testspace != 'true'
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
@@ -379,6 +400,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
+        if: needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -393,8 +415,10 @@ jobs:
       - name: publish results
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
           testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
+          fi
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -962,6 +986,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1008,10 +1033,12 @@ jobs:
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
           testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
           testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
+          fi
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1105,6 +1132,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1127,9 +1155,11 @@ jobs:
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
         run: |
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
+          fi
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         uses: nick-fields/retry@v3
         with:
@@ -1303,6 +1333,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1319,7 +1350,9 @@ jobs:
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
           mv test-results test-results-temp || true
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[mobile/playwright]playwright-report/junit/results.xml"
+          fi
           # Move back for artifact upload
           mv test-results-temp test-results || true
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
@@ -1358,6 +1391,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1376,7 +1410,9 @@ jobs:
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
           mv test-results test-results-temp || true
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[frontend/playwright]playwright-report/junit/results.xml"
+          fi
           # Move back for artifact upload
           mv test-results-temp test-results || true
 
@@ -1448,320 +1484,389 @@ jobs:
             docker-builds/frontendtest/test-results/
           retention-days: 30
 
-  allure_publish:
-    name: Publish Allure Reports to GitHub Pages
+  publish-test-reports:
+    name: publish test reports
     runs-on: ubuntu-latest
-    needs: [ init, frontend_webui_test ]
-    if: always()  # Run even if tests failed
+    needs: [ init, frontend_webui_test, mobile_test ]
+    if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
-      contents: write
+      actions: write    # trigger reports-cleanup workflow when disk space is low
+      contents: read
     steps:
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages-repo
-
-      - name: Setup directory structure
+      - name: Check for report server secret
+        id: check-secret
         run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          if [ -z "${{ secrets.REPORTS_SERVER_SSH_KEY }}" ]; then
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::warning::REPORTS_SERVER_SSH_KEY not configured — skipping report upload"
+          else
+            echo "available=true" >> $GITHUB_OUTPUT
+          fi
 
-          # Create directory structure with explicit paths
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          mkdir -p "gh-pages-repo/_data"
+      - name: Setup SSH
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        env:
+          REPORTS_SERVER_HOSTNAME: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          REPORTS_SERVER_USER: ${{ secrets.TESTREPORTS_USER }}
+          REPORTS_SERVER_SSH_PORT: ${{ secrets.TESTREPORTS_SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
+          chmod 600 ~/.ssh/reports_key
+          ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$REPORTS_SERVER_SSH_PORT" -H "$REPORTS_SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config <<EOF
+          Host reports-storage
+            HostName $REPORTS_SERVER_HOSTNAME
+            User $REPORTS_SERVER_USER
+            Port $REPORTS_SERVER_SSH_PORT
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
 
-          # Debug: Show created paths (absolute)
-          echo "Created directory structure:"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          echo "  - $(pwd)/gh-pages-repo/_data"
+          Host reports-server
+            HostName test-reports.metasfresh.com
+            User ci-reports
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+          EOF
 
-          # Verify directories exist
-          ls -la "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/"
+      - name: Download allure-report-cucumber
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-cucumber
+          path: reports/cucumber
+        continue-on-error: true
 
-      - name: Download Allure report artifact
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
+      - name: Download allure-report-mobile-webui
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-mobile-webui
+          path: reports/mobile-webui
+        continue-on-error: true
+
+      - name: Download allure-report-frontend-webui
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-frontend-webui
-          path: gh-pages-repo/temp-report/
+          path: reports/frontend-webui
+        continue-on-error: true
 
-      - name: Copy report to build directory
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
+      - name: Inventory available reports
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        id: inventory
         run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
-          rm -rf gh-pages-repo/temp-report
-
-      - name: Update latest redirect
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          cat > "gh-pages-repo/branches/${BRANCH_SANITIZED}/latest.html" <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Redirecting to Latest Report...</title>
-            <meta http-equiv="refresh" content="0; url=builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">
-            <script>window.location.href = 'builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/';</script>
-          </head>
-          <body>
-            <p>Redirecting to latest report...</p>
-            <p>If not redirected, <a href="builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">click here</a>.</p>
-          </body>
-          </html>
-          EOF
-
-      - name: Update branches metadata
-        run: |
-          cd gh-pages-repo
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          METADATA_FILE="_data/branches.json"
-          if [ ! -f "$METADATA_FILE" ]; then
-            echo '{"branches":[]}' > "$METADATA_FILE"
+          REPORTS=""
+          COUNT=0
+          for report_type in cucumber mobile-webui frontend-webui; do
+            if [ -d "reports/${report_type}" ] && [ -f "reports/${report_type}/index.html" ]; then
+              REPORTS="${REPORTS}${report_type} "
+              COUNT=$((COUNT + 1))
+            else
+              echo "::notice::No report found for ${report_type}"
+            fi
+          done
+          echo "reports=${REPORTS}" >> $GITHUB_OUTPUT
+          echo "count=${COUNT}" >> $GITHUB_OUTPUT
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No Allure report artifacts available — nothing to upload"
+          else
+            echo "Found ${COUNT} report(s): ${REPORTS}"
           fi
 
-          # Use compact jq to avoid shell quoting issues with multi-line scripts
-          jq --arg name "${{ github.ref_name }}" \
-             --arg sanitized "$BRANCH_SANITIZED" \
-             --arg build "${{ needs.init.outputs.tag-fixed }}" \
-             --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active"} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/latest.html")}, "buildCount": 1, "branch_status": "active"}] else . end' \
-             "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
-
-      - name: Generate landing page
+      - name: Upload reports to server
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+          STORAGEBOX_BASE_PATH: ${{ secrets.TESTREPORTS_BASE_PATH }}
         run: |
-          cd gh-pages-repo
+          # Two different base paths -- same content, different mount points:
+          #   STORAGEBOX_PATH: used by rsync to reports-storage (storagebox internal path)
+          #   SERVER_PATH:     used by ssh to reports-server (test server mount point)
+          STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
+          SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
 
-          cat > index.html <<'LANDINGPAGE'
+          # Create target directories on server
+          ssh reports-server "mkdir -p ${SERVER_PATH}"
+
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            echo "Uploading ${report_type} report..."
+            rsync -az --delete \
+              "reports/${report_type}/" \
+              "reports-storage:${STORAGEBOX_PATH}/${report_type}/"
+            echo "✓ ${report_type} uploaded"
+          done
+
+          # Generate index.html in the allure parent directory so the URL doesn't 403
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}<li><a href=\"${report_type}/\">${report_type}</a></li>"
+          done
+          ssh reports-server "cat > ${SERVER_PATH}/index.html" <<EOF
+          <!DOCTYPE html>
+          <html><head><title>Allure Reports — ${VERSION}</title>
+          <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
+          </head><body>
+          <h1>Allure Reports</h1>
+          <p><strong>Build:</strong> ${VERSION}</p>
+          <ul>${REPORT_LINKS}</ul>
+          <p><a href="https://test-reports.metasfresh.com/">← Back to all reports</a></p>
+          </body></html>
+          EOF
+
+      - name: Update branch metadata and prune old builds
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
+          import json, sys, os, shutil
+          from datetime import datetime, timezone
+
+          MAX_BUILDS_PER_BRANCH = 3
+
+          branch = sys.argv[1]
+          version = sys.argv[2]
+          metadata_dir = "/var/www/test-reports/_metadata"
+          metadata_file = os.path.join(metadata_dir, f"{branch}.json")
+          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
+
+          os.makedirs(metadata_dir, exist_ok=True)
+
+          # Read existing metadata or create new
+          if os.path.exists(metadata_file):
+              with open(metadata_file, "r") as f:
+                  try:
+                      data = json.load(f)
+                  except json.JSONDecodeError:
+                      data = {"branch": branch, "builds": []}
+          else:
+              data = {"branch": branch, "builds": []}
+
+          # Deduplicate: remove existing entry for this version
+          data["builds"] = [b for b in data["builds"] if b.get("version") != version]
+
+          # Prepend new build
+          data["builds"].insert(0, {
+              "version": version,
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          })
+
+          # Cap metadata and collect evicted versions
+          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
+          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
+
+          with open(metadata_file, "w") as f:
+              json.dump(data, f, indent=2)
+
+          # Delete build directories for evicted versions
+          for ver in evicted:
+              build_path = os.path.join(builds_dir, ver)
+              if os.path.isdir(build_path):
+                  shutil.rmtree(build_path)
+                  print(f"Pruned old build: {branch}/{ver}")
+
+          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
+          PYEOF
+
+      - name: Update landing page
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        run: |
+          ssh reports-server "cat > /var/www/test-reports/index.html" <<'HTMLEOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>metasfresh Test Reports</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 2rem;
-              }
-              .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                overflow: hidden;
-              }
-              header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 2rem;
-                text-align: center;
-              }
-              header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-              header p { opacity: 0.9; font-size: 1.1rem; }
-              .filters {
-                padding: 1.5rem 2rem;
-                background: #f7f9fc;
-                border-bottom: 1px solid #e1e8ed;
-                display: flex;
-                gap: 1rem;
-              }
-              .filters input, .filters select {
-                flex: 1;
-                padding: 0.75rem 1rem;
-                border: 1px solid #d1d9e0;
-                border-radius: 6px;
-                font-size: 1rem;
-              }
-              .branch-list { padding: 2rem; }
-              .branch-card {
-                background: #f7f9fc;
-                border-radius: 8px;
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-                border: 1px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .branch-card:hover {
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                transform: translateY(-2px);
-              }
-              .branch-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-              }
-              .branch-name { font-size: 1.3rem; font-weight: 600; color: #2d3748; }
-              .branch-meta { font-size: 0.85rem; color: #718096; margin-top: 0.25rem; }
-              .reports-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1rem;
-                margin-top: 1rem;
-              }
-              .report-link {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 1rem;
-                background: white;
-                border-radius: 6px;
-                text-decoration: none;
-                color: #667eea;
-                font-weight: 500;
-                border: 2px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .report-link:hover {
-                border-color: #667eea;
-                background: #f0f4ff;
-              }
-              .badge {
-                padding: 0.25rem 0.75rem;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-              }
-              .badge-active { background: #48bb78; color: white; }
-              .badge-stale { background: #ed8936; color: white; }
-              footer {
-                text-align: center;
-                padding: 1.5rem;
-                color: #718096;
-                border-top: 1px solid #e1e8ed;
-              }
-            </style>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Test Reports - metasfresh</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  h1 { color: #333; }
+                  .branch { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                  .branch h2 { margin-top: 0; color: #0066cc; }
+                  .builds { display: grid; gap: 10px; }
+                  .build { padding: 10px; background: #f9f9f9; border-radius: 4px; }
+                  .build-header { font-weight: bold; margin-bottom: 5px; }
+                  .timestamp { color: #666; font-size: 0.9em; margin-left: 10px; }
+                  .report-links { margin-top: 5px; }
+                  .report-links a { color: #0066cc; text-decoration: none; margin-right: 15px; }
+                  .report-links a:hover { text-decoration: underline; }
+                  .loading { color: #666; }
+                  .error { color: #cc0000; }
+              </style>
           </head>
           <body>
-            <div class="container">
-              <header>
-                <h1>🧪 metasfresh Test Reports</h1>
-                <p>Allure test reports for all branches</p>
-              </header>
-
-              <div class="filters">
-                <input type="text" id="searchInput" placeholder="Search branches..." />
-                <select id="statusFilter">
-                  <option value="all">All Branches</option>
-                  <option value="active">Active Only</option>
-                  <option value="stale">Stale Only</option>
-                </select>
+              <div class="container">
+                  <h1>📊 Test Reports</h1>
+                  <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
+              <script>
+                  function createTextElement(tag, text, className) {
+                      const el = document.createElement(tag);
+                      el.textContent = text;
+                      if (className) el.className = className;
+                      return el;
+                  }
 
-              <div class="branch-list" id="branchList">
-                <p style="text-align:center; color: #718096; padding: 2rem;">Loading...</p>
-              </div>
+                  function createLink(href, text) {
+                      const a = document.createElement('a');
+                      a.href = href;
+                      a.textContent = text;
+                      return a;
+                  }
 
-              <footer>
-                <p>Generated by GitHub Actions | Last updated: <span id="lastUpdate"></span></p>
-              </footer>
-            </div>
+                  function createBuildElement(branchName, build) {
+                      const buildDiv = document.createElement('div');
+                      buildDiv.className = 'build';
 
-            <script>
-              async function loadBranches() {
-                try {
-                  const response = await fetch('_data/branches.json');
-                  const data = await response.json();
-                  renderBranches(data.branches);
-                  document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-                } catch (error) {
-                  document.getElementById('branchList').innerHTML =
-                    '<p style="text-align:center; color: #e53e3e;">Error loading branches</p>';
-                }
-              }
+                      const header = document.createElement('div');
+                      header.className = 'build-header';
 
-              function renderBranches(branches) {
-                const container = document.getElementById('branchList');
-                container.innerHTML = '';
+                      const versionSpan = document.createElement('span');
+                      versionSpan.textContent = build.version;
+                      header.appendChild(versionSpan);
 
-                if (!branches.length) {
-                  container.innerHTML = '<p style="text-align:center; color: #718096;">No branches</p>';
-                  return;
-                }
+                      const timestampSpan = document.createElement('span');
+                      timestampSpan.className = 'timestamp';
+                      timestampSpan.textContent = new Date(build.timestamp).toLocaleString();
+                      header.appendChild(timestampSpan);
 
-                branches
-                  .sort((a, b) => new Date(b.lastUpdate) - new Date(a.lastUpdate))
-                  .forEach(branch => {
-                    const card = document.createElement('div');
-                    card.className = 'branch-card';
-                    card.dataset.name = branch.name.toLowerCase();
-                    card.dataset.status = branch.branch_status;
+                      buildDiv.appendChild(header);
 
-                    const reports = Object.entries(branch.reports || {})
-                      .map(([type, url]) => `
-                        <a href="${url}" class="report-link">
-                          <span>📊 ${type.replace('-', ' ').toUpperCase()}</span>
-                          <span>→</span>
-                        </a>
-                      `).join('');
+                      const linksDiv = document.createElement('div');
+                      linksDiv.className = 'report-links';
 
-                    card.innerHTML = `
-                      <div class="branch-header">
-                        <div>
-                          <div class="branch-name">${branch.name}</div>
-                          <div class="branch-meta">
-                            Updated: ${new Date(branch.lastUpdate).toLocaleString()} |
-                            Builds: ${branch.buildCount} | Latest: ${branch.lastBuild}
-                          </div>
-                        </div>
-                        <span class="badge badge-${branch.branch_status}">${branch.branch_status}</span>
-                      </div>
-                      <div class="reports-grid">${reports}</div>
-                    `;
+                      const basePath = '/branches/' + encodeURIComponent(branchName) + '/builds/' + encodeURIComponent(build.version);
 
-                    container.appendChild(card);
-                  });
-              }
+                      const reports = [
+                          { name: 'Frontend', path: '/allure/frontend-webui/' },
+                          { name: 'Mobile', path: '/allure/mobile-webui/' },
+                          { name: 'Cucumber', path: '/allure/cucumber/' }
+                      ];
 
-              document.getElementById('searchInput').addEventListener('input', filterBranches);
-              document.getElementById('statusFilter').addEventListener('change', filterBranches);
+                      reports.forEach(function(report) {
+                          const link = createLink(basePath + report.path, report.name);
+                          linksDiv.appendChild(link);
+                      });
 
-              function filterBranches() {
-                const search = document.getElementById('searchInput').value.toLowerCase();
-                const status = document.getElementById('statusFilter').value;
+                      buildDiv.appendChild(linksDiv);
+                      return buildDiv;
+                  }
 
-                document.querySelectorAll('.branch-card').forEach(card => {
-                  const matchesSearch = card.dataset.name.includes(search);
-                  const matchesStatus = status === 'all' || card.dataset.status === status;
-                  card.style.display = (matchesSearch && matchesStatus) ? 'block' : 'none';
-                });
-              }
+                  function createBranchElement(branchData) {
+                      const branchDiv = document.createElement('div');
+                      branchDiv.className = 'branch';
 
-              loadBranches();
-            </script>
+                      const heading = createTextElement('h2', branchData.branch);
+                      branchDiv.appendChild(heading);
+
+                      const buildsDiv = document.createElement('div');
+                      buildsDiv.className = 'builds';
+
+                      // Show all builds (metadata is capped to 3 per branch at publish time)
+                      const builds = branchData.builds;
+                      builds.forEach(function(build) {
+                          buildsDiv.appendChild(createBuildElement(branchData.branch, build));
+                      });
+
+                      branchDiv.appendChild(buildsDiv);
+                      return branchDiv;
+                  }
+
+                  async function loadReports() {
+                      const container = document.getElementById('branches');
+
+                      try {
+                          const response = await fetch('/_metadata/');
+                          if (!response.ok) throw new Error('Failed to load metadata');
+
+                          const files = await response.json();
+                          const jsonFiles = files.filter(function(f) {
+                              return f.name.endsWith('.json');
+                          });
+
+                          if (jsonFiles.length === 0) {
+                              container.textContent = 'No reports available yet.';
+                              return;
+                          }
+
+                          container.textContent = '';
+
+                          for (const file of jsonFiles) {
+                              try {
+                                  const branchResponse = await fetch('/_metadata/' + file.name);
+                                  if (branchResponse.ok) {
+                                      const branchData = await branchResponse.json();
+                                      container.appendChild(createBranchElement(branchData));
+                                  }
+                              } catch (e) {
+                                  console.error('Error loading branch:', file.name, e);
+                              }
+                          }
+                      } catch (error) {
+                          container.textContent = '';
+                          const errorP = createTextElement('p', 'Error loading reports: ' + error.message, 'error');
+                          container.appendChild(errorP);
+                      }
+                  }
+
+                  loadReports();
+              </script>
           </body>
           </html>
-          LANDINGPAGE
+          HTMLEOF
 
-      - name: Create .nojekyll file
+      - name: Check disk space and trigger cleanup
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Disable Jekyll processing to serve _data directory
-          touch gh-pages-repo/.nojekyll
-          echo "Created .nojekyll file to disable Jekyll and serve _data directory"
+          AVAIL_KB=$(ssh reports-server "df --output=avail /var/www/test-reports | tail -1 | tr -d ' '")
+          AVAIL_MB=$((AVAIL_KB / 1024))
+          AVAIL_GB=$(echo "scale=1; $AVAIL_KB / 1048576" | bc)
+          echo "Available disk space: ${AVAIL_GB} GB (${AVAIL_MB} MB)"
 
-      - name: Deploy to GitHub Pages
+          THRESHOLD_KB=2097152  # 2 GB
+          if [ "$AVAIL_KB" -lt "$THRESHOLD_KB" ]; then
+            echo "::warning::Disk space below 2 GB (${AVAIL_GB} GB) — triggering reports-cleanup workflow"
+            gh workflow run reports-cleanup.yml --repo "$GITHUB_REPOSITORY"
+          fi
+
+      - name: Produce summary
+        if: always()
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          cd gh-pages-repo
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "### 📊 Test Reports" >> $GITHUB_STEP_SUMMARY
 
-          git add .
+          if [ "${{ steps.check-secret.outputs.available }}" != "true" ]; then
+            echo "⚠️ Report upload skipped — \`REPORTS_SERVER_SSH_KEY\` not configured" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          if [ "${{ steps.inventory.outputs.count }}" = "0" ] || [ -z "${{ steps.inventory.outputs.count }}" ]; then
+            echo "⚠️ No Allure report artifacts available" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
 
-          # Retry logic for concurrent deployments
-          for i in {1..5}; do
-            git pull --rebase origin gh-pages || true
-            git commit -m "Update reports: ${{ github.ref_name }} (build ${{ needs.init.outputs.tag-fixed }})" || echo "No changes"
-            git push origin gh-pages && break || echo "Push failed, retrying in 10s..."
-            sleep 10
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
+
+      - name: Cleanup SSH
+        if: always() && steps.check-secret.outputs.available == 'true'
+        run: rm -rf ~/.ssh/reports_key
+
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
