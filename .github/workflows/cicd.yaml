@@ -2022,6 +2022,96 @@ jobs:
           </body></html>
           EOF
 
+      - name: Generate failures.json
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
+          import json, sys, os, glob
+
+          branch = sys.argv[1]
+          version = sys.argv[2]
+          build_dir = f"/var/www/test-reports/branches/{branch}/builds/{version}"
+          allure_dir = os.path.join(build_dir, "allure")
+
+          suites = ["cucumber", "frontend-webui", "mobile-webui"]
+          result = {
+              "branch": branch,
+              "version": version,
+              "suites": {},
+              "failures": []
+          }
+
+          for suite in suites:
+              suite_dir = os.path.join(allure_dir, suite)
+              summary_file = os.path.join(suite_dir, "widgets", "summary.json")
+              if not os.path.isfile(summary_file):
+                  continue
+
+              with open(summary_file, "r") as f:
+                  summary = json.load(f)
+
+              stats = summary.get("statistic", {})
+              result["suites"][suite] = {
+                  "total": stats.get("total", 0),
+                  "passed": stats.get("passed", 0),
+                  "failed": stats.get("failed", 0),
+                  "broken": stats.get("broken", 0),
+                  "skipped": stats.get("skipped", 0)
+              }
+
+              # Only dig into test cases if there are failures or broken tests
+              if stats.get("failed", 0) == 0 and stats.get("broken", 0) == 0:
+                  continue
+
+              # Read individual test case files for failure details
+              tc_dir = os.path.join(suite_dir, "data", "test-cases")
+              if not os.path.isdir(tc_dir):
+                  continue
+
+              for tc_file in glob.glob(os.path.join(tc_dir, "*.json")):
+                  with open(tc_file, "r") as f:
+                      try:
+                          tc = json.load(f)
+                      except json.JSONDecodeError:
+                          continue
+
+                  status = tc.get("status", "")
+                  if status not in ("failed", "broken"):
+                      continue
+
+                  failure = {
+                      "suite": suite,
+                      "name": tc.get("name", ""),
+                      "fullName": tc.get("fullName", ""),
+                      "status": status,
+                      "message": tc.get("statusMessage", ""),
+                      "trace": tc.get("statusTrace", ""),
+                  }
+
+                  # Include test steps if available (shows which step failed)
+                  steps = tc.get("testStage", {}).get("steps", [])
+                  failed_steps = [
+                      {"name": s.get("name", ""), "status": s.get("status", "")}
+                      for s in steps if s.get("status") in ("failed", "broken")
+                  ]
+                  if failed_steps:
+                      failure["failedSteps"] = failed_steps
+
+                  result["failures"].append(failure)
+
+          # Write combined failures.json at build level
+          output_file = os.path.join(build_dir, "failures.json")
+          with open(output_file, "w") as f:
+              json.dump(result, f, indent=2)
+
+          n = len(result["failures"])
+          print(f"Generated failures.json: {n} failure(s) across {len(result['suites'])} suite(s)")
+          PYEOF
+
       - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         env:
@@ -2267,6 +2357,9 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
+          FAILURES_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/failures.json"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Machine-readable:** [failures.json](${FAILURES_URL})" >> $GITHUB_STEP_SUMMARY
 
       - name: Post report link on PR
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
