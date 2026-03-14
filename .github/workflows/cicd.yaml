@@ -1248,7 +1248,6 @@ jobs:
 #          username: metasfresh
 #          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
 #      - uses: testspace-com/setup-testspace@v1
-  if: needs.init.outputs.skip-testspace != 'true'
 #        with:
 #          domain: metasfresh
 #          token: ${{ secrets.TESTSPACE_TOKEN }}
