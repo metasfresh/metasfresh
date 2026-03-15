@@ -26,15 +26,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -55,27 +52,6 @@ public class EPCIS_JSON_Export_StepDef
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private JsonNode lastEpcisResult;
-
-	/**
-	 * Loads an existing M_InOut record by its database ID and stores it
-	 * in the step def data under the given identifier.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * Given load M_InOut by ID 1000000 as io_seed
-	 * </pre>
-	 */
-	@Given("^load M_InOut by ID (\\d+) as (.*)$")
-	public void loadInOutById(final int inoutId, @NonNull final String identifier)
-	{
-		final I_M_InOut inout = InterfaceWrapperHelper.load(inoutId, I_M_InOut.class);
-		if (inout == null)
-		{
-			throw new AdempiereException("M_InOut not found for ID=" + inoutId);
-		}
-		inoutTable.putOrReplace(StepDefDataIdentifier.ofString(identifier), inout);
-	}
 
 	/**
 	 * Calls the {@code get_epcis_events_json_fn} SQL function for the given shipment
@@ -321,6 +297,11 @@ public class EPCIS_JSON_Export_StepDef
 		{
 			assertThat(node.isNull() || node.isMissingNode())
 					.as(fieldName + " should be null").isTrue();
+		}
+		else if ("notNull".equals(expected))
+		{
+			assertThat(node.isNull() || node.isMissingNode())
+					.as(fieldName + " should not be null").isFalse();
 		}
 		else
 		{
