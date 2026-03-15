@@ -1,35 +1,7 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- EPCIS event JSON for a given M_InOut (shipment).
--- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
---
--- Changes in me03#28815:
---   - Pallet discovery: M_InOut → M_InOutLine → M_ShipmentSchedule_QtyPicked.M_LU_HU_ID
---   - Crate (TU) discovery: M_HU_Item (itemtype='HU' individual, 'HA' aggregated)
---   - Items: M_HU_Item_Storage per TU (not DESADV pack items)
---   - GRAI: M_HU_Attribute on TU level (comma-separated for aggregated)
---   - DESADV: LEFT JOIN (optional, for buyer/handover/PO references)
---   - New field: cuGTIN from M_Product.GTIN
+-- Migration: 5794490
+-- EPCIS event JSON: rewrite to HU-based, DESADV-optional
+-- me03#28672: Pallet/crate/item data now derived from HU hierarchy
+-- instead of DESADV pack items. DESADV LEFT JOINed for optional biz references.
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
     RETURNS JSONB
@@ -213,10 +185,6 @@ BEGIN
                                                     'productGrossWeight', prod.grossweight
                                             )
                                     )
-                             -- NOTE: The JOIN path here depends on Step 0 data verification.
-                             -- Option A (virtual TU child): ha_item → M_HU (virtual TU) → M_HU_Item (MI) → storage
-                             -- Option B (direct storage): ha_item → M_HU_Item_Storage directly
-                             -- Below shows Option A (most likely based on metasfresh HU model):
                              FROM m_hu vtu
                                       JOIN m_hu_item mi ON mi.m_hu_id = vtu.m_hu_id AND mi.itemtype = 'MI'
                                       JOIN m_hu_item_storage stor ON stor.m_hu_item_id = mi.m_hu_item_id
@@ -229,7 +197,7 @@ BEGIN
                      FROM m_hu_item ha_item
                               -- Virtual TU under HA (for GRAI attribute lookup)
                               LEFT JOIN m_hu ha_vtu ON ha_vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
-                              -- GRAI attribute: check virtual TU first, then LU (Step 0 determines which)
+                              -- GRAI attribute: check virtual TU first, then LU
                               LEFT JOIN m_hu_attribute grai_attr
                                         ON grai_attr.m_hu_id = COALESCE(ha_vtu.m_hu_id, ha_item.m_hu_id)
                                             AND grai_attr.m_attribute_id = v_grai_attribute_id
