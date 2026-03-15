@@ -246,6 +246,11 @@
                     <additionalClasspathElements>
                         <additionalClasspathElement>${external.libs.path}</additionalClasspathElement>
                     </additionalClasspathElements>
+                    <!-- Forward cucumber.filter.tags to the forked JVM so tag-based filtering works locally.
+                         Without this, -Dcucumber.filter.tags=... on the Maven CLI doesn't reach the fork. -->
+                    <systemPropertyVariables>
+                        <cucumber.filter.tags>${cucumber.filter.tags}</cucumber.filter.tags>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
