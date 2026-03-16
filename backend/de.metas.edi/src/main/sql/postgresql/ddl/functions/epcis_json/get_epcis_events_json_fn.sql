@@ -24,7 +24,8 @@
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
 --
 -- Changes in me03#28815:
---   - Pallet discovery: M_InOut → M_InOutLine → M_ShipmentSchedule_QtyPicked.M_LU_HU_ID
+--   - Pallet discovery: M_InOut → M_InOutLine → M_HU_Assignment.M_LU_HU_ID (primary)
+--                        + fallback via M_ShipmentSchedule_QtyPicked.M_LU_HU_ID
 --   - Crate (TU) discovery: M_HU_Item (itemtype='HU' individual, 'HA' aggregated)
 --   - Items: M_HU_Item_Storage per TU (not DESADV pack items)
 --   - GRAI: M_HU_Attribute on TU level (comma-separated for aggregated)
@@ -109,7 +110,19 @@ BEGIN
                        )
                ) AS pallets_json
         FROM (
-                 -- Discover pallets: M_InOut → M_InOutLine → QtyPicked → M_LU_HU_ID
+                 -- Discover pallets via M_HU_Assignment (reliable for both picked and auto-generated shipments)
+                 SELECT DISTINCT ha.m_lu_hu_id
+                 FROM m_inoutline iol
+                          JOIN m_hu_assignment ha
+                               ON ha.ad_table_id = 320 -- M_InOutLine
+                                   AND ha.record_id = iol.m_inoutline_id
+                 WHERE iol.m_inout_id = io.m_inout_id
+                   AND ha.m_lu_hu_id IS NOT NULL
+                   AND ha.isactive = 'Y'
+
+                 UNION
+
+                 -- Fallback: QtyPicked path (for picking-terminal workflows)
                  SELECT DISTINCT qp.m_lu_hu_id
                  FROM m_inoutline iol
                           JOIN m_shipmentschedule_qtypicked qp
