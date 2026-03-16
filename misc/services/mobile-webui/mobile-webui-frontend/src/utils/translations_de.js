@@ -177,6 +177,10 @@ const translations = {
         step: {
           name: 'HU einfüllen',
         },
+        confirmLine: {
+          caption: 'Zuführung bestätigen',
+          promptQuestion: 'Alle geplanten Materialien für diese Position zuführen?',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Sollmenge',

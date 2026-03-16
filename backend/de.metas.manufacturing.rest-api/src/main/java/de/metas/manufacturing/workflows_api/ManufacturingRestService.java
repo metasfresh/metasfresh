@@ -153,6 +153,14 @@ public class ManufacturingRestService
 					.failIfIssueOnlyForReceived(true)
 					.build());
 		}
+		else if (event.getIssueToLine() != null)
+		{
+			final JsonManufacturingOrderEvent.IssueToLine issueToLine = event.getIssueToLine();
+			return manufacturingJobService.issueAllStepsOfLine(
+					job,
+					PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()),
+					issueToLine.getLineIndex());
+		}
 		else if (event.getReceiveFrom() != null)
 		{
 			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();

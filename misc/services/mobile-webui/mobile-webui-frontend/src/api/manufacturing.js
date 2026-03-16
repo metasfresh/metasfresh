@@ -22,3 +22,13 @@ export function postManufacturingIssueEvent({ wfProcessId, activityId, issueTo }
     })
     .then((response) => unboxAxiosResponse(response));
 }
+
+export function postManufacturingIssueToLineEvent({ wfProcessId, activityId, issueToLine }) {
+  return axios
+    .post(`${apiBasePath}/manufacturing/event`, {
+      wfProcessId,
+      wfActivityId: activityId,
+      issueToLine,
+    })
+    .then((response) => unboxAxiosResponse(response));
+}
