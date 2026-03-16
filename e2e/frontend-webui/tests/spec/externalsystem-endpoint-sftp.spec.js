@@ -24,28 +24,44 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
  * the dropdown, then click the matching option.
  */
 async function selectListValue(page, fieldName, optionText) {
-  // Click the dropdown container to open it (use .first() — field may appear in both header and detail sections)
-  const container = page.locator(`.form-field-${fieldName}`).first();
-  await container.locator('input').first().click();
+  const container = page.locator(`.form-field-${fieldName}`);
+  await container.locator('input').click();
   await page.waitForTimeout(300);
 
-  // Find and click the option matching the text
   const option = page.locator('.input-dropdown-list-option').filter({ hasText: optionText }).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await option.click();
   await page.waitForTimeout(1000);
 }
 
+/**
+ * Fill a text input field by column name using the form-field CSS class pattern.
+ */
+async function fillTextField(page, fieldName, value) {
+  const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
+  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await field.fill(value);
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Fill a numeric input field by column name.
+ */
+async function fillNumericField(page, fieldName, value) {
+  const field = page.locator(`.form-field-${fieldName} input`);
+  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await field.fill(value);
+  await page.waitForTimeout(300);
+}
+
 test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
   test.beforeEach(async ({ page }) => {
-    // Login with default credentials (metasfresh/metasfresh)
     await page.goto(`${FRONTEND_BASE_URL}/login`);
     await page.locator('.login-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await page.locator('input[name="username"]').fill('metasfresh');
     await page.locator('input[name="password"]').fill('metasfresh');
     await page.locator('.btn-meta-success').click();
 
-    // Handle role selection
     await page.waitForTimeout(1000);
     if (page.url().includes('/login')) {
       const sendButton = page.locator('.btn-meta-success');
@@ -70,8 +86,8 @@ and hides HTTP fields, and vice versa.
 
 1. Navigate to ExternalSystem_Endpoint window
 2. Create a new record
-3. Set TransportType=SFTP -> verify SFTP fields visible
-4. Set TransportType=HTTP -> verify HTTP fields visible, SFTP hidden
+3. Set TransportType=SFTP -> verify SFTP fields visible, HTTP fields hidden
+4. Set TransportType=HTTP -> verify HTTP fields visible, SFTP fields hidden
     `);
 
     test.setTimeout(120000);
@@ -86,39 +102,31 @@ and hides HTTP fields, and vice versa.
     // --- Test 1: Set TransportType = SFTP ---
     await selectListValue(page, 'TransportType', 'SFTP');
 
-    // Verify SFTP fields are now visible (use .first() — fields may appear in both header and detail sections)
-    const sftpHostField = page.locator('.form-field-SftpHost input[type="text"]').first();
-    await expect(sftpHostField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-
-    const sftpPortField = page.locator('.form-field-SftpPort input').first();
-    await expect(sftpPortField).toBeVisible({ timeout: 5000 });
-
-    const sftpUsernameField = page.locator('.form-field-SftpUsername input[type="text"]').first();
-    await expect(sftpUsernameField).toBeVisible({ timeout: 5000 });
-
-    const sftpAuthTypeField = page.locator('.form-field-SftpAuthType').first();
-    await expect(sftpAuthTypeField).toBeVisible({ timeout: 5000 });
-
-    const sftpRemotePathField = page.locator('.form-field-SftpRemotePath input[type="text"]').first();
-    await expect(sftpRemotePathField).toBeVisible({ timeout: 5000 });
-
-    const sftpFilenamePatternField = page.locator('.form-field-SftpFilenamePattern input[type="text"]').first();
-    await expect(sftpFilenamePatternField).toBeVisible({ timeout: 5000 });
+    // Verify SFTP fields are now visible
+    await expect(page.locator('.form-field-SftpHost input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(page.locator('.form-field-SftpPort input')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-SftpUsername input[type="text"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-SftpAuthType')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-SftpRemotePath input[type="text"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-SftpFilenamePattern input[type="text"]')).toBeVisible({ timeout: 5000 });
 
     // HTTP-only fields should be hidden when TransportType=SFTP
-    const contentTypeField = page.locator('.form-field-ContentType').first();
-    await expect(contentTypeField).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-ContentType')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-OutboundHttpEP')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-OutboundHttpMethod')).toBeHidden({ timeout: 3000 });
 
     // --- Test 2: Set TransportType = HTTP ---
     await selectListValue(page, 'TransportType', 'HTTP');
 
-    // HTTP field should be visible
-    await expect(contentTypeField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    // HTTP fields should be visible
+    await expect(page.locator('.form-field-ContentType')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(page.locator('.form-field-OutboundHttpEP')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-OutboundHttpMethod')).toBeVisible({ timeout: 5000 });
 
     // SFTP fields should be hidden
-    await expect(sftpHostField).toBeHidden({ timeout: 3000 });
-    await expect(sftpPortField).toBeHidden({ timeout: 3000 });
-    await expect(sftpUsernameField).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-SftpHost')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-SftpPort')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-SftpUsername')).toBeHidden({ timeout: 3000 });
   });
 
   test('SftpAuthType toggles Password vs SSH key fields', async ({ page }) => {
@@ -147,22 +155,21 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     // --- Test: Set SftpAuthType = PASSWORD ---
     await selectListValue(page, 'SftpAuthType', 'Password');
 
-    // Password field should be visible (display logic: TransportType=SFTP & SftpAuthType=PASSWORD)
-    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]').first();
+    // Password field should be visible
+    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
     await expect(passwordField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
 
     // SshPrivateKey should NOT be visible
-    const sshKeyField = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input').first();
-    await expect(sshKeyField).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-SshPrivateKey')).toBeHidden({ timeout: 3000 });
 
     // --- Test: Switch to SftpAuthType = SSH_KEY ---
     await selectListValue(page, 'SftpAuthType', 'SSH Key');
 
     // SshPrivateKey should now be visible
-    await expect(sshKeyField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
 
-    // Password should be hidden (display logic requires SftpAuthType=PASSWORD)
-    await expect(passwordField).toBeHidden({ timeout: 3000 });
+    // Password should be hidden
+    await expect(page.locator('.form-field-Password')).toBeHidden({ timeout: 3000 });
   });
 
   test('Create and save full SFTP endpoint configuration', async ({ page }) => {
@@ -174,11 +181,12 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     allure.description(`
 ## ExternalSystem_Endpoint — Full SFTP Configuration
 
-Creates a complete SFTP endpoint with all fields filled:
+Creates a complete SFTP endpoint with all mandatory fields filled:
 1. Navigate to window, create new record
-2. Set Value, TransportType=SFTP
-3. Fill all SFTP fields (host, port, username, auth, remote path, filename)
-4. Verify record saves successfully
+2. Set Value, Type, TransportType=SFTP
+3. Fill all SFTP fields (host, port, username, auth, password, remote path, filename)
+4. Verify record saves successfully (URL changes from /NEW to record ID)
+5. Verify saved field values persist
     `);
 
     test.setTimeout(120000);
@@ -188,48 +196,34 @@ Creates a complete SFTP endpoint with all fields filled:
     await page.waitForTimeout(2000);
     await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    // Fill Value field
-    const valueField = page.locator('.form-field-Value input[type="text"]').first();
-    if (await valueField.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await valueField.fill('sftp-e2e-full-' + Date.now());
-      await page.waitForTimeout(500);
-    }
+    // Fill mandatory generic fields
+    await fillTextField(page, 'Value', 'sftp-e2e-full-' + Date.now());
+
+    // Set Type = HTTP (only available option for endpoint type)
+    await selectListValue(page, 'Type', 'HTTP');
 
     // Set TransportType = SFTP
     await selectListValue(page, 'TransportType', 'SFTP');
 
-    // Fill SFTP fields (use .first() — fields may appear in both header and detail sections)
-    const sftpHostField = page.locator('.form-field-SftpHost input[type="text"]').first();
-    await sftpHostField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await sftpHostField.fill('sftp.example.com');
-    await page.waitForTimeout(300);
+    // Fill mandatory SFTP fields
+    await fillTextField(page, 'SftpHost', 'sftp.example.com');
+    await fillNumericField(page, 'SftpPort', '22');
+    await fillTextField(page, 'SftpUsername', 'testuser');
 
-    const sftpPortField = page.locator('.form-field-SftpPort input').first();
-    await sftpPortField.fill('22');
-    await page.waitForTimeout(300);
-
-    const sftpUsernameField = page.locator('.form-field-SftpUsername input[type="text"]').first();
-    await sftpUsernameField.fill('testuser');
-    await page.waitForTimeout(300);
-
-    // Set SftpAuthType = PASSWORD
+    // Set SftpAuthType = PASSWORD (mandatory when SFTP)
     await selectListValue(page, 'SftpAuthType', 'Password');
 
-    // Fill password
-    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]').first();
+    // Fill password (mandatory when SFTP + SftpAuthType=PASSWORD)
+    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
     await passwordField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await passwordField.fill('secret123');
     await page.waitForTimeout(300);
 
-    // Fill remote path
-    const remotePathField = page.locator('.form-field-SftpRemotePath input[type="text"]').first();
-    await remotePathField.fill('/outbound/edi');
-    await page.waitForTimeout(300);
+    // Fill remote path (mandatory when SFTP)
+    await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
 
-    // Fill filename pattern
-    const filenamePatternField = page.locator('.form-field-SftpFilenamePattern input[type="text"]').first();
-    await filenamePatternField.fill('export_{timestamp}.json');
-    await page.waitForTimeout(300);
+    // Fill optional filename pattern
+    await fillTextField(page, 'SftpFilenamePattern', 'export_{timestamp}.json');
 
     // Tab out to trigger save
     await page.keyboard.press('Tab');
@@ -245,6 +239,11 @@ Creates a complete SFTP endpoint with all fields filled:
     );
 
     // Verify the saved field values are still present
+    const sftpHostField = page.locator('.form-field-SftpHost input[type="text"]');
+    const sftpUsernameField = page.locator('.form-field-SftpUsername input[type="text"]');
+    const remotePathField = page.locator('.form-field-SftpRemotePath input[type="text"]');
+    const filenamePatternField = page.locator('.form-field-SftpFilenamePattern input[type="text"]');
+
     await expect(sftpHostField).toHaveValue('sftp.example.com');
     await expect(sftpUsernameField).toHaveValue('testuser');
     await expect(remotePathField).toHaveValue('/outbound/edi');

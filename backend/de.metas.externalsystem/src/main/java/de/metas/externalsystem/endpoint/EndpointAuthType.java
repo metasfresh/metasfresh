@@ -29,6 +29,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Make sure to keep in sync with {@link de.metas.common.externalsystem.endpoint.JsonEndpointAuthType}.
@@ -48,6 +49,9 @@ public enum EndpointAuthType implements ReferenceListAwareEnum
 	@NonNull private final String code;
 
 	public static EndpointAuthType ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@Nullable
+	public static EndpointAuthType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	public JsonEndpointAuthType toJson()
 	{

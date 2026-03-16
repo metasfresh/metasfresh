@@ -80,20 +80,19 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.ScriptedImportConversion);
 
-		parentConfigList
-				.stream()
-				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for ScriptedImportConversion config " + config.getChildConfig().getId()))
-				.forEach((config -> {
-					final ScriptedImportConversionCommand command = resolveStartupCommand(config);
-					Loggables.withLogger(logger, Level.DEBUG).addLog("Using command " + command + " for config " + config.getChildConfig().getId());
-					ProcessInfo.builder()
-							.setAD_Process_ID(processId)
-							.setAD_User_ID(UserId.METASFRESH.getRepoId())
-							.addParameter(PARAM_EXTERNAL_REQUEST, command.getValue())
-							.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
-							.buildAndPrepareExecution()
-							.executeSync();
-				}));
+		for (final ExternalSystemParentConfig config : parentConfigList)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for ScriptedImportConversion config " + config.getChildConfig().getId());
+			final ScriptedImportConversionCommand command = resolveStartupCommand(config);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Using command " + command + " for config " + config.getChildConfig().getId());
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId)
+					.setAD_User_ID(UserId.METASFRESH.getRepoId())
+					.addParameter(PARAM_EXTERNAL_REQUEST, command.getValue())
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
+					.buildAndPrepareExecution()
+					.executeSync();
+		}
 	}
 
 	@NonNull
