@@ -436,7 +436,6 @@ jobs:
         env:
           mfregistry: metasfresh
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          dbqualifier: preloaded
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker compose build db
