@@ -439,7 +439,42 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker compose build db
+          docker compose up -d db
           docker compose up migration --abort-on-container-exit --exit-code-from migration
+          # Restart db for post-migration SQL (migration --abort-on-container-exit stops all)
+          docker compose up -d db
+          sleep 5
+          # Open all period controls and create periods through 2030 (post-migration, avoids ID conflicts with migration scripts)
+          docker compose exec -T db psql -U metasfresh -d metasfresh -c "UPDATE C_PeriodControl SET PeriodStatus='O', PeriodAction='O' WHERE PeriodStatus != 'O';"
+          docker compose exec -T db psql -U metasfresh -d metasfresh -f - <<'DBEOF'
+          DO $$
+          DECLARE v_cal int; v_yid int; v_pid int; v_pcid int; v_yr int; v_mo int; v_sd date; v_ed date; v_dbt text;
+          BEGIN
+            SELECT C_Calendar_ID INTO v_cal FROM C_Calendar WHERE AD_Client_ID=1000000 AND IsActive='Y' ORDER BY C_Calendar_ID LIMIT 1;
+            IF v_cal IS NULL THEN RETURN; END IF;
+            FOR v_yr IN 2023..2030 LOOP
+              SELECT C_Year_ID INTO v_yid FROM C_Year WHERE C_Calendar_ID=v_cal AND FiscalYear=v_yr::text;
+              IF v_yid IS NULL THEN
+                SELECT COALESCE(MAX(C_Year_ID),999999)+1 INTO v_yid FROM C_Year;
+                INSERT INTO C_Year(C_Year_ID,AD_Client_ID,AD_Org_ID,C_Calendar_ID,FiscalYear,IsActive,Created,CreatedBy,Updated,UpdatedBy) VALUES(v_yid,1000000,0,v_cal,v_yr::text,'Y',now(),0,now(),0);
+              END IF;
+              FOR v_mo IN 1..12 LOOP
+                v_sd:=make_date(v_yr,v_mo,1); v_ed:=(v_sd+interval '1 month'-interval '1 day')::date;
+                SELECT C_Period_ID INTO v_pid FROM C_Period WHERE C_Year_ID=v_yid AND PeriodNo=v_mo;
+                IF v_pid IS NULL THEN
+                  SELECT COALESCE(MAX(C_Period_ID),999999)+1 INTO v_pid FROM C_Period;
+                  INSERT INTO C_Period(C_Period_ID,AD_Client_ID,AD_Org_ID,C_Year_ID,PeriodNo,Name,StartDate,EndDate,PeriodType,IsActive,Created,CreatedBy,Updated,UpdatedBy) VALUES(v_pid,1000000,0,v_yid,v_mo,to_char(v_sd,'Mon')||'-'||to_char(v_sd,'YY'),v_sd,v_ed,'S','Y',now(),0,now(),0);
+                  FOR v_dbt IN SELECT d FROM (VALUES('AVI'),('API'),('ARC'),('ARI'),('ARR'),('APP'),('CMC'),('DOO'),('GLD'),('GLJ'),('MCC'),('MMI'),('MMP'),('MMM'),('MMR'),('MMS'),('MXI'),('MXP'),('PJI'),('POO'),('SOO'),('HRP'),('FAI'),('FAD'),('FDP'),('MQI'),('MQP'))t(d) LOOP
+                    SELECT COALESCE(MAX(C_PeriodControl_ID),999999)+1 INTO v_pcid FROM C_PeriodControl;
+                    INSERT INTO C_PeriodControl(C_PeriodControl_ID,AD_Client_ID,AD_Org_ID,C_Period_ID,DocBaseType,PeriodStatus,PeriodAction,IsActive,Created,CreatedBy,Updated,UpdatedBy) VALUES(v_pcid,1000000,0,v_pid,v_dbt,'O','O','Y',now(),0,now(),0);
+                  END LOOP;
+                ELSE
+                  UPDATE C_PeriodControl SET PeriodStatus='O',PeriodAction='O' WHERE C_Period_ID=v_pid AND PeriodStatus!='O';
+                END IF;
+              END LOOP;
+            END LOOP;
+          END$$;
+          DBEOF
           docker commit "$(docker compose ps -q db)" metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
