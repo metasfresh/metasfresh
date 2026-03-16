@@ -35,6 +35,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,6 +50,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class EPCIS_JSON_Export_StepDef
 {
+	private static final Logger logger = LoggerFactory.getLogger(EPCIS_JSON_Export_StepDef.class);
+
 	private final @NonNull M_InOut_StepDefData inoutTable;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,12 +73,32 @@ public class EPCIS_JSON_Export_StepDef
 	public void callEpcisFunction(@NonNull final String inoutIdentifier)
 	{
 		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+
+		// Diagnostic: log HU assignment and QtyPicked state for this shipment
+		final int haCount = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT COUNT(*) FROM m_inoutline iol JOIN m_hu_assignment ha ON ha.ad_table_id=320 AND ha.record_id=iol.m_inoutline_id AND ha.isactive='Y' WHERE iol.m_inout_id=?",
+				inoutId);
+		final int haLuCount = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT COUNT(*) FROM m_inoutline iol JOIN m_hu_assignment ha ON ha.ad_table_id=320 AND ha.record_id=iol.m_inoutline_id AND ha.isactive='Y' AND ha.m_lu_hu_id IS NOT NULL WHERE iol.m_inout_id=?",
+				inoutId);
+		final int qpCount = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT COUNT(*) FROM m_inoutline iol JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id=iol.m_inoutline_id AND qp.isactive='Y' WHERE iol.m_inout_id=?",
+				inoutId);
+		final int qpLuCount = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT COUNT(*) FROM m_inoutline iol JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id=iol.m_inoutline_id AND qp.isactive='Y' AND qp.m_lu_hu_id IS NOT NULL WHERE iol.m_inout_id=?",
+				inoutId);
+		logger.info("EPCIS diag M_InOut_ID={}: HU_Assignment total={} withLU={}, QtyPicked total={} withLU={}",
+				inoutId, haCount, haLuCount, qpCount, qpLuCount);
+
 		final String sql = "SELECT \"de.metas.edi\".get_epcis_events_json_fn(?)::text";
-		final String json = DB.getSQLValueStringEx(Trx.TRXNAME_None, sql, inout.getM_InOut_ID());
+		final String json = DB.getSQLValueStringEx(Trx.TRXNAME_None, sql, inoutId);
+
+		logger.info("EPCIS JSON for M_InOut_ID={}: {}", inoutId, json);
 
 		if (json == null || json.isEmpty())
 		{
-			throw new AdempiereException("EPCIS JSON export returned null/empty for M_InOut_ID=" + inout.getM_InOut_ID());
+			throw new AdempiereException("EPCIS JSON export returned null/empty for M_InOut_ID=" + inoutId);
 		}
 
 		try
