@@ -100,7 +100,7 @@ services:
       - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
     #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
 
-  mailpit:
+  mailpit:  # Replaces papercut-smtp for SMTP testing (supports auth)
     image: axllent/mailpit:latest
     container_name: ${BRANCH_NAME}_mailpit
     command: ["--smtp-auth-accept-any", "--smtp-auth-allow-insecure", "--smtp=0.0.0.0:587"]
