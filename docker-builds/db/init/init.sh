@@ -47,8 +47,63 @@ echo " Adjusting CI/test configuration ..."
 echo "======================================="
 
 # Enable automatic period control so document completion doesn't fail with @PeriodClosed@
-psql -v ON_ERROR_STOP=1 --username=metasfresh --dbname=metasfresh <<- EOSQL
+psql -v ON_ERROR_STOP=1 --username=metasfresh --dbname=metasfresh <<- 'EOSQL'
 UPDATE C_AcctSchema SET AutoPeriodControl='Y', Period_OpenHistory=9999, Period_OpenFuture=9999 WHERE AD_Client_ID >= 0;
+
+-- Also open all existing period controls directly (belt and suspenders)
+UPDATE C_PeriodControl SET PeriodStatus='O', PeriodAction='O' WHERE PeriodStatus != 'O';
+
+-- Create years and periods through 2030 so AutoPeriodControl has entries to work with
+DO $$
+DECLARE
+    v_calendar_id integer;
+    v_year_id integer;
+    v_period_id integer;
+    v_periodcontrol_id integer;
+    v_year integer;
+    v_month integer;
+    v_start_date date;
+    v_end_date date;
+    v_docbasetype text;
+BEGIN
+    SELECT C_Calendar_ID INTO v_calendar_id FROM C_Calendar WHERE AD_Client_ID=1000000 AND IsActive='Y' ORDER BY C_Calendar_ID LIMIT 1;
+    IF v_calendar_id IS NULL THEN RETURN; END IF;
+
+    FOR v_year IN 2023..2030 LOOP
+        -- Check if year exists
+        SELECT C_Year_ID INTO v_year_id FROM C_Year WHERE C_Calendar_ID=v_calendar_id AND FiscalYear=v_year::text;
+        IF v_year_id IS NULL THEN
+            SELECT COALESCE(MAX(C_Year_ID),540000)+1 INTO v_year_id FROM C_Year;
+            INSERT INTO C_Year(C_Year_ID, AD_Client_ID, AD_Org_ID, C_Calendar_ID, FiscalYear, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+            VALUES(v_year_id, 1000000, 0, v_calendar_id, v_year::text, 'Y', now(), 0, now(), 0);
+        END IF;
+
+        FOR v_month IN 1..12 LOOP
+            v_start_date := make_date(v_year, v_month, 1);
+            v_end_date := (v_start_date + interval '1 month' - interval '1 day')::date;
+
+            -- Check if period exists
+            SELECT C_Period_ID INTO v_period_id FROM C_Period WHERE C_Year_ID=v_year_id AND PeriodNo=v_month;
+            IF v_period_id IS NULL THEN
+                SELECT COALESCE(MAX(C_Period_ID),540000)+1 INTO v_period_id FROM C_Period;
+                INSERT INTO C_Period(C_Period_ID, AD_Client_ID, AD_Org_ID, C_Year_ID, PeriodNo, Name, StartDate, EndDate, PeriodType, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+                VALUES(v_period_id, 1000000, 0, v_year_id, v_month,
+                       to_char(v_start_date, 'Mon') || '-' || to_char(v_start_date, 'YY'),
+                       v_start_date, v_end_date, 'S', 'Y', now(), 0, now(), 0);
+
+                -- Create period controls for all document base types
+                FOR v_docbasetype IN SELECT DocBaseType FROM (VALUES ('AVI'),('API'),('ARC'),('ARI'),('ARR'),('APP'),('CMC'),('DOO'),('GLD'),('GLJ'),('MCC'),('MMI'),('MMP'),('MMM'),('MMR'),('MMS'),('MXI'),('MXP'),('PJI'),('POO'),('SOO'),('HRP'),('FAI'),('FAD'),('FDP'),('MQI'),('MQP')) AS t(DocBaseType) LOOP
+                    SELECT COALESCE(MAX(C_PeriodControl_ID),540000)+1 INTO v_periodcontrol_id FROM C_PeriodControl;
+                    INSERT INTO C_PeriodControl(C_PeriodControl_ID, AD_Client_ID, AD_Org_ID, C_Period_ID, DocBaseType, PeriodStatus, PeriodAction, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+                    VALUES(v_periodcontrol_id, 1000000, 0, v_period_id, v_docbasetype, 'O', 'O', 'Y', now(), 0, now(), 0);
+                END LOOP;
+            ELSE
+                -- Open existing period controls
+                UPDATE C_PeriodControl SET PeriodStatus='O', PeriodAction='O' WHERE C_Period_ID=v_period_id AND PeriodStatus != 'O';
+            END IF;
+        END LOOP;
+    END LOOP;
+END$$;
 EOSQL
 
 # Set server URLs for Docker Compose environment
