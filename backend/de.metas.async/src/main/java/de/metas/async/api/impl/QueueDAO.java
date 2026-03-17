@@ -194,6 +194,9 @@ public class QueueDAO extends AbstractQueueDAO
 			params.add(packageQuery.getError());
 		}
 
+		// Only packages that are not currently locked for processing
+		wc.append(" AND ").append(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt).append(" IS NULL");
+
 		// Only packages that have not been skipped,
 		// or where 'retryTimeoutMillis' has already passed since they were skipped.
 		// NOTE: because we are not creating the query before each polling, we cannot rely on SystemTime.millis()

@@ -434,14 +434,8 @@ class WorkpackageProcessorTask implements Runnable
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
-		try
-		{
-			queueProcessor.getQueue().unlock(workPackage);
-		}
-		catch (final Exception e)
-		{
-			markError(workPackage, AdempiereException.wrapIfNeeded(e));
-		}
+		// NOTE: LockedAt is already cleared in markProcessed/markSkipped/markError.
+		// No T_Lock unlock needed — we use the LockedAt column approach now.
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
 		queueProcessor.notifyWorkpackageProcessed(workPackage, workPackageProcessorOriginal);
@@ -520,6 +514,7 @@ class WorkpackageProcessorTask implements Runnable
 		workPackage.setAD_Issue(null);
 
 		workPackage.setProcessed(true);
+		workPackage.setLockedAt(null);
 
 		setLastEndTime(workPackage); // update statistics
 
@@ -547,6 +542,7 @@ class WorkpackageProcessorTask implements Runnable
 		workPackage.setSkippedAt(skippedAt);
 		workPackage.setSkipTimeoutMillis(skipTimeoutMillis);
 		workPackage.setSkipped_Count(skippedCount + 1);
+		workPackage.setLockedAt(null);
 
 		if (skippedCount <= 0 || workPackage.getSkipped_First_Time() == null)
 		{
@@ -598,6 +594,7 @@ class WorkpackageProcessorTask implements Runnable
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
 		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setLockedAt(null);
 
 		setLastEndTime(workPackage); // update statistics
 

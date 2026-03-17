@@ -466,29 +466,27 @@ public interface I_C_Queue_WorkPackage
 	String COLUMNNAME_LastStartTime = "LastStartTime";
 
 	/**
-	 * Set Gesperrt.
+	 * Set Locked.
+	 * Time at which the data record was blocked for processing
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setLocked (boolean Locked);
+	void setLockedAt (@Nullable java.sql.Timestamp LockedAt);
 
 	/**
-	 * Get Gesperrt.
+	 * Get Locked.
+	 * Time at which the data record was blocked for processing
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	boolean isLocked();
+	@Nullable java.sql.Timestamp getLockedAt();
 
-	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_Locked = new ModelColumn<>(I_C_Queue_WorkPackage.class, "Locked", null);
-	String COLUMNNAME_Locked = "Locked";
+	ModelColumn<I_C_Queue_WorkPackage, Object> COLUMN_LockedAt = new ModelColumn<>(I_C_Queue_WorkPackage.class, "LockedAt", null);
+	String COLUMNNAME_LockedAt = "LockedAt";
 
 	/**
 	 * Set Priority.

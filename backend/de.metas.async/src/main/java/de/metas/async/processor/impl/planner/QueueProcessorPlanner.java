@@ -30,12 +30,14 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.processor.impl.AbstractQueueProcessor;
-import de.metas.lock.api.ILockManager;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -43,6 +45,8 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -59,7 +63,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 	public final static String SYSCONFIG_POLLINTERVAL_MILLIS = "de.metas.async.PollIntervallMillis";
 	private final static int SYSCONFIG_POLLINTERVAL_DEFAULT_MS = 1000;
 
-	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -256,11 +260,6 @@ public abstract class QueueProcessorPlanner implements Runnable
 	@NonNull
 	private List<I_C_Queue_WorkPackage> pollAndLockWorkPackages(@NonNull final Properties ctx, @NonNull final List<IQueueProcessor> queueProcessors)
 	{
-		final IQuery<I_C_Queue_WorkPackage> queueProcessorWPQueriesAggregator = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
-				//dev-note: workaround to be able to union multiple queries without applying 'limit' and 'order by' to the end result
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, -1)
-				.create();
-
 		final QueryLimit numberOfWorkPackagesPerProcessor = QueryLimit.ONE;
 
 		final List<IQuery<I_C_Queue_WorkPackage>> queueProcessorSpecificQueries = queueProcessors
@@ -269,7 +268,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				.map(queue -> queue.createQuery(ctx, numberOfWorkPackagesPerProcessor))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.map(lockManager::addNotLockedClause)
+				.map(query -> TypedSqlQuery.cast(query).setForUpdateSkipLocked(true))
 				.collect(ImmutableList.toImmutableList());
 
 		if (queueProcessorSpecificQueries.isEmpty())
@@ -277,9 +276,23 @@ public abstract class QueueProcessorPlanner implements Runnable
 			return ImmutableList.of();
 		}
 
-		queueProcessorWPQueriesAggregator.addUnions(queueProcessorSpecificQueries, true);
+		return trxManager.callInNewTrx(() -> {
+			final Timestamp lockedAt = SystemTime.asTimestamp();
+			final List<I_C_Queue_WorkPackage> allLockedWorkPackages = new ArrayList<>();
 
-		return lockManager.retrieveAndLockMultipleRecords(queueProcessorWPQueriesAggregator, I_C_Queue_WorkPackage.class);
+			for (final IQuery<I_C_Queue_WorkPackage> query : queueProcessorSpecificQueries)
+			{
+				final List<I_C_Queue_WorkPackage> workPackages = query.list(I_C_Queue_WorkPackage.class);
+				for (final I_C_Queue_WorkPackage wp : workPackages)
+				{
+					wp.setLockedAt(lockedAt);
+					InterfaceWrapperHelper.save(wp);
+					allLockedWorkPackages.add(wp);
+				}
+			}
+
+			return allLockedWorkPackages;
+		});
 	}
 
 	@NonNull

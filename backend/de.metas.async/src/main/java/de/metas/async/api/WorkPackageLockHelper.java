@@ -23,11 +23,9 @@
 package de.metas.async.api;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
 @UtilityClass
@@ -39,30 +37,14 @@ public class WorkPackageLockHelper
 	{
 		try
 		{
-			unlock(workPackage);
+			workPackage.setLockedAt(null);
+			InterfaceWrapperHelper.save(workPackage);
 			return true;
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Got exception while unlocking " + workPackage, e, workPackage);
+			logger.warn("Got exception while clearing LockedAt for " + workPackage, e);
 			return false;
-		}
-	}
-
-	private static void unlock(final I_C_Queue_WorkPackage workPackage)
-	{
-		try
-		{
-			final boolean success = Services.get(ILockManager.class).unlock(workPackage);
-			if (!success)
-			{
-				throw new UnlockFailedException("Cannot unlock");
-			}
-		}
-		catch (final Exception e)
-		{
-			throw UnlockFailedException.wrapIfNeeded(e)
-					.setParameter("Workpackage", workPackage);
 		}
 	}
 }

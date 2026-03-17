@@ -33,7 +33,6 @@ import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.lock.exceptions.UnlockFailedException;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -57,22 +56,6 @@ public interface IWorkPackageQueue
 	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
-
-	/**
-	 * Unlocks given package
-	 *
-	 * @throws UnlockFailedException if unlocking fails
-	 */
-	void unlock(I_C_Queue_WorkPackage workPackage) throws UnlockFailedException;
-
-	/**
-	 * Unlocks given package.
-	 *
-	 * Any unlock exceptions will be logged but not propagated.
-	 *
-	 * @return true if unlocked
-	 */
-	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
 
 	/**
 	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.

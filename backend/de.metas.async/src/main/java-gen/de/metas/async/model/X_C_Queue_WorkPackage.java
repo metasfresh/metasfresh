@@ -311,14 +311,15 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setLocked (final boolean Locked)
+	public void setLockedAt (final @Nullable java.sql.Timestamp LockedAt)
 	{
-		throw new IllegalArgumentException ("Locked is virtual column");	}
+		set_Value (COLUMNNAME_LockedAt, LockedAt);
+	}
 
 	@Override
-	public boolean isLocked() 
+	public java.sql.Timestamp getLockedAt()
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Locked);
+		return get_ValueAsTimestamp(COLUMNNAME_LockedAt);
 	}
 
 	/** 
