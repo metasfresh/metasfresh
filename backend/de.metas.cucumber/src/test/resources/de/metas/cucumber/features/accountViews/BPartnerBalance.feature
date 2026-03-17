@@ -14,41 +14,35 @@ Feature: BPartner Balance View
 
   @from:cucumber
   @Id:S0300.100
-  Scenario: BPartner Balance view shows invoice postings with correct running balance
-    Given metasfresh contains M_Products:
+  Scenario: BPartner Balance — invoice creates Fact_Acct entries with balanced DR/CR
+    Given metasfresh contains M_PricingSystems
       | Identifier |
-      | p_balance  |
-    And metasfresh contains M_PricingSystems
-      | Identifier  |
-      | ps_balance  |
+      | ps_bal     |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl_balance | ps_balance         | DE           | EUR           | true  |
+      | pl_bal     | ps_bal             | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier  | M_PriceList_ID |
-      | plv_balance | pl_balance     |
+      | Identifier |  M_PriceList_ID |
+      | plv_bal    |  pl_bal         |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_bal      |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | plv_balance            | p_balance    | 100.0    | PCE      | Normal           |
-    And metasfresh contains C_BPartners:
-      | Identifier   | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | bp_balance_1 | N        | Y          | ps_balance         |
-    And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_bal_1   | true    | bp_balance_1  | 2026-01-15  |
-    And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID  | M_Product_ID | QtyEntered |
-      | ol_bal_1      | order_bal_1 | p_balance    | 10         |
-    When the order identified by order_bal_1 is completed
-    And after not more than 60s, C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID | C_OrderLine_ID |
-      | ic_bal_1               | ol_bal_1       |
-    And process invoice candidates
-      | C_Invoice_Candidate_ID |
-      | ic_bal_1               |
-    And after not more than 60s, C_Invoice is found:
-      | C_Invoice_ID | C_Invoice_Candidate_ID |
-      | inv_bal_1    | ic_bal_1               |
+      | plv_bal                | p_bal        | 100.0    | PCE      | Normal           |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | M_PricingSystem_ID |
+      | bp_bal     | Y          | ps_bal             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bp_bal_loc | bp_bal        | Y               | Y               |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv_bal    | bp_bal        | 2026-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invl_bal   | inv_bal      | p_bal        | 10 PCE      |
+    And the invoice identified by inv_bal is completed
     Then Fact_Acct records balances for documents:
       | AD_Table_ID.TableName | Record_ID |
-      | C_Invoice             | inv_bal_1 |
+      | C_Invoice             | inv_bal   |
