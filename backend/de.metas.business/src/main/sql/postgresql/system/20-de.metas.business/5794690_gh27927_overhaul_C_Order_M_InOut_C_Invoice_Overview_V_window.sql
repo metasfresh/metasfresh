@@ -1992,3 +1992,29 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2026-03-17 20:24:0
 UPDATE AD_UI_Element SET IsActive='N',Updated=TO_TIMESTAMP('2026-03-17 20:24:34.840000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646935
 ;
 
+
+
+-- UI Element: Ein- und Verkaufsübersicht(542070,D) -> Ein- und Verkaufsübersicht(548990,D) -> main -> 10 -> Product.Menge
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Qty
+-- 2026-03-17T20:37:21.359Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2026-03-17 20:37:21.359000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646929
+;
+
+-- UI Element: Ein- und Verkaufsübersicht(542070,D) -> Ein- und Verkaufsübersicht(548990,D) -> main -> 10 -> Product.Maßeinheit
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.C_UOM_ID
+-- 2026-03-17T20:37:21.371Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2026-03-17 20:37:21.371000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646924
+;
+
+-- UI Element: Ein- und Verkaufsübersicht(542070,D) -> Ein- und Verkaufsübersicht(548990,D) -> main -> 10 -> Product.Aktueller Bestand
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Current_Qty_Sum
+-- 2026-03-17T20:37:32.516Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2026-03-17 20:37:32.515000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646923
+;
+
+-- UI Element: Ein- und Verkaufsübersicht(542070,D) -> Ein- und Verkaufsübersicht(548990,D) -> main -> 10 -> Document.Created By
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.CreatedBy
+-- 2026-03-17T20:37:32.523Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2026-03-17 20:37:32.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648585
+;
+
