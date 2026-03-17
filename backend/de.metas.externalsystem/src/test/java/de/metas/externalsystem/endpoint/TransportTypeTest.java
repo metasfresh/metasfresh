@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-scriptedadapter
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,26 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.externalsystem.endpoint;
 
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import org.junit.jupiter.api.Test;
 
-@Data
-@Builder
-public class MsgFromMfContext
+import static org.assertj.core.api.Assertions.assertThat;
+
+class TransportTypeTest
 {
-	@NonNull private final String orgCode;
-	@NonNull private final String scriptingRequestBody;
-	@NonNull private final String scriptIdentifier;
-
-	private String script;
-	private String scriptReturnValue;
-
-	@NonNull private final JsonExternalSystemEndpoint endpointParameters;
-	
-	@NonNull private final String outboundRecordTableName;
-	@NonNull private final String outboundRecordId;
+	@Test
+	void ofCode_ensureAllValuesAreMapped()
+	{
+		for (final TransportType type : TransportType.values())
+		{
+			assertThat(TransportType.ofCode(type.getCode())).isEqualTo(type);
+		}
+	}
 }

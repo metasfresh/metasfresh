@@ -20,28 +20,28 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint.interceptor;
+package de.metas.externalsystem.endpoint;
 
-import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
-@Interceptor(I_ExternalSystem_Outbound_Endpoint.class)
-@Component
 @RequiredArgsConstructor
-public class ExternalSystem_Outbound_Endpoint
+@Getter
+public enum TransportType implements ReferenceListAwareEnum
 {
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Outbound_Endpoint.COLUMNNAME_AuthType)
-	public void resetCredentials(@NonNull final I_ExternalSystem_Outbound_Endpoint endpoint)
+	HTTP(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP),
+	SFTP(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+
+	private static final ReferenceListAwareEnums.ValuesIndex<TransportType> index = ReferenceListAwareEnums.index(values());
+
+	@NonNull private final String code;
+
+	public static TransportType ofCode(@NonNull final String code)
 	{
-		endpoint.setAuthToken(null);
-		endpoint.setLoginUsername(null);
-		endpoint.setPassword(null);
-		endpoint.setClientId(null);
-		endpoint.setClientSecret(null);
+		return index.ofCode(code);
 	}
 }

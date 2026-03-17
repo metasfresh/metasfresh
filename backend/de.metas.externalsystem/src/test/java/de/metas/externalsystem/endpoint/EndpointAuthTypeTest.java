@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
 import org.junit.jupiter.api.Test;
@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class OutboundEndpointAuthTypeTest
+class EndpointAuthTypeTest
 {
 	@Test
 	void toJson_ensureAllEnumValuesAreMapped()
 	{
-		// Given: all enum values from OutboundEndpointAuthType
-		final Set<String> outboundAuthTypeCodes = Arrays.stream(OutboundEndpointAuthType.values())
-				.map(OutboundEndpointAuthType::getCode)
+		// Given: all enum values from EndpointAuthType
+		final Set<String> endpointAuthTypeCodes = Arrays.stream(EndpointAuthType.values())
+				.map(EndpointAuthType::getCode)
 				.collect(Collectors.toSet());
 
 		// And: all enum values from JsonEndpointAuthType
@@ -46,13 +46,13 @@ class OutboundEndpointAuthTypeTest
 				.map(Enum::name)
 				.collect(Collectors.toSet());
 
-		// Then: all OutboundEndpointAuthType codes should have corresponding JsonEndpointAuthType entries
-		assertThat(outboundAuthTypeCodes)
-				.as("All OutboundEndpointAuthType codes must have corresponding JsonEndpointAuthType entries")
+		// Then: all EndpointAuthType codes should have corresponding JsonEndpointAuthType entries
+		assertThat(endpointAuthTypeCodes)
+				.as("All EndpointAuthType codes must have corresponding JsonEndpointAuthType entries")
 				.isSubsetOf(jsonAuthTypeNames);
 
 		// And: verify toJson() works for each value without throwing an exception
-		Arrays.stream(OutboundEndpointAuthType.values())
+		Arrays.stream(EndpointAuthType.values())
 				.forEach(authType -> {
 					final JsonEndpointAuthType json = authType.toJson();
 					assertThat(json).isNotNull();
