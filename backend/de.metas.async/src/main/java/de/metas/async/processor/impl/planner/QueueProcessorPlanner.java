@@ -268,7 +268,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				.map(queue -> queue.createQuery(ctx, numberOfWorkPackagesPerProcessor))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.map(query -> TypedSqlQuery.cast(query).setForUpdateSkipLocked(true))
+				.map(QueueProcessorPlanner::enableForUpdateSkipLockedIfPossible)
 				.collect(ImmutableList.toImmutableList());
 
 		if (queueProcessorSpecificQueries.isEmpty())
@@ -293,6 +293,16 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 			return allLockedWorkPackages;
 		});
+	}
+
+	private static IQuery<I_C_Queue_WorkPackage> enableForUpdateSkipLockedIfPossible(final IQuery<I_C_Queue_WorkPackage> query)
+	{
+		if (query instanceof TypedSqlQuery)
+		{
+			return TypedSqlQuery.cast(query).setForUpdateSkipLocked(true);
+		}
+		// In unit tests, queries are POJOQuery — FOR UPDATE SKIP LOCKED is not applicable
+		return query;
 	}
 
 	@NonNull
