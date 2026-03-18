@@ -63,6 +63,16 @@ Die Datei enthält technische Informationen zur Fehleranalyse:
 | **buildHash** | Version der Anwendung |
 | **browserInfo** | Browser, Sprache, Bildschirmgröße |
 | **errors** | Liste der aufgetretenen JavaScript-Fehler |
+| **events** | Protokoll der Navigations- und Prozessereignisse (bis zu 200 Einträge) |
+
+Die **events**-Liste zeichnet auf, welche Seitenwechsel und Aktionen in der Anwendung stattgefunden haben. Dies hilft dem Support insbesondere bei der Analyse von unerwarteten Weiterleitungen oder Seitenwechseln.
+
+| Ereignistyp | Beschreibung |
+|-------------|--------------|
+| **navigation** | Jede URL-Änderung (Seitenwechsel) |
+| **processAction** | Ergebnis einer Prozessausführung (z.B. Beleg öffnen, Ansicht öffnen) |
+| **redirect** | Weiterleitung durch die Anwendung (z.B. automatische Umleitung, Verwerfen-Dialog) |
+| **popstate** | Browser Vor-/Zurück-Navigation |
 
 ### Beispiel einer Diagnosedatei
 
@@ -86,13 +96,32 @@ Die Datei enthält technische Informationen zur Fehleranalyse:
       "lineno": 12345,
       "stack": "Error: Cannot read property..."
     }
+  ],
+  "events": [
+    {
+      "timestamp": "2026-01-16T14:30:01.123Z",
+      "type": "navigation",
+      "action": "push",
+      "to": "/window/143/1000000",
+      "url": "http://localhost/window/143"
+    },
+    {
+      "timestamp": "2026-01-16T14:30:15.456Z",
+      "type": "processAction",
+      "processId": "WEBUI_Shipment_Schedule",
+      "pinstanceId": "12345",
+      "actionType": "openView",
+      "windowId": "540674",
+      "viewId": "540674-aabbcc",
+      "url": "http://localhost/window/143/1000000"
+    }
   ]
 }
 ```
 
 ## Datenschutz
 
-Die Diagnosedatei enthält **keine** persönlichen Daten, Passwörter oder Geschäftsdaten. Es werden ausschließlich technische Informationen über den Browser und aufgetretene Fehler erfasst.
+Die Diagnosedatei enthält **keine** persönlichen Daten, Passwörter oder Geschäftsdaten. Es werden ausschließlich technische Informationen über den Browser, aufgetretene Fehler und Navigations-/Prozessereignisse erfasst. Die Ereignisse enthalten URL-Pfade, Prozess-IDs und Fenster-/Ansichts-Kennungen — keine Dokumentinhalte oder Geschäftsdaten.
 
 ## Häufige Fragen
 
@@ -102,7 +131,7 @@ Stellen Sie sicher, dass Sie die Konsole im richtigen Browser-Tab geöffnet habe
 
 ### Es werden keine Fehler in der Datei angezeigt?
 
-Wenn keine Fehler erfasst wurden, ist das Feld "errors" leer. In diesem Fall beschreiben Sie bitte das Problem so genau wie möglich in Ihrem Support-Ticket.
+Wenn keine Fehler erfasst wurden, ist das Feld "errors" leer. Auch in diesem Fall enthält die Datei wertvolle Informationen im "events"-Bereich, der alle Seitenwechsel und Aktionen protokolliert. Bitte senden Sie die Datei trotzdem an den Support und beschreiben Sie das Problem so genau wie möglich in Ihrem Support-Ticket.
 
 ### Wo finde ich die heruntergeladene Datei?
 

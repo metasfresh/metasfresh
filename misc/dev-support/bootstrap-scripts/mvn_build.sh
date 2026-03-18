@@ -23,31 +23,96 @@
 
 set -e
 
-#needed if your locally installed "default" java is not the one expected by maven
-#export JAVA_HOME=c:/Users/tobia/.jdks/temurin-21.0.7 
-#export JAVA_HOME=c:/Users/tobia/.jdks/temurin-17.0.15
-export JAVA_HOME=c:/Users/tobia/.jdks/temurin-1.8.0_452
+# =============================================================================
+# AUTO-DETECT METASFRESH ROOT (works from any working directory)
+# =============================================================================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Script is at misc/dev-support/bootstrap-scripts/ → metasfresh root is 3 levels up
+METASFRESH_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-MULTITHREAD_PARAM=''
-#MULTITHREAD_PARAM='-T2C'
+if [[ ! -f "$METASFRESH_ROOT/backend/pom.xml" ]]; then
+    echo "ERROR: Could not find metasfresh root (expected backend/pom.xml at $METASFRESH_ROOT)"
+    exit 1
+fi
 
-ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
-#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -DskipTests'
-#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -Dmaven.test.skip=true'
+# Use absolute path for .m2-local (critical on Windows Git Bash)
+LOCAL_REPO="$(cd "$METASFRESH_ROOT" && pwd -W 2>/dev/null || pwd)/.m2-local"
+mkdir -p "$LOCAL_REPO"
 
-#GOALS='test'
-GOALS='clean install'
+echo "Metasfresh root: $METASFRESH_ROOT"
+echo "Local Maven repo: $LOCAL_REPO"
 
-mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml $ADDITIONAL_PARAMS $GOALS && \
+# =============================================================================
+# JAVA VERSION
+# =============================================================================
+# Java 8 for backend; override JAVA8_HOME or JAVA_HOME as needed
+if [[ -n "${JAVA8_HOME:-}" ]]; then
+    export JAVA_HOME="$JAVA8_HOME"
+elif [[ -z "${JAVA_HOME:-}" ]]; then
+    # Fallback: look for temurin-1.8 in standard location
+    for jdk in "$HOME"/.jdks/temurin-1.8.*; do
+        [[ -d "$jdk" ]] && export JAVA_HOME="$jdk" && break
+    done
+fi
+echo "JAVA_HOME: $JAVA_HOME"
 
-mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+# =============================================================================
+# PARSE OPTIONS
+# =============================================================================
+CLEAN_FLAG=''
+SKIP_TESTS_FLAG=''
+PARALLEL_FLAG=''
+DEPS_ONLY=false
 
-mvn -e --file ../../../backend/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+for arg in "$@"; do
+    case "$arg" in
+        --clean)      CLEAN_FLAG='clean' ;;
+        --skip-tests) SKIP_TESTS_FLAG='-DskipTests' ;;
+        --parallel)   PARALLEL_FLAG='-T2C' ;;
+        --deps-only)  DEPS_ONLY=true ;;
+        *)            echo "Unknown option: $arg"; exit 1 ;;
+    esac
+done
 
-mvn --file ../../services/camel/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+GOALS="${CLEAN_FLAG} install"
 
-mvn --file ../../services/procurement-webui/procurement-webui-backend/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+MULTITHREAD_PARAM="${PARALLEL_FLAG}"
 
-mvn --file ../../services/federated-rabbitmq/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
+ADDITIONAL_PARAMS="-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true ${SKIP_TESTS_FLAG}"
 
+SETTINGS="$METASFRESH_ROOT/misc/dev-support/maven/settings.xml"
+REPO_FLAG="-Dmaven.repo.local=$LOCAL_REPO"
+MVN_FLAGS="--settings $SETTINGS $REPO_FLAG --no-transfer-progress"
+
+# =============================================================================
+# BUILD
+# =============================================================================
+echo ""
+echo "$(date): Starting build (goals: $GOALS)"
+echo ""
+
+mvn --file "$METASFRESH_ROOT/misc/parent-pom/pom.xml" $MVN_FLAGS $ADDITIONAL_PARAMS $GOALS && \
+
+mvn --file "$METASFRESH_ROOT/misc/de-metas-common/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
+
+if $DEPS_ONLY; then
+    echo "$(date): Done (deps-only: parent-pom + de-metas-common)"
+    exit 0
+fi
+
+JAVA17_HOME="${JAVA17_HOME:-}"
+
+mvn -e --file "$METASFRESH_ROOT/backend/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+
+if [[ -n "$JAVA17_HOME" ]]; then
+    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/camel/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/procurement-webui/procurement-webui-backend/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+    JAVA_HOME="$JAVA17_HOME" mvn --file "$METASFRESH_ROOT/misc/services/federated-rabbitmq/pom.xml" $MVN_FLAGS $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
+else
+    echo ""
+    echo "WARNING: JAVA17_HOME not set — skipping camel, procurement-webui-backend, federated-rabbitmq"
+    echo "Set JAVA17_HOME to build Java 17 services."
+fi
+
+echo ""
 echo "$(date): Done"

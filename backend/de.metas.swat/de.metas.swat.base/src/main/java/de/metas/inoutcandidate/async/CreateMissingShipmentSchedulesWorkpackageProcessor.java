@@ -22,10 +22,12 @@
 
 package de.metas.inoutcandidate.async;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -36,6 +38,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -88,22 +91,32 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	private static boolean _scheduleIfNotPostponed(final IContextAware ctxAware, @Nullable final AsyncBatchId asyncBatchId)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		if (shipmentScheduleBL.allMissingSchedsWillBeCreatedLater())
 		{
-			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+			loggable.addLog("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
 			return false;
 		}
 
 		// don't try to enqueue it if is not active
 		if (!queueDAO.isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
-			logger.debug("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+			loggable.addLog("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
 			return false;
 		}
 
-		final Properties ctx = ctxAware.getCtx();
+		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctxAware.getCtx(), CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+		final int alreadyEnqueuedWPs = queueForEnqueuing.size();
+		if (alreadyEnqueuedWPs > 1)
+		{ // why >1 and not >0? i checked the code and >0 should be fine. still, i feel more comfortable with >1
+			loggable.addLog("Not scheduling WP because there are {} processable workpackages, and we just need one to create all missing schedules!: {}",
+					alreadyEnqueuedWPs,
+					CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+			return false;
+		}
 
-		workPackageQueueFactory.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
+		queueForEnqueuing
 				.newWorkPackage()
 				.setAsyncBatchId(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
