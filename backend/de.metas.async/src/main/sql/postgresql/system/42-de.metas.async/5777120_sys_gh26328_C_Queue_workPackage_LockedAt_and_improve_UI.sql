@@ -36,7 +36,7 @@ UPDATE AD_Element_Trl SET Description='Time at which the data record was blocked
 ;
 
 -- 2025-11-14T21:31:41.061Z
-UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage='Y' LIMIT 1)
 ;
 
 -- 2025-11-14T21:31:41.454Z
