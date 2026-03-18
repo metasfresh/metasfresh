@@ -96,3 +96,58 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=774942
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,774942,0,222,1000034,648587,'F',TO_TIMESTAMP('2026-03-18 07:08:52.895000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN','Y','Y','N','Y','N','N','N',0,'GLN-GCP Länge',45,0,0,TO_TIMESTAMP('2026-03-18 07:08:52.895000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- Field: Geschäftspartner Dist-Orgs(540366,U) -> Adresse(540874,D) -> GLN-GCP Länge
+-- Column: C_BPartner_Location.GLN_GCPLength
+-- 2026-03-18T11:19:18.374Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592254,774943,0,540874,TO_TIMESTAMP('2026-03-18 11:19:18.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN',2,'D','Y','N','N','N','N','N','N','N','GLN-GCP Länge',TO_TIMESTAMP('2026-03-18 11:19:18.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-03-18T11:19:18.379Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=774943 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-03-18T11:19:18.392Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584685)
+;
+
+-- 2026-03-18T11:19:18.415Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=774943
+;
+
+-- 2026-03-18T11:19:18.432Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(774943)
+;
+
+-- UI Element: Geschäftspartner Dist-Orgs(540366,U) -> Adresse(540874,D) -> main -> 10 -> default.GLN-GCP Länge
+-- Column: C_BPartner_Location.GLN_GCPLength
+-- 2026-03-18T11:20:16.636Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,774943,0,540874,541147,648588,'F',TO_TIMESTAMP('2026-03-18 11:20:16.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN','Y','Y','N','Y','N','N','N',0,'GLN-GCP Länge',45,0,0,TO_TIMESTAMP('2026-03-18 11:20:16.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Field: Organisation Stammdaten(540676,D) -> Adresse(541854,U) -> GLN-GCP Länge
+-- Column: C_BPartner_Location.GLN_GCPLength
+-- 2026-03-18T11:24:32.901Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592254,774944,0,541854,TO_TIMESTAMP('2026-03-18 11:24:32.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN',2,'U','Y','N','N','N','N','N','N','N','GLN-GCP Länge',TO_TIMESTAMP('2026-03-18 11:24:32.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-03-18T11:24:32.904Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=774944 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-03-18T11:24:32.906Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584685)
+;
+
+-- 2026-03-18T11:24:32.913Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=774944
+;
+
+-- 2026-03-18T11:24:32.914Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(774944)
+;
+
+-- UI Element: Organisation Stammdaten(540676,D) -> Adresse(541854,U) -> main -> 10 -> default.GLN-GCP Länge
+-- Column: C_BPartner_Location.GLN_GCPLength
+-- 2026-03-18T11:25:01.842Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,774944,0,541854,542736,648589,'F',TO_TIMESTAMP('2026-03-18 11:25:01.724000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN','Y','Y','N','Y','N','N','N',0,'GLN-GCP Länge',150,0,0,TO_TIMESTAMP('2026-03-18 11:25:01.724000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
