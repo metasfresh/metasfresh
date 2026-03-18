@@ -284,6 +284,7 @@ BEGIN
                                             AND bbd_attr.m_attribute_id = v_bbd_attribute_id
                      WHERE ha_item.m_hu_id = lu_hu.m_hu_id
                        AND ha_item.itemtype = 'HA'
+                       AND ha_item.qty IS NOT NULL AND ha_item.qty > 0
                  ) crate
             ) crates_data ON TRUE
         ) pallets_data ON TRUE
