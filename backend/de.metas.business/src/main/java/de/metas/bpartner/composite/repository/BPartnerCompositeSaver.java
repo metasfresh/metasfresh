@@ -353,7 +353,6 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
 			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
 			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
-			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
 			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
 
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
