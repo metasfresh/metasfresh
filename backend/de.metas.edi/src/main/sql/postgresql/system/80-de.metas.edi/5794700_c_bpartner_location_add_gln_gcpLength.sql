@@ -151,3 +151,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=774944
 -- 2026-03-18T11:25:01.842Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,774944,0,541854,542736,648589,'F',TO_TIMESTAMP('2026-03-18 11:25:01.724000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Länge des GCP (GS1 Company Prefix) in der GLN','Y','Y','N','Y','N','N','N',0,'GLN-GCP Länge',150,0,0,TO_TIMESTAMP('2026-03-18 11:25:01.724000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+-- UI Element: Organisation Stammdaten(540676,D) -> Adresse(541854,U) -> main -> 10 -> default.GLN-GCP Länge
+-- Column: C_BPartner_Location.GLN_GCPLength
+-- 2026-03-18T11:31:17.233Z
+UPDATE AD_UI_Element SET SeqNo=45,Updated=TO_TIMESTAMP('2026-03-18 11:31:17.233000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648589
+;
