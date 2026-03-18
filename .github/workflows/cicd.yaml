@@ -1637,6 +1637,8 @@ jobs:
 
       # ===== ALLURE REPORT GENERATION =====
       - name: Generate Allure Report for Mobile
+        if: always()
+        continue-on-error: true  # older branches may not produce Allure results
         uses: ./.github/actions/generate-allure-report
         with:
           results-dir: docker-builds/e2e-tests/allure-results-mobile
