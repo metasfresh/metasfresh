@@ -56,6 +56,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(584685)
 ;
 
+-- 2026-03-18T07:11:37.136Z
+/* DDL */ SELECT public.db_alter_table('C_BPartner_Location','ALTER TABLE public.C_BPartner_Location ADD COLUMN GLN_GCPLength NUMERIC(10) DEFAULT 7 NOT NULL')
+;
+
 -- 2026-03-18T07:12:15.889Z
 INSERT INTO t_alter_column values('c_bpartner_location','GLN_GCPLength','NUMERIC(10)',null,'7')
 ;
