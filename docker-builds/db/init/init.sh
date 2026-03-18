@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+add_pg_stat_statements_extension=${ADD_PG_STAT_STATEMENTS_EXTENSION:-n}
+
 echo ""
 echo "==================="
 echo " Creating role ..."
@@ -30,7 +32,7 @@ echo "Restoring pgdump"
 echo "==================="
 
 # running without "--exit-on-error" because with our current dumps we get "ERROR:  schema "public" already exists"
-# also disabling "fail on error" because pg_restore might return with a on-zero exit status
+# also disabling "fail on error" because pg_restore might return with a non-zero exit status
 set +e
 pg_restore -Fc --username metasfresh --dbname metasfresh /metasfresh.pgdump
 set -e
@@ -41,52 +43,51 @@ echo "=========="
 
 echo ""
 echo "======================================="
-echo " Applying migrations ..."
+echo " Adjusting CI/test configuration ..."
 echo "======================================="
-# We want to use the regular postgres container init and do not want to override the original entrypoint.
-# Therefore we cannot use our metasfresh java migration tool here since it wants to open a JDBC connection via TCP socket, which is not open during postgres init for security reasons.
-# Only a local unix socket is available, which allows us to use psql command line.
-# We emulate what the java migration tool would do, by iterating over the migration sqls in the right order, checking whether they need applying and marking each applied migration in the database.
 
-find /docker-entrypoint-initdb.d/migrations -type f -printf '%f\n' | sort | while read f; do
-  case "$f" in
-    *.sql)
-        readarray -t parts < <( echo "${f//'---'/$'\n'}" );
-        printf "${parts[0]} in ${parts[1]%.sql}: ";
-        
-        exists=`psql -U metasfresh -tc "select exists(select 1 from ad_migrationscript where name = '${parts[1]%.sql}' || '->' || '${parts[0]}' || '.sql')"`;
-        if [ $exists = 't' ]; then
-            echo "skipped";
-            continue;
-        fi
-        
-        psql --username=metasfresh -v ON_ERROR_STOP=ON -q1f "/docker-entrypoint-initdb.d/migrations/${f}" > /tmp/migration.log 2>&1 || {
-          echo "failed";
-          cat /tmp/migration.log
-          exit 1            
-        };
-        
-        cat /tmp/scripts/mark-migration-as-applied.sql | awk "{gsub(\"##project##\",\"${parts[1]%.sql}\");gsub(\"##file##\",\"${parts[0]}\");print}" | psql -v ON_ERROR_STOP=ON -q1 --username=metasfresh || {
-          echo "failed marking";
-          exit 1
-        };
-        
-        echo "applied" ;
-        ;;
-    *)
-        echo "$0: ignoring $f" ;;
-  esac
-done
-echo "=========="
-echo " ...done!"
-echo "=========="
+# Enable automatic period control so document completion doesn't fail with @PeriodClosed@
+# Note: year/period creation happens AFTER migrations (see compose post-migration step)
+psql -v ON_ERROR_STOP=1 --username=metasfresh --dbname=metasfresh <<- EOSQL
+UPDATE C_AcctSchema SET AutoPeriodControl='Y', Period_OpenHistory=9999, Period_OpenFuture=9999 WHERE AD_Client_ID >= 0;
+EOSQL
 
+# Set server URLs for Docker Compose environment
+psql -v ON_ERROR_STOP=1 --username=metasfresh --dbname=metasfresh <<- EOSQL
+UPDATE ad_sysconfig SET value='http://metasfresh-app:8282/adempiereJasper/ReportServlet' WHERE name='de.metas.adempiere.report.jasper.JRServerServlet';
+UPDATE ad_sysconfig SET value='http://metasfresh-app:8282/adempiereJasper/BarcodeServlet' WHERE name='de.metas.adempiere.report.barcode.BarcodeServlet';
+UPDATE ad_sysconfig SET value='' WHERE name='webui.frontend.url';
+EOSQL
 
-echo ""
-echo "==================="
-echo "adjusting configuration"
-echo "==================="
-psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f /tmp/scripts/adjust-config.sql
-echo "=========="
-echo " ...done!"
-echo "=========="
+# Create test user (cynthia) for automated tests
+psql -v ON_ERROR_STOP=1 --username=metasfresh --dbname=metasfresh <<- EOSQL
+INSERT INTO ad_user(ad_user_id, name, description, value, login, password, ad_language, isactive, issystemuser, isfullbpaccess, isdefaultcontact, ad_client_id, ad_org_id, createdby, updatedby, notificationtype, isinpayroll, issubjectmattercontact, issalescontact, isaccountlocked, fresh_gift, ispurchasecontact, ismfprocurementuser, issalescontact_default, ispurchasecontact_default, isloginashostkey, isbilltocontact_default, isshiptocontact_default, isnewsletter, isdecider, ismanagement, ismultiplier, isauthorizedsignatory, ismembershipcontact)
+VALUES (142, 'cynthia', 'user for cypress tests', 'cynthia', 'cynthia', 'sha512:fa4902a30453c242c30378c483bca2ba2272689ff0cc143b8fca94653eef26be5243767dbc937efbe6dfc8c4066159af0d50ee533573746d3b93feb08056ef78:37d25dd5-5909-4d51-83c4-8bb9fc365b79', 'en_US', 'Y', 'Y', 'Y', 'Y', 0, 0, 0, 0, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N')
+ON CONFLICT (ad_user_id) DO NOTHING;
+
+INSERT INTO ad_user_roles(ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, createdby, updatedby)
+VALUES (142, 540024, 1000000, 1000000, 'Y', 142, 142)
+ON CONFLICT DO NOTHING;
+EOSQL
+
+echo "==========="
+echo " ... done!"
+echo "==========="
+
+activate_extensions()
+{
+	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
+		# needs shared_preload_libraries = 'pg_stat_statements'	in postgresql.conf
+		echo "==========================================="
+		echo " activate pg_stat_statements extension ..."
+		echo "==========================================="
+		psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+EOSQL
+		echo "==========="
+		echo " ... done!"
+		echo "==========="
+	fi
+}
+
+activate_extensions
