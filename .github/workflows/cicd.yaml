@@ -129,48 +129,6 @@ jobs:
           echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
           testspace github_run.txt
 
-  # Fast migration CLI build - runs in parallel with java job
-  # This enables db-images to start ~10 minutes earlier
-  migration-cli:
-    runs-on: ubuntu-latest
-    needs: [ init ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: install-envsubst
-        if: env.ACT == 'true'
-        run: |
-          apt-get update && apt-get install -y gettext-base
-      - name: prepare-settings
-        env:
-          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
-        run: |
-          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
-      - name: prepare-metadata
-        env:
-          GIT_PROPS: ${{ needs.init.outputs.git-properties }}
-        run: |
-          mkdir -p docker-builds/metadata
-          echo -e "$GIT_PROPS" > docker-builds/metadata/git.properties
-          echo "Created git.properties:"
-          cat docker-builds/metadata/git.properties
-      - name: build-migration-cli
-        run: |
-          docker buildx build \
-            --progress=auto \
-            --file docker-builds/Dockerfile.migration-cli \
-            --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
-            --output type=local,dest=./artifacts \
-            .
-      - name: verify-output
-        run: |
-          ls -la artifacts/
-          file artifacts/migration-cli.jar
-      - uses: actions/upload-artifact@v4
-        with:
-          name: migration-cli-jar
-          path: artifacts/migration-cli.jar
-          retention-days: 1
-
   java:
     runs-on: ubuntu-latest
     needs: init
@@ -581,7 +539,7 @@ jobs:
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
           .
-      # NOTE: metas-db and metas-db-migration-tool are now built by db-images job
+      # NOTE: metas-db and metas-db-migration-tool are built below in this same job
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -630,7 +588,7 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-      # NOTE: metas-db and metas-db-migration-tool push steps moved to db-images job
+      # NOTE: metas-db and metas-db-migration-tool are built above in this same job
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -648,71 +606,6 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
 
-      - name: produce-summary
-        run: |
-          echo '#### backend images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-
-  # db-images: Build database images independently from backend
-  # Now runs in parallel with java job (depends on fast migration-cli job instead)
-  db-images:
-    runs-on: ubuntu-latest
-    needs: [ init, migration-cli ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          username: metasfresh
-          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: prepare-metadata
-        env:
-          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
-          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
-        run: |
-          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
-          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
-      - name: download-migration-cli-jar
-        uses: actions/download-artifact@v4
-        with:
-          name: migration-cli-jar
-          path: .
-      - name: verify-migration-cli-jar
-        run: |
-          ls -la migration-cli.jar
-          file migration-cli.jar
-      - name: aggregate-sql-from-source
-        shell: bash
-        run: |
-          # Aggregate SQL files directly from source code (no Maven dependency)
-          # Handles two layouts:
-          #   1. Intermediate folders: system/70-de.metas.handlingunits/*.sql
-          #   2. Flat layout: system/*.sql (older branches like task_force_hotfix)
-          # The migration tool processes folders alphabetically, so intermediate
-          # folder names (10-, 20-, 70-) control execution order.
-          mkdir -p migration-sql
-          find backend -path "*/src/main/sql/postgresql/system/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
-            parent_dir=$(basename "$(dirname "$sql_file")")
-            if [ "$parent_dir" = "system" ]; then
-              # Flat layout: derive folder name from the module's Maven artifactId
-              # e.g., backend/de.metas.handlingunits.base/src/main/sql/postgresql/system/5609260_foo.sql
-              # → extract module name → use as intermediate folder (ensures ordering by module)
-              module_path="${sql_file#backend/}"          # de.metas.handlingunits.base/src/...
-              module_name="${module_path%%/src/*}"         # de.metas.handlingunits.base
-              mkdir -p "migration-sql/$module_name"
-              cp "$sql_file" "migration-sql/$module_name/"
-            else
-              # Intermediate folder layout: preserve as-is
-              mkdir -p "migration-sql/$parent_dir"
-              cp "$sql_file" "migration-sql/$parent_dir/"
-            fi
-          done
-          SQL_COUNT=$(find migration-sql -name "*.sql" | wc -l)
-          FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
-          echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
-          ls -la migration-sql/
       - name: build-db-init
         run: |
           docker buildx build \
@@ -728,9 +621,10 @@ jobs:
         run: |
           docker buildx build \
           --progress=auto \
-          --file docker-builds/Dockerfile.db-migration-tool-lite \
+          --file docker-builds/Dockerfile.db-migration-tool \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -768,13 +662,17 @@ jobs:
           command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
-          echo '#### db-images' >> $GITHUB_STEP_SUMMARY
+          echo '#### backend images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
     runs-on: ubuntu-latest
-    needs: [ init, db-images ]
+    needs: [ init, backend ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
     steps:
