@@ -172,17 +172,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # -----------------------------------------------------------
-          # Helper: detect DDL/migration script changes in the merge diff.
-          # Sets HAS_DDL=true and DDL_FILES if SQL migration or DDL
-          # reference files are part of the diff vs the target branch.
+          # Helper: detect DDL reference file changes in the merge diff.
+          # Sets HAS_DDL=true and DDL_FILES if files under */ddl/*
+          # (CREATE/ALTER TABLE/VIEW definitions) are part of the diff.
           # When DDL changes are present, auto-merge labels are omitted
-          # because a human must verify that migration scripts are correct
-          # for the target branch's DB schema.
+          # because a human must verify schema changes are correct for
+          # the target branch. Regular migration scripts (under system/)
+          # are safe to auto-merge.
           # -----------------------------------------------------------
           detect_ddl_changes() {
             DDL_FILES=$(git diff --name-only "origin/$TARGET"..HEAD -- \
-              '*/sql/postgresql/system/' \
-              '*/sql/postgresql/ddl/' \
+              ':(glob)**/sql/postgresql/ddl/**' \
             | head -50)
             if [[ -n "$DDL_FILES" ]]; then
               HAS_DDL=true
