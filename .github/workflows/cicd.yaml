@@ -1395,6 +1395,7 @@ jobs:
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         run: |
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
@@ -1719,7 +1720,9 @@ jobs:
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
           mv test-results-mobile test-results-temp || true
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[mobile/playwright]playwright-report-mobile/junit/results.xml"
+          fi
           # Move back for artifact upload
           mv test-results-temp test-results-mobile || true
 
@@ -1818,7 +1821,9 @@ jobs:
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
           mv test-results-frontend test-results-temp || true
+          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[frontend/playwright-${{ matrix.shard_label }}]playwright-report-frontend/junit/results.xml"
+          fi
           # Move back for artifact upload
           mv test-results-temp test-results-frontend || true
 
@@ -2420,6 +2425,11 @@ jobs:
             gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
             echo "Posted new comment on PR #${PR}"
           fi
+
+      - name: Cleanup SSH
+        if: always() && steps.check-secret.outputs.available == 'true'
+        run: rm -rf ~/.ssh/reports_key
+
 
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'

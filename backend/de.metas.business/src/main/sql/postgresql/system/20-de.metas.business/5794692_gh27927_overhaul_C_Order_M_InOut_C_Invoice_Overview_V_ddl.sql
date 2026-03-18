@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.fresh.base
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V
 ;
