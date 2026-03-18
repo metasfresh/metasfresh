@@ -1,0 +1,45 @@
+# Fast build of just migration CLI for db-tools parallelization
+# This builds in ~2-3 minutes instead of waiting for full backend (~12-15 min)
+# Dependencies: only external libs (commons-lang3, postgresql, guava, slf4j) - no backend modules
+#
+# Build context requires:
+#   - git.properties file (created from init job outputs)
+
+FROM maven:3.8.4-jdk-8
+
+WORKDIR /workspace
+
+# Copy git.properties (created by CI from init job outputs)
+COPY docker-builds/metadata/git.properties /workspace/git.properties
+
+# Copy parent POMs (required for dependency management)
+COPY misc/parent-pom /workspace/misc/parent-pom
+COPY backend/pom.xml /workspace/backend/pom.xml
+
+# Copy only migration module (self-contained - no other backend module dependencies)
+COPY backend/de.metas.migration /workspace/backend/de.metas.migration
+
+# Install parent-pom (non-recursive - just the pom itself)
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/misc/parent-pom && mvn install -N -DskipTests -q
+
+# Install backend parent pom (non-recursive - just the pom itself)
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/backend && mvn install -N -DskipTests -q
+
+# Build migration CLI (includes base module via reactor)
+# Skip git plugin since .git is not present - we inject git.properties manually below
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/backend/de.metas.migration && mvn install -DskipTests -Dmaven.gitcommitid.skip=true -q
+
+# Inject git.properties into the shaded JAR (like other deployable artifacts)
+# Note: shade plugin replaces original JAR, doesn't add -shaded suffix
+RUN cd /workspace && \
+    mkdir -p META-INF && \
+    cp git.properties META-INF/git.properties && \
+    jar -uf /workspace/backend/de.metas.migration/de.metas.migration.cli/target/de.metas.migration.cli-10.0.0.jar META-INF/git.properties && \
+    echo "Injected git.properties into migration-cli JAR"
+
+# Output stage - extract just the shaded JAR (now with git.properties included)
+FROM scratch AS export
+COPY --from=0 /workspace/backend/de.metas.migration/de.metas.migration.cli/target/de.metas.migration.cli-10.0.0.jar /migration-cli.jar
