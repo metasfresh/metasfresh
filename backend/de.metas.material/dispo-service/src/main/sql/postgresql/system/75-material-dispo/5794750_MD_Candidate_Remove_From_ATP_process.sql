@@ -3,7 +3,7 @@
 -- Value: MD_Candidate_RemoveFromATP
 -- Classname: de.metas.process.ExecuteUpdateSQL
 -- 2026-03-18T14:41:29.826Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,CSVFieldQuote,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585600,'Y','de.metas.process.ExecuteUpdateSQL','N',TO_TIMESTAMP('2026-03-18 14:41:29.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'"','D','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Kandidat aus Zusagbar (ATP) entfernen','json','N','N','xls','SELECT de_metas_material.MD_Candidate_Remove_From_ATP(@MD_Candidate_ID/-1@);','SQL',TO_TIMESTAMP('2026-03-18 14:41:29.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'MD_Candidate_RemoveFromATP')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585600,'Y','de.metas.process.ExecuteUpdateSQL','N',TO_TIMESTAMP('2026-03-18 14:41:29.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Kandidat aus Zusagbar (ATP) entfernen','json','N','N','xls','SELECT de_metas_material.MD_Candidate_Remove_From_ATP(@MD_Candidate_ID/-1@);','SQL',TO_TIMESTAMP('2026-03-18 14:41:29.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'MD_Candidate_RemoveFromATP')
 ;
 
 -- 2026-03-18T14:41:29.837Z
@@ -46,28 +46,6 @@ UPDATE AD_Process_Trl SET Name='Aus Zusagbar entfernen',Updated=TO_TIMESTAMP('20
 -- 2026-03-18T14:44:09.485Z
 UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
 ;
-
-/*
- * #%L
- * metasfresh-material-dispo-service
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- Process: MD_Candidate_RemoveFromATP(de.metas.process.ExecuteUpdateSQL)
 -- Table: MD_Candidate
