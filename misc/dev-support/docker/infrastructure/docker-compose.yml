@@ -100,13 +100,13 @@ services:
       - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
     #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
 
-  papercut-smtp:
-    build: papercut-smtp
-    image: docker-papercut-smtp
-    container_name: ${BRANCH_NAME}_papercut-smtp
+  mailpit:  # Replaces papercut-smtp for SMTP testing (supports auth)
+    image: axllent/mailpit:latest
+    container_name: ${BRANCH_NAME}_mailpit
+    command: ["--smtp-auth-accept-any", "--smtp-auth-allow-insecure", "--smtp=0.0.0.0:587"]
     ports:
-      - "${PAPERCUT_SMTP_PORT}:25"
-      - "${PAPERCUT_MGMT_PORT}:37408"
+      - "${MAILPIT_SMTP_PORT:-20587}:587"
+      - "${MAILPIT_MGMT_PORT}:8025"
 volumes:
   metasfresh_postgres:
     name: ${BRANCH_NAME}_metasfresh_postgres
