@@ -724,6 +724,13 @@ public class MD_Candidate_StepDef
 				.build();
 	}
 
+	/**
+	 * Executes the MD_Candidate_RemoveFromATP process for the specified candidate.
+	 * This removes the candidate from ATP calculations by setting its qty to 0
+	 * and recalculating subsequent ATP values.
+	 *
+	 * @param row DataTable row containing MD_Candidate_ID and optional process value
+	 */
 	@And("the MD_Candidate_Remove_From_ATP process is run")
 	public void run_md_candidate_remove_from_atp_processes(@NonNull final DataTable dataTable)
 	{
