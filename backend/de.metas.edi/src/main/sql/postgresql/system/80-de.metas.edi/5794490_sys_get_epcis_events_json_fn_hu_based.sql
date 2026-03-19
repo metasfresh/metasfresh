@@ -1,47 +1,18 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- EPCIS event JSON for a given M_InOut (shipment).
--- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
---
--- Changes in me03#28815:
---   - Pallet discovery: M_InOut → M_InOutLine → M_HU_Assignment.M_LU_HU_ID (primary)
---                        + fallback via M_ShipmentSchedule_QtyPicked.M_LU_HU_ID
---   - Crate (TU) discovery: M_HU_Item (itemtype='HU' individual, 'HA' aggregated)
---   - Items: M_HU_Item_Storage per TU (not DESADV pack items)
---   - GRAI: M_HU_Attribute on TU level (comma-separated for aggregated)
---   - DESADV: LEFT JOIN (optional, for buyer/handover/PO references)
---   - New field: cuGTIN from M_Product.GTIN
+-- Migration: 5794490
+-- EPCIS event JSON: rewrite to HU-based, DESADV-optional
+-- me03#28672: Pallet/crate/item data now derived from HU hierarchy
+-- instead of DESADV pack items. DESADV LEFT JOINed for optional biz references.
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
 $$
 DECLARE
-    v_result            JSONB;
-    v_grai_attribute_id NUMERIC;
-    v_sscc_attribute_id NUMERIC;
-    v_lot_attribute_id  NUMERIC;
-    v_bbd_attribute_id  NUMERIC;
+    v_result             JSONB;
+    v_grai_attribute_id  NUMERIC;
+    v_sscc_attribute_id  NUMERIC;
+    v_lot_attribute_id   NUMERIC;
+    v_bbd_attribute_id   NUMERIC;
 BEGIN
     -- Cache attribute IDs
     SELECT m_attribute_id INTO v_grai_attribute_id FROM m_attribute WHERE value = 'GRAI' LIMIT 1;
@@ -54,70 +25,53 @@ BEGIN
                    'documentNo', io.documentno,
                    'movementDate', TO_CHAR(io.movementdate, 'YYYY-MM-DD"T"HH24:MI:SS'),
                    'timezone', '+01:00',
-               -- Supplier GLN (org's BPartner location)
+                   -- Supplier GLN (org's BPartner location)
                    'supplierGLN', bpl_supplier.gln,
-                   'supplierGcpLength', bpl_supplier.gln_gcpLength,
-               -- Warehouse GLN: primary from warehouse BPartner, fallback to org
+                   -- Warehouse GLN: primary from warehouse BPartner, fallback to org
                    'warehouseGLN', COALESCE(bpl_wh.gln, bpl_supplier.gln),
-                   'warehouseGcpLength',
-                   CASE
-                       WHEN bpl_wh.gln IS NOT NULL THEN bpl_wh.gln_gcpLength
-                                                   ELSE bpl_supplier.gln_gcpLength
-                   END,
-               -- Warehouse value for SGLN extension
+                   -- Warehouse value for SGLN extension
                    'warehouseValue', wh.value,
-               -- Buyer GLN: DESADV → shipment fallback
+                   -- Buyer GLN: DESADV → shipment fallback
                    'buyerGLN', COALESCE(bpl_desadv_buyer.gln, bpl_ship_buyer.gln),
-                   'buyerGcpLength',
-                   CASE
-                       WHEN bpl_desadv_buyer.gln IS NOT NULL THEN bpl_desadv_buyer.gln_gcpLength
-                                                             ELSE bpl_ship_buyer.gln_gcpLength
-                   END,
-               -- Handover (DESADV only)
+                   -- Handover (DESADV only)
                    'handoverGLN', bpl_handover.gln,
-                   'handoverGcpLength', bpl_handover.gln_gcpLength,
-               -- Dropship: DESADV → shipment fallback
+                   -- Dropship: DESADV → shipment fallback
                    'dropshipGLN', COALESCE(bpl_desadv_drop.gln, bpl_ship_drop.gln),
-                   'dropshipGcpLength',
-                   CASE
-                       WHEN bpl_desadv_drop.gln IS NOT NULL THEN bpl_desadv_drop.gln_gcpLength
-                                                            ELSE bpl_ship_drop.gln_gcpLength
-                   END,
-               -- DESADV reference (NULL if no DESADV)
+                   -- DESADV reference (NULL if no DESADV)
                    'desadvReference', d.documentno,
-               -- PO reference: DESADV → shipment
+                   -- PO reference: DESADV → shipment
                    'poReference', COALESCE(d.poreference, io.poreference),
-               -- Pallets
+                   -- Pallets
                    'pallets', COALESCE(pallets_data.pallets_json, '[]'::jsonb)
            )
     INTO v_result
     FROM m_inout io
              -- DESADV: LEFT JOIN (optional)
              LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
-        -- Warehouse
+             -- Warehouse
              JOIN m_warehouse wh ON wh.m_warehouse_id = io.m_warehouse_id
              LEFT JOIN c_bpartner_location bpl_wh
                        ON bpl_wh.c_bpartner_location_id = wh.c_bpartner_location_id
-        -- Supplier (org)
+             -- Supplier (org)
              LEFT JOIN ad_orginfo org ON org.ad_org_id = io.ad_org_id
              LEFT JOIN c_bpartner_location bpl_supplier
                        ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
-        -- Buyer: DESADV path
+             -- Buyer: DESADV path
              LEFT JOIN c_bpartner_location bpl_desadv_buyer
                        ON bpl_desadv_buyer.c_bpartner_location_id = d.c_bpartner_location_id
-        -- Buyer: shipment path (fallback)
+             -- Buyer: shipment path (fallback)
              LEFT JOIN c_bpartner_location bpl_ship_buyer
                        ON bpl_ship_buyer.c_bpartner_location_id = io.c_bpartner_location_id
-        -- Handover (DESADV only)
+             -- Handover (DESADV only)
              LEFT JOIN c_bpartner_location bpl_handover
                        ON bpl_handover.c_bpartner_location_id = d.handover_location_id
-        -- Dropship: DESADV path
+             -- Dropship: DESADV path
              LEFT JOIN c_bpartner_location bpl_desadv_drop
                        ON bpl_desadv_drop.c_bpartner_location_id = d.dropship_location_id
-        -- Dropship: shipment path (fallback)
+             -- Dropship: shipment path (fallback)
              LEFT JOIN c_bpartner_location bpl_ship_drop
                        ON bpl_ship_drop.c_bpartner_location_id = io.dropship_location_id
-        -- Pallets subquery
+             -- Pallets subquery
              LEFT JOIN LATERAL (
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
@@ -146,7 +100,8 @@ BEGIN
                                ON qp.m_inoutline_id = iol.m_inoutline_id
                  WHERE iol.m_inout_id = io.m_inout_id
                    AND qp.m_lu_hu_id IS NOT NULL
-                   AND qp.isactive = 'Y') lu_ids
+                   AND qp.isactive = 'Y'
+             ) lu_ids
                  JOIN m_hu lu_hu ON lu_hu.m_hu_id = lu_ids.m_lu_hu_id
             -- SSCC18 on LU
                  LEFT JOIN m_hu_attribute sscc_attr
@@ -166,17 +121,17 @@ BEGIN
             FROM (
                      -- CASE A: Individual TUs (itemtype='HU')
                      SELECT COALESCE(
-                                    grai_attr.value,
+                                grai_attr.value,
                                 -- Dummy-GRAI fallback for individual TU
-                                    '7613204.00307.' || LPAD(COALESCE(io.poreference, '0'), 10, '0')
-                                        || LPAD(ROW_NUMBER() OVER (PARTITION BY lu_hu.m_hu_id ORDER BY tu_hu.m_hu_id)::text, 2, '0')
-                            )                          AS grai,
-                            lot_attr.value             AS lot_number,
-                            bbd_attr.value             AS best_before_date,
-                            tu_hu.m_hu_id              AS tu_hu_id,
+                                '7613204.00307.' || LPAD(COALESCE(io.poreference, '0'), 10, '0')
+                                    || LPAD(ROW_NUMBER() OVER (PARTITION BY lu_hu.m_hu_id ORDER BY tu_hu.m_hu_id)::text, 2, '0')
+                            )                                                  AS grai,
+                            lot_attr.value                                     AS lot_number,
+                            bbd_attr.value                                     AS best_before_date,
+                            tu_hu.m_hu_id                                      AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', prod.gtin,
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity', stor.qty,
                                                     'movementqty', stor.qty,
@@ -193,16 +148,9 @@ BEGIN
                                  -- TU GTIN from PI Item Product
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = tu_hu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
-                                                         FROM c_bpartner_product bp_prod
-                                                         WHERE bp_prod.m_product_id = prod.m_product_id
-                                                           AND bp_prod.isactive = 'Y'
-                                                           AND bp_prod.c_bpartner_id = COALESCE(bpl_desadv_drop.c_bpartner_id, bpl_desadv_buyer.c_bpartner_id, bpl_ship_drop.c_bpartner_id, bpl_ship_buyer.c_bpartner_id)
-                                                         ORDER BY SeqNo DESC
-                                                         LIMIT 1
-                                 ) AS bp_prod ON TRUE
                              WHERE mi.m_hu_id = tu_hu.m_hu_id
-                               AND mi.itemtype = 'MI') AS items_json
+                               AND mi.itemtype = 'MI'
+                            )                                                  AS items_json
                      FROM m_hu_item parent_item
                               JOIN m_hu tu_hu ON tu_hu.m_hu_item_parent_id = parent_item.m_hu_item_id
                          -- GRAI on TU
@@ -224,35 +172,31 @@ BEGIN
 
                      -- CASE B: Aggregated TUs (itemtype='HA') — expand via GRAI list
                      SELECT grai_expanded.grai,
-                            lot_attr.value                                         AS lot_number,
-                            bbd_attr.value                                         AS best_before_date,
-                            ha_item.m_hu_item_id                                   AS tu_hu_id,
+                            lot_attr.value                                     AS lot_number,
+                            bbd_attr.value                                     AS best_before_date,
+                            ha_item.m_hu_item_id                               AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', prod.gtin,
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity',
                                                     CASE
                                                         WHEN COALESCE(ha_item.qty, 1) > 0
                                                             THEN stor.qty / ha_item.qty
-                                                            ELSE stor.qty
-                                                    END,
+                                                        ELSE stor.qty
+                                                        END,
                                                     'movementqty',
                                                     CASE
                                                         WHEN COALESCE(ha_item.qty, 1) > 0
                                                             THEN stor.qty / ha_item.qty
-                                                            ELSE stor.qty
-                                                    END,
+                                                        ELSE stor.qty
+                                                        END,
                                                     'uom', COALESCE(uom.x12de355, 'KGM'),
                                                     'productValue', prod.value,
                                                     'productNetWeight', prod.weight,
                                                     'productGrossWeight', prod.grossweight
                                             )
                                     )
-                             -- NOTE: The JOIN path here depends on Step 0 data verification.
-                             -- Option A (virtual TU child): ha_item → M_HU (virtual TU) → M_HU_Item (MI) → storage
-                             -- Option B (direct storage): ha_item → M_HU_Item_Storage directly
-                             -- Below shows Option A (most likely based on metasfresh HU model):
                              FROM m_hu vtu
                                       JOIN m_hu_item mi ON mi.m_hu_id = vtu.m_hu_id AND mi.itemtype = 'MI'
                                       JOIN m_hu_item_storage stor ON stor.m_hu_item_id = mi.m_hu_item_id
@@ -260,33 +204,26 @@ BEGIN
                                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = vtu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
-                                                         FROM c_bpartner_product bp_prod
-                                                         WHERE bp_prod.m_product_id = prod.m_product_id
-                                                           AND bp_prod.isactive = 'Y'
-                                                           AND bp_prod.c_bpartner_id = COALESCE(bpl_desadv_drop.c_bpartner_id, bpl_desadv_buyer.c_bpartner_id, bpl_ship_drop.c_bpartner_id, bpl_ship_buyer.c_bpartner_id)
-                                                         ORDER BY SeqNo DESC
-                                                         LIMIT 1
-                                 ) AS bp_prod ON TRUE
-                             WHERE vtu.m_hu_item_parent_id = ha_item.m_hu_item_id) AS items_json
+                             WHERE vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
+                            )                                                  AS items_json
                      FROM m_hu_item ha_item
                               -- Virtual TU under HA (for GRAI attribute lookup)
                               LEFT JOIN m_hu ha_vtu ON ha_vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
-                         -- GRAI attribute: check virtual TU first, then LU (Step 0 determines which)
+                              -- GRAI attribute: check virtual TU first, then LU
                               LEFT JOIN m_hu_attribute grai_attr
                                         ON grai_attr.m_hu_id = COALESCE(ha_vtu.m_hu_id, ha_item.m_hu_id)
                                             AND grai_attr.m_attribute_id = v_grai_attribute_id
                          -- Expand comma-separated GRAIs (or generate dummies)
-                              CROSS JOIN LATERAL UNNEST(
+                              CROSS JOIN LATERAL unnest(
                              COALESCE(
-                                     NULLIF(STRING_TO_ARRAY(TRIM(grai_attr.value), ','), ARRAY [NULL]::text[]),
-                                 -- Dummy-GRAI fallback
+                                     NULLIF(string_to_array(TRIM(grai_attr.value), ','), ARRAY [NULL]::text[]),
+                                     -- Dummy-GRAI fallback
                                      ARRAY(SELECT '7613204.00307.' ||
                                                   LPAD(COALESCE(io.poreference, '0'), 10, '0') ||
                                                   LPAD(gs::text, 2, '0')
-                                           FROM GENERATE_SERIES(1, GREATEST(ha_item.qty::int, 1)) gs)
+                                           FROM generate_series(1, GREATEST(ha_item.qty::int, 1)) gs)
                              )
-                                                 ) WITH ORDINALITY AS grai_expanded(grai, ord)
+                             ) WITH ORDINALITY AS grai_expanded(grai, ord)
                          -- LOT on virtual TU (fallback: LU)
                               LEFT JOIN m_hu_attribute lot_attr
                                         ON lot_attr.m_hu_id = COALESCE(ha_vtu.m_hu_id, ha_item.m_hu_id)
@@ -297,8 +234,7 @@ BEGIN
                                             AND bbd_attr.m_attribute_id = v_bbd_attribute_id
                      WHERE ha_item.m_hu_id = lu_hu.m_hu_id
                        AND ha_item.itemtype = 'HA'
-                       AND ha_item.qty IS NOT NULL
-                       AND ha_item.qty > 0) crate
+                 ) crate
             ) crates_data ON TRUE
         ) pallets_data ON TRUE
     WHERE io.m_inout_id = p_m_inout_id

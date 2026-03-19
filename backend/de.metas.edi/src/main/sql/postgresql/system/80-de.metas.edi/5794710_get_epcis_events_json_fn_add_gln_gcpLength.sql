@@ -37,11 +37,11 @@ CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id 
 AS
 $$
 DECLARE
-    v_result            JSONB;
-    v_grai_attribute_id NUMERIC;
-    v_sscc_attribute_id NUMERIC;
-    v_lot_attribute_id  NUMERIC;
-    v_bbd_attribute_id  NUMERIC;
+    v_result             JSONB;
+    v_grai_attribute_id  NUMERIC;
+    v_sscc_attribute_id  NUMERIC;
+    v_lot_attribute_id   NUMERIC;
+    v_bbd_attribute_id   NUMERIC;
 BEGIN
     -- Cache attribute IDs
     SELECT m_attribute_id INTO v_grai_attribute_id FROM m_attribute WHERE value = 'GRAI' LIMIT 1;
@@ -146,7 +146,8 @@ BEGIN
                                ON qp.m_inoutline_id = iol.m_inoutline_id
                  WHERE iol.m_inout_id = io.m_inout_id
                    AND qp.m_lu_hu_id IS NOT NULL
-                   AND qp.isactive = 'Y') lu_ids
+                   AND qp.isactive = 'Y'
+             ) lu_ids
                  JOIN m_hu lu_hu ON lu_hu.m_hu_id = lu_ids.m_lu_hu_id
             -- SSCC18 on LU
                  LEFT JOIN m_hu_attribute sscc_attr
@@ -170,13 +171,13 @@ BEGIN
                                 -- Dummy-GRAI fallback for individual TU
                                     '7613204.00307.' || LPAD(COALESCE(io.poreference, '0'), 10, '0')
                                         || LPAD(ROW_NUMBER() OVER (PARTITION BY lu_hu.m_hu_id ORDER BY tu_hu.m_hu_id)::text, 2, '0')
-                            )                          AS grai,
-                            lot_attr.value             AS lot_number,
-                            bbd_attr.value             AS best_before_date,
-                            tu_hu.m_hu_id              AS tu_hu_id,
+                            )                                                  AS grai,
+                            lot_attr.value                                     AS lot_number,
+                            bbd_attr.value                                     AS best_before_date,
+                            tu_hu.m_hu_id                                      AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', prod.gtin,
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity', stor.qty,
                                                     'movementqty', stor.qty,
@@ -193,16 +194,9 @@ BEGIN
                                  -- TU GTIN from PI Item Product
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = tu_hu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
-                                                         FROM c_bpartner_product bp_prod
-                                                         WHERE bp_prod.m_product_id = prod.m_product_id
-                                                           AND bp_prod.isactive = 'Y'
-                                                           AND bp_prod.c_bpartner_id = COALESCE(bpl_desadv_drop.c_bpartner_id, bpl_desadv_buyer.c_bpartner_id, bpl_ship_drop.c_bpartner_id, bpl_ship_buyer.c_bpartner_id)
-                                                         ORDER BY SeqNo DESC
-                                                         LIMIT 1
-                                 ) AS bp_prod ON TRUE
                              WHERE mi.m_hu_id = tu_hu.m_hu_id
-                               AND mi.itemtype = 'MI') AS items_json
+                               AND mi.itemtype = 'MI'
+                            )                                                  AS items_json
                      FROM m_hu_item parent_item
                               JOIN m_hu tu_hu ON tu_hu.m_hu_item_parent_id = parent_item.m_hu_item_id
                          -- GRAI on TU
@@ -224,12 +218,12 @@ BEGIN
 
                      -- CASE B: Aggregated TUs (itemtype='HA') — expand via GRAI list
                      SELECT grai_expanded.grai,
-                            lot_attr.value                                         AS lot_number,
-                            bbd_attr.value                                         AS best_before_date,
-                            ha_item.m_hu_item_id                                   AS tu_hu_id,
+                            lot_attr.value                                     AS lot_number,
+                            bbd_attr.value                                     AS best_before_date,
+                            ha_item.m_hu_item_id                               AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', prod.gtin,
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity',
                                                     CASE
@@ -260,15 +254,8 @@ BEGIN
                                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = vtu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
-                                                         FROM c_bpartner_product bp_prod
-                                                         WHERE bp_prod.m_product_id = prod.m_product_id
-                                                           AND bp_prod.isactive = 'Y'
-                                                           AND bp_prod.c_bpartner_id = COALESCE(bpl_desadv_drop.c_bpartner_id, bpl_desadv_buyer.c_bpartner_id, bpl_ship_drop.c_bpartner_id, bpl_ship_buyer.c_bpartner_id)
-                                                         ORDER BY SeqNo DESC
-                                                         LIMIT 1
-                                 ) AS bp_prod ON TRUE
-                             WHERE vtu.m_hu_item_parent_id = ha_item.m_hu_item_id) AS items_json
+                             WHERE vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
+                            )                                                  AS items_json
                      FROM m_hu_item ha_item
                               -- Virtual TU under HA (for GRAI attribute lookup)
                               LEFT JOIN m_hu ha_vtu ON ha_vtu.m_hu_item_parent_id = ha_item.m_hu_item_id
@@ -277,14 +264,14 @@ BEGIN
                                         ON grai_attr.m_hu_id = COALESCE(ha_vtu.m_hu_id, ha_item.m_hu_id)
                                             AND grai_attr.m_attribute_id = v_grai_attribute_id
                          -- Expand comma-separated GRAIs (or generate dummies)
-                              CROSS JOIN LATERAL UNNEST(
+                              CROSS JOIN LATERAL unnest(
                              COALESCE(
-                                     NULLIF(STRING_TO_ARRAY(TRIM(grai_attr.value), ','), ARRAY [NULL]::text[]),
+                                     NULLIF(string_to_array(TRIM(grai_attr.value), ','), ARRAY [NULL]::text[]),
                                  -- Dummy-GRAI fallback
                                      ARRAY(SELECT '7613204.00307.' ||
                                                   LPAD(COALESCE(io.poreference, '0'), 10, '0') ||
                                                   LPAD(gs::text, 2, '0')
-                                           FROM GENERATE_SERIES(1, GREATEST(ha_item.qty::int, 1)) gs)
+                                           FROM generate_series(1, GREATEST(ha_item.qty::int, 1)) gs)
                              )
                                                  ) WITH ORDINALITY AS grai_expanded(grai, ord)
                          -- LOT on virtual TU (fallback: LU)
@@ -297,8 +284,8 @@ BEGIN
                                             AND bbd_attr.m_attribute_id = v_bbd_attribute_id
                      WHERE ha_item.m_hu_id = lu_hu.m_hu_id
                        AND ha_item.itemtype = 'HA'
-                       AND ha_item.qty IS NOT NULL
-                       AND ha_item.qty > 0) crate
+                       AND ha_item.qty IS NOT NULL AND ha_item.qty > 0
+                 ) crate
             ) crates_data ON TRUE
         ) pallets_data ON TRUE
     WHERE io.m_inout_id = p_m_inout_id
