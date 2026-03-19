@@ -103,7 +103,12 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       scaleTolerance,
       qtyHUCapacity,
       qtyAlreadyOnScale,
-    } = computeStepScanPropsFromActivity({ activity: freshActivity, lineId, stepId: step.id, isProcessedQtyStillOnScale });
+    } = computeStepScanPropsFromActivity({
+      activity: freshActivity,
+      lineId,
+      stepId: step.id,
+      isProcessedQtyStillOnScale,
+    });
 
     return {
       //
