@@ -176,7 +176,7 @@ BEGIN
                             tu_hu.m_hu_id              AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity', stor.qty,
                                                     'movementqty', stor.qty,
@@ -193,7 +193,7 @@ BEGIN
                                  -- TU GTIN from PI Item Product
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = tu_hu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT ean_cu
+                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
                                                          FROM c_bpartner_product bp_prod
                                                          WHERE bp_prod.m_product_id = prod.m_product_id
                                                            AND bp_prod.isactive = 'Y'
@@ -229,7 +229,7 @@ BEGIN
                             ha_item.m_hu_item_id                                   AS tu_hu_id,
                             (SELECT JSONB_AGG(
                                             JSONB_BUILD_OBJECT(
-                                                    'cuGTIN', COALESCE(bp_prod.ean_cu, prod.gtin),
+                                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
                                                     'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
                                                     'quantity',
                                                     CASE
@@ -260,7 +260,7 @@ BEGIN
                                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                                       LEFT JOIN m_hu_pi_item_product pi_prod
                                                 ON pi_prod.m_hu_pi_item_product_id = vtu.m_hu_pi_item_product_id
-                                      LEFT JOIN LATERAL (SELECT ean_cu
+                                      LEFT JOIN LATERAL (SELECT gtin, ean_cu
                                                          FROM c_bpartner_product bp_prod
                                                          WHERE bp_prod.m_product_id = prod.m_product_id
                                                            AND bp_prod.isactive = 'Y'
