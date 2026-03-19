@@ -2036,8 +2036,8 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2023-03-23 12:09:4
 
 -- Table: M_InventoryLine
 -- 2026-03-19T15:41:41.596Z
-UPDATE AD_Table SET AD_Window_ID=168,Updated=TO_TIMESTAMP('2026-03-19 15:41:41.497000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=322
-;
+-- UPDATE AD_Table SET AD_Window_ID=168,Updated=TO_TIMESTAMP('2026-03-19 15:41:41.497000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=322
+-- ;
 
 -- UI Element: Inventur Position (Alle)(541685,de.metas.swat) -> Inventur-Position(546850,de.metas.swat) -> main -> 10 -> default.Inventur
 -- Column: M_InventoryLine.M_Inventory_ID
