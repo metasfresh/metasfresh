@@ -194,8 +194,11 @@ public class QueueDAO extends AbstractQueueDAO
 			params.add(packageQuery.getError());
 		}
 
-		// Only packages that are not currently locked for processing
-		wc.append(" AND ").append(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt).append(" IS NULL");
+		// Only packages that are not currently locked for processing.
+		// Also recover stale locks: if LockedAt is older than 10 minutes, treat as unlocked
+		// (the processor that locked it likely crashed or timed out).
+		wc.append(" AND (").append(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt).append(" IS NULL")
+				.append(" OR ").append(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt).append(" < now() - interval '10 minutes')");
 
 		// Only packages that have not been skipped,
 		// or where 'retryTimeoutMillis' has already passed since they were skipped.
