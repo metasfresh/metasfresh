@@ -48,8 +48,6 @@ import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
@@ -274,41 +272,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	public Properties getCtx()
 	{
 		return new Properties(ctx);
-	}
-
-	@Override
-	public void unlock(final I_C_Queue_WorkPackage workPackage)
-	{
-		// NOTE: unlocking shall not be synchronized with mainLock because else we can get dead-locks or unlocked workPackages will be left on shutdown
-
-		try
-		{
-			final boolean success = Services.get(ILockManager.class).unlock(workPackage);
-			if (!success)
-			{
-				throw new UnlockFailedException("Cannot unlock");
-			}
-		}
-		catch (final Exception e)
-		{
-			throw UnlockFailedException.wrapIfNeeded(e)
-					.setParameter("Workpackage", workPackage);
-		}
-	}
-
-	@Override
-	public boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
-	{
-		try
-		{
-			unlock(workPackage);
-			return true;
-		}
-		catch (final Exception e)
-		{
-			logger.warn("Got exception while unlocking " + workPackage, e);
-			return false;
-		}
 	}
 
 	@Override

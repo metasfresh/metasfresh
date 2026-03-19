@@ -98,6 +98,7 @@ import java.util.Properties;
  */
 public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 {
+	private boolean forUpdateSkipLocked = false;
 	private static final Logger log = LogManager.getLogger(TypedSqlQuery.class);
 
 	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder()
@@ -1223,6 +1224,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
+		if (forUpdateSkipLocked)
+		{
+			sqlBuffer.append("\n FOR UPDATE SKIP LOCKED");
+		}
+
 		String sql = sqlBuffer.toString();
 		if (requiredAccess != null)
 		{
@@ -1632,6 +1638,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public static <T> TypedSqlQuery<T> cast(final IQuery<T> query)
 	{
 		return (TypedSqlQuery<T>)query;
+	}
+
+	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
+	{
+		this.forUpdateSkipLocked = forUpdateSkipLocked;
+		return this;
 	}
 
 	@Override

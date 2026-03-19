@@ -179,7 +179,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				WorkPackageLockHelper.unlockNoFail(workPackage);
+				logger.info("processLockedWorkPackage was not successful for workPackage={}. LockedAt will be cleared by WorkpackageProcessorTask.", workPackage);
 			}
 
 			mainLock.unlock();
@@ -212,8 +212,8 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				logger.info("Submitting for processing next workPackage failed. Trying to unlock {}.", workPackage);
-				queue.unlockNoFail(workPackage);
+				logger.info("Submitting for processing next workPackage failed. Clearing LockedAt for {}.", workPackage);
+				WorkPackageLockHelper.unlockNoFail(workPackage);
 
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}

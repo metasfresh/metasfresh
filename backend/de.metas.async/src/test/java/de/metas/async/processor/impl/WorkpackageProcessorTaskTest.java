@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThat;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -92,6 +93,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		workpackage.setProcessed(false);
 		// workpackage.setIsReadyForProcessing(true); // not checked, not relevant
 		workpackage.setIsError(false);
+		workpackage.setLockedAt(SystemTime.asTimestamp()); // simulate that the planner locked this WP
 		InterfaceWrapperHelper.save(workpackage);
 	}
 
@@ -119,6 +121,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		Assert.assertEquals("Invalid IsError", false, workpackage.isError());
 		Assert.assertEquals("Invalid AD_Issue", null, workpackage.getAD_Issue());
 		Assert.assertEquals("Invalid Processed", true, workpackage.isProcessed());
+		Assert.assertNull("LockedAt should be cleared after successful processing", workpackage.getLockedAt());
 	}
 
 	/**
@@ -138,6 +141,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
 		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
+		Assert.assertNull("LockedAt should be cleared after error", workpackage.getLockedAt());
 
 		final String expectedErrorMessage = RuntimeException.class.getSimpleName() + ": " + processingErrorMsg;
 		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(expectedErrorMessage);
@@ -164,6 +168,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertThat(workpackage.getSkipped_Last_Reason()).as("Invalid Skipped_Last_Reason").startsWith(skipReason);
 		Assert.assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
 		Assert.assertEquals("Invalid Skipped_Count", 1, workpackage.getSkipped_Count());
+		Assert.assertNull("LockedAt should be cleared after skip", workpackage.getLockedAt());
 	}
 
 	@Test
@@ -183,6 +188,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertThat("Invalid Skipped_Last_Reason", workpackage.getSkipped_Last_Reason(), startsWith("Deadlock detected"));
 		assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
 		assertEquals("Invalid Skipped_Count", 1, workpackage.getSkipped_Count());
+		Assert.assertNull("LockedAt should be cleared after deadlock skip", workpackage.getLockedAt());
 	}
 
 	/**
@@ -217,5 +223,6 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
 		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
+		Assert.assertNull("LockedAt should be cleared after error", workpackage.getLockedAt());
 	}
 }
