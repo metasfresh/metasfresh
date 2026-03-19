@@ -2,6 +2,7 @@ package de.metas.manufacturing.workflows_api.rest_api;
 
 import de.metas.Profiles;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonCreateIssueScheduleOnTheFlyRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateResponse;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
@@ -11,6 +12,7 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
@@ -42,6 +44,18 @@ public class ManufacturingMobileRestController
 	{
 		assertApplicationAccess();
 		final WFProcess wfProcess = manufacturingMobileApplication.processEvent(event, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/issueSchedule/createOnTheFly")
+	public JsonWFProcess createIssueScheduleOnTheFly(@RequestBody @NonNull final JsonCreateIssueScheduleOnTheFlyRequest request)
+	{
+		assertApplicationAccess();
+		final WFProcessId wfProcessId = WFProcessId.ofString(request.getWfProcessId());
+		final WFProcess wfProcess = manufacturingMobileApplication.createIssueScheduleOnTheFly(
+				wfProcessId,
+				Env.getLoggedUserId(),
+				request.getHuQRCode());
 		return workflowRestController.toJson(wfProcess);
 	}
 

@@ -93,11 +93,21 @@ public class ManufacturingJobCreateCommand
 
 		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
 		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
-		final boolean isCreatePlan = !config.getIsAllowIssuingAnyHU().isTrue();
-		if (isCreatePlan)
+		try
 		{
 			final PPOrderIssuePlan plan = createIssuePlan();
 			createIssueSchedules(plan);
+		}
+		catch (final AdempiereException ex)
+		{
+			if (config.getIsAllowIssuingAnyHU().isTrue())
+			{
+				log.warn("Failed to create issue plan for PP_Order_ID={}. Continuing because IsAllowIssuingAnyHU=Y.", ppOrderId, ex);
+			}
+			else
+			{
+				throw ex;
+			}
 		}
 
 		if (config.getReceiveUnitTypeEffective().isTU())

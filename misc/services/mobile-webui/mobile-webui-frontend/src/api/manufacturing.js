@@ -22,3 +22,13 @@ export function postManufacturingIssueEvent({ wfProcessId, activityId, issueTo }
     })
     .then((response) => unboxAxiosResponse(response));
 }
+
+export function createIssueScheduleOnTheFly({ wfProcessId, wfActivityId, huQRCode }) {
+  return axios
+    .post(`${apiBasePath}/manufacturing/issueSchedule/createOnTheFly`, {
+      wfProcessId,
+      wfActivityId,
+      huQRCode,
+    })
+    .then((response) => unboxAxiosResponse(response));
+}

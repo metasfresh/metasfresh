@@ -16,6 +16,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
@@ -23,6 +25,11 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -56,6 +63,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.lang.SeqNo;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.service.Constants;
@@ -66,19 +74,25 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -679,6 +693,91 @@ public class ManufacturingJobService
 		return limitInt == -100
 				? Constants.DEFAULT_LaunchersLimit
 				: QueryLimit.ofInt(limitInt);
+	}
+
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		// Validate IsAllowIssuingAnyHU=Y
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, ClientId.METASFRESH);
+		if (!config.getIsAllowIssuingAnyHU().isTrue())
+		{
+			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y");
+		}
+
+		// Resolve HU from QR code
+		final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(huQRCodeString);
+		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+
+		// Get top-level HU
+		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
+		final HuId topLevelHUId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
+
+		// Get all products stored in the HU
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final List<IHUProductStorage> productStorages = storageFactory.getProductStorages(topLevelHU);
+
+		// Find a BOM line that matches one of the HU's products
+		final List<I_PP_Order_BOMLine> bomLines = ppOrderBOMBL.getOrderBOMLines(ppOrderId);
+		IHUProductStorage matchingStorage = null;
+		PPOrderBOMLineId matchingBomLineId = null;
+		ProductId matchingProductId = null;
+
+		for (final I_PP_Order_BOMLine bomLine : bomLines)
+		{
+			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+			matchingStorage = productStorages.stream()
+					.filter(ps -> ProductId.equals(ps.getProductId(), bomLineProductId))
+					.findFirst()
+					.orElse(null);
+			if (matchingStorage != null)
+			{
+				matchingBomLineId = PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID());
+				matchingProductId = bomLineProductId;
+				break;
+			}
+		}
+
+		if (matchingStorage == null)
+		{
+			throw new AdempiereException("HU does not contain any product matching the BOM lines")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("ppOrderId", ppOrderId);
+		}
+
+		// Determine next seqNo
+		final ImmutableList<PPOrderIssueSchedule> existingSchedules = ppOrderIssueScheduleService.getByOrderId(ppOrderId);
+		final int maxSeqNo = existingSchedules.stream()
+				.mapToInt(s -> s.getSeqNo().toInt())
+				.max()
+				.orElse(0);
+		final SeqNo nextSeqNo = SeqNo.ofInt(maxSeqNo + 10);
+
+		// Get HU qty and locator
+		final Quantity qtyToIssue = matchingStorage.getQty();
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final int locatorRepoId = topLevelHU.getM_Locator_ID();
+		final WarehouseId warehouseIdForLocator = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
+		final LocatorId locatorId = LocatorId.ofRepoId(warehouseIdForLocator, locatorRepoId);
+
+		// Create schedule
+		ppOrderIssueScheduleService.createSchedule(
+				PPOrderIssueScheduleCreateRequest.builder()
+						.ppOrderId(ppOrderId)
+						.ppOrderBOMLineId(matchingBomLineId)
+						.seqNo(nextSeqNo)
+						.productId(matchingProductId)
+						.qtyToIssue(qtyToIssue)
+						.issueFromHUId(topLevelHUId)
+						.issueFromLocatorId(locatorId)
+						.isAlternativeIssue(false)
+						.build());
+
+		// Reload and return the updated job
+		return getJobById(ppOrderId);
 	}
 
 	public ManufacturingJob autoIssueWhatWasReceived(
