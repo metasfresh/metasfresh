@@ -11,7 +11,7 @@ import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import { getActivityById, getLinesArrayFromActivity, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
+import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
@@ -28,6 +28,10 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+
+  const store = useStore();
+  const dispatch = useDispatch();
+  const history = useMobileNavigation();
 
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
@@ -46,7 +50,6 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       try {
         const wfProcess = await createIssueScheduleOnTheFly({
           wfProcessId,
-          wfActivityId: activityId,
           huQRCode: scannedBarcode,
         });
 
@@ -65,11 +68,11 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
         // If still not found in current line, search all lines
         if (!step) {
-          const allLines = getLinesArrayFromActivity(freshActivity);
-          for (let i = 0; i < allLines.length; i++) {
+          const allLineIds = Object.keys(freshActivity?.dataStored?.lines ?? {});
+          for (const lid of allLineIds) {
             const found = huId
-              ? getNonIssuedStepByHuIdFromActivity({ activity: freshActivity, lineId: i, huId })
-              : getNonIssuedStepByQRCodeFromActivity({ activity: freshActivity, lineId: i, qrCode: scannedBarcode });
+              ? getNonIssuedStepByHuIdFromActivity({ activity: freshActivity, lineId: lid, huId })
+              : getNonIssuedStepByQRCodeFromActivity({ activity: freshActivity, lineId: lid, qrCode: scannedBarcode });
             if (found) {
               step = found;
               break;
@@ -77,7 +80,8 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
           }
         }
       } catch (e) {
-        // Backend call failed — fall through to throw original error
+        console.warn('On-the-fly issue schedule creation failed:', e);
+        // fall through to throw original error
       }
     }
 
@@ -127,9 +131,6 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     };
   };
 
-  const store = useStore();
-  const dispatch = useDispatch();
-  const history = useMobileNavigation();
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
 

@@ -8,7 +8,7 @@ WHERE Name='de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand.cons
 
 -- If the SysConfig doesn't exist yet, create it with default N
 INSERT INTO AD_SysConfig (AD_SysConfig_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive, Name, Value, Description, ConfigurationLevel, EntityType)
-SELECT (SELECT COALESCE(MAX(AD_SysConfig_ID), 0) + 1 FROM AD_SysConfig),
+SELECT 541801 /*From ID Server*/,
        0, 0,
        '2026-03-19 16:00', 100,
        '2026-03-19 16:00', 100,

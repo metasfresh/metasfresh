@@ -121,6 +121,7 @@ public class ManufacturingJobService
 	@NonNull private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
@@ -139,7 +140,8 @@ public class ManufacturingJobService
 						new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 						new DeviceWebsocketNamingStrategy("/test/"),
 						ManufacturingJobLoaderAndSaverSupportingServices.newInstanceForUnitTesting(),
-						new MobileUIManufacturingConfigRepository()
+						new MobileUIManufacturingConfigRepository(),
+						SpringContextHolder.instance.getBean(HUQRCodesService.class)
 				)
 		);
 	}
@@ -700,21 +702,46 @@ public class ManufacturingJobService
 			@NonNull final UserId callerId,
 			@NonNull final String huQRCodeString)
 	{
-		// Validate IsAllowIssuingAnyHU=Y
-		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, ClientId.METASFRESH);
+		return trxManager.callInThreadInheritedTrx(() -> createOnTheFlyIssueScheduleInTrx(ppOrderId, callerId, huQRCodeString));
+	}
+
+	private ManufacturingJob createOnTheFlyIssueScheduleInTrx(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		// Validate IsAllowIssuingAnyHU=Y using the PP_Order's client
+		final de.metas.handlingunits.model.I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, clientId);
 		if (!config.getIsAllowIssuingAnyHU().isTrue())
 		{
 			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y");
 		}
 
 		// Resolve HU from QR code
-		final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(huQRCodeString);
 		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
 
 		// Get top-level HU
 		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
 		final HuId topLevelHUId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
+
+		// Validate HU status — only Active HUs can be issued
+		if (!huStatusBL.isStatusActive(topLevelHU))
+		{
+			throw new AdempiereException("HU is not active and cannot be issued")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("huStatus", topLevelHU.getHUStatus());
+		}
+
+		// Validate HU has a locator
+		final int locatorRepoId = topLevelHU.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			throw new AdempiereException("HU has no locator assigned")
+					.setParameter("huId", topLevelHUId);
+		}
 
 		// Get all products stored in the HU
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -748,6 +775,15 @@ public class ManufacturingJobService
 					.setParameter("ppOrderId", ppOrderId);
 		}
 
+		// Validate qty
+		final Quantity qtyToIssue = matchingStorage.getQty();
+		if (qtyToIssue.isZero())
+		{
+			throw new AdempiereException("HU has zero quantity for the matching product")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("productId", matchingProductId);
+		}
+
 		// Determine next seqNo
 		final ImmutableList<PPOrderIssueSchedule> existingSchedules = ppOrderIssueScheduleService.getByOrderId(ppOrderId);
 		final int maxSeqNo = existingSchedules.stream()
@@ -756,10 +792,8 @@ public class ManufacturingJobService
 				.orElse(0);
 		final SeqNo nextSeqNo = SeqNo.ofInt(maxSeqNo + 10);
 
-		// Get HU qty and locator
-		final Quantity qtyToIssue = matchingStorage.getQty();
+		// Get locator
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		final int locatorRepoId = topLevelHU.getM_Locator_ID();
 		final WarehouseId warehouseIdForLocator = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
 		final LocatorId locatorId = LocatorId.ofRepoId(warehouseIdForLocator, locatorRepoId);
 
