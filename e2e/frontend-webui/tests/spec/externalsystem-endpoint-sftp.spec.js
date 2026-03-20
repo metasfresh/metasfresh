@@ -172,6 +172,57 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     await expect(page.locator('.form-field-Password')).toBeHidden({ timeout: 3000 });
   });
 
+  test('HTTP + Basic auth shows Password field', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.story('HTTP Basic auth Password display logic');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — HTTP + Basic Auth Password Visibility
+
+Regression test for the bug where Password was hidden when TransportType=HTTP
+and AuthType=Basic (Basisauthentifizierung). The root cause was missing parentheses
+in the DisplayLogic/MandatoryLogic expressions which caused incorrect left-to-right
+evaluation when UseOperatorPrecedence=N.
+
+1. Set TransportType=HTTP, AuthType=Basic -> Password must be visible
+2. Switch AuthType to Token -> Password must be hidden
+3. Switch back to AuthType=Basic -> Password visible again
+4. Switch to SFTP + SftpAuthType=PASSWORD -> Password visible via SFTP branch
+    `);
+
+    test.setTimeout(120000);
+
+    // Navigate and create new record
+    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+    await page.waitForTimeout(2000);
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // --- Test 1: HTTP + Basic -> Password visible ---
+    await selectListValue(page, 'TransportType', 'HTTP');
+    await selectListValue(page, 'AuthType', 'Basic');
+
+    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
+    await expect(passwordField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+    // --- Test 2: HTTP + non-Basic auth -> Password hidden ---
+    await selectListValue(page, 'AuthType', 'Token');
+    await expect(page.locator('.form-field-Password')).toBeHidden({ timeout: 5000 });
+
+    // --- Test 3: Switch back to Basic -> Password visible again ---
+    await selectListValue(page, 'AuthType', 'Basic');
+    await expect(passwordField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+    // --- Test 4: Switch to SFTP + PASSWORD -> Password still works via the other branch ---
+    await selectListValue(page, 'TransportType', 'SFTP');
+    // AuthType is now irrelevant; Password should be hidden until SftpAuthType=PASSWORD
+    await expect(page.locator('.form-field-Password')).toBeHidden({ timeout: 5000 });
+
+    await selectListValue(page, 'SftpAuthType', 'Password');
+    await expect(passwordField).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  });
+
   test('Create and save full SFTP endpoint configuration', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
