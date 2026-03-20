@@ -173,3 +173,67 @@ Feature: Manufacturing Mobile UI - On-the-fly issue schedule creation
     Then verify PP_Order_IssueSchedule:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_HU_ID.Identifier | SeqNo |
       | ppOrder4               | comp2Prod               | huComp2            | 10    |
+
+  @from:cucumber
+  Scenario: TC-B4 — Error: scan inactive/destroyed HU
+    And set MobileUI_MFG_Config IsAllowIssuingAnyHU to 'Y'
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder5               | MOP         | finProd                 | 5          | testResource             | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | Y                | prodPlan1                             |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder5               |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder5               |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Destroy the HU
+    And update M_HU:
+      | M_HU_ID.Identifier | HUStatus |
+      | huComp1            | D        |
+
+    # Call on-the-fly with destroyed HU — should fail
+    And create JsonCreateIssueScheduleOnTheFlyRequest and store it in context:
+      | WorkflowProcess.Identifier | M_HU_ID.Identifier |
+      | from_last_response         | huComp1            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/issueSchedule/createOnTheFly' receives a 'POST' request with the payload from context and responds with '422' status code
+
+    # Reset HU status for other tests
+    And update M_HU:
+      | M_HU_ID.Identifier | HUStatus |
+      | huComp1            | A        |
+
+  @from:cucumber
+  Scenario: TC-B5 — Error: scan HU with zero quantity
+    And set MobileUI_MFG_Config IsAllowIssuingAnyHU to 'Y'
+
+    # Create an empty HU (zero qty)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | invEmpty       | 2026-03-20   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | invEmpty       | invLineEmpty       | comp1Prod               | 0       | 0        | PCE          |
+    And complete inventory with inventoryIdentifier 'invEmpty'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID   |
+      | invLineEmpty       | huEmpty   |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder6               | MOP         | finProd                 | 5          | testResource             | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | Y                | prodPlan1                             |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder6               |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder6               |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Call on-the-fly with empty HU — should fail
+    And create JsonCreateIssueScheduleOnTheFlyRequest and store it in context:
+      | WorkflowProcess.Identifier | M_HU_ID.Identifier |
+      | from_last_response         | huEmpty            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/issueSchedule/createOnTheFly' receives a 'POST' request with the payload from context and responds with '422' status code
