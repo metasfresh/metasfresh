@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -32,21 +32,21 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemOutboundEndpointId implements RepoIdAware
+public class ExternalSystemEndpointId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemOutboundEndpointId ofRepoId(final int repoId)
+	public static ExternalSystemEndpointId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemOutboundEndpointId(repoId);
+		return new ExternalSystemEndpointId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemOutboundEndpointId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ExternalSystemEndpointId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ExternalSystemOutboundEndpointId(repoId) : null;
+		return repoId != null && repoId > 0 ? new ExternalSystemEndpointId(repoId) : null;
 	}
 
 	@JsonValue
@@ -55,10 +55,10 @@ public class ExternalSystemOutboundEndpointId implements RepoIdAware
 		return getRepoId();
 	}
 
-	private ExternalSystemOutboundEndpointId(final int repoId)
+	private ExternalSystemEndpointId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Outbound_Endpoint_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Endpoint_ID");
 	}
 
-	public static int toRepoId(@Nullable final ExternalSystemOutboundEndpointId externalSystemOutboundEndpointId) {return externalSystemOutboundEndpointId != null ? externalSystemOutboundEndpointId.getRepoId() : -1;}
+	public static int toRepoId(@Nullable final ExternalSystemEndpointId externalSystemEndpointId) {return externalSystemEndpointId != null ? externalSystemEndpointId.getRepoId() : -1;}
 }

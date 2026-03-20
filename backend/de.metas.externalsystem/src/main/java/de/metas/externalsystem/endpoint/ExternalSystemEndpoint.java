@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,17 +33,23 @@ import javax.annotation.Nullable;
 
 @Builder
 @Value
-public class ExternalSystemOutboundEndpoint
+public class ExternalSystemEndpoint
 {
-	@NonNull ExternalSystemOutboundEndpointId id;
+	@NonNull ExternalSystemEndpointId id;
 
 	@NonNull String value;
 
-	@NonNull String endpointUrl;
+	@NonNull TransportType transportType;
 
-	@NonNull HttpMethod method;
+	// HTTP transport fields (null when transportType == SFTP)
+	@Nullable String endpointUrl;
 
-	@NonNull OutboundEndpointAuthType authType;
+	@Nullable HttpMethod method;
+
+	@Nullable MediaType contentType;
+
+	// HTTP authentication fields
+	@NonNull EndpointAuthType authType;
 
 	@Nullable String clientId;
 
@@ -54,18 +60,36 @@ public class ExternalSystemOutboundEndpoint
 	@Nullable String user;
 
 	@Nullable String password;
-	
+
 	@Nullable String sasSignature;
 
-	@NonNull MediaType contentType;
+	// SFTP transport fields (null when transportType == HTTP)
+	@Nullable String sftpHost;
 
+	int sftpPort;
+
+	@Nullable String sftpUsername;
+
+	@Nullable SftpAuthType sftpAuthType;
+
+	@Nullable String sshPrivateKey;
+
+	@Nullable String sftpRemotePath;
+
+	@Nullable String sftpFilenamePattern;
+
+	/**
+	 * Converts this endpoint to a JSON DTO.
+	 * Supports both HTTP and SFTP transport types.
+	 */
 	@NonNull
-	public JsonExternalSystemOutboundEndpoint toJson()
+	public JsonExternalSystemEndpoint toJson()
 	{
-		return JsonExternalSystemOutboundEndpoint.builder()
+		return JsonExternalSystemEndpoint.builder()
 				.value(value)
+				.transportType(transportType.getCode())
 				.endpointUrl(endpointUrl)
-				.method(method.getCode())
+				.method(method != null ? method.getCode() : null)
 				.authType(authType.toJson())
 				.clientId(clientId)
 				.clientSecret(clientSecret)
@@ -73,7 +97,14 @@ public class ExternalSystemOutboundEndpoint
 				.user(user)
 				.password(password)
 				.sasSignature(sasSignature)
-				.contentType(contentType.toString())
+				.contentType(contentType != null ? contentType.toString() : null)
+				.sftpHost(sftpHost)
+				.sftpPort(sftpPort > 0 ? sftpPort : null)
+				.sftpUsername(sftpUsername)
+				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)
+				.sshPrivateKey(sshPrivateKey)
+				.sftpRemotePath(sftpRemotePath)
+				.sftpFilenamePattern(sftpFilenamePattern)
 				.build();
 	}
 }
