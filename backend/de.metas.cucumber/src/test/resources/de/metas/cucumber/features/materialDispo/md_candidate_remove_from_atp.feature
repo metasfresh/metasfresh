@@ -32,9 +32,9 @@ Feature: MD_Candidate_Remove_From_ATP process
       | pl_po_atp  | ps_atp             | DE           | EUR           | false |
 
     And metasfresh contains M_PriceList_Versions
-      | Identifier  | M_PriceList_ID |
-      | plv_so_atp  | pl_so_atp      |
-      | plv_po_atp  | pl_po_atp      |
+      | Identifier | M_PriceList_ID |
+      | plv_so_atp | pl_so_atp      |
+      | plv_po_atp | pl_po_atp      |
 
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
@@ -174,15 +174,79 @@ Feature: MD_Candidate_Remove_From_ATP process
   @from:cucumber
   Scenario: Idempotency - Running MD_Candidate_Remove_From_ATP multiple times on middle candidate in chain
 
-    # Create initial complex chain of candidates with inventory, demands, and supplies
-    Given metasfresh initially has this MD_Candidate data
-      | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise | M_Warehouse_ID |
-      | initial_inv_004 | INVENTORY_UP      |                           | product_atp  | 2024-09-20T06:00:00Z | 100  | 100                    | WH_ATP         |
-      | demand_1_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-21T21:00:00Z | -30  | 70                     | WH_ATP         |
-      | supply_1_004    | SUPPLY            | PURCHASE                  | product_atp  | 2024-09-22T21:00:00Z | 50   | 120                    | WH_ATP         |
-      | demand_2_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-23T21:00:00Z | -40  | 80                     | WH_ATP         |
-      | supply_2_004    | SUPPLY            | PURCHASE                  | product_atp  | 2024-09-24T21:00:00Z | 60   | 140                    | WH_ATP         |
-      | demand_3_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-25T21:00:00Z | -35  | 105                    | WH_ATP         |
+    # Create initial inventory
+    Given metasfresh contains M_Inventories:
+      | Identifier        | M_Warehouse_ID | MovementDate |
+      | inventory_atp_004 | WH_ATP         | 2024-09-20   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID    | Identifier            | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inventory_atp_004 | inventoryLine_atp_004 | product_atp  | 0       | 100      | WH_ATP         | PCE          |
+    And the inventory identified by inventory_atp_004 is completed
+
+    # Wait for inventory candidate
+    And after not more than 10s, MD_Candidates are found
+      | Identifier      | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | initial_inv_004 | INVENTORY_UP      | product_atp  | 2024-09-20T06:00:00Z | 100 | 100 | WH_ATP         |
+
+    # Create sales order 1 (demand_1_004 at T+1)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_004_1   | true    | customer_atp  | 2024-09-20  | 2024-09-21T21:00:00Z | WH_ATP         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_004_1  | so_004_1   | product_atp  | 30         |
+    And the order identified by so_004_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Create purchase order 1 (supply_1_004 at T+2)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised         | M_Warehouse_ID |
+      | po_004_1   | false   | vendor_atp    | 2024-09-20  | 2024-09-22T21:00:00Z | WH_ATP         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | pol_004_1  | po_004_1   | product_atp  | 50         |
+    And the order identified by po_004_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Create sales order 2 (demand_2_004 at T+3) - this is the middle candidate we'll test
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_004_2   | true    | customer_atp  | 2024-09-20  | 2024-09-23T21:00:00Z | WH_ATP         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_004_2  | so_004_2   | product_atp  | 40         |
+    And the order identified by so_004_2 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Create purchase order 2 (supply_2_004 at T+4)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised         | M_Warehouse_ID |
+      | po_004_2   | false   | vendor_atp    | 2024-09-20  | 2024-09-24T21:00:00Z | WH_ATP         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | pol_004_2  | po_004_2   | product_atp  | 60         |
+    And the order identified by po_004_2 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Create sales order 3 (demand_3_004 at T+5)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_004_3   | true    | customer_atp  | 2024-09-20  | 2024-09-25T21:00:00Z | WH_ATP         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_004_3  | so_004_3   | product_atp  | 35         |
+    And the order identified by so_004_3 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Verify all candidates are present with correct ATP chain
+    And after not more than 10s, MD_Candidates are found
+      | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
+      | initial_inv_004 | INVENTORY_UP      |                           | product_atp  | 2024-09-20T06:00:00Z | 100  | 100 | WH_ATP         |
+      | demand_1_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-21T21:00:00Z | -30  | 70  | WH_ATP         |
+      | supply_1_004    | SUPPLY            | PURCHASE                  | product_atp  | 2024-09-22T21:00:00Z | 50   | 120 | WH_ATP         |
+      | demand_2_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-23T21:00:00Z | -40  | 80  | WH_ATP         |
+      | supply_2_004    | SUPPLY            | PURCHASE                  | product_atp  | 2024-09-24T21:00:00Z | 60   | 140 | WH_ATP         |
+      | demand_3_004    | DEMAND            | SHIPMENT                  | product_atp  | 2024-09-25T21:00:00Z | -35  | 105 | WH_ATP         |
 
     # Run the MD_Candidate_Remove_From_ATP process on demand_2_004 (middle candidate) - first time
     When the MD_Candidate_Remove_From_ATP process is run
