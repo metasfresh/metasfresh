@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -33,10 +34,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class ManufacturingIssueScheduleOnTheFly_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@NonNull private final TestContext testContext;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
-	@NonNull private final IQueryBL queryBL;
 
 	/**
 	 * Sets the global {@code MobileUI_MFG_Config.IsAllowIssuingAnyHU} flag.
