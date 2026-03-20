@@ -291,19 +291,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
 		sqlParams.add(false);
 
-		// Not Closed
-		sqlWhereClause.append("\n AND ").append(ssAlias).append(I_M_ShipmentSchedule.COLUMNNAME_IsClosed).append("='N'");
-
-		// Skip fully delivered schedules: segment-based invalidation is about stock reallocation,
-		// so only schedules that still need delivery are relevant.
-		// NOTE: direct-ID invalidation paths (order reactivation, order line changes, shipment line reversal)
-		// are NOT affected by this filter — they bypass this method entirely.
-		sqlWhereClause.append("\n AND (")
-				.append(ssAlias).append(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver).append(" > 0")
-				.append(" OR ").append(ssAlias).append(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved).append(" > 0")
-				.append(" OR ").append(ssAlias).append(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).append(" > 0")
-				.append(")");
-
 		//
 		// Filter shipment schedules by segments
 		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
@@ -365,8 +352,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
 	 */
-	// package-private for testing
-	String buildShipmentScheduleWhereClause(
+	private String buildShipmentScheduleWhereClause(
 			final String ssAlias,
 			final IShipmentScheduleSegment segment,
 			final List<Object> sqlParams)

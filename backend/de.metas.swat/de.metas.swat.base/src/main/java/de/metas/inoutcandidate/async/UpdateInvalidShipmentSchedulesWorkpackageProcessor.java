@@ -71,12 +71,11 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		_schedule(request);
 	}
 
-	private static final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-
 	private static void _schedule(@NonNull final ShipmentSchedulesUpdateSchedulerRequest request)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
 		final int alreadyEnqueuedWPs = queueForEnqueuing.size();
 		if (alreadyEnqueuedWPs > 1)
