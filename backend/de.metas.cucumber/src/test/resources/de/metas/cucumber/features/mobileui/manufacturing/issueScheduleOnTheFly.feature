@@ -1,5 +1,4 @@
 @from:cucumber
-@ignore
 @ghActions:run_on_executor7
 @allure.label.epic:E0160_Manufacturing_Execution
 @allure.label.feature:F8030_MobileUI_Manufacturing

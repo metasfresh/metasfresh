@@ -54,7 +54,6 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 		if (config != null)
 		{
 			config.setIsAllowIssuingAnyHU("Y".equals(value));
-			de.metas.util.lang.CoalesceUtil.coalesceNotNull(); // dummy to force import
 			org.adempiere.model.InterfaceWrapperHelper.save(config);
 		}
 		else
@@ -78,7 +77,7 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 	@And("create JsonCreateIssueScheduleOnTheFlyRequest and store it in context:")
 	public void createOnTheFlyRequest(@NonNull final DataTable dataTable)
 	{
-		final DataTableRow row = DataTableRows.of(dataTable).getSingleRow();
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 
 		// Get wfProcessId from last response
 		final String wfProcessId;
@@ -107,7 +106,7 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 		final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 		final List<HUQRCode> qrCodes = huQRCodesService.getQRCodesByHuId(de.metas.handlingunits.HuId.ofRepoId(hu.getM_HU_ID()));
 		Check.assumeNotEmpty(qrCodes, "HU must have a QR code: {}", huIdentifier);
-		final String huQRCode = qrCodes.get(0).toGlobalQRCodeJsonString();
+		final String huQRCode = qrCodes.get(0).toGlobalQRCodeString();
 
 		// Build JSON
 		final ObjectMapper mapper = new ObjectMapper();
