@@ -78,6 +78,8 @@ BEGIN
         RETURN QUERY SELECT p_MD_Candidate_ID,
                             NULL::numeric,
                             NULL::numeric,
+                            NULL::numeric,
+                            NULL::integer,
                             'ERROR: Cannot remove STOCK candidates directly. Only DEMAND/SUPPLY/etc types are supported.';
         RETURN;
     END IF;
@@ -243,7 +245,6 @@ BEGIN
         ORDER BY DateProjected ASC, SeqNo ASC
         LOOP
 
-            raise notice 'Processing candidate: %', v_next_candidate_record.MD_Candidate_ID;
             v_update_chain_counter = v_update_chain_counter + 1;
 
             -- Find this candidate's STOCK candidate
