@@ -716,7 +716,8 @@ public class ManufacturingJobService
 		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, clientId);
 		if (!config.getIsAllowIssuingAnyHU().isTrue())
 		{
-			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y");
+			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y")
+					.markAsUserValidationError();
 		}
 
 		// Resolve HU from QR code
@@ -732,7 +733,8 @@ public class ManufacturingJobService
 		{
 			throw new AdempiereException("HU is not active and cannot be issued")
 					.setParameter("huId", topLevelHUId)
-					.setParameter("huStatus", topLevelHU.getHUStatus());
+					.setParameter("huStatus", topLevelHU.getHUStatus())
+					.markAsUserValidationError();
 		}
 
 		// Validate HU has a locator
@@ -740,7 +742,8 @@ public class ManufacturingJobService
 		if (locatorRepoId <= 0)
 		{
 			throw new AdempiereException("HU has no locator assigned")
-					.setParameter("huId", topLevelHUId);
+					.setParameter("huId", topLevelHUId)
+					.markAsUserValidationError();
 		}
 
 		// Get all products stored in the HU
@@ -772,7 +775,8 @@ public class ManufacturingJobService
 		{
 			throw new AdempiereException("HU does not contain any product matching the BOM lines")
 					.setParameter("huId", topLevelHUId)
-					.setParameter("ppOrderId", ppOrderId);
+					.setParameter("ppOrderId", ppOrderId)
+					.markAsUserValidationError();
 		}
 
 		// Validate qty
@@ -781,7 +785,8 @@ public class ManufacturingJobService
 		{
 			throw new AdempiereException("HU has zero quantity for the matching product")
 					.setParameter("huId", topLevelHUId)
-					.setParameter("productId", matchingProductId);
+					.setParameter("productId", matchingProductId)
+					.markAsUserValidationError();
 		}
 
 		// Determine next seqNo
