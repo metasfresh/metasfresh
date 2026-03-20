@@ -20,37 +20,28 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.externalsystem.endpoint;
 
-import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
-import de.metas.externalsystem.model.X_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Make sure to keep in sync with {@link de.metas.common.externalsystem.endpoint.JsonEndpointAuthType}.
- */
 @RequiredArgsConstructor
 @Getter
-public enum OutboundEndpointAuthType implements ReferenceListAwareEnum
+public enum SftpAuthType implements ReferenceListAwareEnum
 {
-	Token(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Token),
-	OAuth(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_OAuth),
-	SAS(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_SAS),
-	Basic(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Basic)
-	;
+	PASSWORD(X_ExternalSystem_Endpoint.SFTPAUTHTYPE_PASSWORD),
+	SSH_KEY(X_ExternalSystem_Endpoint.SFTPAUTHTYPE_SSH_KEY);
 
-	private static final ReferenceListAwareEnums.ValuesIndex<OutboundEndpointAuthType> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<SftpAuthType> index = ReferenceListAwareEnums.index(values());
 
 	@NonNull private final String code;
 
-	public static OutboundEndpointAuthType ofCode(@NonNull final String code) {return index.ofCode(code);}
-
-	public JsonEndpointAuthType toJson()
+	public static SftpAuthType ofCode(@NonNull final String code)
 	{
-		return JsonEndpointAuthType.valueOf(code);
+		return index.ofCode(code);
 	}
 }

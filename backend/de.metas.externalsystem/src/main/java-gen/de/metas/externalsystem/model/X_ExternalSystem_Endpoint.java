@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for ExternalSystem_Outbound_Endpoint
- *  @author metasfresh (generated) 
+/** Generated Model for ExternalSystem_Endpoint
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Outbound_Endpoint, org.compiere.model.I_Persistent 
+public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Endpoint, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = -551340614L;
 
     /** Standard Constructor */
-    public X_ExternalSystem_Outbound_Endpoint (final Properties ctx, final int ExternalSystem_Outbound_Endpoint_ID, @Nullable final String trxName)
+    public X_ExternalSystem_Endpoint (final Properties ctx, final int ExternalSystem_Endpoint_ID, @Nullable final String trxName)
     {
-      super (ctx, ExternalSystem_Outbound_Endpoint_ID, trxName);
+      super (ctx, ExternalSystem_Endpoint_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ExternalSystem_Outbound_Endpoint (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ExternalSystem_Endpoint (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -41,12 +41,12 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getAuthToken() 
+	public java.lang.String getAuthToken()
 	{
 		return get_ValueAsString(COLUMNNAME_AuthToken);
 	}
 
-	/** 
+	/**
 	 * AuthType AD_Reference_ID=542017
 	 * Reference name: ExternalSystem_Outbound_Endpoint_AuthType
 	 */
@@ -66,7 +66,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getAuthType() 
+	public java.lang.String getAuthType()
 	{
 		return get_ValueAsString(COLUMNNAME_AuthType);
 	}
@@ -78,7 +78,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getClientId() 
+	public java.lang.String getClientId()
 	{
 		return get_ValueAsString(COLUMNNAME_ClientId);
 	}
@@ -90,12 +90,12 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getClientSecret() 
+	public java.lang.String getClientSecret()
 	{
 		return get_ValueAsString(COLUMNNAME_ClientSecret);
 	}
 
-	/** 
+	/**
 	 * ContentType AD_Reference_ID=542065
 	 * Reference name: ExternalSystemOutboundEndpointContentType
 	 */
@@ -107,13 +107,13 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	/** text_xml = text/xml */
 	public static final String CONTENTTYPE_Text_xml = "text/xml";
 	@Override
-	public void setContentType (final java.lang.String ContentType)
+	public void setContentType (final @Nullable java.lang.String ContentType)
 	{
 		set_Value (COLUMNNAME_ContentType, ContentType);
 	}
 
 	@Override
-	public java.lang.String getContentType() 
+	public java.lang.String getContentType()
 	{
 		return get_ValueAsString(COLUMNNAME_ContentType);
 	}
@@ -125,24 +125,24 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setExternalSystem_Outbound_Endpoint_ID (final int ExternalSystem_Outbound_Endpoint_ID)
+	public void setExternalSystem_Endpoint_ID (final int ExternalSystem_Endpoint_ID)
 	{
-		if (ExternalSystem_Outbound_Endpoint_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, ExternalSystem_Outbound_Endpoint_ID);
+		if (ExternalSystem_Endpoint_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Endpoint_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Endpoint_ID, ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Outbound_Endpoint_ID() 
+	public int getExternalSystem_Endpoint_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
@@ -152,24 +152,24 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getLoginUsername() 
+	public java.lang.String getLoginUsername()
 	{
 		return get_ValueAsString(COLUMNNAME_LoginUsername);
 	}
 
 	@Override
-	public void setOutboundHttpEP (final java.lang.String OutboundHttpEP)
+	public void setOutboundHttpEP (final @Nullable java.lang.String OutboundHttpEP)
 	{
 		set_Value (COLUMNNAME_OutboundHttpEP, OutboundHttpEP);
 	}
 
 	@Override
-	public java.lang.String getOutboundHttpEP() 
+	public java.lang.String getOutboundHttpEP()
 	{
 		return get_ValueAsString(COLUMNNAME_OutboundHttpEP);
 	}
 
-	/** 
+	/**
 	 * OutboundHttpMethod AD_Reference_ID=541306
 	 * Reference name: Http_Method
 	 */
@@ -193,13 +193,13 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	/** CONNECT = CONNECT */
 	public static final String OUTBOUNDHTTPMETHOD_CONNECT = "CONNECT";
 	@Override
-	public void setOutboundHttpMethod (final java.lang.String OutboundHttpMethod)
+	public void setOutboundHttpMethod (final @Nullable java.lang.String OutboundHttpMethod)
 	{
 		set_Value (COLUMNNAME_OutboundHttpMethod, OutboundHttpMethod);
 	}
 
 	@Override
-	public java.lang.String getOutboundHttpMethod() 
+	public java.lang.String getOutboundHttpMethod()
 	{
 		return get_ValueAsString(COLUMNNAME_OutboundHttpMethod);
 	}
@@ -211,7 +211,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getPassword() 
+	public java.lang.String getPassword()
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
 	}
@@ -223,12 +223,12 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getSasSignature() 
+	public java.lang.String getSasSignature()
 	{
 		return get_ValueAsString(COLUMNNAME_SasSignature);
 	}
 
-	/** 
+	/**
 	 * Type AD_Reference_ID=542016
 	 * Reference name: ExternalSystem_Outbound_Endpoint_EndpointType
 	 */
@@ -250,7 +250,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getType() 
+	public java.lang.String getType()
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
@@ -262,8 +262,122 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public java.lang.String getValue() 
+	public java.lang.String getValue()
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
+	}
+
+	/**
+	 * TransportType AD_Reference_ID=542069
+	 * Reference name: ExternalSystem_Endpoint_TransportType
+	 */
+	public static final int TRANSPORTTYPE_AD_Reference_ID=542069;
+	/** HTTP = HTTP */
+	public static final String TRANSPORTTYPE_HTTP = "HTTP";
+	/** SFTP = SFTP */
+	public static final String TRANSPORTTYPE_SFTP = "SFTP";
+	@Override
+	public void setTransportType (final java.lang.String TransportType)
+	{
+		set_Value (COLUMNNAME_TransportType, TransportType);
+	}
+
+	@Override
+	public java.lang.String getTransportType()
+	{
+		return get_ValueAsString(COLUMNNAME_TransportType);
+	}
+
+	@Override
+	public void setSftpHost (final @Nullable java.lang.String SftpHost)
+	{
+		set_Value (COLUMNNAME_SftpHost, SftpHost);
+	}
+
+	@Override
+	public java.lang.String getSftpHost()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpHost);
+	}
+
+	@Override
+	public void setSftpPort (final int SftpPort)
+	{
+		set_Value (COLUMNNAME_SftpPort, SftpPort);
+	}
+
+	@Override
+	public int getSftpPort()
+	{
+		return get_ValueAsInt(COLUMNNAME_SftpPort);
+	}
+
+	@Override
+	public void setSftpUsername (final @Nullable java.lang.String SftpUsername)
+	{
+		set_Value (COLUMNNAME_SftpUsername, SftpUsername);
+	}
+
+	@Override
+	public java.lang.String getSftpUsername()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpUsername);
+	}
+
+	/**
+	 * SftpAuthType AD_Reference_ID=542070
+	 * Reference name: ExternalSystem_Endpoint_SftpAuthType
+	 */
+	public static final int SFTPAUTHTYPE_AD_Reference_ID=542070;
+	/** PASSWORD = PASSWORD */
+	public static final String SFTPAUTHTYPE_PASSWORD = "PASSWORD";
+	/** SSH_KEY = SSH_KEY */
+	public static final String SFTPAUTHTYPE_SSH_KEY = "SSH_KEY";
+	@Override
+	public void setSftpAuthType (final @Nullable java.lang.String SftpAuthType)
+	{
+		set_Value (COLUMNNAME_SftpAuthType, SftpAuthType);
+	}
+
+	@Override
+	public java.lang.String getSftpAuthType()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpAuthType);
+	}
+
+	@Override
+	public void setSshPrivateKey (final @Nullable java.lang.String SshPrivateKey)
+	{
+		set_Value (COLUMNNAME_SshPrivateKey, SshPrivateKey);
+	}
+
+	@Override
+	public java.lang.String getSshPrivateKey()
+	{
+		return get_ValueAsString(COLUMNNAME_SshPrivateKey);
+	}
+
+	@Override
+	public void setSftpRemotePath (final @Nullable java.lang.String SftpRemotePath)
+	{
+		set_Value (COLUMNNAME_SftpRemotePath, SftpRemotePath);
+	}
+
+	@Override
+	public java.lang.String getSftpRemotePath()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpRemotePath);
+	}
+
+	@Override
+	public void setSftpFilenamePattern (final @Nullable java.lang.String SftpFilenamePattern)
+	{
+		set_Value (COLUMNNAME_SftpFilenamePattern, SftpFilenamePattern);
+	}
+
+	@Override
+	public java.lang.String getSftpFilenamePattern()
+	{
+		return get_ValueAsString(COLUMNNAME_SftpFilenamePattern);
 	}
 }
