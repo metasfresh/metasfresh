@@ -2,7 +2,7 @@
  * #%L
  * de.metas.fresh.base
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +22,14 @@
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants (IN p_Date_From   timestamp without time zone,
                                                                                                 IN p_Date_To     timestamp without time zone,
+                                                                                                IN p_ad_language Character Varying(6))
+;
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants (IN p_Date_From   timestamp without time zone,
+                                                                                                IN p_Date_To     timestamp without time zone,
                                                                                                 IN p_ad_language Character Varying(6),
                                                                                                 IN p_negate_creditmemo_amts char(1))
 ;
+
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants(IN p_Date_From              timestamp without time zone,
                                                                                        IN p_Date_To                timestamp without time zone,
