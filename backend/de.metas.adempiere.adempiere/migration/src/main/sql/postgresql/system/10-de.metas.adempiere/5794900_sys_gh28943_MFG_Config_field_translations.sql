@@ -6,37 +6,37 @@
 
 -- Update base element (de_DE is base language)
 UPDATE AD_Element
-SET Name='Scan der Ressource erforderlich',
-    PrintName='Scan der Ressource erforderlich',
-    Description='Benutzer muss zuerst den Ressource-QR-Code scannen',
-    Updated='2026-03-19 16:00',
+SET Name='Arbeitsplatz-Scan erforderlich',
+    PrintName='Arbeitsplatz-Scan erforderlich',
+    Description='Benutzer muss vor der Produktionsarbeit zuerst einen Arbeitsplatz-QR-Code scannen. Es werden nur Aufträge des zugewiesenen Arbeitsplatzes angezeigt.',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=581714;
 
 UPDATE AD_Element_Trl
-SET Name='Scan der Ressource erforderlich',
-    PrintName='Scan der Ressource erforderlich',
-    Description='Benutzer muss zuerst den Ressource-QR-Code scannen',
+SET Name='Arbeitsplatz-Scan erforderlich',
+    PrintName='Arbeitsplatz-Scan erforderlich',
+    Description='Benutzer muss vor der Produktionsarbeit zuerst einen Arbeitsplatz-QR-Code scannen. Es werden nur Aufträge des zugewiesenen Arbeitsplatzes angezeigt.',
     IsTranslated='N',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=581714 AND AD_Language='de_DE';
 
 UPDATE AD_Element_Trl
-SET Name='Scan der Ressource erforderlich',
-    PrintName='Scan der Ressource erforderlich',
-    Description='Benutzer muss zuerst den Ressource-QR-Code scannen',
+SET Name='Arbeitsplatz-Scan erforderlich',
+    PrintName='Arbeitsplatz-Scan erforderlich',
+    Description='Benutzer muss vor der Produktionsarbeit zuerst einen Arbeitsplatz-QR-Code scannen. Es werden nur Aufträge des zugewiesenen Arbeitsplatzes angezeigt.',
     IsTranslated='N',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=581714 AND AD_Language='de_CH';
 
 UPDATE AD_Element_Trl
-SET Name='Scan Resource QR Code',
-    PrintName='Scan Resource QR Code',
-    Description='User needs to scan the resource QR code first',
+SET Name='Workstation Scan Required',
+    PrintName='Workstation Scan Required',
+    Description='User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.',
     IsTranslated='Y',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=581714 AND AD_Language='en_US';
 
@@ -51,7 +51,7 @@ UPDATE AD_Element
 SET Name='Empfangseinheitentyp',
     PrintName='Empfangseinheitentyp',
     Description='Bestimmt, ob die Empfangsmenge in CU oder TU erfasst wird',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=584558;
 
@@ -60,7 +60,7 @@ SET Name='Empfangseinheitentyp',
     PrintName='Empfangseinheitentyp',
     Description='Bestimmt, ob die Empfangsmenge in CU oder TU erfasst wird',
     IsTranslated='N',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=584558 AND AD_Language='de_DE';
 
@@ -69,7 +69,7 @@ SET Name='Empfangseinheitentyp',
     PrintName='Empfangseinheitentyp',
     Description='Bestimmt, ob die Empfangsmenge in CU oder TU erfasst wird',
     IsTranslated='N',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=584558 AND AD_Language='de_CH';
 
@@ -78,7 +78,7 @@ SET Name='Receive Unit Type',
     PrintName='Receive Unit Type',
     Description='Determines whether the receive quantity is entered in CU or TU',
     IsTranslated='Y',
-    Updated='2026-03-19 16:00',
+    Updated='2026-03-20 06:00',
     UpdatedBy=100
 WHERE AD_Element_ID=584558 AND AD_Language='en_US';
 

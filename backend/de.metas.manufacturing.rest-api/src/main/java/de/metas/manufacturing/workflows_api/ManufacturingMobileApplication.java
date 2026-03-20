@@ -214,7 +214,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		);
 	}
 
-	public WFProcess createIssueScheduleOnTheFly(
+	public WFProcess createOnTheFlyIssueSchedule(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId,
 			@NonNull final String huQRCode)

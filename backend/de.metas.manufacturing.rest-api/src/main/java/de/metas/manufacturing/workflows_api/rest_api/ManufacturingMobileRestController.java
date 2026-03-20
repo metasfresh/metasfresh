@@ -47,12 +47,21 @@ public class ManufacturingMobileRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	/**
+	 * Creates a {@link de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule} on-the-fly
+	 * for an HU that is not in the existing manufacturing issue plan.
+	 *
+	 * <p>Only allowed when {@code IsAllowIssuingAnyHU=Y} in the user's MobileUI Manufacturing Config.
+	 * The HU must be active, have a locator, and contain a product matching one of the PP_Order's BOM lines.</p>
+	 *
+	 * @return the updated WFProcess containing the newly created issue schedule step
+	 */
 	@PostMapping("/issueSchedule/createOnTheFly")
-	public JsonWFProcess createIssueScheduleOnTheFly(@RequestBody @NonNull final JsonCreateIssueScheduleOnTheFlyRequest request)
+	public JsonWFProcess createOnTheFlyIssueSchedule(@RequestBody @NonNull final JsonCreateIssueScheduleOnTheFlyRequest request)
 	{
 		assertApplicationAccess();
 		final WFProcessId wfProcessId = WFProcessId.ofString(request.getWfProcessId());
-		final WFProcess wfProcess = manufacturingMobileApplication.createIssueScheduleOnTheFly(
+		final WFProcess wfProcess = manufacturingMobileApplication.createOnTheFlyIssueSchedule(
 				wfProcessId,
 				Env.getLoggedUserId(),
 				request.getHuQRCode());
