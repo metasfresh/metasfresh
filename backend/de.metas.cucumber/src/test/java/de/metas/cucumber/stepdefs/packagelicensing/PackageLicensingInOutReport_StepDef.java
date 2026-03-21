@@ -7,6 +7,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
@@ -143,13 +144,7 @@ public class PackageLicensingInOutReport_StepDef
 		final BigDecimal movementQty = row.getAsBigDecimal("MovementQty");
 
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		int orgId = Env.getAD_Org_ID(Env.getCtx());
-		if (orgId <= 0)
-		{
-			// M_Warehouse has a CHECK constraint requiring AD_Org_ID > 0
-			orgId = DB.getSQLValueEx(ITrx.TRXNAME_None,
-					"SELECT AD_Org_ID FROM AD_Org WHERE AD_Client_ID=" + clientId + " AND AD_Org_ID > 0 AND IsActive='Y' ORDER BY AD_Org_ID LIMIT 1");
-		}
+		final int orgId = OrgId.MAIN.getRepoId();
 
 		// Create BPartner first (needed for both warehouse and InOut)
 		final int bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
