@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor3
+@ghActions:run_on_executor6
 Feature: Frontend Testing API - Order Lifecycle
   Validates the business logic underlying the frontendTesting API:
   sales order completion, shipment generation from schedules, and
