@@ -16,7 +16,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_OrderLine;
+import de.metas.interfaces.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import java.time.Duration;

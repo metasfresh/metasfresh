@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_OrderLine;
+import de.metas.interfaces.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 

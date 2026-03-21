@@ -1,12 +1,12 @@
 package de.metas.frontend_testing.masterdata.shipment;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
@@ -24,7 +24,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import de.metas.inout.model.I_M_InOut;
-import org.compiere.model.I_C_OrderLine;
+import de.metas.interfaces.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -66,9 +66,8 @@ public class ShipmentCreateCommand
 
 		final List<ShipmentScheduleWithHU> candidates = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
-						.shipmentSchedules(ImmutableList.copyOf(shipmentSchedules))
-						.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QtyOrdered)
-						.calculateShippingDateRule(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY)
+						.schedules(ShipmentScheduleAndJobSchedulesCollection.ofShipmentSchedules(shipmentSchedules))
+						.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 						.build());
 
 		if (candidates.isEmpty())
