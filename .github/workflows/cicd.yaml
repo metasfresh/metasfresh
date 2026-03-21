@@ -103,150 +103,6 @@ jobs:
           echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
           testspace github_run.txt
 
-  # Fast migration CLI build - runs in parallel with java job
-  # This enables db-images to start ~10 minutes earlier
-  migration-cli:
-    runs-on: ubuntu-latest
-    needs: [ init ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: prepare-settings
-        env:
-          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
-        run: |
-          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
-      - name: prepare-metadata
-        env:
-          GIT_PROPS: ${{ needs.init.outputs.git-properties }}
-        run: |
-          mkdir -p docker-builds/metadata
-          echo -e "$GIT_PROPS" > docker-builds/metadata/git.properties
-          echo "Created git.properties:"
-          cat docker-builds/metadata/git.properties
-      - name: build-migration-cli
-        run: |
-          docker buildx build \
-            --progress=auto \
-            --file docker-builds/Dockerfile.migration-cli \
-            --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
-            --output type=local,dest=./artifacts \
-            .
-      - name: verify-output
-        run: |
-          ls -la artifacts/
-          file artifacts/migration-cli.jar
-      - uses: actions/upload-artifact@v4
-        with:
-          name: migration-cli-jar
-          path: artifacts/migration-cli.jar
-          retention-days: 1
-
-  db-images:
-    runs-on: ubuntu-latest
-    needs: [ init, migration-cli ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          username: metasfresh
-          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: prepare-metadata
-        env:
-          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
-          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
-        run: |
-          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
-          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
-      - name: download-migration-cli-jar
-        uses: actions/download-artifact@v4
-        with:
-          name: migration-cli-jar
-          path: .
-      - name: verify-migration-cli-jar
-        run: |
-          ls -la migration-cli.jar
-          file migration-cli.jar
-      - name: aggregate-sql-from-source
-        shell: bash
-        run: |
-          # Aggregate SQL files directly from source code (no Maven dependency)
-          # Handles two layouts:
-          #   1. system/<intermediate_folder>/<script>.sql (e.g., 10-de.metas.adempiere/)
-          #   2. system/<script>.sql (flat — common on keen_hawk branch)
-          # Scripts in flat layout go into a folder named after the Maven module.
-          mkdir -p migration-sql
-          find backend -path "*/src/main/sql/postgresql/system/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
-            parent_dir=$(basename "$(dirname "$sql_file")")
-            if [ "$parent_dir" = "system" ]; then
-              # Flat layout: derive folder name from module path
-              # e.g., backend/de.metas.handlingunits.base/src/... -> 50-de.metas.handlingunits.base
-              module_name=$(echo "$sql_file" | sed -n 's|^backend/\([^/]*\)/.*|\1|p')
-              intermediate_folder="50-${module_name}"
-            else
-              intermediate_folder="$parent_dir"
-            fi
-            mkdir -p "migration-sql/$intermediate_folder"
-            cp "$sql_file" "migration-sql/$intermediate_folder/"
-          done
-          SQL_COUNT=$(find migration-sql -name "*.sql" | wc -l)
-          FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
-          echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
-          ls -la migration-sql/
-      - name: build-db-init
-        run: |
-          docker buildx build \
-          --progress=auto \
-          --file docker-builds/Dockerfile.db-init \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
-          .
-      - name: build-db-migration-tool
-        run: |
-          docker buildx build \
-          --progress=auto \
-          --file docker-builds/Dockerfile.db-migration-tool-lite \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
-          .
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
-      - name: produce-summary
-        run: |
-          echo '#### db-images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-
   java:
     runs-on: ubuntu-latest
     needs: init
@@ -727,9 +583,9 @@ jobs:
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
-  db-apply-migrations:
+  preloaded-db:
     runs-on: ubuntu-latest
-    needs: [ init, db-images ]
+    needs: [ init, backend ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
     steps:
@@ -903,7 +759,7 @@ jobs:
 
   compatibility-images:
     runs-on: ubuntu-latest
-    needs: [ init, frontend, backend, db-apply-migrations ]
+    needs: [ init, frontend, backend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1219,7 +1075,7 @@ jobs:
   cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
+    needs: [ init, backend, frontend, cucumber-build, preloaded-db ]
     strategy:
       max-parallel: 10
       fail-fast: false
@@ -1352,7 +1208,7 @@ jobs:
   health_check:
     name: health check
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, db-apply-migrations ]
+    needs: [ init, backend, frontend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1446,7 +1302,7 @@ jobs:
     name: mobile test
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, db-apply-migrations ]
+    needs: [ init, backend, frontend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1498,7 +1354,7 @@ jobs:
     name: frontend webui test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, db-apply-migrations ]
+    needs: [ init, backend, frontend, preloaded-db ]
     strategy:
       max-parallel: 3
       fail-fast: false
