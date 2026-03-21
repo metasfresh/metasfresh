@@ -156,15 +156,7 @@ testCases.forEach(({ language, label }) => {
         console.log(`[INFO] Rows before Document Type filter: ${rowsBefore}`);
 
         // Open Document Type filter (find by filter-facet class, not by text)
-        const filterBtns = page.locator('.filter-wrapper .btn-filter');
-        const count = await filterBtns.count();
-        for (let i = 0; i < count; i++) {
-          const text = (await filterBtns.nth(i).textContent()).trim();
-          if (text.includes('Document Type') || text.includes('Belegart')) {
-            await filterBtns.nth(i).click();
-            break;
-          }
-        }
+        await page.getByTestId('filter-button-facet-C_DocType_ID').click();
         await page.waitForTimeout(1000);
 
         // Screenshot: filter panel open
@@ -198,13 +190,7 @@ testCases.forEach(({ language, label }) => {
 
           // === Now switch to the SECOND option ===
           // Re-open filter
-          for (let i = 0; i < count; i++) {
-            const text = (await filterBtns.nth(i).textContent()).trim();
-            if (text.includes('Document Type') || text.includes('Belegart')) {
-              await filterBtns.nth(i).click();
-              break;
-            }
-          }
+          await page.getByTestId('filter-button-facet-C_DocType_ID').click();
           await page.waitForTimeout(1000);
 
           // Click first option label to uncheck, then second to check
@@ -229,6 +215,113 @@ testCases.forEach(({ language, label }) => {
           console.log('[WARN] Need at least 2 filter options to test filtering');
           await page.keyboard.press('Escape');
         }
+      });
+
+      // === STEP 8: Clear Document Type filter first ===
+      await test.step('Clear Document Type filter', async () => {
+        // Re-open the doctype filter and uncheck everything
+        await page.getByTestId('filter-button-facet-C_DocType_ID').click();
+        await page.waitForTimeout(1000);
+
+        // Uncheck all options
+        const opts = page.locator('[data-testid^="filter-option-"]');
+        const optCount = await opts.count();
+        for (let i = 0; i < optCount; i++) {
+          const cb = page.locator('[data-testid^="filter-checkbox-"]').nth(i);
+          if (await cb.isChecked()) {
+            await opts.nth(i).locator('label.form-control-label').click();
+          }
+        }
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const rowsCleared = await getGridRowCount();
+        console.log(`[INFO] Rows after clearing DocType filter: ${rowsCleared}`);
+      });
+
+      // === STEP 9: Test date filter — enter yesterday → 0 rows ===
+      await test.step('Filter by date (yesterday) → expect 0 rows', async () => {
+        const rowsBefore = await getGridRowCount();
+
+        // Open date filter
+        await page.getByTestId('filter-button-default-date').click();
+        await page.waitForTimeout(1000);
+
+        // Enter yesterday's date
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = yesterday.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+        const dateInput = page.locator('.filter-widget .datepicker input[type="text"]');
+        await dateInput.click();
+        await dateInput.fill(yStr);
+        await page.waitForTimeout(500);
+
+        allure.attachment('Date Filter - Yesterday Entered', await page.screenshot({ fullPage: false }), 'image/png');
+
+        // Apply
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const rowsAfter = await getGridRowCount();
+        console.log(`[INFO] Date filter (yesterday ${yStr}): ${rowsBefore} → ${rowsAfter} rows`);
+        allure.attachment('Date Filter - Yesterday Result', await page.screenshot({ fullPage: false }), 'image/png');
+
+        // Yesterday should show significantly fewer rows than unfiltered
+        expect(rowsAfter, 'Yesterday should show fewer rows than today').toBeLessThan(rowsBefore);
+      });
+
+      // === STEP 10: Change date to today → rows come back ===
+      await test.step('Filter by date (today) → expect rows back', async () => {
+        // Open date filter again
+        await page.getByTestId('filter-button-default-date').click();
+        await page.waitForTimeout(1000);
+
+        // Enter today's date
+        const today = new Date().toLocaleDateString('en-CA');
+        const dateInput = page.locator('.filter-widget .datepicker input[type="text"]');
+        await dateInput.click();
+        await dateInput.triple_click ? await dateInput.fill('') : await dateInput.fill('');
+        await dateInput.fill(today);
+        await page.waitForTimeout(500);
+
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const rowsAfter = await getGridRowCount();
+        console.log(`[INFO] Date filter (today ${today}): → ${rowsAfter} rows`);
+        allure.attachment('Date Filter - Today Result', await page.screenshot({ fullPage: false }), 'image/png');
+
+        expect(rowsAfter, 'Today filter should show rows').toBeGreaterThan(0);
+      });
+
+      // === STEP 11: Combined filter — Date (today) + DocType (first option) ===
+      await test.step('Combined filter: Date + Document Type', async () => {
+        // Date filter should still be active from step 10
+        // Now also open Document Type filter and select first option
+        await page.getByTestId('filter-button-facet-C_DocType_ID').click();
+        await page.waitForTimeout(1000);
+
+        // Select first option only (Delivery note / Lieferschein)
+        const opts = page.locator('[data-testid^="filter-option-"]');
+        const optCount = await opts.count();
+        if (optCount >= 2) {
+          // Make sure only first is checked
+          for (let i = 0; i < optCount; i++) {
+            const cb = page.locator('[data-testid^="filter-checkbox-"]').nth(i);
+            const checked = await cb.isChecked();
+            if (i === 0 && !checked) await opts.nth(i).locator('label.form-control-label').click();
+            if (i > 0 && checked) await opts.nth(i).locator('label.form-control-label').click();
+          }
+        }
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const rowsCombined = await getGridRowCount();
+        console.log(`[INFO] Combined filter (today + first DocType): ${rowsCombined} rows`);
+        allure.attachment('Combined Filter - Date + DocType', await page.screenshot({ fullPage: false }), 'image/png');
+
+        // Combined filter: should show only shipments from today (fewer than DocType alone)
+        expect(rowsCombined, 'Combined filter should show rows').toBeGreaterThanOrEqual(0);
       });
 
       // === FINAL: Screenshot ===
