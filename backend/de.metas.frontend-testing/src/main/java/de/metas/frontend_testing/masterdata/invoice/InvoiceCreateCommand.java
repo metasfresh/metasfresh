@@ -5,17 +5,21 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.DB;
 import de.metas.interfaces.I_C_OrderLine;
 import org.slf4j.Logger;
 
@@ -58,13 +62,20 @@ public class InvoiceCreateCommand
 			throw new AdempiereException("No invoice candidates found for order " + orderId);
 		}
 
-		// 2. Enqueue candidates for invoicing
+		// 2. Enqueue candidates for invoicing (with default invoicing params)
 		final ImmutableSet<InvoiceCandidateId> candidateIds = invoiceCandidates.stream()
 				.map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
+		final PInstanceId selectionId = DB.createT_Selection(candidateIds, ITrx.TRXNAME_None);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(true);
+
 		invoiceCandBL.enqueueForInvoicing()
-				.enqueueInvoiceCandidateIds(candidateIds);
+				.setInvoicingParams(invoicingParams)
+				.setFailIfNothingEnqueued(true)
+				.prepareAndEnqueueSelection(selectionId);
 
 		// 3. Poll for the generated invoice
 		final I_C_Invoice invoice = pollForInvoice(orderId);
