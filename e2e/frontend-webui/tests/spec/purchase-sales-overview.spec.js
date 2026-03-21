@@ -5,7 +5,6 @@ import { Backend } from '../utils/Backend';
 import { PURCHASE_SALES_OVERVIEW_WINDOW_ID } from '../utils/WindowIds';
 import {
   navigateToViewWindow,
-  assertColumnsPresent,
   discoverColumns,
   discoverFacetFilters,
   exerciseFacetFilter,
@@ -31,15 +30,6 @@ import { getPage, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common
 const testCases = [
   { language: 'en_US', label: 'English' },
   { language: 'de_DE', label: 'German' },
-];
-
-const MINIMUM_EXPECTED_COLUMNS = [
-  'DocumentNo',
-  'Date',
-  'C_BPartner_ID',
-  'M_Product_ID',
-  'LineNetAmt',
-  'AD_Org_ID',
 ];
 
 testCases.forEach(({ language, label }) => {
@@ -110,11 +100,11 @@ testCases.forEach(({ language, label }) => {
         const inputs = page.locator('input, [role="textbox"]');
         await inputs.nth(0).fill(user.username);
         await inputs.nth(1).fill(user.password);
-        await page.locator('button:has-text("Login"), .btn-meta-success').click();
+        await page.locator('.btn-meta-success').click();
 
         await page.waitForTimeout(2000);
         if (page.url().includes('/login')) {
-          const loginBtn = page.locator('button:has-text("Login"), .btn-meta-success');
+          const loginBtn = page.locator('.btn-meta-success');
           if (await loginBtn.isVisible()) { await loginBtn.click(); }
         }
         await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: SLOW_ACTION_TIMEOUT });

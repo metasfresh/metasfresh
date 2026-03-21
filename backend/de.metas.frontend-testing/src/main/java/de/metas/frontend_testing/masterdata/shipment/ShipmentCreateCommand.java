@@ -86,6 +86,11 @@ public class ShipmentCreateCommand
 			throw new AdempiereException("No shipments were created for order " + orderId);
 		}
 
+		if (shipments.size() > 1)
+		{
+			logger.warn("Multiple shipments created ({}) for order {}; returning first one only", shipments.size(), orderId);
+		}
+
 		final I_M_InOut shipment = shipments.get(0);
 		return JsonShipmentCreateResponse.builder()
 				.id(String.valueOf(shipment.getM_InOut_ID()))

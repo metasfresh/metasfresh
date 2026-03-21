@@ -7,11 +7,14 @@ runs:
       shell: bash
       run: |
         # Extract version from package.json (single source of truth)
-        ALLURE_VERSION=$(jq -r '.devDependencies["allure-commandline"] | sub("^\\^"; "")' e2e/mobile-webui/package.json)
-
+        # Try mobile-webui first, fall back to frontend-webui, then hardcoded default
+        ALLURE_VERSION=$(jq -r '.devDependencies["allure-commandline"] // empty | sub("^\\^"; "")' e2e/mobile-webui/package.json 2>/dev/null || true)
         if [ -z "$ALLURE_VERSION" ] || [ "$ALLURE_VERSION" = "null" ]; then
-          echo "::error::Could not extract allure-commandline version from e2e/mobile-webui/package.json"
-          exit 1
+          ALLURE_VERSION=$(jq -r '.devDependencies["allure-commandline"] // empty | sub("^\\^"; "")' e2e/frontend-webui/package.json 2>/dev/null || true)
+        fi
+        if [ -z "$ALLURE_VERSION" ] || [ "$ALLURE_VERSION" = "null" ]; then
+          ALLURE_VERSION="2.32.1"
+          echo "Could not extract version from package.json, using default: $ALLURE_VERSION"
         fi
 
         echo "Installing Allure CLI v${ALLURE_VERSION} (from e2e/mobile-webui/package.json)..."

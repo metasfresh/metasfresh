@@ -5,7 +5,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.order.OrderFactory;
-import de.metas.order.OrderLineBuilder;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -75,7 +74,7 @@ public class PurchaseOrderCreateCommand
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		final Quantity qty = Quantity.of(line.getQty(), uom);
 
-		final OrderLineBuilder lineBuilder = purchaseOrderFactory.newOrderLine()
+		purchaseOrderFactory.newOrderLine()
 				.productId(productId)
 				.addQty(qty);
 	}
