@@ -11,7 +11,7 @@ import {
   assertGridCellsPopulated,
   getGridRowCount,
 } from '../utils/view-validation/ViewWindowHelper';
-import { getPage, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /** Get total item count from pagination footer (language-independent) */
 async function getTotalItemCount(page) {
