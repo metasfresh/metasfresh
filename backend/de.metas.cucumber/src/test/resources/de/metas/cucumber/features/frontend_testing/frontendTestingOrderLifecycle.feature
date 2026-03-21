@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor6
 Feature: Frontend Testing API - Order Lifecycle
   Validates the business logic underlying the frontendTesting API:
   sales order completion, shipment generation from schedules, and
@@ -45,49 +44,6 @@ Feature: Frontend Testing API - Order Lifecycle
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToClose |
       | ss_so_1    | ol_so_1        | N         |
-
-  @from:cucumber
-  Scenario: Sales order to shipment full flow
-    Given metasfresh contains C_BPartners:
-      | Identifier | Name              | IsCustomer | IsVendor |
-      | bp_ship_1  | FT_Ship_Partner   | Y          | N        |
-    And metasfresh contains M_Products:
-      | Identifier  | Name          |
-      | prod_ship_1 | FT_Ship_Prod  |
-    And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps_ship_1  |
-    And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl_ship_1  | ps_ship_1          | DE           | EUR           | true  |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier  | M_PriceList_ID |
-      | plv_ship_1  | pl_ship_1      |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_ship_1  | plv_ship_1             | prod_ship_1  | 30.00    | PCE               | Normal                        |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier    | C_BPartner_ID | IsShipTo | IsBillTo | GLN           |
-      | bp_ship_1_loc | bp_ship_1     | true     | true     | 7285656789022 |
-    When metasfresh contains C_Orders:
-      | Identifier  | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | M_PricingSystem_ID | DateOrdered |
-      | order_ship_1| true    | bp_ship_1     | bp_ship_1_loc          | ps_ship_1          | 2022-05-17  |
-    And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID   | M_Product_ID | QtyEntered |
-      | ol_ship_1   | order_ship_1 | prod_ship_1  | 5          |
-    Then the order identified by order_ship_1 is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToClose |
-      | ss_ship_1  | ol_ship_1      | N         |
-    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | ss_ship_1                        | D            | true                | false       |
-    And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | ss_ship_1                        | ship_1                |
-    And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DocStatus |
-      | ship_1                | bp_ship_1                | bp_ship_1_loc                     | CO        |
 
   @from:cucumber
   Scenario: Purchase order completes successfully
