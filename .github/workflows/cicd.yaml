@@ -170,11 +170,21 @@ jobs:
         shell: bash
         run: |
           # Aggregate SQL files directly from source code (no Maven dependency)
-          # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
-          # Use -print0/read -d '' to handle filenames with spaces
+          # Handles two layouts:
+          #   1. system/<intermediate_folder>/<script>.sql (e.g., 10-de.metas.adempiere/)
+          #   2. system/<script>.sql (flat — common on keen_hawk branch)
+          # Scripts in flat layout go into a folder named after the Maven module.
           mkdir -p migration-sql
-          find backend -path "*/src/main/sql/postgresql/system/*/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
-            intermediate_folder=$(basename "$(dirname "$sql_file")")
+          find backend -path "*/src/main/sql/postgresql/system/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
+            parent_dir=$(basename "$(dirname "$sql_file")")
+            if [ "$parent_dir" = "system" ]; then
+              # Flat layout: derive folder name from module path
+              # e.g., backend/de.metas.handlingunits.base/src/... -> 50-de.metas.handlingunits.base
+              module_name=$(echo "$sql_file" | sed -n 's|^backend/\([^/]*\)/.*|\1|p')
+              intermediate_folder="50-${module_name}"
+            else
+              intermediate_folder="$parent_dir"
+            fi
             mkdir -p "migration-sql/$intermediate_folder"
             cp "$sql_file" "migration-sql/$intermediate_folder/"
           done
