@@ -216,15 +216,22 @@ public class PackageLicensingInOutReport_StepDef
 	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string}")
 	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo) throws SQLException
 	{
+		executeReport(countryCode, dateFrom, dateTo, "Y");
+	}
+
+	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string} and IsIncludeAllProducts {string}")
+	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo, @NonNull final String isIncludeAllProducts) throws SQLException
+	{
 		reportResults.clear();
 
 		final int countryId = getCountryIdByCode(countryCode);
-		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Report(?, ?, ?)";
+		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Report(?, ?, ?, ?)";
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
 			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
 			pstmt.setInt(3, countryId);
+			pstmt.setString(4, isIncludeAllProducts);
 
 			try (final ResultSet rs = pstmt.executeQuery())
 			{
