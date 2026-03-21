@@ -157,7 +157,7 @@ BEGIN
                     r.ProductGroup,
                     'Haushalt'::varchar AS PackagingType,
                     r.SmallPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.SmallPackagingMaterial = ANY(%5$s)
 
@@ -168,7 +168,7 @@ BEGIN
                     r.ProductGroup,
                     'Gewerbe'::varchar AS PackagingType,
                     r.OuterPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.OuterPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.OuterPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.OuterPackagingMaterial = ANY(%5$s)
             ) t
