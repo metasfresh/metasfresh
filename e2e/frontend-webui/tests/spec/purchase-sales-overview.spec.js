@@ -82,11 +82,16 @@ testCases.forEach(({ language, label }) => {
                 lines: [{ product: 'P1', qty: 10 }],
               },
             },
+            shipments: {
+              SHIP1: { salesOrder: 'SO1' },
+            },
           },
         });
 
-        console.log('[INFO] Sales order created:', JSON.stringify(masterdata.salesOrders));
+        console.log('[INFO] Sales order:', JSON.stringify(masterdata.salesOrders));
+        console.log('[INFO] Shipment:', JSON.stringify(masterdata.shipments));
         expect(masterdata.salesOrders.SO1.documentNo, 'Sales order must have documentNo').toBeTruthy();
+        expect(masterdata.shipments.SHIP1.documentNo, 'Shipment must have documentNo').toBeTruthy();
       });
 
       // === STEP 2: Login ===
@@ -145,78 +150,84 @@ testCases.forEach(({ language, label }) => {
         expect(filters.length, 'Expected at least 1 filter').toBeGreaterThanOrEqual(1);
       });
 
-      // === STEP 7: Open Document Type filter, screenshot it ===
-      await test.step('Open Document Type filter panel', async () => {
+      // === STEP 7: Filter by Document Type — select ONLY the first option ===
+      await test.step('Filter to show only one document type (language-independent)', async () => {
         const rowsBefore = await getGridRowCount();
-        console.log(`[INFO] Rows before filtering: ${rowsBefore}`);
+        console.log(`[INFO] Rows before Document Type filter: ${rowsBefore}`);
 
-        // Find the Document Type filter button
+        // Open Document Type filter (find by filter-facet class, not by text)
         const filterBtns = page.locator('.filter-wrapper .btn-filter');
         const count = await filterBtns.count();
         for (let i = 0; i < count; i++) {
           const text = (await filterBtns.nth(i).textContent()).trim();
           if (text.includes('Document Type') || text.includes('Belegart')) {
             await filterBtns.nth(i).click();
-            await page.waitForTimeout(1000);
-            const filterScreenshot = await page.screenshot({ fullPage: false });
-            allure.attachment('Document Type Filter Open', filterScreenshot, 'image/png');
-            console.log('[INFO] Document Type filter opened');
-            await page.keyboard.press('Escape');
-            await page.waitForTimeout(500);
             break;
           }
         }
-      });
+        await page.waitForTimeout(1000);
 
-      // === STEP 8: Apply Status filter — toggle checkbox and verify grid changes ===
-      await test.step('Apply Status filter and verify grid changes', async () => {
-        const rowsBefore = await getGridRowCount();
+        // Screenshot: filter panel open
+        allure.attachment('DocType Filter - Open', await page.screenshot({ fullPage: false }), 'image/png');
 
-        // Find the Status filter button
-        const filterBtns = page.locator('.filter-wrapper .btn-filter');
-        const count = await filterBtns.count();
-        for (let i = 0; i < count; i++) {
-          const text = (await filterBtns.nth(i).textContent()).trim();
-          if (text.includes('Status') || text.includes('Belegstatus')) {
-            // Open Status filter
-            await filterBtns.nth(i).click();
-            await page.waitForTimeout(1000);
+        // Use data-testid to find filter checkboxes (language-independent)
+        const filterOptions = page.locator('[data-testid^="filter-option-"]');
+        const filterCheckboxes = page.locator('[data-testid^="filter-checkbox-"]');
+        const optionCount = await filterOptions.count();
+        console.log(`[INFO] Filter has ${optionCount} options`);
 
-            const filterOpenScreenshot = await page.screenshot({ fullPage: false });
-            allure.attachment('Status Filter Open', filterOpenScreenshot, 'image/png');
+        if (optionCount >= 2) {
+          // Click only the first option's label (triggers React onChange via htmlFor)
+          // The filter starts with nothing checked, so clicking one selects ONLY that one
+          const firstOptionLabel = filterOptions.nth(0).locator('label.form-control-label');
+          await firstOptionLabel.click();
+          const firstOptionKey = await filterOptions.nth(0).getAttribute('data-testid');
+          console.log(`[INFO] Selected: ${firstOptionKey}`);
 
-            // The Status filter has a checkbox — toggle it
-            // The filter overlay uses .filter-widget (not .filters-overlay on keen_hawk)
-            const checkbox = page.locator('.filter-widget input[type="checkbox"], input[type="checkbox"]').first();
-            if (await checkbox.isVisible().catch(() => false)) {
-              await checkbox.click({ force: true });
-              console.log('[INFO] Toggled Status checkbox');
-              await page.waitForTimeout(500);
+          // Apply
+          await page.getByTestId('filter-apply-button').click();
+          await page.waitForTimeout(2000);
 
-              // Apply the filter — look for Apply/OK button inside the filter widget
-              const applyBtn = page.locator('.filter-widget .btn-meta-primary, .filter-widget .btn-meta-success, .filter-widget .btn-filter-submit').first();
-              if (await applyBtn.isVisible().catch(() => false)) {
-                await applyBtn.click();
-              } else {
-                // Some filters auto-apply on checkbox toggle — press Enter as fallback
-                await page.keyboard.press('Enter');
-              }
-              await page.waitForTimeout(2000);
+          const rowsAfterFirst = await getGridRowCount();
+          console.log(`[INFO] Rows after first option filter: ${rowsAfterFirst} (was ${rowsBefore})`);
+          allure.attachment('DocType Filter - First Option Only', await page.screenshot({ fullPage: false }), 'image/png');
 
-              const rowsAfter = await getGridRowCount();
-              console.log(`[INFO] Rows before Status filter: ${rowsBefore}, after: ${rowsAfter}`);
+          // HARD: must be fewer rows (we have both orders AND shipments)
+          expect(rowsAfterFirst, 'Filter should reduce visible rows').toBeLessThan(rowsBefore);
+          expect(rowsAfterFirst, 'Should still have rows').toBeGreaterThan(0);
 
-              const filteredScreenshot = await page.screenshot({ fullPage: false });
-              allure.attachment('Grid After Status Filter Applied', filteredScreenshot, 'image/png');
-
-              // The filter badge should now show as active
-              expect(rowsAfter, 'Grid should still show rows after filtering').toBeGreaterThanOrEqual(0);
-            } else {
-              console.log('[WARN] No checkbox in Status filter');
-              await page.keyboard.press('Escape');
+          // === Now switch to the SECOND option ===
+          // Re-open filter
+          for (let i = 0; i < count; i++) {
+            const text = (await filterBtns.nth(i).textContent()).trim();
+            if (text.includes('Document Type') || text.includes('Belegart')) {
+              await filterBtns.nth(i).click();
+              break;
             }
-            break;
           }
+          await page.waitForTimeout(1000);
+
+          // Click first option label to uncheck, then second to check
+          const opts = page.locator('[data-testid^="filter-option-"]');
+          await opts.nth(0).locator('label.form-control-label').click(); // uncheck first
+          await opts.nth(1).locator('label.form-control-label').click(); // check second
+          const secondOptionKey = await opts.nth(1).getAttribute('data-testid');
+          console.log(`[INFO] Switched to: ${secondOptionKey}`);
+
+          await page.getByTestId('filter-apply-button').click();
+          await page.waitForTimeout(2000);
+
+          const rowsAfterSecond = await getGridRowCount();
+          console.log(`[INFO] Rows after second option filter: ${rowsAfterSecond}`);
+          allure.attachment('DocType Filter - Second Option Only', await page.screenshot({ fullPage: false }), 'image/png');
+
+          // HARD: second filter should show the OTHER rows
+          expect(rowsAfterSecond, 'Second option should also show rows').toBeGreaterThan(0);
+          // The two filtered counts should add up to roughly the original
+          console.log(`[INFO] First: ${rowsAfterFirst}, Second: ${rowsAfterSecond}, Total was: ${rowsBefore}`);
+        } else {
+          console.log('[WARN] Need at least 2 filter options to test filtering');
+          await page.keyboard.press('Escape');
         }
       });
 
