@@ -61,19 +61,33 @@ export async function assertColumnsPresent(expectedColumns) {
 
 /**
  * Discover all column headers currently in the DOM.
+ * Supports both data-testid (new_dawn) and plain th (keen_hawk) selectors.
  * @returns {Promise<Array<{testId: string, caption: string}>>}
  */
 export async function discoverColumns() {
   const page = getPage();
-  const headers = await page.locator('th[data-testid^="column-"]').all();
-  const result = [];
 
-  for (const header of headers) {
-    const testId = await header.getAttribute('data-testid');
-    const caption = await header.locator('.th-caption').textContent().catch(() => '');
-    result.push({ testId, caption: caption.trim() });
+  // Try data-testid first (new_dawn frontend)
+  let headers = await page.locator('th[data-testid^="column-"]').all();
+  if (headers.length > 0) {
+    const result = [];
+    for (const header of headers) {
+      const testId = await header.getAttribute('data-testid');
+      const caption = await header.locator('.th-caption').textContent().catch(() => '');
+      result.push({ testId, caption: caption.trim() });
+    }
+    return result;
   }
 
+  // Fallback: plain th cells (keen_hawk frontend)
+  headers = await page.locator('table thead th, table thead td').all();
+  const result = [];
+  for (const header of headers) {
+    const text = (await header.textContent().catch(() => '')).trim();
+    if (text) {
+      result.push({ testId: `column-${text}`, caption: text });
+    }
+  }
   return result;
 }
 
@@ -170,10 +184,17 @@ export async function assertGridCellsPopulated(columnNames, maxRows = 5) {
  */
 export async function getGridRowCount() {
   const page = getPage();
-  const rows = page.locator('table tbody tr');
 
-  // Wait briefly for at least one row to appear
+  // Try standard table rows first, then flex-based grid rows
+  let rows = page.locator('table tbody tr');
   await rows.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+  let count = await rows.count();
 
-  return await rows.count();
+  if (count === 0) {
+    // Fallback: some views use div-based rows
+    rows = page.locator('.table-flex-wrapper .table-flex-row, .document-list-table tr');
+    count = await rows.count();
+  }
+
+  return count;
 }
