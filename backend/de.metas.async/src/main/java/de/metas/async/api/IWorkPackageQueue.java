@@ -75,7 +75,7 @@ public interface IWorkPackageQueue
 	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
 
 	/**
-	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.
+	 * Retrieve the number of processable workpackages using a DB-query.
 	 */
 	int size();
 
