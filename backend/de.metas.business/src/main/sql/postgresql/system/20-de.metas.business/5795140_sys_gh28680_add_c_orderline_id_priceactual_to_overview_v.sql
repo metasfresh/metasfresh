@@ -1,29 +1,13 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- gh#28680: Add c_orderline_id and priceactual to C_Order_M_InOut_C_Invoice_Overview_V
+-- These columns enable customer-specific extension views (e.g., kh202) to compute
+-- cost-based metrics (Deckungsbeitrag, Einstandspreis) using the order line reference.
+--
+-- c_orderline_id: for C_Order=direct, M_InOut=from M_InOutLine.C_OrderLine_ID, C_Invoice=from C_InvoiceLine.C_OrderLine_ID
+-- priceactual: for C_Order/C_Invoice=from line, M_InOut=NULL
 
-DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V
-;
+DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V$new;
 
-CREATE OR REPLACE VIEW C_Order_M_InOut_C_Invoice_Overview_V AS
+CREATE OR REPLACE VIEW C_Order_M_InOut_C_Invoice_Overview_V$new AS
 SELECT ROW_NUMBER() OVER (ORDER BY ad_Table_id, head_id, line_id) AS C_Order_M_InOut_C_Invoice_Overview_V_ID,
        doc.ad_Table_id,
        doc.Record_ID,
@@ -121,7 +105,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
 
       SELECT get_table_id('C_Invoice')                                 AS ad_Table_id,
              i.c_invoice_id                                            AS Record_ID,
-             i.c_invoice_id                                              AS head_id,
+             i.c_invoice_id                                            AS head_id,
              il.c_invoiceline_id                                       AS line_id,
              il.ad_client_id,
              il.ad_org_id,
@@ -160,3 +144,12 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
                     WHERE s.isactive = 'Y'
                     GROUP BY s.m_product_id, s.m_warehouse_id) stock ON doc.m_product_id = stock.m_product_id AND doc.m_warehouse_id = stock.m_warehouse_id
 ;
+
+SELECT db_alter_view(
+    'C_Order_M_InOut_C_Invoice_Overview_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('C_Order_M_InOut_C_Invoice_Overview_V$new'))
+);
+
+DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V$new;

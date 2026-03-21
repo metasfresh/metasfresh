@@ -1,0 +1,227 @@
+# Unified E2E Testing Stack
+#
+# This compose file supports both frontend and mobile E2E tests using profiles:
+#   - Frontend tests: docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend
+#   - Mobile tests:   docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile
+#
+# Shared services (db, rabbitmq, search, app) start for both profiles.
+# Profile-specific services only start when their profile is activated.
+
+services:
+
+  # ===== SHARED INFRASTRUCTURE =====
+
+  db:
+    image: $mfregistry/metas-db:$mfversion-$dbqualifier
+    ports:
+      - "14432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      # run the database on the initial data
+      # so we can later commit it again to create post-test images
+      # /data directories can't be persisted with docker commit!
+      - PGDATA=/var/lib/postgresql/initdata
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  rabbitmq:
+    image: rabbitmq:3.9.13-management
+    ports:
+      - "14672:5672"
+      - "14673:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q status
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      # TEST ONLY - DO NOT USE IN PRODUCTION
+      - RABBITMQ_DEFAULT_USER=metasfresh
+      - RABBITMQ_DEFAULT_PASS=metasfresh
+      - RABBITMQ_DEFAULT_VHOST=/
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  search:
+    image: elasticsearch:7.17.8
+    ports:
+      - "14200:9200"
+      - "14300:9300"
+    healthcheck:
+      test: "curl --fail --silent GET http://localhost:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - discovery.type=single-node
+      - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
+      - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  app:
+    image: $mfregistry/metas-app:$mfversion
+    networks:
+      default:
+        aliases:
+          - app-test
+    ports:
+      - "8282:8282"
+      - "8788:8788"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8282/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
+      - PropertyFile=/opt/metasfresh/metasfresh.properties
+      - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+      - "FRONTEND_TESTING=true"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # ===== FRONTEND PROFILE SERVICES =====
+
+  webapi:
+    image: $mfregistry/metas-api:$mfversion
+    profiles: ["frontend"]
+    networks:
+      default:
+        aliases:
+          - webapi-test
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet -DPO_AllowReactivationIfReceiptsCreated=Y"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  webui:
+    image: $mfregistry/metas-frontend:$mfversion
+    profiles: ["frontend"]
+    ports:
+      - "3000:80"
+    volumes:
+      - ./configs/frontend/web-config.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/frontend/default.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: "curl --fail --silent http://localhost:80 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    depends_on:
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  playwright-frontend:
+    image: $mfregistry/metas-frontend-test:$mfversion
+    profiles: ["frontend"]
+    volumes:
+      - ./playwright-report-frontend:/app/playwright-report
+      - ./test-results-frontend:/app/test-results
+      - ./allure-results:/app/allure-results
+    environment:
+      - "FRONTEND_BASE_URL=http://webui:80"
+      - "WEBAPI_BASE_URL=http://webui:80/rest/api"
+      - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
+      - "CI=true"
+      - "PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-}"
+    depends_on:
+      webui:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # ===== MOBILE PROFILE SERVICES =====
+
+  mobile:
+    image: $mfregistry/metas-mobile:$mfversion
+    profiles: ["mobile"]
+    ports:
+      - "3001:80"
+    volumes:
+      - ./configs/mobile/mobile-config.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/mobile/default.conf:/etc/nginx/conf.d/default.conf
+    healthcheck:
+      test: "curl --fail --silent http://localhost:80 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  playwright-mobile:
+    image: $mfregistry/metas-mobile-test:$mfversion
+    profiles: ["mobile"]
+    volumes:
+      - ./playwright-report-mobile:/app/playwright-report
+      - ./test-results-mobile:/app/test-results
+      - ./allure-results-mobile:/app/allure-results
+    environment:
+      - "FRONTEND_BASE_URL=http://mobile:80/mobile"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
+    depends_on:
+      mobile:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+volumes: { }
+configs: { }
+secrets: { }
