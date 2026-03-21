@@ -30,10 +30,9 @@ SELECT s.ad_client_id,
        s.datelastinventory,
        s.m_attributesetinstance_id,
        asi.m_attributeset_id,
-       NULL                        AS shelflifedays,
-       NULL                        AS goodfordays,
-       NULL::numeric
-                                   AS shelfliferemainingpct
+       NULL::numeric               AS shelflifedays,
+       NULL::numeric               AS goodfordays,
+       NULL::numeric               AS shelfliferemainingpct
 FROM m_storage s
          JOIN m_locator l ON s.m_locator_id = l.m_locator_id
          JOIN m_product p ON s.m_product_id = p.m_product_id
