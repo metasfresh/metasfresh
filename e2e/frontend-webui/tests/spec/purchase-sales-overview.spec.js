@@ -13,6 +13,18 @@ import {
 } from '../utils/view-validation/ViewWindowHelper';
 import { getPage, FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
+/** Get total item count from pagination footer (language-independent) */
+async function getTotalItemCount(page) {
+  const paginationText = await page.locator('.pagination-wrapper, .document-list-footer').first().textContent().catch(() => '');
+  const match = paginationText.match(/(\d+)\s*(?:«|$)/); // "Total items 63«1..."
+  if (!match) {
+    // Try extracting number after "Total items" or "Gesamt"
+    const match2 = paginationText.match(/(?:Total items|Gesamt)\s*(\d+)/i);
+    return match2 ? parseInt(match2[1]) : 0;
+  }
+  return parseInt(match[1]);
+}
+
 /**
  * Purchase & Sales Overview (Ein- und Verkaufsübersicht) E2E test.
  *
@@ -153,7 +165,8 @@ testCases.forEach(({ language, label }) => {
       // === STEP 7: Filter by Document Type — select ONLY the first option ===
       await test.step('Filter to show only one document type (language-independent)', async () => {
         const rowsBefore = await getGridRowCount();
-        console.log(`[INFO] Rows before Document Type filter: ${rowsBefore}`);
+        const totalBefore = await getTotalItemCount(page);
+        console.log(`[INFO] Rows before Document Type filter: ${rowsBefore}, total items: ${totalBefore}`);
 
         // Open Document Type filter (find by filter-facet class, not by text)
         await page.getByTestId('filter-button-facet-C_DocType_ID').click();
@@ -180,13 +193,13 @@ testCases.forEach(({ language, label }) => {
           await page.getByTestId('filter-apply-button').click();
           await page.waitForTimeout(2000);
 
-          const rowsAfterFirst = await getGridRowCount();
-          console.log(`[INFO] Rows after first option filter: ${rowsAfterFirst} (was ${rowsBefore})`);
+          const totalAfterFirst = await getTotalItemCount(page);
+          console.log(`[INFO] Total items after first option: ${totalAfterFirst} (was ${totalBefore})`);
           allure.attachment('DocType Filter - First Option Only', await page.screenshot({ fullPage: false }), 'image/png');
 
-          // HARD: must be fewer rows (we have both orders AND shipments)
-          expect(rowsAfterFirst, 'Filter should reduce visible rows').toBeLessThan(rowsBefore);
-          expect(rowsAfterFirst, 'Should still have rows').toBeGreaterThan(0);
+          // HARD: total items must be fewer (we have both orders AND shipments)
+          expect(totalAfterFirst, 'Filter should reduce total items').toBeLessThan(totalBefore);
+          expect(totalAfterFirst, 'Should still have items').toBeGreaterThan(0);
 
           // === Now switch to the SECOND option ===
           // Re-open filter
@@ -203,14 +216,15 @@ testCases.forEach(({ language, label }) => {
           await page.getByTestId('filter-apply-button').click();
           await page.waitForTimeout(2000);
 
-          const rowsAfterSecond = await getGridRowCount();
-          console.log(`[INFO] Rows after second option filter: ${rowsAfterSecond}`);
+          const totalAfterSecond = await getTotalItemCount(page);
+          console.log(`[INFO] Total items after second option: ${totalAfterSecond}`);
           allure.attachment('DocType Filter - Second Option Only', await page.screenshot({ fullPage: false }), 'image/png');
 
           // HARD: second filter should show the OTHER rows
-          expect(rowsAfterSecond, 'Second option should also show rows').toBeGreaterThan(0);
-          // The two filtered counts should add up to roughly the original
-          console.log(`[INFO] First: ${rowsAfterFirst}, Second: ${rowsAfterSecond}, Total was: ${rowsBefore}`);
+          expect(totalAfterSecond, 'Second option should also show items').toBeGreaterThan(0);
+          // The two filtered counts should add up to the total
+          console.log(`[INFO] First: ${totalAfterFirst}, Second: ${totalAfterSecond}, Total: ${totalBefore}`);
+          expect(totalAfterFirst + totalAfterSecond, 'Filtered counts should sum to total').toBe(totalBefore);
         } else {
           console.log('[WARN] Need at least 2 filter options to test filtering');
           await page.keyboard.press('Escape');
@@ -239,59 +253,87 @@ testCases.forEach(({ language, label }) => {
         console.log(`[INFO] Rows after clearing DocType filter: ${rowsCleared}`);
       });
 
-      // === STEP 9: Test date filter — enter yesterday → 0 rows ===
-      await test.step('Filter by date (yesterday) → expect 0 rows', async () => {
+      // === STEP 9: Test date RANGE filter — select "Yesterday" preset → fewer rows ===
+      await test.step('Date range filter: Yesterday preset → fewer rows', async () => {
         const rowsBefore = await getGridRowCount();
 
         // Open date filter
         await page.getByTestId('filter-button-default-date').click();
         await page.waitForTimeout(1000);
 
-        // Enter yesterday's date
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = yesterday.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const dateInput = page.locator('.filter-widget .datepicker input[type="text"]');
-        await dateInput.click();
-        await dateInput.fill(yStr);
-        await page.waitForTimeout(500);
+        // Click "Show all Dates" to expand the date range picker
+        const showAllBtn = page.locator('.filter-widget button').first();
+        await showAllBtn.click();
+        await page.waitForTimeout(1000);
 
-        allure.attachment('Date Filter - Yesterday Entered', await page.screenshot({ fullPage: false }), 'image/png');
+        allure.attachment('Date Range Picker Open', await page.screenshot({ fullPage: false }), 'image/png');
 
-        // Apply
-        await page.getByTestId('filter-apply-button').click();
+        // Select "Yesterday" preset (language-independent: use list index)
+        const presets = page.locator('.daterangepicker .ranges li');
+        const presetCount = await presets.count();
+        console.log(`[INFO] Date range presets: ${presetCount}`);
+        // Index 1 = Yesterday (0=Today, 1=Yesterday, 2=Last 7 Days, etc.)
+        if (presetCount >= 2) {
+          await presets.nth(1).click({ force: true }); // Yesterday
+          await page.waitForTimeout(1000);
+
+          // Click Apply if still visible (some configs auto-apply on preset click)
+          const drpApply = page.locator('.daterangepicker .applyBtn');
+          if (await drpApply.isVisible().catch(() => false)) {
+            await drpApply.click({ force: true });
+            await page.waitForTimeout(1000);
+          }
+
+          // Also click the filter widget Apply if visible
+          const filterApply = page.getByTestId('filter-apply-button');
+          if (await filterApply.isVisible().catch(() => false)) {
+            await filterApply.click();
+            await page.waitForTimeout(1000);
+          }
+        }
         await page.waitForTimeout(2000);
 
-        const rowsAfter = await getGridRowCount();
-        console.log(`[INFO] Date filter (yesterday ${yStr}): ${rowsBefore} → ${rowsAfter} rows`);
-        allure.attachment('Date Filter - Yesterday Result', await page.screenshot({ fullPage: false }), 'image/png');
+        const totalAfter = await getTotalItemCount(page);
+        console.log(`[INFO] Date range (Yesterday): ${rowsBefore} total → ${totalAfter} total`);
+        allure.attachment('Date Range - Yesterday', await page.screenshot({ fullPage: false }), 'image/png');
 
-        // Yesterday should show significantly fewer rows than unfiltered
-        expect(rowsAfter, 'Yesterday should show fewer rows than today').toBeLessThan(rowsBefore);
+        expect(totalAfter, 'Yesterday should show fewer items than unfiltered').toBeLessThan(rowsBefore);
       });
 
-      // === STEP 10: Change date to today → rows come back ===
-      await test.step('Filter by date (today) → expect rows back', async () => {
-        // Open date filter again
+      // === STEP 10: Select "Today" preset → rows come back ===
+      await test.step('Date range filter: Today preset → rows come back', async () => {
+        // Open date filter
         await page.getByTestId('filter-button-default-date').click();
         await page.waitForTimeout(1000);
 
-        // Enter today's date
-        const today = new Date().toLocaleDateString('en-CA');
-        const dateInput = page.locator('.filter-widget .datepicker input[type="text"]');
-        await dateInput.click();
-        await dateInput.triple_click ? await dateInput.fill('') : await dateInput.fill('');
-        await dateInput.fill(today);
-        await page.waitForTimeout(500);
+        // Expand date range picker
+        const showAllBtn = page.locator('.filter-widget button').first();
+        await showAllBtn.click();
+        await page.waitForTimeout(1000);
 
-        await page.getByTestId('filter-apply-button').click();
+        // Select "Today" preset (index 0)
+        const presets = page.locator('.daterangepicker .ranges li');
+        await presets.nth(0).click({ force: true }); // Today
+        await page.waitForTimeout(1000);
+
+        // Apply if visible
+        const drpApply = page.locator('.daterangepicker .applyBtn');
+        if (await drpApply.isVisible().catch(() => false)) {
+          await drpApply.click({ force: true });
+          await page.waitForTimeout(1000);
+        }
+        const filterApply = page.getByTestId('filter-apply-button');
+        if (await filterApply.isVisible().catch(() => false)) {
+          await filterApply.click();
+          await page.waitForTimeout(1000);
+        }
         await page.waitForTimeout(2000);
 
         const rowsAfter = await getGridRowCount();
-        console.log(`[INFO] Date filter (today ${today}): → ${rowsAfter} rows`);
-        allure.attachment('Date Filter - Today Result', await page.screenshot({ fullPage: false }), 'image/png');
+        console.log(`[INFO] Date range (Today): → ${rowsAfter} rows`);
+        allure.attachment('Date Range - Today', await page.screenshot({ fullPage: false }), 'image/png');
 
-        expect(rowsAfter, 'Today filter should show rows').toBeGreaterThan(0);
+        expect(rowsAfter, 'Today should show rows').toBeGreaterThan(0);
       });
 
       // === STEP 11: Combined filter — Date (today) + DocType (first option) ===
