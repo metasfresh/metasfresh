@@ -97,7 +97,7 @@ testCases.forEach(({ language, label }) => {
               SO1: {
                 bpartner: 'BP1',
                 warehouse: 'wh',
-                datePromised: '2026-03-22T00:00:00.000+01:00',
+                datePromised: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
                 lines: [
                   { product: 'P1', qty: 5 },
                   { product: 'P2', qty: 3 },

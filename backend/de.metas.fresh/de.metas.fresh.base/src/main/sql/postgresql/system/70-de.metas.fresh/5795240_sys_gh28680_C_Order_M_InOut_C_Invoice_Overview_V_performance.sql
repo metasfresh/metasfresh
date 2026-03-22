@@ -6,6 +6,7 @@
 --    - M_InOutLine: 1000000000 + m_inoutline_id (range 1B..2B)
 --    - C_InvoiceLine: 2000000000 + c_invoiceline_id (range 2B..2.147B)
 --    All fit in NUMERIC(10,0) for T_WEBUI_ViewSelection.IntKey1 and Java int (max 2,147,483,647)
+--    Ceiling: c_invoiceline_id must be <= 147,483,647 to avoid int overflow (typical installations are well below 10M)
 -- 3. m_product INNER JOIN -> LEFT JOIN: allows PostgreSQL join removal for facet queries
 --    that don't reference m_product columns (e.g., CreatedBy facet filter)
 -- 4. Add indexes on CreatedBy for fast facet filter DISTINCT
