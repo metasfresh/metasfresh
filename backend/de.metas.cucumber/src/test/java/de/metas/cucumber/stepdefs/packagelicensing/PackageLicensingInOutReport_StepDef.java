@@ -244,7 +244,7 @@ public class PackageLicensingInOutReport_StepDef
 					resultRow.put("CountryCode", rs.getString("CountryCode"));
 					resultRow.put("ProductValue", rs.getString("ProductValue"));
 					resultRow.put("ProductName", rs.getString("ProductName"));
-					resultRow.put("MovementQty", bigDecimalToString(rs.getBigDecimal("MovementQty")));
+					resultRow.put("TotalSalesQty", bigDecimalToString(rs.getBigDecimal("TotalSalesQty")));
 					resultRow.put("PurchaseQty", bigDecimalToString(rs.getBigDecimal("PurchaseQty")));
 					resultRow.put("ForeignSalesQty", bigDecimalToString(rs.getBigDecimal("ForeignSalesQty")));
 					resultRow.put("UOMSymbol", rs.getString("UOMSymbol"));
@@ -349,7 +349,7 @@ public class PackageLicensingInOutReport_StepDef
 
 	private static boolean isNumericColumn(@NonNull final String col)
 	{
-		return "MovementQty".equals(col) || "PurchaseQty".equals(col) || "ForeignSalesQty".equals(col)
+		return "TotalSalesQty".equals(col) || "PurchaseQty".equals(col) || "ForeignSalesQty".equals(col)
 				|| "Weight".equals(col) || "SmallPackagingWeight".equals(col) || "OuterPackagingWeight".equals(col)
 				|| "PackagingInstructionFactor".equals(col);
 	}
