@@ -478,30 +478,42 @@ public class SqlViewSelectData
 			sqlDisplayValue = null;
 		}
 
-		final CompositeStringExpression.Builder sqlExpression = IStringExpression.composer()
-				.append("SELECT DISTINCT ")
-				.append(sqlValue.getColumnNameAlias());
-		if (sqlDisplayValue != null)
-		{
-			sqlExpression.append(", ").append(sqlDisplayValue.getColumnNameAlias());
-		}
+		final CompositeStringExpression.Builder sqlExpression;
 
-		sqlExpression
-				.append("\n FROM (")
-				.append("\n SELECT ")
-				.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias());
 		if (sqlDisplayValue != null)
 		{
-			sqlExpression
-					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias());
+			// gh#28680: Performance optimization — compute DISTINCT first, then display values.
+			// Previously, the display subquery (e.g., AD_User lookup) ran for ALL rows (52k+)
+			// before DISTINCT reduced them to ~10 values. Now we first get distinct values,
+			// then compute display only for those few values.
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT ")
+					.append("t.").append(sqlValue.getColumnNameAlias())
+					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias("t").toStringExpressionWithColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT DISTINCT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n) t")
+					.append("\n LIMIT ?");
 		}
-		sqlExpression.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
-				.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
-				.append("\n) t")
-				.append("\n LIMIT ?");
+		else
+		{
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT DISTINCT ")
+					.append(sqlValue.getColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
+					.append("\n) t")
+					.append("\n LIMIT ?");
+		}
 
 		final String sql = sqlExpression.build()
 				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
