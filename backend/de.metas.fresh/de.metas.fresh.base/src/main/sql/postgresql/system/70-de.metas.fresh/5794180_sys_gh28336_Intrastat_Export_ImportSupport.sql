@@ -1,24 +1,7 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- gh#28336: Update Intrastat_Export function to support both Export and Import directions.
+-- Now queries from Intrastat_Report_V (instead of M_InOut_V) and filters by issotrx.
+-- Export (issotrx='Y'): sales shipments, CountryOfOrigin = org/warehouse country (AT)
+-- Import (issotrx='N'): purchase receipts, CountryOfOrigin = product rawmaterialorigin or vendor country
 
 DROP FUNCTION IF EXISTS report.Intrastat_Export(p_c_year_id                 numeric,
                                                 p_C_Period_ID               numeric,
