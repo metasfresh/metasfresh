@@ -1,3 +1,6 @@
+-- gh#28967: Round Summary Report material weights to 3 decimal places (gram precision)
+-- Austrian Verpackungsverordnung requires kg with 3 decimal places for Mengenmeldung
+
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
     p_DateFrom             timestamp with time zone,
     p_DateTo               timestamp with time zone,
