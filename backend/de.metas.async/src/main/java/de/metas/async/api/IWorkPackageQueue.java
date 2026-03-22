@@ -58,7 +58,23 @@ public interface IWorkPackageQueue
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
-	 *  Retrieve the number of processable workpackages using a DB-query.
+	 * Unlocks given package
+	 *
+	 * @throws UnlockFailedException if unlocking fails
+	 */
+	void unlock(I_C_Queue_WorkPackage workPackage) throws UnlockFailedException;
+
+	/**
+	 * Unlocks given package.
+	 *
+	 * Any unlock exceptions will be logged but not propagated.
+	 *
+	 * @return true if unlocked
+	 */
+	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
+
+	/**
+	 * Retrieve the number of processable workpackages using a DB-query.
 	 */
 	int size();
 
