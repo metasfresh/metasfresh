@@ -147,9 +147,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10

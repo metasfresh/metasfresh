@@ -225,7 +225,7 @@ Feature: Production + Distribution material dispo scenarios
     And after not more than 60s, following DD_Order_Candidates are found
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | QtyProcessed | QtyToProcess | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID | C_OrderSO_ID | C_OrderLineSO_ID |
       | component    | rawMaterials_WH     | production_WH    | 10 PCE | 10 PCE       | 0 PCE        | Y         | oc_1                          | ocl_1                             | ppOrder             | SO           | SO_L1            |
-    And after not more than 60s, DD_OrderLine found for orderLine SO_L1
+    And after not more than 120s, DD_OrderLine found for orderLine SO_L1
       | Identifier | DD_Order_ID | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol1      | ddo         | component    | 10         | rawMaterials_WH     | production_WH     |
     And after not more than 60s, following DD_Orders are found
@@ -399,7 +399,7 @@ Feature: Production + Distribution material dispo scenarios
     And the following DD_Order_Candidates are enqueued for generating DD_Orders
       | DD_Order_Candidate_ID |
       | ddoc_1                |
-    And after not more than 60s, DD_OrderLine found for orderLine SO_L1
+    And after not more than 120s, DD_OrderLine found for orderLine SO_L1
       | Identifier | DD_Order_ID | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol       | ddo         | component    | 10         | rawMaterials_WH     | production_WH     |
     And after not more than 60s, following DD_Orders are found

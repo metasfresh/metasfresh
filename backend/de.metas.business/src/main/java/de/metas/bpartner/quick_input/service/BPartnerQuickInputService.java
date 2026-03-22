@@ -703,6 +703,7 @@ public class BPartnerQuickInputService
 							.billToDefault(bpartnerLocationTemplate.isBillToDefault())
 							.shipTo(bpartnerLocationTemplate.isShipTo())
 							.shipToDefault(bpartnerLocationTemplate.isShipToDefault())
+							.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 							.build())
 					.active(bpartnerLocationTemplate.isActive())
 					.email(bpartnerLocationTemplate.getEMail())
@@ -717,7 +718,6 @@ public class BPartnerQuickInputService
 					.replicationLookupDefault(bpartnerLocationTemplate.isReplicationLookupDefault())
 					.remitTo(bpartnerLocationTemplate.isRemitTo())
 					.handOverLocation(bpartnerLocationTemplate.isHandOverLocation())
-					.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 					.build());
 		}
 

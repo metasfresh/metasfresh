@@ -106,6 +106,7 @@ pull_request_rules:
               - base=ghost_rider_hotfix
               - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
+              - base=epic_party_hotfix
               - base=inner_silence_hotfix
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
