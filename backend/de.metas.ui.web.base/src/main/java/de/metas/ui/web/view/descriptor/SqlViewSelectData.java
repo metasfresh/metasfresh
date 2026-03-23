@@ -452,6 +452,30 @@ public class SqlViewSelectData
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
+	/**
+	 * Builds SQL to retrieve distinct field values for facet filters.
+	 * <p>
+	 * gh#28680: When a display value is present (e.g. AD_User name lookup for CreatedBy),
+	 * the query is structured as:
+	 * <pre>
+	 * SELECT t.CreatedBy, (SELECT Name FROM AD_User WHERE AD_User_ID=t.CreatedBy) AS CreatedBy$Display
+	 * FROM (
+	 *   SELECT DISTINCT view.CreatedBy
+	 *   FROM T_WEBUI_ViewSelection sel INNER JOIN view ON (...)
+	 *   WHERE sel.UUID=?
+	 * ) t
+	 * LIMIT ?
+	 * </pre>
+	 * The inner subquery computes DISTINCT on the raw value column only (cheap — just integers),
+	 * producing ~10 rows. The display subquery then runs only for those few distinct values.
+	 * <p>
+	 * Previously, the display subquery ran for ALL rows (e.g. 52k) before DISTINCT removed
+	 * duplicates — 52k subquery executions for ~10 results (89 seconds on a real dataset).
+	 * With this restructuring: ~10 executions, under 1 second.
+	 * <p>
+	 * When no display value is present, DISTINCT is applied directly in the outer SELECT
+	 * (no expensive subquery to defer, so no restructuring needed).
+	 */
 	public SqlAndParams selectFieldValues(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			@NonNull final String selectionId,
