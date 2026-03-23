@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: external system invocation using metasfresh api
   As a REST-API invoker
   I want want to be able to invoke external systems

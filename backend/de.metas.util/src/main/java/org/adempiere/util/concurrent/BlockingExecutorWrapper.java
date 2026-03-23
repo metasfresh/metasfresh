@@ -1,16 +1,16 @@
 package org.adempiere.util.concurrent;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.experimental.Delegate;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -35,17 +35,14 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 
 /**
- * Thx to https://stackoverflow.com/questions/3446011/threadpoolexecutor-block-when-queue-is-full
+ * Thx to <a href="https://stackoverflow.com/questions/3446011/threadpoolexecutor-block-when-queue-is-full">stackoverflow</a>
  */
 @ToString
-public class BlockingExecutorWrapper implements ExecutorService
+public class BlockingExecutorWrapper
 {
-	private final Semaphore semaphore;
-
-	@Delegate(excludes = Executor.class) // don't delegate to Executor.execute(); of that, we have our own
-	private final ThreadPoolExecutor delegate;
-
-	private @NonNull Logger logger;
+	@NonNull private final ThreadPoolExecutor delegate;
+	@NonNull private final Logger logger;
+	@NonNull private final Semaphore semaphore;
 
 	@Builder
 	private BlockingExecutorWrapper(
@@ -53,68 +50,72 @@ public class BlockingExecutorWrapper implements ExecutorService
 			@NonNull final ThreadPoolExecutor delegate,
 			@NonNull final Logger loggerToUse)
 	{
-		this.semaphore = new Semaphore(poolSize);
 		this.delegate = delegate;
 		this.logger = loggerToUse;
+		this.semaphore = new Semaphore(poolSize);
 	}
 
-	@Override
 	public void execute(@NonNull final Runnable command)
 	{
+		final IAutoCloseable permit = acquirePermit();
+
 		try
 		{
-			logger.debug("Going to acquire semaphore{}", semaphore.toString());
-			semaphore.acquire();
-			logger.debug("Done acquiring semaphore={}", semaphore.toString());
-		}
-		catch (final InterruptedException e)
-		{
-			logger.warn("execute - InterruptedException while acquiring semaphore=" + semaphore + " for command=" + command + ";-> return", e);
-			return;
-		}
-
-		// wrap 'command' into another runnable, so we can in the end release the semaphore.
-		final Runnable r = new Runnable()
-		{
-			public String toString()
-			{
-				return "runnable-wrapper-for[" + command + "]";
-			}
-
-			public void run()
-			{
+			delegate.execute(() -> {
+				//noinspection TryFinallyCanBeTryWithResources
 				try
 				{
-					logger.debug("execute - Going to invoke command.run() within delegate thread-pool");
 					command.run();
-					logger.debug("execute - Done invoking command.run() within delegate thread-pool");
-				}
-				catch (final Throwable t)
-				{
-					logger.error("execute - Caught throwable while running command=" + command + "; -> rethrow", t);
-					throw t;
 				}
 				finally
 				{
-					semaphore.release();
-					logger.debug("Released semaphore={}", semaphore);
+					permit.close(); // release the semaphore permit on actual task is done
 				}
-			}
-		};
+			});
+		}
+		catch (final Exception enqueueException)
+		{
+			permit.close(); // release the semaphore permit just in case enqueueing fails
+
+			throw enqueueException;
+		}
+	}
+
+	private IAutoCloseable acquirePermit()
+	{
 		try
 		{
-			delegate.execute(r); // don't expect RejectedExecutionException because delegate has a small queue that can hold runnables after semaphore-release and before they can actually start
+			logger.debug("Going to acquire semaphore{}", semaphore);
+			semaphore.acquire();
+			logger.debug("Done acquiring semaphore={}", semaphore);
 		}
-		catch (final RejectedExecutionException e)
+		catch (final InterruptedException e)
 		{
-			semaphore.release();
-			logger.error("execute - Caught RejectedExecutionException while trying to submit task=" + r + " to delegate thread-pool=" + delegate + "; -> released semaphore=" + semaphore + " and rethrow", e);
-			throw e;
+			throw Check.mkEx("Got interrupted while acquiring permit from " + semaphore, e);
 		}
+
+		final AtomicBoolean closed = new AtomicBoolean();
+		return () -> {
+			final boolean alreadyClosed = closed.getAndSet(true);
+			if (!alreadyClosed)
+			{
+				semaphore.release();
+				logger.debug("Released semaphore={}", semaphore);
+			}
+		};
 	}
 
 	public boolean hasAvailablePermits()
 	{
 		return semaphore.availablePermits() > 0;
+	}
+
+	public void shutdown() {delegate.shutdown();}
+
+	public void shutdownNow() {delegate.shutdownNow();}
+
+	public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException
+	{
+		return delegate.awaitTermination(timeout, unit);
 	}
 }

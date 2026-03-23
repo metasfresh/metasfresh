@@ -69,7 +69,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			statsRecord = createBPartnerStats(partner);
 		}
-		
+
 		return BPartnerStats.builder()
 				.repoId(statsRecord.getC_BPartner_Stats_ID())
 				.bpartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
@@ -87,7 +87,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
 		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
-		
+
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
 		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -106,24 +106,26 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		BigDecimal openItems = null;
-
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
+				+ " currencyBase(OpenAmt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)"
+				+ " FROM de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date, 'N', ?)";
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-
 		try
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				openItems = rs.getBigDecimal(1);
+				final BigDecimal openAmt = rs.getBigDecimal(1);
+				return openAmt != null ? openAmt : BigDecimal.ZERO;
+			}
+			else
+			{
+				return BigDecimal.ZERO;
 			}
 		}
 		catch (final SQLException e)
@@ -134,8 +136,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
-
-		return openItems;
 	}
 
 	@Override
@@ -178,7 +178,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 	}
-
 
 	@Override
 	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
@@ -335,7 +334,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final String percentSring = fmt.format(percent);
 
 		stats.setCreditLimitIndicator(percentSring);
-		
+
 		saveRecord(stats);
 	}
 }

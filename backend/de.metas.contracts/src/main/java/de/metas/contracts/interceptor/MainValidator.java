@@ -33,6 +33,7 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.printing.impl.FlatrateTermPrintingQueueHandler;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.document.location.IDocumentLocationBL;
@@ -48,6 +49,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -155,6 +157,8 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
+
+		Services.get(IPrintingQueueBL.class).registerHandler(FlatrateTermPrintingQueueHandler.instance);
 	}
 
 	/**

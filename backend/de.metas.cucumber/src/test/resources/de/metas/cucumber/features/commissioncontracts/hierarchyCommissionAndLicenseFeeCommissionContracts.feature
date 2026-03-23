@@ -1,27 +1,29 @@
 @from:cucumber
 @topic:commissionContracts
+@ghActions:run_on_executor3
 Feature: Hierarchy commission and license fee commission combined
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh has date and time 2021-12-10T08:00:00+01:00[Europe/Berlin]
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.X12DE355 | Value |
-      | commission_product  | commission_product  | S           | PTS          |       |
-      | transaction_product | transaction_product |             | PCE          |       |
+      | Identifier          | Name                           | ProductType | OPT.X12DE355 | Value |
+      | commission_product  | commission_product_16112022_1  | S           | PTS          |       |
+      | transaction_product | transaction_product_16112022_1 |             | PCE          |       |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                    | Value                   | OPT.IsActive |
-      | ps_1       | salesRep_pricing_system | salesRep_pricing_system | true         |
+      | Identifier | Name                               | Value                              | OPT.IsActive |
+      | ps_1       | salesRep_pricing_system_16112022_1 | salesRep_pricing_system_16112022_1 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              | true         |
-      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_1 | true  | false         | 2              | true         |
+      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po_16112022_1 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
-      | plv_so     | pl_so                     | salesOrder-PLV_72    | 2021-04-01 |
-      | plv_po     | pl_po                     | purchaseOrder-PLV_72 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
+      | plv_so     | pl_so                     | salesOrder-PLV_72_16112022_1    | 2021-04-01 |
+      | plv_po     | pl_po                     | purchaseOrder-PLV_72_16112022_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_so                            | commission_product      | 1.0      | PTS               | Normal                        |
@@ -58,9 +60,9 @@ Feature: Hierarchy commission and license fee commission combined
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier           | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
-      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
+      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
+      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -77,7 +79,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,
@@ -238,8 +240,8 @@ Feature: Hierarchy commission and license fee commission combined
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
+      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -256,7 +258,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,

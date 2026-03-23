@@ -1,3 +1,4 @@
+@ghActions:run_on_executor3
 Feature: attachment creation using metasfresh api
   As a REST-API invoker
   As an API user I want to be able to create attachment entries

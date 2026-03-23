@@ -4,6 +4,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.product.IProductDAO;
@@ -11,6 +12,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
 import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
@@ -50,14 +52,17 @@ final class OrderLineQuickInputCallout
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerBL bpartnersService;
 	private final PackingItemProductFieldHelper packingItemProductFieldHelper;
+	private final UserSession userSession;
 
 	@Builder
 	private OrderLineQuickInputCallout(
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
+			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper,
+			@NonNull final UserSession userSession)
 	{
 		this.bpartnersService = bpartnersService;
 		this.packingItemProductFieldHelper = packingItemProductFieldHelper;
+		this.userSession = userSession;
 	}
 
 	public void onProductChanged(final ICalloutField calloutField)
@@ -130,6 +135,9 @@ final class OrderLineQuickInputCallout
 		if (groupTemplateId != null)
 		{
 			quickInputModel.setQty(BigDecimal.ONE);
+
+			final ConditionsId defaultFlatrateConditionsId = userSession.getDefaultFlatrateConditionsId();
+			quickInputModel.setC_Flatrate_Conditions_ID(defaultFlatrateConditionsId == null ? -1 : defaultFlatrateConditionsId.getRepoId());
 		}
 		else
 		{

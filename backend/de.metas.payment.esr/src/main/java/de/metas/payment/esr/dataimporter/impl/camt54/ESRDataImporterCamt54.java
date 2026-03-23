@@ -1,27 +1,25 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
+import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.dataimporter.impl.camt54.v02.ESRDataImporterCamt54v02;
+import de.metas.payment.esr.dataimporter.impl.camt54.v06.ESRDataImporterCamt54v06;
+import de.metas.payment.esr.dataimporter.impl.camt54.v08.ESRDataImporterCamt54v08;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
@@ -30,7 +28,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -75,18 +72,6 @@ import java.util.Properties;
  */
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
-	private static final Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
-
-	@VisibleForTesting
-	static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
-
-	@VisibleForTesting
-	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
-
-	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
-	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
-	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
-
 	@NonNull private final InputStream input;
 	@Nullable private final CurrencyCode bankAccountCurrencyCode;
 	@NonNull private final String adLanguage;
@@ -125,9 +110,19 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Env.getADLanguageOrBaseLanguage(ctx);
 	}
 
-	private static boolean isVersion2Schema(@NonNull final String namespaceURI)
+		private static boolean isVersion2Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
+	}
+
+	private static boolean isVersion6Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.04", namespaceURI);
+	}
+
+	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.08", namespaceURI);
 	}
 
 	private static String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
@@ -163,13 +158,24 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.04 and amt.054.001.05
 			final MultiVersionStreamReaderDelegate mxsr = new MultiVersionStreamReaderDelegate(xsr);
 
-			if (isVersion2Schema(getNameSpaceURI(mxsr)))
+			final String nameSpace = getNameSpaceURI(mxsr);
+
+            if (isVersion2Schema(nameSpace))
 			{
 				return importCamt54v02(mxsr);
 			}
-			else
+			else if (isVersion6Schema(nameSpace))
 			{
 				return importCamt54v06(mxsr);
+			}
+			else if (isVersion8Schema(nameSpace))
+			{
+				return importCamt54v08(mxsr);
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported camt.54 version: " )
+						.setParameter("namespaceURI", getNameSpaceURI(mxsr));
 			}
 
 		}
@@ -187,10 +193,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	private ESRStatement importCamt54v02(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v02.loadXML(mxsr);
-		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-		}
 
 		return ESRDataImporterCamt54v02.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
@@ -202,12 +204,19 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	private ESRStatement importCamt54v06(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v06.loadXML(mxsr);
-		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-		}
 
 		return ESRDataImporterCamt54v06.builder()
+				.bankAccountCurrencyCode(bankAccountCurrencyCode)
+				.adLanguage(adLanguage)
+				.build()
+				.createESRStatement(bkToCstmrDbtCdtNtfctn);
+	}
+
+	private ESRStatement importCamt54v08(final MultiVersionStreamReaderDelegate mxsr)
+	{
+		final BankToCustomerDebitCreditNotificationV08 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v08.loadXML(mxsr);
+
+		return ESRDataImporterCamt54v08.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
 				.adLanguage(adLanguage)
 				.build()

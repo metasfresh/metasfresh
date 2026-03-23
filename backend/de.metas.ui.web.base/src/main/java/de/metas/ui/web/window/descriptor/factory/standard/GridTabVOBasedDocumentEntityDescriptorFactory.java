@@ -5,6 +5,7 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -25,6 +26,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.NotFoundMessages;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -40,6 +42,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -113,6 +116,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final LabelFieldNameFactory labelFieldNameFactory = new LabelFieldNameFactory();
 
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
@@ -248,7 +252,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
-				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents());
+				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters())
+				.notFoundMessages(extractNotFoundMessages(gridTabVO));
 
 		// Fields descriptor
 		gridTabVO
@@ -265,6 +271,21 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
+	}
+
+	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO)
+	{
+		final ITranslatableString message = gridTabVO.getNotFoundMessage();
+		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
+		if (TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+		{
+			return null;
+		}
+
+		return NotFoundMessages.builder()
+				.message(message)
+				.detail(detail)
+				.build();
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
@@ -490,7 +511,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Nullable
 	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
 	{
-		if(gridFieldVO.isVirtualColumn())
+		if (gridFieldVO.isVirtualColumn())
 		{
 			return gridFieldVO.getColumnSql(contextTableName);
 		}
@@ -765,6 +786,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		collectSpecialField(fieldBuilder);
 	}
 
+	public String getLabelsFieldName(@NonNull final AdUIElementId uiElementId)
+	{
+		return labelFieldNameFactory.getFieldName(uiElementId);
+	}
+
 	@Nullable
 	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
 	{
@@ -790,7 +816,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.orElse(ConstantLogicExpression.TRUE);
 	}
 
-	private static LabelsLookup createLabelsLookup(
+	private LabelsLookup createLabelsLookup(
 			@NonNull final I_AD_UI_Element labelsUIElement,
 			@NonNull final String tableName)
 	{
@@ -851,8 +877,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
+		final String fieldName = labelFieldNameFactory.createFieldName(AdUIElementId.ofRepoId(labelsUIElement.getAD_UI_Element_ID()), labelsTableName);
+
 		return LabelsLookup.builder()
-				.fieldName(extractLabelsFieldName(labelsUIElement))
+				.fieldName(fieldName)
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
@@ -861,12 +889,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
-	}
-
-	@NonNull
-	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
-	{
-		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable

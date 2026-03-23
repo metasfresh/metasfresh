@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and that it correctly propagates on C_InvoiceCandidates
   (default payment rule is not propagated on C_InvoiceCandidates in this case, the payment rule set on C_Order is taken into consideration)
 

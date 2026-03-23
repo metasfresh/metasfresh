@@ -56,7 +56,7 @@ import lombok.NonNull;
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
@@ -71,7 +71,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 			.build();
 
 	@Override
-	public void initialize()
+	protected void afterInit()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
 		SystemTime.setTimeSource(today);

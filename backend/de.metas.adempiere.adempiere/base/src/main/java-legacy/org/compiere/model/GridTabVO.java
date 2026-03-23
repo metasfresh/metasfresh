@@ -64,6 +64,7 @@ import java.util.Set;
  * @author Jorg Janke
  * @version $Id: GridTabVO.java,v 1.4 2006/07/30 00:58:38 jjanke Exp $
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
@@ -84,7 +85,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		logger.debug("TabNo={}", TabNo);
 
-		GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
+		final GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
 		vo.adWindowId = wVO.getAdWindowId();
 		//
 		if (!loadTabDetails(vo, rs))
@@ -337,13 +338,14 @@ public class GridTabVO implements Evaluatee, Serializable
 					vo.IsReadOnly = true;
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
+			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
 
 			loadTabDetails_metas(vo, rs); // metas
 		}
@@ -363,7 +365,6 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		this.captions.loadCurrentLanguage(rs);
 	}
-
 
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
@@ -418,7 +419,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.applyRolePermissions = applyRolePermissions;
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(GridTabVO.class);
+	private static final Logger logger = LogManager.getLogger(GridTabVO.class);
 
 	/**
 	 * Context - replicated
@@ -454,7 +455,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			I_AD_Tab.COLUMNNAME_Help,
 			I_AD_Tab.COLUMNNAME_CommitWarning,
 			I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption,
-			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);
+			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption,
+			I_AD_Tab.COLUMNNAME_NotFound_Message,
+			I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);
 
 	private String entityType = null;
 	/**
@@ -514,9 +517,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
-	/** Detect default date filter	*/
+	/**
+	 * Detect default date filter
+	 */
 	private boolean IsAutodetectDefaultDateFilter;
-	
+
 	/**
 	 * Where
 	 */
@@ -586,6 +591,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	private String includedTabNewRecordInputMode;
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
+
+	@Getter
+	private boolean queryIfNoFilters = true;
 
 	@Override
 	public String toString()
@@ -728,13 +736,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *
 	 * @param newCtx new context
 	 */
-	public void setCtx(Properties newCtx)
+	public void setCtx(final Properties newCtx)
 	{
 		ctx = newCtx;
 		final List<GridFieldVO> fields = this._fields;
 		if (fields != null)
 		{
-			for (GridFieldVO field : fields)
+			for (final GridFieldVO field : fields)
 			{
 				field.setCtx(newCtx);
 			}
@@ -753,7 +761,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * @return value
 	 */
 	@Override
-	public String get_ValueAsString(String variableName)
+	public String get_ValueAsString(final String variableName)
 	{
 		return Env.getContext(ctx, WindowNo, variableName, false);    // not just window
 	}    //	get_ValueAsString
@@ -804,6 +812,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.allowQuickInput = allowQuickInput;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+		clone.queryIfNoFilters = queryIfNoFilters;
 
 		clone_metas(ctx, windowNo, clone); // metas
 
@@ -918,7 +927,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	private StringBuffer loadErrorMessages = null;
 
-	protected void addLoadErrorMessage(String message)
+	protected void addLoadErrorMessage(final String message)
 	{
 		if (Check.isEmpty(message, true))
 		{
@@ -941,7 +950,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append("Tab ").append(this.getName()).append("(").append(this.TableName).append("): ").append(loadErrorMessages);
 		return sb.toString();
 	}
@@ -1065,7 +1074,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		return IsReadOnly;
 	}
 
-	void setReadOnly(boolean isReadOnly)
+	void setReadOnly(final boolean isReadOnly)
 	{
 		IsReadOnly = isReadOnly;
 	}
@@ -1099,6 +1108,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsAutodetectDefaultDateFilter;
 	}
+
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
@@ -1165,8 +1175,13 @@ public class GridTabVO implements Evaluatee, Serializable
 		return applyRolePermissions;
 	}
 
-	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
-	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
+	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
+
+	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
+
+	public ITranslatableString getNotFoundMessage() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_Message);}
+
+	public ITranslatableString getNotFoundMessageDetail() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);}
 
 	//
 	//
@@ -1300,7 +1315,17 @@ public class GridTabVO implements Evaluatee, Serializable
 		public void putTranslation(@NonNull final String adLanguage, @Nullable final String captionTrl)
 		{
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-			translations.put(adLanguage, captionTrl != null ? captionTrl.trim() : "");
+
+			final String captionTrlNorm = captionTrl != null ? captionTrl.trim() : "";
+			if (!captionTrlNorm.isEmpty())
+			{
+				translations.put(adLanguage, captionTrlNorm);
+			}
+			else
+			{
+				translations.remove(adLanguage);
+			}
+
 			computedTrl = null;
 		}
 

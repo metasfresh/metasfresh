@@ -22,8 +22,11 @@
 
 package de.metas.calendar.impl;
 
-import de.metas.util.Check;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +45,8 @@ import java.util.Properties;
 public class PlainCalendarDAO extends AbstractCalendarDAO
 {
 	private final POJOLookupMap db = POJOLookupMap.get();
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public POJOLookupMap getDB()
 	{
@@ -92,11 +97,8 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	}
 
 	@Override
-	protected List<I_C_Period> retrievePeriods(final Properties ctx, final int calendarId, final Timestamp begin, final Timestamp end, final String trxName)
+	protected List<I_C_Period> retrievePeriods(final Properties ctx, final int calendarId, @NonNull final LocalDateAndOrgId begin, @NonNull final LocalDateAndOrgId end, final String trxName)
 	{
-		Check.assume(begin != null, "Param 'begin' is not null");
-		Check.assume(end != null, "Param 'end' is not null");
-
 		final List<I_C_Year> years = db.getRecords(I_C_Year.class, new IQueryFilter<I_C_Year>()
 		{
 
@@ -117,19 +119,19 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		{
 
 			@Override
-			public boolean accept(I_C_Period pojo)
+			public boolean accept(final I_C_Period pojo)
 			{
 				if (!years.contains(pojo.getC_Year()))
 				{
 					return false;
 				}
 
-				if (pojo.getEndDate().before(begin))
+				if (pojo.getEndDate().before(begin.toTimestamp(orgDAO::getTimeZone)))
 				{
 					return false;
 				}
 
-				if (pojo.getStartDate().after(end))
+				if (pojo.getStartDate().after(end.toTimestamp(orgDAO::getTimeZone)))
 				{
 					return false;
 				}

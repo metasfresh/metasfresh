@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Cleared HU can be issued to production order
 
   Scenario: Cleared HUs can be issued to a production order

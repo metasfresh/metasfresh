@@ -227,8 +227,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setEMail(order.getEMail());
 		}
 
-		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
-
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 

@@ -360,27 +360,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Async Batch.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Async_Batch_ID (int C_Async_Batch_ID);
-
-	/**
-	 * Get Async Batch.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Async_Batch_ID();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Async_Batch_ID", null);
-	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
-
-	/**
 	 * Set Sales partner.
 	 *
 	 * <br>Type: Search

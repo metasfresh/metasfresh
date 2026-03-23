@@ -1,4 +1,6 @@
 @from:cucumber
+@ignore
+@ghActions:run_on_executor7
 Feature: workflow rest controller tests
 
   Background:

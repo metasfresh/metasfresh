@@ -32,6 +32,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -94,6 +95,9 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final SqlDocumentFilterConverter filterConverters;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
@@ -113,6 +117,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
 
+		this.queryIfNoFilters = sqlBindings.isQueryIfNoFilters();
 	}
 
 	@Override

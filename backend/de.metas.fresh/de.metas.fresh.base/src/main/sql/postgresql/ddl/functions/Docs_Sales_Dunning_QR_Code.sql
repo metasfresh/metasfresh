@@ -23,12 +23,12 @@ select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
-        'K' || E'\n' || -- CR - AdressTyp = Combined address
+          'S' || E'\n' || -- CR - AdressTyp = S address
         (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) || E'\n' || --CR – Name
-        coalesce(orgl.address1, '') || E'\n' || --CR –Street and building number of P.O. Box
-        coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' || -- CR Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
+        COALESCE(orgl.postal, '') || E'\n' || -- CR Postal code
+        COALESCE(orgl.city, '') || E'\n' || -- CR city
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
@@ -39,15 +39,15 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || -- E'\n' || --UCR – Country
         to_char((i.grandtotal - coalesce(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
-        'K' || E'\n' || -- UD– AdressTyp = Combined address
+         'S' || E'\n' || -- UD– AdressTyp = S address
         (case
              when bp.IsCompany = 'Y' then bp.companyname
              else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
             || E'\n' || --UD – Name
-        coalesce(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
-        coalesce(l.postal, '') || ' ' || coalesce(l.city, '') || E'\n' || -- UD Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
+        (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
+        COALESCE(l.postal, '') || E'\n' || -- UD Postal code
+        COALESCE(l.city, '') || E'\n' || -- UD city
         c.countrycode || E'\n' || -- UD Country
         (case
              when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then 'QRR'
@@ -102,7 +102,11 @@ select ('SPC' || E'\n' || --QRType
        i.DocumentNo,
        y.zuordnung
 
-from C_Invoice i
+from C_DunningDoc dd
+         INNER JOIN C_DunningDoc_line dl ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
+         INNER JOIN C_DunningDoc_Line_Source dls ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
+         INNER JOIN C_Dunning_Candidate cand ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
+         INNER JOIN C_Invoice i ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
          JOIN C_BPartner bp
               ON i.C_BPartner_ID = bp.C_BPartner_ID
          LEFT JOIN AD_User u on i.AD_User_ID = u.AD_user_ID
@@ -147,12 +151,6 @@ from C_Invoice i
                             where al.C_Invoice_ID = i.C_Invoice_ID
                             GROUP BY al.c_invoice_id) y on y.c_invoice_id = i.c_invoice_id
 
-
-         LEFT JOIN C_Dunning_Candidate cand
-                   ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
-         LEFT JOIN C_DunningDoc_Line_Source dls ON cand.C_Dunning_Candidate_ID = dls.C_Dunning_Candidate_ID
-         LEFT JOIN C_DunningDoc_line dl ON dls.C_DunningDoc_Line_ID = dl.C_DunningDoc_Line_ID
-         LEFT JOIN C_DunningDoc dd ON dl.C_DunningDoc_ID = dd.C_DunningDoc_ID
 WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 
 $$

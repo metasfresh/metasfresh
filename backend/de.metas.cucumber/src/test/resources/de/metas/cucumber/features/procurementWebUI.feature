@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
 
   @from:cucumber
