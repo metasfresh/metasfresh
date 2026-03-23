@@ -154,6 +154,17 @@ jobs:
           --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: extract-swingui-zip
+        run: |
+          CONTAINER_ID=$(docker create metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }})
+          docker cp "$CONTAINER_ID:/backend/metasfresh-dist/swingui/target/metasfresh-dist-swingui-10.0.0-client.zip" "metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}.zip"
+          docker rm "$CONTAINER_ID"
+          ls -lh metasfresh-swingui-*.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}
+          path: metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}.zip
+          retention-days: 90
       - name: build-camel
         run: |
           docker buildx build \
