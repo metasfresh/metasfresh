@@ -34,6 +34,7 @@ import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.inoutcandidate.qty_reservation.SupplyType;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.project.ProjectId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -71,6 +72,7 @@ import org.compiere.model.I_M_QtyReservation;
  *   <li><b>QtyTU</b> — (required) transport-unit quantity (e.g. number of pallets / boxes)</li>
  *   <li><b>SupplyType</b> — (optional, default {@code OH}) supply type code: {@code OH} = on-hand, {@code PS} = planned supply</li>
  *   <li><b>C_Project_ID</b> — (optional, identifier-ref) project to link; when set, also propagates {@code C_Project_ID} to the sales order line</li>
+ *   <li><b>AttributesKey</b> — (optional) attributes key string identifying the reserved supply domain (e.g. Herkunft, Kaliber)</li>
  * </ul>
  *
  * <h3>{@code validate M_QtyReservations:}</h3>
@@ -124,6 +126,7 @@ public class M_QtyReservation_StepDef
 				.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
 				.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
 				.projectId(projectId)
+				.attributesKey(row.getAsOptionalString("AttributesKey").map(AttributesKey::ofString).orElse(null))
 				.build());
 
 		// final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);

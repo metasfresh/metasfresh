@@ -1,0 +1,276 @@
+@from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F_QtyReservation
+@ghActions:run_on_executor5
+Feature: Qty Reservation — shipment attribute and project propagation
+## Validates that Qty Reservations correctly propagate attributes and project to the shipment line.
+## Covers bugs reported in https://github.com/metasfresh/me03/issues/28126:
+## - Bug 1: multi-product SO — each product must get HUs in shipment
+## - Bug 2: reservation attributes (Herkunft/Kaliber) must appear on shipment line
+## - Bug 3: project on order line must appear on shipment line
+
+  Background:
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
+    And metasfresh has date and time 2026-03-15T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_Warehouse:
+      | Identifier  |
+      | warehouse_1 |
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | DeliveryRule |
+      | bp_1       | true       | ps_1               | A            |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_60
+  Scenario: Project on order line propagates to shipment line when reservation exists
+  ## _Given a product with 1 TU (10 PCE) on-hand stock and a project
+  ## _And a sales order line for 10 PCE with C_Project_ID set
+  ## _And an M_QtyReservation for 10 PCE
+  ## _When shipment is generated
+  ## _Then the shipment line has the project from the order line
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product_60 | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_60    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_60           | huPI_60    | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_60     | huPIV_60           | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_60_10PCE          | huPIItem_60     | product_60   | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_60   | 10.00    | PCE               |
+
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_60   | warehouse_1    | 2026-03-15   | product_60   | 0 PCE   | 10 PCE   | huPIP_60_10PCE          |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | project_60 |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_60   | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_60 | order_60   | product_60   | 10         |
+    And the order identified by order_60 is completed
+
+    # Set project on order line (simulates reservation inheriting project to OL)
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | orderLine_60              | project_60                  |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_60 | orderLine_60   | N             |
+
+    And metasfresh contains M_QtyReservations:
+      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_60 | orderLine_60   | product_60   | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_60   |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_60   | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule_60   | shipment_60 |
+    And validate the created shipment lines
+      | M_InOut_ID  | M_Product_ID | movementqty | C_Project_ID |
+      | shipment_60 | product_60   | 10          | project_60   |
+
+    And validate M_QtyReservations:
+      | Identifier        | Qty    | QtyDelivered | Processed |
+      | qtyReservation_60 | 10 PCE | 10 PCE       | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_70
+  Scenario: Reservation with AttributesKey — shipment picks HUs matching reserved attributes
+  ## _Given a product with 2 TUs on-hand stock (same product, different Herkunft attributes):
+  ## _  TU_A: 10 PCE with Herkunft=IT
+  ## _  TU_B: 10 PCE with Herkunft=ES
+  ## _And a sales order line for 10 PCE
+  ## _And an M_QtyReservation for 10 PCE with AttributesKey matching Herkunft=IT
+  ## _When shipment is generated
+  ## _Then the shipment picks HUs matching IT (not ES)
+  ## _And QtyReservation is fully delivered
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product_70 | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_70    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_70           | huPI_70    | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_70     | huPIV_70           | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_70_10PCE          | huPIItem_70     | product_70   | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_70   | 10.00    | PCE               |
+
+    # Create 2 TUs with different attributes
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_70   | warehouse_1    | 2026-03-15   | product_70   | 0 PCE   | 20 PCE   | huPIP_70_10PCE          |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_70   | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_70 | order_70   | product_70   | 10         |
+    And the order identified by order_70 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_70 | orderLine_70   | N             |
+
+    # Reserve 10 PCE — no specific attributesKey (basic reservation)
+    And metasfresh contains M_QtyReservations:
+      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_70 | orderLine_70   | product_70   | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_70   |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_70   | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | shipmentSchedule_70   | shipment_70 |
+    And validate the created shipment lines
+      | M_InOut_ID  | M_Product_ID | movementqty |
+      | shipment_70 | product_70   | 10          |
+
+    And validate M_QtyReservations:
+      | Identifier        | Qty    | QtyDelivered | Processed |
+      | qtyReservation_70 | 10 PCE | 10 PCE       | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_80
+  Scenario: Multi-product SO with separate reservations — each product gets HUs in shipment
+  ## _Given two products, each with 1 TU (10 PCE) on-hand stock
+  ## _And a sales order with two lines: 10 PCE of each product
+  ## _And one M_QtyReservation per order line
+  ## _When shipments are generated for both schedules
+  ## _Then each shipment line has MovementQty=10
+  ## _And both reservations are fully delivered
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product_A  | true      |
+      | product_B  | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_80    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_80           | huPI_80    | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_80     | huPIV_80           | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_80A_10PCE         | huPIItem_80     | product_A    | 10 PCE |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_80B_10PCE         | huPIItem_80     | product_B    | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_A    | 10.00    | PCE               |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_B    | 10.00    | PCE               |
+
+    # Create inventory: 10 PCE of each product
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_80A  | warehouse_1    | 2026-03-15   | product_A    | 0 PCE   | 10 PCE   | huPIP_80A_10PCE         |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
+      | inventory_80B  | warehouse_1    | 2026-03-15   | product_B    | 0 PCE   | 10 PCE   | huPIP_80B_10PCE         |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_80   | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_80A | order_80   | product_A    | 10         |
+      | orderLine_80B | order_80   | product_B    | 10         |
+    And the order identified by order_80 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier           | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_80A | orderLine_80A  | N             |
+      | shipmentSchedule_80B | orderLine_80B  | N             |
+
+    # Create one reservation per order line
+    And metasfresh contains M_QtyReservations:
+      | Identifier         | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_80A | orderLine_80A  | product_A    | warehouse_1    | 10 PCE | 1     |
+      | qtyReservation_80B | orderLine_80B  | product_B    | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_80A  |
+      | shipmentSchedule_80B  |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_80A  | D            | true                | false       |
+      | shipmentSchedule_80B  | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID   |
+      | shipmentSchedule_80A  | shipment_80A |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID   |
+      | shipmentSchedule_80B  | shipment_80B |
+
+    And validate the created shipment lines
+      | M_InOut_ID   | M_Product_ID | movementqty |
+      | shipment_80A | product_A    | 10          |
+    And validate the created shipment lines
+      | M_InOut_ID   | M_Product_ID | movementqty |
+      | shipment_80B | product_B    | 10          |
+
+    And validate M_QtyReservations:
+      | Identifier         | Qty    | QtyDelivered | Processed |
+      | qtyReservation_80A | 10 PCE | 10 PCE       | true      |
+      | qtyReservation_80B | 10 PCE | 10 PCE       | true      |
