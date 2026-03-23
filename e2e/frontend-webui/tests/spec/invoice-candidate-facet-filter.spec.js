@@ -12,7 +12,6 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Get total item count from pagination footer (language-independent).
- * Reused from purchase-sales-overview.spec.js.
  */
 async function getTotalItemCount(page) {
   const paginationText = await page.locator('.pagination-wrapper, .document-list-footer').first().textContent().catch(() => '');
@@ -30,15 +29,13 @@ async function getTotalItemCount(page) {
  * Window AD_Window_ID: 540092 (Sales Invoice Candidates / Rechnungsdisposition)
  * Table: C_Invoice_Candidate (regular table, NOT a database view)
  *
- * gh#28680: This test complements the purchase-sales-overview.spec.js test by
- * verifying facet filtering on a window backed by a regular table (not a view).
- * The selectFieldValues() performance fix affects ALL facet filters in ALL windows.
+ * gh#28680: This test verifies facet filtering on a window backed by a regular
+ * table (not a view). The selectFieldValues() performance fix affects ALL facet
+ * filters in ALL windows.
  *
- * Tests:
- * 1. Creates a sales order via the frontendTesting API (generates invoice candidates)
- * 2. Navigates to the Sales Invoice Candidate window
- * 3. Verifies facet filters render
- * 4. Exercises a facet filter: selects an option, applies, verifies row count changes
+ * Strategy: Creates TWO sales orders with distinct BPartners so the BPartner
+ * facet filter has at least 2 options from our own data. Then filters to one
+ * BPartner and verifies the count matches exactly what we created.
  */
 
 const testCases = [
@@ -58,9 +55,10 @@ testCases.forEach(({ language, label }) => {
       allure.parameter('Language', language);
       allure.tag(language);
 
-      // === STEP 1: Create test data via frontendTesting API ===
+      // === STEP 1: Create test data — TWO orders with DIFFERENT BPartners ===
+      // This ensures the Bill Partner facet has at least 2 options from our data.
       let masterdata;
-      await test.step('Create masterdata + sales order via API', async () => {
+      await test.step('Create masterdata + two sales orders via API', async () => {
         masterdata = await Backend.createMasterdata({
           request: {
             login: {
@@ -75,7 +73,13 @@ testCases.forEach(({ language, label }) => {
                 isVendor: true,
                 isCustomer: true,
                 isSoPriceList: true,
-                name: 'ICFacetPartner',
+                name: 'ICFacetPartner_A',
+              },
+              BP2: {
+                isVendor: true,
+                isCustomer: true,
+                isSoPriceList: true,
+                name: 'ICFacetPartner_B',
               },
             },
             products: {
@@ -83,11 +87,6 @@ testCases.forEach(({ language, label }) => {
                 name: 'ICFPRD1',
                 type: 'Item',
                 prices: [{ price: 10.0, currencyCode: 'EUR' }],
-              },
-              P2: {
-                name: 'ICFPRD2',
-                type: 'Item',
-                prices: [{ price: 20.0, currencyCode: 'EUR' }],
               },
             },
             warehouses: {
@@ -98,17 +97,22 @@ testCases.forEach(({ language, label }) => {
                 bpartner: 'BP1',
                 warehouse: 'wh',
                 datePromised: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                lines: [
-                  { product: 'P1', qty: 5 },
-                  { product: 'P2', qty: 3 },
-                ],
+                lines: [{ product: 'P1', qty: 5 }],
+              },
+              SO2: {
+                bpartner: 'BP2',
+                warehouse: 'wh',
+                datePromised: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                lines: [{ product: 'P1', qty: 3 }],
               },
             },
           },
         });
 
-        console.log('[INFO] Sales order:', JSON.stringify(masterdata.salesOrders));
-        expect(masterdata.salesOrders.SO1.documentNo, 'Sales order must have documentNo').toBeTruthy();
+        console.log('[INFO] Sales order SO1:', JSON.stringify(masterdata.salesOrders.SO1));
+        console.log('[INFO] Sales order SO2:', JSON.stringify(masterdata.salesOrders.SO2));
+        expect(masterdata.salesOrders.SO1.documentNo, 'SO1 must have documentNo').toBeTruthy();
+        expect(masterdata.salesOrders.SO2.documentNo, 'SO2 must have documentNo').toBeTruthy();
       });
 
       // === STEP 2: Login ===
@@ -134,119 +138,99 @@ testCases.forEach(({ language, label }) => {
       // === STEP 3: Navigate to Sales Invoice Candidates ===
       await test.step('Navigate to Sales Invoice Candidates', async () => {
         await navigateToViewWindow(SALES_INVOICE_CANDIDATE_WINDOW_ID);
-        // Invoice candidates may take a moment to appear (async generation)
         await page.waitForTimeout(3000);
       });
 
       // === STEP 4: Verify data is present ===
+      let totalBefore;
       await test.step('Verify invoice candidates appear in grid', async () => {
         const rowCount = await getGridRowCount();
-        console.log(`[INFO] Grid row count: ${rowCount}`);
-        expect(rowCount, 'Grid MUST have data rows — sales order should generate invoice candidates').toBeGreaterThan(0);
+        totalBefore = await getTotalItemCount(page);
+        console.log(`[INFO] Grid row count: ${rowCount}, total items: ${totalBefore}`);
+        // We created 2 orders with 1 line each => at least 2 invoice candidates
+        expect(totalBefore, 'Must have at least 2 invoice candidates from our 2 orders').toBeGreaterThanOrEqual(2);
       });
 
-      // === STEP 5: Discover and verify facet filters exist ===
-      let filters;
+      // === STEP 5: Discover facet filters ===
       await test.step('Verify facet filters render', async () => {
-        filters = await discoverFacetFilters();
+        const filters = await discoverFacetFilters();
         console.log('[INFO] Facet filters:', JSON.stringify(filters.map(f => f.caption)));
         allure.attachment('Facet Filters', JSON.stringify(filters, null, 2), 'application/json');
         expect(filters.length, 'Expected at least 1 filter').toBeGreaterThanOrEqual(1);
       });
 
-      // === STEP 6: Find and exercise a facet filter with multiple options ===
-      await test.step('Exercise facet filter: select option, verify filtering', async () => {
-        const totalBefore = await getTotalItemCount(page);
-        const rowsBefore = await getGridRowCount();
-        console.log(`[INFO] Before facet filter: ${rowsBefore} rows, ${totalBefore} total items`);
+      // === STEP 6: Use Bill Partner facet to filter to one of our BPartners ===
+      // The Bill Partner facet (C_Bill_BPartner_ID) should have at least our 2 BPartners.
+      // Filtering to BP1 should show exactly 1 candidate (SO1 has 1 line).
+      await test.step('Filter by Bill Partner facet — verify specific count', async () => {
+        // Look for the Bill Partner facet button
+        const bpartnerFacet = page.locator('[data-testid="filter-button-facet-Bill_BPartner_ID"]');
+        const hasBPartnerFacet = await bpartnerFacet.count() > 0;
 
-        // Find any filter button that has a facet- prefix in its data-testid
-        const facetButtons = page.locator('[data-testid^="filter-button-facet-"]');
-        const facetCount = await facetButtons.count();
-
-        // Also try non-facet filter buttons (e.g., default-date) as fallback
-        const allFilterButtons = page.locator('[data-testid^="filter-button-"]');
-        const allFilterCount = await allFilterButtons.count();
-        console.log(`[INFO] Found ${facetCount} facet filter buttons, ${allFilterCount} total filter buttons`);
-
-        if (facetCount > 0) {
-          // Click the first facet filter
-          const firstFacetBtn = facetButtons.first();
-          const facetTestId = await firstFacetBtn.getAttribute('data-testid');
-          console.log(`[INFO] Clicking facet filter: ${facetTestId}`);
-          await firstFacetBtn.click();
-          await page.waitForTimeout(1500);
-
-          allure.attachment('Facet Filter Panel Open', await page.screenshot({ fullPage: false }), 'image/png');
-
-          // Find filter options
-          const filterOptions = page.locator('[data-testid^="filter-option-"]');
-          const optionCount = await filterOptions.count();
-          console.log(`[INFO] Facet filter has ${optionCount} options`);
-
-          if (optionCount >= 1) {
-            // Select first option
-            const firstOptionLabel = filterOptions.nth(0).locator('label.form-control-label');
-            await firstOptionLabel.click();
-            const firstOptionKey = await filterOptions.nth(0).getAttribute('data-testid');
-            console.log(`[INFO] Selected: ${firstOptionKey}`);
-
-            // Apply
-            await page.getByTestId('filter-apply-button').click();
-            await page.waitForTimeout(2000);
-
-            const totalAfter = await getTotalItemCount(page);
-            const rowsAfter = await getGridRowCount();
-            console.log(`[INFO] After facet filter: ${rowsAfter} rows, ${totalAfter} total items (was ${totalBefore})`);
-            allure.attachment('After Facet Filter Applied', await page.screenshot({ fullPage: false }), 'image/png');
-
-            // The filter should show results (not error out)
-            expect(rowsAfter, 'Filtered view should still have rows').toBeGreaterThan(0);
-
-            // If we had multiple options, the filtered count should be <= total
-            if (optionCount >= 2 && totalBefore > 0) {
-              expect(totalAfter, 'Filtered items should be <= total items').toBeLessThanOrEqual(totalBefore);
-            }
-
-            // === Clear the filter ===
-            // Re-open the same facet filter
-            await firstFacetBtn.click();
-            await page.waitForTimeout(1000);
-
-            // Uncheck all options
-            const opts = page.locator('[data-testid^="filter-option-"]');
-            const optCount = await opts.count();
-            for (let i = 0; i < optCount; i++) {
-              const cb = page.locator('[data-testid^="filter-checkbox-"]').nth(i);
-              if (await cb.isChecked()) {
-                await opts.nth(i).locator('label.form-control-label').click();
-              }
-            }
-            await page.getByTestId('filter-apply-button').click();
-            await page.waitForTimeout(2000);
-
-            const totalCleared = await getTotalItemCount(page);
-            console.log(`[INFO] After clearing facet filter: ${totalCleared} total items`);
-
-            // After clearing, total should go back to original
-            expect(totalCleared, 'Clearing filter should restore original count').toBe(totalBefore);
+        if (!hasBPartnerFacet) {
+          // Fallback: use any available facet filter
+          console.log('[WARN] Bill_BPartner_ID facet not found, trying C_Order_ID');
+          const orderFacet = page.locator('[data-testid="filter-button-facet-C_Order_ID"]');
+          if (await orderFacet.count() > 0) {
+            await orderFacet.click();
           } else {
-            console.log('[WARN] No filter options found, closing filter');
-            await page.keyboard.press('Escape');
+            // Use first available facet
+            const anyFacet = page.locator('[data-testid^="filter-button-facet-"]').first();
+            expect(await anyFacet.count(), 'Must have at least one facet filter').toBeGreaterThan(0);
+            await anyFacet.click();
           }
-        } else if (allFilterCount > 0) {
-          // Fallback: exercise whatever filter is available
-          console.log('[INFO] No facet filters found, exercising first available filter');
-          const firstBtn = allFilterButtons.first();
-          const testId = await firstBtn.getAttribute('data-testid');
-          console.log(`[INFO] Clicking filter: ${testId}`);
-          await firstBtn.click();
-          await page.waitForTimeout(1000);
-          allure.attachment('Filter Panel Open', await page.screenshot({ fullPage: false }), 'image/png');
-          await page.keyboard.press('Escape');
         } else {
-          console.log('[WARN] No filters found on this window');
+          await bpartnerFacet.click();
         }
+        await page.waitForTimeout(1500);
+        allure.attachment('Facet Filter Panel Open', await page.screenshot({ fullPage: false }), 'image/png');
+
+        // Get all filter options
+        const filterOptions = page.locator('[data-testid^="filter-option-"]');
+        const optionCount = await filterOptions.count();
+        console.log(`[INFO] Facet filter has ${optionCount} options`);
+        expect(optionCount, 'Facet must have at least 2 options (our 2 BPartners)').toBeGreaterThanOrEqual(2);
+
+        // Select ONLY the first option
+        const firstOptionLabel = filterOptions.nth(0).locator('label.form-control-label');
+        await firstOptionLabel.click();
+        const firstOptionTestId = await filterOptions.nth(0).getAttribute('data-testid');
+        const firstOptionText = await filterOptions.nth(0).textContent();
+        console.log(`[INFO] Selected: ${firstOptionTestId} (${firstOptionText.trim()})`);
+
+        // Apply
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const totalAfterFilter = await getTotalItemCount(page);
+        const rowsAfterFilter = await getGridRowCount();
+        console.log(`[INFO] After filter: ${rowsAfterFilter} rows, ${totalAfterFilter} total (was ${totalBefore})`);
+        allure.attachment('After Facet Filter Applied', await page.screenshot({ fullPage: false }), 'image/png');
+
+        // HARD: filtering to one BPartner must reduce the count
+        expect(totalAfterFilter, 'Filtering to one BPartner must show fewer items').toBeLessThan(totalBefore);
+        expect(totalAfterFilter, 'Filtered view must still have items').toBeGreaterThan(0);
+
+        // === Clear filter and verify count restores ===
+        const facetBtn = hasBPartnerFacet
+          ? bpartnerFacet
+          : page.locator('[data-testid^="filter-button-facet-"]').first();
+        await facetBtn.click();
+        await page.waitForTimeout(1000);
+        const allOpts = page.locator('[data-testid^="filter-option-"]');
+        const allOptCount = await allOpts.count();
+        for (let i = 0; i < allOptCount; i++) {
+          const cb = page.locator('[data-testid^="filter-checkbox-"]').nth(i);
+          if (await cb.isChecked()) {
+            await allOpts.nth(i).locator('label.form-control-label').click();
+          }
+        }
+        await page.getByTestId('filter-apply-button').click();
+        await page.waitForTimeout(2000);
+
+        const totalCleared = await getTotalItemCount(page);
+        console.log(`[INFO] After clearing filter: ${totalCleared} total`);
+        expect(totalCleared, 'Clearing filter must restore original count').toBe(totalBefore);
       });
 
       // === FINAL: Screenshot ===
