@@ -22,7 +22,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
