@@ -44,7 +44,8 @@ public class PPOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 
 		final boolean manufactured = productPlanning.isManufactured();
 		final boolean pickingOrder = productPlanning.isPickingOrder(); // basically, picking orders are different beast.
-		if (manufactured && !pickingOrder)
+		final boolean lotForLot = productPlanning.isManufacturedLot4Lot();
+		if (manufactured && !pickingOrder && !lotForLot)
 		{
 			return true;
 		}
