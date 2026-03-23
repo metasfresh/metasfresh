@@ -23,7 +23,7 @@ const createMasterdata = async () => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh1', qty: 80 }
+                "HU1": { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' }
             },
         }
     });
