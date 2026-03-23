@@ -471,8 +471,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | isManufacturedLot4Lot |
-      | ppln_1     | p_1          | bomVersions_1             | false        | true                    |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLot4Lot |
+      | ppln_1     | p_1          | bomVersions_1             | false        | true                  |
 
     And metasfresh contains C_BPartners:
       | Identifier    | M_PricingSystem_ID |
@@ -498,8 +498,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | il_1                          | hu_1               |
       | il_2                          | hu_2               |
     And M_HU are disposed:
-      | M_HU_ID.Identifier | MovementDate         |
-      | hu_1               | 2021-04-16T21:00:00Z |
+      | M_HU_ID | MovementDate         |
+      | hu_1    | 2021-04-16T21:00:00Z |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
@@ -569,8 +569,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | isManufacturedLot4Lot |
-      | ppln_1     | p_1                     | bomVersions_1                            | false        | true                    |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | IsManufacturedLot4Lot |
+      | ppln_1     | p_1          | bomVersions_1                        | false        | true                  |
 
     And metasfresh contains C_BPartners:
       | Identifier    | M_PricingSystem_ID |
@@ -585,9 +585,9 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | i_1        | 540008         | 2021-04-16   |
       | i_2        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
-      | Identifier | M_Inventory_ID.Identifier | M_Product_ID | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_1       | i_1                       | p_1          | PCE          | 10       | 0       |
-      | il_2       | i_2                       | p_1          | PCE          | 5        | 0       |
+      | Identifier | M_Inventory_ID | M_Product_ID | UOM.X12DE355 | QtyCount | QtyBook |
+      | il_1       | i_1            | p_1          | PCE          | 10       | 0       |
+      | il_2       | i_2            | p_1          | PCE          | 5        | 0       |
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
@@ -596,8 +596,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | il_1               | hu_1    |
       | il_2               | hu_2    |
     And M_HU are disposed:
-      | M_HU_ID.Identifier | MovementDate         |
-      | hu_2               | 2021-04-16T21:00:00Z |
+      | M_HU_ID | MovementDate         |
+      | hu_2    | 2021-04-16T21:00:00Z |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
@@ -620,8 +620,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
-      | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
+      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | oc_1                             | olc_1      | p_2          | 100        | PCE               | CO            | boml_1                |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10   | 10                     | 2021-04-16T00:00:00             |
