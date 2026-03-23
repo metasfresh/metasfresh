@@ -111,7 +111,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						atpRepository,
 						stockCandidateService,
 						supplyCandidateHandler,
-						new MaterialPlanningContextHelper(),
+						Mockito.mock(MaterialPlanningContextHelper.class),
 						new PPOrderCandidateDemandMatcher())));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(

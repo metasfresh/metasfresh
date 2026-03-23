@@ -113,7 +113,7 @@ public class DemandCandidateHandlerTest
 				availableToPromiseRepository,
 				stockCandidateService,
 				supplyCandidateHandler,
-				new MaterialPlanningContextHelper(),
+				Mockito.mock(MaterialPlanningContextHelper.class),
 				new PPOrderCandidateDemandMatcher());
 	}
 

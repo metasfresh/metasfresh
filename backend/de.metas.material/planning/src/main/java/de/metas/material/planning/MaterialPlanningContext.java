@@ -37,7 +37,7 @@ public class MaterialPlanningContext
 		}
 	}
 
-	public boolean isManufacturedLotForLot()
+	public boolean isManufacturedLot4Lot()
 	{
 		return getProductPlanning().isManufacturedLot4Lot();
 	}

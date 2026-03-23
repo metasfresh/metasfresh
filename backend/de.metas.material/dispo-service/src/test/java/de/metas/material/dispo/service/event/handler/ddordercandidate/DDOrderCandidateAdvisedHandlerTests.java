@@ -151,7 +151,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 				availableToPromiseRepository,
 				stockCandidateService,
 				supplyCandidateHandler,
-				new MaterialPlanningContextHelper(),
+				Mockito.mock(MaterialPlanningContextHelper.class),
 				new PPOrderCandidateDemandMatcher());
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandidateHandler,

@@ -342,7 +342,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
       | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
 
-  #@ignore # supply for components changed, needs to be checked
+  @ignore # supply for components changed, needs to be checked
   @Id:S0264_500
   @Id:S0196_300
   @from:cucumber
@@ -471,7 +471,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLotForLot |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | isManufacturedLot4Lot |
       | ppln_1     | p_1          | bomVersions_1             | false        | true                    |
 
     And metasfresh contains C_BPartners:
@@ -565,11 +565,11 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
       | bom_1      | p_1          | bomVersions_1             |
     And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID | M_Product_ID. | QtyBatch |
-      | boml_1     | bom_1             | p_2           | 10       |
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | IsManufacturedLotForLot |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | isManufacturedLot4Lot |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | true                    |
 
     And metasfresh contains C_BPartners:

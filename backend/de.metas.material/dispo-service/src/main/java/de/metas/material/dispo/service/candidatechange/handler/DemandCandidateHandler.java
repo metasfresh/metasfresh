@@ -150,7 +150,7 @@ public class DemandCandidateHandler implements CandidateHandler
 				{
 					isUseLotForLotQty = false;
 				}
-				else if (materialPlanningContext.isManufacturedLotForLot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
+				else if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
 				{
 					isUseLotForLotQty = true;
 				}
@@ -242,13 +242,13 @@ public class DemandCandidateHandler implements CandidateHandler
 		return minMaxDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
 	}
 
-	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate, final boolean isManufacturedLotForLot)
+	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate, final boolean isUseLotForLotQty)
 	{
 		if (demandCandidate.isSimulated())
 		{
 			fireSimulatedSupplyRequiredEvent(demandCandidate, stockCandidate);
 		}
-		else if (isManufacturedLotForLot)
+		else if (isUseLotForLotQty)
 		{
 			postSupplyRequiredEvent(demandCandidate, demandCandidate.getQuantity());
 		}

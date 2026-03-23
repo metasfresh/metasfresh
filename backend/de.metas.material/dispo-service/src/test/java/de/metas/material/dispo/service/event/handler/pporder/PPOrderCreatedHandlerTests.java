@@ -136,7 +136,7 @@ public class PPOrderCreatedHandlerTests
 						availableToPromiseRepository,
 						stockCandidateService,
 						supplyCandidateHandler,
-						new MaterialPlanningContextHelper(),
+						Mockito.mock(MaterialPlanningContextHelper.class),
 						new PPOrderCandidateDemandMatcher())));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(

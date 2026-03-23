@@ -117,7 +117,7 @@ public class CandidateChangeHandlerTests
 								stockRepository,
 								stockCandidateService,
 								supplyCandidateHandler,
-								new MaterialPlanningContextHelper(),
+								Mockito.mock(MaterialPlanningContextHelper.class),
 								new PPOrderCandidateDemandMatcher()),
 						supplyCandidateHandler));
 	}
