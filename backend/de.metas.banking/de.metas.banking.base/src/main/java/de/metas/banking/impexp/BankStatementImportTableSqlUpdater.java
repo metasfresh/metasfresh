@@ -224,37 +224,64 @@ public class BankStatementImportTableSqlUpdater
 
 	private void updateC_BPartner(final ImportRecordsSelection selection)
 	{
+		final String bpartnerMatchCondition = "("
+				+ "i." + I_I_BankStatement.COLUMNNAME_Bill_BPartner_Name
+				+ " = bp." + I_C_BPartner.COLUMNNAME_Name
+				+ " OR i." + I_I_BankStatement.COLUMNNAME_BPartnerValue
+				+ " = bp." + I_C_BPartner.COLUMNNAME_Value
+				+ " OR "
+				+ "("
+				+ "i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
+				+ " = bp." + I_C_BPartner.COLUMNNAME_DebtorId
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_DebtorId + " > 0"
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsCustomer + " = 'Y'"
+				+ ") "
+				+ " OR "
+				+ "("
+				+ "i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
+				+ " = bp." + I_C_BPartner.COLUMNNAME_CreditorId
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_CreditorId + " > 0"
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsVendor + " = 'Y'"
+				+ ") "
+				+ ")"
+				+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
+				+ " = bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND bp.IsActive = 'Y'";
+
+		// Set C_BPartner_ID only when exactly one active BPartner matches.
+		// Uses HAVING COUNT(*)=1 so that duplicate DebtorId/CreditorId values
+		// (after relaxing the unique constraint) don't silently pick an arbitrary partner.
 		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "
-															+ "SET " + I_I_BankStatement.COLUMNNAME_C_BPartner_ID
-															+ " = (SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-															+ " FROM " + I_C_BPartner.Table_Name + " bp "
-															+ " WHERE " + "(i." + I_I_BankStatement.COLUMNNAME_Bill_BPartner_Name
-															+ " = bp." + I_C_BPartner.COLUMNNAME_Name
-															+ " OR i." + I_I_BankStatement.COLUMNNAME_BPartnerValue
-															+ " = bp." + I_C_BPartner.COLUMNNAME_Value
-															+ " OR "
-															+ "("
-															+ "i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
-															+ " = bp." + I_C_BPartner.COLUMNNAME_DebtorId
-															+ " AND bp." + I_C_BPartner.COLUMNNAME_DebtorId + " > 0"
-															+ " AND bp." + I_C_BPartner.COLUMNNAME_IsCustomer + " = 'Y'"
-															+ " ) "
-															+ " OR "
-															+ "("
-															+ "i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
-															+ " = bp." + I_C_BPartner.COLUMNNAME_CreditorId
-															+ " AND bp." + I_C_BPartner.COLUMNNAME_CreditorId + " > 0"
-															+ " AND  bp." + I_C_BPartner.COLUMNNAME_IsVendor + " = 'Y'"
-															+ " ) "
-															+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
-															+ " = bp. " + I_C_BPartner.COLUMNNAME_AD_Org_ID
-															+ ")) "
-															+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
-															+ "AND i.I_IsImported<>'Y' "
-															+ "OR i.I_IsImported IS NULL")
+				+ "SET " + I_I_BankStatement.COLUMNNAME_C_BPartner_ID
+				+ " = (SELECT MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+				+ " FROM " + I_C_BPartner.Table_Name + " bp "
+				+ " WHERE " + bpartnerMatchCondition
+				+ " HAVING COUNT(*) = 1"
+				+ ") "
+				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ "AND i.I_IsImported<>'Y' "
+				+ "OR i.I_IsImported IS NULL")
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Flag records where multiple active BPartners match the same DebtorId/CreditorId
+		final StringBuilder errorSql = new StringBuilder("UPDATE I_BankStatement i "
+				+ "SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')"
+				+ "||'ERR=Multiple BPartners found for the same DebtorId/CreditorId."
+				+ " Please make sure each DebtorId/CreditorId is unique among active BPartners, ' "
+				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ "AND (SELECT COUNT(*) FROM " + I_C_BPartner.Table_Name + " bp "
+				+ " WHERE " + bpartnerMatchCondition + ") > 1 "
+				+ "AND i.I_IsImported<>'Y' "
+				+ "OR i.I_IsImported IS NULL")
+				.append(selection.toSqlWhereClause("i"));
+
+		final int noAmbiguous = DB.executeUpdateAndThrowExceptionOnFail(errorSql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (noAmbiguous > 0)
+		{
+			logger.warn("Ambiguous BPartner matches (multiple active BPartners with same DebtorId/CreditorId): {}", noAmbiguous);
+		}
 	}
 
 	private void updateBankAccountTo(final ImportRecordsSelection selection)
