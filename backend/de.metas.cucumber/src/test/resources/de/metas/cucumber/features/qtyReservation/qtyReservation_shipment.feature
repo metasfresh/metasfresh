@@ -32,7 +32,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
 
 
   @from:cucumber
-  @Id:S_QtyRes_60
+  @Id:S_QtyRes_110
   Scenario: Project on order line propagates to shipment line when reservation exists
   ## _Given a product with 1 TU (10 PCE) on-hand stock and a project
   ## _And a sales order line for 10 PCE with C_Project_ID set
@@ -110,16 +110,13 @@ Feature: Qty Reservation — shipment attribute and project propagation
 
 
   @from:cucumber
-  @Id:S_QtyRes_70
-  Scenario: Reservation with AttributesKey — shipment picks HUs matching reserved attributes
-  ## _Given a product with 2 TUs on-hand stock (same product, different Herkunft attributes):
-  ## _  TU_A: 10 PCE with Herkunft=IT
-  ## _  TU_B: 10 PCE with Herkunft=ES
+  @Id:S_QtyRes_120
+  Scenario: Reservation from on-hand stock — shipment delivers and closes reservation
+  ## _Given a product with 20 PCE on-hand stock (2 TUs)
   ## _And a sales order line for 10 PCE
-  ## _And an M_QtyReservation for 10 PCE with AttributesKey matching Herkunft=IT
+  ## _And an M_QtyReservation for 10 PCE
   ## _When shipment is generated
-  ## _Then the shipment picks HUs matching IT (not ES)
-  ## _And QtyReservation is fully delivered
+  ## _Then QtyReservation is fully delivered (QtyDelivered=10, Processed=true)
 
     Given metasfresh contains M_Products:
       | Identifier | IsStocked |
@@ -140,7 +137,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv_1                  | product_70   | 10.00    | PCE               |
 
-    # Create 2 TUs with different attributes
+    # Create 20 PCE on-hand stock (2 TUs of 10 PCE each)
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
       | inventory_70   | warehouse_1    | 2026-03-15   | product_70   | 0 PCE   | 20 PCE   | huPIP_70_10PCE          |
@@ -183,7 +180,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
 
 
   @from:cucumber
-  @Id:S_QtyRes_80
+  @Id:S_QtyRes_130
   Scenario: Multi-product SO with separate reservations — each product gets HUs in shipment
   ## _Given two products, each with 1 TU (10 PCE) on-hand stock
   ## _And a sales order with two lines: 10 PCE of each product
