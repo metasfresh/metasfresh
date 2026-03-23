@@ -115,5 +115,10 @@ public class PickingJobCompleteCommand
 		{
 			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
+
+		PickingJobGRAIValidator.builder()
+				.pickingJob(initialPickingJob0)
+				.build()
+				.validate();
 	}
 }

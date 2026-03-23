@@ -51,6 +51,13 @@
       "windowName": "Etiketten drucken",
       "print": "Drucken",
       "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
+    },
+    "scanGRAI": {
+      "buttonCaption": "Packmittel scannen",
+      "windowName": "Packmittel scannen",
+      "count": "%(scanned)s / %(total)s Packmittel gescannt",
+      "nfcActive": "NFC-Scan aktiv",
+      "nfcNotAvailable": "NFC nicht verfügbar"
     }
   }
 }

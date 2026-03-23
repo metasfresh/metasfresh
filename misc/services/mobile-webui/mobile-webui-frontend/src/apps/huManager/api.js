@@ -117,3 +117,15 @@ export const getHUsByDisplayableQRCode = (displayableQRCode) => {
 export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
   return axios.post(`${huAPIBasePath}/list/byQRCode`, { qrCode, upperLevelLocatingQrCode }).then(unboxAxiosResponse);
 };
+
+export const getPackingMaterials = (huId) => {
+  return axios
+    .get(`${huManagerAPIBasePath}/${huId}/packingMaterials`)
+    .then(unboxAxiosResponse);
+};
+
+export const setPackingMaterials = (huId, graiCodes) => {
+  return axios
+    .put(`${huManagerAPIBasePath}/${huId}/packingMaterials`, { graiCodes })
+    .then(unboxAxiosResponse);
+};

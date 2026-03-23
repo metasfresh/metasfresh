@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
+import de.metas.common.handlingunits.JsonGRAICodesRequest;
+import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.handlingunits.HuId;
@@ -65,6 +67,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -237,5 +240,27 @@ public class HUManagerRestController
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
+	}
+
+	@GetMapping("/{huId}/packingMaterials")
+	public ResponseEntity<JsonGRAICodesResponse> getPackingMaterials(@PathVariable("huId") final int huId)
+	{
+		assertActionAccess(HUManagerAction.ScanGRAI);
+
+		final JsonGRAICodesResponse response = handlingUnitsService.getPackingMaterials(HuId.ofRepoId(huId));
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/{huId}/packingMaterials")
+	public ResponseEntity<JsonGRAICodesResponse> setPackingMaterials(
+			@PathVariable("huId") final int huId,
+			@RequestBody @NonNull final JsonGRAICodesRequest request)
+	{
+		assertActionAccess(HUManagerAction.ScanGRAI);
+
+		final JsonGRAICodesResponse response = handlingUnitsService.setPackingMaterials(
+				HuId.ofRepoId(huId),
+				request.getGraiCodes());
+		return ResponseEntity.ok(response);
 	}
 }

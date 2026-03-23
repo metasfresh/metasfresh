@@ -884,6 +884,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setGRAIRequired (final @Nullable java.lang.String GRAIRequired)
+	{
+		set_Value (COLUMNNAME_GRAIRequired, GRAIRequired);
+	}
+
+	@Override
+	public java.lang.String getGRAIRequired()
+	{
+		return get_ValueAsString(COLUMNNAME_GRAIRequired);
+	}
+
+	@Override
 	public void setGlobalId (final @Nullable java.lang.String GlobalId)
 	{
 		set_Value (COLUMNNAME_GlobalId, GlobalId);

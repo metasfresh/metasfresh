@@ -7,6 +7,7 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
   huManagerBulkActionsLocation,
   huManagerDisposeLocation,
+  huManagerGraiLocation,
   huManagerHuLabelsLocation,
   huManagerMoveLocation,
 } from '../routes';
@@ -177,6 +178,13 @@ const HUManagerScreen = () => {
               captionKey="huManager.action.printLabels.buttonCaption"
               onClick={onPrintLabelsClicked}
               testId="print-labels-button"
+            />
+          )}
+          {actions.includes('scanGRAI') && isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.scanGRAI.buttonCaption"
+              onClick={() => history.push(huManagerGraiLocation())}
+              testId="scan-grai-button"
             />
           )}
           {actions.includes('dispose') && isExistingHU && (

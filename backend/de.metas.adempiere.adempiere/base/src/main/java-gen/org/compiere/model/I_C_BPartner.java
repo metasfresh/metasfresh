@@ -1254,6 +1254,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_GDPCertificateVendor = "GDPCertificateVendor";
 
 	/**
+	 * Set GRAI Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGRAIRequired (@Nullable java.lang.String GRAIRequired);
+
+	/**
+	 * Get GRAI Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGRAIRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_GRAIRequired = new ModelColumn<>(I_C_BPartner.class, "GRAIRequired", null);
+	String COLUMNNAME_GRAIRequired = "GRAIRequired";
+
+	/**
 	 * Set Global ID.
 	 *
 	 * <br>Type: String
