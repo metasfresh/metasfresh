@@ -41,7 +41,9 @@ import org.adempiere.ad.table.api.TableName;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.indices.GetIndexRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -74,12 +76,18 @@ public class ES_FTS_Config_Sync extends JavaProcess
 		if (p_esDropIndex)
 		{
 			final String esIndexName = config.getEsIndexName();
-			elasticsearchSystem.elasticsearchClient()
-					.indices()
-					.delete(new DeleteIndexRequest(esIndexName),
-							RequestOptions.DEFAULT);
 
-			addLog("Elasticsearch index dropped: {}", esIndexName);
+			final IndicesClient indicesClient = elasticsearchSystem.elasticsearchClient().indices();
+			if (indicesClient.exists(new GetIndexRequest(esIndexName), RequestOptions.DEFAULT))
+			{
+				indicesClient.delete(new DeleteIndexRequest(esIndexName), RequestOptions.DEFAULT);
+				addLog("Elasticsearch index dropped: {}", esIndexName);
+			}
+			else
+			{
+				addLog("Elasticsearch index missing, skip deleting it: {}", esIndexName);
+			}
+
 		}
 	}
 

@@ -121,6 +121,8 @@ public interface IView
 
 	boolean isQueryLimitHit();
 
+	@Nullable default EmptyReason getEmptyReason() {return null;}
+
 	/**
 	 * Invalidate ALL view rows.
 	 * <p>

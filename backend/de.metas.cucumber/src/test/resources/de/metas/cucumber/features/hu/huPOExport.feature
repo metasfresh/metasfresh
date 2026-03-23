@@ -1,5 +1,6 @@
 @from:cucumber
 @ignore
+@ghActions:run_on_executor5
 Feature: Handling unit export from purchase order
 
   Background:

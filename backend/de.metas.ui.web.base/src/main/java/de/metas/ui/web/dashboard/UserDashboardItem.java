@@ -7,7 +7,9 @@ import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPISupplier;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,6 +37,8 @@ import javax.annotation.Nullable;
  */
 
 @Value
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(exclude = "kpiSupplier", doNotUseGetters = true)
 public class UserDashboardItem
 {
 	@NonNull UserDashboardItemId id;

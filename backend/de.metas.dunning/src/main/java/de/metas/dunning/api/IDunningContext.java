@@ -22,13 +22,13 @@ package de.metas.dunning.api;
  * #L%
  */
 
-
-import java.util.Date;
-import java.util.Properties;
-
+import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
+import de.metas.dunning.interfaces.I_C_DunningLevel;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
-import de.metas.dunning.interfaces.I_C_DunningLevel;
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * Dunning running context
@@ -49,6 +49,9 @@ public interface IDunningContext
 	IDunningConfig getDunningConfig();
 
 	Date getDunningDate();
+
+	@Nullable
+	RecomputeDunningCandidatesQuery getRecomputeDunningCandidatesQuery();
 
 	void setProperty(String propertyName, Object value);
 

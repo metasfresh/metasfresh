@@ -10,25 +10,25 @@ package de.metas.calendar.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.calendar.IPeriodBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -41,14 +41,19 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.calendar.IPeriodBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 public class PeriodBL implements IPeriodBL
 {
 
 	private static final Logger s_log = LogManager.getLogger(PeriodBL.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
@@ -165,6 +170,22 @@ public class PeriodBL implements IPeriodBL
 		}
 
 		return true;
+	}
+
+	@Override
+	public boolean isInPeriod(final int periodId, final @Nullable LocalDateAndOrgId date)
+	{
+		final I_C_Period period = InterfaceWrapperHelper.load(periodId, I_C_Period.class);
+
+		if (date == null)
+		{
+			return false;
+		}
+		final OrgId orgId = OrgId.ofRepoId(period.getAD_Org_ID());
+		final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(period.getStartDate(), orgId, orgDAO::getTimeZone);
+		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(period.getEndDate(), orgId, orgDAO::getTimeZone);
+
+		return date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0;
 	}
 
 }

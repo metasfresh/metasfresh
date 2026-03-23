@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -34,6 +35,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1352,6 +1354,12 @@ public class TimeUtil
 		return timestamp;
 	}
 
+	@Deprecated
+	public static Timestamp asTimestamp(final LocalDateAndOrgId localDateAndOrgId)
+	{
+		throw new AdempiereException("Converting from LocalDateAndOrgId to Timestamp without knowing the org timezone is not possible");
+	}
+
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
@@ -1395,7 +1403,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
+				.atStartOfDay(coalesceNotNull(timezone, SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1414,7 +1422,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesceNotNull(timezone, SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1672,6 +1680,10 @@ public class TimeUtil
 		{
 			return LocalDate.parse(obj.toString());
 		}
+		else if (obj instanceof LocalDateAndOrgId)
+		{
+			return ((LocalDateAndOrgId)obj).toLocalDate();
+		}
 		else
 		{
 			return asLocalDateTime(obj,zoneId).toLocalDate();
@@ -1785,7 +1797,7 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
-				? localDate.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId())
+				? localDate.atStartOfDay(SystemTime.zoneId())
 				: null;
 	}
 

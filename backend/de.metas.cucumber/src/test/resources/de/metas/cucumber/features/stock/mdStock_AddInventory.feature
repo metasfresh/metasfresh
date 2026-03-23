@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:stock
+@ghActions:run_on_executor7
 Feature: stock changes accordingly
   As a user
   I want stock to be updated properly if inventory is changed

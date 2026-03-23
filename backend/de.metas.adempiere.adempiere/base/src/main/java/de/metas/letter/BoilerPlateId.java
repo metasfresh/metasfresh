@@ -10,6 +10,9 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -60,6 +63,11 @@ public class BoilerPlateId implements RepoIdAware
 	public static int toRepoId(final BoilerPlateId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(@Nullable final BoilerPlateId id1, @Nullable final BoilerPlateId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 
 	@Override

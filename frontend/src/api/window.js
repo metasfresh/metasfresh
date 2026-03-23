@@ -1,8 +1,8 @@
-import { post, get, delete as del } from 'axios';
+import { delete as del, get, post } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery } from '../utils';
+import { formatSortingQuery, getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -95,8 +95,18 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**
@@ -134,64 +144,6 @@ export function formatParentUrl({ windowId, docId, rowId, target }) {
       break;
   }
   return parentUrl;
-}
-
-export function startProcess(processType, pinstanceId) {
-  return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
-}
-
-export function getProcessData({
-  processId,
-  viewId,
-  documentType,
-  ids,
-  tabId,
-  rowId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  const payload = {
-    processId: processId,
-  };
-
-  if (viewId) {
-    payload.viewId = viewId;
-    payload.viewDocumentIds = ids;
-
-    if (childViewId) {
-      payload.childViewId = childViewId;
-      payload.childViewSelectedIds = childViewSelectedIds;
-    }
-
-    if (parentViewId) {
-      payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds =
-        parentViewSelectedIds instanceof Array
-          ? parentViewSelectedIds
-          : [parentViewSelectedIds];
-    }
-  } else {
-    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = documentType;
-    payload.tabId = tabId;
-    payload.rowId = rowId;
-  }
-
-  if (selectedTab) {
-    const { tabId, rowIds } = selectedTab;
-
-    if (tabId && rowIds) {
-      payload.selectedTab = {
-        tabId,
-        rowIds,
-      };
-    }
-  }
-
-  return post(`${config.API_URL}/process/${processId}`, payload);
 }
 
 /**
@@ -239,9 +191,10 @@ export function initQuickInput(entity, windowId, docId, tabId, subentity) {
  * @method completeRequest
  * @summary Save changes in attributes/quick input
  * @param {string} entity - for example 'window'
- * @param {string} windowId
+ * @param {string} docType windowId
  * @param {string} docId
  * @param {string} tabId
+ * @param {string} rowId
  * @param {string} subentity - for example `quickInput`
  * @param {string} subentityId
  */

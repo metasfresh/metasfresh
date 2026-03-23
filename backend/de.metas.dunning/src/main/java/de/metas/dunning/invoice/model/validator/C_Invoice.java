@@ -77,9 +77,10 @@ public class C_Invoice
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 		final IDunningContext context = dunningBL.createDunningContext(ctx,
-				null, // dunningLevel
-				null, // dunningDate
-				trxName);
+																	   null, // dunningLevel
+																	   null, // dunningDate
+																	   trxName,
+																	   null); // recomputeDunningCandidatesQuery
 
 		final I_C_Dunning_Candidate callerCandidate = InterfaceWrapperHelper.getDynAttribute(invoice, C_Dunning_Candidate.POATTR_CallerPO);
 

@@ -146,7 +146,8 @@ public class SqlViewBindingFactory
 		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
 				.filterDescriptors(filterDescriptors)
 				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
-				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
+				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId))
+				.queryIfNoFilters(entityDescriptor.isQueryIfNoFilters());
 
 		builder.filterConverters(filterConverters);
 

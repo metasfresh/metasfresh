@@ -87,9 +87,22 @@
             <plugin>
                 <!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip -->
                 <!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.02.zip -->
+                <!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.08.zip -->
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>generate-de.metas.payment.esr.camt054.001.08</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd/camt.054.001.08</schemaDirectory>
+                            <generatePackage>de.metas.payment.camt054_001_08</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_08</generateDirectory>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>generate-de.metas.payment.esr.camt054.001.06</id>
                         <phase>generate-sources</phase>

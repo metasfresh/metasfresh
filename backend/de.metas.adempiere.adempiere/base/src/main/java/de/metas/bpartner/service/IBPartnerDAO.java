@@ -47,6 +47,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -54,6 +55,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -328,13 +330,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
+	Iterator<I_C_BPartner> retrievePartnersByQuery(@NonNull IQuery<I_C_BPartner> query);
+
 	@Value
 	@Builder
 	class BPartnerLocationQuery
 	{
 		public enum Type
 		{
-			BILL_TO, SHIP_TO, REMIT_TO
+			BILL_TO, SHIP_TO, REMIT_TO, BILL_TO_DEFAULT, SHIP_TO_DEFAULT
 		}
 
 		@NonNull
