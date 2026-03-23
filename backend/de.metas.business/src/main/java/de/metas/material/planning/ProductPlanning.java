@@ -193,5 +193,5 @@ public class ProductPlanning
 		return Check.assumeNotNull(id, "product planning is saved: {}", this);
 	}
 
-	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shal be set: {}", this);}
+	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shall be set: {}", this);}
 }
