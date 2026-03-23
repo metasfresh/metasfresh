@@ -17,9 +17,13 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -55,30 +59,17 @@ import static java.math.BigDecimal.ZERO;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class DemandCandiateHandler implements CandidateHandler
+@RequiredArgsConstructor
+public class DemandCandidateHandler implements CandidateHandler
 {
-	private final CandidateRepositoryRetrieval candidateRepository;
-	private final AvailableToPromiseRepository availableToPromiseRepository;
-	private final PostMaterialEventService materialEventService;
-	private final StockCandidateService stockCandidateService;
-	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
-	private final SupplyCandidateHandler supplyCandidateHandler;
-
-	public DemandCandiateHandler(
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
-			@NonNull final PostMaterialEventService postMaterialEventService,
-			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
-			@NonNull final StockCandidateService stockCandidateService,
-			@NonNull final SupplyCandidateHandler supplyCandidateHandler)
-	{
-		this.candidateRepository = candidateRepositoryRetrieval;
-		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
-		this.materialEventService = postMaterialEventService;
-		this.availableToPromiseRepository = availableToPromiseRepository;
-		this.stockCandidateService = stockCandidateService;
-		this.supplyCandidateHandler = supplyCandidateHandler;
-	}
+	@NonNull private final CandidateRepositoryRetrieval candidateRepository;
+	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final AvailableToPromiseRepository availableToPromiseRepository;
+	@NonNull private final StockCandidateService stockCandidateService;
+	@NonNull private final SupplyCandidateHandler supplyCandidateHandler;
+	@NonNull private final MaterialPlanningContextHelper helper;
+	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 
 	@Override
 	public Collection<CandidateType> getHandeledTypes()
@@ -143,7 +134,39 @@ public class DemandCandiateHandler implements CandidateHandler
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate());
+			// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
+			// So other parts shouldn't be affected by this.
+			final boolean isUseLotForLotQty;
+			if(candidateSaveResult.getPreviousQty() == null) // prevent full qty on updates
+			{
+				final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
+						.orgId(savedCandidate.getClientAndOrgId().getOrgId())
+						.warehouseId(savedCandidate.getWarehouseId())
+						.productId(savedCandidate.getProductId())
+						.attributeSetInstanceId(savedCandidate.getAttributeSetInstanceId())
+						.build());
+
+				if (materialPlanningContext == null)
+				{
+					isUseLotForLotQty = false;
+				}
+				else if (materialPlanningContext.isManufacturedLotForLot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
+				{
+					isUseLotForLotQty = true;
+				}
+				else
+				{
+					isUseLotForLotQty = false;
+				}
+			}
+			else
+			{
+				isUseLotForLotQty = false;
+			}
+
+
+
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isUseLotForLotQty);
 		}
 
 		if (candidateSaveResult.getQtyDelta().signum() < 0)
@@ -219,11 +242,15 @@ public class DemandCandiateHandler implements CandidateHandler
 		return minMaxDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
 	}
 
-	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate)
+	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate, final boolean isManufacturedLotForLot)
 	{
 		if (demandCandidate.isSimulated())
 		{
 			fireSimulatedSupplyRequiredEvent(demandCandidate, stockCandidate);
+		}
+		else if (isManufacturedLotForLot)
+		{
+			postSupplyRequiredEvent(demandCandidate, demandCandidate.getQuantity());
 		}
 		else
 		{

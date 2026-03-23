@@ -37,4 +37,9 @@ public class MaterialPlanningContext
 		}
 	}
 
+	public boolean isManufacturedLotForLot()
+	{
+		return getProductPlanning().isManufacturedLot4Lot();
+	}
+
 }
