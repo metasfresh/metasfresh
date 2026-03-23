@@ -119,13 +119,9 @@ export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
 };
 
 export const getPackingMaterials = (huId) => {
-  return axios
-    .get(`${huManagerAPIBasePath}/${huId}/packingMaterials`)
-    .then(unboxAxiosResponse);
+  return axios.get(`${huManagerAPIBasePath}/${huId}/packingMaterials`).then(unboxAxiosResponse);
 };
 
 export const setPackingMaterials = (huId, graiCodes) => {
-  return axios
-    .put(`${huManagerAPIBasePath}/${huId}/packingMaterials`, { graiCodes })
-    .then(unboxAxiosResponse);
+  return axios.put(`${huManagerAPIBasePath}/${huId}/packingMaterials`, { graiCodes }).then(unboxAxiosResponse);
 };
