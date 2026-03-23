@@ -56,7 +56,6 @@ Feature: Shipment schedule export rest-api
       | shipUser_ref                      | Shopware6      | UserID  | shipUser_reference    | shipUser                  |                             |
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
   @Id:S0150_210
   Scenario: Export oxid shipment candidate
