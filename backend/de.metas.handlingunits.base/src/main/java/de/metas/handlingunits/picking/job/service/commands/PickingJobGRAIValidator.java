@@ -16,7 +16,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,9 +31,6 @@ import java.util.List;
 public class PickingJobGRAIValidator
 {
 	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
-	private static final String MIGROS_COMPANY_PREFIX = "7613204";
-	private static final String MIGROS_ASSET_TYPE = "00307";
-	private static final int MAX_DUMMY_COUNTER = 99;
 
 	@NonNull private final PickingJob pickingJob;
 
@@ -167,8 +163,7 @@ public class PickingJobGRAIValidator
 			throw new AdempiereException("Cannot generate dummy GRAIs: POReference not found for LU " + luDisplayName);
 		}
 
-		final String paddedPORef = StringUtils.lpadZero(poReference, 10, "POReference");
-		// paddedPORef is 10 chars; lpadZero throws if > 10 chars
+		final String paddedPORef = DummyGRAIGenerator.padPOReference(poReference);
 
 		// Find the max existing dummy counter across all picked HUs for the same order
 		final int existingMaxCounter = findMaxExistingDummyCounter(paddedPORef);
@@ -199,11 +194,11 @@ public class PickingJobGRAIValidator
 				// Add missing dummies
 				for (int i = 0; i < tuInfo.missingCount; i++)
 				{
-					if (counter > MAX_DUMMY_COUNTER)
+					if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
 					{
-						throw new AdempiereException("Cannot generate more than " + MAX_DUMMY_COUNTER + " dummy GRAIs per order");
+						throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
 					}
-					dummyGrais.add(buildDummyGRAI(paddedPORef, counter));
+					dummyGrais.add(DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter));
 					counter++;
 				}
 
@@ -213,11 +208,11 @@ public class PickingJobGRAIValidator
 			else
 			{
 				// Regular TU: single GRAI
-				if (counter > MAX_DUMMY_COUNTER)
+				if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
 				{
-					throw new AdempiereException("Cannot generate more than " + MAX_DUMMY_COUNTER + " dummy GRAIs per order");
+					throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
 				}
-				final String dummyGrai = buildDummyGRAI(paddedPORef, counter);
+				final String dummyGrai = DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter);
 				huAttributesBL.updateHUAttribute(tuInfo.huId, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI, dummyGrai);
 				counter++;
 			}
@@ -243,7 +238,7 @@ public class PickingJobGRAIValidator
 
 	private int findMaxExistingDummyCounter(@NonNull final String paddedPORef)
 	{
-		final String dummyPrefix = MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef;
+		final String dummyPrefix = DummyGRAIGenerator.buildDummyPrefix(paddedPORef);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
@@ -265,7 +260,7 @@ public class PickingJobGRAIValidator
 				{
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
-						maxCounter = Math.max(maxCounter, extractDummyCounter(
+						maxCounter = Math.max(maxCounter, DummyGRAIGenerator.extractDummyCounter(
 								huAttributesBL.getHUAttributeValue(childTU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI),
 								dummyPrefix));
 					}
@@ -279,7 +274,7 @@ public class PickingJobGRAIValidator
 						{
 							for (final String singleGrai : graiValue.split(","))
 							{
-								maxCounter = Math.max(maxCounter, extractDummyCounter(singleGrai.trim(), dummyPrefix));
+								maxCounter = Math.max(maxCounter, DummyGRAIGenerator.extractDummyCounter(singleGrai.trim(), dummyPrefix));
 							}
 						}
 					}
@@ -288,33 +283,6 @@ public class PickingJobGRAIValidator
 		}
 
 		return maxCounter;
-	}
-
-	private static int extractDummyCounter(@Nullable final String grai, @NonNull final String dummyPrefix)
-	{
-		if (grai == null || !grai.startsWith(dummyPrefix))
-		{
-			return 0;
-		}
-		final String counterStr = grai.substring(dummyPrefix.length());
-		if (counterStr.length() != 2)
-		{
-			return 0;
-		}
-		try
-		{
-			return Integer.parseInt(counterStr);
-		}
-		catch (final NumberFormatException e)
-		{
-			return 0;
-		}
-	}
-
-	@NonNull
-	private static String buildDummyGRAI(@NonNull final String paddedPORef, final int counter)
-	{
-		return MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef + String.format("%02d", counter);
 	}
 
 	// --- Helper types ---
