@@ -27,24 +27,43 @@ jobs:
       id-token: write
       actions: read
     steps:
-      - name: Checkout metasfresh (PR branch)
+      - name: Checkout metasfresh (default branch)
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+
+      - name: Switch to PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # issue_comment checks out the default branch. We need the PR branch
+          # so that the overlay lands on the right base and the action's internal
+          # git checkout becomes a no-op (already on the correct branch).
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q .headRefName)
+          git fetch origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
 
       - name: Checkout mf15-ai-dev-support (private config)
         uses: actions/checkout@v6
         with:
           repository: metasfresh/mf15-ai-dev-support
-          token: ${{ secrets.CICD_TRIGGER_DISPATCH }}
+          token: ${{ secrets.MF15_AI_DEV_SUPPORT_READ }}
           path: _ai-config
           fetch-depth: 1
 
       - name: Overlay private config into metasfresh checkout
         run: |
+          # The metasfresh repo has symlinks (e.g. docs/coding-rules) managed
+          # via mf15-ai-dev-support. Git stores them as mode 120000 entries.
+          # On Linux CI, they become plain text files containing the target path.
+          # cp cannot overwrite these files with directories, so remove them first.
+          git ls-files -s | awk '/^120000/{print $4}' | while read -r symfile; do
+            rm -f "$symfile"
+          done
+
           # --- CLAUDE.md files (150+ across the module hierarchy) ---
-          # The -n flag avoids overwriting any files that already exist in the repo.
-          cp -rn _ai-config/claude/metasfresh/. ./
+          cp -r --update=none _ai-config/claude/metasfresh/. ./
 
           # --- REVIEW.md (review-specific guidelines) ---
           if [ -f _ai-config/claude/metasfresh/REVIEW.md ]; then
@@ -54,19 +73,13 @@ jobs:
           fi
 
           # --- Skills, agents, commands, templates ---
-          # Copy the .claude directory contents (skills, agents, commands) but
-          # skip settings files that contain local/desktop-specific config.
+          # Copy from .claude directory but skip settings files (local/desktop-specific).
           mkdir -p .claude
           for dir in skills agents commands templates; do
             if [ -d "_ai-config/claude/.claude/$dir" ]; then
               cp -r "_ai-config/claude/.claude/$dir" .claude/
             fi
           done
-
-          # --- Coding rules (referenced by skills and CLAUDE.md) ---
-          if [ -d "_ai-config/claude/metasfresh/docs" ]; then
-            cp -rn _ai-config/claude/metasfresh/docs/. docs/ 2>/dev/null || true
-          fi
 
           # Clean up the private repo checkout so Claude doesn't index it
           rm -rf _ai-config
