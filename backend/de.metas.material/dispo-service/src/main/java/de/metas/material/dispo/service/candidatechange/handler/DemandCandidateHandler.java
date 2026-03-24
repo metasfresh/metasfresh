@@ -134,38 +134,7 @@ public class DemandCandidateHandler implements CandidateHandler
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
-			// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
-			// So other parts shouldn't be affected by this.
-			final boolean isUseLotForLotQty;
-			if(candidateSaveResult.getPreviousQty() == null) // prevent full qty on updates
-			{
-				final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
-						.orgId(savedCandidate.getClientAndOrgId().getOrgId())
-						.warehouseId(savedCandidate.getWarehouseId())
-						.productId(savedCandidate.getProductId())
-						.attributeSetInstanceId(savedCandidate.getAttributeSetInstanceId())
-						.build());
-
-				if (materialPlanningContext == null)
-				{
-					isUseLotForLotQty = false;
-				}
-				else if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
-				{
-					isUseLotForLotQty = true;
-				}
-				else
-				{
-					isUseLotForLotQty = false;
-				}
-			}
-			else
-			{
-				isUseLotForLotQty = false;
-			}
-
-
-
+			final boolean isUseLotForLotQty = isUseLotForLotQty(candidateSaveResult, savedCandidate);
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isUseLotForLotQty);
 		}
 
@@ -175,6 +144,38 @@ public class DemandCandidateHandler implements CandidateHandler
 		}
 
 		return candidateSaveResult;
+	}
+
+	private boolean isUseLotForLotQty(@NonNull final CandidateSaveResult candidateSaveResult, @NonNull final Candidate savedCandidate)
+	{
+		if(candidateSaveResult.getPreviousQty() == null) // prevent full qty on updates
+		{
+			// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
+			// So other parts shouldn't be affected by this.
+			final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
+					.orgId(savedCandidate.getClientAndOrgId().getOrgId())
+					.warehouseId(savedCandidate.getWarehouseId())
+					.productId(savedCandidate.getProductId())
+					.attributeSetInstanceId(savedCandidate.getAttributeSetInstanceId())
+					.build());
+
+			if (materialPlanningContext == null)
+			{
+				return false;
+			}
+			else if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
