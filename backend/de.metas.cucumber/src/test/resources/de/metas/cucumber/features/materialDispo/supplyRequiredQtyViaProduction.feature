@@ -515,15 +515,15 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | p_1                     | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 10         |
     When the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
-      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | false     | p_1                     | bom_1             | ppln_1                 | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
-      | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
+      | PP_Order_Candidate_ID | I_PP_OrderLine_Candidate | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | oc_1                  | olc_1                    | p_2          | 100        | PCE               | CO            | boml_1                |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10   | 10                     | 2021-04-16T00:00:00             |
@@ -532,7 +532,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -5                     |                                 |
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 5                      |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |                                 |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 0                      |                                 |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
@@ -569,8 +568,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | boml_1     | bom_1             | p_2          | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | IsManufacturedLot4Lot |
-      | ppln_1     | p_1          | bomVersions_1                        | false        | true                  |
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLot4Lot |
+      | ppln_1     | p_1          | bomVersions_1             | false        | true                  |
 
     And metasfresh contains C_BPartners:
       | Identifier    | M_PricingSystem_ID |
@@ -613,15 +612,15 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
       | o_1        | true    | endcustomer_1 | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | p_1                     | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 10         |
     When the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
-      | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1                             | olc_1      | p_2          | 100        | PCE               | CO            | boml_1                |
+      | PP_Order_Candidate_ID | I_PP_OrderLine_Candidate | M_Product_ID | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID |
+      | oc_1                  | olc_1                    | p_2          | 100        | PCE               | CO            | boml_1                |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10   | 10                     | 2021-04-16T00:00:00             |
@@ -630,7 +629,6 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | 0                      |                                 |
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 10                     |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |                                 |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 0                      |                                 |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |

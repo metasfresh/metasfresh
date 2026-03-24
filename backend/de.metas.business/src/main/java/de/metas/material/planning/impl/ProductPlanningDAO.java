@@ -133,6 +133,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.transferTimeDays(record.getTransfertTime().intValueExact())
 				.leadTimeDays(record.getDeliveryTime_Promised().intValueExact())
 				.isManufactured(StringUtils.toBoolean(record.getIsManufactured()))
+				.isManufacturedLot4Lot(record.isManufacturedLot4Lot())
 				.isPurchased(StringUtils.toBoolean(record.getIsPurchased()))
 				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
