@@ -28,6 +28,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -533,7 +534,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -544,6 +545,20 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
+	public void updateShipper(@NonNull final I_C_Order order)
+	{
+		if(InterfaceWrapperHelper.isCopying(order))
+		{
+			return;
+		}
+
+		if(BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
+		{
+			return;
+		}
 
 		orderBL.setShipperId(order);
 	}
