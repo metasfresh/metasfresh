@@ -1141,13 +1141,13 @@ jobs:
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results
+      - name: push-results to testspace
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
+        continue-on-error: true
         run: |
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
+          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
-          fi
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         uses: nick-fields/retry@v3
         with:
@@ -1215,6 +1215,123 @@ jobs:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
           retention-days: 30
+      - name: Extract Cucumber Allure results
+        if: always()
+        run: |
+          echo "=== Searching for Allure results ==="
+          mkdir -p cucumber-allure-results
+          FOUND_RESULTS=false
+
+          # Check primary location: cucumber/allure-results
+          if [ -d "cucumber/allure-results" ]; then
+            echo "Found results in cucumber/allure-results"
+            cp -r cucumber/allure-results/. cucumber-allure-results/
+            FOUND_RESULTS=true
+          # Check alternative location: cucumber/target/allure-results
+          elif [ -d "cucumber/target/allure-results" ]; then
+            echo "Found results in cucumber/target/allure-results"
+            cp -r cucumber/target/allure-results/. cucumber-allure-results/
+            FOUND_RESULTS=true
+          else
+            echo "Searching for allure-results directory..."
+            ALLURE_DIR=$(find cucumber -name "allure-results" -type d 2>/dev/null | head -1)
+            if [ -n "$ALLURE_DIR" ]; then
+              echo "Found results in $ALLURE_DIR"
+              cp -r "$ALLURE_DIR"/. cucumber-allure-results/
+              FOUND_RESULTS=true
+            fi
+          fi
+
+          if [ "$FOUND_RESULTS" = true ]; then
+            echo "branch=${{ github.ref_name }}" >> cucumber-allure-results/environment.properties
+            echo "build=${{ needs.init.outputs.tag-fixed }}" >> cucumber-allure-results/environment.properties
+            JSON_COUNT=$(find cucumber-allure-results -name '*.json' -type f | wc -l)
+            echo "Allure results extracted: $JSON_COUNT JSON files for profile ${{ matrix.profile }}"
+          else
+            echo "No Allure results found for profile ${{ matrix.profile }}"
+            echo "Available directories in cucumber/:"
+            ls -la cucumber/ 2>/dev/null || echo "cucumber/ does not exist"
+          fi
+      - name: Upload Cucumber Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-allure-results-${{ matrix.profile }}
+          path: cucumber-allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Rename Cucumber JUnit for unique merge
+        if: always()
+        run: mv cucumber/cucumber-junit.xml cucumber/cucumber-junit-${{ matrix.profile }}.xml || true
+      - name: Upload Cucumber JUnit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-cucumber-${{ matrix.profile }}
+          path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
+          if-no-files-found: ignore
+          retention-days: 1
+
+  cucumber-allure-report:
+    name: Generate Cucumber Allure Report
+    runs-on: ubuntu-latest
+    needs: [ init, cucumber-run ]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all Cucumber Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cucumber-allure-results-*
+          path: all-cucumber-results/
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          echo "=== Allure Results Diagnostics ==="
+          if [ -d "all-cucumber-results" ] && [ "$(ls -A all-cucumber-results 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Directory exists. File counts:"
+            echo "  Total files: $(find all-cucumber-results -type f | wc -l)"
+            echo "  JSON result files: $(find all-cucumber-results -name '*-result.json' -type f | wc -l)"
+            echo "  Container files: $(find all-cucumber-results -name '*-container.json' -type f | wc -l)"
+            echo ""
+            echo "=== Files by type ==="
+            find all-cucumber-results -type f | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -10
+            echo ""
+            echo "=== Environment files ==="
+            for env_file in $(find all-cucumber-results -name "environment.properties" 2>/dev/null); do
+              echo "--- $env_file ---"
+              cat "$env_file"
+            done
+            echo ""
+            echo "=== Sample JSON files (first 5) ==="
+            find all-cucumber-results -name '*.json' -type f | head -5
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+            echo "Current directory contents:"
+            ls -la
+          fi
+
+      - name: Setup Allure
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/setup-allure
+
+      - name: Generate combined Allure report
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: all-cucumber-results
+          output-dir: cucumber-allure-report
+          artifact-name: allure-report-cucumber
+          retention-days: 30
+          history-artifact-name: allure-history-cucumber
+          report-title: 'Cucumber BDD'
 
   health_check:
     name: health check
@@ -1497,7 +1614,7 @@ jobs:
   publish-test-reports:
     name: publish test reports
     runs-on: ubuntu-latest
-    needs: [ init, cucumber-run, mobile_test, frontend_allure_report ]
+    needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write    # trigger reports-cleanup workflow when disk space is low
