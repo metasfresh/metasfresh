@@ -489,16 +489,17 @@ public class ShipmentScheduleWithHUService
 		return result.build();
 	}
 
-	private Quantity processHU(final @NonNull I_M_ShipmentSchedule scheduleRecord,
-							   final @NonNull Quantity qtyToDeliver,
-							   final boolean pickAccordingToPackingInstruction,
-							   final @NonNull IHUContext huContext,
-							   final List<I_M_HU> husToPick,
-							   Quantity remainingQtyToAllocate,
-							   final ILoggable loggableWithLogger,
-							   boolean firstHU,
-							   final ImmutableList.Builder<ShipmentScheduleWithHU> result,
-							   final boolean useExistingHUStructure)
+	private Quantity processHU(
+			@NonNull final I_M_ShipmentSchedule scheduleRecord,
+			@NonNull final Quantity qtyToDeliver,
+			final boolean pickAccordingToPackingInstruction,
+			@NonNull final IHUContext huContext,
+			@NonNull final List<I_M_HU> husToPick,
+			@NonNull Quantity remainingQtyToAllocate,
+			@NonNull final ILoggable loggableWithLogger,
+			boolean firstHU,
+			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
+			final boolean useExistingHUStructure)
 	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
