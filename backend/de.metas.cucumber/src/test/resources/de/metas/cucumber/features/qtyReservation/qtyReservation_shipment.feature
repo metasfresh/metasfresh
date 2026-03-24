@@ -314,6 +314,9 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
       | huPIItem_C      | huPIV_C            | MI       |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Attribute_ID.Identifier | M_HU_PI_Version_ID.Identifier | M_Attribute.Value |
+      | huPIAttr_C                      | huPIV_C                       | QtyRes_Herkunft   |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
       | huPIP_C_10PCE           | huPIItem_C      | product_C    | 10 PCE |
@@ -427,6 +430,9 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
       | huPIItem_D      | huPIV_D            | MI       |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Attribute_ID.Identifier | M_HU_PI_Version_ID.Identifier | M_Attribute.Value |
+      | huPIAttr_D                      | huPIV_D                       | QtyRes_Herkunft   |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
       | huPIP_D_10PCE           | huPIItem_D      | product_D    | 10 PCE |
