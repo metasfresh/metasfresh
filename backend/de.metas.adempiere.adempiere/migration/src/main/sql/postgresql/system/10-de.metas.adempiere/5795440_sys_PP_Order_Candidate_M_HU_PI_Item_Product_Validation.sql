@@ -195,6 +195,13 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540775,Updated=TO_TIMESTAMP('2026-03-24 12:4
 UPDATE AD_Column SET AD_Reference_Value_ID=541948, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2026-03-24 12:52:39.876000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=583382
 ;
 
+-- Column: PP_Order_Candidate.M_HU_PI_Item_Product_ID
+-- 2026-03-24T14:17:01.405Z
+UPDATE AD_Column SET AD_Reference_Value_ID=NULL, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2026-03-24 14:17:01.405000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=583382
+;
+
+
+
 -- Name: M_HU_PI_Item_Product for PP_Order_Candidate
 -- 2026-03-24T12:58:07.515Z
 
