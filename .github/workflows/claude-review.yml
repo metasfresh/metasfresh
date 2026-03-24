@@ -84,9 +84,23 @@ jobs:
           # Clean up the private repo checkout so Claude doesn't index it
           rm -rf _ai-config
 
+      - name: Detect model from comment
+        id: model
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body || '' }}
+        run: |
+          # Default: Sonnet (fast, ~$3-5/review)
+          # Use Opus with: @claude review opus  (thorough, ~$15-25/review)
+          if echo "$COMMENT_BODY" | grep -qi 'opus'; then
+            echo "claude_model=claude-opus-4-6" >> "$GITHUB_OUTPUT"
+          else
+            echo "claude_model=claude-sonnet-4-6" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--model ${{ steps.model.outputs.claude_model }}"
           additional_permissions: |
             actions: read
