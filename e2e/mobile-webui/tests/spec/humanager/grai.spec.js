@@ -29,6 +29,7 @@ const createMasterdata = async () => {
     });
 }
 
+// noinspection DuplicatedCode
 const createMasterdataAndScanLU = async ({ page }) => {
     const masterdata = await createMasterdata();
 

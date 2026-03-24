@@ -1,49 +1,5 @@
 @import 'variables';
 
-.nfc-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-
-  &.active {
-    background-color: rgba($base-mf-green, 0.1);
-    color: $base-mf-green;
-
-    .nfc-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: $base-mf-green;
-      margin-right: 0.5rem;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-  }
-
-  &.inactive {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #666;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 .grai-count {
   text-align: center;
   font-size: 1.1rem;

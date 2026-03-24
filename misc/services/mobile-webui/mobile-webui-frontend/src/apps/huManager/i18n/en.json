@@ -55,9 +55,7 @@
     "scanGRAI": {
       "buttonCaption": "Scan Packing Materials",
       "windowName": "Scan Packing Materials",
-      "count": "%(scanned)s / %(total)s packing materials scanned",
-      "nfcActive": "NFC scanning active",
-      "nfcNotAvailable": "NFC not available"
+      "count": "%(scanned)s / %(total)s packing materials scanned"
     }
   }
 }

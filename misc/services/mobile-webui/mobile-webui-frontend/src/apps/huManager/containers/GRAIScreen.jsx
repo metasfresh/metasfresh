@@ -9,9 +9,8 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { huManagerLocation } from '../routes';
-import { useNfcReader } from '../../../hooks/useNfcReader';
 import { useKeyboardBarcodeReader } from '../../../hooks/useKeyboardBarcodeReader';
-import { parseGraiFromNfc, parseGraiFromGs1Barcode, parseGraiFromRawInput } from '../../../utils/grai';
+import { parseGraiFromGs1Barcode, parseGraiFromRawInput } from '../../../utils/grai';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
 import '../../../assets/GRAIScreen.scss';
@@ -47,19 +46,6 @@ const GRAIScreen = () => {
         setLoading(false);
       });
   }, []);
-
-  // NFC scanning
-  const { isNfcSupported, isScanning, lastRead } = useNfcReader();
-
-  // Process NFC reads
-  useEffect(() => {
-    if (lastRead && handlingUnitInfo) {
-      const grai = parseGraiFromNfc(lastRead);
-      if (grai) {
-        addGrai(grai);
-      }
-    }
-  }, [lastRead]);
 
   const addGrai = useCallback(
     (grai) => {
@@ -119,9 +105,6 @@ const GRAIScreen = () => {
     <div className="grai-screen">
       <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
 
-      {/* NFC indicator */}
-      <NfcIndicator isSupported={isNfcSupported} isScanning={isScanning} />
-
       {/* Count */}
       <div className="grai-count" data-testid="grai-count">
         {trl('huManager.action.scanGRAI.count', { scanned: graiCodes.length, total: tuCount })}
@@ -138,19 +121,6 @@ const GRAIScreen = () => {
       {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
     </div>
   );
-};
-
-const NfcIndicator = ({ isSupported, isScanning }) => {
-  if (isSupported && isScanning) {
-    return (
-      <div className="nfc-indicator active">
-        <span className="nfc-dot" />
-        {trl('huManager.action.scanGRAI.nfcActive')}
-      </div>
-    );
-  }
-
-  return <div className="nfc-indicator inactive">{trl('huManager.action.scanGRAI.nfcNotAvailable')}</div>;
 };
 
 const GraiChip = ({ grai, onRemove }) => {

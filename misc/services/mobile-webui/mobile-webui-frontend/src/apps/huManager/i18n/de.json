@@ -55,9 +55,7 @@
     "scanGRAI": {
       "buttonCaption": "Packmittel scannen",
       "windowName": "Packmittel scannen",
-      "count": "%(scanned)s / %(total)s Packmittel gescannt",
-      "nfcActive": "NFC-Scan aktiv",
-      "nfcNotAvailable": "NFC nicht verfügbar"
+      "count": "%(scanned)s / %(total)s Packmittel gescannt"
     }
   }
 }
