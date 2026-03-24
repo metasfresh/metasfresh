@@ -42,16 +42,12 @@ jobs:
 
       - name: Overlay private config into metasfresh checkout
         run: |
-          # The metasfresh repo has symlinks (e.g. docs/coding-rules) that git
-          # checks out as plain text files on Linux. These block cp from copying
-          # directories over them. Find and remove such broken symlink-files
-          # before overlaying.
-          find _ai-config/claude/metasfresh -type d | while read -r src_dir; do
-            rel="${src_dir#_ai-config/claude/metasfresh/}"
-            [ "$rel" = "$src_dir" ] && continue  # skip the root itself
-            if [ -f "./$rel" ] && [ ! -d "./$rel" ]; then
-              rm -f "./$rel"
-            fi
+          # The metasfresh repo has symlinks (e.g. docs/coding-rules) managed
+          # via mf15-ai-dev-support. Git stores them as mode 120000 entries.
+          # On Linux CI, they become plain text files containing the target path.
+          # cp cannot overwrite these files with directories, so remove them first.
+          git ls-files -s | awk '/^120000/{print $4}' | while read -r symfile; do
+            rm -f "$symfile"
           done
 
           # --- CLAUDE.md files (150+ across the module hierarchy) ---
