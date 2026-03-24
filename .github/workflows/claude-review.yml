@@ -42,9 +42,20 @@ jobs:
 
       - name: Overlay private config into metasfresh checkout
         run: |
+          # The metasfresh repo has symlinks (e.g. docs/coding-rules) that git
+          # checks out as plain text files on Linux. These block cp from copying
+          # directories over them. Find and remove such broken symlink-files
+          # before overlaying.
+          find _ai-config/claude/metasfresh -type d | while read -r src_dir; do
+            rel="${src_dir#_ai-config/claude/metasfresh/}"
+            [ "$rel" = "$src_dir" ] && continue  # skip the root itself
+            if [ -f "./$rel" ] && [ ! -d "./$rel" ]; then
+              rm -f "./$rel"
+            fi
+          done
+
           # --- CLAUDE.md files (150+ across the module hierarchy) ---
-          # The -n flag avoids overwriting any files that already exist in the repo.
-          cp -rn _ai-config/claude/metasfresh/. ./
+          cp -r --update=none _ai-config/claude/metasfresh/. ./
 
           # --- REVIEW.md (review-specific guidelines) ---
           if [ -f _ai-config/claude/metasfresh/REVIEW.md ]; then
@@ -54,19 +65,13 @@ jobs:
           fi
 
           # --- Skills, agents, commands, templates ---
-          # Copy the .claude directory contents (skills, agents, commands) but
-          # skip settings files that contain local/desktop-specific config.
+          # Copy from .claude directory but skip settings files (local/desktop-specific).
           mkdir -p .claude
           for dir in skills agents commands templates; do
             if [ -d "_ai-config/claude/.claude/$dir" ]; then
               cp -r "_ai-config/claude/.claude/$dir" .claude/
             fi
           done
-
-          # --- Coding rules (referenced by skills and CLAUDE.md) ---
-          if [ -d "_ai-config/claude/metasfresh/docs" ]; then
-            cp -rn _ai-config/claude/metasfresh/docs/. docs/ 2>/dev/null || true
-          fi
 
           # Clean up the private repo checkout so Claude doesn't index it
           rm -rf _ai-config
