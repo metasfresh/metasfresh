@@ -10,7 +10,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
@@ -130,7 +130,7 @@ public class InOutBL implements IInOutBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -398,7 +398,7 @@ public class InOutBL implements IInOutBL
 			return priceListDAO.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = bpartnerBL.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;
@@ -710,7 +710,7 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inout = inOutDAO.getById(inOutId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpartnerLocation = bpartnerBL.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -723,7 +723,7 @@ public class InOutBL implements IInOutBL
 		{
 			return null;
 		}
-		return bpartnerDAO.getContactLocationEmail(contactId);
+		return bpartnerBL.getContactLocationEmail(contactId);
 	}
 
 	@Override
@@ -792,7 +792,7 @@ public class InOutBL implements IInOutBL
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
 
 		return bPartnerId != null
-				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				? bpartnerBL.getById(bPartnerId, I_C_BPartner.class)
 				: null;
 	}
 
@@ -850,19 +850,12 @@ public class InOutBL implements IInOutBL
 		inout.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(inout)));
 	}
 
+	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipBPartnerLocationId(inout);
-		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(dropShipLocationId);
-
-		return deliveryAddressShipperId.orElseGet(() -> bpartnerDAO.getShipperId(getEffectiveDropshipPartnerId(inout)));
-	}
-
-	private BPartnerLocationId getEffectiveDropshipBPartnerLocationId(@NonNull final I_M_InOut inout)
-	{
-		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
+		return bpartnerBL.getEffectiveShipperId(
+				BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				BPartnerLocationId.ofRepoId(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
 		);
 	}
 

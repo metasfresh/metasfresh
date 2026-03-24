@@ -317,6 +317,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Nullable
+	@Override
 	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
 	{
 		if (contactId == null)
@@ -491,6 +492,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId())
@@ -511,6 +513,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
@@ -822,6 +825,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_None);
@@ -2077,9 +2081,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<ShipperId> getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	@Nullable
+	public ShipperId getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-		return bpLocation != null ? ShipperId.optionalOfRepoId(bpLocation.getM_Shipper_ID()) : Optional.empty();
+		if (bpLocation == null) {return null;}
+		return ShipperId.ofRepoIdOrNull(bpLocation.getM_Shipper_ID());
 	}
 }
