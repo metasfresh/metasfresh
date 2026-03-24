@@ -259,22 +259,20 @@ public class BankStatementImportTableSqlUpdater
 				+ " HAVING COUNT(*) = 1"
 				+ ") "
 				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
-				+ "AND i.I_IsImported<>'Y' "
-				+ "OR i.I_IsImported IS NULL")
+				+ "AND (i.I_IsImported<>'Y' OR i.I_IsImported IS NULL)")
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		// Flag records where multiple active BPartners match the same DebtorId/CreditorId
+		// Flag records where multiple active BPartners match (by Name, Value, DebtorId, or CreditorId)
 		final StringBuilder errorSql = new StringBuilder("UPDATE I_BankStatement i "
 				+ "SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')"
-				+ "||'ERR=Multiple BPartners found for the same DebtorId/CreditorId."
-				+ " Please make sure each DebtorId/CreditorId is unique among active BPartners, ' "
+				+ "||'ERR=Multiple BPartners found matching the import record (by Name, Value, DebtorId, or CreditorId)."
+				+ " Please make sure each identifier is unique among active BPartners.' "
 				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
 				+ "AND (SELECT COUNT(*) FROM " + I_C_BPartner.Table_Name + " bp "
 				+ " WHERE " + bpartnerMatchCondition + ") > 1 "
-				+ "AND i.I_IsImported<>'Y' "
-				+ "OR i.I_IsImported IS NULL")
+				+ "AND (i.I_IsImported<>'Y' OR i.I_IsImported IS NULL)")
 				.append(selection.toSqlWhereClause("i"));
 
 		final int noAmbiguous = DB.executeUpdateAndThrowExceptionOnFail(errorSql.toString(), ITrx.TRXNAME_ThreadInherited);

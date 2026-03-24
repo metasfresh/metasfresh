@@ -75,7 +75,7 @@ public class CPaymentImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE I_Datev_Payment i ")
 				.append("SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')")
 				.append("||'ERR=Multiple BPartners found for the same DebtorId/CreditorId.")
-				.append(" Please make sure each DebtorId/CreditorId is unique among active BPartners, ' ")
+				.append(" Please make sure each DebtorId/CreditorId is unique among active BPartners.' ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
 				.append("AND (SELECT COUNT(*) FROM C_BPartner bp WHERE ").append(matchCondition).append(") > 1 ")
 				.append("AND I_IsImported<>'Y'  ")
