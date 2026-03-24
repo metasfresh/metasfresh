@@ -2,7 +2,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.qty_reservation.QtyReservation;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -16,17 +15,26 @@ import javax.annotation.Nullable;
  * When {@code qtyReservation} is null, picking falls back to the shipment schedule's own ASI.
  */
 @Value
-@Builder
 public class ShipmentScheduleAndQtyReservation
 {
 	@NonNull I_M_ShipmentSchedule shipmentSchedule;
 	@Nullable QtyReservation qtyReservation;
 
-	/**
-	 * Convenience factory for the fallback case: no specific reservation, use SS ASI.
-	 */
+	private ShipmentScheduleAndQtyReservation(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule, 
+			@Nullable final QtyReservation qtyReservation)
+	{
+		this.shipmentSchedule = shipmentSchedule;
+		this.qtyReservation = qtyReservation;
+	}
+
 	public static ShipmentScheduleAndQtyReservation of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return builder().shipmentSchedule(shipmentSchedule).build();
+		return new ShipmentScheduleAndQtyReservation(shipmentSchedule, null);
+	}
+
+	public static ShipmentScheduleAndQtyReservation of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final QtyReservation qtyReservation)
+	{
+		return new ShipmentScheduleAndQtyReservation(shipmentSchedule, qtyReservation);
 	}
 }

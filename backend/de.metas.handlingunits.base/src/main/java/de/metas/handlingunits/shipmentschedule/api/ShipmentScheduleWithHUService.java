@@ -67,9 +67,6 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.inoutcandidate.qty_reservation.QtyReservation;
-import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -80,7 +77,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.qty_reservation.QtyReservation;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
@@ -95,6 +95,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -122,6 +123,7 @@ import java.util.Properties;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentScheduleWithHUService
 {
 
@@ -147,16 +149,8 @@ public class ShipmentScheduleWithHUService
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	private final HUReservationService huReservationService;
-	private final QtyReservationRepository qtyReservationRepository;
-
-	public ShipmentScheduleWithHUService(
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final QtyReservationRepository qtyReservationRepository)
-	{
-		this.huReservationService = huReservationService;
-		this.qtyReservationRepository = qtyReservationRepository;
-	}
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final QtyReservationRepository qtyReservationRepository;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
@@ -457,10 +451,10 @@ public class ShipmentScheduleWithHUService
 		}
 
 		// Pass 2: For each M_QtyReservation, pick HUs filtered by the reservation's attributesKey
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
-		if (remainingQtyToAllocate.isPositive() && orderLineId != null)
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (remainingQtyToAllocate.isPositive() && salesOrderLineId != null)
 		{
-			final ImmutableList<QtyReservation> qtyReservations = qtyReservationRepository.getActiveByOrderLineId(orderLineId);
+			final ImmutableList<QtyReservation> qtyReservations = qtyReservationRepository.getActiveByOrderLineId(salesOrderLineId);
 			for (final QtyReservation qtyReservation : qtyReservations)
 			{
 				if (remainingQtyToAllocate.signum() <= 0)
@@ -473,11 +467,7 @@ public class ShipmentScheduleWithHUService
 					continue;
 				}
 				final Quantity qtyCapForThisReservation = effectiveQty.min(remainingQtyToAllocate);
-				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(
-						ShipmentScheduleAndQtyReservation.builder()
-								.shipmentSchedule(scheduleRecord)
-								.qtyReservation(qtyReservation)
-								.build());
+				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord, qtyReservation));
 				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false);
 				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
@@ -499,7 +489,16 @@ public class ShipmentScheduleWithHUService
 		return result.build();
 	}
 
-	private Quantity processHU(final @NonNull I_M_ShipmentSchedule scheduleRecord, final @NonNull Quantity qtyToDeliver, final boolean pickAccordingToPackingInstruction, final @NonNull IHUContext huContext, final List<I_M_HU> husToPick, Quantity remainingQtyToAllocate, final ILoggable loggableWithLogger, boolean firstHU, final ImmutableList.Builder<ShipmentScheduleWithHU> result, final boolean useExistingHUStructure)
+	private Quantity processHU(final @NonNull I_M_ShipmentSchedule scheduleRecord,
+							   final @NonNull Quantity qtyToDeliver,
+							   final boolean pickAccordingToPackingInstruction,
+							   final @NonNull IHUContext huContext,
+							   final List<I_M_HU> husToPick,
+							   Quantity remainingQtyToAllocate,
+							   final ILoggable loggableWithLogger,
+							   boolean firstHU,
+							   final ImmutableList.Builder<ShipmentScheduleWithHU> result,
+							   final boolean useExistingHUStructure)
 	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
