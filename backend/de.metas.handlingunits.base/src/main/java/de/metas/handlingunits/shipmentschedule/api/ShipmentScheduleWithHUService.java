@@ -481,8 +481,7 @@ public class ShipmentScheduleWithHUService
 		// Pass 3: Fallback — remaining qty using the shipment schedule's own ASI (no specific attributesKey)
 		if (remainingQtyToAllocate.isPositive())
 		{
-			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(
-					ShipmentScheduleAndQtyReservation.of(scheduleRecord));
+			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord));
 			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
 		}
 
