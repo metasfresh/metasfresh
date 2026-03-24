@@ -271,3 +271,247 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | Identifier         | Qty    | QtyDelivered | Processed |
       | qtyReservation_80A | 10 PCE | 10 PCE       | true      |
       | qtyReservation_80B | 10 PCE | 10 PCE       | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_140
+  Scenario: HU attribute propagates to shipment line ASI
+  ## _Given a product with a custom storage-relevant LIST attribute (QtyRes_Herkunft=DE)
+  ## _And a HU created via inventory carrying that ASI
+  ## _And a simple M_QtyReservation without attribute filtering
+  ## _When the shipment is generated
+  ## _Then the shipment line's ASI contains QtyRes_Herkunft=DE (attribute propagated from picked HU)
+  ## _Covers Bug 2 reported in https://github.com/metasfresh/me03/issues/28126
+
+    # Custom storage-relevant LIST attribute for attribute-based picking tests
+    Given metasfresh contains M_Attributes:
+      | Identifier | Value           | AttributeValueType | IsStorageRelevant |
+      | attr_QRH   | QtyRes_Herkunft | L                  | true              |
+    And metasfresh contains M_AttributeValues:
+      | Identifier    | M_Attribute_ID | Value | IsNullFieldValue |
+      | attrVal_QRH_D | attr_QRH       | DE    | false            |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_QRH_D":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"QtyRes_Herkunft",
+          "valueStr":"DE"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product_C  | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_C     |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_C            | huPI_C     | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_C      | huPIV_C            | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_C_10PCE           | huPIItem_C      | product_C    | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_C    | 10.00    | PCE               |
+
+    # 10 PCE on-hand with QtyRes_Herkunft=DE
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | inventory_C    | warehouse_1    | 2026-03-15   | product_C    | 0 PCE   | 10 PCE   | huPIP_C_10PCE           | asi_QRH_D                 |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_C    | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_C | order_C    | product_C    | 10         |
+    And the order identified by order_C is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier         | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_C | orderLine_C    | N             |
+
+    # Reservation without attribute filtering (single HU available, picked by FIFO)
+    And metasfresh contains M_QtyReservations:
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | qtyReservation_C | orderLine_C    | product_C    | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_C    |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_C    | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule_C    | shipment_C |
+
+    # Store the inout line identifier so we can access it in the "by id" validation step
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
+      | shipment_C | product_C    | 10          | shipLine_C     |
+
+    # Capture the shipment line's ASI under a new identifier, then assert its attribute values
+    And validate the created shipment lines by id
+      | Identifier | M_AttributeSetInstance_ID |
+      | shipLine_C | asi_shipLine_C            |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode   | Value |
+      | asi_shipLine_C            | QtyRes_Herkunft | DE    |
+
+    And validate M_QtyReservations:
+      | Identifier       | Qty    | QtyDelivered | Processed |
+      | qtyReservation_C | 10 PCE | 10 PCE       | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_150
+  Scenario: Attribute-filtered picking — each reservation picks the correct HU by attribute
+  ## _Given two HUs for the same product: HU_DE (QtyRes_Herkunft=DE) and HU_AT (QtyRes_Herkunft=AT)
+  ## _And two separate sales orders for 10 PCE each
+  ## _And one M_QtyReservation per order, each filtered by a different attribute
+  ## _When shipments are generated for both schedules
+  ## _Then shipment for order D1 has QtyRes_Herkunft=DE on its line
+  ## _And  shipment for order D2 has QtyRes_Herkunft=AT on its line
+  ## _Covers Bug 2 reported in https://github.com/metasfresh/me03/issues/28126
+
+    # Re-use custom attribute from S_QtyRes_140 (upsert keeps existing if already created)
+    Given metasfresh contains M_Attributes:
+      | Identifier | Value           | AttributeValueType | IsStorageRelevant |
+      | attr_QRH   | QtyRes_Herkunft | L                  | true              |
+    And metasfresh contains M_AttributeValues:
+      | Identifier    | M_Attribute_ID | Value | IsNullFieldValue |
+      | attrVal_QRH_D | attr_QRH       | DE    | false            |
+      | attrVal_QRH_A | attr_QRH       | AT    | false            |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_D_DE":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"QtyRes_Herkunft",
+          "valueStr":"DE"
+        }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_D_AT":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"QtyRes_Herkunft",
+          "valueStr":"AT"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product_D  | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI_D     |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV_D            | huPI_D     | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem_D      | huPIV_D            | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_D_10PCE           | huPIItem_D      | product_D    | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_D    | 10.00    | PCE               |
+
+    # HU_DE: 10 PCE product_D with QtyRes_Herkunft=DE
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | inventory_D_DE | warehouse_1    | 2026-03-15   | product_D    | 0 PCE   | 10 PCE   | huPIP_D_10PCE           | asi_D_DE                  |
+    # HU_AT: 10 PCE product_D with QtyRes_Herkunft=AT
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | inventory_D_AT | warehouse_1    | 2026-03-15   | product_D    | 0 PCE   | 10 PCE   | huPIP_D_10PCE           | asi_D_AT                  |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Order D1: 10 PCE product_D (will be covered by reservation with Herkunft=DE)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_D1   | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_D1 | order_D1   | product_D    | 10         |
+    And the order identified by order_D1 is completed
+    # Order D2: 10 PCE product_D (will be covered by reservation with Herkunft=AT)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_D2   | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_D2 | order_D2   | product_D    | 10         |
+    And the order identified by order_D2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier          | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_D1 | orderLine_D1   | N             |
+      | shipmentSchedule_D2 | orderLine_D2   | N             |
+
+    # Reservations filtered by attribute: M_AttributeSetInstance_ID computes the AttributesKey
+    # from the ASI's storage-relevant attributes
+    And metasfresh contains M_QtyReservations:
+      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | M_AttributeSetInstance_ID |
+      | qtyReservation_D1 | orderLine_D1   | product_D    | warehouse_1    | 10 PCE | 1     | asi_D_DE                  |
+      | qtyReservation_D2 | orderLine_D2   | product_D    | warehouse_1    | 10 PCE | 1     | asi_D_AT                  |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule_D1   |
+      | shipmentSchedule_D2   |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule_D1   | D            | true                | false       |
+      | shipmentSchedule_D2   | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | shipmentSchedule_D1   | shipment_D1 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | shipmentSchedule_D2   | shipment_D2 |
+
+    # Shipment D1 must carry QtyRes_Herkunft=DE
+    And validate the created shipment lines
+      | M_InOut_ID  | M_Product_ID | movementqty | M_InOutLine_ID |
+      | shipment_D1 | product_D    | 10          | shipLine_D1    |
+    And validate the created shipment lines by id
+      | Identifier  | M_AttributeSetInstance_ID |
+      | shipLine_D1 | asi_shipLine_D1           |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode   | Value |
+      | asi_shipLine_D1           | QtyRes_Herkunft | DE    |
+
+    # Shipment D2 must carry QtyRes_Herkunft=AT
+    And validate the created shipment lines
+      | M_InOut_ID  | M_Product_ID | movementqty | M_InOutLine_ID |
+      | shipment_D2 | product_D    | 10          | shipLine_D2    |
+    And validate the created shipment lines by id
+      | Identifier  | M_AttributeSetInstance_ID |
+      | shipLine_D2 | asi_shipLine_D2           |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode   | Value |
+      | asi_shipLine_D2           | QtyRes_Herkunft | AT    |
+
+    And validate M_QtyReservations:
+      | Identifier        | Qty    | QtyDelivered | Processed |
+      | qtyReservation_D1 | 10 PCE | 10 PCE       | true      |
+      | qtyReservation_D2 | 10 PCE | 10 PCE       | true      |
