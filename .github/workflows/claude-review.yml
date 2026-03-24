@@ -27,10 +27,22 @@ jobs:
       id-token: write
       actions: read
     steps:
-      - name: Checkout metasfresh (PR branch)
+      - name: Checkout metasfresh (default branch)
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+
+      - name: Switch to PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # issue_comment checks out the default branch. We need the PR branch
+          # so that the overlay lands on the right base and the action's internal
+          # git checkout becomes a no-op (already on the correct branch).
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q .headRefName)
+          git fetch origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
 
       - name: Checkout mf15-ai-dev-support (private config)
         uses: actions/checkout@v6
@@ -71,12 +83,6 @@ jobs:
 
           # Clean up the private repo checkout so Claude doesn't index it
           rm -rf _ai-config
-
-          # The claude-code-action internally does `git checkout <pr-branch>`.
-          # Our overlay replaced symlink-files with real directories (e.g.
-          # docs/coding-rules), which git sees as dirty working tree and
-          # refuses to switch. Stage everything so the checkout succeeds.
-          git add -A
 
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
