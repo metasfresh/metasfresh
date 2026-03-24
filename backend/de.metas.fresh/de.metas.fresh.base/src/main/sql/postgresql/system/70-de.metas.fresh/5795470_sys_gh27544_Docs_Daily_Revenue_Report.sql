@@ -40,8 +40,13 @@ WITH params AS (SELECT (SELECT c.name FROM ad_client c WHERE c.ad_client_id = p_
                        (SELECT bp.value || ' - ' || bp.name FROM c_bpartner bp WHERE bp.c_bpartner_id = p_vendor_id)   AS vendor_name,
                        (SELECT g.name FROM c_bp_group g WHERE g.c_bp_group_id = p_vendor_group_id)                     AS vendor_group_name),
 
-     sales_orders AS (SELECT o.dateordered::date                 AS day,
-                             SUM(ol.qtyordered * ol.priceactual) AS revenue_net
+     sales_orders AS (SELECT o.dateordered::date                                          AS day,
+                             SUM(ol.qtyordered * currencyconvert(ol.priceactual :: numeric,
+                                                                 o.C_Currency_ID :: numeric,
+                                                                 (SELECT C_Currency_ID FROM c_Currency WHERE iso_code = 'EUR') :: numeric,
+                                                                 o.dateordered :: timestamp with time zone, 0 :: numeric,
+                                                                 o.AD_Client_ID :: numeric,
+                                                                 o.AD_Org_ID :: numeric)) AS revenue_net
                       FROM c_order o
                                INNER JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
                                INNER JOIN c_bpartner bp ON bp.c_bpartner_id = o.c_bpartner_id
@@ -55,8 +60,13 @@ WITH params AS (SELECT (SELECT c.name FROM ad_client c WHERE c.ad_client_id = p_
                         AND (p_date_to IS NULL OR o.dateordered::date <= p_date_to::date)
                       GROUP BY o.dateordered::date),
 
-     ar_invoices AS (SELECT i.dateinvoiced::date AS day,
-                            SUM(i.totallines)    AS revenue_ar
+     ar_invoices AS (SELECT i.dateinvoiced::date                         AS day,
+                            SUM(currencyconvert(i.totallines :: numeric,
+                                                i.C_Currency_ID :: numeric,
+                                                (SELECT C_Currency_ID FROM c_Currency WHERE iso_code = 'EUR') :: numeric,
+                                                i.dateinvoiced :: timestamp with time zone, 0 :: numeric,
+                                                i.AD_Client_ID :: numeric,
+                                                i.AD_Org_ID :: numeric)) AS revenue_ar
                      FROM c_invoice i
                               INNER JOIN c_bpartner bp ON bp.c_bpartner_id = i.c_bpartner_id
                      WHERE i.issotrx = 'Y'
@@ -69,8 +79,13 @@ WITH params AS (SELECT (SELECT c.name FROM ad_client c WHERE c.ad_client_id = p_
                        AND (p_date_to IS NULL OR i.dateinvoiced::date <= p_date_to::date)
                      GROUP BY i.dateinvoiced::date),
 
-     ap_invoices AS (SELECT i.dateinvoiced::date AS day,
-                            SUM(i.totallines)    AS revenue_ap
+     ap_invoices AS (SELECT i.dateinvoiced::date                         AS day,
+                            SUM(currencyconvert(i.totallines :: numeric,
+                                                i.C_Currency_ID :: numeric,
+                                                (SELECT C_Currency_ID FROM c_Currency WHERE iso_code = 'EUR') :: numeric,
+                                                i.dateinvoiced :: timestamp with time zone, 0 :: numeric,
+                                                i.AD_Client_ID :: numeric,
+                                                i.AD_Org_ID :: numeric)) AS revenue_ap
                      FROM c_invoice i
                               INNER JOIN c_bpartner bp ON bp.c_bpartner_id = i.c_bpartner_id
                      WHERE i.issotrx = 'N'
