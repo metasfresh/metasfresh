@@ -348,7 +348,7 @@ public class ShipmentScheduleWithHUService
 		Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
 
 		final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
-		if (remainingQtyToAllocate.signum() > 0)
+		if (remainingQtyToAllocate.isPositive())
 		{
 			final boolean hasNoPickedHUs = result.isEmpty();
 
@@ -421,7 +421,7 @@ public class ShipmentScheduleWithHUService
 	{
 		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
 
-		if (qtyToDeliver.signum() <= 0)
+		if (qtyToDeliver.isZeroOrNegative())
 		{
 			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do", qtyToDeliver);
 			return ImmutableList.of();
@@ -436,7 +436,7 @@ public class ShipmentScheduleWithHUService
 
 		Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
 
-		if (remainingQtyToAllocate.signum() <= 0)
+		if (remainingQtyToAllocate.isZeroOrNegative())
 		{
 			return result.build();
 		}
@@ -457,12 +457,12 @@ public class ShipmentScheduleWithHUService
 			final ImmutableList<QtyReservation> qtyReservations = qtyReservationRepository.getActiveByOrderLineId(salesOrderLineId);
 			for (final QtyReservation qtyReservation : qtyReservations)
 			{
-				if (remainingQtyToAllocate.signum() <= 0)
+				if (remainingQtyToAllocate.isZeroOrNegative())
 				{
 					break;
 				}
 				final Quantity effectiveQty = qtyReservation.getEffectiveQty();
-				if (effectiveQty.signum() <= 0)
+				if (effectiveQty.isZeroOrNegative())
 				{
 					continue;
 				}
@@ -507,7 +507,7 @@ public class ShipmentScheduleWithHUService
 
 			final I_C_UOM uomRecord = remainingQtyToAllocate.getUOM();
 			final Quantity qtyOfSourceHU = extractQtyOfHU(sourceHURecord, productId, uomRecord);
-			if (qtyOfSourceHU.signum() <= 0)
+			if (qtyOfSourceHU.isZeroOrNegative())
 			{
 				continue; // expected not to happen, but shall not be our problem if it does
 			}
@@ -565,7 +565,7 @@ public class ShipmentScheduleWithHUService
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
 			}
 
-			if (remainingQtyToAllocate.signum() <= 0)
+			if (remainingQtyToAllocate.isZeroOrNegative())
 			{
 				break; // we are done here
 			}
