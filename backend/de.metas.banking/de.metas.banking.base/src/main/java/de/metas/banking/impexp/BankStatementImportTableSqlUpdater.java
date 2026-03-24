@@ -172,8 +172,7 @@ public class BankStatementImportTableSqlUpdater
 																+ " AND a." + I_C_BP_BankAccount.COLUMNNAME_IsActive
 																+ " = 'Y' )"
 																+ "WHERE i.C_BP_BankAccount_ID IS NULL "
-																+ "AND i.I_IsImported<>'Y' "
-																+ "OR i.I_IsImported IS NULL")
+																+ "AND (i.I_IsImported<>'Y' OR i.I_IsImported IS NULL)")
 					.append(selection.toSqlWhereClause("i"));
 			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
@@ -192,8 +191,7 @@ public class BankStatementImportTableSqlUpdater
 																+ " OR b.SwiftCode=i.RoutingNo) "
 																+ ") "
 																+ "WHERE i.C_BP_BankAccount_ID IS NULL "
-																+ "AND i.I_IsImported<>'Y' "
-																+ "OR i.I_IsImported IS NULL")
+																+ "AND (i.I_IsImported<>'Y' OR i.I_IsImported IS NULL)")
 					.append(selection.toSqlWhereClause("i"));
 			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
@@ -205,8 +203,7 @@ public class BankStatementImportTableSqlUpdater
 			sql.append(" and a.AD_Client_ID=i.AD_Client_ID) "
 							   + "WHERE i.C_BP_BankAccount_ID IS NULL "
 							   + "AND i.BankAccountNo IS NULL "
-							   + "AND i.I_isImported<>'Y' "
-							   + "OR i.I_isImported IS NULL")
+							   + "AND (i.I_isImported<>'Y' OR i.I_isImported IS NULL)")
 					.append(selection.toSqlWhereClause("i"));
 			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
@@ -215,8 +212,7 @@ public class BankStatementImportTableSqlUpdater
 			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
 																+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Bank Account, ' "
 																+ "WHERE C_BP_BankAccount_ID IS NULL "
-																+ "AND I_isImported<>'Y' "
-																+ "OR I_isImported IS NULL")
+																+ "AND (I_isImported<>'Y' OR I_isImported IS NULL)")
 					.append(selection.toSqlWhereClause());
 			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
@@ -295,8 +291,7 @@ public class BankStatementImportTableSqlUpdater
 															+ " AND ba." + I_C_BP_BankAccount.COLUMNNAME_IsActive
 															+ " = 'Y' )"
 															+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BP_BankAccountTo_ID + " IS NULL "
-															+ "AND i.I_IsImported<>'Y' "
-															+ "OR i.I_IsImported IS NULL")
+															+ "AND (i.I_IsImported<>'Y' OR i.I_IsImported IS NULL)")
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
