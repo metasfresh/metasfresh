@@ -78,10 +78,10 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     await HUManagerScreen.openGRAIScreen();
     await GRAIScreen.expectVisible();
 
-    // Scan a dot-separated GRAI via keyboard barcode reader
-    await GRAIScreen.scanGraiBarcode({ barcodeString: '7613204.00307.1234567890' });
+    // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipWithText({ text: '1234567890' });
+    await GRAIScreen.expectGraiChipWithText({ text: '...00691412000' });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -95,11 +95,11 @@ test('Duplicate GRAI scan is ignored', async ({ page }) => {
     await HUManagerScreen.openGRAIScreen();
     await GRAIScreen.expectVisible();
 
-    // Scan same GRAI twice
-    await GRAIScreen.scanGraiBarcode({ barcodeString: '7613204.00307.1234567890' });
+    // Scan same GS1 AI 8003 GRAI barcode twice — MIGROS A crate
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
 
-    await GRAIScreen.scanGraiBarcode({ barcodeString: '7613204.00307.1234567890' });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 }); // still 1
 });
 
@@ -114,8 +114,8 @@ test('Remove GRAI chip', async ({ page }) => {
     await HUManagerScreen.openGRAIScreen();
     await GRAIScreen.expectVisible();
 
-    // Add a GRAI
-    await GRAIScreen.scanGraiBarcode({ barcodeString: '7613204.00307.9999999999' });
+    // Add a GRAI — MIGROS B crate
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003071100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
 
     // Remove it
