@@ -109,6 +109,24 @@ public class QtyReservationRepository
 		return deleteCount > 0;
 	}
 
+	/**
+	 * Returns all active, unprocessed reservations for the given order line.
+	 * Used by the HU picker to honor each reservation's attributes when picking on-the-fly.
+	 */
+	@NonNull
+	public ImmutableList<QtyReservation> getActiveByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.orderBy(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID)
+				.create()
+				.stream()
+				.map(QtyReservationLoaderAndSaver::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public QtyTU getReservedQtyTU(final @NotNull DeleteQtyReservationRequest request)
 	{
 		return getReservedQtyTU(toSqlQuery(request));
