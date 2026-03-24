@@ -16,11 +16,12 @@ WHERE EXISTS (SELECT 1 FROM AD_Tab WHERE AD_Tab_ID = 541964 AND IsActive = 'Y');
 -- Place it in the last UI element group used on this tab, with next SeqNo.
 -- Only insert if the tab and its UI elements exist.
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_Field_ID, AD_UI_ElementGroup_ID, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
+                           AD_Field_ID, AD_UI_ElementGroup_ID, AD_Tab_ID, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
                            IsAdvancedField, AD_UI_Element_ID, Name)
 SELECT 0, 0, 'Y', TO_TIMESTAMP('2026-03-23 12:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-23 12:00', 'YYYY-MM-DD HH24:MI'), 0,
        775480 /*From ID Server*/,
        uie.AD_UI_ElementGroup_ID,
+       541964 /*AD_Tab_ID = Kunde tab*/,
        COALESCE(MAX(uie2.SeqNo), 0) + 10,
        'Y', 'N', 'N',
        'N', 648881 /*From ID Server*/, 'GRAI Pflicht'
