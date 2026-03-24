@@ -93,3 +93,4 @@ nul
 **/allure-results/**/*
 **/playwright-report/**/*
 **/test-results/**/*
+docker-builds/e2e-tests/.env

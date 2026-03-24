@@ -1,14 +1,22 @@
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric
+)
+;
+DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric,
+    p_IsIncludeAllProducts varchar
 )
 ;
 
 CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric,
+    p_IsIncludeAllProducts varchar DEFAULT 'Y'
 )
     RETURNS TABLE
             (
@@ -108,8 +116,8 @@ BEGIN
 
     -- 4) Build the SQL statement to execute (separate function call argument)
     v_report_func_call := FORMAT(
-            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s)',
-            p_DateFrom, p_DateTo, p_Country_id
+            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s, p_IsIncludeAllProducts := %L)',
+            p_DateFrom, p_DateTo, p_Country_id, p_IsIncludeAllProducts
                           );
 
     -- 5) REWRITTEN V_SQL CONTENT - Wrapped the entire query to exclude the sort_order column
