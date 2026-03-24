@@ -148,7 +148,7 @@ public class DemandCandidateHandler implements CandidateHandler
 
 	private boolean isUseLotForLotQty(@NonNull final CandidateSaveResult candidateSaveResult, @NonNull final Candidate savedCandidate)
 	{
-		if(candidateSaveResult.getPreviousQty() == null) // prevent full qty on updates
+		if(candidateSaveResult.isNew())
 		{
 			// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
 			// So other parts shouldn't be affected by this.
@@ -163,19 +163,13 @@ public class DemandCandidateHandler implements CandidateHandler
 			{
 				return false;
 			}
-			else if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
+
+			if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
 			{
 				return true;
 			}
-			else
-			{
-				return false;
-			}
 		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
