@@ -16,7 +16,7 @@ env:
 jobs:
 
   init:
-    runs-on: ${{ vars.RUNNER_LIGHT }}
+    runs-on: warp-ubuntu-latest-x64-2x
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
