@@ -22,7 +22,6 @@
 
 package de.metas.shipping.process;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
@@ -30,6 +29,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -43,6 +43,7 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 {
 	private static final AdMessageKey MSG_ORDER_LINE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("OrderLineAssignedToProcessedTransportationOrder");
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -51,11 +52,6 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 		if (processPreconditionsResolution.isRejected())
 		{
 			return processPreconditionsResolution;
-		}
-
-		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
-		{
-			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
 		}
 		final IQueryFilter<I_C_OrderLine> queryFilter = context.getQueryFilter(I_C_OrderLine.class);
 		final List<I_C_Order> selectedOrders = orderBL.getByLineQueryFilter(queryFilter);
@@ -75,8 +71,13 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 	@Override
 	protected Set<OrderLineId> getOrderLineIds()
 	{
-		final IQueryFilter<I_C_OrderLine> queryFilterOrElseFalse = getProcessInfo().getQueryFilterOrElseFalse();
-		return ImmutableSet.copyOf(orderBL.getLineIdsByQueryFilter(queryFilterOrElseFalse));
+		final IQueryFilter<I_C_OrderLine> processQueryFilter = getProcessInfo().getQueryFilterOrElseFalse();
+		queryBL
+				.createCompositeQueryFilter(I_C_OrderLine.class)
+				.addFilter(processQueryFilter)
+				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, true)
+		;
+		return orderBL.getLineIdsByQueryFilter(processQueryFilter);
 	}
 
 	@Override
