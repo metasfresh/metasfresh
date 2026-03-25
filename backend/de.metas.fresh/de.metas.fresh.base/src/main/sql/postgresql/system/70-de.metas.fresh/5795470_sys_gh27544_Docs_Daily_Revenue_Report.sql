@@ -64,12 +64,12 @@ BEGIN
                                 FROM c_bp_group g
                                 WHERE g.c_bp_group_id = p_bp_group_id)  AS bpartner_group_name),
 
-             sales_orders AS (SELECT o.dateordered::date                            AS day,
-                                     SUM(ol.qtyordered * currencyBase(ol.priceactual,
-                                                                      o.c_currency_id,
-                                                                      o.dateordered,
-                                                                      o.AD_Client_ID,
-                                                                      o.AD_Org_ID)) AS revenue_net
+             sales_orders AS (SELECT o.dateordered::date            AS day,
+                                     SUM(currencyBase(ol.linenetamt,
+                                                      o.c_currency_id,
+                                                      o.dateordered,
+                                                      o.AD_Client_ID,
+                                                      o.AD_Org_ID)) AS revenue_net
                               FROM c_order o
                                        INNER JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
                                        INNER JOIN c_bpartner bp ON bp.c_bpartner_id = o.c_bpartner_id
