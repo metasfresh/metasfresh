@@ -102,7 +102,6 @@ public class DemandCandidateHandler implements CandidateHandler
 		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
 			// nothing to do
-			//return candidateSaveResult.toCandidateWithQtyDelta();
 			return candidateSaveResult;
 		}
 

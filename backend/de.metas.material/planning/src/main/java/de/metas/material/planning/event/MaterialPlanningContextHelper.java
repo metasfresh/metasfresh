@@ -23,7 +23,6 @@
 package de.metas.material.planning.event;
 
 import ch.qos.logback.classic.Level;
-import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -47,13 +46,11 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
-@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
 @RequiredArgsConstructor
 public class MaterialPlanningContextHelper
 {
