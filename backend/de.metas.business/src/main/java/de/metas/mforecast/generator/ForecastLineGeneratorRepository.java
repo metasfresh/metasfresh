@@ -23,8 +23,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -161,8 +159,8 @@ public class ForecastLineGeneratorRepository
 							AttributeSetInstanceId.NONE))
 					.forecastCalculationMethod(ForecastCalculationMethod.ofNullableCode(bestMatch.getForecast_CalculationMethod()))
 					.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(bestMatch.getForecast_PrecisionUnit()))
-					.forecastFrequency(extractForecastIntOrNull(bestMatch.getForecast_Frequency()))
-					.forecastBufferTime(extractForecastIntOrNull(bestMatch.getForecast_BufferTime()))
+					.forecastFrequency(bestMatch.getForecast_Frequency())
+					.forecastBufferTime(bestMatch.getForecast_BufferTime())
 					.deliveryTimePromised(bestMatch.getDeliveryTime_Promised() != null && bestMatch.getDeliveryTime_Promised().signum() > 0
 							? bestMatch.getDeliveryTime_Promised()
 							: null)
@@ -177,15 +175,5 @@ public class ForecastLineGeneratorRepository
 		final I_M_Product_Category category = InterfaceWrapperHelper.load(
 				product.getM_Product_Category_ID(), I_M_Product_Category.class);
 		return category != null && category.isExcludeFromForecast();
-	}
-
-	@Nullable
-	private static Integer extractForecastIntOrNull(@Nullable final BigDecimal value)
-	{
-		if (value == null || value.signum() <= 0)
-		{
-			return null;
-		}
-		return value.intValue();
 	}
 }
