@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 63995316L;
+	private static final long serialVersionUID = -1645678566L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -193,14 +193,14 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	@Override
 	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
-		if (M_HU_PI_Item_Product_ID < 1)
+		if (M_HU_PI_Item_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
-	public int getM_HU_PI_Item_Product_ID()
+	public int getM_HU_PI_Item_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
@@ -417,7 +417,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public BigDecimal getQtyProcessed_OnDate()
+	public BigDecimal getQtyProcessed_OnDate() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -485,6 +485,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
 	{
 		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setStorageAttributesKey (final @Nullable java.lang.String StorageAttributesKey)
+	{
+		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
+	}
+
+	@Override
+	public java.lang.String getStorageAttributesKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_StorageAttributesKey);
 	}
 
 	@Override
