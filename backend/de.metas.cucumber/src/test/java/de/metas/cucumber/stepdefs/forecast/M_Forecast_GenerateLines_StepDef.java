@@ -109,8 +109,8 @@ public class M_Forecast_GenerateLines_StepDef
 
 			ppRecord.setForecast_CalculationMethod(calculationMethod);
 			ppRecord.setForecast_PrecisionUnit(precisionUnit);
-			ppRecord.setForecast_Frequency(new BigDecimal(frequency));
-			ppRecord.setForecast_BufferTime(new BigDecimal(bufferTime));
+			ppRecord.setForecast_Frequency(frequency);
+			ppRecord.setForecast_BufferTime(bufferTime);
 			ppRecord.setIsExcludeFromForecast(excludeFromForecast);
 
 			InterfaceWrapperHelper.saveRecord(ppRecord);
