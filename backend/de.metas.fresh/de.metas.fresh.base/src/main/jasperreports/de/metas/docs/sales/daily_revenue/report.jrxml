@@ -13,24 +13,24 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="date_to" class="java.sql.Timestamp"/>
+	<parameter name="DateTo" class="java.sql.Timestamp"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="date_from" class="java.sql.Timestamp"/>
-	<parameter name="bpartner_group_id" class="java.math.BigDecimal"/>
+	<parameter name="DateFrom" class="java.sql.Timestamp"/>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="bpartner_id" class="java.math.BigDecimal"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="ad_org_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[new java.math.BigDecimal(1000000)]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Daily_Revenue_Report($P{bpartner_id},$P{bpartner_group_id},$P{date_from},$P{date_to}
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Daily_Revenue_Report($P{C_BPartner_ID},$P{C_BP_Group_ID},$P{DateFrom},$P{DateTo}
 );]]>
 	</queryString>
 	<field name="day" class="java.sql.Date">
@@ -61,9 +61,9 @@
 		<property name="com.jaspersoft.studio.field.name" value="margin_cur"/>
 		<property name="com.jaspersoft.studio.field.label" value="margin_cur"/>
 	</field>
-	<field name="currency" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="currency"/>
-		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
+		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
 	<field name="margin_pct" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="margin_pct"/>
@@ -136,7 +136,7 @@
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{date_from}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{DateFrom}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="144" y="164" width="156" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c8bd545c-4247-4aa6-a172-62f2fc4acf20"/>
@@ -149,7 +149,7 @@
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{date_to}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{DateTo}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-19" x="300" y="152" width="121" height="12" forecolor="#000000" uuid="226e5481-02a8-4a31-922a-27c58dbaa0dc">
@@ -392,7 +392,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
