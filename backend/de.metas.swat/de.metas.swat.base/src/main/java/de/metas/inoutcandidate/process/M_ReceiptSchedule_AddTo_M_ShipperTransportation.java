@@ -30,6 +30,7 @@ import de.metas.shipping.process.AddOrderLinesToShipperTransportation;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,8 @@ public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends AddOrderLin
 		return receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), queryFilterOrElseFalse)
 				.create()
 				.stream()
-				.map(rs -> OrderLineId.ofRepoId(rs.getC_OrderLine_ID()))
+				.map(rs -> OrderLineId.ofRepoIdOrNull(rs.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 	}
 

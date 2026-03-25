@@ -548,6 +548,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(I_C_Order.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 	}
@@ -557,6 +558,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.andCollect(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID)
 				.create()
 				.list();
@@ -567,6 +569,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
 				.filter(queryFilter)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.iterateAndStreamIds(OrderLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
