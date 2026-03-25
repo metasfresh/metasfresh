@@ -216,3 +216,47 @@ UPDATE AD_Process_Para SET AD_Element_ID=1383, AD_Reference_Value_ID=NULL, Colum
 UPDATE AD_Process_Para_Trl trl SET Description='Geschäftspartnergruppe',Help='Eine Geschäftspartner-Gruppe bietet Ihnen die Möglichkeit, Standard-Werte für einzelne Geschäftspartner zu verwenden.',Name='Geschäftspartnergruppe' WHERE AD_Process_Para_ID=543168 AND AD_Language='de_DE'
 ;
 
+-- Value: C_Order_Daily_Revenue_Report
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/sales/daily_revenue/report.jasper
+-- 2026-03-25T15:04:26.546Z
+UPDATE AD_Process SET Description='Tagesübersicht des Netto-Auftragsumsatzes, des Rechnungsumsatzes aus Debitoren- und Kreditorenrechnungen sowie der daraus resultierenden Marge in € und %.',Updated=TO_TIMESTAMP('2026-03-25 15:04:26.374000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585601
+;
+
+-- 2026-03-25T15:04:26.617Z
+UPDATE AD_Process_Trl trl SET Description='Tagesübersicht des Netto-Auftragsumsatzes, des Rechnungsumsatzes aus Debitoren- und Kreditorenrechnungen sowie der daraus resultierenden Marge in € und %.' WHERE AD_Process_ID=585601 AND AD_Language='de_DE'
+;
+
+-- Value: C_Order_Daily_Revenue_Report
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/sales/daily_revenue/report.jasper
+-- 2026-03-25T15:07:55.664Z
+UPDATE AD_Process SET Description='Tagesübersicht des Netto-Auftragsumsatzes, des Rechnungsumsatzes aus Debitoren- und Kreditorenrechnungen sowie der daraus resultierenden Marge.',Updated=TO_TIMESTAMP('2026-03-25 15:07:55.490000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585601
+;
+
+-- 2026-03-25T15:07:55.723Z
+UPDATE AD_Process_Trl trl SET Description='Tagesübersicht des Netto-Auftragsumsatzes, des Rechnungsumsatzes aus Debitoren- und Kreditorenrechnungen sowie der daraus resultierenden Marge.' WHERE AD_Process_ID=585601 AND AD_Language='de_DE'
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-03-25T15:08:09.082Z
+UPDATE AD_Process_Trl SET Description='Tagesübersicht des Netto-Auftragsumsatzes, des Rechnungsumsatzes aus Debitoren- und Kreditorenrechnungen sowie der daraus resultierenden Marge.', IsTranslated='Y',Updated=TO_TIMESTAMP('2026-03-25 15:08:09.082000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585601
+;
+
+-- 2026-03-25T15:08:09.140Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-03-25T15:08:16.604Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-03-25 15:08:16.604000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585601
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-03-25T15:08:26.769Z
+UPDATE AD_Process_Trl SET Description='Daily overview of net order revenue, accounts receivable and accounts payable invoice totals, and the resulting margin.',Updated=TO_TIMESTAMP('2026-03-25 15:08:26.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585601
+;
+
+-- 2026-03-25T15:08:26.828Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
