@@ -125,7 +125,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DateTo}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="MM/dd/yyyy" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="144" y="152" width="156" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="65c5f3ed-9151-4c26-a7c6-52849c2f5d48"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,7 +138,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{date_from}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="MM/dd/yyyy" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="144" y="164" width="156" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c8bd545c-4247-4aa6-a172-62f2fc4acf20"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -290,7 +290,7 @@
 	</columnHeader>
 	<detail>
 		<band height="17" splitType="Stretch">
-			<textField textAdjust="StretchHeight" pattern="MM/dd/yyyy" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="34" y="0" width="66" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="45b876fd-a771-4c8a-8f40-f45bcd15ed37"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
