@@ -35,8 +35,8 @@ Feature: Qty Reservation — shipment attribute and project propagation
   @Id:S_QtyRes_110
   Scenario: Project on order line propagates to shipment line when reservation exists
   ## _Given a product with 1 TU (10 PCE) on-hand stock and a project
-  ## _And a sales order line for 10 PCE with C_Project_ID set
-  ## _And an M_QtyReservation for 10 PCE
+  ## _And a sales order line for 10 PCE
+  ## _And an M_QtyReservation for 10 PCE with C_Project_ID set
   ## _When shipment is generated
   ## _Then the shipment line has the project from the order line
 
@@ -76,18 +76,13 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | orderLine_60 | order_60   | product_60   | 10         |
     And the order identified by order_60 is completed
 
-    # Set project on order line (simulates reservation inheriting project to OL)
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.C_Project_ID.Identifier |
-      | orderLine_60              | project_60                  |
-
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier          | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_60 | orderLine_60   | N             |
 
     And metasfresh contains M_QtyReservations:
-      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
-      | qtyReservation_60 | orderLine_60   | product_60   | warehouse_1    | 10 PCE | 1     |
+      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | C_Project_ID |
+      | qtyReservation_60 | orderLine_60   | product_60   | warehouse_1    | 10 PCE | 1     | project_60   |
 
     And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID |
@@ -101,7 +96,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | M_ShipmentSchedule_ID | M_InOut_ID  |
       | shipmentSchedule_60   | shipment_60 |
     And validate the created shipment lines
-      | M_InOut_ID  | M_Product_ID | movementqty | C_Project_ID |
+      | M_InOut_ID  | M_Product_ID | MovementQty | C_Project_ID |
       | shipment_60 | product_60   | 10          | project_60   |
 
     And validate M_QtyReservations:
