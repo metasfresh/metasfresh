@@ -78,7 +78,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
-	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -140,9 +139,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Set<OrderLineId> orderLineIds)
 	{
-		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
+		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderLineIds);
 
 		orderToLinesMap.keySet()
 				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
@@ -351,7 +350,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds, @NonNull final AdMessageKey failureMessage)
 	{
 		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderLineIds(orderLineIds)
@@ -363,7 +362,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		else
 		{
-			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+			throw new AdempiereException(failureMessage);
 		}
 	}
 }

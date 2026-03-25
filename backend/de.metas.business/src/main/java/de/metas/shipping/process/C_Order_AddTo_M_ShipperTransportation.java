@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
 	private static final int MAX_SELECTION_SIZE = 100;
-	private final static AdMessageKey MSG_DOCUMENT_NOT_COMPLETE = AdMessageKey.of("DocumentNotComplete");
+	public final static AdMessageKey MSG_DOCUMENT_NOT_COMPLETE = AdMessageKey.of("DocumentNotComplete");
 	private final static AdMessageKey MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToDifferentTransportationOrder");
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);

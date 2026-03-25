@@ -85,7 +85,7 @@ public interface IOrderDAO extends ISingletonService
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
 
-	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Collection<OrderAndLineId> orderAndLineIds);
+	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * @return order lines for given order
@@ -175,4 +175,6 @@ public interface IOrderDAO extends ISingletonService
 	boolean hasDeliveredItems(@NonNull OrderId orderId);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
+	Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
 }
