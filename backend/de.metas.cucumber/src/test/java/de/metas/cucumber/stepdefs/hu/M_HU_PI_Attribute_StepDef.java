@@ -82,9 +82,7 @@ public class M_HU_PI_Attribute_StepDef
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
 				.firstOnlyOptional(I_M_HU_PI_Attribute.class)
-				.orElseGet(() -> {
-					return InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
-				});
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class));
 		
 		piAttributeRecord.setM_HU_PI_Version_ID(huPiVersionId.getRepoId());
 		piAttributeRecord.setM_Attribute_ID(attributeId.getRepoId());
