@@ -3,16 +3,17 @@ package de.metas.ui.web.view.descriptor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectDisplayValue;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.user.UserId;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.table.api.ColumnNameFQ;
+import org.adempiere.service.ClientId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,14 +43,14 @@ class SqlViewSelectDataTest
 	void beforeEach()
 	{
 		viewEvalCtx = ViewEvaluationCtx._builder()
-				.loggedUserId(Optional.of(UserId.ofRepoId(100)))
+				.loggedUserId(Optional.of(UserId.METASFRESH))
 				.orgId(OrgId.ofRepoId(1000000))
 				.adLanguage("en_US")
 				.timeZone(ZoneId.of("Europe/Berlin"))
 				.permissionsKey(UserRolePermissionsKey.of(
-						de.metas.security.RoleId.ofRepoId(0),
-						UserId.ofRepoId(100),
-						org.adempiere.service.ClientId.ofRepoId(0),
+						RoleId.SYSTEM,
+						UserId.METASFRESH,
+						ClientId.SYSTEM,
 						LocalDate.of(2026, 3, 22)))
 				.build();
 	}
@@ -58,113 +59,75 @@ class SqlViewSelectDataTest
 	class selectFieldValues
 	{
 		@Test
-		void withoutDisplayValue_usesDistinctInOuterSelect()
+		void withoutDisplayValue()
 		{
-			// A simple field without a display value (e.g., a plain date or amount column)
 			final SqlViewSelectData selectData = createSelectData(
 					createKeyField(),
 					createSimpleField("DateOrdered", "DateOrdered", DocumentFieldWidgetType.LocalDate));
 
 			final SqlAndParams result = selectData.selectFieldValues(viewEvalCtx, "test-uuid", "DateOrdered", 10);
 
-			final String sql = result.getSql();
+			assertThat(result.getSql()).isEqualTo(
+					"SELECT DISTINCT DateOrdered"
+							+ "\n FROM ("
+							+ "\n SELECT "
+							+ "\n " + TABLE_NAME + ".DateOrdered AS DateOrdered"
+							+ "\n FROM T_WEBUI_ViewSelection sel"
+							+ "\n INNER JOIN " + TABLE_NAME + " ON (" + TABLE_NAME + ".Overview_ID=sel.IntKey1)"
+							+ "\n WHERE sel.UUID=?"
+							+ "\n ORDER BY sel.Line"
+							+ "\n) t"
+							+ "\n LIMIT ?");
 
-			// Without display value: SELECT DISTINCT in outer, no display subquery
-			assertThat(sql).startsWith("SELECT DISTINCT DateOrdered");
-			assertThat(sql).contains("FROM (");
-			assertThat(sql).contains(TABLE_NAME);
-			assertThat(sql).contains("T_WEBUI_ViewSelection sel");
-			assertThat(sql).contains("sel.UUID=?");
-			assertThat(sql).contains("LIMIT ?");
-
-			// Should NOT have any display column
-			assertThat(sql).doesNotContain("$Display");
-
-			// Params: selectionId, limit
 			assertThat(result.getSqlParams()).containsExactly("test-uuid", 10);
 		}
 
 		@Test
-		void withDisplayValue_computesDistinctBeforeDisplay()
+		void withDisplayValue()
 		{
-			// A field with a display value (e.g., CreatedBy with AD_User lookup)
-			final SqlSelectDisplayValue displayValue = SqlSelectDisplayValue.builder()
-					.joinOnColumnName("CreatedBy")
-					.sqlExpression(SqlForFetchingLookupById.builder()
-							.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("AD_User", "AD_User_ID"))
-							.numericKey(true)
-							.displayColumn(ConstantStringExpression.of("AD_User.Name"))
-							.sqlFrom(ConstantStringExpression.of("AD_User"))
-							.build())
-					.columnNameAlias("CreatedBy$Display")
-					.build();
-
 			final SqlViewSelectData selectData = createSelectData(
 					createKeyField(),
-					createFieldWithDisplay("CreatedBy", "CreatedBy", DocumentFieldWidgetType.Integer, displayValue));
+					createFieldWithDisplay("CreatedBy", "CreatedBy", DocumentFieldWidgetType.Integer,
+							createAdUserDisplayValue("CreatedBy")));
 
 			final SqlAndParams result = selectData.selectFieldValues(viewEvalCtx, "test-uuid", "CreatedBy", 10);
 
-			final String sql = result.getSql();
+			assertThat(result.getSql()).isEqualTo(
+					"SELECT t.CreatedBy"
+							+ "\n, (SELECT "
+							+ "\n ARRAY[AD_User.AD_User_ID::text, AD_User.Name, NULL,NULL, NULL] "
+							+ "\n FROM AD_User"
+							+ "\n WHERE AD_User.AD_User_ID=t.CreatedBy) AS CreatedBy$Display"
+							+ "\n FROM ("
+							+ "\n SELECT DISTINCT "
+							+ "\n " + TABLE_NAME + ".CreatedBy AS CreatedBy"
+							+ "\n FROM T_WEBUI_ViewSelection sel"
+							+ "\n INNER JOIN " + TABLE_NAME + " ON (" + TABLE_NAME + ".Overview_ID=sel.IntKey1)"
+							+ "\n WHERE sel.UUID=?"
+							+ "\n) t"
+							+ "\n LIMIT ?");
 
-			// gh#28680: The critical performance fix:
-			// Outer SELECT must NOT have DISTINCT — it selects from already-distinct inner results
-			assertThat(sql).startsWith("SELECT t.CreatedBy");
-			assertThat(sql).doesNotMatch("(?i)^SELECT DISTINCT.*");
-
-			// Display value must be computed in the OUTER query (referencing t.CreatedBy)
-			assertThat(sql).contains("CreatedBy$Display");
-			// The display subquery should reference t.CreatedBy (outer table alias)
-			assertThat(sql).contains("AD_User.AD_User_ID=t.CreatedBy");
-
-			// DISTINCT must be in the INNER subquery (on the value column only)
-			assertThat(sql).contains("SELECT DISTINCT");
-			// The inner DISTINCT should be followed by the value column with the view table
-			assertThat(sql).matches("(?s).*SELECT DISTINCT\\s+\\n\\s+" + TABLE_NAME + "\\.CreatedBy AS CreatedBy.*");
-
-			// Inner query must join selection table
-			assertThat(sql).contains("T_WEBUI_ViewSelection sel");
-			assertThat(sql).contains("sel.UUID=?");
-			assertThat(sql).contains("LIMIT ?");
-
-			// Params
 			assertThat(result.getSqlParams()).containsExactly("test-uuid", 10);
 		}
 
 		@Test
 		void withDisplayValue_innerQueryDoesNotContainDisplaySubquery()
 		{
-			// Verify the display subquery is NOT in the inner query
-			// (this was the root cause of the 89-second query)
-			final SqlSelectDisplayValue displayValue = SqlSelectDisplayValue.builder()
-					.joinOnColumnName("M_Product_ID")
-					.sqlExpression(SqlForFetchingLookupById.builder()
-							.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("M_Product", "M_Product_ID"))
-							.numericKey(true)
-							.displayColumn(ConstantStringExpression.of("M_Product.Name"))
-							.sqlFrom(ConstantStringExpression.of("M_Product"))
-							.build())
-					.columnNameAlias("M_Product_ID$Display")
-					.build();
-
 			final SqlViewSelectData selectData = createSelectData(
 					createKeyField(),
-					createFieldWithDisplay("M_Product_ID", "M_Product_ID", DocumentFieldWidgetType.Integer, displayValue));
+					createFieldWithDisplay("M_Product_ID", "M_Product_ID", DocumentFieldWidgetType.Integer,
+							createProductDisplayValue()));
 
 			final SqlAndParams result = selectData.selectFieldValues(viewEvalCtx, "test-uuid", "M_Product_ID", 10);
-
 			final String sql = result.getSql();
 
-			// Split SQL at the inner subquery boundary to check what's inside vs outside
+			// Split at inner subquery boundary
 			final int fromSubqueryStart = sql.indexOf("FROM (");
 			final int subqueryEnd = sql.indexOf(") t");
-			assertThat(fromSubqueryStart).isGreaterThan(0);
-			assertThat(subqueryEnd).isGreaterThan(fromSubqueryStart);
-
 			final String outerSelect = sql.substring(0, fromSubqueryStart);
 			final String innerSubquery = sql.substring(fromSubqueryStart, subqueryEnd);
 
-			// Display lookup must be in the OUTER select, not in the inner subquery
+			// Display lookup must be in OUTER select only (this was the 89s perf bug)
 			assertThat(outerSelect).contains("M_Product_ID$Display");
 			assertThat(innerSubquery).doesNotContain("M_Product_ID$Display");
 			assertThat(innerSubquery).doesNotContain("M_Product.Name");
@@ -186,7 +149,6 @@ class SqlViewSelectDataTest
 		@Test
 		void withDisplayValue_refListLookup()
 		{
-			// Test with AD_Ref_List lookup (string key, has additionalWhereClause)
 			final SqlSelectDisplayValue displayValue = SqlSelectDisplayValue.builder()
 					.joinOnColumnName("DocStatus")
 					.sqlExpression(SqlForFetchingLookupById.builder()
@@ -205,34 +167,29 @@ class SqlViewSelectDataTest
 
 			final SqlAndParams result = selectData.selectFieldValues(viewEvalCtx, "test-uuid", "DocStatus", 10);
 
-			final String sql = result.getSql();
+			assertThat(result.getSql()).isEqualTo(
+					"SELECT t.DocStatus"
+							+ "\n, (SELECT "
+							+ "\n ARRAY[AD_Ref_List.Value::text, AD_Ref_List.Name, NULL,NULL, NULL] "
+							+ "\n FROM AD_Ref_List"
+							+ "\n WHERE AD_Ref_List.Value=t.DocStatus AND AD_Ref_List.AD_Reference_ID=131) AS DocStatus$Display"
+							+ "\n FROM ("
+							+ "\n SELECT DISTINCT "
+							+ "\n " + TABLE_NAME + ".DocStatus AS DocStatus"
+							+ "\n FROM T_WEBUI_ViewSelection sel"
+							+ "\n INNER JOIN " + TABLE_NAME + " ON (" + TABLE_NAME + ".Overview_ID=sel.IntKey1)"
+							+ "\n WHERE sel.UUID=?"
+							+ "\n) t"
+							+ "\n LIMIT ?");
 
-			// Outer query references t.DocStatus for the lookup
-			assertThat(sql).contains("AD_Ref_List.Value=t.DocStatus");
-			// Additional where clause must be preserved
-			assertThat(sql).contains("AD_Ref_List.AD_Reference_ID=131");
-			// DISTINCT in inner query only
-			assertThat(sql).startsWith("SELECT t.DocStatus");
-			assertThat(sql).contains("SELECT DISTINCT");
+			assertThat(result.getSqlParams()).containsExactly("test-uuid", 10);
 		}
 
 		@Test
 		void withDisplayValue_displayNotInDisplayFieldNames_treatedAsNoDisplay()
 		{
-			// If the field has a SqlSelectDisplayValue but is NOT in displayFieldNames,
-			// it should behave like a field without display value
-			final SqlSelectDisplayValue displayValue = SqlSelectDisplayValue.builder()
-					.joinOnColumnName("CreatedBy")
-					.sqlExpression(SqlForFetchingLookupById.builder()
-							.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("AD_User", "AD_User_ID"))
-							.numericKey(true)
-							.displayColumn(ConstantStringExpression.of("AD_User.Name"))
-							.sqlFrom(ConstantStringExpression.of("AD_User"))
-							.build())
-					.columnNameAlias("CreatedBy$Display")
-					.build();
-
-			// Create field WITH display value but don't include it in displayFieldNames
+			// Field has SqlSelectDisplayValue but is NOT in displayFieldNames =>
+			// should behave like a field without display value (DISTINCT in outer query)
 			final SqlViewRowFieldBinding keyField = createKeyField();
 			final SqlViewRowFieldBinding createdByField = SqlViewRowFieldBinding.builder()
 					.fieldName("CreatedBy")
@@ -243,7 +200,7 @@ class SqlViewSelectDataTest
 							.columnName("CreatedBy")
 							.columnNameAlias("CreatedBy")
 							.build())
-					.sqlSelectDisplayValue(displayValue)
+					.sqlSelectDisplayValue(createAdUserDisplayValue("CreatedBy"))
 					.fieldLoader((rs, adLanguage) -> null)
 					.build();
 
@@ -257,15 +214,42 @@ class SqlViewSelectDataTest
 
 			final SqlAndParams result = selectData.selectFieldValues(viewEvalCtx, "test-uuid", "CreatedBy", 10);
 
-			final String sql = result.getSql();
-
-			// Should use the simpler DISTINCT path since display is not active
-			assertThat(sql).startsWith("SELECT DISTINCT CreatedBy");
-			assertThat(sql).doesNotContain("$Display");
+			assertThat(result.getSql()).startsWith("SELECT DISTINCT CreatedBy");
+			assertThat(result.getSql()).doesNotContain("$Display");
 		}
 	}
 
-	// --- Helper methods ---
+	// --- Reusable display value builders ---
+
+	private static SqlSelectDisplayValue createAdUserDisplayValue(final String joinOnColumnName)
+	{
+		return SqlSelectDisplayValue.builder()
+				.joinOnColumnName(joinOnColumnName)
+				.sqlExpression(SqlForFetchingLookupById.builder()
+						.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("AD_User", "AD_User_ID"))
+						.numericKey(true)
+						.displayColumn(ConstantStringExpression.of("AD_User.Name"))
+						.sqlFrom(ConstantStringExpression.of("AD_User"))
+						.build())
+				.columnNameAlias(joinOnColumnName + "$Display")
+				.build();
+	}
+
+	private static SqlSelectDisplayValue createProductDisplayValue()
+	{
+		return SqlSelectDisplayValue.builder()
+				.joinOnColumnName("M_Product_ID")
+				.sqlExpression(SqlForFetchingLookupById.builder()
+						.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("M_Product", "M_Product_ID"))
+						.numericKey(true)
+						.displayColumn(ConstantStringExpression.of("M_Product.Name"))
+						.sqlFrom(ConstantStringExpression.of("M_Product"))
+						.build())
+				.columnNameAlias("M_Product_ID$Display")
+				.build();
+	}
+
+	// --- Field builder helpers ---
 
 	private SqlViewRowFieldBinding createKeyField()
 	{
@@ -337,7 +321,6 @@ class SqlViewSelectDataTest
 		allFields.add(keyField);
 		allFields.add(otherFields);
 
-		// Collect field names that have display values to include in displayFieldNames
 		final ImmutableSet.Builder<String> displayFieldNames = ImmutableSet.builder();
 		for (final SqlViewRowFieldBinding field : otherFields)
 		{
