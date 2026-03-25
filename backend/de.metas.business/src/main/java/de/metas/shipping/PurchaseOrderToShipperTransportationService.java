@@ -365,4 +365,20 @@ public class PurchaseOrderToShipperTransportationService
 			throw new AdempiereException(failureMessage);
 		}
 	}
+
+	public void deleteShippingPackagesForOrders(@NonNull final Collection<OrderId> orderIds, @NonNull final AdMessageKey failureMessage)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderIds(orderIds)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderIds(orderIds).build());
+		}
+		else
+		{
+			throw new AdempiereException(failureMessage);
+		}
+	}
 }

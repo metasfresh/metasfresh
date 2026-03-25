@@ -9,7 +9,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
@@ -53,7 +52,6 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
 	private ShipperTransportationId p_M_ShipperTransportation_ID;
@@ -93,10 +91,7 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 				.map(o -> OrderId.ofRepoId(o.getC_Order_ID()))
 				.collect(Collectors.toSet());
 
-		if (shipperTransportationBL.isAnyOrderAssignedToDifferentTransportationOrder(p_M_ShipperTransportation_ID, orderIds))
-		{
-			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
-		}
+		orderToShipperTransportationService.deleteShippingPackagesForOrders(orderIds, MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
 
 		orderToShipperTransportationService.addPurchaseOrdersToShipperTransportation(p_M_ShipperTransportation_ID, orderIds);
 		return MSG_OK;
