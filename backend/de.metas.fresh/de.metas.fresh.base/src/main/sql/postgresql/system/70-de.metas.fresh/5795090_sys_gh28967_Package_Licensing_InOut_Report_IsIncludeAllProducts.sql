@@ -170,9 +170,9 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 584691)
 ;
 
--- de_DE translation (base language)
+-- de_DE translation (base language — IsTranslated stays N)
 UPDATE AD_Element_Trl
-SET IsTranslated   = 'Y',
+SET IsTranslated   = 'N',
     Name           = 'Alle Produkte einbeziehen',
     PrintName      = 'Alle Produkte einbeziehen',
     Description    = 'Produkte ohne Verpackungslizenz-Stammdaten für das gewählte Land mit einbeziehen',
@@ -208,16 +208,6 @@ SET IsTranslated   = 'Y',
 WHERE AD_Element_ID = 584691
   AND AD_Language = 'en_US'
 ;
-UPDATE AD_Element base
-SET Name      = trl.Name,
-    PrintName = trl.PrintName,
-    Updated   = trl.Updated,
-    UpdatedBy = trl.UpdatedBy
-FROM AD_Element_Trl trl
-WHERE trl.AD_Element_ID = base.AD_Element_ID
-  AND trl.AD_Language = 'en_US'
-  AND trl.AD_Language = getBaseLanguage()
-;
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
 
 -- 3) AD_Process_Para for detail report (585503)
@@ -242,6 +232,10 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID)
 ;
 
+-- Propagate element translations (en_US name/description) to process parameter labels
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
+
 -- 4) AD_Process_Para for summary report (585504)
 INSERT INTO AD_Process_Para (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID, AD_Process_Para_ID,
                              AD_Reference_ID, ColumnName, Created, CreatedBy, EntityType, FieldLength,
@@ -264,9 +258,13 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID)
 ;
 
+-- Propagate element translations (en_US name/description) to process parameter labels
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
+
 -- 5) Update SQLStatement on detail report to pass the new parameter
 UPDATE AD_Process
-SET SQLStatement = 'SELECT * FROM Package_Licensing_InOut_Report_report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, NULLIF(''@IsIncludeAllProducts/null@'', ''null''))',
+SET SQLStatement = 'SELECT * FROM report.Package_Licensing_InOut_Report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, ''@IsIncludeAllProducts@'')',
     Updated      = '2026-03-21 12:00',
     UpdatedBy    = 100
 WHERE AD_Process_ID = 585503
@@ -274,7 +272,7 @@ WHERE AD_Process_ID = 585503
 
 -- 6) Update SQLStatement on summary report to pass the new parameter
 UPDATE AD_Process
-SET SQLStatement = 'SELECT * FROM Package_Licensing_InOut_Summary_Report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, NULLIF(''@IsIncludeAllProducts/null@'', ''null''))',
+SET SQLStatement = 'SELECT * FROM report.Package_Licensing_InOut_Summary_Report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, ''@IsIncludeAllProducts@'')',
     Updated      = '2026-03-21 12:00',
     UpdatedBy    = 100
 WHERE AD_Process_ID = 585504
