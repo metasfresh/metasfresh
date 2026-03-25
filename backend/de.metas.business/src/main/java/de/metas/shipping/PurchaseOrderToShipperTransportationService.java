@@ -239,7 +239,7 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
 
-		//For most flows this is a NOOP as the packages should have been deleted beforehand. Keeping this as a safety net.
+		// For most flows this is a NOOP as the packages should have been deleted beforehand. Keeping this as a safety net.
 		deletePackagesForOrderLine(orderLineId);
 
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());

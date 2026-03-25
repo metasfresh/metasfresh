@@ -142,3 +142,12 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='At least one purchase order
 UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 
+-- Value: OrderAssignedToDifferentTransportationOrder
+-- 2026-03-25T16:45:16.448Z
+DELETE FROM  AD_Message_Trl WHERE AD_Message_ID=545607
+;
+
+-- 2026-03-25T16:45:16.457Z
+DELETE FROM AD_Message WHERE AD_Message_ID=545607
+;
+
