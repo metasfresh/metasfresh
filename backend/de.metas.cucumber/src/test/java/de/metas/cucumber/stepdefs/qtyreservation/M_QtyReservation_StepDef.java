@@ -36,7 +36,6 @@ import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.inoutcandidate.qty_reservation.SupplyType;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.project.ProjectId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -49,6 +48,8 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_QtyReservation;
+
+import javax.annotation.Nullable;
 
 /**
  * Step definitions for {@code M_QtyReservation}.
@@ -118,43 +119,31 @@ public class M_QtyReservation_StepDef
 
 	private void createReservation(@NonNull final DataTableRow row)
 	{
-		final ProjectId projectId = row.getAsOptionalIdentifier("C_Project_ID")
-				.map(projectTable::get)
-				.map(project -> ProjectId.ofRepoId(project.getC_Project_ID()))
-				.orElse(null);
+		final QtyReservationId qtyReservationId = qtyReservationService.makeReservation(
+				CreateQtyReservationRequest.builder()
+						.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
+						.productId(row.getAsIdentifier("M_Product_ID").lookupNotNullIdIn(productTable))
+						.warehouseId(row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIdIn(warehouseTable))
+						.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
+						.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
+						.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
+						.projectId(row.getAsOptionalIdentifier("C_Project_ID").map(projectTable::getId).orElse(null))
+						.attributesKey(extractAttributesKey(row))
+						.build()
+		);
 
-		// AttributesKey: either as a raw §&§-separated string or computed from a referenced ASI
-		final AttributesKey attributesKey = row.getAsOptionalString("AttributesKey")
+		row.getAsOptionalIdentifier().ifPresent(id -> qtyReservationTable.putOrReplace(id, qtyReservationId));
+	}
+
+	@Nullable
+	private AttributesKey extractAttributesKey(final @NonNull DataTableRow row)
+	{
+		return row.getAsOptionalString("AttributesKey")
 				.map(AttributesKey::ofString)
 				.orElseGet(() -> row.getAsOptionalIdentifier(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
 						.map(asiTable::getId)
 						.flatMap(AttributesKeys::createAttributesKeyFromASIStorageAttributes)
 						.orElse(null));
-
-		final QtyReservationId qtyReservationId = qtyReservationService.makeReservation(CreateQtyReservationRequest.builder()
-				.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
-				.productId(row.getAsIdentifier("M_Product_ID").lookupNotNullIdIn(productTable))
-				.warehouseId(row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIdIn(warehouseTable))
-				.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
-				.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
-				.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
-				.projectId(projectId)
-				.attributesKey(attributesKey)
-				.build());
-
-		// final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);
-		// record.setC_Order_ID(orderLine.getC_Order_ID());
-		// record.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		// record.setM_Product_ID(productId);
-		// record.setM_Warehouse_ID(warehouseId);
-		// record.setQty(qty.toBigDecimal());
-		// record.setQtyDelivered(BigDecimal.ZERO);
-		// record.setQtyTU(qtyTU);
-		// record.setC_UOM_ID(qty.getUomId().getRepoId());
-		// record.setSupplyType(supplyType);
-		// InterfaceWrapperHelper.saveRecord(record);
-
-		row.getAsOptionalIdentifier().ifPresent(id -> qtyReservationTable.putOrReplace(id, qtyReservationId));
 	}
 
 	/**
