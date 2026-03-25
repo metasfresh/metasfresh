@@ -25,6 +25,8 @@ package de.metas.handlingunits.rest_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
@@ -107,7 +109,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Arrays;
 import java.util.Collection;
@@ -926,7 +927,7 @@ public class HandlingUnitsService
 			throw new AdempiereException("GRAI scanning not supported for virtual HUs");
 		}
 
-		final ArrayList<String> graiCodes = new ArrayList<>();
+		final ArrayList<GRAI> grais = new ArrayList<>();
 		final int tuCount;
 
 		if (handlingUnitsBL.isLoadingUnit(hu))
@@ -942,10 +943,10 @@ public class HandlingUnitsService
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
 						tuCounter++;
-						final String grai = huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI);
-						if (Check.isNotBlank(grai))
+						final GRAI grai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI));
+						if (grai != null)
 						{
-							graiCodes.add(grai);
+							grais.add(grai);
 						}
 					}
 				}
@@ -955,21 +956,11 @@ public class HandlingUnitsService
 					tuCounter += item.getQty().intValue();
 
 					// Read comma-separated GRAIs from the aggregate VHU's attribute
-					final List<I_M_HU> aggregateVHUs = handlingUnitsDAO.retrieveIncludedHUs(item);
-					for (final I_M_HU aggregateVHU : aggregateVHUs)
+					for (final I_M_HU aggregateVHU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
-						final String graiValue = huAttributesBL.getHUAttributeValue(aggregateVHU, AttributeConstants.ATTR_GRAI);
-						if (Check.isNotBlank(graiValue))
-						{
-							for (final String singleGrai : graiValue.split(","))
-							{
-								final String trimmed = singleGrai.trim();
-								if (!trimmed.isEmpty())
-								{
-									graiCodes.add(trimmed);
-								}
-							}
-						}
+						GRAISet.ofNullableCommaSeparated(huAttributesBL.getHUAttributeValue(aggregateVHU, AttributeConstants.ATTR_GRAI))
+								.stream()
+								.forEach(grais::add);
 					}
 				}
 			}
@@ -979,22 +970,22 @@ public class HandlingUnitsService
 		{
 			// TU: single GRAI
 			tuCount = 1;
-			final String grai = huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI);
-			if (Check.isNotBlank(grai))
+			final GRAI grai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
+			if (grai != null)
 			{
-				graiCodes.add(grai);
+				grais.add(grai);
 			}
 		}
 
 		return JsonGRAICodesResponse.builder()
 				.huId(huId.getRepoId())
-				.graiCodes(graiCodes)
+				.graiCodes(GRAISet.ofCollection(grais).toStringList())
 				.tuCount(tuCount)
 				.build();
 	}
 
 	@NonNull
-	public JsonGRAICodesResponse setPackingMaterials(@NonNull final HuId huId, @NonNull final List<String> graiCodes)
+	public JsonGRAICodesResponse setPackingMaterials(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
 	{
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
@@ -1006,20 +997,19 @@ public class HandlingUnitsService
 		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
 			// TU: set single GRAI directly
-			final String value = graiCodes.isEmpty() ? null : graiCodes.get(0);
+			final String value = graiSet.stream().findFirst().map(GRAI::getValue).orElse(null);
 			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, value);
 		}
 		else if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			// LU: distribute GRAIs to child TUs in two passes
-			final LinkedHashSet<String> unassignedGrais = new LinkedHashSet<>(graiCodes);
-			final HashSet<String> newGraiSet = new HashSet<>(graiCodes);
+			final LinkedHashSet<GRAI> unassignedGrais = new LinkedHashSet<>(graiSet.toSet());
 
 			// Collect TUs that need GRAI assignment and aggregate items
 			final ArrayList<I_M_HU> tusWithoutGrai = new ArrayList<>();
 			final ArrayList<I_M_HU> aggregateVHUs = new ArrayList<>();
 
-			// Pass 1: For disaggregated TUs, keep existing GRAIs that are in the new list, clear others
+			// Pass 1: For disaggregated TUs, keep existing GRAIs that are in the new set, clear others
 			for (final I_M_HU_Item item : handlingUnitsDAO.retrieveItems(hu))
 			{
 				final String itemType = item.getItemType();
@@ -1027,15 +1017,15 @@ public class HandlingUnitsService
 				{
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
-						final String existingGrai = huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI);
-						if (Check.isNotBlank(existingGrai) && newGraiSet.contains(existingGrai))
+						final GRAI existingGrai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI));
+						if (existingGrai != null && graiSet.contains(existingGrai))
 						{
-							// Keep it — it's in the new list; mark as assigned
+							// Keep it — it's in the new set; mark as assigned
 							unassignedGrais.remove(existingGrai);
 						}
-						else if (Check.isNotBlank(existingGrai))
+						else if (existingGrai != null)
 						{
-							// Clear it — it's NOT in the new list
+							// Clear it — it's NOT in the new set
 							huAttributesBL.updateHUAttribute(HuId.ofRepoId(childTU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, null);
 							tusWithoutGrai.add(childTU);
 						}
@@ -1056,13 +1046,13 @@ public class HandlingUnitsService
 			}
 
 			// Pass 2: Assign unassigned GRAIs to TUs without GRAI
-			final ArrayList<String> remainingGrais = new ArrayList<>(unassignedGrais);
+			final ArrayList<GRAI> remainingGrais = new ArrayList<>(unassignedGrais);
 			int graiIndex = 0;
 			for (final I_M_HU tu : tusWithoutGrai)
 			{
 				if (graiIndex < remainingGrais.size())
 				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(tu.getM_HU_ID()), AttributeConstants.ATTR_GRAI, remainingGrais.get(graiIndex));
+					huAttributesBL.updateHUAttribute(HuId.ofRepoId(tu.getM_HU_ID()), AttributeConstants.ATTR_GRAI, remainingGrais.get(graiIndex).getValue());
 					graiIndex++;
 				}
 			}
@@ -1070,8 +1060,7 @@ public class HandlingUnitsService
 			// Store remaining unassigned GRAIs as comma-separated on aggregate VHUs
 			if (graiIndex < remainingGrais.size() && !aggregateVHUs.isEmpty())
 			{
-				final List<String> leftoverGrais = remainingGrais.subList(graiIndex, remainingGrais.size());
-				final String commaSeparated = String.join(",", leftoverGrais);
+				final String commaSeparated = GRAISet.ofCollection(remainingGrais.subList(graiIndex, remainingGrais.size())).toCommaSeparatedString();
 				for (final I_M_HU aggregateVHU : aggregateVHUs)
 				{
 					huAttributesBL.updateHUAttribute(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, commaSeparated);

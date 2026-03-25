@@ -31,6 +31,7 @@ import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.mobileui.config.HUManagerProfile;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
@@ -260,7 +261,7 @@ public class HUManagerRestController
 
 		final JsonGRAICodesResponse response = handlingUnitsService.setPackingMaterials(
 				HuId.ofRepoId(huId),
-				request.getGraiCodes());
+				GRAISet.ofStrings(request.getGraiCodes()));
 		return ResponseEntity.ok(response);
 	}
 }

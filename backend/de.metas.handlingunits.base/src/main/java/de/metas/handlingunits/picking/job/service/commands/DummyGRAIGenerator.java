@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -21,9 +22,9 @@ public class DummyGRAIGenerator
 	 * @param counter     sequential counter (1-99)
 	 */
 	@NonNull
-	public String buildDummyGRAI(@NonNull final String paddedPORef, final int counter)
+	public GRAI buildDummyGRAI(@NonNull final String paddedPORef, final int counter)
 	{
-		return MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef + String.format("%02d", counter);
+		return GRAI.of(MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef + String.format("%02d", counter));
 	}
 
 	/**
@@ -41,16 +42,21 @@ public class DummyGRAIGenerator
 	}
 
 	/**
-	 * Extract the 2-digit dummy counter from a GRAI string, if it matches the dummy prefix.
+	 * Extract the 2-digit dummy counter from a GRAI, if it matches the dummy prefix.
 	 * Returns 0 if not a dummy GRAI.
 	 */
-	public int extractDummyCounter(@Nullable final String grai, @NonNull final String dummyPrefix)
+	public int extractDummyCounter(@Nullable final GRAI grai, @NonNull final String dummyPrefix)
 	{
-		if (grai == null || !grai.startsWith(dummyPrefix))
+		if (grai == null)
 		{
 			return 0;
 		}
-		final String counterStr = grai.substring(dummyPrefix.length());
+		final String value = grai.getValue();
+		if (!value.startsWith(dummyPrefix))
+		{
+			return 0;
+		}
+		final String counterStr = value.substring(dummyPrefix.length());
 		if (counterStr.length() != 2)
 		{
 			return 0;

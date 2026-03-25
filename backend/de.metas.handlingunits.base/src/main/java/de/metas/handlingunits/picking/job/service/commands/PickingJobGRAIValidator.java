@@ -7,6 +7,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -19,12 +23,14 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import de.metas.handlingunits.model.I_M_HU;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 @Builder
@@ -32,6 +38,14 @@ public class PickingJobGRAIValidator
 {
 	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
 
+	// Services
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	// Parameters
 	@NonNull private final PickingJob pickingJob;
 
 	public void validate()
@@ -42,43 +56,30 @@ public class PickingJobGRAIValidator
 			return;
 		}
 
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
-		final String graiRequired = bpartner.getGRAIRequired();
-		if (graiRequired == null || "N".equals(graiRequired))
+		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
+		if (graiRequired == GRAIRequired.No)
 		{
 			return;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final HULoadingCache huCache = new HULoadingCache(handlingUnitsDAO, huAttributesBL);
 
-		final ImmutableSet<HuId> pickedHuIds = pickingJob.getAllPickedHuIds();
-		for (final HuId huId : pickedHuIds)
-		{
-			final I_M_HU hu = handlingUnitsDAO.getById(huId);
-			if (!handlingUnitsBL.isLoadingUnit(hu))
-			{
-				continue;
-			}
-
-			validateLU(hu, graiRequired, handlingUnitsDAO, handlingUnitsBL);
-		}
+		handlingUnitsDAO.getByIds(pickingJob.getAllPickedHuIds())
+				.stream()
+				.filter(handlingUnitsBL::isLoadingUnit)
+				.forEach(lu -> validateLU(lu, graiRequired, huCache));
 	}
 
 	private void validateLU(
 			@NonNull final I_M_HU lu,
-			@NonNull final String graiRequired,
-			@NonNull final IHandlingUnitsDAO handlingUnitsDAO,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL)
+			@NonNull final GRAIRequired graiRequired,
+			@NonNull final HULoadingCache huCache)
 	{
-		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 		int totalTUs = 0;
 		int countWithGRAI = 0;
 
-		// Collect TUs without GRAI for potential dummy generation
-		final List<TUWithoutGRAI> tusWithoutGRAI = new ArrayList<>();
+		final TUWithoutGRAICollection tusWithoutGRAI = new TUWithoutGRAICollection(huCache);
 
 		for (final I_M_HU_Item item : handlingUnitsDAO.retrieveItems(lu))
 		{
@@ -88,8 +89,7 @@ public class PickingJobGRAIValidator
 				for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 				{
 					totalTUs++;
-					final String grai = huAttributesBL.getHUAttributeValue(childTU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI);
-					if (Check.isNotBlank(grai))
+					if (huCache.getGRAI(childTU) != null)
 					{
 						countWithGRAI++;
 					}
@@ -108,17 +108,7 @@ public class PickingJobGRAIValidator
 				int graisInAggregate = 0;
 				for (final I_M_HU aggregateVHU : aggregateVHUs)
 				{
-					final String graiValue = huAttributesBL.getHUAttributeValue(aggregateVHU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI);
-					if (Check.isNotBlank(graiValue))
-					{
-						for (final String singleGrai : graiValue.split(","))
-						{
-							if (!singleGrai.trim().isEmpty())
-							{
-								graisInAggregate++;
-							}
-						}
-					}
+					graisInAggregate += huCache.getGRAISet(aggregateVHU).size();
 				}
 				countWithGRAI += graisInAggregate;
 
@@ -134,99 +124,40 @@ public class PickingJobGRAIValidator
 
 		if (countWithGRAI >= totalTUs)
 		{
-			// All TUs have GRAIs
 			return;
 		}
 
-		if ("Y".equals(graiRequired))
+		if (graiRequired == GRAIRequired.Yes)
 		{
-			final String luDisplayName = handlingUnitsBL.getDisplayName(lu);
-			throw new AdempiereException(GRAI_COUNT_MISMATCH, luDisplayName, countWithGRAI, totalTUs);
+			throw new AdempiereException(GRAI_COUNT_MISMATCH, handlingUnitsBL.getDisplayName(lu), countWithGRAI, totalTUs);
 		}
-		else if ("D".equals(graiRequired))
+		else if (graiRequired == GRAIRequired.Dummy)
 		{
-			generateDummyGRAIs(tusWithoutGRAI, lu, handlingUnitsBL);
+			generateDummyGRAIs(tusWithoutGRAI, lu);
 		}
 	}
 
-	private void generateDummyGRAIs(
-			@NonNull final List<TUWithoutGRAI> tusWithoutGRAI,
-			@NonNull final I_M_HU lu,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL)
+	private void generateDummyGRAIs(@NonNull final TUWithoutGRAICollection tusWithoutGRAI, @NonNull final I_M_HU lu)
 	{
-		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 		final String poReference = extractPOReference();
 		if (poReference == null)
 		{
-			final String luDisplayName = handlingUnitsBL.getDisplayName(lu);
-			throw new AdempiereException("Cannot generate dummy GRAIs: POReference not found for LU " + luDisplayName);
+			throw new AdempiereException("Cannot generate dummy GRAIs: POReference not found for LU " + handlingUnitsBL.getDisplayName(lu));
 		}
 
 		final String paddedPORef = DummyGRAIGenerator.padPOReference(poReference);
+		final int startCounter = findMaxExistingDummyCounter(paddedPORef) + 1;
 
-		// Find the max existing dummy counter across all picked HUs for the same order
-		final int existingMaxCounter = findMaxExistingDummyCounter(paddedPORef);
-
-		int counter = existingMaxCounter + 1;
-		for (final TUWithoutGRAI tuInfo : tusWithoutGRAI)
-		{
-			if (tuInfo.isAggregate)
-			{
-				// For aggregate VHU: build comma-separated list of dummy GRAIs
-				final List<String> dummyGrais = new ArrayList<>();
-
-				// First read existing GRAIs on the aggregate VHU
-				final I_M_HU aggregateVHU = Services.get(IHandlingUnitsDAO.class).getById(tuInfo.huId);
-				final String existingGraiValue = huAttributesBL.getHUAttributeValue(aggregateVHU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI);
-				if (Check.isNotBlank(existingGraiValue))
-				{
-					for (final String existing : existingGraiValue.split(","))
-					{
-						final String trimmed = existing.trim();
-						if (!trimmed.isEmpty())
-						{
-							dummyGrais.add(trimmed);
-						}
-					}
-				}
-
-				// Add missing dummies
-				for (int i = 0; i < tuInfo.missingCount; i++)
-				{
-					if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
-					{
-						throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
-					}
-					dummyGrais.add(DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter));
-					counter++;
-				}
-
-				final String commaSeparated = String.join(",", dummyGrais);
-				huAttributesBL.updateHUAttribute(tuInfo.huId, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI, commaSeparated);
-			}
-			else
-			{
-				// Regular TU: single GRAI
-				if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
-				{
-					throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
-				}
-				final String dummyGrai = DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter);
-				huAttributesBL.updateHUAttribute(tuInfo.huId, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI, dummyGrai);
-				counter++;
-			}
-		}
+		tusWithoutGRAI.assignDummyGRAIs(paddedPORef, startCounter);
 	}
 
 	@Nullable
 	private String extractPOReference()
 	{
-		// Navigate from picking job lines to the sales order POReference
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
 			final OrderId orderId = line.getSalesOrderAndLineId().getOrderId();
-			final I_C_Order order = Services.get(IOrderDAO.class).getById(orderId);
+			final I_C_Order order = orderDAO.getById(orderId);
 			final String poReference = order.getPOReference();
 			if (Check.isNotBlank(poReference))
 			{
@@ -239,15 +170,10 @@ public class PickingJobGRAIValidator
 	private int findMaxExistingDummyCounter(@NonNull final String paddedPORef)
 	{
 		final String dummyPrefix = DummyGRAIGenerator.buildDummyPrefix(paddedPORef);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 		int maxCounter = 0;
 
-		for (final HuId huId : pickingJob.getAllPickedHuIds())
+		for (final I_M_HU hu : handlingUnitsDAO.getByIds(pickingJob.getAllPickedHuIds()))
 		{
-			final I_M_HU hu = handlingUnitsDAO.getById(huId);
 			if (!handlingUnitsBL.isLoadingUnit(hu))
 			{
 				continue;
@@ -261,7 +187,7 @@ public class PickingJobGRAIValidator
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
 						maxCounter = Math.max(maxCounter, DummyGRAIGenerator.extractDummyCounter(
-								huAttributesBL.getHUAttributeValue(childTU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI),
+								GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI)),
 								dummyPrefix));
 					}
 				}
@@ -269,14 +195,13 @@ public class PickingJobGRAIValidator
 				{
 					for (final I_M_HU aggregateVHU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
-						final String graiValue = huAttributesBL.getHUAttributeValue(aggregateVHU, org.adempiere.mm.attributes.api.AttributeConstants.ATTR_GRAI);
-						if (Check.isNotBlank(graiValue))
-						{
-							for (final String singleGrai : graiValue.split(","))
-							{
-								maxCounter = Math.max(maxCounter, DummyGRAIGenerator.extractDummyCounter(singleGrai.trim(), dummyPrefix));
-							}
-						}
+						final int aggregateMax = GRAISet.ofNullableCommaSeparated(
+										huAttributesBL.getHUAttributeValue(aggregateVHU, AttributeConstants.ATTR_GRAI))
+								.stream()
+								.mapToInt(grai -> DummyGRAIGenerator.extractDummyCounter(grai, dummyPrefix))
+								.max()
+								.orElse(0);
+						maxCounter = Math.max(maxCounter, aggregateMax);
 					}
 				}
 			}
@@ -285,29 +210,158 @@ public class PickingJobGRAIValidator
 		return maxCounter;
 	}
 
+	//
+ 	//
+ 	//
 	// --- Helper types ---
+	//
+ 	//
+ 	//
 
 	private static class TUWithoutGRAI
 	{
-		final HuId huId;
-		final boolean isAggregate;
-		final int missingCount;
+		@NonNull private final HuId huId;
+		private final boolean isAggregate;
+		private final int missingCount;
 
-		private TUWithoutGRAI(final HuId huId, final boolean isAggregate, final int missingCount)
+		private TUWithoutGRAI(@NonNull final HuId huId, final boolean isAggregate, final int missingCount)
 		{
 			this.huId = huId;
 			this.isAggregate = isAggregate;
 			this.missingCount = missingCount;
 		}
 
-		static TUWithoutGRAI ofRegularTU(final HuId huId)
+		static TUWithoutGRAI ofRegularTU(@NonNull final HuId huId)
 		{
 			return new TUWithoutGRAI(huId, false, 1);
 		}
 
-		static TUWithoutGRAI ofAggregate(final HuId huId, final int missingCount)
+		static TUWithoutGRAI ofAggregate(@NonNull final HuId huId, final int missingCount)
 		{
 			return new TUWithoutGRAI(huId, true, missingCount);
+		}
+	}
+
+	private static class TUWithoutGRAICollection
+	{
+		@NonNull private final HULoadingCache huCache;
+		private final List<TUWithoutGRAI> items = new ArrayList<>();
+
+		TUWithoutGRAICollection(@NonNull final HULoadingCache huCache)
+		{
+			this.huCache = huCache;
+		}
+
+		void add(@NonNull final TUWithoutGRAI item)
+		{
+			items.add(item);
+		}
+
+		boolean isEmpty()
+		{
+			return items.isEmpty();
+		}
+
+		private ImmutableSet<HuId> getAggregateVHUIds()
+		{
+			return items.stream()
+					.filter(t -> t.isAggregate)
+					.map(t -> t.huId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		void assignDummyGRAIs(@NonNull final String paddedPORef, final int startCounter)
+		{
+			huCache.loadHUs(getAggregateVHUIds());
+
+			int counter = startCounter;
+			for (final TUWithoutGRAI tuInfo : items)
+			{
+				if (tuInfo.isAggregate)
+				{
+					final List<GRAI> dummyGrais = new ArrayList<>();
+
+					// Preserve existing GRAIs on the aggregate VHU
+					huCache.getGRAISet(tuInfo.huId).forEach(dummyGrais::add);
+
+					// Add missing dummies
+					for (int i = 0; i < tuInfo.missingCount; i++)
+					{
+						if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
+						{
+							throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
+						}
+						dummyGrais.add(DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter));
+						counter++;
+					}
+
+					huCache.setGRAISet(tuInfo.huId, GRAISet.ofCollection(dummyGrais));
+				}
+				else
+				{
+					if (counter > DummyGRAIGenerator.MAX_DUMMY_COUNTER)
+					{
+						throw new AdempiereException("Cannot generate more than " + DummyGRAIGenerator.MAX_DUMMY_COUNTER + " dummy GRAIs per order");
+					}
+					huCache.setGRAI(tuInfo.huId, DummyGRAIGenerator.buildDummyGRAI(paddedPORef, counter));
+					counter++;
+				}
+			}
+		}
+	}
+
+	private static class HULoadingCache
+	{
+		@NonNull private final IHandlingUnitsDAO handlingUnitsDAO;
+		@NonNull private final IHUAttributesBL huAttributesBL;
+		private final HashMap<HuId, I_M_HU> husById = new HashMap<>();
+
+		HULoadingCache(
+				@NonNull final IHandlingUnitsDAO handlingUnitsDAO,
+				@NonNull final IHUAttributesBL huAttributesBL)
+		{
+			this.handlingUnitsDAO = handlingUnitsDAO;
+			this.huAttributesBL = huAttributesBL;
+		}
+
+		void loadHUs(@NonNull final Collection<HuId> huIds)
+		{
+			if (huIds.isEmpty())
+			{
+				return;
+			}
+			handlingUnitsDAO.getByIds(huIds)
+					.forEach(hu -> husById.put(HuId.ofRepoId(hu.getM_HU_ID()), hu));
+		}
+
+		@Nullable GRAI getGRAI(@NonNull final I_M_HU hu)
+		{
+			return GRAI.ofNullable(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
+		}
+
+		@NonNull GRAISet getGRAISet(@NonNull final I_M_HU hu)
+		{
+			return GRAISet.ofNullableCommaSeparated(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
+		}
+
+		@NonNull GRAISet getGRAISet(@NonNull final HuId huId)
+		{
+			return getGRAISet(getHU(huId));
+		}
+
+		private I_M_HU getHU(@NonNull final HuId huId)
+		{
+			return Check.assumeNotNull(husById.get(huId), "HU not loaded into cache: {}", huId);
+		}
+
+		void setGRAI(@NonNull final HuId huId, @NonNull final GRAI grai)
+		{
+			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, grai.getValue());
+		}
+
+		void setGRAISet(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
+		{
+			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, graiSet.toCommaSeparatedString());
 		}
 	}
 }
