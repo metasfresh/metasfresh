@@ -49,7 +49,7 @@ import static de.metas.shipping.process.AddOrderLinesToShipperTransportation.MAX
 public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
 	public final static AdMessageKey MSG_DOCUMENT_NOT_COMPLETE = AdMessageKey.of("DocumentNotComplete");
-	private final static AdMessageKey MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToDifferentTransportationOrder");
+	private final static AdMessageKey MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToProcessedTransportationOrder");
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -92,7 +92,7 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 				.map(o -> OrderId.ofRepoId(o.getC_Order_ID()))
 				.collect(Collectors.toSet());
 
-		orderToShipperTransportationService.deleteShippingPackagesForOrders(orderIds, MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
+		orderToShipperTransportationService.deleteShippingPackagesForOrders(orderIds, MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 
 		orderToShipperTransportationService.addPurchaseOrdersToShipperTransportation(p_M_ShipperTransportation_ID, orderIds);
 		return MSG_OK;
