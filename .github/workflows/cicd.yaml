@@ -477,7 +477,7 @@ jobs:
 
   test-frontend:
     name: test (frontend)
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v4
@@ -1175,7 +1175,7 @@ jobs:
 
   junit:
     name: test (java)
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1337,7 +1337,7 @@ jobs:
 
   cucumber-run:
     name: test (cucumber)
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
       max-parallel: 10
@@ -1592,7 +1592,7 @@ jobs:
 
   health_check:
     name: health check
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1688,7 +1688,7 @@ jobs:
   mobile_test:
     name: mobile test
     timeout-minutes: 60
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1774,7 +1774,7 @@ jobs:
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
     timeout-minutes: 60
-    runs-on: ${{ vars.RUNNER_HEAVY }}
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
       max-parallel: 3
