@@ -71,13 +71,10 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 	@Override
 	protected Set<OrderLineId> getOrderLineIds()
 	{
-		final IQueryFilter<I_C_OrderLine> processQueryFilter = getProcessInfo().getQueryFilterOrElseFalse();
-		queryBL
-				.createCompositeQueryFilter(I_C_OrderLine.class)
-				.addFilter(processQueryFilter)
-				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, true)
-		;
-		return orderBL.getLineIdsByQueryFilter(processQueryFilter);
+		final IQueryFilter<I_C_OrderLine> processAndNotPackingMaterial = queryBL.createCompositeQueryFilter(I_C_OrderLine.class)
+				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, true);
+		return orderBL.getLineIdsByQueryFilter(processAndNotPackingMaterial);
 	}
 
 	@Override

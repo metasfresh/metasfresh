@@ -61,7 +61,7 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 	{
 		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))

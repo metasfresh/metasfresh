@@ -143,8 +143,9 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderLineIds);
 
+		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
-				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
+				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
 	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @NonNull ShipperTransportationId shipperTransportationId)
