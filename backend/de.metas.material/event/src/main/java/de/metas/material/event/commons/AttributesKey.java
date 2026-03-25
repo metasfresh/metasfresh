@@ -184,7 +184,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	}
 
 	@Nullable
-	public static String toString(@Nullable final AttributesKey key)
+	public static String toStringOrNull(@Nullable final AttributesKey key)
 	{
 		if (key == null || key.isNone())
 		{

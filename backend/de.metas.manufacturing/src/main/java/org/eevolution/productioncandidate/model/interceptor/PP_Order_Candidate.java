@@ -272,6 +272,6 @@ public class PP_Order_Candidate
 	{
 		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderCandidateRecord.getM_AttributeSetInstance_ID()))
 				.orElse(null);
-		ppOrderCandidateRecord.setStorageAttributesKey(AttributesKey.toString(attributesKey));
+		ppOrderCandidateRecord.setStorageAttributesKey(AttributesKey.toStringOrNull(attributesKey));
 	}
 }
