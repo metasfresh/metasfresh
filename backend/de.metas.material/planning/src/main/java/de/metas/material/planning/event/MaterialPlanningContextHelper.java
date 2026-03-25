@@ -23,7 +23,6 @@
 package de.metas.material.planning.event;
 
 import ch.qos.logback.classic.Level;
-import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -37,25 +36,25 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
-@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
 @RequiredArgsConstructor
-public class SupplyRequiredHandlerHelper
+public class MaterialPlanningContextHelper
 {
-	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandlerHelper.class);
+	private static final Logger logger = LogManager.getLogger(MaterialPlanningContextHelper.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -63,13 +62,26 @@ public class SupplyRequiredHandlerHelper
 	@Nullable
 	protected MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
+		return createContextOrNull(MaterialPlanningContextRequest.builder()
+				.orgId(supplyRequiredDescriptor.getOrgId())
+				.warehouseId(supplyRequiredDescriptor.getWarehouseId())
+				.productId(ProductId.ofRepoId(supplyRequiredDescriptor.getProductId()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(supplyRequiredDescriptor.getAttributeSetInstanceId()))
+				.build());
+	}
 
-		final WarehouseId warehouseId = supplyRequiredDescriptor.getWarehouseId();
+	@Nullable
+	public MaterialPlanningContext createContextOrNull(@NonNull final MaterialPlanningContextRequest request)
+	{
+		final OrgId orgId = request.getOrgId();
+
+		final WarehouseId warehouseId = request.getWarehouseId();
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(supplyRequiredDescriptor.getAttributeSetInstanceId());
+		final ProductId productId = request.getProductId();
+		final AttributeSetInstanceId attributeSetInstanceId = request.getAttributeSetInstanceId();
+
+
 		final ResourceId plantId = productPlanningDAO.findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId).orElse(null);
 		if (plantId == null)
 		{
@@ -103,5 +115,15 @@ public class SupplyRequiredHandlerHelper
 				.plantId(plantId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.build();
+	}
+
+	@Builder
+	@Value
+	public static class MaterialPlanningContextRequest
+	{
+		@NonNull OrgId orgId;
+		@NonNull WarehouseId warehouseId;
+		@NonNull ProductId productId;
+		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 	}
 }

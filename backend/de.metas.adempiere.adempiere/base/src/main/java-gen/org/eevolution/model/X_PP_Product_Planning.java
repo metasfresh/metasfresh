@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_Planning
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -751515352L;
+	private static final long serialVersionUID = -1607039972L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (final Properties ctx, final int PP_Product_Planning_ID, @Nullable final String trxName)
@@ -66,6 +66,21 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public void setC_Manufacturing_Aggregation_ID (final int C_Manufacturing_Aggregation_ID)
+	{
+		if (C_Manufacturing_Aggregation_ID < 1) 
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, C_Manufacturing_Aggregation_ID);
+	}
+
+	@Override
+	public int getC_Manufacturing_Aggregation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Manufacturing_Aggregation_ID);
+	}
+
+	@Override
 	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
@@ -106,6 +121,78 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public void setForecast_BufferTime (final int Forecast_BufferTime)
+	{
+		set_Value (COLUMNNAME_Forecast_BufferTime, Forecast_BufferTime);
+	}
+
+	@Override
+	public int getForecast_BufferTime() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forecast_BufferTime);
+	}
+
+	/** 
+	 * Forecast_CalculationMethod AD_Reference_ID=542072
+	 * Reference name: Forecast_CalculationMethod
+	 */
+	public static final int FORECAST_CALCULATIONMETHOD_AD_Reference_ID=542072;
+	/** AVG_52_WEEKS = 0 */
+	public static final String FORECAST_CALCULATIONMETHOD_AVG_52_WEEKS = "0";
+	/** AVG_26_WEEKS = 1 */
+	public static final String FORECAST_CALCULATIONMETHOD_AVG_26_WEEKS = "1";
+	/** AVG_12_WEEKS = 2 */
+	public static final String FORECAST_CALCULATIONMETHOD_AVG_12_WEEKS = "2";
+	/** AVG_PREV_CALENDAR_YEAR = 3 */
+	public static final String FORECAST_CALCULATIONMETHOD_AVG_PREV_CALENDAR_YEAR = "3";
+	/** AVG_SAME_PERIOD_PREV_YEAR = 4 */
+	public static final String FORECAST_CALCULATIONMETHOD_AVG_SAME_PERIOD_PREV_YEAR = "4";
+	@Override
+	public void setForecast_CalculationMethod (final @Nullable java.lang.String Forecast_CalculationMethod)
+	{
+		set_Value (COLUMNNAME_Forecast_CalculationMethod, Forecast_CalculationMethod);
+	}
+
+	@Override
+	public java.lang.String getForecast_CalculationMethod() 
+	{
+		return get_ValueAsString(COLUMNNAME_Forecast_CalculationMethod);
+	}
+
+	@Override
+	public void setForecast_Frequency (final int Forecast_Frequency)
+	{
+		set_Value (COLUMNNAME_Forecast_Frequency, Forecast_Frequency);
+	}
+
+	@Override
+	public int getForecast_Frequency() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Forecast_Frequency);
+	}
+
+	/** 
+	 * Forecast_PrecisionUnit AD_Reference_ID=542073
+	 * Reference name: Forecast_PrecisionUnit
+	 */
+	public static final int FORECAST_PRECISIONUNIT_AD_Reference_ID=542073;
+	/** WEEK = W */
+	public static final String FORECAST_PRECISIONUNIT_WEEK = "W";
+	/** MONTH = M */
+	public static final String FORECAST_PRECISIONUNIT_MONTH = "M";
+	@Override
+	public void setForecast_PrecisionUnit (final @Nullable java.lang.String Forecast_PrecisionUnit)
+	{
+		set_Value (COLUMNNAME_Forecast_PrecisionUnit, Forecast_PrecisionUnit);
+	}
+
+	@Override
+	public java.lang.String getForecast_PrecisionUnit() 
+	{
+		return get_ValueAsString(COLUMNNAME_Forecast_PrecisionUnit);
+	}
+
+	@Override
 	public void setIsAttributeDependant (final boolean IsAttributeDependant)
 	{
 		set_Value (COLUMNNAME_IsAttributeDependant, IsAttributeDependant);
@@ -141,6 +228,18 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return get_ValueAsBoolean(COLUMNNAME_IsDocComplete);
 	}
 
+	@Override
+	public void setIsExcludeFromForecast (final boolean IsExcludeFromForecast)
+	{
+		set_Value (COLUMNNAME_IsExcludeFromForecast, IsExcludeFromForecast);
+	}
+
+	@Override
+	public boolean isExcludeFromForecast() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromForecast);
+	}
+
 	/** 
 	 * IsManufactured AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -163,13 +262,25 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public void setIsManufacturedLot4Lot (final boolean IsManufacturedLot4Lot)
+	{
+		set_Value (COLUMNNAME_IsManufacturedLot4Lot, IsManufacturedLot4Lot);
+	}
+
+	@Override
+	public boolean isManufacturedLot4Lot() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManufacturedLot4Lot);
+	}
+
+	@Override
 	public void setIsMatured (final boolean IsMatured)
 	{
 		set_Value (COLUMNNAME_IsMatured, IsMatured);
 	}
 
 	@Override
-	public boolean isMatured()
+	public boolean isMatured() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMatured);
 	}
@@ -286,7 +397,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrderDispo()
+	public BigDecimal getMaxManufacturedQtyPerOrderDispo() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -295,14 +406,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setMaxManufacturedQtyPerOrderDispo_UOM_ID (final int MaxManufacturedQtyPerOrderDispo_UOM_ID)
 	{
-		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1)
+		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1) 
 			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
 	@Override
-	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID()
+	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
@@ -322,14 +433,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
 	{
-		if (M_Maturing_Configuration_ID < 1)
+		if (M_Maturing_Configuration_ID < 1) 
 			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
 	}
 
 	@Override
-	public int getM_Maturing_Configuration_ID()
+	public int getM_Maturing_Configuration_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
 	}
@@ -349,14 +460,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
 	{
-		if (M_Maturing_Configuration_Line_ID < 1)
+		if (M_Maturing_Configuration_Line_ID < 1) 
 			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
-	public int getM_Maturing_Configuration_Line_ID()
+	public int getM_Maturing_Configuration_Line_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
 	}
@@ -491,7 +602,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public BigDecimal getQtyProcessed_OnDate()
+	public BigDecimal getQtyProcessed_OnDate() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -504,7 +615,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -584,82 +695,5 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getYield() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Yield);
-	}
-
-	@Override
-	public void setC_Manufacturing_Aggregation_ID (final int C_Manufacturing_Aggregation_ID)
-	{
-		if (C_Manufacturing_Aggregation_ID < 1)
-			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, C_Manufacturing_Aggregation_ID);
-	}
-
-	@Override
-	public int getC_Manufacturing_Aggregation_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Manufacturing_Aggregation_ID);
-	}
-
-	@Override
-	public void setForecast_CalculationMethod (final String Forecast_CalculationMethod)
-	{
-		set_Value (COLUMNNAME_Forecast_CalculationMethod, Forecast_CalculationMethod);
-	}
-
-	@Override
-	public String getForecast_CalculationMethod()
-	{
-		return (String)get_Value(COLUMNNAME_Forecast_CalculationMethod);
-	}
-
-	@Override
-	public void setForecast_PrecisionUnit (final String Forecast_PrecisionUnit)
-	{
-		set_Value (COLUMNNAME_Forecast_PrecisionUnit, Forecast_PrecisionUnit);
-	}
-
-	@Override
-	public String getForecast_PrecisionUnit()
-	{
-		return (String)get_Value(COLUMNNAME_Forecast_PrecisionUnit);
-	}
-
-	@Override
-	public void setForecast_Frequency (final java.math.BigDecimal Forecast_Frequency)
-	{
-		set_Value (COLUMNNAME_Forecast_Frequency, Forecast_Frequency);
-	}
-
-	@Override
-	public java.math.BigDecimal getForecast_Frequency()
-	{
-		final java.math.BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Forecast_Frequency);
-		return bd;
-	}
-
-	@Override
-	public void setForecast_BufferTime (final java.math.BigDecimal Forecast_BufferTime)
-	{
-		set_Value (COLUMNNAME_Forecast_BufferTime, Forecast_BufferTime);
-	}
-
-	@Override
-	public java.math.BigDecimal getForecast_BufferTime()
-	{
-		final java.math.BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Forecast_BufferTime);
-		return bd;
-	}
-
-	@Override
-	public void setIsExcludeFromForecast (final boolean IsExcludeFromForecast)
-	{
-		set_Value (COLUMNNAME_IsExcludeFromForecast, IsExcludeFromForecast);
-	}
-
-	@Override
-	public boolean isExcludeFromForecast()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromForecast);
 	}
 }
