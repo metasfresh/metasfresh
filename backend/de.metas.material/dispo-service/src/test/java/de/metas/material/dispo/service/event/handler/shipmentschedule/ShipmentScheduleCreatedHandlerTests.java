@@ -15,7 +15,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -23,6 +23,8 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -102,13 +104,15 @@ public class ShipmentScheduleCreatedHandlerTests
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
 						atpRepository,
 						stockCandidateService,
-						supplyCandidateHandler)));
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher())));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,
