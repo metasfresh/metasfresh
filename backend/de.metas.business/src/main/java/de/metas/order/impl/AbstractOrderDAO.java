@@ -562,6 +562,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.list();
 	}
 
+	@Override
 	public Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
 	{
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)

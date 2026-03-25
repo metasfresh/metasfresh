@@ -67,6 +67,14 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 			return ProcessPreconditionsResolution.reject(MSG_DOCUMENT_NOT_COMPLETE);
 		}
 
+		final IQueryFilter<I_C_OrderLine> processAndNotPackingMaterial = queryBL.createCompositeQueryFilter(I_C_OrderLine.class)
+				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, true);
+		if (orderDAO.getLineIdsByQueryFilter(processAndNotPackingMaterial).isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only packing material lines selected");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
