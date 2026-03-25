@@ -44,21 +44,47 @@ public class I_BankStatement_Import_StepDef
 		DB.executeUpdateAndSaveErrorOnFail(
 				"DROP INDEX IF EXISTS C_BPartner_Value_Unique",
 				ITrx.TRXNAME_None);
+		// Also drop DebtorId/CreditorId unique constraints to allow duplicate IDs
+		DB.executeUpdateAndSaveErrorOnFail(
+				"DROP INDEX IF EXISTS c_bpartner_debtorid_unique",
+				ITrx.TRXNAME_None);
+		DB.executeUpdateAndSaveErrorOnFail(
+				"DROP INDEX IF EXISTS c_bpartner_creditorid_unique",
+				ITrx.TRXNAME_None);
 	}
 
 	@Given("metasfresh contains C_BPartners with duplicate Values allowed:")
 	public void metasfresh_contains_c_bpartners_with_duplicate_values(@NonNull final DataTable dataTable)
 	{
-		final java.util.Set<String> deactivatedValues = new java.util.HashSet<>();
+		// Deactivate stale BPartners from previous test runs — by Value and by DebtorId/CreditorId
+		final java.util.Set<String> deactivatedKeys = new java.util.HashSet<>();
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String value = row.getAsString(I_C_BPartner.COLUMNNAME_Value);
-			if (deactivatedValues.add(value))
+			if (deactivatedKeys.add("val:" + value))
 			{
 				DB.executeUpdateAndSaveErrorOnFail(
 						"UPDATE C_BPartner SET IsActive='N' WHERE Value=" + DB.TO_STRING(value)
 								+ " AND AD_Client_ID=" + StepDefConstants.CLIENT_ID.getRepoId(),
 						ITrx.TRXNAME_None);
 			}
+			row.getAsOptionalInt(I_C_BPartner.COLUMNNAME_DebtorId).ifPresent(debtorId -> {
+				if (debtorId > 0 && deactivatedKeys.add("deb:" + debtorId))
+				{
+					DB.executeUpdateAndSaveErrorOnFail(
+							"UPDATE C_BPartner SET IsActive='N' WHERE DebtorId=" + debtorId
+									+ " AND AD_Org_ID=" + StepDefConstants.ORG_ID.getRepoId(),
+							ITrx.TRXNAME_None);
+				}
+			});
+			row.getAsOptionalInt(I_C_BPartner.COLUMNNAME_CreditorId).ifPresent(creditorId -> {
+				if (creditorId > 0 && deactivatedKeys.add("cred:" + creditorId))
+				{
+					DB.executeUpdateAndSaveErrorOnFail(
+							"UPDATE C_BPartner SET IsActive='N' WHERE CreditorId=" + creditorId
+									+ " AND AD_Org_ID=" + StepDefConstants.ORG_ID.getRepoId(),
+							ITrx.TRXNAME_None);
+				}
+			});
 		});
 
 		DataTableRows.of(dataTable).forEach(row -> {
