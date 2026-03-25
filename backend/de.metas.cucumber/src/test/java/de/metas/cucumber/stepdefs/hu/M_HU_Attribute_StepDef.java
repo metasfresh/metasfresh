@@ -156,10 +156,10 @@ public class M_HU_Attribute_StepDef
 		{
 			SharedTestContext.put("huIdentifier", huIdentifier);
 
-			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
+			final HuId huId = huIdentifier.lookupIdIn(huTable);
 			SharedTestContext.put("huId", huId);
 
-			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 			assertThat(huRecord).isNotNull();
 
 			final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
@@ -230,8 +230,7 @@ public class M_HU_Attribute_StepDef
 		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
 				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_Value)
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
 				.ifPresent(value -> attributesStorage.setValue(attributeRecord, value));
-
 	}
 }

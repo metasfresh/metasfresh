@@ -2,6 +2,8 @@ package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.qty_reservation.AvailabilityType;
+import de.metas.inoutcandidate.qty_reservation.SupplyType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectValue;
@@ -24,8 +26,8 @@ public class MaterialCockpitV2RowVO
 {
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
-	@NonNull de.metas.inoutcandidate.qty_reservation.SupplyType supplyType;
-	@NonNull de.metas.inoutcandidate.qty_reservation.AvailabilityType availabilityType;
+	@NonNull SupplyType supplyType;
+	@NonNull AvailabilityType availabilityType;
 	@Nullable Instant datePromised;
 	@Nullable BPartnerId vendorBPartnerId;
 	@Nullable AttributesKey attributesKey;
@@ -49,13 +51,13 @@ public class MaterialCockpitV2RowVO
 
 	public boolean isAvailableForReservation()
 	{
-		return availabilityType == de.metas.inoutcandidate.qty_reservation.AvailabilityType.AVAILABLE
+		return availabilityType == AvailabilityType.AVAILABLE
 				&& qtyTU.isPositive();
 	}
 
 	public boolean isAvailableForUnReservation()
 	{
-		return availabilityType == de.metas.inoutcandidate.qty_reservation.AvailabilityType.RESERVED
+		return availabilityType == AvailabilityType.RESERVED
 				&& qtyTU.isPositive();
 	}
 

@@ -85,8 +85,11 @@
 									 .firstOnly(I_M_Attribute.class),
 							 () -> InterfaceWrapperHelper.newInstance(I_M_Attribute.class));
 
-					 attributeRecord.setValue(value);
-					 attributeRecord.setName(valueAndName.getName());
+					 if(InterfaceWrapperHelper.isNew(attributeRecord))
+					 {
+						 attributeRecord.setValue(value);
+						 attributeRecord.setName(valueAndName.getName());
+					 }
 
 					 row.getAsOptionalEnum(I_M_Attribute.COLUMNNAME_AttributeValueType, AttributeValueType.class)
 							 .ifPresent(type -> attributeRecord.setAttributeValueType(type.getCode()));

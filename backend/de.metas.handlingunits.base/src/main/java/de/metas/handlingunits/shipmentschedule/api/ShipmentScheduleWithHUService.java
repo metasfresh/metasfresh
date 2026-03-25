@@ -116,11 +116,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -441,11 +443,17 @@ public class ShipmentScheduleWithHUService
 			return result.build();
 		}
 
+		// Track source HU IDs already consumed in this run to avoid double-picking.
+		// The storage query in retrievePickOnTheFlySourceHUs uses an out-of-transaction read,
+		// so it does not see in-transaction changes made by earlier passes in the same WP.
+		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
+
 		// Pass 1: M_HU_Reservation HUs (physically reserved VHUs)
 		boolean anyHUProcessed = false;
 		final List<I_M_HU> reservedHUs = retrieveReservedHUs(scheduleRecord);
 		if (!reservedHUs.isEmpty())
 		{
+			reservedHUs.forEach(hu -> alreadyUsedSourceHuIds.add(HuId.ofRepoId(hu.getM_HU_ID())));
 			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true);
 			anyHUProcessed = true;
 		}
@@ -467,7 +475,11 @@ public class ShipmentScheduleWithHUService
 					continue;
 				}
 				final Quantity qtyCapForThisReservation = effectiveQty.min(remainingQtyToAllocate);
-				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord, qtyReservation));
+				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord, qtyReservation))
+					.stream()
+					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
+					.collect(Collectors.toList());
+				alreadyUsedSourceHuIds.addAll(husToPick.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(Collectors.toSet()));
 				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false);
 				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
@@ -481,7 +493,10 @@ public class ShipmentScheduleWithHUService
 		// Pass 3: Fallback — remaining qty using the shipment schedule's own ASI (no specific attributesKey)
 		if (remainingQtyToAllocate.isPositive())
 		{
-			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord));
+			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord))
+					.stream()
+					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
+					.collect(Collectors.toList());
 			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
 		}
 
