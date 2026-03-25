@@ -63,8 +63,10 @@ BEGIN
                                        INNER JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
                                        INNER JOIN c_bpartner bp ON bp.c_bpartner_id = o.c_bpartner_id
                                        INNER JOIN c_currency cur ON cur.c_currency_id = o.c_currency_id
+                                       INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
                               WHERE o.issotrx = 'Y'
                                 AND o.docstatus IN ('CO', 'CL')
+                                AND dt.docbasetype <> 'SOO'
                                 AND v_is_customer
                                 AND (p_bpartner_id IS NULL OR o.c_bpartner_id = p_bpartner_id)
                                 AND (p_bp_group_id IS NULL OR bp.c_bp_group_id = p_bp_group_id)
