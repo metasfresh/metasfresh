@@ -45,11 +45,12 @@ public class I_BankStatement_Import_StepDef
 				"DROP INDEX IF EXISTS C_BPartner_Value_Unique",
 				ITrx.TRXNAME_None);
 		// Also drop DebtorId/CreditorId unique constraints to allow duplicate IDs
+		// NOTE: index names have a typo ("Uniqe") from the original migration 5582410
 		DB.executeUpdateAndSaveErrorOnFail(
-				"DROP INDEX IF EXISTS c_bpartner_debtorid_unique",
+				"DROP INDEX IF EXISTS C_BPartner_DebtorID_Uniqe",
 				ITrx.TRXNAME_None);
 		DB.executeUpdateAndSaveErrorOnFail(
-				"DROP INDEX IF EXISTS c_bpartner_creditorid_unique",
+				"DROP INDEX IF EXISTS C_BPartner_CreditorID_Uniqe",
 				ITrx.TRXNAME_None);
 	}
 
