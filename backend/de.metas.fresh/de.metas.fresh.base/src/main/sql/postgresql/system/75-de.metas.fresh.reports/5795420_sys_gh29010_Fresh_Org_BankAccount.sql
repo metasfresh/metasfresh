@@ -36,11 +36,11 @@ CREATE FUNCTION report.Fresh_Org_BankAccount(p_Org_ID numeric)
     LANGUAGE sql
 AS
 $$
-SELECT COALESCE(bpb.accountno, '')                 AS org_bank_acct,
-       COALESCE(bank.name, '')                     AS org_bank_name,
-       COALESCE(bpb.routingno, bank.routingno, '') AS org_bank_blz,
-       COALESCE(bpb.iban, '')                      AS org_bank_iban,
-       COALESCE(bank.swiftcode, '')                AS org_bank_swift
+SELECT COALESCE(bpb.accountno, '')  AS org_bank_acct,
+       COALESCE(bank.name, '')      AS org_bank_name,
+       COALESCE(bpb.routingno, '')  AS org_bank_blz,
+       COALESCE(bpb.iban, '')       AS org_bank_iban,
+       COALESCE(bank.swiftcode, '') AS org_bank_swift
 
 FROM ad_org org
          INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
