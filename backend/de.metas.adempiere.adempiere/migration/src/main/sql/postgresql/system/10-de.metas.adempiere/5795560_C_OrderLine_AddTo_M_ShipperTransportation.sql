@@ -3,7 +3,10 @@
 -- Value: C_OrderLine_AddTo_M_ShipperTransportation
 -- Classname: de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation
 -- 2026-03-25T09:43:27.125Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,CSVFieldQuote,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsIncludeCSVHeaderRow,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585602,'Y','de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation','N',TO_TIMESTAMP('2026-03-25 09:43:26.027000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'"','D','Y','N','N','N','Y','Y','N','N','N','N','Y','N','Y',0,'Bestellposition in Transportauftrag übernehmen','json','N','N','Java',TO_TIMESTAMP('2026-03-25 09:43:26.027000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'C_OrderLine_AddTo_M_ShipperTransportation')
+INSERT INTO AD_Process (AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID, AllowProcessReRun, Classname, CopyFromProcess, Created, CreatedBy, CSVFieldQuote, EntityType, IsActive, IsApplySecuritySettings, IsBetaFunctionality, IsDirectPrint, IsFormatExcelFile, IsIncludeCSVHeaderRow, IsLogWarning, IsNotifyUserAfterExecution, IsOneInstanceOnly, IsReport, IsTranslateExcelHeaders, IsUpdateExportDate,
+                        IsUseBPartnerLanguage, LockWaitTimeout, Name, PostgrestResponseFormat, RefreshAllAfterExecution, ShowHelp, Type, Updated, UpdatedBy, Value)
+VALUES ('3', 0, 0, 585602, 'Y', 'de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation', 'N', TO_TIMESTAMP('2026-03-25 09:43:26.027000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, '"', 'D', 'Y', 'N', 'N', 'N', 'Y', 'Y', 'N', 'N', 'N', 'N', 'Y', 'N', 'Y', 0, 'Position in Transportauftrag übernehmen', 'json', 'N', 'N', 'Java',
+        TO_TIMESTAMP('2026-03-25 09:43:26.027000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'C_OrderLine_AddTo_M_ShipperTransportation')
 ;
 
 -- 2026-03-25T09:43:27.133Z
@@ -27,62 +30,6 @@ UPDATE AD_Process_Trl SET Name='Add Orderline to Transportation Order',Updated=T
 
 -- 2026-03-25T09:46:15.817Z
 UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
-;
-
--- Value: C_OrderLine_AddTo_M_ShipperTransportation
--- Classname: de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation
--- 2026-03-25T09:46:20.115Z
-UPDATE AD_Process SET Name='Auftragsposition in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:46:20.113000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585602
-;
-
--- 2026-03-25T09:46:20.116Z
-UPDATE AD_Process_Trl trl SET Name='Auftragsposition in Transportauftrag übernehmen' WHERE AD_Process_ID=585602 AND AD_Language='de_DE'
-;
-
--- Process: C_OrderLine_AddTo_M_ShipperTransportation(de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation)
--- 2026-03-25T09:46:26.975Z
-UPDATE AD_Process_Trl SET Name='Auftragsposition in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:46:26.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585602
-;
-
--- 2026-03-25T09:46:26.977Z
-UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
-;
-
--- Process: C_OrderLine_AddTo_M_ShipperTransportation(de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation)
--- 2026-03-25T09:46:33.511Z
-UPDATE AD_Process_Trl SET Name='Auftragsposition in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:46:33.511000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585602
-;
-
--- 2026-03-25T09:46:33.512Z
-UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
-;
-
--- Value: C_OrderLine_AddTo_M_ShipperTransportation
--- Classname: de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation
--- 2026-03-25T09:47:38.373Z
-UPDATE AD_Process SET Name='Position in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:47:38.371000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585602
-;
-
--- 2026-03-25T09:47:38.374Z
-UPDATE AD_Process_Trl trl SET Name='Position in Transportauftrag übernehmen' WHERE AD_Process_ID=585602 AND AD_Language='de_DE'
-;
-
--- Process: C_OrderLine_AddTo_M_ShipperTransportation(de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation)
--- 2026-03-25T09:47:44.408Z
-UPDATE AD_Process_Trl SET Name='Position in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:47:44.408000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585602
-;
-
--- 2026-03-25T09:47:44.409Z
-UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
-;
-
--- Process: C_OrderLine_AddTo_M_ShipperTransportation(de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation)
--- 2026-03-25T09:47:50.161Z
-UPDATE AD_Process_Trl SET Name='Position in Transportauftrag übernehmen',Updated=TO_TIMESTAMP('2026-03-25 09:47:50.161000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585602
-;
-
--- 2026-03-25T09:47:50.162Z
-UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
 ;
 
 -- Process: C_OrderLine_AddTo_M_ShipperTransportation(de.metas.shipping.process.C_OrderLine_AddTo_M_ShipperTransportation)
