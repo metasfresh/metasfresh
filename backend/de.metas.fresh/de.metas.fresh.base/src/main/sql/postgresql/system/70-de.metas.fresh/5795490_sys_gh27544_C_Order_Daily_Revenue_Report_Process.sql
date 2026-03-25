@@ -160,3 +160,59 @@ UPDATE AD_Process_Trl SET Description='Daily overview of net order revenue, acco
 UPDATE AD_Process base SET Description=trl.Description, Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: AD_Client_ID
+-- 2026-03-25T13:34:06.941Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=543163
+;
+
+-- 2026-03-25T13:34:07.292Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=543163
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: AD_Org_ID
+-- 2026-03-25T13:34:51.855Z
+UPDATE AD_Process_Para SET DefaultValue='@#AD_Org_ID/0@', DisplayLogic='1=2',Updated=TO_TIMESTAMP('2026-03-25 13:34:51.855000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543164
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: Vendor_ID
+-- 2026-03-25T13:35:21.111Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=543169
+;
+
+-- 2026-03-25T13:35:21.462Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=543169
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: Vendor_Group_ID
+-- 2026-03-25T13:35:25.788Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=543170
+;
+
+-- 2026-03-25T13:35:26.157Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=543170
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_BPartner_ID
+-- 2026-03-25T13:36:12.770Z
+UPDATE AD_Process_Para SET AD_Element_ID=187, AD_Reference_Value_ID=138, ColumnName='C_BPartner_ID', Description='Bezeichnet einen Geschäftspartner', Help='Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.', Name='Geschäftspartner',Updated=TO_TIMESTAMP('2026-03-25 13:36:12.770000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543167
+;
+
+-- 2026-03-25T13:36:12.831Z
+UPDATE AD_Process_Para_Trl trl SET Description='Bezeichnet einen Geschäftspartner',Help='Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.',Name='Geschäftspartner' WHERE AD_Process_Para_ID=543167 AND AD_Language='de_DE'
+;
+
+-- Process: C_Order_Daily_Revenue_Report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_BP_Group_ID
+-- 2026-03-25T13:36:46.428Z
+UPDATE AD_Process_Para SET AD_Element_ID=1383, AD_Reference_Value_ID=NULL, ColumnName='C_BP_Group_ID', Description='Geschäftspartnergruppe', Help='Eine Geschäftspartner-Gruppe bietet Ihnen die Möglichkeit, Standard-Werte für einzelne Geschäftspartner zu verwenden.', Name='Geschäftspartnergruppe',Updated=TO_TIMESTAMP('2026-03-25 13:36:46.427000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543168
+;
+
+-- 2026-03-25T13:36:46.489Z
+UPDATE AD_Process_Para_Trl trl SET Description='Geschäftspartnergruppe',Help='Eine Geschäftspartner-Gruppe bietet Ihnen die Möglichkeit, Standard-Werte für einzelne Geschäftspartner zu verwenden.',Name='Geschäftspartnergruppe' WHERE AD_Process_Para_ID=543168 AND AD_Language='de_DE'
+;
+
