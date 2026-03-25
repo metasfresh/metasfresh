@@ -55,8 +55,8 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 		{
 			return processPreconditionsResolution;
 		}
-		final IQueryFilter<I_C_OrderLine> queryFilter = context.getQueryFilter(I_C_OrderLine.class);
-		final List<I_C_Order> selectedOrders = orderDAO.getByLineQueryFilter(queryFilter);
+		final IQueryFilter<I_C_OrderLine> contextQueryFilter = context.getQueryFilter(I_C_OrderLine.class);
+		final List<I_C_Order> selectedOrders = orderDAO.getByLineQueryFilter(contextQueryFilter);
 
 		if (selectedOrders.stream().anyMatch(orderBL::isRequisition))
 		{
@@ -68,7 +68,7 @@ public class C_OrderLine_AddTo_M_ShipperTransportation extends AddOrderLinesToSh
 		}
 
 		final IQueryFilter<I_C_OrderLine> processAndNotPackingMaterial = queryBL.createCompositeQueryFilter(I_C_OrderLine.class)
-				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addFilter(contextQueryFilter)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, true);
 		if (orderDAO.getLineIdsByQueryFilter(processAndNotPackingMaterial).isEmpty())
 		{
