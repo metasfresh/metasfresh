@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static de.metas.shipping.process.AddOrderLinesToShipperTransportation.MAX_SELECTION_SIZE;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -46,7 +48,6 @@ import java.util.stream.Collectors;
 
 public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
-	private static final int MAX_SELECTION_SIZE = 100;
 	public final static AdMessageKey MSG_DOCUMENT_NOT_COMPLETE = AdMessageKey.of("DocumentNotComplete");
 	private final static AdMessageKey MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToDifferentTransportationOrder");
 

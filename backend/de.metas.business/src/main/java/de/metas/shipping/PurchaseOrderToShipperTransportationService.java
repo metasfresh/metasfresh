@@ -238,12 +238,10 @@ public class PurchaseOrderToShipperTransportationService
 															   final int qtyLUs)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 
-		if (!existingPackages.isEmpty())
-		{
-			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
-		}
+		//For most flows this is a NOOP as the packages should have been deleted beforehand. Keeping this as a safety net.
+		deletePackagesForOrderLine(orderLineId);
+
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 
 		final BigDecimal totalTU = ol.getQtyEnteredTU();
@@ -262,6 +260,15 @@ public class PurchaseOrderToShipperTransportationService
 							.tuQty(tuQtyForPackage)
 							.grossWeightInKg(grossWeightInKg)
 							.build());
+		}
+	}
+
+	private void deletePackagesForOrderLine(final OrderLineId orderLineId)
+	{
+		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
+		if (!existingPackages.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
 		}
 	}
 

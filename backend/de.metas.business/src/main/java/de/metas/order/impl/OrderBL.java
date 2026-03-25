@@ -1476,12 +1476,6 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> lineQueryFilter)
-	{
-		return orderDAO.getByLineQueryFilter(lineQueryFilter);
-	}
-
-	@Override
 	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
 	{
 		if (!attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
@@ -1514,11 +1508,5 @@ public class OrderBL implements IOrderBL
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
-	}
-
-	@Override
-	public Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter)
-	{
-		return orderDAO.getLineIdsByQueryFilter(queryFilter);
 	}
 }
