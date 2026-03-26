@@ -72,7 +72,6 @@
 	<field name="param_attributes" class="java.lang.String"/>
 	<field name="currency" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="delivery_bp_name" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>

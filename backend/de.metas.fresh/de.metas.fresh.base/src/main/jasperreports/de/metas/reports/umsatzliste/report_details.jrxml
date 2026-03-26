@@ -32,7 +32,6 @@
 	<field name="month" class="java.sql.Timestamp"/>
 	<field name="iso_code" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="delivery_bp_name" class="java.lang.String"/>
 	<variable name="IsPMinvoiced" class="java.math.BigDecimal" resetType="Group" resetGroup="ProductOrHU" calculation="Sum">
 		<variableExpression><![CDATA[$F{totalinvoiced}]]></variableExpression>
 	</variable>

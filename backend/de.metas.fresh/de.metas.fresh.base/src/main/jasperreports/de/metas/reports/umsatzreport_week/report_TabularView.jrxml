@@ -47,7 +47,6 @@
 	<field name="year_difference_percentage" class="java.math.BigDecimal"/>
 	<field name="attributesetinstance" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="delivery_bp_name" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="base_week_total" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{base_week_sum}]]></variableExpression>

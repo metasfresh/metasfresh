@@ -7,15 +7,16 @@
 --   Too long (>45 chars):          "BillingPartn… (DeliveryRec…)"
 --
 -- Max output: 45 chars (fits varchar(60) column budget with room to spare).
-CREATE OR REPLACE FUNCTION report._merge_bp_name(billing_bp text, delivery_bp text)
+CREATE OR REPLACE FUNCTION report._merge_bp_name(p_billing_bp text, p_delivery_bp text)
 RETURNS text AS
 $$
 SELECT CASE
-    WHEN delivery_bp IS NULL OR delivery_bp = billing_bp
-    THEN CASE WHEN length(billing_bp) <= 45 THEN billing_bp ELSE left(billing_bp, 44) || '…' END
-    WHEN length(billing_bp) + length(delivery_bp) + 3 <= 45
-    THEN billing_bp || ' (' || delivery_bp || ')'
-    ELSE left(billing_bp, 24) || '… (' || left(delivery_bp, 14) || '…)'
+    WHEN p_billing_bp IS NULL THEN p_delivery_bp
+    WHEN p_delivery_bp IS NULL OR p_delivery_bp = p_billing_bp
+    THEN CASE WHEN length(p_billing_bp) <= 45 THEN p_billing_bp ELSE left(p_billing_bp, 44) || '…' END
+    WHEN length(p_billing_bp) + length(p_delivery_bp) + 3 <= 45
+    THEN p_billing_bp || ' (' || p_delivery_bp || ')'
+    ELSE left(p_billing_bp, 24) || '… (' || left(p_delivery_bp, 14) || '…)'
 END
 $$
 LANGUAGE sql IMMUTABLE;
