@@ -94,11 +94,16 @@ testCases.forEach(({ language, label }) => {
                 lines: [{ product: 'P1', qty: 10 }],
               },
             },
+            shipments: {
+              SHIP1: { salesOrder: 'SO1' },
+            },
           },
         });
 
         console.log('[INFO] Sales order:', JSON.stringify(masterdata.salesOrders));
+        console.log('[INFO] Shipment:', JSON.stringify(masterdata.shipments));
         expect(masterdata.salesOrders.SO1.documentNo, 'Sales order must have documentNo').toBeTruthy();
+        expect(masterdata.shipments.SHIP1.documentNo, 'Shipment must have documentNo').toBeTruthy();
       });
 
       // === STEP 2: Login ===

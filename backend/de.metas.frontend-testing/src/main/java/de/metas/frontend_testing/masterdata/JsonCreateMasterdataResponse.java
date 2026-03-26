@@ -51,7 +51,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
-	@Nullable Map<String, JsonPurchaseOrderCreateResponse> purchaseOrders;
+	@NonNull Map<String, JsonPurchaseOrderCreateResponse> purchaseOrders;
 	@Nullable Map<String, JsonShipmentCreateResponse> shipments;
 	@Nullable Map<String, JsonReceiptCreateResponse> receipts;
 	@Nullable Map<String, JsonInvoiceCreateResponse> invoices;
