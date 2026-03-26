@@ -53,9 +53,9 @@
       "noPrintingOptionSelected": "No printing option has been selected!"
     },
     "scanGRAI": {
-      "buttonCaption": "Scan Packing Materials",
-      "windowName": "Scan Packing Materials",
-      "count": "%(scanned)s / %(total)s packing materials scanned"
+      "buttonCaption": "Scan GRAI",
+      "windowName": "Scan GRAI",
+      "count": "%(scanned)s / %(total)s GRAIs scanned"
     }
   }
 }

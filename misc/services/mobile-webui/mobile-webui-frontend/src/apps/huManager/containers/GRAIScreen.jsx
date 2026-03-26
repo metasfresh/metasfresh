@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
@@ -138,6 +139,11 @@ const GraiChip = ({ grai, onRemove }) => {
       </button>
     </div>
   );
+};
+
+GraiChip.propTypes = {
+  grai: PropTypes.string.isRequired,
+  onRemove: PropTypes.func.isRequired,
 };
 
 export default GRAIScreen;

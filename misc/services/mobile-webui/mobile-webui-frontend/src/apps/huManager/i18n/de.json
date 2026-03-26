@@ -53,9 +53,9 @@
       "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
     },
     "scanGRAI": {
-      "buttonCaption": "Packmittel scannen",
-      "windowName": "Packmittel scannen",
-      "count": "%(scanned)s / %(total)s Packmittel gescannt"
+      "buttonCaption": "GRAI scannen",
+      "windowName": "GRAI scannen",
+      "count": "%(scanned)s / %(total)s GRAIs gescannt"
     }
   }
 }
