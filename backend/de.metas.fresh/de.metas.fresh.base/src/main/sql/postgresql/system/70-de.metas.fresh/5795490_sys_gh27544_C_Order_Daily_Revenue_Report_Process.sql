@@ -260,3 +260,20 @@ UPDATE AD_Process_Trl SET Description='Daily overview of net order revenue, acco
 -- 2026-03-25T15:08:26.828Z
 UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
+
+-- 2026-03-26T15:29:13.721Z
+DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=584695
+;
+
+-- 2026-03-26T15:29:14.070Z
+DELETE FROM AD_Element WHERE AD_Element_ID=584695
+;
+
+-- Name: C_BP_Vendor_Group
+-- 2026-03-26T15:30:50.868Z
+DELETE FROM  AD_Reference_Trl WHERE AD_Reference_ID=542083
+;
+
+-- 2026-03-26T15:30:51.229Z
+DELETE FROM AD_Reference WHERE AD_Reference_ID=542083
+;
