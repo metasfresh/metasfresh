@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
@@ -50,12 +50,30 @@ export const GRAIScreen = {
         await removeButtons.nth(index).tap();
     }),
 
-    expectClearAllButtonVisible: async () => await test.step(`${NAME} - Expect Clear All button visible`, async () => {
-        await expect(page.getByTestId('grai-clear-all-button')).toBeVisible();
+    expectExtraGraiChipCount: async ({ expectedCount }) => await test.step(`${NAME} - Expect ${expectedCount} extra GRAI chip(s)`, async () => {
+        const chips = page.getByTestId('grai-chip-extra');
+        await expect(chips).toHaveCount(expectedCount);
     }),
 
-    expectClearAllButtonNotVisible: async () => await test.step(`${NAME} - Expect Clear All button not visible`, async () => {
-        await expect(page.getByTestId('grai-clear-all-button')).not.toBeVisible();
+    removeExtraGraiChip: async ({ index = 0 } = {}) => await test.step(`${NAME} - Remove extra GRAI chip at index ${index}`, async () => {
+        const removeButtons = page.getByTestId('grai-chip-extra-remove');
+        await removeButtons.nth(index).tap();
+    }),
+
+    expectCountExtraVisible: async ({ expectedExtra }) => await test.step(`${NAME} - Expect extra count shows ${expectedExtra}`, async () => {
+        await expect(page.getByTestId('grai-count-extra')).toContainText(`${expectedExtra}`);
+    }),
+
+    expectCountExtraNotVisible: async () => await test.step(`${NAME} - Expect extra count not visible`, async () => {
+        await expect(page.getByTestId('grai-count-extra')).not.toBeVisible();
+    }),
+
+    expectClearAllButtonEnabled: async () => await test.step(`${NAME} - Expect Clear All button enabled`, async () => {
+        await expect(page.getByTestId('grai-clear-all-button')).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    expectClearAllButtonDisabled: async () => await test.step(`${NAME} - Expect Clear All button disabled`, async () => {
+        await expect(page.getByTestId('grai-clear-all-button')).toBeDisabled({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
     clearAllGrais: async () => await test.step(`${NAME} - Clear all GRAIs (with confirmation)`, async () => {
@@ -66,6 +84,30 @@ export const GRAIScreen = {
     clearAllGraisAndCancel: async () => await test.step(`${NAME} - Click Clear All then cancel`, async () => {
         await page.getByTestId('grai-clear-all-button').tap();
         await YesNoDialog.clickNoButton();
+    }),
+
+    tapSendButton: async () => await test.step(`${NAME} - Send GRAIs to backend`, async () => {
+        await expect(page.getByTestId('grai-send-button')).toBeEnabled();
+        const syncDone = page.waitForResponse(
+            (resp) => resp.url().includes('/grai') && resp.request().method() === 'PUT',
+            { timeout: 5000 }
+        );
+        await page.getByTestId('grai-send-button').tap();
+        await syncDone;
+        await expect(page.getByTestId('grai-send-button')).toBeDisabled({timeout: FAST_ACTION_TIMEOUT});
+    }),
+
+    expectSendButtonEnabled: async () => await test.step(`${NAME} - Expect Send button enabled`, async () => {
+        await expect(page.getByTestId('grai-send-button')).toBeEnabled({timeout: FAST_ACTION_TIMEOUT});
+    }),
+
+    expectSendButtonDisabled: async () => await test.step(`${NAME} - Expect Send button disabled`, async () => {
+        await expect(page.getByTestId('grai-send-button')).toBeDisabled({timeout: FAST_ACTION_TIMEOUT});
+    }),
+
+    tapUndoButton: async () => await test.step(`${NAME} - Tap Undo button (reload from backend)`, async () => {
+        await expect(page.getByTestId('grai-undo-button')).toBeEnabled({timeout: FAST_ACTION_TIMEOUT});
+        await page.getByTestId('grai-undo-button').tap();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
