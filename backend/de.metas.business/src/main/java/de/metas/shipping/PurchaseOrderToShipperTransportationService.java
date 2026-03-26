@@ -78,7 +78,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
-	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -140,12 +139,13 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Set<OrderLineId> orderLineIds)
 	{
-		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
+		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderLineIds);
 
+		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
-				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
+				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
 	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @NonNull ShipperTransportationId shipperTransportationId)
@@ -238,12 +238,10 @@ public class PurchaseOrderToShipperTransportationService
 															   final int qtyLUs)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 
-		if (!existingPackages.isEmpty())
-		{
-			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
-		}
+		// For most flows this is a NOOP as the packages should have been deleted beforehand. Keeping this as a safety net.
+		deletePackagesForOrderLine(orderLineId);
+
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 
 		final BigDecimal totalTU = ol.getQtyEnteredTU();
@@ -262,6 +260,15 @@ public class PurchaseOrderToShipperTransportationService
 							.tuQty(tuQtyForPackage)
 							.grossWeightInKg(grossWeightInKg)
 							.build());
+		}
+	}
+
+	private void deletePackagesForOrderLine(final OrderLineId orderLineId)
+	{
+		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
+		if (!existingPackages.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
 		}
 	}
 
@@ -351,7 +358,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds, @NonNull final AdMessageKey failureMessage)
 	{
 		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderLineIds(orderLineIds)
@@ -363,7 +370,23 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		else
 		{
-			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+			throw new AdempiereException(failureMessage);
+		}
+	}
+
+	public void deleteShippingPackagesForOrders(@NonNull final Collection<OrderId> orderIds, @NonNull final AdMessageKey failureMessage)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderIds(orderIds)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderIds(orderIds).build());
+		}
+		else
+		{
+			throw new AdempiereException(failureMessage);
 		}
 	}
 }

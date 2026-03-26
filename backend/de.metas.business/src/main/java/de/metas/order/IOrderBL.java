@@ -267,7 +267,7 @@ public interface IOrderBL extends ISingletonService
 	boolean isSalesOrder(@NonNull I_C_Order order);
 
 	boolean isSalesOrder(@NonNull OrderId orderId);
-	
+
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
