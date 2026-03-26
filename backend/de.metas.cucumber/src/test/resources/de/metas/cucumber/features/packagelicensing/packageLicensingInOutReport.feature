@@ -1,10 +1,12 @@
 @from:cucumber
 @ghActions:run_on_executor2
-Feature: Package Licensing InOut Report (gh#28487)
+Feature: Package Licensing InOut Report (gh#28487, gh#28967)
   Verifies that the SQL function report.Package_Licensing_InOut_Report()
   returns all movements (not just cross-border), with correct ForeignSalesQty,
   PurchaseQty, MovementQty, MaterialType, and PackagingInstructionFactor.
   Only completed/closed documents should appear.
+  The IsIncludeAllProducts parameter controls whether products without
+  packaging masterdata for the selected country are included.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -67,3 +69,53 @@ Feature: Package Licensing InOut Report (gh#28487)
     Then the Package Licensing InOut Report result contains:
       | DocumentNo      | MovementQty | PurchaseQty | ForeignSalesQty | MaterialType   | SmallPackagingMaterial | OuterPackagingMaterial |
       | PLIO_RECEIPT_DE | 75          | 75          |                 | Tiernahrung AT | PPK AT                 | Papier AT              |
+
+  @Id:S28967_10
+  Scenario: S28967_10 - IsIncludeAllProducts=Y includes products without packaging masterdata
+  Tests that when IsIncludeAllProducts=Y, the report also includes products that have
+  NO packaging licensing masterdata for the selected country. These products appear with
+  NULL values for ProductGroup, MaterialType, SmallPackagingMaterial, OuterPackagingMaterial.
+
+    Given metasfresh contains M_Products:
+      | Identifier   | Name                           |
+      | p_with_data  | PLInOut With Masterdata        |
+      | p_no_data    | PLInOut Without Masterdata     |
+    And package licensing master data is set up:
+      | M_Product_ID.Identifier | CountryCode | ProductGroupName  | SmallPackagingMaterialName | SmallPackagingWeight | OuterPackagingMaterialName | OuterPackagingWeight |
+      | p_with_data             | AT          | Lebensmittel AT2  | Glas AT2                   | 0.100                | Kunststoffe AT2            | 0.020                |
+    And package licensing InOut test data is set up:
+      | M_Product_ID.Identifier | DocumentNo            | MovementDate | MovementType | IsSOTrx | DocStatus | WarehouseCountryCode | DestinationCountryCode | MovementQty |
+      | p_with_data             | PLIO_WITH_DATA        | 2026-03-10   | V+           | N        | CO        | AT                   | AT                     | 50          |
+      | p_no_data               | PLIO_NO_DATA          | 2026-03-12   | V+           | N        | CO        | AT                   | AT                     | 80          |
+
+    When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-03-01" to "2026-04-01" and IsIncludeAllProducts "Y"
+
+    Then the Package Licensing InOut Report result contains:
+      | DocumentNo      | MovementQty | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
+      | PLIO_WITH_DATA  | 50          | 50          | Lebensmittel AT2 | Lebensmittel AT2 | Glas AT2               | Kunststoffe AT2        |
+      | PLIO_NO_DATA    | 80          | 80          |                  |                  |                        |                        |
+
+  @Id:S28967_20
+  Scenario: S28967_20 - IsIncludeAllProducts=N excludes products without packaging masterdata
+  Tests that when IsIncludeAllProducts=N, the report only includes products that have
+  packaging licensing masterdata for the selected country (original behavior).
+
+    Given metasfresh contains M_Products:
+      | Identifier     | Name                           |
+      | p_with_data_2  | PLInOut With Masterdata 2      |
+      | p_no_data_2    | PLInOut Without Masterdata 2   |
+    And package licensing master data is set up:
+      | M_Product_ID.Identifier | CountryCode | ProductGroupName  | SmallPackagingMaterialName | SmallPackagingWeight | OuterPackagingMaterialName | OuterPackagingWeight |
+      | p_with_data_2           | AT          | Lebensmittel AT3  | Glas AT3                   | 0.100                | Kunststoffe AT3            | 0.020                |
+    And package licensing InOut test data is set up:
+      | M_Product_ID.Identifier | DocumentNo              | MovementDate | MovementType | IsSOTrx | DocStatus | WarehouseCountryCode | DestinationCountryCode | MovementQty |
+      | p_with_data_2           | PLIO_WITH_DATA_N        | 2026-04-10   | V+           | N        | CO        | AT                   | AT                     | 50          |
+      | p_no_data_2             | PLIO_NO_DATA_N          | 2026-04-12   | V+           | N        | CO        | AT                   | AT                     | 80          |
+
+    When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-04-01" to "2026-05-01" and IsIncludeAllProducts "N"
+
+    Then the Package Licensing InOut Report result contains:
+      | DocumentNo       | MovementQty | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
+      | PLIO_WITH_DATA_N | 50          | 50          | Lebensmittel AT3 | Lebensmittel AT3 | Glas AT3               | Kunststoffe AT3        |
+
+    And the Package Licensing InOut Report result does not contain DocumentNo "PLIO_NO_DATA_N"
