@@ -1,33 +1,19 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- gh#28680: Performance optimization for C_Order_M_InOut_C_Invoice_Overview_V
+--
+-- 1. UNION -> UNION ALL: eliminates Sort+Unique on 26 columns (branches are disjoint by ad_table_id)
+-- 2. ROW_NUMBER() -> deterministic arithmetic ID: avoids window function sort
+--    - C_OrderLine: c_orderline_id (range 1..999M)
+--    - M_InOutLine: 1000000000 + m_inoutline_id (range 1B..2B)
+--    - C_InvoiceLine: 2000000000 + c_invoiceline_id (range 2B..2.147B)
+--    All fit in NUMERIC(10,0) for T_WEBUI_ViewSelection.IntKey1 and Java int (max 2,147,483,647)
+--    Ceiling: c_invoiceline_id must be <= 147,483,647 to avoid int overflow (typical installations are well below 10M)
+-- 3. m_product INNER JOIN -> LEFT JOIN: allows PostgreSQL join removal for facet queries
+--    that don't reference m_product columns (e.g., CreatedBy facet filter)
+-- 4. Add indexes on CreatedBy for fast facet filter DISTINCT
 
 DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V
 ;
 
--- gh#28680: Performance optimizations:
--- 1. UNION ALL instead of UNION (branches are disjoint by ad_table_id, no duplicates possible)
--- 2. Deterministic arithmetic IDs instead of ROW_NUMBER() (avoids window function sort)
--- 3. LEFT JOIN m_product (enables PostgreSQL join removal for queries not referencing m_product)
--- ID ceiling: c_invoiceline_id must be <= 147,483,647 to avoid Java int overflow
 CREATE OR REPLACE VIEW C_Order_M_InOut_C_Invoice_Overview_V AS
 SELECT doc.line_id                                                AS C_Order_M_InOut_C_Invoice_Overview_V_ID,
        doc.ad_Table_id,
@@ -163,3 +149,9 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
                     WHERE s.isactive = 'Y'
                     GROUP BY s.m_product_id, s.m_warehouse_id) stock ON doc.m_product_id = stock.m_product_id AND doc.m_warehouse_id = stock.m_warehouse_id
 ;
+
+
+-- Indexes on CreatedBy for fast facet filter DISTINCT
+CREATE INDEX IF NOT EXISTS c_orderline_createdby ON c_orderline (createdby);
+CREATE INDEX IF NOT EXISTS m_inoutline_createdby ON m_inoutline (createdby);
+CREATE INDEX IF NOT EXISTS c_invoiceline_createdby ON c_invoiceline (createdby);

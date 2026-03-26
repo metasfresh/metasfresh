@@ -10,20 +10,10 @@ import {
   exerciseFacetFilter,
   assertGridCellsPopulated,
   getGridRowCount,
+  getTotalItemCount,
 } from '../utils/view-validation/ViewWindowHelper';
+import { loginWithMasterdataUser } from '../utils/LoginHelper';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-
-/** Get total item count from pagination footer (language-independent) */
-async function getTotalItemCount(page) {
-  const paginationText = await page.locator('.pagination-wrapper, .document-list-footer').first().textContent().catch(() => '');
-  const match = paginationText.match(/(\d+)\s*(?:«|$)/); // "Total items 63«1..."
-  if (!match) {
-    // Try extracting number after "Total items" or "Gesamt"
-    const match2 = paginationText.match(/(?:Total items|Gesamt)\s*(\d+)/i);
-    return match2 ? parseInt(match2[1]) : 0;
-  }
-  return parseInt(match[1]);
-}
 
 /**
  * Purchase & Sales Overview (Ein- und Verkaufsübersicht) E2E test.
@@ -108,23 +98,7 @@ testCases.forEach(({ language, label }) => {
 
       // === STEP 2: Login ===
       await test.step('Login', async () => {
-        await page.goto(`${FRONTEND_BASE_URL}`);
-        await page.waitForTimeout(3000);
-        // The app redirects to /login if not logged in
-        await page.locator('input, [role="textbox"]').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-        const user = masterdata.login.user;
-        const inputs = page.locator('input, [role="textbox"]');
-        await inputs.nth(0).fill(user.username);
-        await inputs.nth(1).fill(user.password);
-        await page.locator('.btn-meta-success').click();
-
-        await page.waitForTimeout(2000);
-        if (page.url().includes('/login')) {
-          const loginBtn = page.locator('.btn-meta-success');
-          if (await loginBtn.isVisible()) { await loginBtn.click(); }
-        }
-        await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: SLOW_ACTION_TIMEOUT });
+        await loginWithMasterdataUser(page, masterdata.login.user);
       });
 
       // === STEP 3: Navigate to window ===
@@ -165,7 +139,7 @@ testCases.forEach(({ language, label }) => {
       // === STEP 7: Filter by Document Type — select ONLY the first option ===
       await test.step('Filter to show only one document type (language-independent)', async () => {
         const rowsBefore = await getGridRowCount();
-        const totalBefore = await getTotalItemCount(page);
+        const totalBefore = await getTotalItemCount();
         console.log(`[INFO] Rows before Document Type filter: ${rowsBefore}, total items: ${totalBefore}`);
 
         // Open Document Type filter (find by filter-facet class, not by text)
@@ -193,7 +167,7 @@ testCases.forEach(({ language, label }) => {
           await page.getByTestId('filter-apply-button').click();
           await page.waitForTimeout(2000);
 
-          const totalAfterFirst = await getTotalItemCount(page);
+          const totalAfterFirst = await getTotalItemCount();
           console.log(`[INFO] Total items after first option: ${totalAfterFirst} (was ${totalBefore})`);
           allure.attachment('DocType Filter - First Option Only', await page.screenshot({ fullPage: false }), 'image/png');
 
@@ -216,7 +190,7 @@ testCases.forEach(({ language, label }) => {
           await page.getByTestId('filter-apply-button').click();
           await page.waitForTimeout(2000);
 
-          const totalAfterSecond = await getTotalItemCount(page);
+          const totalAfterSecond = await getTotalItemCount();
           console.log(`[INFO] Total items after second option: ${totalAfterSecond}`);
           allure.attachment('DocType Filter - Second Option Only', await page.screenshot({ fullPage: false }), 'image/png');
 
@@ -293,7 +267,7 @@ testCases.forEach(({ language, label }) => {
         }
         await page.waitForTimeout(2000);
 
-        const totalAfter = await getTotalItemCount(page);
+        const totalAfter = await getTotalItemCount();
         console.log(`[INFO] Date range (Yesterday): ${rowsBefore} total → ${totalAfter} total`);
         allure.attachment('Date Range - Yesterday', await page.screenshot({ fullPage: false }), 'image/png');
 
