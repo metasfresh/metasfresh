@@ -1,0 +1,283 @@
+# ===========================================================================
+# Cleanup old test reports on test-reports.metasfresh.com
+# ===========================================================================
+# Removes stale branch directories and orphaned builds to reclaim disk space.
+#
+# Trigger:
+#   - Nightly cron (2:30 AM UTC)
+#   - Manual via workflow_dispatch
+#   - Programmatic via gh workflow run (from publish-test-reports when disk < 2GB)
+#
+# Logic:
+#   1. Stale branches: If the newest metadata entry is older than 30 days,
+#      remove the entire branch directory + metadata file. This handles
+#      branches deleted from GitHub (they stop receiving builds and age out).
+#   2. Orphaned builds: Build directories not tracked in metadata and older
+#      than 7 days are removed. This handles partial uploads, merge-queue
+#      branches, and builds that fell out of the 20-entry metadata cap.
+#   3. Empty branches: After pruning builds, remove any branch directory
+#      with no builds left.
+#   4. Orphaned metadata: Remove metadata JSON files with no matching
+#      branch directory.
+# ===========================================================================
+
+name: Cleanup test reports
+
+on:
+  schedule:
+    - cron: '30 2 * * *'   # Daily at 2:30 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    steps:
+      - name: Check for report server secret
+        id: check-secret
+        run: |
+          if [ -z "${{ secrets.REPORTS_SERVER_SSH_KEY }}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::REPORTS_SERVER_SSH_KEY not configured — skipping cleanup"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup SSH
+        if: steps.check-secret.outputs.available == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
+          chmod 600 ~/.ssh/reports_key
+          ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config <<EOF
+          Host reports-server
+            HostName test-reports.metasfresh.com
+            User ci-reports
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+          EOF
+
+      - name: Run cleanup
+        if: steps.check-secret.outputs.available == 'true'
+        id: cleanup
+        run: |
+          ssh reports-server "python3 -" <<'PYEOF' | tee /tmp/cleanup-output.txt
+          import json, os, shutil, time, sys
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          REPORTS_ROOT = Path("/var/www/test-reports")
+          BRANCHES_DIR = REPORTS_ROOT / "branches"
+          METADATA_DIR = REPORTS_ROOT / "_metadata"
+
+          MAX_BUILDS_PER_BRANCH = 3
+          MAX_BRANCH_AGE_DAYS = 30
+          MAX_ORPHAN_BUILD_AGE_DAYS = 7
+
+          def get_avail_bytes():
+              stat = os.statvfs(str(REPORTS_ROOT))
+              return stat.f_bavail * stat.f_frsize
+
+          def dir_size(path):
+              total = 0
+              for entry in path.rglob("*"):
+                  if entry.is_file():
+                      total += entry.stat().st_size
+              return total
+
+          def fmt(size_bytes):
+              for unit in ("B", "KB", "MB", "GB"):
+                  if abs(size_bytes) < 1024:
+                      return f"{size_bytes:.1f} {unit}"
+                  size_bytes /= 1024
+              return f"{size_bytes:.1f} TB"
+
+          now = time.time()
+          before = get_avail_bytes()
+          removed_branches = []
+          removed_builds = []
+          freed = 0
+
+          if not BRANCHES_DIR.exists():
+              print("No branches directory — nothing to clean")
+              sys.exit(0)
+
+          for branch_dir in sorted(BRANCHES_DIR.iterdir()):
+              if not branch_dir.is_dir():
+                  continue
+
+              branch = branch_dir.name
+              builds_dir = branch_dir / "builds"
+              metadata_file = METADATA_DIR / f"{branch}.json"
+
+              # --- Load metadata ---
+              known_versions = set()
+              newest_ts = 0
+              if metadata_file.exists():
+                  try:
+                      data = json.loads(metadata_file.read_text())
+                      for b in data.get("builds", []):
+                          known_versions.add(b["version"])
+                          try:
+                              ts = datetime.fromisoformat(
+                                  b["timestamp"].replace("Z", "+00:00")
+                              ).timestamp()
+                              newest_ts = max(newest_ts, ts)
+                          except Exception:
+                              pass
+                  except (json.JSONDecodeError, KeyError):
+                      pass
+
+              # --- Stale branch (newest metadata entry > MAX_BRANCH_AGE_DAYS) ---
+              if newest_ts > 0:
+                  age_days = (now - newest_ts) / 86400
+                  if age_days > MAX_BRANCH_AGE_DAYS:
+                      size = dir_size(branch_dir)
+                      shutil.rmtree(branch_dir)
+                      if metadata_file.exists():
+                          metadata_file.unlink()
+                      removed_branches.append(
+                          f"{branch} (stale: {int(age_days)}d, {fmt(size)})"
+                      )
+                      freed += size
+                      continue
+
+              # --- No metadata at all (merge-queue, orphaned) — check file age ---
+              if newest_ts == 0 and not known_versions:
+                  # Use directory mtime as proxy
+                  try:
+                      dir_age = (now - branch_dir.stat().st_mtime) / 86400
+                  except OSError:
+                      dir_age = 999
+                  if dir_age > MAX_ORPHAN_BUILD_AGE_DAYS:
+                      size = dir_size(branch_dir)
+                      shutil.rmtree(branch_dir)
+                      if metadata_file.exists():
+                          metadata_file.unlink()
+                      removed_branches.append(
+                          f"{branch} (no metadata, {int(dir_age)}d old, {fmt(size)})"
+                      )
+                      freed += size
+                      continue
+
+              # --- Enforce per-branch build cap ---
+              if metadata_file.exists() and len(data.get("builds", [])) > MAX_BUILDS_PER_BRANCH:
+                  builds_list = data["builds"]
+                  evicted = builds_list[MAX_BUILDS_PER_BRANCH:]
+                  data["builds"] = builds_list[:MAX_BUILDS_PER_BRANCH]
+                  metadata_file.write_text(json.dumps(data, indent=2))
+                  for ev in evicted:
+                      ev_ver = ev.get("version", "")
+                      ev_path = builds_dir / ev_ver
+                      if ev_path.is_dir():
+                          size = dir_size(ev_path)
+                          shutil.rmtree(ev_path)
+                          removed_builds.append(
+                              f"{branch}/{ev_ver} (over cap, {fmt(size)})"
+                          )
+                          freed += size
+                      known_versions.discard(ev_ver)
+
+              # --- Prune orphaned builds within active branches ---
+              if builds_dir.exists():
+                  for build_dir in sorted(builds_dir.iterdir()):
+                      if not build_dir.is_dir():
+                          continue
+                      version = build_dir.name
+                      if version not in known_versions:
+                          try:
+                              build_age = (now - build_dir.stat().st_mtime) / 86400
+                          except OSError:
+                              build_age = 999
+                          if build_age > MAX_ORPHAN_BUILD_AGE_DAYS:
+                              size = dir_size(build_dir)
+                              shutil.rmtree(build_dir)
+                              removed_builds.append(
+                                  f"{branch}/{version} ({int(build_age)}d, {fmt(size)})"
+                              )
+                              freed += size
+
+              # --- Remove empty branch directory ---
+              if builds_dir.exists() and not any(builds_dir.iterdir()):
+                  shutil.rmtree(branch_dir)
+                  if metadata_file.exists():
+                      metadata_file.unlink()
+                  removed_branches.append(f"{branch} (empty after pruning)")
+
+          # --- Orphaned metadata files (no matching branch directory) ---
+          orphaned_meta = []
+          if METADATA_DIR.exists():
+              for meta_file in sorted(METADATA_DIR.glob("*.json")):
+                  branch = meta_file.stem
+                  if not (BRANCHES_DIR / branch).exists():
+                      meta_file.unlink()
+                      orphaned_meta.append(branch)
+
+          after = get_avail_bytes()
+
+          # --- Output (parsed by step summary) ---
+          print(f"BEFORE_AVAIL={fmt(before)}")
+          print(f"AFTER_AVAIL={fmt(after)}")
+          print(f"FREED={fmt(after - before)}")
+          print(f"BRANCHES_REMOVED={len(removed_branches)}")
+          for b in removed_branches:
+              print(f"  BRANCH: {b}")
+          print(f"BUILDS_PRUNED={len(removed_builds)}")
+          for b in removed_builds:
+              print(f"  BUILD: {b}")
+          if orphaned_meta:
+              print(f"ORPHANED_METADATA={len(orphaned_meta)}")
+              for m in orphaned_meta:
+                  print(f"  META: {m}")
+          PYEOF
+
+      - name: Step summary
+        if: steps.check-secret.outputs.available == 'true'
+        run: |
+          OUTPUT="/tmp/cleanup-output.txt"
+          BEFORE=$(grep 'BEFORE_AVAIL=' "$OUTPUT" | cut -d= -f2)
+          AFTER=$(grep 'AFTER_AVAIL=' "$OUTPUT" | cut -d= -f2)
+          FREED=$(grep 'FREED=' "$OUTPUT" | cut -d= -f2)
+          BRANCHES=$(grep 'BRANCHES_REMOVED=' "$OUTPUT" | cut -d= -f2)
+          BUILDS=$(grep 'BUILDS_PRUNED=' "$OUTPUT" | cut -d= -f2)
+
+          {
+            echo "## Test Reports Cleanup"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Trigger | \`${{ github.event_name }}\` |"
+            echo "| Timestamp | $(date -u '+%Y-%m-%dT%H:%M:%SZ') |"
+            echo "| Disk before | ${BEFORE:-unknown} |"
+            echo "| Disk after | ${AFTER:-unknown} |"
+            echo "| Space freed | ${FREED:-unknown} |"
+            echo "| Branches removed | ${BRANCHES:-0} |"
+            echo "| Builds pruned | ${BUILDS:-0} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # List removed branches if any
+          if grep -q '  BRANCH:' "$OUTPUT"; then
+            {
+              echo ""
+              echo "### Removed Branches"
+              echo ""
+              grep '  BRANCH:' "$OUTPUT" | sed 's/  BRANCH: /- /'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # List pruned builds if any
+          if grep -q '  BUILD:' "$OUTPUT"; then
+            {
+              echo ""
+              echo "### Pruned Builds"
+              echo ""
+              grep '  BUILD:' "$OUTPUT" | sed 's/  BUILD: /- /'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Cleanup SSH
+        if: always() && steps.check-secret.outputs.available == 'true'
+        run: rm -f ~/.ssh/reports_key
