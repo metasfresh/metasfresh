@@ -6,6 +6,7 @@ import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 
@@ -19,8 +20,8 @@ import javax.annotation.Nullable;
 @RequiredArgsConstructor
 public enum ForecastPrecisionUnit implements ReferenceListAwareEnum
 {
-	WEEK("W"),
-	MONTH("M");
+	WEEK(X_PP_Product_Planning.FORECAST_PRECISIONUNIT_WEEK),
+	MONTH(X_PP_Product_Planning.FORECAST_PRECISIONUNIT_MONTH);
 
 	private static final ValuesIndex<ForecastPrecisionUnit> index = ReferenceListAwareEnums.index(values());
 

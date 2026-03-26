@@ -24,6 +24,8 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
@@ -73,10 +75,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-public class DemandCandiateHandlerTest
+public class DemandCandidateHandlerTest
 {
 	private PostMaterialEventService postMaterialEventService;
-	private DemandCandiateHandler demandCandidateHandler;
+	private DemandCandidateHandler demandCandidateHandler;
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	@BeforeEach
@@ -104,13 +106,15 @@ public class DemandCandiateHandlerTest
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 
-		demandCandidateHandler = new DemandCandiateHandler(
+		demandCandidateHandler = new DemandCandidateHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService,
 				postMaterialEventService,
 				availableToPromiseRepository,
 				stockCandidateService,
-				supplyCandidateHandler);
+				supplyCandidateHandler,
+				Mockito.mock(MaterialPlanningContextHelper.class),
+				new PPOrderCandidateDemandMatcher());
 	}
 
 	@Test
@@ -230,7 +234,6 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
-		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.enqueueEventNow(Mockito.any());
 	}
@@ -410,7 +413,7 @@ public class DemandCandiateHandlerTest
 				.max(new BigDecimal(givenMax)).build();
 
 		// when
-		final BigDecimal actual = DemandCandiateHandler.computeRequiredQty(new BigDecimal(when), minMaxDescriptor);
+		final BigDecimal actual = DemandCandidateHandler.computeRequiredQty(new BigDecimal(when), minMaxDescriptor);
 
 		// then
 		assertThat(actual).isEqualByComparingTo(then);
