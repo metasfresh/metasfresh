@@ -33,7 +33,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveContactRequestBuilder;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
@@ -155,14 +154,13 @@ public class OrderBL implements IOrderBL
 	private static final Logger logger = LogManager.getLogger(OrderBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
 	private static final AdMessageKey MSG_PRODUCT_CANT_BE_USED_ERROR = AdMessageKey.of("de.metas.order.ProductCantBeUsedError");
 
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -217,7 +215,7 @@ public class OrderBL implements IOrderBL
 
 			final BPartnerId bpartnerId = bpartnerAndLocation.getBpartnerId();
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-			final PricingSystemId pricingSysId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+			final PricingSystemId pricingSysId = bPartnerBL.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
 			if (pricingSysId == null && throwExIfNotFound)
@@ -591,7 +589,7 @@ public class OrderBL implements IOrderBL
 	{
 		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
 		return bpartnerId != null
-				? bpartnerDAO.getById(bpartnerId, I_C_BPartner.class)
+				? bPartnerBL.getById(bpartnerId, I_C_BPartner.class)
 				: null;
 	}
 
@@ -695,7 +693,7 @@ public class OrderBL implements IOrderBL
 
 		// keep the trxName null, as it was before
 		final String trxName = ITrx.TRXNAME_None;
-		final I_AD_User contact = bpartnerDAO.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
+		final I_AD_User contact = bPartnerBL.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
 
 		// keep the functionality as it was. Do not set null user
 		if (contact != null)
@@ -708,7 +706,7 @@ public class OrderBL implements IOrderBL
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
-		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
+		final I_C_BPartner_Location shipToLocationId = bPartnerBL.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
 				.type(Type.SHIP_TO)
 				.build());
@@ -743,7 +741,7 @@ public class OrderBL implements IOrderBL
 				.relationBPartnerLocationId(extractBPartnerLocation(order).map(BPartnerLocationAndCaptureId::getBpartnerLocationId).orElse(null))
 				.bpartnerId(bpartnerId)
 				.build();
-		final I_C_BPartner_Location billtoLocation = bpartnerDAO.retrieveBPartnerLocation(query);
+		final I_C_BPartner_Location billtoLocation = bPartnerBL.retrieveBPartnerLocation(query);
 		if (billtoLocation == null)
 		{
 			return false;
@@ -1188,7 +1186,7 @@ public class OrderBL implements IOrderBL
 	public void validateHaddexDate(final I_C_Order order)
 	{
 		final ZoneId timeZone = getTimeZone(order);
-		final org.compiere.model.I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner partner = bPartnerBL.getById(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
 				ChronoUnit.MONTHS.between(
 						TimeUtil.asZonedDateTime(partner.getDateHaddexCheck(), timeZone),
@@ -1209,7 +1207,7 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		final org.compiere.model.I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner partner = bPartnerBL.getById(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 
 		if (!partner.isHaddexCheck())
 		{
@@ -1254,7 +1252,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Check main (ship) location
 		{
-			final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+			final I_C_BPartner_Location bpartnerLocation = bPartnerBL.getBPartnerLocationById(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
 			final String locationEmail = bpartnerLocation != null ? StringUtils.trimBlankToNull(bpartnerLocation.getEMail()) : null;
 			if (locationEmail != null)
 			{
@@ -1267,7 +1265,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
 		if (orderContactId != null)
 		{
-			final String contactLocationEmail = StringUtils.trimBlankToNull(bpartnerDAO.getContactLocationEmail(orderContactId));
+			final String contactLocationEmail = StringUtils.trimBlankToNull(bPartnerBL.getContactLocationEmail(orderContactId));
 			if (contactLocationEmail != null)
 			{
 				return contactLocationEmail;
@@ -1279,7 +1277,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerLocationId billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
 		if (billBPLocationId != null)
 		{
-			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
+			final I_C_BPartner_Location billLocationRecord = bPartnerBL.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
 			return billLocationEmail;
 		}
@@ -1427,40 +1425,13 @@ public class OrderBL implements IOrderBL
 		order.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(order)));
 	}
 
+	@Nullable
 	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		final Optional<ShipperId> dropShipShipperId = getDropShipAddressShipperId(orderRecord);
-		return dropShipShipperId.orElse(getDeliveryAddressShipperId(orderRecord));
-	}
-
-	private Optional<ShipperId> getDropShipAddressShipperId(final I_C_Order orderRecord)
-	{
-		if (orderRecord.getDropShip_BPartner_ID() <= 0 || orderRecord.getDropShip_Location_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		final Optional<ShipperId> dropShipShipperId = partnerDAO.getShipperIdByBPLocationId(
-				BPartnerLocationId.ofRepoId(
-						orderRecord.getDropShip_BPartner_ID(),
-						orderRecord.getDropShip_Location_ID()));
-
-		return Optional.ofNullable(dropShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID()))));
-	}
-
-	private ShipperId getDeliveryAddressShipperId(final I_C_Order orderRecord)
-	{
-		final Optional<ShipperId> deliveryShipShipperId = partnerDAO.getShipperIdByBPLocationId(
-				BPartnerLocationId.ofRepoId(
-						orderRecord.getC_BPartner_ID(),
-						orderRecord.getC_BPartner_Location_ID()));
-
-		return deliveryShipShipperId.orElse(getPartnerShipperId(getEffectiveDropshipPartnerId(orderRecord)));
-	}
-
-	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
-	{
-		return partnerDAO.getShipperId(partnerId);
+		return bPartnerBL.getEffectiveShipperId(
+				BPartnerLocationId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()),
+				BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID())
+		);
 	}
 
 	@Override
