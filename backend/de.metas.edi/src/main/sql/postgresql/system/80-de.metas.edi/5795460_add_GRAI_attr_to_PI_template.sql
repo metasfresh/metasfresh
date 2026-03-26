@@ -1,0 +1,22 @@
+-- TODO
+
+-- -- 2026-03-05T18:03:34.354Z
+-- INSERT INTO M_HU_PI_Attribute (AD_Client_ID, AD_Org_ID, 
+--                                Created, CreatedBy, 
+--                                HU_TansferStrategy_JavaClass_ID, IsActive, IsDisplayed, IsInstanceAttribute, IsMandatory, IsOnlyIfInProductAttributeSet, IsReadOnly, 
+--                                M_Attribute_ID, M_HU_PI_Attribute_ID, M_HU_PI_Version_ID, PropagationType, SeqNo, 
+--                                Updated, UpdatedBy, 
+--                                UseInASI)
+-- VALUES (1000000, 1000000,
+--         TO_TIMESTAMP('2026-03-24 18:03:34.352000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
+--         540027, 'Y', 'Y', 'N', 'N', 'N', 'N',
+--         540192, 540139, 2001855, 'NONE', 200,
+--         TO_TIMESTAMP('2026-03-24 18:03:34.352000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
+--         'N')
+-- ;
+-- 
+-- -- 2026-03-05T18:03:45.748Z
+-- UPDATE M_HU_PI_Attribute
+-- SET UseInASI='N'
+-- WHERE M_HU_PI_Attribute_ID = 540140
+-- ;

@@ -25,8 +25,6 @@ package de.metas.handlingunits.rest_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAISet;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
@@ -55,13 +53,12 @@ import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
@@ -72,6 +69,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.rest_api.grai.GetHUGraiCommand;
+import de.metas.handlingunits.rest_api.grai.SetHUGraiCommand;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -109,7 +108,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -918,170 +916,16 @@ public class HandlingUnitsService
 	// --- GRAI Packing Materials ---
 
 	@NonNull
-	public JsonGRAICodesResponse getPackingMaterials(@NonNull final HuId huId)
+	public JsonGRAICodesResponse getGRAIs(@NonNull final HuId huId)
 	{
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
-
-		if (handlingUnitsBL.isVirtual(hu))
-		{
-			throw new AdempiereException("GRAI scanning not supported for virtual HUs");
-		}
-
-		final ArrayList<GRAI> grais = new ArrayList<>();
-		final int tuCount;
-
-		if (handlingUnitsBL.isLoadingUnit(hu))
-		{
-			// LU: collect GRAIs from all child TUs
-			int tuCounter = 0;
-			for (final I_M_HU_Item item : handlingUnitsDAO.retrieveItems(hu))
-			{
-				final String itemType = item.getItemType();
-				if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
-				{
-					// Disaggregated TUs
-					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
-					{
-						tuCounter++;
-						final GRAI grai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI));
-						if (grai != null)
-						{
-							grais.add(grai);
-						}
-					}
-				}
-				else if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
-				{
-					// Aggregate: item.getQty() = number of TUs represented
-					tuCounter += item.getQty().intValue();
-
-					// Read comma-separated GRAIs from the aggregate VHU's attribute
-					for (final I_M_HU aggregateVHU : handlingUnitsDAO.retrieveIncludedHUs(item))
-					{
-						GRAISet.ofNullableCommaSeparated(huAttributesBL.getHUAttributeValue(aggregateVHU, AttributeConstants.ATTR_GRAI))
-								.stream()
-								.forEach(grais::add);
-					}
-				}
-			}
-			tuCount = tuCounter;
-		}
-		else
-		{
-			// TU: single GRAI
-			tuCount = 1;
-			final GRAI grai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
-			if (grai != null)
-			{
-				grais.add(grai);
-			}
-		}
-
-		return JsonGRAICodesResponse.builder()
-				.huId(huId.getRepoId())
-				.graiCodes(GRAISet.ofCollection(grais).toStringList())
-				.tuCount(tuCount)
-				.build();
+		return GetHUGraiCommand.builder()
+				.huId(huId)
+				.build().execute();
 	}
 
 	@NonNull
-	public JsonGRAICodesResponse setPackingMaterials(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
+	public JsonGRAICodesResponse setGRAIs(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
 	{
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
-
-		if (handlingUnitsBL.isVirtual(hu))
-		{
-			throw new AdempiereException("GRAI scanning not supported for virtual HUs");
-		}
-
-		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
-		{
-			// TU: set single GRAI directly
-			final String value = graiSet.stream().findFirst().map(GRAI::getValue).orElse(null);
-			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, value);
-		}
-		else if (handlingUnitsBL.isLoadingUnit(hu))
-		{
-			// LU: distribute GRAIs to child TUs in two passes
-			final LinkedHashSet<GRAI> unassignedGrais = new LinkedHashSet<>(graiSet.toSet());
-
-			// Collect TUs that need GRAI assignment and aggregate items
-			final ArrayList<I_M_HU> tusWithoutGrai = new ArrayList<>();
-			final ArrayList<I_M_HU> aggregateVHUs = new ArrayList<>();
-
-			// Pass 1: For disaggregated TUs, keep existing GRAIs that are in the new set, clear others
-			for (final I_M_HU_Item item : handlingUnitsDAO.retrieveItems(hu))
-			{
-				final String itemType = item.getItemType();
-				if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
-				{
-					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
-					{
-						final GRAI existingGrai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI));
-						if (existingGrai != null && graiSet.contains(existingGrai))
-						{
-							// Keep it — it's in the new set; mark as assigned
-							unassignedGrais.remove(existingGrai);
-						}
-						else if (existingGrai != null)
-						{
-							// Clear it — it's NOT in the new set
-							huAttributesBL.updateHUAttribute(HuId.ofRepoId(childTU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, null);
-							tusWithoutGrai.add(childTU);
-						}
-						else
-						{
-							// No existing GRAI
-							tusWithoutGrai.add(childTU);
-						}
-					}
-				}
-				else if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
-				{
-					for (final I_M_HU aggregateVHU : handlingUnitsDAO.retrieveIncludedHUs(item))
-					{
-						aggregateVHUs.add(aggregateVHU);
-					}
-				}
-			}
-
-			// Pass 2: Assign unassigned GRAIs to TUs without GRAI
-			final ArrayList<GRAI> remainingGrais = new ArrayList<>(unassignedGrais);
-			int graiIndex = 0;
-			for (final I_M_HU tu : tusWithoutGrai)
-			{
-				if (graiIndex < remainingGrais.size())
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(tu.getM_HU_ID()), AttributeConstants.ATTR_GRAI, remainingGrais.get(graiIndex).getValue());
-					graiIndex++;
-				}
-			}
-
-			// Store remaining unassigned GRAIs as comma-separated on aggregate VHUs
-			if (graiIndex < remainingGrais.size() && !aggregateVHUs.isEmpty())
-			{
-				final String commaSeparated = GRAISet.ofCollection(remainingGrais.subList(graiIndex, remainingGrais.size())).toCommaSeparatedString();
-				for (final I_M_HU aggregateVHU : aggregateVHUs)
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, commaSeparated);
-					break; // store on first aggregate VHU only
-				}
-			}
-			else
-			{
-				// Clear any remaining aggregate VHU GRAIs
-				for (final I_M_HU aggregateVHU : aggregateVHUs)
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, null);
-				}
-			}
-		}
-		else
-		{
-			throw new AdempiereException("GRAI scanning not supported for this HU type");
-		}
-
-		// Re-read fresh state
-		return getPackingMaterials(huId);
+		return SetHUGraiCommand.builder().huId(huId).graiSet(graiSet).build().execute();
 	}
 }

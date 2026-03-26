@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,8 +49,10 @@ public class GRAISet implements Iterable<GRAI>
 		{
 			return EMPTY;
 		}
+
 		return values.stream()
-				.map(GRAI::of)
+				.map(GRAI::ofNullable)
+				.filter(Objects::nonNull)
 				.collect(collect());
 	}
 
@@ -63,11 +66,8 @@ public class GRAISet implements Iterable<GRAI>
 		{
 			return EMPTY;
 		}
-		
-		return COMMA_SPLITTER.splitToList(csvNorm)
-				.stream()
-				.map(GRAI::of)
-				.collect(collect());
+
+		return ofStrings(COMMA_SPLITTER.splitToList(csvNorm));
 	}
 
 	public static Collector<GRAI, ?, GRAISet> collect()

@@ -244,22 +244,22 @@ public class HUManagerRestController
 	}
 
 	@GetMapping("/{huId}/packingMaterials")
-	public ResponseEntity<JsonGRAICodesResponse> getPackingMaterials(@PathVariable("huId") final int huId)
+	public ResponseEntity<JsonGRAICodesResponse> getGRAIs(@PathVariable("huId") final int huId)
 	{
 		assertActionAccess(HUManagerAction.ScanGRAI);
 
-		final JsonGRAICodesResponse response = handlingUnitsService.getPackingMaterials(HuId.ofRepoId(huId));
+		final JsonGRAICodesResponse response = handlingUnitsService.getGRAIs(HuId.ofRepoId(huId));
 		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/{huId}/packingMaterials")
-	public ResponseEntity<JsonGRAICodesResponse> setPackingMaterials(
+	public ResponseEntity<JsonGRAICodesResponse> setGRAIs(
 			@PathVariable("huId") final int huId,
 			@RequestBody @NonNull final JsonGRAICodesRequest request)
 	{
 		assertActionAccess(HUManagerAction.ScanGRAI);
 
-		final JsonGRAICodesResponse response = handlingUnitsService.setPackingMaterials(
+		final JsonGRAICodesResponse response = handlingUnitsService.setGRAIs(
 				HuId.ofRepoId(huId),
 				GRAISet.ofStrings(request.getGraiCodes()));
 		return ResponseEntity.ok(response);
