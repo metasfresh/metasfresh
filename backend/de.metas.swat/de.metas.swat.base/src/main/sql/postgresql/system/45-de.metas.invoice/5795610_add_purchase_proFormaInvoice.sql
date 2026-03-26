@@ -84,3 +84,8 @@ UPDATE C_DocType SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2026-03-25 15:37:09.16400
 UPDATE AD_Sequence SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2026-03-25 15:38:04.053000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Sequence_ID=556590
 ;
 
+-- old: Speditionsauftrag/Ladeliste
+UPDATE ad_ref_list
+SET valuename = 'ShipperTransportation',Updated=TO_TIMESTAMP('2026-03-25 15:38:04.053000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+WHERE ad_ref_list_id = 540166
+;

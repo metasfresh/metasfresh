@@ -49,6 +49,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	ManufacturingCostCollector(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector),
 	GehaltsrechnungAngestellter(X_C_DocType.DOCBASETYPE_GehaltsrechnungAngestellter),
 	InterneRechnungLieferant(X_C_DocType.DOCBASETYPE_InterneRechnungLieferant),
+	ShipperTransportation(X_C_DocType.DOCBASETYPE_ShipperTransportation),
 	CustomerContract(X_C_DocType.DOCBASETYPE_CustomerContract),
 	DunningDoc(X_C_DocType.DOCBASETYPE_DunningDoc),
 	ShipmentDeclaration(X_C_DocType.DOCBASETYPE_ShipmentDeclaration),
@@ -126,4 +127,6 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isARReceipt(){ return ARReceipt.equals(this); }
 
 	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
+
+	public boolean isShipperTransportation(){ return ShipperTransportation.equals(this); }
 }
