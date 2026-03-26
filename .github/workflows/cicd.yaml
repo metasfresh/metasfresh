@@ -1347,6 +1347,8 @@ jobs:
         working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
         run: |
           docker compose up -d
       - name: Make the script files executable
@@ -1407,6 +1409,10 @@ jobs:
       - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
         run: |
           docker compose ps -a
           docker inspect --format "{{json .State.Health }}" compose-db-1 | jq
@@ -1422,6 +1428,8 @@ jobs:
         working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
         if: success() || failure()
         run: |
           docker compose down
