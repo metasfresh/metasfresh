@@ -11,7 +11,7 @@ env:
 jobs:
 
   init:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
@@ -104,7 +104,7 @@ jobs:
           testspace github_run.txt
 
   java:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     permissions:
       packages: write
@@ -265,7 +265,7 @@ jobs:
   #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     steps:
       - uses: actions/checkout@v4
@@ -354,7 +354,7 @@ jobs:
 
   test-frontend:
     name: test (frontend)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v4
@@ -388,7 +388,7 @@ jobs:
           path: jest/**/jest.log
 
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -566,7 +566,7 @@ jobs:
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   preloaded-db:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, backend ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -619,7 +619,7 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   procurement:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -740,7 +740,7 @@ jobs:
   
 
   compatibility-images:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, frontend, backend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
@@ -936,7 +936,7 @@ jobs:
 
   junit:
     name: test (java)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1011,7 +1011,7 @@ jobs:
 
   cucumber-build:
     name: build (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1056,7 +1056,7 @@ jobs:
 
   cucumber-run:
     name: test (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, preloaded-db ]
     strategy:
       max-parallel: 10
@@ -1189,7 +1189,7 @@ jobs:
 
   health_check:
     name: health check
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
@@ -1283,7 +1283,7 @@ jobs:
   mobile_test:
     name: mobile test
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
@@ -1335,7 +1335,7 @@ jobs:
 
   publish-test-reports:
     name: publish test reports
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, cucumber-run, mobile_test ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
@@ -1719,7 +1719,7 @@ jobs:
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, compatibility-images ]
     steps:
       - name: dispatch-workflow
