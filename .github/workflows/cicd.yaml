@@ -16,7 +16,7 @@ env:
 jobs:
 
   init:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
@@ -25,6 +25,8 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
       is-local: ${{ steps.detect-local.outputs.is-local }}
+      skip-testspace: ${{ steps.skip-checks.outputs.skip-testspace }}
+      skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
     steps:
       - name: Detect local execution
         id: detect-local
@@ -36,9 +38,26 @@ jobs:
             echo "is-local=false" >> $GITHUB_OUTPUT
             echo "Running on GitHub Actions"
           fi
+      - name: Determine skip flags
+        id: skip-checks
+        env:
+          SKIP_TESTSPACE_VAR: ${{ vars.SKIP_TESTSPACE }}
+        run: |
+          # Skip testspace for tmp-mergify/ branches or when SKIP_TESTSPACE var is set
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]] || [[ "$SKIP_TESTSPACE_VAR" == "true" ]]; then
+            echo "skip-testspace=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-testspace=false" >> $GITHUB_OUTPUT
+          fi
+          # Skip publish-reports for tmp-mergify/ branches only
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]]; then
+            echo "skip-publish-reports=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -100,7 +119,7 @@ jobs:
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
@@ -111,7 +130,7 @@ jobs:
   # Fast migration CLI build - runs in parallel with java job
   # This enables db-images to start ~10 minutes earlier
   migration-cli:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init ]
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +170,7 @@ jobs:
           retention-days: 1
 
   java:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     permissions:
       packages: write
@@ -334,7 +353,7 @@ jobs:
   #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     steps:
       - uses: actions/checkout@v4
@@ -456,12 +475,12 @@ jobs:
 
   test-frontend:
     name: test (frontend)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -477,7 +496,7 @@ jobs:
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
       - name: publish results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         run: |
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
           testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
@@ -499,7 +518,7 @@ jobs:
           path: jest/**/jest.log
 
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -636,7 +655,7 @@ jobs:
   # db-images: Build database images independently from backend
   # Now runs in parallel with java job (depends on fast migration-cli job instead)
   db-images:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, migration-cli ]
     steps:
       - uses: actions/checkout@v4
@@ -736,7 +755,7 @@ jobs:
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, db-images ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -791,7 +810,7 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   procurement:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -924,7 +943,7 @@ jobs:
   
 
   compatibility-images:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, frontend, backend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1133,7 +1152,7 @@ jobs:
 
   junit:
     name: test (java)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1142,7 +1161,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1195,7 +1214,7 @@ jobs:
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         run: |
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code
@@ -1232,7 +1251,7 @@ jobs:
 
   cucumber-build:
     name: build (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1283,7 +1302,7 @@ jobs:
 
   cucumber-run:
     name: test (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
       max-parallel: 10
@@ -1318,7 +1337,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1340,7 +1359,7 @@ jobs:
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
@@ -1475,7 +1494,7 @@ jobs:
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, cucumber-run ]
     if: always()
     permissions:
@@ -1536,7 +1555,7 @@ jobs:
 
   health_check:
     name: health check
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1632,7 +1651,7 @@ jobs:
   mobile_test:
     name: mobile test
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1641,7 +1660,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1656,7 +1675,7 @@ jobs:
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose --profile mobile down
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
@@ -1712,7 +1731,7 @@ jobs:
   frontend_webui_test:
     name: frontend webui test
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1721,7 +1740,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1736,7 +1755,7 @@ jobs:
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
           docker compose --profile frontend down
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
@@ -1814,9 +1833,9 @@ jobs:
 
   publish-test-reports:
     name: publish test reports
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, cucumber-allure-report, mobile_test ]
-    if: always() && needs.init.result == 'success'
+    if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write    # trigger reports-cleanup workflow when disk space is low
       contents: read
@@ -2198,7 +2217,7 @@ jobs:
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, compatibility-images ]
     steps:
       - name: dispatch-workflow
