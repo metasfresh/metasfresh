@@ -1,8 +1,9 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
+import { HUManagerScreen } from './HUManagerScreen';
 
 const NAME = 'GRAIScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -66,4 +67,35 @@ export const GRAIScreen = {
         await page.getByTestId('grai-clear-all-button').tap();
         await YesNoDialog.clickNoButton();
     }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+    }),
+
+    reloadFromBackend: async () => await test.step(`${NAME} - Reload from backend (go back and re-open)`, async () => {
+        await GRAIScreen.goBack();
+        await HUManagerScreen.waitForScreen();
+        await HUManagerScreen.openGRAIScreen();
+        await GRAIScreen.expectVisible();
+    }),
+
+    expectGraiChipTexts: async ({ expectedTexts }) => await test.step(
+        `${NAME} - Expect exact GRAI chip texts (${expectedTexts.length} chips)`,
+        async () => {
+            const chipTexts = await page.locator('.grai-chip-text').evaluateAll(
+                (elements) => elements.map((el) => el.textContent.trim()).sort()
+            );
+            expect(chipTexts).toEqual([...expectedTexts].sort());
+        }
+    ),
+
+    /**
+     * Start listening for the next PUT /grai backend sync response.
+     * Call BEFORE the action that triggers the sync (scan/clear), then await the returned promise
+     * after the action to ensure data reached the backend before navigating away.
+     */
+    pendingBackendSync: () => page.waitForResponse(
+        (resp) => resp.url().includes('/grai') && resp.request().method() === 'PUT',
+        { timeout: 5000 }
+    ),
 };

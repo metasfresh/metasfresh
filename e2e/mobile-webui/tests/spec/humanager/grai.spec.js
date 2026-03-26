@@ -15,6 +15,9 @@ const makeGraiBarcodes = (count) => {
     });
 };
 
+/** Expected chip display text for a generated GRAI serial number (1-based). */
+const graiChipText = (n) => `...${String(n).padStart(11, '0')}`;
+
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: "en_US",
@@ -112,9 +115,17 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     await GRAIScreen.expectVisible();
 
     // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
+    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
     await GRAIScreen.expectGraiChipWithText({ text: '...00691412000' });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['...00691412000'] });
+    await syncDone;
+
+    // Verify backend persistence: reload from backend, confirm GRAI survived the round-trip
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['...00691412000'] });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -187,8 +198,22 @@ test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ p
     await GRAIScreen.expectGraiChipCount({ expectedCount: 35 });
 
     // Scan 3: GRAIs 19–40 (indices 18–39) — overlaps with previous scans on GRAIs 19–35
+    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBatch({ graiCodes: allGrais.slice(18, 40) });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
+
+    // Verify exact chip texts for all 40 GRAIs
+    const allExpectedTexts = Array.from({ length: 40 }, (_, i) => graiChipText(i + 1));
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
+    await syncDone;
+
+    // Verify backend persistence: go back, re-open, confirm all 40 GRAIs survived the round-trip
+    await GRAIScreen.goBack();
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -217,11 +242,17 @@ test('Clear All GRAIs removes all chips after confirmation', async ({ page }) =>
     await GRAIScreen.expectClearAllButtonVisible();
 
     // Clear all and confirm
+    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.clearAllGrais();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
 
     // Clear All button should be hidden again
     await GRAIScreen.expectClearAllButtonNotVisible();
+    await syncDone;
+
+    // Verify backend persistence: reload from backend, confirm empty state survived the round-trip
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
 });
 
 // noinspection JSUnusedLocalSymbols
