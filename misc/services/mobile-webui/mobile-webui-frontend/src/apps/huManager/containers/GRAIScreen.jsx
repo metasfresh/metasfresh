@@ -13,6 +13,7 @@ import { parseGraiArrayFromRawInput } from '../../../utils/grai';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import YesNoDialog from '../../../components/dialogs/YesNoDialog';
 import { useGrais } from '../hooks/useGrais';
+import { traceLogWarn } from '../../../utils/ui_trace';
 
 import '../../../assets/GRAIScreen.scss';
 
@@ -32,6 +33,8 @@ const GRAIScreen = () => {
       const parsed = parseGraiArrayFromRawInput(barcodeString);
       if (parsed.length > 0) {
         addGrais(parsed);
+      } else {
+        traceLogWarn('Scanned barcode is not a valid GRAI', { barcodeString });
       }
     },
     [addGrais]

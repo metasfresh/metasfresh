@@ -115,11 +115,11 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     await GRAIScreen.expectVisible();
 
     // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
     await GRAIScreen.expectGraiChipWithText({ text: '...00691412000' });
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['...00691412000'] });
+    const syncDone = GRAIScreen.pendingBackendSync();
     await syncDone;
 
     // Verify backend persistence: reload from backend, confirm GRAI survived the round-trip
@@ -168,6 +168,26 @@ test('Remove GRAI chip', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
+test('Non-GRAI barcode is silently ignored', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Invalid Barcode');
+    allure.severity('normal');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan a random EAN-13 barcode that is NOT a GRAI — should be ignored
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '4006381333931' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
+
+    // Scan a valid GRAI afterwards to confirm the scanner still works
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
@@ -198,8 +218,8 @@ test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ p
     await GRAIScreen.expectGraiChipCount({ expectedCount: 35 });
 
     // Scan 3: GRAIs 19–40 (indices 18–39) — overlaps with previous scans on GRAIs 19–35
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBatch({ graiCodes: allGrais.slice(18, 40) });
+    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
 
     // Verify exact chip texts for all 40 GRAIs
@@ -207,11 +227,8 @@ test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ p
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
     await syncDone;
 
-    // Verify backend persistence: go back, re-open, confirm all 40 GRAIs survived the round-trip
-    await GRAIScreen.goBack();
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.openGRAIScreen();
-    await GRAIScreen.expectVisible();
+    // Verify backend persistence: reload from backend, confirm all 40 GRAIs survived the round-trip
+    await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
 });
@@ -242,12 +259,12 @@ test('Clear All GRAIs removes all chips after confirmation', async ({ page }) =>
     await GRAIScreen.expectClearAllButtonVisible();
 
     // Clear all and confirm
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.clearAllGrais();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
 
     // Clear All button should be hidden again
     await GRAIScreen.expectClearAllButtonNotVisible();
+    const syncDone = GRAIScreen.pendingBackendSync();
     await syncDone;
 
     // Verify backend persistence: reload from backend, confirm empty state survived the round-trip

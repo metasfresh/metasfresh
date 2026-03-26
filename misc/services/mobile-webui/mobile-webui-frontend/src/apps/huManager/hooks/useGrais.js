@@ -4,6 +4,7 @@ import { toastError } from '../../../utils/toast';
 import * as api from '../api';
 
 const SYNC_DEBOUNCE_MS = 500;
+const MAX_SYNC_RETRIES = 3;
 
 export const useGrais = ({ huId }) => {
   const [graiCodes, setGraiCodes] = useState([]);
@@ -28,23 +29,37 @@ export const useGrais = ({ huId }) => {
 
   // Debounced sync: waits for scanning to settle, then sends the latest state to backend.
   // Reads from graiCodesRef at fire time (not at schedule time) to always send the latest list.
-  const scheduleSyncToBackend = useCallback(() => {
-    if (!huId) return;
+  // On transient failures, retries up to MAX_SYNC_RETRIES times before showing an error toast.
+  const scheduleSyncToBackend = useCallback(
+    (retryCount = 0) => {
+      if (!huId) return;
 
-    clearTimeout(syncTimerRef.current);
-    const generation = ++syncGenerationRef.current;
-    syncTimerRef.current = setTimeout(() => {
-      api
-        .setGRAIs(huId, graiCodesRef.current)
-        .then((response) => {
-          // Only apply if no newer sync was scheduled while this was in flight
-          if (syncGenerationRef.current === generation) {
-            applyBackendResponse(response);
-          }
-        })
-        .catch((axiosError) => toastError({ axiosError }));
-    }, SYNC_DEBOUNCE_MS);
-  }, [huId, applyBackendResponse]);
+      clearTimeout(syncTimerRef.current);
+      const generation = ++syncGenerationRef.current;
+      syncTimerRef.current = setTimeout(() => {
+        api
+          .setGRAIs(huId, graiCodesRef.current)
+          .then((response) => {
+            // Only apply if no newer sync was scheduled while this was in flight
+            if (syncGenerationRef.current === generation) {
+              applyBackendResponse(response);
+            }
+          })
+          .catch((axiosError) => {
+            // Only act if this is still the latest sync generation (no newer user action superseded it)
+            if (syncGenerationRef.current !== generation) return;
+
+            if (retryCount < MAX_SYNC_RETRIES) {
+              console.warn(`GRAI sync failed (attempt ${retryCount + 1}/${MAX_SYNC_RETRIES}), retrying...`);
+              scheduleSyncToBackend(retryCount + 1);
+            } else {
+              toastError({ axiosError });
+            }
+          });
+      }, SYNC_DEBOUNCE_MS);
+    },
+    [huId, applyBackendResponse]
+  );
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
