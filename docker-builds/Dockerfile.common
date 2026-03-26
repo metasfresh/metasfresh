@@ -8,9 +8,9 @@ COPY misc/parent-pom .
 RUN sed -i 's/json-snapshot-PR/json-snapshot-pr/' pom.xml
 
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress clean install --offline -Dmaven.gitcommitid.skip=true
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean install --offline -Dmaven.gitcommitid.skip=true
 
 WORKDIR /commons
 COPY misc/de-metas-common .
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests
