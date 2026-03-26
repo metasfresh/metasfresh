@@ -71,6 +71,24 @@ export const parseGraiFromRawInput = (inputString) => {
  * @param {string} graiString
  * @returns {boolean}
  */
+/**
+ * Parse a raw input string that may contain one or more GRAIs
+ * separated by newlines or tabs (e.g., RFID scanner batch output).
+ *
+ * @param {string} rawInput
+ * @returns {string[]} array of canonical GRAI strings
+ */
+export const parseGraiArrayFromRawInput = (rawInput) => {
+  if (!rawInput || typeof rawInput !== 'string') return [];
+
+  return rawInput
+    .split(/[\n\r\t]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map(parseGraiFromRawInput)
+    .filter(Boolean);
+};
+
 export const isValidGrai = (graiString) => {
   if (!graiString || typeof graiString !== 'string') return false;
 
