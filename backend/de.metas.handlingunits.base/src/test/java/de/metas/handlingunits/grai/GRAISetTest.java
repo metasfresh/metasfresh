@@ -4,17 +4,14 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings({ "AssertThatIsZeroOne", "OptionalGetWithoutIsPresent" })
+@SuppressWarnings({ "AssertThatIsZeroOne" })
 class GRAISetTest
 {
-	private static final GRAI GRAI_A = GRAI.ofCanonicalString("7613204.00307.1000000001");
-	private static final GRAI GRAI_B = GRAI.ofCanonicalString("7613204.00307.1000000002");
-	private static final GRAI GRAI_C = GRAI.ofCanonicalString("7613204.00307.1000000003");
-
 	@Nested
 	class OfStrings
 	{
@@ -22,14 +19,14 @@ class GRAISetTest
 		void canonical_values()
 		{
 			final GRAISet set = GRAISet.ofStrings(ImmutableList.of("7613204.00307.1000000001", "7613204.00307.1000000002"));
-			assertThat(set.toSet()).containsExactlyInAnyOrder(GRAI_A, GRAI_B);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001", "7613204.00307.1000000002");
 		}
 
 		@Test
 		void skips_blanks()
 		{
-			final GRAISet set = GRAISet.ofStrings(ImmutableList.of("7613204.00307.1000000001", "", "  "));
-			assertThat(set.toSet()).containsExactly(GRAI_A);
+			final GRAISet set = GRAISet.ofStrings(Arrays.asList("7613204.00307.1000000001", "", "  ", null));
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001");
 		}
 
 		@Test
@@ -48,29 +45,23 @@ class GRAISetTest
 		@Test
 		void preserves_insertion_order()
 		{
-			final GRAISet set = GRAISet.ofStrings(ImmutableList.of(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString()));
-			assertThat(set.toStringList()).containsExactly(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString());
+			final GRAISet set = GRAISet.ofStrings(ImmutableList.of("7613204.00307.1000000003", "7613204.00307.1000000001", "7613204.00307.1000000002"));
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000003", "7613204.00307.1000000001", "7613204.00307.1000000002");
 		}
 
 		@Test
 		void preserves_order_and_deduplicates()
 		{
 			final GRAISet set = GRAISet.ofStrings(ImmutableList.of(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_C.toCanonicalString(),
-					GRAI_B.toCanonicalString(),
-					GRAI_A.toCanonicalString()));
+					"7613204.00307.1000000003",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000003",
+					"7613204.00307.1000000002",
+					"7613204.00307.1000000001"));
 			assertThat(set.toStringList()).containsExactly(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString());
+					"7613204.00307.1000000003",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000002");
 		}
 	}
 
@@ -81,16 +72,14 @@ class GRAISetTest
 		void canonical_values()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of("7613204.00307.1000000001"));
-			assertThat(set.toSet()).containsExactly(GRAI_A);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001");
 		}
 
 		@Test
 		void gs1_values()
 		{
-			// GS1 AI 8003: indicator(0) + 7613204(cp) + 003095(at) + checkDigit(1) + serial(00691412000)
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of("800307613204003095100691412000"));
-			assertThat(set.size()).isEqualTo(1);
-			assertThat(set.stream().findFirst().get().toCanonicalString()).isEqualTo("7613204.003095.00691412000");
+			assertThat(set.toStringList()).containsExactly("7613204.003095.00691412000");
 		}
 
 		@Test
@@ -99,22 +88,24 @@ class GRAISetTest
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of(
 					"7613204.00307.1000000001",
 					"800307613204003095100691412000"));
-			assertThat(set.size()).isEqualTo(2);
+			assertThat(set.toStringList()).containsExactly(
+					"7613204.00307.1000000001",
+					"7613204.003095.00691412000");
 		}
 
 		@Test
 		void skips_unparseable()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of("7613204.00307.1000000001", "garbage", ""));
-			assertThat(set.toSet()).containsExactly(GRAI_A);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001");
 		}
 
 		@Test
 		void deduplicates()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of(
-					GRAI_A.toCanonicalString(),
-					GRAI_A.toCanonicalString()));
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000001"));
 			assertThat(set.size()).isEqualTo(1);
 		}
 
@@ -122,27 +113,27 @@ class GRAISetTest
 		void preserves_insertion_order()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString()));
+					"7613204.00307.1000000003",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000002"));
 			assertThat(set.toStringList()).containsExactly(
-					GRAI_C.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString());
+					"7613204.00307.1000000003",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000002");
 		}
 
 		@Test
 		void preserves_order_and_deduplicates()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of(
-					GRAI_B.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_B.toCanonicalString(),
-					GRAI_C.toCanonicalString()));
+					"7613204.00307.1000000002",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000002",
+					"7613204.00307.1000000003"));
 			assertThat(set.toStringList()).containsExactly(
-					GRAI_B.toCanonicalString(),
-					GRAI_A.toCanonicalString(),
-					GRAI_C.toCanonicalString());
+					"7613204.00307.1000000002",
+					"7613204.00307.1000000001",
+					"7613204.00307.1000000003");
 		}
 
 		@Test
@@ -159,14 +150,14 @@ class GRAISetTest
 		void parses_commaSeparated()
 		{
 			final GRAISet set = GRAISet.ofNullableCommaSeparated("7613204.00307.1000000001,7613204.00307.1000000002");
-			assertThat(set.toSet()).containsExactlyInAnyOrder(GRAI_A, GRAI_B);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001", "7613204.00307.1000000002");
 		}
 
 		@Test
 		void handles_whitespace()
 		{
 			final GRAISet set = GRAISet.ofNullableCommaSeparated(" 7613204.00307.1000000001 , 7613204.00307.1000000002 ");
-			assertThat(set.toSet()).containsExactlyInAnyOrder(GRAI_A, GRAI_B);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001", "7613204.00307.1000000002");
 		}
 
 		@Test
@@ -185,7 +176,7 @@ class GRAISetTest
 		void single_value()
 		{
 			final GRAISet set = GRAISet.ofNullableCommaSeparated("7613204.00307.1000000001");
-			assertThat(set.toSet()).containsExactly(GRAI_A);
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001");
 		}
 	}
 
@@ -195,18 +186,18 @@ class GRAISetTest
 		@Test
 		void multiple()
 		{
-			final GRAISet set = GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B));
-			final String csv = set.toCommaSeparatedString();
-			// Order is not guaranteed by ImmutableSet, but both values must be present
-			assertThat(csv).contains("7613204.00307.1000000001");
-			assertThat(csv).contains("7613204.00307.1000000002");
-			assertThat(csv.split(",")).hasSize(2);
+			final GRAISet set = GRAISet.ofCollection(ImmutableList.of(
+					GRAI.ofCanonicalString("7613204.00307.1000000001"),
+					GRAI.ofCanonicalString("7613204.00307.1000000002")
+			));
+			assertThat(set.toCommaSeparatedString()).isEqualTo("7613204.00307.1000000001,7613204.00307.1000000002");
 		}
 
 		@Test
 		void single()
 		{
-			assertThat(GRAISet.of(GRAI_A).toCommaSeparatedString()).isEqualTo("7613204.00307.1000000001");
+			final GRAISet set = GRAISet.of(GRAI.ofCanonicalString("7613204.00307.1000000001"));
+			assertThat(set.toCommaSeparatedString()).isEqualTo("7613204.00307.1000000001");
 		}
 
 		@Test
@@ -234,7 +225,9 @@ class GRAISetTest
 		@Test
 		void returnsString_forNonEmpty()
 		{
-			assertThat(GRAISet.toCommaSeparatedStringOrNull(GRAISet.of(GRAI_A))).isEqualTo("7613204.00307.1000000001");
+			assertThat(GRAISet.toCommaSeparatedStringOrNull(
+					GRAISet.of(GRAI.ofCanonicalString("7613204.00307.1000000001"))))
+					.isEqualTo("7613204.00307.1000000001");
 		}
 	}
 
@@ -244,8 +237,10 @@ class GRAISetTest
 		@Test
 		void returnsCanonicalStrings()
 		{
-			final GRAISet set = GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B));
-			assertThat(set.toStringList()).containsExactlyInAnyOrder("7613204.00307.1000000001", "7613204.00307.1000000002");
+			final GRAISet set = GRAISet.ofCollection(ImmutableList.of(
+					GRAI.ofCanonicalString("7613204.00307.1000000001"),
+					GRAI.ofCanonicalString("7613204.00307.1000000002")));
+			assertThat(set.toStringList()).containsExactly("7613204.00307.1000000001", "7613204.00307.1000000002");
 		}
 
 		@Test
@@ -261,7 +256,8 @@ class GRAISetTest
 		@Test
 		void returnsSingle()
 		{
-			assertThat(GRAISet.of(GRAI_A).singleElement()).isEqualTo(GRAI_A);
+			final GRAI grai = GRAI.ofCanonicalString("7613204.00307.1000000001");
+			assertThat(GRAISet.of(grai).singleElement()).isEqualTo(grai);
 		}
 	}
 
@@ -277,7 +273,8 @@ class GRAISetTest
 		@Test
 		void returnsSingle()
 		{
-			assertThat(GRAISet.of(GRAI_A).noneOrSingleElement()).isEqualTo(GRAI_A);
+			final GRAI grai = GRAI.ofCanonicalString("7613204.00307.1000000001");
+			assertThat(GRAISet.of(grai).noneOrSingleElement()).isEqualTo(grai);
 		}
 	}
 
@@ -287,10 +284,8 @@ class GRAISetTest
 		@Test
 		void commaSeparated_roundtrip()
 		{
-			final GRAISet original = GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B, GRAI_C));
-			final String csv = original.toCommaSeparatedString();
-			final GRAISet restored = GRAISet.ofNullableCommaSeparated(csv);
-			assertThat(restored).isEqualTo(original);
+			final GRAISet original = GRAISet.ofNullableCommaSeparated("7613204.00307.1000000001,7613204.00307.1000000002,7613204.00307.1000000003");
+			assertThat(original.toCommaSeparatedString()).isEqualTo("7613204.00307.1000000001,7613204.00307.1000000002,7613204.00307.1000000003");
 		}
 	}
 }
