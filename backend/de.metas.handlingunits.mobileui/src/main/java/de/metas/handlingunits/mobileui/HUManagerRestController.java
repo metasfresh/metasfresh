@@ -243,8 +243,8 @@ public class HUManagerRestController
 		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
 	}
 
-	@GetMapping("/{huId}/packingMaterials")
-	public ResponseEntity<JsonGRAICodesResponse> getGRAIs(@PathVariable("huId") final int huId)
+	@GetMapping("/{huId}/grai")
+	public ResponseEntity<JsonGRAICodesResponse> getGRAIs(@PathVariable final int huId)
 	{
 		assertActionAccess(HUManagerAction.ScanGRAI);
 
@@ -252,9 +252,9 @@ public class HUManagerRestController
 		return ResponseEntity.ok(response);
 	}
 
-	@PutMapping("/{huId}/packingMaterials")
+	@PutMapping("/{huId}/grai")
 	public ResponseEntity<JsonGRAICodesResponse> setGRAIs(
-			@PathVariable("huId") final int huId,
+			@PathVariable final int huId,
 			@RequestBody @NonNull final JsonGRAICodesRequest request)
 	{
 		assertActionAccess(HUManagerAction.ScanGRAI);

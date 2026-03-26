@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 import static org.assertj.core.api.Assertions.*;
 
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.picking.job.service.commands.grai.DummyGRAIGenerator;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 

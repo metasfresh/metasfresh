@@ -35,7 +35,7 @@ const GRAIScreen = () => {
     }
 
     api
-      .getPackingMaterials(handlingUnitInfo.id)
+      .getGRAIs(handlingUnitInfo.id)
       .then((response) => {
         setGraiCodes(response.graiCodes || []);
         setTuCount(response.tuCount || 0);
@@ -54,7 +54,7 @@ const GRAIScreen = () => {
         const updated = [...prev, grai];
         // Fire-and-forget save to backend
         if (handlingUnitInfo) {
-          api.setPackingMaterials(handlingUnitInfo.id, updated).catch((axiosError) => toastError({ axiosError }));
+          api.setGRAIs(handlingUnitInfo.id, updated).catch((axiosError) => toastError({ axiosError }));
         }
         return updated;
       });
@@ -67,7 +67,7 @@ const GRAIScreen = () => {
       setGraiCodes((prev) => {
         const updated = prev.filter((g) => g !== graiToRemove);
         if (handlingUnitInfo) {
-          api.setPackingMaterials(handlingUnitInfo.id, updated).catch((axiosError) => toastError({ axiosError }));
+          api.setGRAIs(handlingUnitInfo.id, updated).catch((axiosError) => toastError({ axiosError }));
         }
         return updated;
       });

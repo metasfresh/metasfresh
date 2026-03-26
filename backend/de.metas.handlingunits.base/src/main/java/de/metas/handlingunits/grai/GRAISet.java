@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -33,6 +34,7 @@ public class GRAISet implements Iterable<GRAI>
 		this.grais = grais;
 	}
 
+	@NonNull
 	public static GRAISet ofCollection(@NonNull final Collection<GRAI> grais)
 	{
 		return grais.isEmpty() ? EMPTY : new GRAISet(ImmutableSet.copyOf(grais));
@@ -56,9 +58,7 @@ public class GRAISet implements Iterable<GRAI>
 				.collect(collect());
 	}
 
-	/**
-	 * Parse a comma-separated attribute value (as stored in HU attributes) into a GRAISet.
-	 */
+	@NonNull
 	public static GRAISet ofNullableCommaSeparated(@Nullable final String csv)
 	{
 		final String csvNorm = StringUtils.trimBlankToNull(csv);
@@ -75,14 +75,19 @@ public class GRAISet implements Iterable<GRAI>
 		return GuavaCollectors.collectUsingHashSetAccumulator(GRAISet::ofCollection);
 	}
 
-	/**
-	 * Serialize to a comma-separated string for HU attribute storage.
-	 */
 	public String toCommaSeparatedString()
 	{
 		return grais.stream()
 				.map(GRAI::getValue)
 				.collect(Collectors.joining(","));
+	}
+
+	@Nullable
+	public static String toCommaSeparatedStringOrNull(@Nullable final GRAISet graiSet)
+	{
+		return graiSet != null && !graiSet.isEmpty()
+				? StringUtils.trimBlankToNull(graiSet.toCommaSeparatedString())
+				: null;
 	}
 
 	/**
@@ -108,4 +113,19 @@ public class GRAISet implements Iterable<GRAI>
 	public Stream<GRAI> stream() {return grais.stream();}
 
 	public ImmutableSet<GRAI> toSet() {return grais;}
+
+	@NonNull
+	public GRAI singleElement()
+	{
+		return CollectionUtils.singleElement(grais);
+	}
+
+	@Nullable
+	public GRAI noneOrSingleElement()
+	{
+		return grais.isEmpty()
+				? null
+				: CollectionUtils.singleElement(grais);
+	}
+
 }

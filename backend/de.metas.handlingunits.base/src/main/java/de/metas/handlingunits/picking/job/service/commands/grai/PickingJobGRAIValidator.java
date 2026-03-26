@@ -131,7 +131,7 @@ public class PickingJobGRAIValidator
 		{
 			throw new AdempiereException(GRAI_COUNT_MISMATCH, handlingUnitsBL.getDisplayName(lu), countWithGRAI, totalTUs);
 		}
-		else if (graiRequired == GRAIRequired.Dummy)
+		else if (graiRequired == GRAIRequired.YesWithDummyGRAIs)
 		{
 			generateDummyGRAIs(tusWithoutGRAI, lu);
 		}

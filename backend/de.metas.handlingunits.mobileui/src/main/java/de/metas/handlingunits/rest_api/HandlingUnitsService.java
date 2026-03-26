@@ -913,8 +913,6 @@ public class HandlingUnitsService
 				.orElse(false);
 	}
 
-	// --- GRAI Packing Materials ---
-
 	@NonNull
 	public JsonGRAICodesResponse getGRAIs(@NonNull final HuId huId)
 	{
@@ -926,6 +924,11 @@ public class HandlingUnitsService
 	@NonNull
 	public JsonGRAICodesResponse setGRAIs(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
 	{
-		return SetHUGraiCommand.builder().huId(huId).graiSet(graiSet).build().execute();
+		SetHUGraiCommand.builder()
+				.huId(huId)
+				.graiSet(graiSet)
+				.build().execute();
+
+		return getGRAIs(huId); // read it again fresh
 	}
 }

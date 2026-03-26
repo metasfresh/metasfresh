@@ -1,6 +1,6 @@
 package de.metas.handlingunits.rest_api.grai;
 
-import de.metas.common.handlingunits.JsonGRAICodesResponse;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -9,13 +9,13 @@ import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
@@ -29,8 +29,7 @@ public class SetHUGraiCommand
 	@NonNull private final HuId huId;
 	@NonNull private final GRAISet graiSet;
 
-	@NonNull
-	public JsonGRAICodesResponse execute()
+	public void execute()
 	{
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
@@ -42,8 +41,7 @@ public class SetHUGraiCommand
 		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
 			// TU: set single GRAI directly
-			final String value = graiSet.stream().findFirst().map(GRAI::getValue).orElse(null);
-			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, value);
+			setGRAIAttribute(huId, graiSet.noneOrSingleElement());
 		}
 		else if (handlingUnitsBL.isLoadingUnit(hu))
 		{
@@ -57,12 +55,12 @@ public class SetHUGraiCommand
 			// Pass 1: For disaggregated TUs, keep existing GRAIs that are in the new set, clear others
 			for (final I_M_HU_Item item : handlingUnitsDAO.retrieveItems(hu))
 			{
-				final String itemType = item.getItemType();
-				if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+				final HUItemType itemType = HUItemType.ofNullableCode(item.getItemType());
+				if (HUItemType.HandlingUnit.equals(itemType))
 				{
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
-						final GRAI existingGrai = GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI));
+						final GRAI existingGrai = getGRAISet(childTU).noneOrSingleElement();
 						if (existingGrai != null && graiSet.contains(existingGrai))
 						{
 							// Keep it — it's in the new set; mark as assigned
@@ -71,7 +69,7 @@ public class SetHUGraiCommand
 						else if (existingGrai != null)
 						{
 							// Clear it — it's NOT in the new set
-							huAttributesBL.updateHUAttribute(HuId.ofRepoId(childTU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, null);
+							clearGRAIAttribute(childTU);
 							tusWithoutGrai.add(childTU);
 						}
 						else
@@ -81,7 +79,7 @@ public class SetHUGraiCommand
 						}
 					}
 				}
-				else if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
+				else if (HUItemType.HUAggregate.equals(itemType))
 				{
 					for (final I_M_HU aggregateVHU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
@@ -92,41 +90,63 @@ public class SetHUGraiCommand
 
 			// Pass 2: Assign unassigned GRAIs to TUs without GRAI
 			final ArrayList<GRAI> remainingGrais = new ArrayList<>(unassignedGrais);
-			int graiIndex = 0;
 			for (final I_M_HU tu : tusWithoutGrai)
 			{
-				if (graiIndex < remainingGrais.size())
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(tu.getM_HU_ID()), AttributeConstants.ATTR_GRAI, remainingGrais.get(graiIndex).getValue());
-					graiIndex++;
-				}
+				if (remainingGrais.isEmpty()) {break;}
+
+				final GRAI grai = remainingGrais.remove(0);
+				setGRAIAttribute(tu, grai);
 			}
 
 			// Store remaining unassigned GRAIs as comma-separated on aggregate VHUs
-			if (graiIndex < remainingGrais.size() && !aggregateVHUs.isEmpty())
+			if (!remainingGrais.isEmpty() && !aggregateVHUs.isEmpty())
 			{
-				final String commaSeparated = GRAISet.ofCollection(remainingGrais.subList(graiIndex, remainingGrais.size())).toCommaSeparatedString();
-				for (final I_M_HU aggregateVHU : aggregateVHUs)
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, commaSeparated);
-					break; // store on first aggregate VHU only
-				}
+				final I_M_HU firstAggregateVHU = aggregateVHUs.get(0);
+				setGRAIAttribute(firstAggregateVHU, GRAISet.ofCollection(remainingGrais));
 			}
 			else
 			{
 				// Clear any remaining aggregate VHU GRAIs
-				for (final I_M_HU aggregateVHU : aggregateVHUs)
-				{
-					huAttributesBL.updateHUAttribute(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), AttributeConstants.ATTR_GRAI, null);
-				}
+				aggregateVHUs.forEach(this::clearGRAIAttribute);
 			}
 		}
 		else
 		{
 			throw new AdempiereException("GRAI scanning not supported for this HU type");
 		}
+	}
 
-		// Re-read fresh state
-		return GetHUGraiCommand.builder().huId(huId).build().execute();
+	private void setGRAIAttribute(@NonNull final HuId huId, @Nullable final GRAISet graiSet)
+	{
+		huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, GRAISet.toCommaSeparatedStringOrNull(graiSet));
+	}
+
+	private void setGRAIAttribute(@NonNull final HuId huId, @Nullable final GRAI grai)
+	{
+		huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, grai != null ? grai.getValue() : null);
+	}
+
+	private void setGRAIAttribute(@NonNull final I_M_HU hu, @Nullable final GRAI grai)
+	{
+		// TODO optimize
+		setGRAIAttribute(HuId.ofRepoId(hu.getM_HU_ID()), grai);
+	}
+
+	private void setGRAIAttribute(@NonNull final I_M_HU hu, @Nullable final GRAISet graiSet)
+	{
+		// TODO optimize
+		setGRAIAttribute(HuId.ofRepoId(hu.getM_HU_ID()), graiSet);
+	}
+
+	private void clearGRAIAttribute(@NonNull final I_M_HU hu)
+	{
+		// TODO optimize
+		setGRAIAttribute(HuId.ofRepoId(hu.getM_HU_ID()), (GRAI)null);
+	}
+
+	@NonNull
+	private GRAISet getGRAISet(@NonNull final I_M_HU hu)
+	{
+		return GRAISet.ofNullableCommaSeparated(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
 	}
 }

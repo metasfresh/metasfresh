@@ -2,25 +2,32 @@ package de.metas.handlingunits.grai;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+@RequiredArgsConstructor
+@Getter
 public enum GRAIRequired implements ReferenceListAwareEnum
 {
-	No("N"),
-	Yes("Y"),
-	Dummy("D"),
+	No(X_C_BPartner.GRAIREQUIRED_No),
+	Yes(X_C_BPartner.GRAIREQUIRED_Yes),
+	YesWithDummyGRAIs(X_C_BPartner.GRAIREQUIRED_YesWithDummyGRAIs),
 	;
 
-	@Getter
-	private final String code;
+	private static final ValuesIndex<GRAIRequired> index = ReferenceListAwareEnums.index(values());
 
-	GRAIRequired(@NonNull final String code)
+	@NonNull private final String code;
+
+	@NonNull
+	public static GRAIRequired ofCode(@NonNull final String code)
 	{
-		this.code = code;
+		return index.ofCode(code);
 	}
 
 	@Nullable
@@ -34,11 +41,5 @@ public enum GRAIRequired implements ReferenceListAwareEnum
 		return index.optionalOfNullableCode(code);
 	}
 
-	@NonNull
-	public static GRAIRequired ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
-
-	private static final ReferenceListAwareEnums.ValuesIndex<GRAIRequired> index = ReferenceListAwareEnums.index(values());
+	public boolean isNo() {return this == No;}
 }
