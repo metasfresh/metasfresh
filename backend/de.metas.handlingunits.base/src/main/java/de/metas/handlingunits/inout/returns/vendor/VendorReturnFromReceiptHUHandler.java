@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inout.returns.vendor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -25,12 +26,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handles HU split/transform when a vendor return document (created by {@code M_InOut_GenerateVendorReturn}) is completed.
@@ -100,6 +103,12 @@ public class VendorReturnFromReceiptHUHandler
 
 			// Assign split HUs to the return line
 			huAssignmentBL.assignHUs(returnLine, splitHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+
+			final TableRecordReference originalInOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, originInOutLineId);
+			huAssignmentBL.unassignHUs(originalInOutLineRef, splitHUs.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(Collectors.toList()));
 
 			// Mark new HUs as Shipped and queue for snapshot
 			for (final I_M_HU hu : splitHUs)
