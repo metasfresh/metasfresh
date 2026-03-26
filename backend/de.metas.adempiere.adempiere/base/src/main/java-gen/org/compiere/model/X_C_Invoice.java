@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1467204517L;
+	private static final long serialVersionUID = 1373880103L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -207,6 +207,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_BPartner_Location_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public void setC_BPartner_SalesRep_ID (final int C_BPartner_SalesRep_ID)
+	{
+		if (C_BPartner_SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, C_BPartner_SalesRep_ID);
+	}
+
+	@Override
+	public int getC_BPartner_SalesRep_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
 
 	@Override

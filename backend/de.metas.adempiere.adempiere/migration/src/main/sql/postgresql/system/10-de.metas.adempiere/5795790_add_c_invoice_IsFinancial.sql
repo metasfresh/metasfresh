@@ -1,10 +1,5 @@
 -- Run mode: SWING_CLIENT
 
--- Name: C_DocType AR/AP normal Invoices and Credit Memos
--- 2026-03-26T10:31:36.154Z
-UPDATE AD_Val_Rule SET Code='( C_DocType.DocBaseType IN (''API'',''APC'',''APF'') OR (C_DocType.DocBaseType IN (''ARC'',''ARI'') AND C_DocType.DocSubType IS NULL) /*only the default types*/ OR (C_DocType.DocBaseType=''ARC'' AND C_DocType.DocSubType = ''CS'') /*only the RMA-credit-memo*/ ) AND C_DocType.IsSOTrx=''@IsSOTrx@'' AND C_DocType.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2026-03-26 10:31:36.152000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540294
-;
-
 -- 2026-03-26T10:51:06.048Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584701,0,'IsFinancial',TO_TIMESTAMP('2026-03-26 10:51:05.908000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Gibt an, ob die Rechnung finanzielle Auswirkungen hat (z. B. buchungsrelevant ist).','U','Y','Financial Relevant','Financial Relevant',TO_TIMESTAMP('2026-03-26 10:51:05.908000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;

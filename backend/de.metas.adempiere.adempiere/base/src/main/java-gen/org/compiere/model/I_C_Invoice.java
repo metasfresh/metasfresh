@@ -285,6 +285,26 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
+	 * Set Sales partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
+
+	/**
+	 * Get Sales partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_SalesRep_ID();
+
+	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
