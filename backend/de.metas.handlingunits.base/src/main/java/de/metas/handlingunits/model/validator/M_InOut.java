@@ -49,6 +49,8 @@ import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
 import de.metas.util.Check;
@@ -81,11 +83,13 @@ public class M_InOut
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final PickingJobService pickingJobService;
@@ -295,9 +299,69 @@ public class M_InOut
 		// Receipt
 		else
 		{
+			if (inOutBL.isVendorReturn(inout))
+			{
+				return;
+			}
 			// TODO: destroy the HUs
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void processReturnsReactivation(final I_M_InOut inout)
+	{
+		if (inout.isSOTrx())
+		{
+			if (inOutBL.isCustomerReturn(inout))
+			{
+				//TODO implement for customer returns
+			}
+			// TODO: change HUStatus from Shipped back to Picked
+			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
+		}
+		//
+		// Receipt
+		else
+		{
+			if (inOutBL.isVendorReturn(inout))
+			{
+				inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+						.forEach(this::reactivateVendorReturnLine);
+				return;
+			}
+			// TODO: destroy the HUs
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private void reactivateVendorReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine vendorReturnLine)
+	{
+		final InOutLineId originalReceiptLineId = InOutLineId.ofRepoId(vendorReturnLine.getReturn_Origin_InOutLine_ID());
+		final org.compiere.model.I_M_InOutLine originalReceipt = inOutBL.getLineByIdInTrx(originalReceiptLineId, org.compiere.model.I_M_InOutLine.class);
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(vendorReturnLine);
+		// Unassign from vendor return line
+		huShipmentAssignmentBL.removeHUAssignments(InterfaceWrapperHelper.create(vendorReturnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		//Assign to original Material receipt line
+		huAssignmentBL.assignHUs(originalReceipt, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	public void reverseVendorReturn(final I_M_InOut vendorReturn)
+	{
+		final MovementType movementType = MovementType.ofCode(vendorReturn.getMovementType());
+
+		// Make sure we deal with a vendor return
+		final boolean isVendorReturn = !vendorReturn.isSOTrx() && movementType.isMaterialReturn();
+		if (!isVendorReturn)
+		{
+			return;
+		}
+
+		//
+		// Remove all HU Assignments
+		huShipmentAssignmentBL.removeHUAssignments(vendorReturn);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

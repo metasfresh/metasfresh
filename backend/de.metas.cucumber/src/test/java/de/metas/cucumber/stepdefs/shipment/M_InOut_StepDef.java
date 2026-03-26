@@ -29,24 +29,24 @@ import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -76,12 +76,12 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.material.MovementType;
-import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -117,7 +117,6 @@ import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -1108,6 +1107,75 @@ public class M_InOut_StepDef
 	}
 
 	/**
+	 * Generate a vendor return document from a completed material receipt.
+	 * <p>
+	 * Mirrors the {@code M_InOut_GenerateVendorReturn} UI process: creates a new M_InOut
+	 * with {@code MovementType=V-} (VendorReturns), copying all lines from the receipt.
+	 * The returned document is in Draft status; use the complete step to finalise it.
+	 * <p>
+	 * On completion the {@code VendorReturnFromReceiptHUHandler} splits the receipt HUs
+	 * and reassigns them to the vendor return lines.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) completed material receipt to return from<br>
+	 * <b>VendorReturn_ID</b> — (required, identifier) alias to store the created vendor return<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * And generate vendor return from receipt
+	 *   | M_InOut_ID      | VendorReturn_ID |
+	 *   | receipt_1       | vendorReturn_1  |
+	 * </pre>
+	 */
+	@And("generate vendor return from receipt")
+	public void generateVendorReturnFromReceipt(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final I_M_InOut receipt = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.Shipment)
+					.docSubType(DocSubType.NONE)
+					.isSOTrx(false)
+					.adClientId(receipt.getAD_Client_ID())
+					.adOrgId(receipt.getAD_Org_ID())
+					.build());
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(receipt.getM_Warehouse_ID());
+			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+
+			final I_M_InOut vendorReturn = InterfaceWrapperHelper.copy()
+					.setSkipCalculatedColumns(true)
+					.setFrom(receipt)
+					.copyToNew(I_M_InOut.class);
+			vendorReturn.setC_DocType_ID(docTypeId.getRepoId());
+			vendorReturn.setIsSOTrx(false);
+			vendorReturn.setMovementType(MovementType.VendorReturns.getCode());
+			vendorReturn.setReturn_Origin_InOut_ID(receipt.getM_InOut_ID());
+			vendorReturn.setMovementDate(SystemTime.asTimestamp());
+			vendorReturn.setDateAcct(SystemTime.asTimestamp());
+			vendorReturn.setM_Warehouse_ID(warehouseId.getRepoId());
+			InterfaceWrapperHelper.save(vendorReturn);
+
+			for (final org.compiere.model.I_M_InOutLine receiptLine : inOutBL.getLines(receipt))
+			{
+				final I_M_InOutLine returnLine = InterfaceWrapperHelper.copy()
+						.setSkipCalculatedColumns(true)
+						.setFrom(receiptLine)
+						.copyToNew(I_M_InOutLine.class);
+				returnLine.setM_InOut_ID(vendorReturn.getM_InOut_ID());
+				returnLine.setReturn_Origin_InOutLine_ID(receiptLine.getM_InOutLine_ID());
+				returnLine.setM_Locator_ID(locatorId.getRepoId());
+				returnLine.setC_OrderLine_ID(OrderLineId.toRepoId(null));
+				InterfaceWrapperHelper.save(returnLine);
+			}
+
+			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("VendorReturn_ID");
+			inoutTable.putOrReplace(returnIdentifier, vendorReturn);
+		});
+	}
+
+	/**
 	 * Load the first HU assigned to an M_InOut and store it in M_HU_StepDefData.
 	 *
 	 * @cucumber.stepdef
@@ -1137,5 +1205,49 @@ public class M_InOut_StepDef
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
 			huTable.putOrReplace(huIdentifier, hus.get(0));
 		});
+	}
+
+	/**
+	 * Assert that no HUs are assigned to a given M_InOut (shipment, receipt, or return).
+	 * <p>
+	 * Useful after a vendor return is reactivated, to confirm that the HUs have been
+	 * unassigned from the return document.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) document that should have no HU assignments<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * And assert no HUs assigned to M_InOut
+	 *   | M_InOut_ID      |
+	 *   | vendorReturn_1  |
+	 * </pre>
+	 */
+	@And("assert no HUs assigned to M_InOut")
+	public void assertNoHUsAssignedToInOut(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final StepDefDataIdentifier inoutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
+			final I_M_InOut inout = inoutIdentifier.lookupNotNullIn(inoutTable);
+			InterfaceWrapperHelper.refresh(inout);
+
+			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
+			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isEmpty();
+		});
+	}
+
+	@Then("process single receipt response")
+	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
+	{
+		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
+		assertThat(receiptsResponse).isNotNull();
+
+		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
+		assertThat(createdReceiptIdList.size()).isEqualTo(1);
+
+		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
+		assertThat(receiptRecord).isNotNull();
+
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
 	}
 }

@@ -39,6 +39,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.material.MovementType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -91,15 +92,16 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.build();
 	}
 
-	private void assertShipment(@NonNull final I_M_InOut inout)
+	private void assertShipmentOrVendorReturn(@NonNull final I_M_InOut inout)
 	{
-		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
+		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		Check.assume(inout.isSOTrx() || movementType.isMaterialReturn(), "inout shall be a shipment or a vendor return: {}", inout);
 	}
 
 	@Override
 	public void updateHUsOnShipmentComplete(final I_M_InOut shipment)
 	{
-		assertShipment(shipment);
+		assertShipmentOrVendorReturn(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
@@ -131,7 +133,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public void removeHUAssignments(final I_M_InOut shipment)
 	{
-		assertShipment(shipment);
+		assertShipmentOrVendorReturn(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
