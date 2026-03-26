@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands;
+package de.metas.handlingunits.picking.job.service.commands.grai;
 
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.util.StringUtils;
@@ -8,7 +8,7 @@ import lombok.experimental.UtilityClass;
 import javax.annotation.Nullable;
 
 @UtilityClass
-public class DummyGRAIGenerator
+class DummyGRAIGenerator
 {
 	static final String MIGROS_COMPANY_PREFIX = "7613204";
 	static final String MIGROS_ASSET_TYPE = "00307";
@@ -24,7 +24,7 @@ public class DummyGRAIGenerator
 	@NonNull
 	public GRAI buildDummyGRAI(@NonNull final String paddedPORef, final int counter)
 	{
-		return GRAI.of(MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef + String.format("%02d", counter));
+		return GRAI.ofCanonicalString(MIGROS_COMPANY_PREFIX + "." + MIGROS_ASSET_TYPE + "." + paddedPORef + String.format("%02d", counter));
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class DummyGRAIGenerator
 		{
 			return 0;
 		}
-		final String value = grai.getValue();
+		final String value = grai.toCanonicalString();
 		if (!value.startsWith(dummyPrefix))
 		{
 			return 0;

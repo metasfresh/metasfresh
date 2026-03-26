@@ -261,7 +261,7 @@ public class HUManagerRestController
 
 		final JsonGRAICodesResponse response = handlingUnitsService.setGRAIs(
 				HuId.ofRepoId(huId),
-				GRAISet.ofStrings(request.getGraiCodes()));
+				GRAISet.parseStrings(request.getGraiCodes()));
 		return ResponseEntity.ok(response);
 	}
 }

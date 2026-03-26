@@ -53,7 +53,24 @@ public class GRAISet implements Iterable<GRAI>
 		}
 
 		return values.stream()
-				.map(GRAI::ofNullable)
+				.map(GRAI::ofNullableCanonicalString)
+				.filter(Objects::nonNull)
+				.collect(collect());
+	}
+
+	/**
+	 * Parse strings in any supported format (canonical, GS1 AI 8003).
+	 * Use this at system boundaries (REST API) where input format is not guaranteed.
+	 */
+	public static GRAISet parseStrings(@NonNull final Collection<String> values)
+	{
+		if (values.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		return values.stream()
+				.map(GRAI::parse)
 				.filter(Objects::nonNull)
 				.collect(collect());
 	}
@@ -72,13 +89,17 @@ public class GRAISet implements Iterable<GRAI>
 
 	public static Collector<GRAI, ?, GRAISet> collect()
 	{
-		return GuavaCollectors.collectUsingHashSetAccumulator(GRAISet::ofCollection);
+		return GuavaCollectors.collectUsingListAccumulator(GRAISet::ofCollection);
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return toCommaSeparatedString();}
 
 	public String toCommaSeparatedString()
 	{
 		return grais.stream()
-				.map(GRAI::getValue)
+				.map(GRAI::toCanonicalString)
 				.collect(Collectors.joining(","));
 	}
 
@@ -96,7 +117,7 @@ public class GRAISet implements Iterable<GRAI>
 	public List<String> toStringList()
 	{
 		return grais.stream()
-				.map(GRAI::getValue)
+				.map(GRAI::toCanonicalString)
 				.collect(ImmutableList.toImmutableList());
 	}
 

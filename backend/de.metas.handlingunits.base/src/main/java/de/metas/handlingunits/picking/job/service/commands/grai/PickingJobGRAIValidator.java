@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands;
+package de.metas.handlingunits.picking.job.service.commands.grai;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -20,6 +20,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,17 +49,12 @@ public class PickingJobGRAIValidator
 	// Parameters
 	@NonNull private final PickingJob pickingJob;
 
+	// State
+	private GRAIRequired _graiRequired; // lazy
+
 	public void validate()
 	{
-		final BPartnerId customerId = pickingJob.getCustomerId();
-		if (customerId == null)
-		{
-			return;
-		}
-
-		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
-		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
-		if (graiRequired == GRAIRequired.No)
+		if (getGRAIRequired().isNo())
 		{
 			return;
 		}
@@ -68,12 +64,34 @@ public class PickingJobGRAIValidator
 		handlingUnitsDAO.getByIds(pickingJob.getAllPickedHuIds())
 				.stream()
 				.filter(handlingUnitsBL::isLoadingUnit)
-				.forEach(lu -> validateLU(lu, graiRequired, huCache));
+				.forEach(lu -> validateLU(lu, huCache));
+	}
+
+	@NonNull
+	private GRAIRequired getGRAIRequired()
+	{
+		if (_graiRequired == null)
+		{
+			_graiRequired = computeGRAIRequired();
+		}
+		return _graiRequired;
+	}
+
+	@NonNull
+	private GRAIRequired computeGRAIRequired()
+	{
+		final BPartnerId customerId = pickingJob.getCustomerId();
+		if (customerId == null)
+		{
+			return GRAIRequired.No;
+		}
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
+		return GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
 	}
 
 	private void validateLU(
 			@NonNull final I_M_HU lu,
-			@NonNull final GRAIRequired graiRequired,
 			@NonNull final HULoadingCache huCache)
 	{
 		int totalTUs = 0;
@@ -122,18 +140,19 @@ public class PickingJobGRAIValidator
 			}
 		}
 
-		if (countWithGRAI >= totalTUs)
+		//
+		// Case: less GRAIs found than the number of TUs
+		if (countWithGRAI < totalTUs)
 		{
-			return;
-		}
-
-		if (graiRequired == GRAIRequired.Yes)
-		{
-			throw new AdempiereException(GRAI_COUNT_MISMATCH, handlingUnitsBL.getDisplayName(lu), countWithGRAI, totalTUs);
-		}
-		else if (graiRequired == GRAIRequired.YesWithDummyGRAIs)
-		{
-			generateDummyGRAIs(tusWithoutGRAI, lu);
+			final GRAIRequired graiRequired = getGRAIRequired();
+			if (graiRequired == GRAIRequired.Yes)
+			{
+				throw new AdempiereException(GRAI_COUNT_MISMATCH, handlingUnitsBL.getDisplayName(lu), countWithGRAI, totalTUs);
+			}
+			else if (graiRequired == GRAIRequired.YesWithDummyGRAIs)
+			{
+				generateDummyGRAIs(tusWithoutGRAI, lu);
+			}
 		}
 	}
 
@@ -158,8 +177,8 @@ public class PickingJobGRAIValidator
 		{
 			final OrderId orderId = line.getSalesOrderAndLineId().getOrderId();
 			final I_C_Order order = orderDAO.getById(orderId);
-			final String poReference = order.getPOReference();
-			if (Check.isNotBlank(poReference))
+			final String poReference = StringUtils.trimBlankToNull(order.getPOReference());
+			if (poReference != null)
 			{
 				return poReference;
 			}
@@ -187,7 +206,7 @@ public class PickingJobGRAIValidator
 					for (final I_M_HU childTU : handlingUnitsDAO.retrieveIncludedHUs(item))
 					{
 						maxCounter = Math.max(maxCounter, DummyGRAIGenerator.extractDummyCounter(
-								GRAI.ofNullable(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI)),
+								GRAI.ofNullableCanonicalString(huAttributesBL.getHUAttributeValue(childTU, AttributeConstants.ATTR_GRAI)),
 								dummyPrefix));
 					}
 				}
@@ -211,12 +230,12 @@ public class PickingJobGRAIValidator
 	}
 
 	//
- 	//
- 	//
-	// --- Helper types ---
 	//
- 	//
- 	//
+	//
+	// ----------------------------------------------------------------------------
+	//
+	//
+	//
 
 	private static class TUWithoutGRAI
 	{
@@ -310,6 +329,14 @@ public class PickingJobGRAIValidator
 		}
 	}
 
+	//
+	//
+	//
+	// --------------------------------------------------------------------------
+	//
+	//
+	//
+
 	private static class HULoadingCache
 	{
 		@NonNull private final IHandlingUnitsDAO handlingUnitsDAO;
@@ -334,17 +361,20 @@ public class PickingJobGRAIValidator
 					.forEach(hu -> husById.put(HuId.ofRepoId(hu.getM_HU_ID()), hu));
 		}
 
-		@Nullable GRAI getGRAI(@NonNull final I_M_HU hu)
+		@Nullable
+		GRAI getGRAI(@NonNull final I_M_HU hu)
 		{
-			return GRAI.ofNullable(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
+			return GRAI.ofNullableCanonicalString(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
 		}
 
-		@NonNull GRAISet getGRAISet(@NonNull final I_M_HU hu)
+		@NonNull
+		GRAISet getGRAISet(@NonNull final I_M_HU hu)
 		{
 			return GRAISet.ofNullableCommaSeparated(huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_GRAI));
 		}
 
-		@NonNull GRAISet getGRAISet(@NonNull final HuId huId)
+		@NonNull
+		GRAISet getGRAISet(@NonNull final HuId huId)
 		{
 			return getGRAISet(getHU(huId));
 		}
@@ -356,7 +386,7 @@ public class PickingJobGRAIValidator
 
 		void setGRAI(@NonNull final HuId huId, @NonNull final GRAI grai)
 		{
-			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, grai.getValue());
+			huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
 		}
 
 		void setGRAISet(@NonNull final HuId huId, @NonNull final GRAISet graiSet)

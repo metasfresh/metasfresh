@@ -1,9 +1,8 @@
-package de.metas.handlingunits.picking.job.service.commands;
+package de.metas.handlingunits.picking.job.service.commands.grai;
 
 import static org.assertj.core.api.Assertions.*;
 
 import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.picking.job.service.commands.grai.DummyGRAIGenerator;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ class DummyGRAIGeneratorTest
 	{
 		// POReference "1234567890", counter 1
 		assertThat(DummyGRAIGenerator.buildDummyGRAI("1234567890", 1))
-				.isEqualTo(GRAI.of("7613204.00307.123456789001"));
+				.isEqualTo(GRAI.ofCanonicalString("7613204.00307.123456789001"));
 	}
 
 	@Test
@@ -23,14 +22,14 @@ class DummyGRAIGeneratorTest
 		// POReference "12345678" -> padded to "0012345678", counter 3
 		final String padded = DummyGRAIGenerator.padPOReference("12345678");
 		assertThat(DummyGRAIGenerator.buildDummyGRAI(padded, 3))
-				.isEqualTo(GRAI.of("7613204.00307.001234567803"));
+				.isEqualTo(GRAI.ofCanonicalString("7613204.00307.001234567803"));
 	}
 
 	@Test
 	void testBuildDummyGRAI_counter99()
 	{
 		assertThat(DummyGRAIGenerator.buildDummyGRAI("1234567890", 99))
-				.isEqualTo(GRAI.of("7613204.00307.123456789099"));
+				.isEqualTo(GRAI.ofCanonicalString("7613204.00307.123456789099"));
 	}
 
 	@Test
@@ -59,7 +58,7 @@ class DummyGRAIGeneratorTest
 	void testExtractDummyCounter_matchingDummy()
 	{
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.of("7613204.00307.123456789003"), prefix))
+		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.123456789003"), prefix))
 				.isEqualTo(3);
 	}
 
@@ -67,7 +66,7 @@ class DummyGRAIGeneratorTest
 	void testExtractDummyCounter_notADummy()
 	{
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.of("7613204.00307.9876543210"), prefix))
+		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.9876543210"), prefix))
 				.isEqualTo(0);
 	}
 
@@ -84,7 +83,7 @@ class DummyGRAIGeneratorTest
 	{
 		// A real GRAI (not dummy) should return 0
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.of("7613204.00307.1234567890"), prefix))
+		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.1234567890"), prefix))
 				.isEqualTo(0);
 	}
 }
