@@ -28,6 +28,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -105,6 +106,7 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -810,9 +812,15 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			setC_DocType_ID(getC_DocTypeTarget_ID());
 		}
-		if (getC_DocType_ID() <= 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
+		if (docTypeId == null)
 		{
 			throw new AdempiereException("No Document Type");
+		}
+
+		if(docTypeBL.isPurchaseProFormaInvoice(docTypeId))
+		{
+			setIsFinancial(false);
 		}
 
 		// explodeBOM(); // task 09030: we don't really want to explode the BOM, least of all this uncontrolled way after invoice-candidates-way.

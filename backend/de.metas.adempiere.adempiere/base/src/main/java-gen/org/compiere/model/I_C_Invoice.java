@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -286,26 +285,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Sales partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
-
-	/**
-	 * Get Sales partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_SalesRep_ID();
-
-	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
-
-	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -491,6 +470,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
+	 * Set Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
 	 * Set Incoterms.
 	 *
 	 * <br>Type: TableDir
@@ -516,56 +518,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
-	 * Set Promotion Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PromotionCode_ID (int C_PromotionCode_ID);
-
-	/**
-	 * Get Promotion Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PromotionCode_ID();
-
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
-
-	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Invoice.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
-
-	/**
-	 * Set Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
-
-	/**
-	 * Get Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PromotionCode2_ID();
-
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
-
-	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Invoice.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
-
-	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -587,6 +539,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_Invoice.class, "C_Invoice_ID", null);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Invoice.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Sales order.
@@ -682,50 +657,54 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Charge amount.
-	 * Charge Amount
+	 * Set Promotion Code 2.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
 
 	/**
-	 * Get Charge amount.
-	 * Charge Amount
+	 * Get Promotion Code 2.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getChargeAmt();
+	int getC_PromotionCode2_ID();
 
-	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Invoice.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
 
 	/**
-	 * Set Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Set Promotion Code.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
 
 	/**
-	 * Get Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Get Promotion Code.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCopyFrom();
+	int getC_PromotionCode_ID();
 
-	ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Invoice.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Invoice.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Set Adjustment Charge.
@@ -1065,6 +1044,33 @@ public interface I_C_Invoice
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
+	 * Set Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDocSubType (@Nullable java.lang.String DocSubType);
+
+	/**
+	 * Get Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDocSubType();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DocSubType = new ModelColumn<>(I_C_Invoice.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
+
+	/**
 	 * Set Document No.
 	 * Document sequence number of the document
 	 *
@@ -1151,6 +1157,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Invoice.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
 	 * Set Generate Invoice from Receipt.
 	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
@@ -1220,27 +1247,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
-	 * Set Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInvoice_includedTab (@Nullable java.lang.String Invoice_includedTab);
-
-	/**
-	 * Get Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getInvoice_includedTab();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
-	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
-
-	/**
 	 * Set Collection Status.
 	 * Invoice Collection Status
 	 *
@@ -1262,6 +1268,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceCollectionType = new ModelColumn<>(I_C_Invoice.class, "InvoiceCollectionType", null);
 	String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
+
+	/**
+	 * Set Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoice_includedTab (@Nullable java.lang.String Invoice_includedTab);
+
+	/**
+	 * Get Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoice_includedTab();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
+	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
 
 	/**
 	 * Set Active.
@@ -1331,6 +1358,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsDiscountPrinted = new ModelColumn<>(I_C_Invoice.class, "IsDiscountPrinted", null);
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
+
+	/**
+	 * Set Financial Relevant.
+	 * Indicates whether the invoice has financial impact (e.g., posted to accounting).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFinancial (boolean IsFinancial);
+
+	/**
+	 * Get Financial Relevant.
+	 * Indicates whether the invoice has financial impact (e.g., posted to accounting).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFinancial();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsFinancial = new ModelColumn<>(I_C_Invoice.class, "IsFinancial", null);
+	String COLUMNNAME_IsFinancial = "IsFinancial";
 
 	/**
 	 * Set In Dispute.
@@ -1677,7 +1727,7 @@ public interface I_C_Invoice
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1687,7 +1737,7 @@ public interface I_C_Invoice
 	 * Get Payment Rule.
 	 * How you pay the invoice
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1695,6 +1745,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Invoice.class, "PaymentRule", null);
 	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
+	 * Set Payment Term Text.
+	 * Payment term text that computed based on the payment term details and invoice data
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentTermText (@Nullable java.lang.String PaymentTermText);
+
+	/**
+	 * Get Payment Term Text.
+	 * Payment term text that computed based on the payment term details and invoice data
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentTermText();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_PaymentTermText = new ModelColumn<>(I_C_Invoice.class, "PaymentTermText", null);
+	String COLUMNNAME_PaymentTermText = "PaymentTermText";
 
 	/**
 	 * Set Order Reference.
@@ -2067,25 +2140,4 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_UserFlag = new ModelColumn<>(I_C_Invoice.class, "UserFlag", null);
 	String COLUMNNAME_UserFlag = "UserFlag";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Invoice.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

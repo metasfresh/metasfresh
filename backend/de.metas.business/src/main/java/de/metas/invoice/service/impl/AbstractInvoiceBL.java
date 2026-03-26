@@ -56,6 +56,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -525,6 +526,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			return false; // not changed
 		}
+
+		if (!invoice.isFinancial() || getDocBaseType(invoice).isPurchaseProformaInvoice())
+		{
+			return false;
+		}
+
+		DocBaseType.ofNullableCode(getC_DocType(invoice).getDocBaseType());
 
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(
@@ -1178,7 +1186,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoiceLineId2inOutId.size() == lines.size(), "Every line's id has been added to map '" + invoiceLineId2inOutId + "'");
 
 		// create Comparator
-		final Comparator<I_C_InvoiceLine> cmp = (line1, line2) -> {
+		return (line1, line2) -> {
 			// InOut_ID
 			final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
 			final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
@@ -1212,12 +1220,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return Integer.compare(line1No, line2No);
 
 		};
-		return cmp;
 	}
 
 	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
 	{
-		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
+		return (line1, line2) -> {
 
 			final I_M_InOutLine iol1 = line1.getM_InOutLine();
 			final I_M_InOutLine iol2 = line2.getM_InOutLine();
@@ -1258,7 +1265,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			return ol1.getLine() - ol2.getLine(); // keep OL order
 		};
-		return comparator;
 	}
 
 	@Override
@@ -1567,10 +1573,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return null;
 	}
 
+	private I_C_DocType getC_DocTypeNotNull(final org.compiere.model.I_C_Invoice invoice)
+	{
+		return assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
+	}
+
 	@Override
 	public final boolean isInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
+		final I_C_DocType docType = getC_DocTypeNotNull(invoice);
 		final String docBaseType = docType.getDocBaseType();
 		return isInvoice(docBaseType);
 	}
@@ -1584,8 +1595,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public InvoiceDocBaseType getInvoiceDocBaseType(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
-		return InvoiceDocBaseType.ofCode(docType.getDocBaseType());
+		return InvoiceDocBaseType.ofCode(getC_DocTypeNotNull(invoice).getDocBaseType());
+	}
+
+	private DocBaseType getDocBaseType(final org.compiere.model.I_C_Invoice invoice)
+	{
+		return DocBaseType.ofCode(getC_DocTypeNotNull(invoice).getDocBaseType());
 	}
 
 	@Override
@@ -2025,13 +2040,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+
+		return currencyBL.createCurrencyConversionContext(
 				invoice.getDateAcct().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 				ClientId.ofRepoId(invoice.getAD_Client_ID()),
 				OrgId.ofRepoId(invoice.getAD_Org_ID()));
-
-		return conversionCtx;
 	}
 
 	@Override

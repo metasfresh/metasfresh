@@ -19,6 +19,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -411,6 +413,34 @@ public class C_Invoice // 03771
 		if (orderId != null && invoice.getDateInvoiced() != null)
 		{
 			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateNonFinancialInvoices(@NonNull final I_C_Invoice invoice)
+	{
+		if(invoice.isFinancial())
+		{
+			return;
+		}
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+		if(orderId != null)
+		{
+			throw new AdempiereException("Only financial invoices should have OrderId set.")
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
+		}
+		invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).forEach(this::assertNoOrderLineSet);
+	}
+
+	private void assertNoOrderLineSet(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceLine.getC_Order_ID());
+		if (orderLineId != null && orderId != null)
+		{
+			throw new AdempiereException("Only financial invoices should have OrderId or OrderLineId set.")
+					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID())
+					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID());
 		}
 	}
 }
