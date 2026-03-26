@@ -27,18 +27,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Revenue
 AS
 $$
 DECLARE
-    v_is_customer boolean;
-    v_is_vendor   boolean;
-    v_cursymbol   character varying;
+    v_cursymbol character varying;
 BEGIN
-    SELECT bp.iscustomer = 'Y',
-           bp.isvendor = 'Y'
-    INTO v_is_customer, v_is_vendor
-    FROM c_bpartner bp
-    WHERE bp.c_bpartner_id = p_bpartner_id;
-
-    v_is_customer := COALESCE(v_is_customer, FALSE);
-    v_is_vendor := COALESCE(v_is_vendor, FALSE);
 
     -- Resolve accounting currency symbol, scoped to a single active client
     SELECT cur.cursymbol
@@ -50,11 +40,6 @@ BEGIN
       AND ci.AD_Client_ID > 0
     ORDER BY ci.AD_Client_ID
     LIMIT 1;
-
-    IF p_bpartner_id IS NULL THEN
-        v_is_customer := TRUE;
-        v_is_vendor := TRUE;
-    END IF;
 
     RETURN QUERY
         WITH params AS (SELECT (SELECT bp.value || ' - ' || bp.name
@@ -77,7 +62,6 @@ BEGIN
                               WHERE o.issotrx = 'Y'
                                 AND o.docstatus IN ('CO', 'CL')
                                 AND dt.docsubtype NOT IN ('OA', 'ON') -- exclude offers and requisitions
-                                AND v_is_customer
                                 AND (p_bpartner_id IS NULL OR o.c_bpartner_id = p_bpartner_id)
                                 AND (p_bp_group_id IS NULL OR bp.c_bp_group_id = p_bp_group_id)
                                 AND (p_date_from IS NULL OR o.dateordered::date >= p_date_from::date)
@@ -94,7 +78,6 @@ BEGIN
                                       INNER JOIN c_bpartner bp ON bp.c_bpartner_id = i.c_bpartner_id
                              WHERE i.issotrx = 'Y'
                                AND i.docstatus IN ('CO', 'CL')
-                               AND v_is_customer
                                AND (p_bpartner_id IS NULL OR i.c_bpartner_id = p_bpartner_id)
                                AND (p_bp_group_id IS NULL OR bp.c_bp_group_id = p_bp_group_id)
                                AND (p_date_from IS NULL OR i.dateinvoiced::date >= p_date_from::date)
@@ -111,7 +94,6 @@ BEGIN
                                       INNER JOIN c_bpartner bp ON bp.c_bpartner_id = i.c_bpartner_id
                              WHERE i.issotrx = 'N'
                                AND i.docstatus IN ('CO', 'CL')
-                               AND v_is_vendor
                                AND (p_bpartner_id IS NULL OR i.c_bpartner_id = p_bpartner_id)
                                AND (p_bp_group_id IS NULL OR bp.c_bp_group_id = p_bp_group_id)
                                AND (p_date_from IS NULL OR i.dateinvoiced::date >= p_date_from::date)
@@ -130,23 +112,22 @@ BEGIN
         SELECT dc.day,
                p.bpartner_name,
                p.bpartner_group_name,
-               CASE WHEN v_is_customer THEN COALESCE(so.revenue_net, 0) END AS order_revenue_net,
-               CASE WHEN v_is_customer THEN COALESCE(ar.revenue_ar, 0) END  AS invoice_revenue_ar,
-               CASE WHEN v_is_vendor THEN COALESCE(ap.revenue_ap, 0) END    AS invoice_revenue_ap,
+               so.revenue_net                                          AS order_revenue_net,
+               ar.revenue_ar                                           AS invoice_revenue_ar,
+               ap.revenue_ap                                           AS invoice_revenue_ap,
+               COALESCE(ar.revenue_ar, 0) - COALESCE(ap.revenue_ap, 0) AS margin_cur,
+               v_cursymbol                                             AS cursymbol,
                CASE
-                   WHEN v_is_customer AND v_is_vendor
-                       THEN COALESCE(ar.revenue_ar, 0) - COALESCE(ap.revenue_ap, 0)
-               END                                                          AS margin_cur,
-               v_cursymbol                                                  AS cursymbol,
-               CASE
-                   WHEN v_is_customer AND v_is_vendor AND COALESCE(ar.revenue_ar, 0) <> 0
-                       THEN ROUND(
+                   WHEN ar.revenue_ar <> 0 THEN ROUND(
                            (COALESCE(ar.revenue_ar, 0) - COALESCE(ap.revenue_ap, 0))
-                               / COALESCE(ar.revenue_ar, 0) * 100,
+                               / COALESCE(ar.revenue_ar, 1) * 100,
                            1)
-                   WHEN v_is_customer AND v_is_vendor
-                       THEN 0
-               END                                                          AS margin_pct
+                                           ELSE -ROUND(
+                                                   COALESCE(ap.revenue_ap, 0)
+                                                       / COALESCE(ap.revenue_ap, 1) * 100,
+                                                   1)
+               END
+                                                                       AS margin_pct
         FROM all_days dc
                  CROSS JOIN params p
                  LEFT JOIN sales_orders so ON so.day = dc.day
@@ -161,15 +142,14 @@ $$
 ;
 
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.Docs_Daily_Revenue_Report(numeric, numeric, timestamp, timestamp) IS
-    'Returns a daily revenue report aggregated by day. Amounts are converted to the accounting currency via currencyBase().
-    Partner role is auto-detected from iscustomer/isvendor on c_bpartner:
-      - customer only → order_revenue_net + invoice_revenue_ar populated; invoice_revenue_ap = NULL; margin = NULL
-      - vendor only   → invoice_revenue_ap populated; order_revenue_net + invoice_revenue_ar = NULL; margin = NULL
-      - both          → all columns populated; margin = AR - AP
-      - no filter     → full report (all columns)
-    Offers are excluded from sales_orders via docsubtype filter on c_doctypetarget_id.
+    'Returns a daily revenue report aggregated by day. Amounts converted to accounting currency via currencyBase().
+    Margin logic is derived from actual data presence (NULL = no transactions that day for that side):
+      - AR + AP present → margin = AR - AP; margin_pct = (AR-AP)/AR*100
+      - AR only         → margin = AR (no cost side); margin_pct = 100
+      - AP only         → margin = -AP; margin_pct = -100 (no revenue side)
+    Offers excluded via docsubtype NOT IN (OA, ON) on c_doctypetarget_id.
     Parameters:
-      p_bpartner_id – filter by business partner; role auto-detected
+      p_bpartner_id – filter by business partner
       p_bp_group_id – filter by partner group
       p_date_from   – start of date range, inclusive
       p_date_to     – end of date range, inclusive'
