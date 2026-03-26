@@ -25,8 +25,8 @@ import java.util.List;
 @Builder
 class HUGraiSnapshotLoader
 {
-	private static final Logger logger = LogManager.getLogger(HUGraiSnapshotLoader.class);
 	// Services
+	@NonNull private static final Logger logger = LogManager.getLogger(HUGraiSnapshotLoader.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
