@@ -78,7 +78,7 @@ public class HUGraiSnapshot
 			block.grais.forEach(unassigned::remove);
 		}
 
-		// Step 2: Build changes for disaggregated TUs
+		// Step 2: Collect TU slots that need a new value (wrong GRAI or empty)
 		final List<AttributeChange> changes = new ArrayList<>();
 		final List<TU> availableSlots = new ArrayList<>();
 
@@ -86,8 +86,7 @@ public class HUGraiSnapshot
 		{
 			if (tu.grai != null && !desiredGrais.contains(tu.grai))
 			{
-				// Wrong GRAI — clear it
-				changes.add(AttributeChange.of(tu.huId, GRAISet.EMPTY));
+				// Wrong GRAI — needs to be replaced or cleared
 				availableSlots.add(tu);
 			}
 			else if (tu.grai == null)
@@ -97,16 +96,21 @@ public class HUGraiSnapshot
 			// else: correct GRAI already in place — no change
 		}
 
-		// Step 3: Fill available TU slots from unassigned GRAIs
+		// Step 3: Assign unassigned GRAIs to available slots; clear the rest
 		final ArrayList<GRAI> remainingUnassigned = new ArrayList<>(unassigned);
 		for (final TU slot : availableSlots)
 		{
-			if (remainingUnassigned.isEmpty())
+			if (!remainingUnassigned.isEmpty())
 			{
-				break;
+				final GRAI grai = remainingUnassigned.remove(0);
+				changes.add(AttributeChange.of(slot.huId, GRAISet.of(grai)));
 			}
-			final GRAI grai = remainingUnassigned.remove(0);
-			changes.add(AttributeChange.of(slot.huId, GRAISet.of(grai)));
+			else if (slot.grai != null)
+			{
+				// No more GRAIs to assign, but this slot had a wrong GRAI — clear it
+				changes.add(AttributeChange.of(slot.huId, GRAISet.EMPTY));
+			}
+			// else: slot was already empty and stays empty — no change
 		}
 
 		// Step 4: Handle aggregate blocks

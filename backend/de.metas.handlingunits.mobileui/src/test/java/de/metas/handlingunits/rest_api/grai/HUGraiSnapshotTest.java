@@ -164,8 +164,6 @@ class HUGraiSnapshotTest
 			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(ImmutableList.of(GRAI_C, GRAI_D)));
 
 			assertThat(delta.getChanges()).containsExactly(
-					AttributeChange.of(HuId.ofRepoId(1), GRAISet.EMPTY),
-					AttributeChange.of(HuId.ofRepoId(2), GRAISet.EMPTY),
 					AttributeChange.of(HuId.ofRepoId(1), GRAISet.of(GRAI_C)),
 					AttributeChange.of(HuId.ofRepoId(2), GRAISet.of(GRAI_D)));
 			assertThat(delta.hasUnassignedGrais()).isFalse();
@@ -182,7 +180,6 @@ class HUGraiSnapshotTest
 			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_C)));
 
 			assertThat(delta.getChanges()).containsExactly(
-					AttributeChange.of(HuId.ofRepoId(2), GRAISet.EMPTY),
 					AttributeChange.of(HuId.ofRepoId(2), GRAISet.of(GRAI_C)));
 			assertThat(delta.hasUnassignedGrais()).isFalse();
 		}
@@ -295,7 +292,6 @@ class HUGraiSnapshotTest
 			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.of(GRAI_B));
 
 			assertThat(delta.getChanges()).containsExactly(
-					AttributeChange.of(HuId.ofRepoId(1), GRAISet.EMPTY),
 					AttributeChange.of(HuId.ofRepoId(1), GRAISet.of(GRAI_B)));
 			assertThat(delta.hasUnassignedGrais()).isFalse();
 		}
