@@ -324,6 +324,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();
