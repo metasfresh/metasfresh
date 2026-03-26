@@ -1,8 +1,7 @@
-package de.metas.handlingunits.rest_api.grai;
+package de.metas.handlingunits.grai;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.grai.GRAISet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

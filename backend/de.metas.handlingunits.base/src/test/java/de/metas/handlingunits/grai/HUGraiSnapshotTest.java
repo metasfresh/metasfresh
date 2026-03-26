@@ -1,20 +1,20 @@
-package de.metas.handlingunits.rest_api.grai;
+package de.metas.handlingunits.grai;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAISet;
-import de.metas.handlingunits.rest_api.grai.HUGraiDelta.AttributeChange;
-import de.metas.handlingunits.rest_api.grai.HUGraiSnapshot.AggregateBlock;
-import de.metas.handlingunits.rest_api.grai.HUGraiSnapshot.TU;
+import de.metas.handlingunits.grai.HUGraiDelta.AttributeChange;
+import de.metas.handlingunits.grai.HUGraiSnapshot.AggregateBlock;
+import de.metas.handlingunits.grai.HUGraiSnapshot.TU;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HUGraiSnapshotTest
 {
@@ -90,6 +90,50 @@ class HUGraiSnapshotTest
 					ImmutableList.of(AggregateBlock.of(HuId.ofRepoId(2), QtyTU.ofInt(2), GRAISet.EMPTY)));
 
 			assertThat(snapshot.getAllGrais().isEmpty()).isTrue();
+		}
+	}
+
+	@Nested
+	class IsAllGraisAssigned
+	{
+		@Test
+		void allAssigned()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), GRAI_B)),
+					ImmutableList.of());
+
+			assertThat(snapshot.isAllGraisAssigned()).isTrue();
+		}
+
+		@Test
+		void someMissing()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), null)),
+					ImmutableList.of());
+
+			assertThat(snapshot.isAllGraisAssigned()).isFalse();
+		}
+
+		@Test
+		void aggregatePartiallyAssigned()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(AggregateBlock.of(HuId.ofRepoId(1), QtyTU.ofInt(3), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B)))));
+
+			assertThat(snapshot.isAllGraisAssigned()).isFalse();
+		}
+
+		@Test
+		void aggregateFullyAssigned()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(AggregateBlock.of(HuId.ofRepoId(1), QtyTU.ofInt(2), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B)))));
+
+			assertThat(snapshot.isAllGraisAssigned()).isTrue();
 		}
 	}
 
@@ -307,6 +351,169 @@ class HUGraiSnapshotTest
 					AttributeChange.of(HuId.ofRepoId(1), GRAISet.of(GRAI_A)));
 			assertThat(delta.hasUnassignedGrais()).isTrue();
 			assertThat(delta.getUnassignedGrais().toSet()).containsExactly(GRAI_B);
+		}
+	}
+
+	// -------------------------------------------------------------------
+	// assertAllGraisAssigned
+	// -------------------------------------------------------------------
+
+	@Nested
+	class AssertAllGraisAssigned
+	{
+		@Test
+		void allAssigned_noException()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A)),
+					ImmutableList.of());
+
+			snapshot.assertAllGraisAssigned(); // should not throw
+		}
+
+		@Test
+		void someMissing_throws()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), null)),
+					ImmutableList.of());
+
+			assertThatThrownBy(snapshot::assertAllGraisAssigned)
+					.isInstanceOf(AdempiereException.class);
+		}
+	}
+
+	// -------------------------------------------------------------------
+	// findMaxDummyCounter
+	// -------------------------------------------------------------------
+
+	@Nested
+	class FindMaxDummyCounter
+	{
+		@Test
+		void noDummies_returnsZero()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A)),
+					ImmutableList.of());
+
+			assertThat(snapshot.findMaxDummyCounter(DummyGRAITemplate.migros("1234567890"))).isZero();
+		}
+
+		@Test
+		void withDummies_returnsMax()
+		{
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final GRAI dummy3 = template.buildGRAI(3);
+			final GRAI dummy7 = template.buildGRAI(7);
+
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), dummy3), TU.of(HuId.ofRepoId(2), dummy7)),
+					ImmutableList.of());
+
+			assertThat(snapshot.findMaxDummyCounter(template)).isEqualTo(7);
+		}
+
+		@Test
+		void mixedRealAndDummy()
+		{
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final GRAI dummy5 = template.buildGRAI(5);
+
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), dummy5)),
+					ImmutableList.of());
+
+			assertThat(snapshot.findMaxDummyCounter(template)).isEqualTo(5);
+		}
+
+		@Test
+		void dummiesInAggregateBlock()
+		{
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final GRAI dummy2 = template.buildGRAI(2);
+			final GRAI dummy9 = template.buildGRAI(9);
+
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(AggregateBlock.of(HuId.ofRepoId(1), QtyTU.ofInt(3), GRAISet.ofCollection(ImmutableList.of(dummy2, dummy9)))));
+
+			assertThat(snapshot.findMaxDummyCounter(template)).isEqualTo(9);
+		}
+	}
+
+	// -------------------------------------------------------------------
+	// generateMissingGRAIs
+	// -------------------------------------------------------------------
+
+	@Nested
+	class GenerateMissingGRAIs
+	{
+		@Test
+		void allAssigned_emptyDelta()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), GRAI_B)),
+					ImmutableList.of());
+
+			final DummyGRAIProvider provider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
+			final HUGraiDelta delta = snapshot.generateMissingGRAIs(provider);
+
+			assertThat(delta.isEmpty()).isTrue();
+		}
+
+		@Test
+		void fillsMissingTUs()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), GRAI_A), TU.of(HuId.ofRepoId(2), null)),
+					ImmutableList.of());
+
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final DummyGRAIProvider provider = new DummyGRAIProvider(template, 1);
+			final HUGraiDelta delta = snapshot.generateMissingGRAIs(provider);
+
+			assertThat(delta.getChanges()).containsExactly(
+					AttributeChange.of(HuId.ofRepoId(2), GRAISet.of(template.buildGRAI(1))));
+			assertThat(provider.getNextCounter()).isEqualTo(2);
+		}
+
+		@Test
+		void fillsMissingInAggregate()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(AggregateBlock.of(HuId.ofRepoId(1), QtyTU.ofInt(3), GRAISet.of(GRAI_A))));
+
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final DummyGRAIProvider provider = new DummyGRAIProvider(template, 1);
+			final HUGraiDelta delta = snapshot.generateMissingGRAIs(provider);
+
+			// Block should now contain GRAI_A + 2 dummies
+			assertThat(delta.getChanges()).hasSize(1);
+			final GRAISet newBlockGrais = delta.getChanges().get(0).getNewValue();
+			assertThat(newBlockGrais.size()).isEqualTo(3);
+			assertThat(newBlockGrais.contains(GRAI_A)).isTrue();
+			assertThat(provider.getNextCounter()).isEqualTo(3);
+		}
+
+		@Test
+		void providerCounterAdvancesAcrossCalls()
+		{
+			final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+			final DummyGRAIProvider provider = new DummyGRAIProvider(template, 5);
+
+			final HUGraiSnapshot snapshot1 = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(1), null)),
+					ImmutableList.of());
+			snapshot1.generateMissingGRAIs(provider);
+			assertThat(provider.getNextCounter()).isEqualTo(6);
+
+			final HUGraiSnapshot snapshot2 = snapshotLU(
+					ImmutableList.of(TU.of(HuId.ofRepoId(2), null)),
+					ImmutableList.of());
+			snapshot2.generateMissingGRAIs(provider);
+			assertThat(provider.getNextCounter()).isEqualTo(7);
 		}
 	}
 

@@ -54,6 +54,8 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -69,8 +71,6 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
-import de.metas.handlingunits.rest_api.grai.GetHUGraiCommand;
-import de.metas.handlingunits.rest_api.grai.SetHUGraiCommand;
 import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -139,12 +139,14 @@ public class HandlingUnitsService
 	private final HULabelService huLabelService;
 	private final HUTransformService huTransformService;
 	private final InventoryCandidateService inventoryCandidateService;
+	private final HUGraiService huGraiService;
 
 	public HandlingUnitsService(
 			@NonNull final HUQRCodesService huQRCodeService,
 			@NonNull final HUQtyService huQtyService,
 			@NonNull final HULabelService huLabelService,
-			@NonNull final InventoryCandidateService inventoryCandidateService)
+			@NonNull final InventoryCandidateService inventoryCandidateService,
+			@NonNull final HUGraiService huGraiService)
 	{
 		this.huQRCodeService = huQRCodeService;
 		this.huQtyService = huQtyService;
@@ -153,6 +155,7 @@ public class HandlingUnitsService
 				.huQRCodesService(huQRCodeService)
 				.build();
 		this.inventoryCandidateService = inventoryCandidateService;
+		this.huGraiService = huGraiService;
 	}
 
 	public JsonHUList getFullHUsList(
@@ -916,19 +919,18 @@ public class HandlingUnitsService
 	@NonNull
 	public JsonGRAICodesResponse getGRAIs(@NonNull final HuId huId)
 	{
-		return GetHUGraiCommand.builder()
-				.huId(huId)
-				.build().execute();
+		final HUGraiSnapshot snapshot = huGraiService.getSnapshot(huId).orElseThrow();
+		return JsonGRAICodesResponse.builder()
+				.huId(huId.getRepoId())
+				.graiCodes(snapshot.getAllGrais().toStringList())
+				.tuCount(snapshot.getTUCount().toInt())
+				.build();
 	}
 
 	@NonNull
 	public JsonGRAICodesResponse setGRAIs(@NonNull final HuId huId, @NonNull final GRAISet graiSet)
 	{
-		SetHUGraiCommand.builder()
-				.huId(huId)
-				.graiSet(graiSet)
-				.build().execute();
-
-		return getGRAIs(huId); // read it again fresh
+		huGraiService.setGrais(huId, graiSet);
+		return getGRAIs(huId);
 	}
 }

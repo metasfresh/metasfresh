@@ -120,6 +120,7 @@ public class PickingJobCompleteCommand
 		}
 
 		PickingJobGRAIValidator.builder()
+				.huService(huService)
 				.pickingJob(pickingJob)
 				.build()
 				.validate();

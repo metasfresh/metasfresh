@@ -1,14 +1,14 @@
-package de.metas.handlingunits.rest_api.grai;
+package de.metas.handlingunits.grai;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAISet;
-import de.metas.handlingunits.rest_api.grai.HUGraiDelta.AttributeChange;
+import de.metas.handlingunits.grai.HUGraiDelta.AttributeChange;
+import de.metas.i18n.AdMessageKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -19,6 +19,8 @@ import java.util.List;
 @Builder
 public class HUGraiSnapshot
 {
+	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
+
 	@NonNull HuId huId;
 	@NonNull ImmutableList<TU> tus;
 	@NonNull ImmutableList<AggregateBlock> aggregateBlocks;
@@ -36,6 +38,31 @@ public class HUGraiSnapshot
 			count = count.add(block.tuCount);
 		}
 		return count;
+	}
+
+	public boolean isAllGraisAssigned()
+	{
+		return getAllGrais().size() >= getTUCount().toInt();
+	}
+
+	public void assertAllGraisAssigned()
+	{
+		if (isAllGraisAssigned()) {return;}
+
+		throw new AdempiereException(GRAI_COUNT_MISMATCH,
+				this.huId,
+				getAllGrais().size(),
+				getTUCount().toInt());
+	}
+
+	public int findMaxDummyCounter(@NonNull final DummyGRAITemplate template)
+	{
+		int maxCounter = 0;
+		for (final GRAI grai : getAllGrais())
+		{
+			maxCounter = Math.max(maxCounter, template.extractCounter(grai));
+		}
+		return maxCounter;
 	}
 
 	@NonNull
@@ -56,9 +83,21 @@ public class HUGraiSnapshot
 		return GRAISet.ofCollection(result);
 	}
 
-	// -------------------------------------------------
-	// Delta computation (SET path)
-	// -------------------------------------------------
+	@NonNull
+	public HUGraiDelta generateMissingGRAIs(@NonNull final DummyGRAIProvider nextGraiProvider)
+	{
+		// Build the desired GRAISet: existing GRAIs + generated dummies for missing slots
+		final ArrayList<GRAI> desiredGrais = new ArrayList<>();
+		getAllGrais().forEach(desiredGrais::add);
+
+		final int missingCount = getTUCount().toInt() - desiredGrais.size();
+		for (int i = 0; i < missingCount; i++)
+		{
+			desiredGrais.add(nextGraiProvider.nextGRAI());
+		}
+
+		return computeDelta(GRAISet.ofCollection(desiredGrais));
+	}
 
 	@NonNull
 	public HUGraiDelta computeDelta(@NonNull final GRAISet desiredGrais)
@@ -156,9 +195,13 @@ public class HUGraiSnapshot
 				.build();
 	}
 
-	// -------------------------------------------------
-	// Nested types
-	// -------------------------------------------------
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 
 	@Value(staticConstructor = "of")
 	public static class TU
