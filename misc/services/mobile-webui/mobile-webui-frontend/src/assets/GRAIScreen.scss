@@ -55,3 +55,25 @@
     }
   }
 }
+
+.grai-clear-all {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+
+  .grai-clear-all-button {
+    background-color: rgba($red, 0.1);
+    color: $red;
+    border: 1px solid $red;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 44px;
+
+    &:active {
+      background-color: rgba($red, 0.25);
+    }
+  }
+}

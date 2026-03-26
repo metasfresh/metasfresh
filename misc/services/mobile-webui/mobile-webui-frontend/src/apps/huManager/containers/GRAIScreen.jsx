@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
@@ -11,6 +11,7 @@ import { huManagerLocation } from '../routes';
 import { useKeyboardBarcodeReader } from '../../../hooks/useKeyboardBarcodeReader';
 import { parseGraiArrayFromRawInput } from '../../../utils/grai';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import YesNoDialog from '../../../components/dialogs/YesNoDialog';
 import { useGrais } from '../hooks/useGrais';
 
 import '../../../assets/GRAIScreen.scss';
@@ -23,7 +24,8 @@ const GRAIScreen = () => {
   });
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
-  const { graiCodes, tuCount, loading, addGrais, removeGrai } = useGrais({ huId: handlingUnitInfo?.id });
+  const { graiCodes, tuCount, loading, addGrais, removeGrai, clearAllGrais } = useGrais({ huId: handlingUnitInfo?.id });
+  const [showClearAllDialog, setShowClearAllDialog] = useState(false);
 
   const onBarcodeString = useCallback(
     (barcodeString) => {
@@ -68,6 +70,29 @@ const GRAIScreen = () => {
           <GraiChip key={grai} grai={grai} onRemove={() => removeGrai(grai)} />
         ))}
       </div>
+
+      {graiCodes.length > 0 && (
+        <div className="grai-clear-all">
+          <button
+            className="grai-clear-all-button"
+            data-testid="grai-clear-all-button"
+            onClick={() => setShowClearAllDialog(true)}
+          >
+            {trl('huManager.action.scanGRAI.clearAll.buttonCaption')}
+          </button>
+        </div>
+      )}
+
+      {showClearAllDialog && (
+        <YesNoDialog
+          promptQuestion={trl('huManager.action.scanGRAI.clearAll.confirmQuestion', { count: graiCodes.length })}
+          onYes={() => {
+            clearAllGrais();
+            setShowClearAllDialog(false);
+          }}
+          onNo={() => setShowClearAllDialog(false)}
+        />
+      )}
 
       {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
     </div>

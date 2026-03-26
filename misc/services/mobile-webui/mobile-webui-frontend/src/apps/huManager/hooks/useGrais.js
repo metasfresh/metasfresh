@@ -15,6 +15,10 @@ export const useGrais = ({ huId }) => {
   graiCodesRef.current = graiCodes;
 
   const syncTimerRef = useRef(null);
+  // Generation counter: incremented on every scheduleSyncToBackend call.
+  // Prevents stale API responses from overwriting newer local state.
+  // (e.g., rapid batch scans where response from batch 1 arrives after batch 2 updates local state)
+  const syncGenerationRef = useRef(0);
 
   // Apply the backend response (source of truth) to local state
   const applyBackendResponse = useCallback((response) => {
@@ -28,10 +32,16 @@ export const useGrais = ({ huId }) => {
     if (!huId) return;
 
     clearTimeout(syncTimerRef.current);
+    const generation = ++syncGenerationRef.current;
     syncTimerRef.current = setTimeout(() => {
       api
         .setGRAIs(huId, graiCodesRef.current)
-        .then(applyBackendResponse)
+        .then((response) => {
+          // Only apply if no newer sync was scheduled while this was in flight
+          if (syncGenerationRef.current === generation) {
+            applyBackendResponse(response);
+          }
+        })
         .catch((axiosError) => toastError({ axiosError }));
     }, SYNC_DEBOUNCE_MS);
   }, [huId, applyBackendResponse]);
@@ -70,7 +80,12 @@ export const useGrais = ({ huId }) => {
     [scheduleSyncToBackend]
   );
 
-  return { graiCodes, tuCount, loading, addGrais, removeGrai };
+  const clearAllGrais = useCallback(() => {
+    setGraiCodes([]);
+    scheduleSyncToBackend();
+  }, [scheduleSyncToBackend]);
+
+  return { graiCodes, tuCount, loading, addGrais, removeGrai, clearAllGrais };
 };
 
 //

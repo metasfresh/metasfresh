@@ -55,7 +55,11 @@
     "scanGRAI": {
       "buttonCaption": "GRAI scannen",
       "windowName": "GRAI scannen",
-      "count": "%(scanned)s / %(total)s GRAIs gescannt"
+      "count": "%(scanned)s / %(total)s GRAIs gescannt",
+      "clearAll": {
+        "buttonCaption": "Alle löschen",
+        "confirmQuestion": "Alle %(count)s GRAIs entfernen?"
+      }
     }
   }
 }
