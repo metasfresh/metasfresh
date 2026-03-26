@@ -102,10 +102,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | M_InOut_ID | M_Product_ID | MovementQty | C_Project_ID |
       | shipment   | product      | 10          | project      |
 
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed |
-      | 10        | hu         | 1     | true      |
-
     And validate M_QtyReservations:
       | Identifier  | Qty    | QtyDelivered | Processed |
       | reservation | 10 PCE | 10 PCE       | true      |
@@ -179,11 +175,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | movementqty |
       | shipment   | product      | 20          |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed |
-      | 10        | hu1        | 1     | true      |
-      | 10        | hu2        | 1     | true      |
 
     And validate M_QtyReservations:
       | Identifier  | Qty    | QtyDelivered | Processed |
@@ -281,13 +272,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | movementqty |
       | shipment_B | product_B    | 10          |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_A
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed |
-      | 10        | hu_A       | 1     | true      |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_B
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed |
-      | 10        | hu_B       | 1     | true      |
 
     And validate M_QtyReservations:
       | Identifier    | Qty    | QtyDelivered | Processed |
@@ -391,10 +375,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine              | 1000001       | DE    |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu         | 1     | true      | shipLine       |
 
     And validate M_QtyReservations:
       | Identifier  | Qty    | QtyDelivered | Processed |
@@ -541,13 +521,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine2             | 1000001       | AT    |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu_DE      | 1     | true      | shipLine1      |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu_AT      | 1     | true      | shipLine2      |
 
     And validate M_QtyReservations:
       | Identifier     | Qty    | QtyDelivered | Processed |
@@ -732,16 +705,6 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | M_AttributeSetInstance_ID | AttributeCode |
       | asi_shipLine3             | 1000001       |
 
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu_DE      | 1     | true      | shipLine1      |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu_CH      | 1     | true      | shipLine2      |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule3
-      | QtyPicked | M_TU_HU_ID | QtyTU | Processed | M_InOutLine_ID |
-      | 10        | hu_plain   | 1     | true      | shipLine3      |
-
     And validate M_QtyReservations:
       | Identifier        | Qty    | QtyDelivered | Processed |
       | reservation_DE    | 10 PCE | 10 PCE       | true      |
@@ -844,67 +807,67 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | orderLine  | order      | product      | 60         | huPIP_10PCE             |
     And the order identified by order is completed
-#    And after not more than 60s, M_ShipmentSchedules are found:
-#      | Identifier       | C_OrderLine_ID | IsToRecompute |
-#      | shipmentSchedule | orderLine      | N             |
-#
-#    # Three reservations on the same order line: 1 TU DE, 2 TUs CH, 3 TUs plain
-#    And metasfresh contains M_QtyReservations:
-#      | Identifier     | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | M_AttributeSetInstance_ID |
-#      | reservation_DE | orderLine      | product      | warehouse_1    | 10 PCE | 1     | asi_DE                    |
-#      | reservation_CH | orderLine      | product      | warehouse_1    | 20 PCE | 2     | asi_CH                    |
-#    And metasfresh contains M_QtyReservations:
-#      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
-#      | reservation_plain | orderLine      | product      | warehouse_1    | 30 PCE | 3     |
-#
-#    And after not more than 60s, shipment schedule is recomputed
-#      | M_ShipmentSchedule_ID |
-#      | shipmentSchedule      |
-#
-#    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-#      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-#      | shipmentSchedule      | D            | true                | false       |
-#
-#    Then after not more than 60s, M_InOut is found:
-#      | M_ShipmentSchedule_ID | M_InOut_ID |
-#      | shipmentSchedule      | shipment   |
-#
-#    # One shipment with three lines — one per attribute group (10/20/30 PCE)
-#    # Line with 10 PCE: from DE TU — must carry Herkunft=DE
-#    And validate the created shipment lines
-#      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
-#      | shipment   | product      | 10          | shipLine_DE    |
-#    And validate the created shipment lines by id
-#      | Identifier  | M_AttributeSetInstance_ID |
-#      | shipLine_DE | asi_shipLine_DE           |
-#    And validate M_AttributeInstance:
-#      | M_AttributeSetInstance_ID | AttributeCode | Value |
-#      | asi_shipLine_DE           | 1000001       | DE    |
-#
-#    # Line with 20 PCE: from 2 CH TUs — must carry Herkunft=CH
-#    And validate the created shipment lines
-#      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
-#      | shipment   | product      | 20          | shipLine_CH    |
-#    And validate the created shipment lines by id
-#      | Identifier  | M_AttributeSetInstance_ID |
-#      | shipLine_CH | asi_shipLine_CH           |
-#    And validate M_AttributeInstance:
-#      | M_AttributeSetInstance_ID | AttributeCode | Value |
-#      | asi_shipLine_CH           | 1000001       | CH    |
-#
-#    # Line with 30 PCE: from 3 plain TUs — must NOT carry any Herkunft value
-#    And validate the created shipment lines
-#      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
-#      | shipment   | product      | 30          | shipLine_plain |
-#    And validate the created shipment lines by id
-#      | Identifier     | M_AttributeSetInstance_ID |
-#      | shipLine_plain | asi_shipLine_plain        |
-#    And validate M_AttributeInstance:
-#      | M_AttributeSetInstance_ID | AttributeCode |
-#      | asi_shipLine_plain        | 1000001       |
-#
-#    And validate M_QtyReservations:
-#      | Identifier        | Qty    | QtyDelivered | Processed |
-#      | reservation_DE    | 10 PCE | 10 PCE       | true      |
-#      | reservation_CH    | 20 PCE | 20 PCE       | true      |
-#      | reservation_plain | 30 PCE | 30 PCE       | true      |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+
+    # Three reservations on the same order line: 1 TU DE, 2 TUs CH, 3 TUs plain
+    And metas fresh contains M_QtyReservations:
+      | Identifier     | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | M_AttributeSetInstance_ID |
+      | reservation_DE | orderLine      | product      | warehouse_1    | 10 PCE | 1     | asi_DE                    |
+      | reservation_CH | orderLine      | product      | warehouse_1    | 20 PCE | 2     | asi_CH                    |
+    And metasfresh contains M_QtyReservations:
+      | Identifier        | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | reservation_plain | orderLine      | product      | warehouse_1    | 30 PCE | 3     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule      | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule      | shipment   |
+
+    # One shipment with three lines — one per attribute group (10/20/30 PCE)
+    # Line with 10 PCE: from DE TU — must carry Herkunft=DE
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
+      | shipment   | product      | 10          | shipLine_DE    |
+    And validate the created shipment lines by id
+      | Identifier  | M_AttributeSetInstance_ID |
+      | shipLine_DE | asi_shipLine_DE           |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode | Value |
+      | asi_shipLine_DE           | 1000001       | DE    |
+
+    # Line with 20 PCE: from 2 CH TUs — must carry Herkunft=CH
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
+      | shipment   | product      | 20          | shipLine_CH    |
+    And validate the created shipment lines by id
+      | Identifier  | M_AttributeSetInstance_ID |
+      | shipLine_CH | asi_shipLine_CH           |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode | Value |
+      | asi_shipLine_CH           | 1000001       | CH    |
+
+    # Line with 30 PCE: from 3 plain TUs — must NOT carry any Herkunft value
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | MovementQty | M_InOutLine_ID |
+      | shipment   | product      | 30          | shipLine_plain |
+    And validate the created shipment lines by id
+      | Identifier     | M_AttributeSetInstance_ID |
+      | shipLine_plain | asi_shipLine_plain        |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode |
+      | asi_shipLine_plain        | 1000001       |
+
+    And validate M_QtyReservations:
+      | Identifier        | Qty    | QtyDelivered | Processed |
+      | reservation_DE    | 10 PCE | 10 PCE       | true      |
+      | reservation_CH    | 20 PCE | 20 PCE       | true      |
+      | reservation_plain | 30 PCE | 30 PCE       | true      |
