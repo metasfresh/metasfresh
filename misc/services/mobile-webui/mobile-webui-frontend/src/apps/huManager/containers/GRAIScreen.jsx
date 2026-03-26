@@ -11,6 +11,7 @@ import { huManagerLocation } from '../routes';
 import { useKeyboardBarcodeReader } from '../../../hooks/useKeyboardBarcodeReader';
 import { parseGraiArrayFromRawInput } from '../../../utils/grai';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import YesNoDialog from '../../../components/dialogs/YesNoDialog';
 import { useGrais } from '../hooks/useGrais';
 import { traceLogWarn } from '../../../utils/ui_trace';
@@ -25,7 +26,20 @@ const GRAIScreen = () => {
   });
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
-  const { graiCodes, tuCount, loading, addGrais, removeGrai, clearAllGrais } = useGrais({ huId: handlingUnitInfo?.id });
+  const {
+    graiCodes,
+    assignedGrais,
+    extraGrais,
+    tuCount,
+    loading,
+    dirty,
+    sending,
+    addGrais,
+    removeGrai,
+    clearAllGrais,
+    sendToBackend,
+    loadFromBackend,
+  } = useGrais({ huId: handlingUnitInfo?.id });
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
 
   const onBarcodeString = useCallback(
@@ -65,30 +79,51 @@ const GRAIScreen = () => {
       <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
 
       <div className="grai-count" data-testid="grai-count">
-        {trl('huManager.action.scanGRAI.count', { scanned: graiCodes.length, total: tuCount })}
+        {trl('huManager.action.scanGRAI.count', { scanned: assignedGrais.length, total: tuCount })}
+        {extraGrais.length > 0 && (
+          <span className="grai-count-extra" data-testid="grai-count-extra">
+            {' '}
+            {trl('huManager.action.scanGRAI.countExtra', { extra: extraGrais.length })}
+          </span>
+        )}
+      </div>
+
+      <div className="pt-3 section">
+        <ButtonWithIndicator
+          captionKey="huManager.action.scanGRAI.send.buttonCaption"
+          testId="grai-send-button"
+          disabled={!dirty || sending || extraGrais.length > 0}
+          onClick={sendToBackend}
+          additionalCssClass="action-button"
+        />
+        <ButtonWithIndicator
+          captionKey="huManager.action.scanGRAI.clearAll.buttonCaption"
+          testId="grai-clear-all-button"
+          disabled={!graiCodes.length}
+          onClick={() => setShowClearAllDialog(true)}
+        />
+        <ButtonWithIndicator
+          captionKey="huManager.action.scanGRAI.undo.buttonCaption"
+          testId="grai-undo-button"
+          disabled={!dirty}
+          onClick={loadFromBackend}
+        />
       </div>
 
       <div className="grai-chip-list">
-        {graiCodes.map((grai) => (
+        {assignedGrais.map((grai) => (
           <GraiChip key={grai} grai={grai} onRemove={() => removeGrai(grai)} />
+        ))}
+        {extraGrais.map((grai) => (
+          <GraiChip key={grai} grai={grai} extra onRemove={() => removeGrai(grai)} />
         ))}
       </div>
 
-      {graiCodes.length > 0 && (
-        <div className="grai-clear-all">
-          <button
-            className="grai-clear-all-button"
-            data-testid="grai-clear-all-button"
-            onClick={() => setShowClearAllDialog(true)}
-          >
-            {trl('huManager.action.scanGRAI.clearAll.buttonCaption')}
-          </button>
-        </div>
-      )}
-
       {showClearAllDialog && (
         <YesNoDialog
-          promptQuestion={trl('huManager.action.scanGRAI.clearAll.confirmQuestion', { count: graiCodes.length })}
+          promptQuestion={trl('huManager.action.scanGRAI.clearAll.confirmQuestion', {
+            count: graiCodes.length,
+          })}
           onYes={() => {
             clearAllGrais();
             setShowClearAllDialog(false);
@@ -102,16 +137,21 @@ const GRAIScreen = () => {
   );
 };
 
-const GraiChip = ({ grai, onRemove }) => {
-  const parts = grai.split('.');
-  const displayText = parts.length === 3 ? `...${parts[2]}` : grai;
-
+const GraiChip = ({ grai, extra, onRemove }) => {
   return (
-    <div className="grai-chip" data-testid="grai-chip">
+    <div
+      className={extra ? 'grai-chip grai-chip--extra' : 'grai-chip'}
+      data-testid={extra ? 'grai-chip-extra' : 'grai-chip'}
+    >
       <span className="grai-chip-text" title={grai}>
-        {displayText}
+        {grai}
       </span>
-      <button className="grai-chip-remove" data-testid="grai-chip-remove" onClick={onRemove} aria-label="Remove">
+      <button
+        className="grai-chip-remove"
+        data-testid={extra ? 'grai-chip-extra-remove' : 'grai-chip-remove'}
+        onClick={onRemove}
+        aria-label="Remove"
+      >
         &times;
       </button>
     </div>
@@ -120,6 +160,7 @@ const GraiChip = ({ grai, onRemove }) => {
 
 GraiChip.propTypes = {
   grai: PropTypes.string.isRequired,
+  extra: PropTypes.bool,
   onRemove: PropTypes.func.isRequired,
 };
 
