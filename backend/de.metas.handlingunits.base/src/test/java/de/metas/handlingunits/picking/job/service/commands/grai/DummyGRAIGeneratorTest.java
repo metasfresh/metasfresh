@@ -66,16 +66,14 @@ class DummyGRAIGeneratorTest
 	void testExtractDummyCounter_notADummy()
 	{
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.9876543210"), prefix))
-				.isEqualTo(0);
+		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.9876543210"), prefix)).isZero();
 	}
 
 	@Test
 	void testExtractDummyCounter_nullGrai()
 	{
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(null, prefix))
-				.isEqualTo(0);
+		assertThat(DummyGRAIGenerator.extractDummyCounter(null, prefix)).isZero();
 	}
 
 	@Test
@@ -83,7 +81,6 @@ class DummyGRAIGeneratorTest
 	{
 		// A real GRAI (not dummy) should return 0
 		final String prefix = DummyGRAIGenerator.buildDummyPrefix("1234567890");
-		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.1234567890"), prefix))
-				.isEqualTo(0);
+		assertThat(DummyGRAIGenerator.extractDummyCounter(GRAI.ofCanonicalString("7613204.00307.1234567890"), prefix)).isZero();
 	}
 }

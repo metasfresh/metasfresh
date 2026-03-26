@@ -276,11 +276,6 @@ public class PickingJobGRAIValidator
 			items.add(item);
 		}
 
-		boolean isEmpty()
-		{
-			return items.isEmpty();
-		}
-
 		private ImmutableSet<HuId> getAggregateVHUIds()
 		{
 			return items.stream()

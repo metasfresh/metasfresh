@@ -8,7 +8,7 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("AssertThatIsZeroOne")
+@SuppressWarnings({ "AssertThatIsZeroOne", "OptionalGetWithoutIsPresent" })
 class GRAISetTest
 {
 	private static final GRAI GRAI_A = GRAI.ofCanonicalString("7613204.00307.1000000001");

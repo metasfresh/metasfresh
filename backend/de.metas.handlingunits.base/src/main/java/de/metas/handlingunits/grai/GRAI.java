@@ -64,13 +64,7 @@ public class GRAI implements Comparable<GRAI>
 		}
 
 		// Try GS1 AI 8003
-		final GRAI gs1Result = parseGS1AI8003(trimmed);
-		if (gs1Result != null)
-		{
-			return gs1Result;
-		}
-
-		return null;
+		return parseGS1AI8003(trimmed);
 	}
 
 	private static boolean isCanonicalFormat(@NonNull final String value)

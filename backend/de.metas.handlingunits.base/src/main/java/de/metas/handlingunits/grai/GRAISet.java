@@ -8,7 +8,6 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @EqualsAndHashCode
-@ToString
 public class GRAISet implements Iterable<GRAI>
 {
 	public static final GRAISet EMPTY = new GRAISet(ImmutableSet.of());
