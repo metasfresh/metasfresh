@@ -106,7 +106,17 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private IDocTypeBL docTypeBL;
+
+	private IDocTypeBL getDocTypeBL()
+	{
+		if (docTypeBL == null)
+		{
+			docTypeBL = Services.get(IDocTypeBL.class);
+		}
+		return docTypeBL;
+	}
+
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -818,7 +828,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			throw new AdempiereException("No Document Type");
 		}
 
-		setIsFinancial(docTypeBL.isFinancial(docTypeId));
+		setIsFinancial(getDocTypeBL().isFinancial(docTypeId));
 
 		// explodeBOM(); // task 09030: we don't really want to explode the BOM, least of all this uncontrolled way after invoice-candidates-way.
 
