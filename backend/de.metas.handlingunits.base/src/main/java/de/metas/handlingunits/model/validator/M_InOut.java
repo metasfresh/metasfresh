@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -315,7 +316,8 @@ public class M_InOut
 		{
 			if (inOutBL.isCustomerReturn(inout))
 			{
-				//TODO implement for customer returns
+				inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+						.forEach(this::reactivateCustomerReturnLine);
 			}
 			// TODO: change HUStatus from Shipped back to Picked
 			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
@@ -345,6 +347,25 @@ public class M_InOut
 
 		//Assign to original Material receipt line
 		huAssignmentBL.assignHUs(originalReceipt, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+	}
+
+	private void reactivateCustomerReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine returnLine)
+	{
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(returnLine);
+		if (returnedHUs.isEmpty())
+		{
+			return;
+		}
+
+		// Unassign from the customer return line
+		huShipmentAssignmentBL.removeHUAssignments(
+				InterfaceWrapperHelper.create(returnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		// Destroy the HUs — reactivating undoes the completion; HUs created during completion
+		// are destroyed so they can be recreated if/when the return is completed again
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(
+				InterfaceWrapperHelper.getContextAware(returnLine));
+		handlingUnitsBL.markDestroyed(huContext, returnedHUs);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })

@@ -1235,19 +1235,4 @@ public class M_InOut_StepDef
 			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isEmpty();
 		});
 	}
-
-	@Then("process single receipt response")
-	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
-	{
-		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
-		assertThat(receiptsResponse).isNotNull();
-
-		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
-		assertThat(createdReceiptIdList.size()).isEqualTo(1);
-
-		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
-		assertThat(receiptRecord).isNotNull();
-
-		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
-	}
 }
