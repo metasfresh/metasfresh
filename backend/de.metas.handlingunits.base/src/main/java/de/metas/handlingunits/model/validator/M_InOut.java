@@ -462,14 +462,13 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
-	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
 		if (!huInOutBL.isVendorReturn(returnInOut))
 		{
 			return;
 		}
 
-		huShipmentAssignmentBL.removeHUAssignments(returnInOut);
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
 
 		if (hus.isEmpty())
@@ -477,6 +476,7 @@ public class M_InOut
 			// nothing to do.
 			return;
 		}
+		huShipmentAssignmentBL.removeHUAssignments(returnInOut);
 
 		final String snapshotId = returnInOut.getSnapshot_UUID();
 		if (Check.isEmpty(snapshotId, true))
