@@ -16,6 +16,10 @@ Feature: Customer Return from Shipment
       | Identifier   | Value        |
       | warehouseStd | StdWarehouse |
 
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | IsQualityReturnWarehouse |
+      | wh             | Y                        |
+
     And metasfresh contains M_Products:
       | Identifier |
       | product_CR |

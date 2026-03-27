@@ -280,7 +280,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
+		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
 		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
 		{
 			return;
@@ -309,7 +309,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void processReturnsReactivation(final I_M_InOut inout)
 	{
-		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
+		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
 		if (!hasHUAssignments) // nothing to do if there are no HU assignments
 		{
 			return;
@@ -342,13 +342,13 @@ public class M_InOut
 	private void reactivateVendorReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine vendorReturnLine)
 	{
 		final InOutLineId originalReceiptLineId = InOutLineId.ofRepoId(vendorReturnLine.getReturn_Origin_InOutLine_ID());
-		final org.compiere.model.I_M_InOutLine originalReceipt = inOutBL.getLineByIdInTrx(originalReceiptLineId, org.compiere.model.I_M_InOutLine.class);
+		final org.compiere.model.I_M_InOutLine originalReceiptLine = inOutBL.getLineByIdInTrx(originalReceiptLineId, org.compiere.model.I_M_InOutLine.class);
 		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(vendorReturnLine);
 		// Unassign from vendor return line
 		huShipmentAssignmentBL.removeHUAssignments(InterfaceWrapperHelper.create(vendorReturnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
 
-		//Assign to original Material receipt line
-		huAssignmentBL.assignHUs(originalReceipt, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		// Assign to original Material receipt line
+		huAssignmentBL.assignHUs(originalReceiptLine, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
 	}
 
 	private void reactivateCustomerReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine returnLine)

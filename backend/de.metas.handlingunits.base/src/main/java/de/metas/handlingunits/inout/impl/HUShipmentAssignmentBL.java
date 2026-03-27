@@ -142,6 +142,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			removeHUAssignments(shipmentLine);
 		}
+		huAssignmentBL.unassignAllHUs(shipment);
 	}
 
 	@Override
@@ -248,5 +249,16 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.map(line -> shipmentScheduleAllocDAO.retrieveAllForInOutLine(line, I_M_ShipmentSchedule_QtyPicked.class))
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public boolean hasHUAssignments(final I_M_InOut inout)
+	{
+		if (huAssignmentDAO.hasHUAssignmentsForModel(inout))
+		{
+			return true;
+		}
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
+		return huAssignmentDAO.hasHUAssignmentsForAnyModel(lines);
 	}
 }

@@ -80,4 +80,6 @@ public interface IHUShipmentAssignmentBL extends ISingletonService
 	IQueryFilter<I_M_HU> createHUsNotAssignedToShipmentsFilter(IContextAware contextProvider);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(I_M_InOut shipment);
+
+	boolean hasHUAssignments(final I_M_InOut inout);
 }
