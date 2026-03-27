@@ -37,7 +37,9 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.material.MovementType;
 import de.metas.util.Check;
@@ -66,6 +68,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
@@ -105,6 +108,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
+		// Iterate each shipment line, get assigned HUs and change HUStatus to Shipped
 		for (final I_M_InOutLine shipmentLine : shipmentLines)
 		{
 			updateHUsOnShipmentComplete(shipmentLine);
@@ -141,7 +145,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			removeHUAssignments(shipmentLine);
 		}
-		huAssignmentBL.unassignAllHUs(shipment);
+		if (inOutBL.isVendorReturn(shipment))
+		{
+			huAssignmentBL.unassignAllHUs(shipment);
+		}
 	}
 
 	@Override
@@ -174,6 +181,39 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 					+ " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
+	}
+
+	@Override
+	public void reactivateVendorReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine vendorReturnLine)
+	{
+		final InOutLineId originalReceiptLineId = InOutLineId.ofRepoId(vendorReturnLine.getReturn_Origin_InOutLine_ID());
+
+		final org.compiere.model.I_M_InOutLine originalReceiptLine = inOutBL.getLineByIdInTrx(originalReceiptLineId, org.compiere.model.I_M_InOutLine.class);
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(vendorReturnLine);
+		// Unassign from vendor return line
+		removeHUAssignments(InterfaceWrapperHelper.create(vendorReturnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		// Assign to original Material receipt line
+		huAssignmentBL.assignHUs(originalReceiptLine, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	public void reactivateCustomerReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine returnLine)
+	{
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(returnLine);
+		if (returnedHUs.isEmpty())
+		{
+			return;
+		}
+
+		// Unassign from the customer return line
+		removeHUAssignments(InterfaceWrapperHelper.create(returnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		// Destroy the HUs — reactivating undoes the completion; HUs created during completion
+		// are destroyed so they can be recreated if/when the return is completed again
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(
+				InterfaceWrapperHelper.getContextAware(returnLine));
+		handlingUnitsBL.markDestroyed(huContext, returnedHUs);
 	}
 
 	@Override

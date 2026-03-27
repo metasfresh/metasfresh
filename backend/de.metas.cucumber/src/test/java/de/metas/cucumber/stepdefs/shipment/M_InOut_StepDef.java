@@ -59,6 +59,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
@@ -171,6 +172,7 @@ public class M_InOut_StepDef
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 
 	/**
 	 * Validate M_InOut records (shipments or material receipts).
@@ -1231,8 +1233,9 @@ public class M_InOut_StepDef
 			final I_M_InOut inout = inoutIdentifier.lookupNotNullIn(inoutTable);
 			InterfaceWrapperHelper.refresh(inout);
 
-			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
-			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isEmpty();
+			final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
+
+			assertThat(hasHUAssignments).as("HUs assigned to " + inoutIdentifier + ", M_InOut_ID=" + inout.getM_InOut_ID()).isFalse();
 		});
 	}
 }
