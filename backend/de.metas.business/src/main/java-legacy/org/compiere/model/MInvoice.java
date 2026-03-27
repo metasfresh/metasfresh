@@ -106,13 +106,14 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
-	private IDocTypeBL docTypeBL;
+	private IDocTypeBL _docTypeBL;
 
 	private IDocTypeBL getDocTypeBL()
 	{
+		IDocTypeBL docTypeBL = this._docTypeBL;
 		if (docTypeBL == null)
 		{
-			docTypeBL = Services.get(IDocTypeBL.class);
+			docTypeBL = this._docTypeBL = Services.get(IDocTypeBL.class);
 		}
 		return docTypeBL;
 	}
