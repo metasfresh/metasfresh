@@ -581,7 +581,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if(!invoice.isFinancial())
 		{
 			invoice.setIsPaid(false);
+			invoice.setIsPartiallyPaid(false);
+			invoice.setOpenAmt(BigDecimal.ZERO);
+
+			return false;
 		}
+
 		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
 		if (isOpenAmtChanged)
 		{
