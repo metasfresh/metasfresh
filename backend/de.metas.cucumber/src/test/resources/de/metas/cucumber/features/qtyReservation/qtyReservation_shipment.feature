@@ -812,7 +812,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | shipmentSchedule | orderLine      | N             |
 
     # Three reservations on the same order line: 1 TU DE, 2 TUs CH, 3 TUs plain
-    And metas fresh contains M_QtyReservations:
+    And metasfresh contains M_QtyReservations:
       | Identifier     | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | M_AttributeSetInstance_ID |
       | reservation_DE | orderLine      | product      | warehouse_1    | 10 PCE | 1     | asi_DE                    |
       | reservation_CH | orderLine      | product      | warehouse_1    | 20 PCE | 2     | asi_CH                    |
