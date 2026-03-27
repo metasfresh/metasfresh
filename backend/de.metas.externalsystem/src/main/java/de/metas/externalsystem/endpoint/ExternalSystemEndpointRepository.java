@@ -69,7 +69,7 @@ public class ExternalSystemEndpointRepository
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
 				// HTTP authentication fields
-				.authType(EndpointAuthType.ofCode(endpointRecord.getAuthType()))
+				.authType(EndpointAuthType.ofNullableCode(endpointRecord.getAuthType()))
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())
 				.token(endpointRecord.getAuthToken())

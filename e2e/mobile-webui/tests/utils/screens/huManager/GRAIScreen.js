@@ -30,7 +30,9 @@ export const GRAIScreen = {
 
     scanGraiBarcode: async ({ barcodeString }) => await test.step(`${NAME} - Scan GRAI barcode`, async () => {
         await GRAIScreen.expectVisible();
-        await BarcodeScannerComponent.type(barcodeString);
+        // Use typeBatch with a single code so Enter is dispatched after the barcode,
+        // triggering immediate processing instead of relying on the interval timer flush.
+        await BarcodeScannerComponent.typeBatch({ codes: [barcodeString] });
     }),
 
     expectGraiChipWithText: async ({ text }) => await test.step(`${NAME} - Expect GRAI chip containing "${text}"`, async () => {
