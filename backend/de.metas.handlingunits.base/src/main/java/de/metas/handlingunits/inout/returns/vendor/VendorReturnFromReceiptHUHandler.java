@@ -112,12 +112,8 @@ public class VendorReturnFromReceiptHUHandler
 					.collect(Collectors.toList()));
 
 			// Mark new HUs as Shipped and queue for snapshot
-			for (final I_M_HU hu : splitHUs)
-			{
-				hu.setHUStatus(X_M_HU.HUSTATUS_Shipped);
-				InterfaceWrapperHelper.save(hu);
-				snapshotProducer.addModel(hu);
-			}
+			snapshotProducer.addModels(splitHUs);
+			handlingUnitsBL.setHUStatus(splitHUs, X_M_HU.HUSTATUS_Shipped);
 			allSplitHUs.addAll(splitHUs);
 		}
 
