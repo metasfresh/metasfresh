@@ -198,3 +198,20 @@ export async function getGridRowCount() {
 
   return count;
 }
+
+/**
+ * Get total item count from pagination footer (language-independent).
+ * Parses "Total items 63" / "Gesamt 63" from the pagination area.
+ *
+ * @returns {Promise<number>} Total item count, or 0 if not found
+ */
+export async function getTotalItemCount() {
+  const page = getPage();
+  const paginationText = await page.locator('.pagination-wrapper, .document-list-footer').first().textContent().catch(() => '');
+  const match = paginationText.match(/(\d+)\s*(?:«|$)/);
+  if (!match) {
+    const match2 = paginationText.match(/(?:Total items|Gesamt)\s*(\d+)/i);
+    return match2 ? parseInt(match2[1]) : 0;
+  }
+  return parseInt(match[1]);
+}
