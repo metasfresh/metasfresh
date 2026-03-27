@@ -871,3 +871,138 @@ Feature: Qty Reservation — shipment attribute and project propagation
       | reservation_DE    | 10 PCE | 10 PCE       | true      |
       | reservation_CH    | 20 PCE | 20 PCE       | true      |
       | reservation_plain | 30 PCE | 30 PCE       | true      |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_180
+  Scenario: Shipment reversal restores reservation — QtyDelivered drops back to 0
+  ## _Given a product with 1 TU (10 PCE on-hand) and a sales order for 10 PCE
+  ## _And an M_QtyReservation for 10 PCE
+  ## _When shipment is generated, then reversed
+  ## _Then QtyDelivered goes back to 0 and Processed=false (reservation restored)
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product    | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI       |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV              | huPI       | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem        | huPIV              | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_10PCE             | huPIItem        | product      | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product      | 10.00    | PCE               |
+
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
+      | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And M_HU_Attribute is changed
+      | M_HU_ID | M_Attribute_ID.Value | ValueStr |
+      | hu      | ProjectValue         | P180     |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order      | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | product      | 10         | huPIP_10PCE             |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+
+    And metasfresh contains M_QtyReservations:
+      | Identifier  | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | reservation | orderLine      | product      | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule      | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule      | shipment   |
+
+    # Verify reservation is fully delivered after shipment
+    And validate M_QtyReservations:
+      | Identifier  | Qty    | QtyDelivered | Processed |
+      | reservation | 10 PCE | 10 PCE       | true      |
+
+    # Now reverse the shipment
+    And the shipment identified by shipment is reversed as shipmentReversal
+
+    # After reversal, reservation must be restored: QtyDelivered=0, Processed=false
+    And validate M_QtyReservations:
+      | Identifier  | Qty    | QtyDelivered | Processed |
+      | reservation | 10 PCE | 0 PCE        | false     |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_190
+  Scenario: Normal shipment without reservations — regression test for multi-pass picking
+  ## _Given a product with 1 TU (10 PCE on-hand) and a sales order for 10 PCE
+  ## _And NO M_QtyReservation records exist
+  ## _When shipment is generated
+  ## _Then shipment line has MovementQty=10 (Pass 2 is a no-op, Pass 3 picks normally)
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product    | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI       |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV              | huPI       | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem        | huPIV              | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_10PCE             | huPIItem        | product      | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product      | 10.00    | PCE               |
+
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
+      | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order      | true    | bp_1          | 2026-03-15  | warehouse_1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | product      | 10         | huPIP_10PCE             |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule      | D            | true                | false       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule      | shipment   |
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | movementqty |
+      | shipment   | product      | 10          |
