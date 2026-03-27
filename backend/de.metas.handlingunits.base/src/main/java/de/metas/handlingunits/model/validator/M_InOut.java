@@ -496,9 +496,17 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
-		if (!returnsServiceFacade.isVendorReturn(returnInOut))
+		if (!huInOutBL.isVendorReturn(returnInOut))
 		{
-			huShipmentAssignmentBL.removeHUAssignments(returnInOut);
+			return;
+		}
+
+		huShipmentAssignmentBL.removeHUAssignments(returnInOut);
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
+
+		if (hus.isEmpty())
+		{
+			// nothing to do.
 			return;
 		}
 
@@ -506,14 +514,6 @@ public class M_InOut
 		if (Check.isEmpty(snapshotId, true))
 		{
 			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
-		}
-
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
-
-		if (hus.isEmpty())
-		{
-			// nothing to do.
-			return;
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);

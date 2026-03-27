@@ -105,7 +105,6 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
-		// Iterate each shipment line, get assigned HUs and change HUStatus to Shipped
 		for (final I_M_InOutLine shipmentLine : shipmentLines)
 		{
 			updateHUsOnShipmentComplete(shipmentLine);
