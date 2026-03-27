@@ -278,7 +278,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
+		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
 		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
 		{
 			return;
@@ -307,7 +307,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void processReturnsReactivation(final I_M_InOut inout)
 	{
-		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
+		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
 		if (!hasHUAssignments) // nothing to do if there are no HU assignments
 		{
 			return;
@@ -461,7 +461,7 @@ public class M_InOut
 				.execute();
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
 		if (!huInOutBL.isVendorReturn(returnInOut))
