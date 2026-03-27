@@ -78,7 +78,7 @@ Feature: Vendor Return from Material Receipt
       | receiptSchedule_VR   | order_VR   | orderLine_VR   | supplier_VR   | supplier_VR            | product_VR   | 10         | warehouseStd   |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | Identifier      | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | OPT.M_LU_HU_PI_ID      |
+      | Identifier      | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID          |
       | huLuTuConfig_VR | hu_VR   | receiptSchedule_VR   | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_VR      | huPackingTauschpalette |
 
     # Step 3: Create material receipt (M_InOut) from material receipt candidate
@@ -139,7 +139,7 @@ Feature: Vendor Return from Material Receipt
       | receiptSchedule_VR2  | order_VR2  | orderLine_VR2  | supplier_VR   | supplier_VR            | product_VR   | 10         | warehouseStd   |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | Identifier       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | OPT.M_LU_HU_PI_ID      |
+      | Identifier       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID          |
       | huLuTuConfig_VR2 | hu_VR2  | receiptSchedule_VR2  | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_VR      | huPackingTauschpalette |
 
     When create material receipt

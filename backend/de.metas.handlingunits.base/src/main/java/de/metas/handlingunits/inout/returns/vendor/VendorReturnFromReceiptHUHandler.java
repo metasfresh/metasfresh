@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -249,10 +250,12 @@ public class VendorReturnFromReceiptHUHandler
 
 			// Check if the source HU was fully consumed and mark it as Destroyed
 			final IHUStorage updatedStorage = storageFactory.getStorage(cuHU);
+
 			if (updatedStorage.isEmpty())
 			{
-				cuHU.setHUStatus(X_M_HU.HUSTATUS_Destroyed);
-				InterfaceWrapperHelper.save(cuHU);
+				final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(cuHU);
+				final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
+				handlingUnitsBL.markDestroyed(huContext, cuHU);
 			}
 		}
 

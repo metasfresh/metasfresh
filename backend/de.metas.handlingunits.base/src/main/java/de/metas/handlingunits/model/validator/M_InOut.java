@@ -370,21 +370,6 @@ public class M_InOut
 		handlingUnitsBL.markDestroyed(huContext, returnedHUs);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	public void reverseVendorReturn(final I_M_InOut vendorReturn)
-	{
-		// Make sure we deal with a vendor return
-		final boolean isVendorReturn = inOutBL.isVendorReturn(vendorReturn);
-		if (!isVendorReturn)
-		{
-			return;
-		}
-
-		//
-		// Remove all HU Assignments
-		huShipmentAssignmentBL.removeHUAssignments(vendorReturn);
-	}
-
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void unassignShipmentFromMPackages(final I_M_InOut shipment)
 	{
@@ -513,7 +498,8 @@ public class M_InOut
 	{
 		if (!returnsServiceFacade.isVendorReturn(returnInOut))
 		{
-			return; // nothing to do
+			huShipmentAssignmentBL.removeHUAssignments(returnInOut);
+			return;
 		}
 
 		final String snapshotId = returnInOut.getSnapshot_UUID();

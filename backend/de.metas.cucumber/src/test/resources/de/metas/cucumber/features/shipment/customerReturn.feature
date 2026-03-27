@@ -143,7 +143,7 @@ Feature: Customer Return from Shipment
   @from:cucumber
   @allure.label.epic:E0110_Sales
   @allure.label.feature:F00200_Sales_Order
-  Scenario: Reactivating a completed customer return leaves M_HUs unchanged
+  Scenario: Reactivating a completed customer destroys its M_HUs
     # Step 1: Create Sales Order
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.POReference | OPT.M_PricingSystem_ID | OPT.C_BPartner_Location_ID | OPT.DeliveryRule | OPT.DeliveryViaRule |
