@@ -37,6 +37,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	VendorInvoice(DocBaseType.PurchaseInvoice, SOTrx.PURCHASE, false),
 	VendorCreditMemo(DocBaseType.PurchaseCreditMemo, SOTrx.PURCHASE, true),
 	PurchaseProFormaInvoice(DocBaseType.PurchaseProformaInvoice, SOTrx.PURCHASE,false),
+	SalesProFormaInvoice(DocBaseType.SalesProformaInvoice, SOTrx.SALES,false),
 	CustomerInvoice(DocBaseType.SalesInvoice, SOTrx.SALES, false),
 	CustomerCreditMemo(DocBaseType.SalesCreditMemo, SOTrx.SALES, true),
 	//
@@ -145,7 +146,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 
 	public boolean isFinancial()
 	{
-		return !docBaseType.isPurchaseProformaInvoice();
+		return docBaseType.isFinancial();
 	}
 
 }

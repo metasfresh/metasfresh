@@ -434,7 +434,7 @@ public class C_Invoice // 03771
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
 		if (orderId != null)
 		{
-			throw new AdempiereException("Only financial invoices should have OrderId set.")
+			throw new AdempiereException("Non-financial (proforma) invoices must not have OrderId set.")
 					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
 		}
 		invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).forEach(this::assertNoOrderLineSet);
@@ -447,7 +447,7 @@ public class C_Invoice // 03771
 		final InOutLineId inOutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
 		if (orderLineId != null || orderId != null || inOutLineId != null)
 		{
-			throw new AdempiereException("Only financial invoices should have OrderId or OrderLineId set.")
+			throw new AdempiereException("Non-financial (proforma) invoices must not have OrderId, OrderLineId and InOutLineId set.")
 					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID())
 					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID())
 					.setParameter("M_InOutLine_ID", invoiceLine.getM_InOutLine_ID());

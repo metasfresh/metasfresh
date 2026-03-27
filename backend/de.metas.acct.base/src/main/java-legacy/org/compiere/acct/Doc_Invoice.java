@@ -68,7 +68,7 @@ import java.util.Set;
  *
  * <pre>
  *  Table:              C_Invoice (318)
- *  Document Types:     ARI, ARC, ARF, API, APC
+ *  Document Types:     ARI, ARC, ARF, API, APC, APF
  * </pre>
  *
  * @author Jorg Janke
@@ -317,8 +317,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			return ImmutableList.of();
 		}
-		else if (docBaseType.isSalesInvoice()
-				|| docBaseType.isSalesProformaInvoice())
+		else if (docBaseType.isSalesInvoice())
 		{
 			return createFacts_SalesInvoice(as);
 		}
