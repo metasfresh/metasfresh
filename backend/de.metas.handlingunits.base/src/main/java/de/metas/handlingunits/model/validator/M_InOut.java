@@ -373,8 +373,6 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void reverseVendorReturn(final I_M_InOut vendorReturn)
 	{
-		final MovementType movementType = MovementType.ofCode(vendorReturn.getMovementType());
-
 		// Make sure we deal with a vendor return
 		final boolean isVendorReturn = inOutBL.isVendorReturn(vendorReturn);
 		if (!isVendorReturn)

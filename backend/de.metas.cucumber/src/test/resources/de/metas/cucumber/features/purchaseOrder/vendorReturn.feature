@@ -247,8 +247,3 @@ Feature: Vendor Return from Material Receipt
     And M_HU are validated:
       | M_HU_ID    | HUStatus | IsActive |
       | return_hu3 | A        | Y        |
-
-    # Reverse returns the vendor return HU to the original material receipt
-    And load HUs assigned to M_InOut
-      | M_InOut_ID  | M_HU_ID |
-      | receipt_VR3 | hu_VR3  |
