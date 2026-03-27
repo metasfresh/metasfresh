@@ -578,6 +578,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final BigDecimal openAmt,
 			@NonNull final InvoicePaymentStatus paymentStatus)
 	{
+		if(!invoice.isFinancial())
+		{
+			invoice.setIsPaid(false);
+		}
 		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
 		if (isOpenAmtChanged)
 		{
@@ -1725,6 +1729,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final void adjustmentCharge(@NonNull final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getById(adjustmentChargeCreateRequest.getInvoiceID());
+		if (!invoice.isFinancial())
+		{
+			return;
+		}
 		final DocBaseAndSubType docBaseAndSubType = adjustmentChargeCreateRequest.getDocBaseAndSubTYpe();
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 

@@ -10,6 +10,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
@@ -443,11 +444,13 @@ public class C_Invoice // 03771
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceLine.getC_Order_ID());
-		if (orderLineId != null && orderId != null)
+		final InOutLineId inOutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
+		if (orderLineId != null || orderId != null || inOutLineId != null)
 		{
 			throw new AdempiereException("Only financial invoices should have OrderId or OrderLineId set.")
 					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID())
-					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID());
+					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID())
+					.setParameter("M_InOutLine_ID", invoiceLine.getM_InOutLine_ID());
 		}
 	}
 }

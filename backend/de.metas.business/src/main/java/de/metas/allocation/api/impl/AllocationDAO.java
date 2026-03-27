@@ -183,6 +183,10 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull final I_C_Invoice invoice, @Nullable final Set<PaymentId> paymentIDsToIgnore)
 	{
+		if (!invoice.isFinancial())
+		{
+			return Money.zero(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		}
 		final InvoiceOpenResult result = retrieveInvoiceOpen(InvoiceOpenRequest.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.dateColumn(InvoiceOpenRequest.DateColumn.DateTrx)

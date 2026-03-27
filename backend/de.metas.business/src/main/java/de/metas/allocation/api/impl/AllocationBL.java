@@ -180,7 +180,7 @@ public class AllocationBL implements IAllocationBL
 											@NonNull final I_C_Payment payment,
 											final boolean ignoreIsAutoAllocateAvailableAmt)
 	{
-		if (invoice.isFinancial())
+		if (!invoice.isFinancial())
 		{
 			return;
 		}
