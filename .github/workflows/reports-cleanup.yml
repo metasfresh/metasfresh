@@ -33,7 +33,7 @@ permissions:
 
 jobs:
   cleanup:
-    runs-on: ${{ vars.RUNNER_LIGHT }}
+    runs-on: ubuntu-latest
     steps:
       - name: Check for report server secret
         id: check-secret
