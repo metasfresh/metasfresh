@@ -31,7 +31,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
@@ -50,9 +49,9 @@ import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -63,7 +62,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -334,7 +332,6 @@ public class M_InOut
 			huAssignmentBL.unassignAllHUs(inout);
 			inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
 					.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
-			return;
 		}
 		else
 		{
@@ -467,36 +464,21 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
-	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnedInOut)
 	{
-		if (!huInOutBL.isVendorReturn(returnInOut))
+		if (!returnsServiceFacade.isVendorReturn(returnedInOut))
+		{
+			return; // nothing to do
+		}
+
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(returnedInOut.getReversal_ID());
+		if (inOutId == null)
 		{
 			return;
 		}
+		final I_M_InOut returnReversalInOut = inOutBL.getById(inOutId);
 
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
-
-		if (hus.isEmpty())
-		{
-			// nothing to do.
-			return;
-		}
-		huShipmentAssignmentBL.removeHUAssignments(returnInOut);
-
-		final String snapshotId = returnInOut.getSnapshot_UUID();
-		if (Check.isEmpty(snapshotId, true))
-		{
-			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
-		}
-
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
-		snapshotDAO.restoreHUs()
-				.setContext(context)
-				.setSnapshotId(snapshotId)
-				.setDateTrx(returnInOut.getMovementDate())
-				.setReferencedModel(returnInOut)
-				.addModels(hus)
-				.restoreFromSnapshot();
+		huShipmentAssignmentBL.moveAssignments(returnedInOut, returnReversalInOut);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

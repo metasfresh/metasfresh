@@ -87,4 +87,6 @@ public interface IHUShipmentAssignmentBL extends ISingletonService
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(I_M_InOut shipment);
 
 	boolean hasHUAssignments(final I_M_InOut inout);
+
+	void moveAssignments(@NonNull I_M_InOut source, @NonNull I_M_InOut dest);
 }

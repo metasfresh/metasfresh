@@ -300,4 +300,40 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		return huAssignmentDAO.hasHUAssignmentsForAnyModel(lines);
 	}
+
+	@Override
+	public void moveAssignments(@NonNull final I_M_InOut source, @NonNull final I_M_InOut dest)
+	{
+		if (source == dest) {return;}
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(source);
+
+		if (hus.isEmpty())
+		{
+			// nothing to do.
+			return;
+		}
+		huAssignmentBL.unassignAllHUs(source);
+		huAssignmentBL.assignHUs(dest, hus, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		handlingUnitsBL.setHUStatus(hus, X_M_HU.HUSTATUS_Active);
+
+		inOutBL.retrieveLines(source, I_M_InOutLine.class)
+				.forEach(this::moveAssignmentsToReversalLine);
+	}
+
+	private void moveAssignmentsToReversalLine(@NonNull final I_M_InOutLine source)
+	{
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(source);
+
+		if (hus.isEmpty())
+		{
+			// nothing to do.
+			return;
+		}
+		final InOutLineId reversalLineId = InOutLineId.ofRepoIdOrNull(source.getReversalLine_ID());
+		if (reversalLineId == null) {return;}
+		final I_M_InOutLine reversalLine = inOutBL.getLineByIdInTrx(reversalLineId, I_M_InOutLine.class);
+		huAssignmentBL.unassignAllHUs(source);
+		huAssignmentBL.assignHUs(reversalLine, hus, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		handlingUnitsBL.setHUStatus(hus, X_M_HU.HUSTATUS_Active);
+	}
 }
