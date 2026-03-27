@@ -235,7 +235,7 @@ Feature: Vendor Return from Material Receipt
       | hu_VR3  | D        | false    |
 
     # Step 4: Reverse the vendor return
-    # reverseVendorReturn (TIMING_AFTER_VOID | TIMING_AFTER_REVERSECORRECT) removes all HU assignments
+    # reverseReturn (TIMING_AFTER_REVERSEACCRUAL | TIMING_AFTER_REVERSECORRECT) removes all HU assignments
     And the return inOut identified by vendorReturn_VR3 is reversed as vendorReturnReversal_VR3
 
     # Step 5: Assert vendor return no longer has any HU assignments

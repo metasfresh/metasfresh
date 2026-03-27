@@ -304,7 +304,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public void moveAssignments(@NonNull final I_M_InOut source, @NonNull final I_M_InOut dest)
 	{
-		if (source == dest) {return;}
+		if (source == dest)
+		{
+			return;
+		}
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(source);
 
 		if (hus.isEmpty())
@@ -330,7 +333,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			return;
 		}
 		final InOutLineId reversalLineId = InOutLineId.ofRepoIdOrNull(source.getReversalLine_ID());
-		if (reversalLineId == null) {return;}
+		if (reversalLineId == null)
+		{
+			return;
+		}
 		final I_M_InOutLine reversalLine = inOutBL.getLineByIdInTrx(reversalLineId, I_M_InOutLine.class);
 		huAssignmentBL.unassignAllHUs(source);
 		huAssignmentBL.assignHUs(reversalLine, hus, org.compiere.util.Trx.TRXNAME_ThreadInherited);

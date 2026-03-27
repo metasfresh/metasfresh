@@ -15,7 +15,7 @@ Feature: Customer Return from Shipment
     And load M_Warehouse:
       | Identifier   | Value        |
       | warehouseStd | StdWarehouse |
-
+   #Ensure a quality return warehouse exists so that we can process customer returns
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | IsQualityReturnWarehouse |
       | wh             | Y                        |
