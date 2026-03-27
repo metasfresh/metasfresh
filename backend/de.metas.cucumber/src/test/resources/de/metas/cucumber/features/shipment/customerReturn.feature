@@ -130,10 +130,10 @@ Feature: Customer Return from Shipment
     # calls huInOutBL.destroyHandlingUnitsIfReversedInboundTransaction — HUs are Destroyed
     And the return inOut identified by customerReturn_CR2 is reversed
 
-    # Step 5: Assert HUs are now Destroyed
+    # Step 5: HUs are Destroyed
     And M_HU are validated:
       | M_HU_ID    | HUStatus | IsActive |
-      | return_hu2 | D        | false    |
+      | return_hu2 | D        | N        |
 
 
   @from:cucumber
@@ -182,7 +182,7 @@ Feature: Customer Return from Shipment
     # Step 4: Reactivate the customer return
     And the return inOut identified by customerReturn_CR3 is reactivated
 
-    # Step 5: HUs is Deleted
+    # Step 5: HUs are Destroyed
     And M_HU are validated:
       | M_HU_ID    | HUStatus | IsActive |
       | return_hu3 | D        | N        |

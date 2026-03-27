@@ -376,7 +376,7 @@ public class M_InOut
 		final MovementType movementType = MovementType.ofCode(vendorReturn.getMovementType());
 
 		// Make sure we deal with a vendor return
-		final boolean isVendorReturn = !vendorReturn.isSOTrx() && movementType.isMaterialReturn();
+		final boolean isVendorReturn = inOutBL.isVendorReturn(vendorReturn);
 		if (!isVendorReturn)
 		{
 			return;
