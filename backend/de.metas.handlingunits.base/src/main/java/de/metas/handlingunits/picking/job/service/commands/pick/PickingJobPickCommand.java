@@ -213,7 +213,9 @@ public class PickingJobPickCommand
 						.setParameter("pickingJobLineId", this._lineId);
 			}
 
-			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
+			// qtyToPickBD is in CU units (from the picking step / frontend).
+			// Convert CUs to TUs using the packing info (e.g., 2 CUs / 2 CUs-per-TU = 1 TU).
+			this.qtyToPickTUs = line.getPackingInfo().computeQtyTUsOfTotalCUs(Quantity.of(qtyToPickBD, uom), line.getProductId());
 
 			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
@@ -223,6 +225,7 @@ public class PickingJobPickCommand
 				final HUPIItemProduct packingInfo = line.getPackingInfo();
 
 				final Quantity qtyRejectedCUs = QtyTU.optionalOfBigDecimal(qtyRejectedBD)
+						.map(qtyRejectedTUs -> packingInfo.computeQtyTUsOfTotalCUs(Quantity.of(qtyRejectedBD, uom), line.getProductId()))
 						.map(packingInfo::computeQtyCUsOfQtyTUs)
 						.orElseGet(() -> computeQtyRejectedCUs(line, step, this.stepPickFromKey, this.qtyToPickCUs));
 
