@@ -79,7 +79,7 @@ public class AllocationDAO implements IAllocationDAO
 			final boolean isCreditMemoAdjust)
 	{
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		if (invoice.isPaid())
+		if (invoice.isPaid() || !invoice.isFinancial())
 		{
 			return Money.zero(invoiceCurrencyId);
 		}
@@ -183,6 +183,10 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull final I_C_Invoice invoice, @Nullable final Set<PaymentId> paymentIDsToIgnore)
 	{
+		if (!invoice.isFinancial())
+		{
+			return Money.zero(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		}
 		final InvoiceOpenResult result = retrieveInvoiceOpen(InvoiceOpenRequest.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.dateColumn(InvoiceOpenRequest.DateColumn.DateTrx)
@@ -229,7 +233,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		Object[] resultParts = null;
+		final Object[] resultParts = null;
 		try
 		{
 
@@ -264,12 +268,12 @@ public class AllocationDAO implements IAllocationDAO
 					.hasAllocations(hasAllocations)
 					.build();
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams)
 					.setParameter("resultParts", resultParts);
 		}
-		catch (Exception otherEx)
+		catch (final Exception otherEx)
 		{
 			throw new AdempiereException("Cannot determine open amount for " + request, otherEx)
 					.setParameter("sql", sql)
