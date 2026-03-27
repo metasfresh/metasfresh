@@ -100,7 +100,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	{
 		if(isShipment() || isReceipt() || isARReceipt()) return I_M_InOut.Table_Name;
 		else if(isSalesOrder() || isPurchaseOrder()) return I_C_Order.Table_Name;
-		else if(isSalesInvoice() || isPurchaseInvoice() || isPurchaseCreditMemo()) return I_C_Invoice.Table_Name;
+		else if(isSalesInvoice() || isPurchaseInvoice() || isPurchaseCreditMemo() || isPurchaseProformaInvoice()) return I_C_Invoice.Table_Name;
 		else throw new AdempiereException("No known tableName found for DocBaseType " + code);
 	}
 
@@ -129,4 +129,6 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
 
 	public boolean isShipperTransportation(){ return ShipperTransportation.equals(this); }
+
+	public boolean isFinancial() { return !isPurchaseProformaInvoice(); }
 }

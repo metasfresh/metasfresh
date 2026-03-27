@@ -77,7 +77,7 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isCallOrder(DocTypeId docTypeId);
 
-	boolean isPurchaseProFormaInvoice(@NonNull DocTypeId docTypeId);
+	boolean isFinancial(@NonNull DocTypeId docTypeId);
 
 	void save(I_C_DocType dt);
 

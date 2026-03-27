@@ -818,10 +818,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			throw new AdempiereException("No Document Type");
 		}
 
-		if(docTypeBL.isPurchaseProFormaInvoice(docTypeId))
-		{
-			setIsFinancial(false);
-		}
+		setIsFinancial(docTypeBL.isFinancial(docTypeId));
 
 		// explodeBOM(); // task 09030: we don't really want to explode the BOM, least of all this uncontrolled way after invoice-candidates-way.
 

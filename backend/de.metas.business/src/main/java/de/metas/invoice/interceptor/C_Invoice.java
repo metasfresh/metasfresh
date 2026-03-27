@@ -416,15 +416,22 @@ public class C_Invoice // 03771
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_C_DocType_ID })
+	public void onDocTypeChange(@NonNull final I_C_Invoice invoice)
+	{
+		invoice.setIsFinancial(invoiceBL.getInvoiceDocBaseType(invoice).isFinancial());
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateNonFinancialInvoices(@NonNull final I_C_Invoice invoice)
 	{
-		if(invoice.isFinancial())
+		if (invoice.isFinancial())
 		{
 			return;
 		}
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-		if(orderId != null)
+		if (orderId != null)
 		{
 			throw new AdempiereException("Only financial invoices should have OrderId set.")
 					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());

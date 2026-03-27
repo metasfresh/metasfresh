@@ -168,9 +168,9 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean isPurchaseProFormaInvoice(@NonNull final DocTypeId docTypeId)
+	public boolean isFinancial(@NonNull final DocTypeId docTypeId)
 	{
-		return getDocBaseType(docTypeId).isPurchaseProformaInvoice();
+		return getDocBaseType(docTypeId).isFinancial();
 	}
 
 	private DocBaseType getDocBaseType(@NonNull final DocTypeId docTypeId)

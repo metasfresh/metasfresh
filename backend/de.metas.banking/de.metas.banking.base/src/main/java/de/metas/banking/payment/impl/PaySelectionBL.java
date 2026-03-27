@@ -171,6 +171,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			case Invoice:
 
 				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(psl.getC_Invoice_ID()));
+				Check.assume(invoice.isFinancial(), "Invoice {} is financial", invoice.getDocumentNo());
 				partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 				final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
 				acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;

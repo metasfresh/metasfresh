@@ -30,7 +30,6 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -82,7 +81,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final MatchInvoiceService matchInvoiceService;
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
@@ -315,7 +313,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** ARI, ARF
 		final DocBaseType docBaseType = getDocBaseType();
-		if (docBaseType.isSalesInvoice()
+		if(!docBaseType.isFinancial())
+		{
+			return ImmutableList.of();
+		}
+		else if (docBaseType.isSalesInvoice()
 				|| docBaseType.isSalesProformaInvoice())
 		{
 			return createFacts_SalesInvoice(as);
@@ -332,10 +334,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
-		}
-		else if (docBaseType.isPurchaseProformaInvoice())
-		{
-			return ImmutableList.of();
 		}
 		// APC
 		else if (docBaseType.isPurchaseCreditMemo())
