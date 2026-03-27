@@ -583,7 +583,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			invoice.setIsPaid(false);
 			invoice.setIsPartiallyPaid(false);
 			invoice.setOpenAmt(BigDecimal.ZERO);
-
+			if (paymentStatus.isFullyPaid() || paymentStatus.isPartiallyPaid())
+			{
+				log.warn("Cannot set payment status for non-financial invoice: {}", invoice);
+			}
 			return false;
 		}
 
