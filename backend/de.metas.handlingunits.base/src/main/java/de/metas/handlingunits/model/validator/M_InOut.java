@@ -307,11 +307,8 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void processReturnsReactivation(final I_M_InOut inout)
 	{
-		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
-		if (!hasHUAssignments) // nothing to do if there are no HU assignments
-		{
-			return;
-		}
+		//
+		// Shipment or customer return
 		if (inout.isSOTrx())
 		{
 			if (inOutBL.isCustomerReturn(inout))
@@ -321,18 +318,26 @@ public class M_InOut
 			}
 			// TODO: change HUStatus from Shipped back to Picked
 			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
+			return;
 		}
+
+		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
+		if (!hasHUAssignments) // nothing to do if there are no HU assignments
+		{
+			return;
+		}
+
 		//
-		// Receipt
+		// Receipt or vendor return
+		if (inOutBL.isVendorReturn(inout))
+		{
+			huAssignmentBL.unassignAllHUs(inout);
+			inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+					.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
+			return;
+		}
 		else
 		{
-			if (inOutBL.isVendorReturn(inout))
-			{
-				huAssignmentBL.unassignAllHUs(inout);
-				inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
-						.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
-				return;
-			}
 			// TODO: destroy the HUs
 			throw new UnsupportedOperationException();
 		}
