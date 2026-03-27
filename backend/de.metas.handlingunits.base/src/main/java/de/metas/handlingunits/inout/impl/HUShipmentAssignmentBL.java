@@ -37,8 +37,11 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.material.MovementType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,6 +68,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
@@ -91,15 +95,16 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.build();
 	}
 
-	private void assertShipment(@NonNull final I_M_InOut inout)
+	private void assertShipmentOrVendorReturn(@NonNull final I_M_InOut inout)
 	{
-		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
+		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		Check.assume(inout.isSOTrx() || movementType.isMaterialReturn(), "inout shall be a shipment or a vendor return: {}", inout);
 	}
 
 	@Override
 	public void updateHUsOnShipmentComplete(final I_M_InOut shipment)
 	{
-		assertShipment(shipment);
+		assertShipmentOrVendorReturn(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
@@ -131,7 +136,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public void removeHUAssignments(final I_M_InOut shipment)
 	{
-		assertShipment(shipment);
+		assertShipmentOrVendorReturn(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
@@ -139,6 +144,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		for (final I_M_InOutLine shipmentLine : shipmentLines)
 		{
 			removeHUAssignments(shipmentLine);
+		}
+		if (inOutBL.isVendorReturn(shipment))
+		{
+			huAssignmentBL.unassignAllHUs(shipment);
 		}
 	}
 
@@ -172,6 +181,39 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 					+ " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
+	}
+
+	@Override
+	public void reactivateVendorReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine vendorReturnLine)
+	{
+		final InOutLineId originalReceiptLineId = InOutLineId.ofRepoId(vendorReturnLine.getReturn_Origin_InOutLine_ID());
+
+		final org.compiere.model.I_M_InOutLine originalReceiptLine = inOutBL.getLineByIdInTrx(originalReceiptLineId, org.compiere.model.I_M_InOutLine.class);
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(vendorReturnLine);
+		// Unassign from vendor return line
+		removeHUAssignments(InterfaceWrapperHelper.create(vendorReturnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		// Assign to original Material receipt line
+		huAssignmentBL.assignHUs(originalReceiptLine, returnedHUs, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	public void reactivateCustomerReturnLine(@NonNull final de.metas.inout.model.I_M_InOutLine returnLine)
+	{
+		final List<I_M_HU> returnedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(returnLine);
+		if (returnedHUs.isEmpty())
+		{
+			return;
+		}
+
+		// Unassign from the customer return line
+		removeHUAssignments(InterfaceWrapperHelper.create(returnLine, de.metas.handlingunits.model.I_M_InOutLine.class));
+
+		// Destroy the HUs — reactivating undoes the completion; HUs created during completion
+		// are destroyed so they can be recreated if/when the return is completed again
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(
+				InterfaceWrapperHelper.getContextAware(returnLine));
+		handlingUnitsBL.markDestroyed(huContext, returnedHUs);
 	}
 
 	@Override
@@ -246,5 +288,58 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.map(line -> shipmentScheduleAllocDAO.retrieveAllForInOutLine(line, I_M_ShipmentSchedule_QtyPicked.class))
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public boolean hasHUAssignments(final I_M_InOut inout)
+	{
+		if (huAssignmentDAO.hasHUAssignmentsForModel(inout))
+		{
+			return true;
+		}
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
+		return huAssignmentDAO.hasHUAssignmentsForAnyModel(lines);
+	}
+
+	@Override
+	public void moveAssignments(@NonNull final I_M_InOut source, @NonNull final I_M_InOut dest)
+	{
+		if (source == dest)
+		{
+			return;
+		}
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(source);
+
+		if (hus.isEmpty())
+		{
+			// nothing to do.
+			return;
+		}
+		huAssignmentBL.unassignAllHUs(source);
+		huAssignmentBL.assignHUs(dest, hus, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		handlingUnitsBL.setHUStatus(hus, X_M_HU.HUSTATUS_Active);
+
+		inOutBL.retrieveLines(source, I_M_InOutLine.class)
+				.forEach(this::moveAssignmentsToReversalLine);
+	}
+
+	private void moveAssignmentsToReversalLine(@NonNull final I_M_InOutLine source)
+	{
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(source);
+
+		if (hus.isEmpty())
+		{
+			// nothing to do.
+			return;
+		}
+		final InOutLineId reversalLineId = InOutLineId.ofRepoIdOrNull(source.getReversalLine_ID());
+		if (reversalLineId == null)
+		{
+			return;
+		}
+		final I_M_InOutLine reversalLine = inOutBL.getLineByIdInTrx(reversalLineId, I_M_InOutLine.class);
+		huAssignmentBL.unassignAllHUs(source);
+		huAssignmentBL.assignHUs(reversalLine, hus, org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		handlingUnitsBL.setHUStatus(hus, X_M_HU.HUSTATUS_Active);
 	}
 }
