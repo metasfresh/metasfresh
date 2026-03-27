@@ -77,7 +77,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              ol.priceactual,
              ol.linenetamt
       FROM c_order o
-               JOIN c_orderline ol ON ol.c_orderline_id = o.c_order_id
+               JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
       UNION
 
       SELECT get_table_id('M_InOut')           AS ad_Table_id,
