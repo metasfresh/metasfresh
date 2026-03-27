@@ -319,7 +319,7 @@ public class M_InOut
 			return;
 		}
 
-		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
+		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
 		if (!hasHUAssignments) // nothing to do if there are no HU assignments
 		{
 			return;
@@ -333,11 +333,7 @@ public class M_InOut
 			inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
 					.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
 		}
-		else
-		{
-			// TODO: destroy the HUs
-			throw new UnsupportedOperationException();
-		}
+
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
