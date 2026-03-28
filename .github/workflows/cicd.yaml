@@ -511,7 +511,28 @@ jobs:
           path: jest/frontend/*.xml
           retention-days: 1
           if-no-files-found: warn
-      # TODO: Upload jest JUnit XML to HTTP report server (source: jest/frontend/*.xml)
+      - name: Generate JUnit HTML for Jest
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: jest/frontend/*.xml
+          output-dir: junit-html-jest
+          artifact-name: junit-html-jest
+          report-title: 'JUnit (Jest Frontend)'
+          history-artifact-name: junit-html-history-jest
+      - name: Upload Jest JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-jest
+          report-type: junit/jest
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -1272,7 +1293,56 @@ jobs:
           path: junit/camel/**/*.xml
           retention-days: 1
           if-no-files-found: warn
-      # TODO: Upload backend+camel JUnit XML to HTTP report server (source: junit/backend/, junit/camel/)
+      - name: Merge backend JUnit XML
+        if: always()
+        run: |
+          mkdir -p junit-merged-backend
+          find junit/commons junit/backend -name '*.xml' -type f -exec cp {} junit-merged-backend/ \;
+          echo "Merged $(ls junit-merged-backend/*.xml 2>/dev/null | wc -l) XML files"
+      - name: Generate JUnit HTML for Backend
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-merged-backend/*.xml
+          output-dir: junit-html-backend
+          artifact-name: junit-html-backend
+          report-title: 'JUnit (Backend + Commons)'
+          history-artifact-name: junit-html-history-backend
+      - name: Upload Backend JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-backend
+          report-type: junit/backend
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+      - name: Generate JUnit HTML for Camel
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit/camel/**/*.xml
+          output-dir: junit-html-camel
+          artifact-name: junit-html-camel
+          report-title: 'JUnit (Camel)'
+          history-artifact-name: junit-html-history-camel
+      - name: Upload Camel JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-camel
+          report-type: junit/camel
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1795,6 +1865,28 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
+      - name: Generate JUnit HTML for Playwright Mobile
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: docker-builds/e2e-tests/playwright-report-mobile/junit/*.xml
+          output-dir: junit-html-playwright-mobile
+          artifact-name: junit-html-playwright-mobile
+          report-title: 'JUnit (Playwright Mobile)'
+          history-artifact-name: junit-html-history-playwright-mobile
+      - name: Upload Playwright Mobile JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-playwright-mobile
+          report-type: junit/playwright-mobile
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
