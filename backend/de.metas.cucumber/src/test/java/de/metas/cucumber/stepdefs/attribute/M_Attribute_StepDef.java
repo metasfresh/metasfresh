@@ -91,6 +91,9 @@
 					 row.getAsOptionalEnum(I_M_Attribute.COLUMNNAME_AttributeValueType, AttributeValueType.class)
 							 .ifPresent(type -> attributeRecord.setAttributeValueType(type.getCode()));
 
+					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsStorageRelevant)
+							 .ifPresent(attributeRecord::setIsStorageRelevant);
+
 					 row.getAsOptionalString(I_M_Attribute.COLUMNNAME_DefaultValueSQL)
 							 .ifPresent(attributeRecord::setDefaultValueSQL);
 

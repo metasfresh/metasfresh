@@ -64,6 +64,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -288,9 +289,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
-
+	
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
 	{
@@ -1967,14 +1969,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			note.setRecord_ID(ic.getC_Invoice_Candidate_ID());
 			InterfaceWrapperHelper.save(note);
 		}
-
-		final boolean askForRegeneration;
-		if (e instanceof ProductNotOnPriceListException)
-		{
-			askForRegeneration = true;
-		}
 		else
-			askForRegeneration = e instanceof ProductNotOnPriceListException;
+		{
+			errorManager.createIssue(e);
+		}
+
+		final boolean askForRegeneration = e instanceof ProductNotOnPriceListException;
 
 		String errorMsg = e.getLocalizedMessage();
 		if (Check.isEmpty(errorMsg) || errorMsg.length() < 4)
@@ -2796,5 +2796,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		return ZERO;
+	}
+
+	@Override
+	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		final List<I_C_Invoice_Candidate> updatedInvoiceCandidates = invoiceCandidates.stream()
+				.filter(ic -> !ic.isProcessed())
+				.filter(ic -> !ProjectId.equals(ProjectId.ofRepoIdOrNull(ic.getC_Project_ID()), projectId))
+				.peek(ic -> ic.setC_Project_ID(ProjectId.toRepoId(projectId)))
+				.collect(Collectors.toList());
+		invoiceCandDAO.saveAll(updatedInvoiceCandidates);
+		logger.debug("Updated C_Project_ID={} on {} C_Invoice_Candidates for C_OrderLine_ID={}", projectId, updatedInvoiceCandidates.size(), orderLineId);
 	}
 }

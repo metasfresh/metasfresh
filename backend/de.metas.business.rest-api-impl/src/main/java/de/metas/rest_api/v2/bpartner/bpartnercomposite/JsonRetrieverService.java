@@ -627,14 +627,13 @@ public class JsonRetrieverService
 					.remitTo(location.isRemitTo())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
 					.handoverLocation(location.isHandOverLocation())
-					.visitorsAddress(location.isVisitorsAddress())
-					.visitorsAddressDefault(location.isVisitorsAddressDefault())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
+					.visitorsAddressDefault(locationType.getIsVisitorsAddressDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
 					.vatId(VATIdentifier.toString(location.getVatTaxId()))
-					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)

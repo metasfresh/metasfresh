@@ -544,6 +544,29 @@ public interface I_AD_Process
 	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
 
 	/**
+	 * Set Include CSV Header Row.
+	 * If enabled, the first row of the CSV file will contain column headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsIncludeCSVHeaderRow (boolean IsIncludeCSVHeaderRow);
+
+	/**
+	 * Get Include CSV Header Row.
+	 * If enabled, the first row of the CSV file will contain column headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isIncludeCSVHeaderRow();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsIncludeCSVHeaderRow = new ModelColumn<>(I_AD_Process.class, "IsIncludeCSVHeaderRow", null);
+	String COLUMNNAME_IsIncludeCSVHeaderRow = "IsIncludeCSVHeaderRow";
+
+	/**
 	 * Set Log Warning.
 	 * If enabled, PostgreSQL messages (RAISE NOTICE / RAISE WARNING) are logged to AD_PInstance_Log.
 	 *

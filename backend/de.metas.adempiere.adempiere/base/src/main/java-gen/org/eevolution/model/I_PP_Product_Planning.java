@@ -1,10 +1,8 @@
 package org.eevolution.model;
 
-import de.metas.product.model.I_M_Product_PlanningSchema;
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Product_Planning
  *  @author metasfresh (generated) 
@@ -96,6 +94,27 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Manufacturing_Aggregation_ID (int C_Manufacturing_Aggregation_ID);
+
+	/**
+	 * Get Manufacturing aggregation schema.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Manufacturing_Aggregation_ID();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_C_Manufacturing_Aggregation_ID = new ModelColumn<>(I_PP_Product_Planning.class, "C_Manufacturing_Aggregation_ID", null);
+	String COLUMNNAME_C_Manufacturing_Aggregation_ID = "C_Manufacturing_Aggregation_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -169,6 +188,98 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_DeliveryTime_Promised = new ModelColumn<>(I_PP_Product_Planning.class, "DeliveryTime_Promised", null);
 	String COLUMNNAME_DeliveryTime_Promised = "DeliveryTime_Promised";
+
+	/**
+	 * Set Forecast Buffer Time.
+	 * Safety buffer in time units, added on top of the frequency.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_BufferTime (int Forecast_BufferTime);
+
+	/**
+	 * Get Forecast Buffer Time.
+	 * Safety buffer in time units, added on top of the frequency.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForecast_BufferTime();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_BufferTime = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_BufferTime", null);
+	String COLUMNNAME_Forecast_BufferTime = "Forecast_BufferTime";
+
+	/**
+	 * Set Forecast Calculation Method.
+	 * Overrides the calculation method configured per product in Product Planning. If empty, the per-product setting is used.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_CalculationMethod (@Nullable java.lang.String Forecast_CalculationMethod);
+
+	/**
+	 * Get Forecast Calculation Method.
+	 * Overrides the calculation method configured per product in Product Planning. If empty, the per-product setting is used.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getForecast_CalculationMethod();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_CalculationMethod = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_CalculationMethod", null);
+	String COLUMNNAME_Forecast_CalculationMethod = "Forecast_CalculationMethod";
+
+	/**
+	 * Set Forecast Frequency.
+	 * Order cycle in forecast time units. If empty, the lead time is used.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_Frequency (int Forecast_Frequency);
+
+	/**
+	 * Get Forecast Frequency.
+	 * Order cycle in forecast time units. If empty, the lead time is used.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getForecast_Frequency();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_Frequency = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_Frequency", null);
+	String COLUMNNAME_Forecast_Frequency = "Forecast_Frequency";
+
+	/**
+	 * Set Forecast Precision Unit.
+	 * Time unit for forecast calculation and horizon: Week (W) or Month (M).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setForecast_PrecisionUnit (@Nullable java.lang.String Forecast_PrecisionUnit);
+
+	/**
+	 * Get Forecast Precision Unit.
+	 * Time unit for forecast calculation and horizon: Week (W) or Month (M).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getForecast_PrecisionUnit();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_PrecisionUnit = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_PrecisionUnit", null);
+	String COLUMNNAME_Forecast_PrecisionUnit = "Forecast_PrecisionUnit";
 
 	/**
 	 * Set Active.
@@ -261,6 +372,29 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsDocComplete = "IsDocComplete";
 
 	/**
+	 * Set Exclude from Forecast.
+	 * If set, this product is skipped during forecast generation
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromForecast (boolean IsExcludeFromForecast);
+
+	/**
+	 * Get Exclude from Forecast.
+	 * If set, this product is skipped during forecast generation
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromForecast();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsExcludeFromForecast = new ModelColumn<>(I_PP_Product_Planning.class, "IsExcludeFromForecast", null);
+	String COLUMNNAME_IsExcludeFromForecast = "IsExcludeFromForecast";
+
+	/**
 	 * Set Manufactured.
 	 *
 	 * <br>Type: List
@@ -282,7 +416,28 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_IsManufactured = "IsManufactured";
 
 	/**
-	 * Set Matured.
+	 * Set Produziert Lot for Lot.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManufacturedLot4Lot (boolean IsManufacturedLot4Lot);
+
+	/**
+	 * Get Produziert Lot for Lot.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManufacturedLot4Lot();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsManufacturedLot4Lot = new ModelColumn<>(I_PP_Product_Planning.class, "IsManufacturedLot4Lot", null);
+	String COLUMNNAME_IsManufacturedLot4Lot = "IsManufacturedLot4Lot";
+
+	/**
+	 * Set Fully matured.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -291,7 +446,7 @@ public interface I_PP_Product_Planning
 	void setIsMatured (boolean IsMatured);
 
 	/**
-	 * Get Matured.
+	 * Get Fully matured.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -507,7 +662,7 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_M_Maturing_Configuration_ID = "M_Maturing_Configuration_ID";
 
 	/**
-	 * Set Maturing Configuration Line.
+	 * Set Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -516,7 +671,7 @@ public interface I_PP_Product_Planning
 	void setM_Maturing_Configuration_Line_ID (int M_Maturing_Configuration_Line_ID);
 
 	/**
-	 * Get Maturing Configuration Line.
+	 * Get Maturing Products Allocation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -642,7 +797,7 @@ public interface I_PP_Product_Planning
 	/**
 	 * Set BOM & Formula.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -651,7 +806,7 @@ public interface I_PP_Product_Planning
 	/**
 	 * Get BOM & Formula.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -686,6 +841,27 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_Planning_ID", null);
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
+
+	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
 
 	/**
 	 * Set SeqNo.
@@ -853,138 +1029,4 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Product_Planning.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
-
-	/**
-	 * Set Manufacturing aggregation schema.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Manufacturing_Aggregation_ID (int C_Manufacturing_Aggregation_ID);
-
-	/**
-	 * Get Manufacturing aggregation schema.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Manufacturing_Aggregation_ID();
-
-	ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_C_Manufacturing_Aggregation_ID = new ModelColumn<>(I_M_Product_PlanningSchema.class, "C_Manufacturing_Aggregation_ID", null);
-	String COLUMNNAME_C_Manufacturing_Aggregation_ID = "C_Manufacturing_Aggregation_ID";
-
-
-	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
-
-	BigDecimal getQtyProcessed_OnDate();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
-	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
-
-	/**
-	 * Set Forecast Calculation Method.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setForecast_CalculationMethod (@Nullable java.lang.String Forecast_CalculationMethod);
-
-	/**
-	 * Get Forecast Calculation Method.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getForecast_CalculationMethod();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_CalculationMethod = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_CalculationMethod", null);
-	String COLUMNNAME_Forecast_CalculationMethod = "Forecast_CalculationMethod";
-
-	/**
-	 * Set Forecast Precision Unit.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setForecast_PrecisionUnit (@Nullable java.lang.String Forecast_PrecisionUnit);
-
-	/**
-	 * Get Forecast Precision Unit.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getForecast_PrecisionUnit();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_PrecisionUnit = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_PrecisionUnit", null);
-	String COLUMNNAME_Forecast_PrecisionUnit = "Forecast_PrecisionUnit";
-
-	/**
-	 * Set Forecast Frequency.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setForecast_Frequency (@Nullable BigDecimal Forecast_Frequency);
-
-	/**
-	 * Get Forecast Frequency.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable BigDecimal getForecast_Frequency();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_Frequency = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_Frequency", null);
-	String COLUMNNAME_Forecast_Frequency = "Forecast_Frequency";
-
-	/**
-	 * Set Forecast Buffer Time.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setForecast_BufferTime (@Nullable BigDecimal Forecast_BufferTime);
-
-	/**
-	 * Get Forecast Buffer Time.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable BigDecimal getForecast_BufferTime();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Forecast_BufferTime = new ModelColumn<>(I_PP_Product_Planning.class, "Forecast_BufferTime", null);
-	String COLUMNNAME_Forecast_BufferTime = "Forecast_BufferTime";
-
-	/**
-	 * Set Exclude from Forecast.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsExcludeFromForecast (boolean IsExcludeFromForecast);
-
-	/**
-	 * Get Exclude from Forecast.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isExcludeFromForecast();
-
-	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsExcludeFromForecast = new ModelColumn<>(I_PP_Product_Planning.class, "IsExcludeFromForecast", null);
-	String COLUMNNAME_IsExcludeFromForecast = "IsExcludeFromForecast";
 }

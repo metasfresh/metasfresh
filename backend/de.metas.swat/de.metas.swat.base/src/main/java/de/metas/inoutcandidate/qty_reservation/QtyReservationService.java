@@ -42,6 +42,13 @@ public class QtyReservationService
 
 		final QtyReservationId qtyReservationId = repository.createReservation(request);
 
+		if (request.getProjectId() != null)
+		{
+			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
+			// assume the ProjectValue attribute will be automatically set/updated in ASI 
+			orderLineBL.save(orderLine);
+		}
+
 		invalidateShipmentSchedulesForSalesOrderLine(orderLine);
 
 		return qtyReservationId;

@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectValue;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ public class MaterialCockpitV2RowVO
 	@Nullable Instant datePromised;
 	@Nullable BPartnerId vendorBPartnerId;
 	@Nullable AttributesKey attributesKey;
+	@Nullable ProjectValue projectValue;
 	@NonNull QtyTU qtyTU;
 	@NonNull Quantity qtyStock;
 

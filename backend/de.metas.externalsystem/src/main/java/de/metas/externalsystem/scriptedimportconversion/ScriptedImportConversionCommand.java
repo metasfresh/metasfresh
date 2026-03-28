@@ -30,7 +30,9 @@ public enum ScriptedImportConversionCommand
 {
 	// value for ad_reference=541998
 	EnableRestAPI("enableRestAPI"),
-	DisableRestAPI("disableRestAPI");
+	DisableRestAPI("disableRestAPI"),
+	EnableSftpPolling("enableSftpPolling"),
+	DisableSftpPolling("disableSftpPolling");
 
 	@Getter
 	private final String value;

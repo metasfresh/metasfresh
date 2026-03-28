@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -68,6 +69,13 @@ import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessCalledFrom;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.text.tabular.Table;
@@ -86,6 +94,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -118,6 +127,8 @@ public class MD_Candidate_StepDef
 {
 	@NonNull private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final PostMaterialEventService postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 	@NonNull private final MaterialDispoRecordRepository materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
@@ -724,6 +735,61 @@ public class MD_Candidate_StepDef
 				.productTable(productTable)
 				.attributeSetInstanceTable(attributeSetInstanceTable)
 				.build();
+	}
+
+	/**
+	 * Executes the MD_Candidate_RemoveFromATP process for the specified candidate.
+	 * This removes the candidate from ATP calculations by setting its qty to 0
+	 * and recalculating subsequent ATP values.
+	 *
+	 * @param row DataTable row containing MD_Candidate_ID and optional process value
+	 */
+	@And("the MD_Candidate_Remove_From_ATP process is run")
+	public void run_md_candidate_remove_from_atp_processes(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::run_md_candidate_remove_from_atp_process);
+	}
+
+	public void run_md_candidate_remove_from_atp_process(@NonNull final DataTableRow row)
+	{
+		final String value = row.getAsOptionalString(I_AD_Process.COLUMNNAME_Value)
+				.orElse("MD_Candidate_RemoveFromATP");
+		final AdProcessId processId = processDAO.retrieveProcessIdByValue(value);
+		assertThat(processId).isNotNull();
+
+		// Get the MD_Candidate_ID from either the MD_Candidate table or the MaterialDispoDataItem table
+		final CandidateId candidateId;
+		if (row.getAsOptionalIdentifier(COLUMNNAME_MD_Candidate_ID).isPresent())
+		{
+			// Check if it's in the MD_Candidate table first
+			candidateId = row.getAsOptionalIdentifier(COLUMNNAME_MD_Candidate_ID)
+					.flatMap(stockCandidateTable::getIdOptional)
+					// Otherwise check the MaterialDispoDataItem table
+					.orElseGet(() -> materialDispoDataItemStepDefData.get(row.getAsIdentifier(COLUMNNAME_MD_Candidate_ID)).getCandidateId());
+		}
+		else
+		{
+			throw new IllegalArgumentException("MD_Candidate_ID is required");
+		}
+
+		final TableRecordReference recordRef = TableRecordReference.of("MD_Candidate", candidateId.getRepoId());
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.Unknown)
+				.setAD_Process_ID(processId)
+				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
+				.setReportLanguage(Language.getBaseLanguage())
+				.setRecord(recordRef)
+				.build();
+
+		pInstanceDAO.saveProcessInfoOnly(processInfo);
+
+		final ProcessExecutionResult result = ProcessExecutor.builder(processInfo)
+				.executeSync()
+				.getResult();
+		assertThat(result).isNotNull();
+		assertThat(result.isError()).isFalse();
 	}
 
 }

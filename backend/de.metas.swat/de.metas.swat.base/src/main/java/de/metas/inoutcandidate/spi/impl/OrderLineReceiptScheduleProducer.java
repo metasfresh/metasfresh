@@ -170,7 +170,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-		receiptSchedule.setPOReference(order.getPOReference());
+		if (isNewReceiptSchedule || Check.isBlank(receiptSchedule.getPOReference()))
+		{
+			// Set POReference from the order when:
+			// - creating a new receipt schedule, OR
+			// - the receipt schedule's POReference is blank (no manual changes)
+			// When the user has manually set a non-blank POReference, preserve it.
+			receiptSchedule.setPOReference(order.getPOReference());
+		}
 		receiptSchedule.setExternalHeaderId(order.getExternalId());
 		receiptSchedule.setExternalSystem_ID(order.getExternalSystem_ID());
 		//

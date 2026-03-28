@@ -222,7 +222,7 @@ Feature: Qty Reservation delivery tracking
       | Identifier          | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_5A | orderLine_5A   | N             |
       | shipmentSchedule_5B | orderLine_5B   | N             |
-    
+
     ## Before reservation: order_5A gets QtyToDeliver=10 (in the normal order of priorities, by Date in this case)
     Then after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
@@ -244,3 +244,96 @@ Feature: Qty Reservation delivery tracking
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver |
       | shipmentSchedule_5A              | 0                |
       | shipmentSchedule_5B              | 10               |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_60
+  Scenario: Project propagates from PO receipt to HU attribute; OH reservation from stock references same project
+  ## _Given the ProjectValue attribute is storage-relevant and a vendor PO line has C_Project_ID set
+  ## _When goods are received into a TU HU via the receipt schedule
+  ## _Then the TU carries the ProjectValue attribute matching the project value
+  ## _And an OH reservation with C_Project_ID propagates it to the sales order line
+
+    ## 1. Make ProjectValue storage-relevant so updateASIFromProjectId propagates it to received HUs
+    Given metasfresh contains M_Attributes:
+      | Identifier          | Value        | AttributeValueType | IsStorageRelevant |
+      | projectValueAttr_60 | ProjectValue | S                  | Y                 |
+
+    ## 2. PO pricing chain (SOTrx=false) and vendor bpartner without auto-location
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | psP_60     |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
+      | plP_60     | psP_60             | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plvP_60    | plP_60         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plvP_60                | product_1    | 5.00     | PCE               |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier   | IsVendor | M_PricingSystem_ID |
+      | bp_vendor_60 | true     | psP_60             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | C_BPartner_ID | IsShipTo | IsBillTo |
+      | bp_vendor_60_loc | bp_vendor_60  | true     | true     |
+
+    And metasfresh contains C_Projects:
+      | Identifier | Value      |
+      | project_60 | PROJECT-60 |
+
+    ## 3. Purchase order with C_Project_ID on the line — triggers updateASIFromProjectId before save
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order_60po | false   | bp_vendor_60  | 2026-03-01  | warehouse_1    |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID |
+      | orderLine_60po | order_60po | product_1    | 10         | project_60   |
+    And the order identified by order_60po is completed
+
+    ## 4. Receipt schedule is created automatically from the completed PO
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSched_60                 | order_60po            | orderLine_60po            | bp_vendor_60             | bp_vendor_60_loc                  | product_1               | 10         | warehouse_1               |
+
+    ## 5. Generate 1 TU (10 PCE) and receive it — QtyLU=0 means TU-only, no pallet wrapper
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig_60                       | hu_60              | receiptSched_60                 | N               | 0     | N               | 1     | N               | 10          | huPIP_TU_10PCE                     |
+
+    And create material receipt
+      | M_ReceiptSchedule_ID.Identifier | M_HU_ID.Identifier | M_InOut_ID.Identifier |
+      | receiptSched_60                 | hu_60              | inout_60              |
+
+    ## 6. The received TU must carry the project value as a storage-relevant attribute
+    Then M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | Value      |
+      | hu_60   | ProjectValue         | PROJECT-60 |
+
+    ## 7. Sales order — no project set initially
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order_6    | true    | bp_1          | 2026-03-01  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_6 | order_6    | product_1    | 10         |
+    And the order identified by order_6 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier         | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule_6 | orderLine_6    | N             |
+
+    ## Order line has no project yet
+    Then validate C_OrderLine:
+      | Identifier  | C_Project_ID |
+      | orderLine_6 | null         |
+
+    ## 8. Create OH reservation from on-hand stock with project → propagates C_Project_ID to order line
+    When metasfresh contains M_QtyReservations:
+      | Identifier       | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU | SupplyType | C_Project_ID |
+      | qtyReservation_6 | orderLine_6    | product_1    | warehouse_1    | 10 PCE | 1     | OH         | project_60   |
+
+    ## The service must have propagated C_Project_ID to the order line
+    Then validate C_OrderLine:
+      | Identifier  | C_Project_ID |
+      | orderLine_6 | project_60   |

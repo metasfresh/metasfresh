@@ -6,6 +6,15 @@ SELECT io.m_inout_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
                'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
+               'TechnicalSenderGLN', (SELECT REGEXP_REPLACE(sl.gln::text, '\s+$'::text, ''::text)
+                                      FROM c_bpartner_location sl
+                                      WHERE sl.c_bpartner_id = org.org_bpartner_id
+                                        AND sl.isremitto = 'Y'
+                                        AND sl.gln IS NOT NULL
+                                        AND sl.gln <> ''
+                                        AND sl.isactive = 'Y'
+                                      ORDER BY sl.c_bpartner_location_id
+                                      LIMIT 1),
                'Parties', JSONB_BUILD_OBJECT(
                        'Supplier', COALESCE(bp_supplier.bpartner_json, '{}'::jsonb),
                        'Supplier_Location', COALESCE(bpl_supplier.bpartner_location_json, '{}'::jsonb),

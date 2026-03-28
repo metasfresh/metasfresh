@@ -141,7 +141,8 @@ public class BPartnerBankAccount
 			@Nullable final String accountStreet,
 			@Nullable final String accountZip,
 			@Nullable final String accountCity,
-			@Nullable final String accountCountry)
+			@Nullable final String accountCountry,
+			@Nullable final BPBankAcctUse bpBankAcctUse)
 	{
 		setId(id);
 		this.iban = iban;
@@ -158,6 +159,7 @@ public class BPartnerBankAccount
 		this.accountZip = accountZip;
 		this.accountCity = accountCity;
 		this.accountCountry = accountCountry;
+		this.bpBankAcctUse = bpBankAcctUse;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)

@@ -16,7 +16,7 @@ env:
 jobs:
 
   init:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
@@ -25,6 +25,8 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
       is-local: ${{ steps.detect-local.outputs.is-local }}
+      skip-testspace: ${{ steps.skip-checks.outputs.skip-testspace }}
+      skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
     steps:
       - name: Detect local execution
         id: detect-local
@@ -36,9 +38,26 @@ jobs:
             echo "is-local=false" >> $GITHUB_OUTPUT
             echo "Running on GitHub Actions"
           fi
+      - name: Determine skip flags
+        id: skip-checks
+        env:
+          SKIP_TESTSPACE_VAR: ${{ vars.SKIP_TESTSPACE }}
+        run: |
+          # Skip testspace for tmp-mergify/ branches or when SKIP_TESTSPACE var is set
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]] || [[ "$SKIP_TESTSPACE_VAR" == "true" ]]; then
+            echo "skip-testspace=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-testspace=false" >> $GITHUB_OUTPUT
+          fi
+          # Skip publish-reports for tmp-mergify/ branches only
+          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]]; then
+            echo "skip-publish-reports=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -101,7 +120,7 @@ jobs:
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
           echo '* Allure test reports: https://test-reports.metasfresh.com/branches/${{ steps.sanitize-branch-gh-pages.outputs.value }}/builds/${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}/allure/' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch (e.g. merge-queue branches)
         run: |
           touch github_run.txt
@@ -113,7 +132,7 @@ jobs:
   # Fast migration CLI build - runs in parallel with java job
   # This enables db-images to start ~10 minutes earlier
   migration-cli:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init ]
     steps:
       - uses: actions/checkout@v4
@@ -153,7 +172,7 @@ jobs:
           retention-days: 1
 
   java:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     permissions:
       packages: write
@@ -336,7 +355,7 @@ jobs:
   #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     steps:
       - uses: actions/checkout@v4
@@ -458,12 +477,12 @@ jobs:
 
   test-frontend:
     name: test (frontend)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -479,7 +498,7 @@ jobs:
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
       - name: publish results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
@@ -503,7 +522,7 @@ jobs:
           path: jest/**/jest.log
 
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -640,7 +659,7 @@ jobs:
   # db-images: Build database images independently from backend
   # Now runs in parallel with java job (depends on fast migration-cli job instead)
   db-images:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, migration-cli ]
     steps:
       - uses: actions/checkout@v4
@@ -740,7 +759,7 @@ jobs:
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   db-apply-migrations:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, db-images ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -795,7 +814,7 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   procurement:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -928,7 +947,7 @@ jobs:
   
 
   compatibility-images:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, frontend, backend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1156,7 +1175,7 @@ jobs:
 
   junit:
     name: test (java)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1165,7 +1184,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1228,7 +1247,7 @@ jobs:
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace
@@ -1267,7 +1286,7 @@ jobs:
 
   cucumber-build:
     name: build (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v4
@@ -1318,7 +1337,7 @@ jobs:
 
   cucumber-run:
     name: test (cucumber)
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
       max-parallel: 10
@@ -1351,7 +1370,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1360,6 +1379,8 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           cucumberparams: ${{ matrix.params }}
           TEST_SMTP_HOST: ${{ secrets.TEST_SMTP_HOST }}
+          TEST_SMTP_PORT: "587"
+          TEST_SMTP_STARTTLS: "true"
           TEST_SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
           TEST_SMTP_USER: ${{ secrets.TEST_SMTP_USER }}
           TEST_SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
@@ -1373,7 +1394,7 @@ jobs:
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
@@ -1510,7 +1531,7 @@ jobs:
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, cucumber-run ]
     if: always()
     permissions:
@@ -1571,7 +1592,7 @@ jobs:
 
   health_check:
     name: health check
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1667,7 +1688,7 @@ jobs:
   mobile_test:
     name: mobile test
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
@@ -1676,7 +1697,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1694,7 +1715,7 @@ jobs:
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose --profile mobile down
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         working-directory: docker-builds/e2e-tests/
         run: |
@@ -1753,7 +1774,7 @@ jobs:
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     strategy:
       max-parallel: 3
@@ -1774,7 +1795,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1793,7 +1814,7 @@ jobs:
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
           docker compose --profile frontend down
       - name: push-results to testspace
-        if: env.ACT != 'true'  # Skip when running locally with act
+        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch
         working-directory: docker-builds/e2e-tests/
         run: |
@@ -1851,7 +1872,7 @@ jobs:
   # =============================================================================
   frontend_allure_report:
     name: frontend allure report
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, frontend_webui_test ]
     if: always() && needs.init.result == 'success'
     steps:
@@ -1890,12 +1911,13 @@ jobs:
   # =============================================================================
   publish-test-reports:
     name: publish test reports
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
-    if: always() && needs.init.result == 'success'
+    if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
-      actions: write    # trigger reports-cleanup workflow when disk space is low
+      actions: write       # trigger reports-cleanup workflow when disk space is low
       contents: read
+      pull-requests: write # post Allure report links as PR comments
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -1909,12 +1931,24 @@ jobs:
 
       - name: Setup SSH
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
+        env:
+          REPORTS_SERVER_HOSTNAME: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          REPORTS_SERVER_USER: ${{ secrets.TESTREPORTS_USER }}
+          REPORTS_SERVER_SSH_PORT: ${{ secrets.TESTREPORTS_SSH_PORT }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$REPORTS_SERVER_SSH_PORT" -H "$REPORTS_SERVER_HOSTNAME" >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
+          Host reports-storage
+            HostName $REPORTS_SERVER_HOSTNAME
+            User $REPORTS_SERVER_USER
+            Port $REPORTS_SERVER_SSH_PORT
+            IdentityFile ~/.ssh/reports_key
+            StrictHostKeyChecking accept-new
+
           Host reports-server
             HostName test-reports.metasfresh.com
             User ci-reports
@@ -1973,17 +2007,22 @@ jobs:
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
+          STORAGEBOX_BASE_PATH: ${{ secrets.TESTREPORTS_BASE_PATH }}
         run: |
-          BASE_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
+          # Two different base paths — same content, different mount points:
+          #   STORAGEBOX_PATH: used by rsync to reports-storage (storagebox internal path)
+          #   SERVER_PATH:     used by ssh to reports-server (test server mount point)
+          STORAGEBOX_PATH="${STORAGEBOX_BASE_PATH}/branches/${BRANCH}/builds/${VERSION}/allure"
+          SERVER_PATH="/var/www/test-reports/branches/${BRANCH}/builds/${VERSION}/allure"
 
-          # Create target directories on server
-          ssh reports-server "mkdir -p ${BASE_PATH}"
+          # Create target directories on test server (mkdir needs the server-side path)
+          ssh reports-server "mkdir -p ${SERVER_PATH}"
 
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "Uploading ${report_type} report..."
             rsync -az --delete \
               "reports/${report_type}/" \
-              "reports-server:${BASE_PATH}/${report_type}/"
+              "reports-storage:${STORAGEBOX_PATH}/${report_type}/"
             echo "✓ ${report_type} uploaded"
           done
 
@@ -1992,7 +2031,7 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             REPORT_LINKS="${REPORT_LINKS}<li><a href=\"${report_type}/\">${report_type}</a></li>"
           done
-          ssh reports-server "cat > ${BASE_PATH}/index.html" <<EOF
+          ssh reports-server "cat > ${SERVER_PATH}/index.html" <<EOF
           <!DOCTYPE html>
           <html><head><title>Allure Reports — ${VERSION}</title>
           <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
@@ -2003,6 +2042,96 @@ jobs:
           <p><a href="https://test-reports.metasfresh.com/">← Back to all reports</a></p>
           </body></html>
           EOF
+
+      - name: Generate failures.json
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
+          import json, sys, os, glob
+
+          branch = sys.argv[1]
+          version = sys.argv[2]
+          build_dir = f"/var/www/test-reports/branches/{branch}/builds/{version}"
+          allure_dir = os.path.join(build_dir, "allure")
+
+          suites = ["cucumber", "frontend-webui", "mobile-webui"]
+          result = {
+              "branch": branch,
+              "version": version,
+              "suites": {},
+              "failures": []
+          }
+
+          for suite in suites:
+              suite_dir = os.path.join(allure_dir, suite)
+              summary_file = os.path.join(suite_dir, "widgets", "summary.json")
+              if not os.path.isfile(summary_file):
+                  continue
+
+              with open(summary_file, "r") as f:
+                  summary = json.load(f)
+
+              stats = summary.get("statistic", {})
+              result["suites"][suite] = {
+                  "total": stats.get("total", 0),
+                  "passed": stats.get("passed", 0),
+                  "failed": stats.get("failed", 0),
+                  "broken": stats.get("broken", 0),
+                  "skipped": stats.get("skipped", 0)
+              }
+
+              # Only dig into test cases if there are failures or broken tests
+              if stats.get("failed", 0) == 0 and stats.get("broken", 0) == 0:
+                  continue
+
+              # Read individual test case files for failure details
+              tc_dir = os.path.join(suite_dir, "data", "test-cases")
+              if not os.path.isdir(tc_dir):
+                  continue
+
+              for tc_file in glob.glob(os.path.join(tc_dir, "*.json")):
+                  with open(tc_file, "r") as f:
+                      try:
+                          tc = json.load(f)
+                      except json.JSONDecodeError:
+                          continue
+
+                  status = tc.get("status", "")
+                  if status not in ("failed", "broken"):
+                      continue
+
+                  failure = {
+                      "suite": suite,
+                      "name": tc.get("name", ""),
+                      "fullName": tc.get("fullName", ""),
+                      "status": status,
+                      "message": tc.get("statusMessage", ""),
+                      "trace": tc.get("statusTrace", ""),
+                  }
+
+                  # Include test steps if available (shows which step failed)
+                  steps = tc.get("testStage", {}).get("steps", [])
+                  failed_steps = [
+                      {"name": s.get("name", ""), "status": s.get("status", "")}
+                      for s in steps if s.get("status") in ("failed", "broken")
+                  ]
+                  if failed_steps:
+                      failure["failedSteps"] = failed_steps
+
+                  result["failures"].append(failure)
+
+          # Write combined failures.json at build level
+          output_file = os.path.join(build_dir, "failures.json")
+          with open(output_file, "w") as f:
+              json.dump(result, f, indent=2)
+
+          n = len(result["failures"])
+          print(f"Generated failures.json: {n} failure(s) across {len(result['suites'])} suite(s)")
+          PYEOF
 
       - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
@@ -2249,14 +2378,59 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
+          FAILURES_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/failures.json"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Machine-readable:** [failures.json](${FAILURES_URL})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post report link on PR
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+          if [ -z "$PR" ]; then
+            echo "No open PR for branch ${{ github.ref_name }} — skipping comment"
+            exit 0
+          fi
+
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          done
+
+          MARKER="<!-- allure-reports -->"
+          BODY="${MARKER}
+          ### 📊 Allure Test Reports
+
+          **Build:** \`${VERSION}\`
+
+          | Report | Link |
+          |--------|------|
+          ${REPORT_LINKS}
+          _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+
+          # Find existing comment with marker, update or create
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
+            echo "Updated existing comment ${COMMENT_ID} on PR #${PR}"
+          else
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Posted new comment on PR #${PR}"
+          fi
 
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'
         run: rm -rf ~/.ssh/reports_key
 
+
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     needs: [ init, compatibility-images ]
     steps:
       - name: dispatch-workflow

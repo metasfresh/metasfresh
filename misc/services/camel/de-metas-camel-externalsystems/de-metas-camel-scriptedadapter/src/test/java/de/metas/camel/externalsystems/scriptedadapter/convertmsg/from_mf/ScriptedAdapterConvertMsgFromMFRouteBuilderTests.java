@@ -97,7 +97,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		Mockito.when(oauthTokenManager.getAccessToken(Mockito.any()))
 				.thenReturn(OAuthAccessToken.of("dummy access token", SystemTime.asInstant().plus(24, ChronoUnit.HOURS)));
 
-		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(oauthTokenManager);
+		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(oauthTokenManager, new SftpDeliveryProcessor());
 	}
 
 	@Test

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
@@ -1089,6 +1090,10 @@ public class ExternalSystemConfigRepo
 				.scriptIdentifier(config.getScriptIdentifier())
 				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
 				.description(config.getDescription())
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoIdOrNull(config.getExternalSystem_Endpoint_ID() > 0 ? config.getExternalSystem_Endpoint_ID() : null))
+				.sftpPollingIntervalMs(config.getSftpPollingIntervalMs() > 0 ? config.getSftpPollingIntervalMs() : null)
+				.sftpProcessedDirectory(config.getSftpProcessedDirectory())
+				.sftpErrorDirectory(config.getSftpErrorDirectory())
 				.build();
 	}
 

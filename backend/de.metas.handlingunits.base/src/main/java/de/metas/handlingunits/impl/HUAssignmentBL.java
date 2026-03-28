@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
@@ -42,12 +43,16 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty;
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
@@ -87,7 +92,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	@Override
 	public void assignHUs(
 			@NonNull final Object model,
-			@NonNull final Collection<I_M_HU> huList, 
+			@NonNull final Collection<I_M_HU> huList,
 			@Nullable final String trxName)
 	{
 		if (huList.isEmpty())
@@ -101,7 +106,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	@Override
 	public I_M_HU_Assignment assignHU(
 			@NonNull final Object model,
-			@NonNull final I_M_HU hu, 
+			@NonNull final I_M_HU hu,
 			@Nullable final String trxName)
 	{
 		return assignHU0(model, hu, IsTransferPackingMaterials_DoNotChange, trxName);
@@ -110,7 +115,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	@Override
 	public I_M_HU_Assignment assignHU(
 			@NonNull final Object model,
-			@NonNull final I_M_HU hu, 
+			@NonNull final I_M_HU hu,
 			final boolean isTransferPackingMaterials,
 			@Nullable final String trxName)
 	{
@@ -177,6 +182,12 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final boolean isNewAssignment = builder.isNewAssignment();
 		final boolean isActiveOld = builder.isActive();
 
+		final BigDecimal qty = getQtyOrNull(model);
+		if (qty != null)
+		{
+			builder.setQty(qty);
+		}
+
 		//
 		// Update Assignment fields and save it
 		updateHUAssignmentAndSave(builder, model, hu, isTransferPackingMaterials);
@@ -215,6 +226,17 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			final IReference<Object> modelRef = ImmutableReference.valueOf(model);
 			listeners.onHUUnassigned(huRef, modelRef, trxName);
 		}
+	}
+
+	/**
+	 * Attempts to retrieve the quantity value from the given model object specified by certain column names.
+	 * If the value is not available, returns {@code null}.
+	 */
+	@Nullable
+	private BigDecimal getQtyOrNull(final Object model)
+	{
+		return CoalesceUtil.coalesceSuppliers(() -> InterfaceWrapperHelper.getValueAsBigDecimalOrNull(model, COLUMNNAME_QtyEntered),
+				() -> InterfaceWrapperHelper.getValueAsBigDecimalOrNull(model, COLUMNNAME_MovementQty));
 	}
 
 	/**

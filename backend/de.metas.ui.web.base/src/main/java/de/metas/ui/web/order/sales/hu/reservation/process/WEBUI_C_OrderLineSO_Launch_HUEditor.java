@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -26,7 +27,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -157,7 +158,12 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	{
 		return MaterialCockpitViewContext.builder()
 				.sourceSelectionId(getPinstanceId())
-				.salesOrderAndLineId(OrderAndLineId.of(getOrderId(), getSingleOrderLineId()))
+				.salesOrderAndLineId(getSalesOrderAndLineId())
 				.build();
+	}
+
+	private @NotNull OrderAndLineId getSalesOrderAndLineId()
+	{
+		return OrderAndLineId.of(getOrderId(), getSingleOrderLineId());
 	}
 }

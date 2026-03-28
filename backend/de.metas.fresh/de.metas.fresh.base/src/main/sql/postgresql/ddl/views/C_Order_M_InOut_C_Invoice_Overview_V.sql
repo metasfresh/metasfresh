@@ -40,12 +40,13 @@ SELECT ROW_NUMBER() OVER (ORDER BY ad_Table_id, head_id, line_id) AS C_Order_M_I
        p.c_uom_id,
        doc.qty,
        doc.linenetamt,
-       stock.qtyonhand                                            AS current_qty_sum,
+       COALESCE(stock.qtyonhand, 0)                               AS current_qty_sum,
        doc.ad_client_id,
        doc.ad_org_id,
        doc.created,
        doc.createdby,
-       doc.isactive
+       doc.isactive,
+       doc.posted
 FROM (SELECT get_table_id('C_Order')                                   AS ad_Table_id,
              o.c_order_id                                              AS Record_ID,
              o.c_order_id                                              AS head_id,
@@ -69,19 +70,20 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              o.c_bpartner_id,
              o.c_bpartner_location_id,
              o.m_warehouse_id,
+             o.posted,
              ol.m_product_id,
              ol.qtyordered                                             AS qty,
              ol.m_hu_pi_item_product_id,
              ol.priceactual,
              ol.linenetamt
       FROM c_order o
-               JOIN c_orderline ol ON ol.c_orderline_id = o.c_order_id
+               JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
       UNION
 
       SELECT get_table_id('M_InOut')           AS ad_Table_id,
              io.m_inout_id                     AS Record_ID,
-             io.c_order_id                     AS head_id,
-             iol.c_orderline_id                AS line_id,
+             io.m_inout_id                     AS head_id,
+             iol.m_inoutline_id                AS line_id,
              iol.ad_client_id,
              iol.ad_org_id,
              iol.created,
@@ -102,6 +104,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              io.c_bpartner_id,
              io.c_bpartner_location_id,
              io.m_warehouse_id,
+             io.posted,
              iol.m_product_id,
              iol.movementqty,
              iol.m_hu_pi_item_product_id,
@@ -114,8 +117,8 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
 
       SELECT get_table_id('C_Invoice')                                 AS ad_Table_id,
              i.c_invoice_id                                            AS Record_ID,
-             i.c_order_id                                              AS head_id,
-             il.c_orderline_id                                         AS line_id,
+             i.c_invoice_id                                              AS head_id,
+             il.c_invoiceline_id                                       AS line_id,
              il.ad_client_id,
              il.ad_org_id,
              il.created,
@@ -136,6 +139,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              i.c_bpartner_id,
              i.c_bpartner_location_id,
              i.m_warehouse_id,
+             i.posted,
              il.m_product_id,
              il.qtyinvoiced,
              il.m_hu_pi_item_product_id,
@@ -144,10 +148,10 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
       FROM c_invoice i
                JOIN c_invoiceline il
                     ON il.c_invoice_id = i.c_invoice_id) doc
-         JOIN c_doctype dt ON dt.c_doctype_id = doc.c_doctype_id
+         LEFT JOIN c_doctype dt ON dt.c_doctype_id = doc.c_doctype_id
          JOIN m_product p ON p.m_product_id = doc.m_product_id
-         JOIN (SELECT s.m_product_id, s.m_warehouse_id, SUM(s.qtyonhand) AS qtyonhand
-               FROM md_stock s
-               WHERE s.isactive = 'Y'
-               GROUP BY s.m_product_id, s.m_warehouse_id) stock ON doc.m_product_id = stock.m_product_id AND doc.m_warehouse_id = stock.m_warehouse_id
+         LEFT JOIN (SELECT s.m_product_id, s.m_warehouse_id, SUM(s.qtyonhand) AS qtyonhand
+                    FROM md_stock s
+                    WHERE s.isactive = 'Y'
+                    GROUP BY s.m_product_id, s.m_warehouse_id) stock ON doc.m_product_id = stock.m_product_id AND doc.m_warehouse_id = stock.m_warehouse_id
 ;

@@ -124,3 +124,37 @@ Feature: Forecast ASI enrichment from PP_Product_Planning
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | 0                      |
+
+  @Id:S0463_130
+  @from:cucumber
+  Scenario: Forecast line WITHOUT ASI, attribute-DEPENDENT planning — enrichment from planning
+    Given metasfresh contains M_Products:
+      | Identifier | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | standard_category                    |
+    And metasfresh contains M_AttributeSetInstance with identifier "planningASI":
+  """
+  {
+    "attributeInstances":[
+      {
+        "attributeCode":"1000002",
+          "valueStr":"Bio"
+      }
+    ]
+  }
+  """
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | warehouse      |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID | IsCreatePlan | M_AttributeSetInstance_ID | IsAttributeDependant |
+      | ppln_1     | p_1          | false        | planningASI               | true                 |
+    And metasfresh contains M_Forecasts:
+      | Identifier | Name | DatePromised | M_Warehouse_ID |
+      | f_1        | test | 2021-04-17   | warehouse      |
+    And metasfresh contains M_ForecastLines:
+      | M_Forecast_ID | M_Product_ID | Qty | M_Warehouse_ID | C_UOM_ID.X12DE355 |
+      | f_1           | p_1          | 10  | warehouse      | PCE                |
+    When the forecast identified by f_1 is completed
+    Then after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | M_AttributeSetInstance_ID |
+      | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | planningASI               |

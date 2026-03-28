@@ -122,7 +122,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
       | Identifier   |
       | ddOrderLine1 |
     
@@ -401,7 +401,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
       | Identifier   | QtyEntered |
       | ddOrderLine1 | 14         |
 

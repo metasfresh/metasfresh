@@ -28,6 +28,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -378,12 +379,29 @@ public class C_Order
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void deleteShippingPackageIfPossible(final I_C_Order order)
+	public void blockReactivationIfProcessedTransportationOrder(final I_C_Order order)
 	{
-		if (!purchaseOrderToShipperTransportationService.deleteShippingPackagesForOrderIfPossible(OrderId.ofRepoId(order.getC_Order_ID())))
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
+		// Block reactivation when the transport order is already processed,
+		// but do NOT delete shipping packages — they must be preserved so the
+		// transport order link on receipt schedules (virtual column via M_ShippingPackage) survives.
+		if (purchaseOrderToShipperTransportationService.hasProcessedShipperTransportation(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void syncShippingPackagesFromOrder(final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
+		purchaseOrderToShipperTransportationService.syncShippingPackagesFromOrder(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
@@ -516,7 +534,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -527,6 +545,20 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
+	public void updateShipper(@NonNull final I_C_Order order)
+	{
+		if(InterfaceWrapperHelper.isCopying(order))
+		{
+			return;
+		}
+
+		if(BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
+		{
+			return;
+		}
 
 		orderBL.setShipperId(order);
 	}

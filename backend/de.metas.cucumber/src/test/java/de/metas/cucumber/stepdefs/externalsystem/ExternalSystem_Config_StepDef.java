@@ -38,8 +38,8 @@ import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.leichmehl.PLUType;
-import de.metas.externalsystem.model.X_ExternalSystem_Outbound_Endpoint;
-import de.metas.externalsystem.outboundendpoint.OutboundEndpointAuthType;
+import de.metas.externalsystem.endpoint.EndpointAuthType;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
@@ -50,7 +50,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
-import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -364,11 +364,11 @@ public class ExternalSystem_Config_StepDef
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
 		// Create an outbound endpoint with defaults
-		final I_ExternalSystem_Outbound_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Outbound_Endpoint.class);
+		final I_ExternalSystem_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
 		outboundEndpoint.setOutboundHttpEP("http://localhost:9999");
 		outboundEndpoint.setOutboundHttpMethod(HttpMethod.POST.getCode());
-		outboundEndpoint.setType(X_ExternalSystem_Outbound_Endpoint.TYPE_HTTP);
-        outboundEndpoint.setAuthType(OutboundEndpointAuthType.Token.getCode());
+		outboundEndpoint.setType(X_ExternalSystem_Endpoint.TYPE_HTTP);
+		outboundEndpoint.setAuthType(EndpointAuthType.Token.getCode());
 		outboundEndpoint.setAuthToken("Bearer xyz");
 		outboundEndpoint.setValue(valueAndName.getValue());
 		InterfaceWrapperHelper.save(outboundEndpoint);
@@ -384,7 +384,7 @@ public class ExternalSystem_Config_StepDef
 		// Create a scripted export conversion config
 		final I_ExternalSystem_Config_ScriptedExportConversion scriptedExportConversionConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
 		scriptedExportConversionConfig.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
-		scriptedExportConversionConfig.setExternalSystem_Outbound_Endpoint_ID(outboundEndpoint.getExternalSystem_Outbound_Endpoint_ID());
+		scriptedExportConversionConfig.setExternalSystem_Endpoint_ID(outboundEndpoint.getExternalSystem_Endpoint_ID());
 		scriptedExportConversionConfig.setScriptIdentifier("echo");
 
 		final String processValue = row.getAsString(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Process_OutboundData_ID + ".Value");

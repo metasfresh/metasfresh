@@ -37,6 +37,7 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+import de.metas.handlingunits.inout.returns.vendor.VendorReturnFromReceiptHUHandler;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -376,6 +377,51 @@ public class M_InOut
 	private boolean isCustomerReturnsInOut_FailIfNoHUsAssigned()
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned, true);
+	}
+
+	/**
+	 * On vendor return completion (created by {@code M_InOut_GenerateVendorReturn}):
+	 * split/transform receipt HUs to correctly separate the returned quantities.
+	 * <p>
+	 * Only applies to vendor returns that have a {@code Return_Origin_InOut_ID}
+	 * (i.e., created from a receipt by the new process). Does NOT affect existing
+	 * HU-based vendor return or empties return flows.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void handleVendorReturnFromReceipt(final I_M_InOut vendorReturn)
+	{
+		if (!returnsServiceFacade.isVendorReturn(vendorReturn))
+		{
+			return;
+		}
+
+		if (returnsServiceFacade.isReversal(vendorReturn))
+		{
+			return;
+		}
+
+		if (returnsServiceFacade.isEmptiesReturn(vendorReturn))
+		{
+			return;
+		}
+
+		// Only handle vendor returns created from receipts (by M_InOut_GenerateVendorReturn)
+		if (vendorReturn.getReturn_Origin_InOut_ID() <= 0)
+		{
+			return;
+		}
+
+		// Skip if HUs are already assigned (e.g., from the existing HU-based vendor return flow)
+		final List<I_M_HU> existingHUs = huInOutBL.retrieveHandlingUnits(vendorReturn);
+		if (!existingHUs.isEmpty())
+		{
+			return;
+		}
+
+		VendorReturnFromReceiptHUHandler.builder()
+				.vendorReturn(vendorReturn)
+				.build()
+				.execute();
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
