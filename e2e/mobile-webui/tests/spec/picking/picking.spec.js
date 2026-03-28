@@ -555,7 +555,9 @@ test('TU picking with CU-per-TU > 1 — step qty displayed as TU count', async (
 
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
 
+    // Verify backend state BEFORE completion: 4 CU = 2 TU picked, not yet processed
     await Backend.expect({
+        title: 'After pick: 2 TU picked, source HU reduced',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
@@ -565,7 +567,28 @@ test('TU picking with CU-per-TU > 1 — step qty displayed as TU count', async (
                 }
             }
         },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '36 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '4 PCE' } },
+        }
     });
 
     await PickingJobScreen.complete();
+
+    // Verify backend state AFTER completion: shipment created, LU shipped
+    await Backend.expect({
+        title: 'After complete: shipment created, LU shipped',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 2, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '4 PCE' } },
+        }
+    });
 });
