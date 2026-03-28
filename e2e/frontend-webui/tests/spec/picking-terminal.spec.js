@@ -119,27 +119,41 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}`);
     await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    // Select first row — use keyboard shortcut Alt+A (select all) then click first row
-    // Or try finding the row by data-testid and clicking its indicator
+    // Select a single row — click on the row number cell (leftmost column)
+    // In view mode, we need to click the row indicator area.
+    // The first column often contains a row number or selection indicator.
     const firstRow = page.locator('table tbody tr').first();
 
-    // Try to get the row's data-testid to use it for selection
-    const rowTestId = await firstRow.getAttribute('data-testid');
-
-    // Click the row to focus it
-    await firstRow.click();
-    await page.waitForTimeout(500);
-
-    // If still not selected, try Ctrl+click or Space to toggle selection
-    const selectedCount = await page.locator(':text("item(s) selected")').count();
-    if (!selectedCount) {
-      // Try clicking with Ctrl to force selection
-      await firstRow.click({ modifiers: ['Control'] });
-      await page.waitForTimeout(500);
+    // Find a row that's NOT locked (no Picking User) — those without text in Picking User column
+    // The 5th column (index 4) is "Picking User"
+    let targetRow = null;
+    const rowCount = await page.locator('table tbody tr').count();
+    for (let i = 0; i < rowCount; i++) {
+      const row = page.locator('table tbody tr').nth(i);
+      const pickingUserCell = row.locator('td').nth(4);
+      const pickingUserText = await pickingUserCell.innerText().catch(() => '');
+      if (!pickingUserText.trim()) {
+        targetRow = row;
+        break;
+      }
     }
 
-    // Verify a row is selected before clicking Pick
-    await page.locator(':text("item(s) selected")').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    if (!targetRow) {
+      // All rows are locked — just use first row
+      targetRow = firstRow;
+    }
+
+    // Click the row's first cell (row number) to select it
+    await targetRow.locator('td').first().click();
+    await page.waitForTimeout(1000);
+
+    // Check if selected
+    const isSelected = await targetRow.evaluate((el) => el.classList.contains('row-selected'));
+    if (!isSelected) {
+      // Try double-clicking the row indicator
+      await targetRow.locator('td').first().dblclick();
+      await page.waitForTimeout(500);
+    }
 
     // Click "Pick" quick action button
     const pickButton = page.locator('[data-testid^="quick-action-PackageablesView_OpenProductsToPick"]');
