@@ -4,6 +4,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,7 +43,7 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, warehouseId);
 
 		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouseId);
-		locator.setValue(value + "_Locator");
+		locator.setValue(StringUtils.trimBlankToOptional(request.getLocatorCode()).orElseGet(() -> value + "_Locator"));
 		saveRecord(locator);
 		final LocatorQRCode locatorQRCode = LocatorQRCode.ofLocator(locator);
 		context.putIdentifier(identifier, LocatorId.ofRecord(locator));
@@ -50,6 +51,7 @@ public class WarehouseCommand
 		return JsonWarehouseResponse.builder()
 				.warehouseCode(warehouseRecord.getValue())
 				.warehouseName(warehouseRecord.getName())
+				.locatorCode(locator.getValue())
 				.locatorQRCode(locatorQRCode.toGlobalQRCodeJsonString())
 				.build();
 	}

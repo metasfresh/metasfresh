@@ -45,6 +45,7 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
+	public static final AdMessageKey MSG_NotFound = AdMessageKey.of("NotFound");
 	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);

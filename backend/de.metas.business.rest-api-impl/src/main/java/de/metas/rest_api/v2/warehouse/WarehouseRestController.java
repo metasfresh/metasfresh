@@ -28,6 +28,8 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsert;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorResponse;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Loggables;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,14 +37,17 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
@@ -53,21 +58,13 @@ import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/warehouses" })
 @RestController
 @Profile(Profiles.PROFILE_App)
+@RequiredArgsConstructor
 public class WarehouseRestController
 {
-	@NonNull
-	private final WarehouseService warehouseService;
+	@NonNull private final WarehouseService warehouseService;
+	@NonNull private final WarehouseRestService warehouseRestService;
 
-	@NonNull
-	private final WarehouseRestService warehouseRestService;
-	
-	public WarehouseRestController(
-			@NonNull final WarehouseService warehouseService,
-			@NonNull final WarehouseRestService warehouseRestService)
-	{
-		this.warehouseService = warehouseService;
-		this.warehouseRestService = warehouseRestService;
-	}
+	private @NotNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
 	@PutMapping("/{warehouseId}/outOfStockNotice")
 	public ResponseEntity<?> createShippingPackages(
@@ -77,16 +74,13 @@ public class WarehouseRestController
 		try
 		{
 			final JsonOutOfStockResponse response = warehouseService.handleOutOfStockRequest(warehouseId, request);
-
-			return ResponseEntity.status(HttpStatus.OK).body(response);
+			return ResponseEntity.ok(response);
 		}
 		catch (final Exception ex)
 		{
 			Loggables.addLog(ex.getLocalizedMessage(), ex);
 
-			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-			return ResponseEntity.badRequest()
-					.body(JsonErrors.ofThrowable(ex, adLanguage));
+			return ResponseEntity.badRequest().body(JsonErrors.ofThrowable(ex, getAdLanguage()));
 		}
 	}
 
@@ -104,7 +98,21 @@ public class WarehouseRestController
 			@RequestBody @NonNull final JsonRequestWarehouseUpsert request)
 	{
 		final JsonResponseUpsert responseUpsert = warehouseRestService.upsertWarehouses(orgCode, request);
+		return ResponseEntity.ok(responseUpsert);
+	}
 
-		return ResponseEntity.ok().body(responseUpsert);
+	@GetMapping("/resolveLocator")
+	@NonNull
+	public JsonResolveLocatorResponse resolveLocatorScannedCode(
+			@RequestParam("scannedBarcode") final String scannedBarcode)
+	{
+		try
+		{
+			return JsonResolveLocatorResponse.ok(warehouseRestService.resolveLocatorScannedCode(ScannedCode.ofString(scannedBarcode)));
+		}
+		catch (final Exception ex)
+		{
+			return JsonResolveLocatorResponse.error(ex, getAdLanguage());
+		}
 	}
 }

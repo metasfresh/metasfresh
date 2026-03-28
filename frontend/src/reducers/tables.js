@@ -426,7 +426,10 @@ const reducer = produce((draftState, action) => {
     case types.SET_ACTIVE_SORT: {
       const { id, active } = action.payload;
 
-      draftState[id].activeSort = active;
+      // Guard against race condition where sort action fires before table creation
+      if (draftState[id]) {
+        draftState[id].activeSort = active;
+      }
 
       return;
     }
@@ -459,7 +462,10 @@ const reducer = produce((draftState, action) => {
       }
 
       const tableId = getTableId({ windowId, docId, tabId });
-      draftState[tableId].orderBys = [{ fieldName, ascending }];
+      // Guard against race condition where sort action fires before table creation
+      if (draftState[tableId]) {
+        draftState[tableId].orderBys = [{ fieldName, ascending }];
+      }
 
       return;
     }

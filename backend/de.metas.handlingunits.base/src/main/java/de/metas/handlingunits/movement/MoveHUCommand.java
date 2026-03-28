@@ -3,7 +3,6 @@ package de.metas.handlingunits.movement;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -11,13 +10,13 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -26,7 +25,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import java.util.Collection;
 import java.util.List;
@@ -49,15 +47,14 @@ public class MoveHUCommand
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
-	private final ImmutableSet<MoveHURequestItem> requestItems;
-	private final GlobalQRCode targetQRCode;
-	private final boolean placeAggHusOnNewLUsWhenMoving;
+	@NonNull private final ImmutableSet<MoveHURequestItem> requestItems;
+	@NonNull private final MoveTarget target;
 
 	@Builder
 	private MoveHUCommand(
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final Set<MoveHURequestItem> requestItems,
-			@NonNull final GlobalQRCode targetQRCode)
+			@NonNull final ScannedCode targetQRCode)
 	{
 		this.huTransformService = HUTransformService.builder()
 				.huQRCodesService(huQRCodesService)
@@ -65,8 +62,9 @@ public class MoveHUCommand
 
 		this.huQRCodesService = huQRCodesService;
 		this.requestItems = ImmutableSet.copyOf(requestItems);
-		this.targetQRCode = targetQRCode;
-		this.placeAggHusOnNewLUsWhenMoving = isPlaceAggTUsOnNewLUAfterMove(targetQRCode, warehouseDAO);
+
+		final MoveTargetResolver moveTargetResolver = new MoveTargetResolver();
+		this.target = moveTargetResolver.resolve(targetQRCode);
 	}
 
 	public ImmutableSet<HuId> execute()
@@ -82,27 +80,25 @@ public class MoveHUCommand
 
 	private ImmutableSet<HuId> executeInTrx()
 	{
-		if (LocatorQRCode.isTypeMatching(targetQRCode))
+		if (target.getLocatorId() != null)
 		{
-			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
-
-			return moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
+			return moveHUIdsToLocator(extractHUIdsToMove(), target.getLocatorId());
 		}
-		else if (HUQRCode.isTypeMatching(targetQRCode))
+		else if (target.getHuQRCode() != null)
 		{
-			return getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
+			return getMoveToTargetHUFunction(target.getHuQRCode())
 					.apply(extractHUIdsToMove());
 		}
 		else
 		{
-			throw new AdempiereException("Move target not handled: " + targetQRCode);
+			throw new AdempiereException("Move target not handled: " + target);
 		}
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTargetHUFunction(@NonNull final HUQRCode huqrCode)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTargetHUFunction(@NonNull final HUQRCode huQRCode)
 	{
-		final I_M_HU targetHU = handlingUnitsBL.getById(huQRCodesService.getHuIdByQRCode(huqrCode));
+		final I_M_HU targetHU = handlingUnitsBL.getById(huQRCodesService.getHuIdByQRCode(huQRCode));
 		if (handlingUnitsBL.isDestroyed(targetHU))
 		{
 			handlingUnitsBL.reactivateDestroyedHU(targetHU, PlainContextAware.newWithThreadInheritedTrx());
@@ -218,13 +214,13 @@ public class MoveHUCommand
 		if (requestItem.getNumberOfTUs() == null || requestItem.getNumberOfTUs().isOne())
 		{
 			final HuId splitHuId = huTransformService.extractToTopLevel(requestItem.getHuIdAndQRCode().getHuId(),
-																		requestItem.getHuIdAndQRCode().getHuQRCode());
+					requestItem.getHuIdAndQRCode().getHuQRCode());
 			return Stream.of(splitHuId);
 		}
 		return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
-																requestItem.getHuIdAndQRCode().getHuQRCode(),
-																requestItem.getNumberOfTUs(),
-																getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
+						requestItem.getHuIdAndQRCode().getHuQRCode(),
+						requestItem.getNumberOfTUs(),
+						getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
 				.stream();
 	}
 
@@ -241,8 +237,8 @@ public class MoveHUCommand
 		final Map<Integer, List<HuId>> diffLocatorToHuIds = husToMove.stream()
 				.filter(hu -> hu.getM_Locator_ID() != locatorId.getRepoId())
 				.collect(Collectors.groupingBy(I_M_HU::getM_Locator_ID,
-											   Collectors.mapping(hu -> HuId.ofRepoId(hu.getM_HU_ID()),
-																  Collectors.toList())));
+						Collectors.mapping(hu -> HuId.ofRepoId(hu.getM_HU_ID()),
+								Collectors.toList())));
 
 		if (diffLocatorToHuIds.isEmpty())
 		{
@@ -251,16 +247,16 @@ public class MoveHUCommand
 
 		diffLocatorToHuIds.values()
 				.forEach(huIdsSharingTheSameLocator -> huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-																					.toLocatorId(locatorId)
-																					.huIdsToMove(huIdsSharingTheSameLocator)
-																					.movementDate(SystemTime.asInstant())
-																					.build()));
+						.toLocatorId(locatorId)
+						.huIdsToMove(huIdsSharingTheSameLocator)
+						.movementDate(SystemTime.asInstant())
+						.build()));
 	}
 
 	@NonNull
 	private Optional<HuPackingInstructionsItemId> getNewLUPackingInstructionsForAggregateSplit(@NonNull final HuId tuId)
 	{
-		if (!placeAggHusOnNewLUsWhenMoving)
+		if (!target.isPlaceAggTUsOnNewLUAfterMove())
 		{
 			return Optional.empty();
 		}
@@ -272,19 +268,5 @@ public class MoveHUCommand
 		}
 
 		return handlingUnitsDAO.retrieveDefaultParentPIItemId(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
-	}
-
-	private static boolean isPlaceAggTUsOnNewLUAfterMove(
-			@NonNull final GlobalQRCode target,
-			@NonNull final IWarehouseDAO warehouseDAO)
-	{
-		if (!LocatorQRCode.isTypeMatching(target))
-		{
-			return false;
-		}
-
-		final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(target);
-		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorQRCode.getLocatorId(), I_M_Locator.class);
-		return locator.isPlaceAggHUOnNewLU();
 	}
 }

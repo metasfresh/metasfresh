@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
@@ -37,6 +38,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonWarehouseResponse> warehouses;
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
+	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;

@@ -20,6 +20,16 @@ BEGIN
     EXECUTE 'CREATE TABLE ' || v_backupTableName || ' AS SELECT * FROM ' || p_TableName;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
 
+    CREATE TABLE IF NOT EXISTS backup.backup_tables
+
+    (
+        backup_table_name text PRIMARY KEY,
+        source_table_name text        NOT NULL,
+        created_at        timestamptz NOT NULL DEFAULT NOW(),
+        row_count         integer
+    )
+    ;
+
     INSERT INTO backup.backup_tables (backup_table_name, source_table_name, created_at, row_count)
     VALUES (v_backupTableName, p_TableName, NOW(), v_rowcount);
 
