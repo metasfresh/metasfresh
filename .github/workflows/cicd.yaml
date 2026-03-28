@@ -1673,37 +1673,6 @@ jobs:
           server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
           storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
-      - name: Download Cucumber JUnit results
-        if: always()
-        uses: actions/download-artifact@v4
-        with:
-          pattern: junit-results-cucumber-*
-          path: cucumber-junit-xml/
-          merge-multiple: true
-
-      - name: Generate JUnit HTML for Cucumber
-        if: always()
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: cucumber-junit-xml/*.xml
-          output-dir: junit-html-cucumber
-          artifact-name: junit-html-cucumber
-          report-title: 'JUnit (Cucumber BDD)'
-          history-artifact-name: junit-html-history-cucumber
-
-      - name: Upload Cucumber JUnit HTML to server
-        if: always()
-        uses: ./.github/actions/upload-report-to-server
-        with:
-          report-dir: junit-html-cucumber
-          report-type: junit/cucumber
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
   health_check:
     name: health check
@@ -1897,28 +1866,6 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
-      - name: Generate JUnit HTML for Playwright Mobile
-        if: always()
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: docker-builds/e2e-tests/playwright-report-mobile/junit/*.xml
-          output-dir: junit-html-playwright-mobile
-          artifact-name: junit-html-playwright-mobile
-          report-title: 'JUnit (Playwright Mobile)'
-          history-artifact-name: junit-html-history-playwright-mobile
-      - name: Upload Playwright Mobile JUnit HTML to server
-        if: always()
-        uses: ./.github/actions/upload-report-to-server
-        with:
-          report-dir: junit-html-playwright-mobile
-          report-type: junit/playwright-mobile
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
@@ -2069,37 +2016,6 @@ jobs:
           server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
           storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
-      - name: Download Frontend Playwright JUnit results
-        if: always()
-        uses: actions/download-artifact@v4
-        with:
-          pattern: junit-results-playwright-frontend-*
-          path: frontend-junit-xml/
-          merge-multiple: true
-
-      - name: Generate JUnit HTML for Frontend Playwright
-        if: always()
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: frontend-junit-xml/*.xml
-          output-dir: junit-html-playwright-frontend
-          artifact-name: junit-html-playwright-frontend
-          report-title: 'JUnit (Playwright Frontend)'
-          history-artifact-name: junit-html-history-playwright-frontend
-
-      - name: Upload Frontend Playwright JUnit HTML to server
-        if: always()
-        uses: ./.github/actions/upload-report-to-server
-        with:
-          report-dir: junit-html-playwright-frontend
-          report-type: junit/playwright-frontend
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
   # =============================================================================
   # Publish Allure HTML Reports to test-reports.metasfresh.com
@@ -2173,7 +2089,7 @@ jobs:
 
           JUNIT_REPORTS=""
           JUNIT_COUNT=0
-          for suite in backend camel jest cucumber playwright-mobile playwright-frontend; do
+          for suite in backend camel jest; do
             if ssh reports-server "test -f ${BUILD_PATH}/junit/${suite}/index.html" 2>/dev/null; then
               JUNIT_REPORTS="${JUNIT_REPORTS}${suite} "
               JUNIT_COUNT=$((JUNIT_COUNT + 1))
@@ -2331,7 +2247,7 @@ jobs:
 
           # JUnit suites (Allure-generated HTML from JUnit XML has same widget structure)
           junit_dir = os.path.join(build_dir, "junit")
-          junit_suites = ["backend", "camel", "jest", "cucumber", "playwright-mobile", "playwright-frontend"]
+          junit_suites = ["backend", "camel", "jest"]
           for suite in junit_suites:
               suite_dir = os.path.join(junit_dir, suite)
               summary_file = os.path.join(suite_dir, "widgets", "summary.json")
