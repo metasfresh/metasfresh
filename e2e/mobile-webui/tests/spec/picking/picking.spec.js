@@ -16,6 +16,7 @@ const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
+                                    qtyCUsPerTU = 4,
                                 } = {}) => {
     return await Backend.createMasterdata({
         language,
@@ -43,7 +44,7 @@ const createMasterdata = async ({
                 "P1": { prices: [{ price: 1 }] },
             },
             packingInstructions: {
-                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU },
             },
             handlingUnits: {
                 "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' }
@@ -470,4 +471,54 @@ test('Check launcher already started indicator', async ({ page }) => {
     await PickingJobsListScreen.expectJobButtons([
         { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: true }
     ]);
+});
+
+// noinspection JSUnusedLocalSymbols
+test('TU picking with CU-per-TU > 1 — step qty displayed as TU count', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('TU picking qty conversion (CU-per-TU > 1)');
+    allure.severity('critical');
+
+    // Setup with qtyCUsPerTU=2 to test that step qty is displayed as TU count (not CU count).
+    // Sales order: 4 CU = 2 TU with packing "x 2 Stk" (2 CU per TU).
+    // Without the fix, the step would show "4" (CU) instead of "2" (TU), and picking 4 TUs would fail.
+    const masterdata = await createMasterdata({ salesOrdersQty: 4, qtyCUsPerTU: 2 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // Line should show 2 TU (not 4 CU)
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+
+    // Pick via direct scan — dialog should propose 2 TUs
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '2',
+    });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 2, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        },
+    });
+
+    await PickingJobScreen.complete();
 });
