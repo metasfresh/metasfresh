@@ -1673,6 +1673,38 @@ jobs:
           server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
           storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
+      - name: Download Cucumber JUnit results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-results-cucumber-*
+          path: cucumber-junit-xml/
+          merge-multiple: true
+
+      - name: Generate JUnit HTML for Cucumber
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: cucumber-junit-xml/*.xml
+          output-dir: junit-html-cucumber
+          artifact-name: junit-html-cucumber
+          report-title: 'JUnit (Cucumber BDD)'
+          history-artifact-name: junit-html-history-cucumber
+
+      - name: Upload Cucumber JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-cucumber
+          report-type: junit/cucumber
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
   health_check:
     name: health check
     runs-on: ${{ vars.RUNNER_TEST }}
@@ -2029,6 +2061,38 @@ jobs:
         with:
           report-dir: e2e/frontend-webui/allure-report
           report-type: allure/frontend-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
+      - name: Download Frontend Playwright JUnit results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-results-playwright-frontend-*
+          path: frontend-junit-xml/
+          merge-multiple: true
+
+      - name: Generate JUnit HTML for Frontend Playwright
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: frontend-junit-xml/*.xml
+          output-dir: junit-html-playwright-frontend
+          artifact-name: junit-html-playwright-frontend
+          report-title: 'JUnit (Playwright Frontend)'
+          history-artifact-name: junit-html-history-playwright-frontend
+
+      - name: Upload Frontend Playwright JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-playwright-frontend
+          report-type: junit/playwright-frontend
           branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           version: ${{ needs.init.outputs.tag-fixed }}
           ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
