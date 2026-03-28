@@ -214,10 +214,22 @@ services:
       - ./allure-results-mobile:/app/allure-results
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
+      - "WIREMOCK_BASE_URL=http://wiremock:8080"
       - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
     depends_on:
       mobile:
         condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # WireMock — mock server for external API stubs (DHL, etc.)
+  # Stub mappings are baked into the image from misc/dev-support/docker/wiremock/
+  wiremock:
+    image: wiremock/wiremock:3.13.0
+    volumes:
+      - ../../misc/dev-support/docker/wiremock/mappings:/home/wiremock/mappings
+      - ../../misc/dev-support/docker/wiremock/__files:/home/wiremock/__files
     deploy:
       mode: replicated
       replicas: 1

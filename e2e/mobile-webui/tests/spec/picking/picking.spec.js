@@ -687,11 +687,13 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
     allure.story('DHL label generation during picking (QA scenario 11)');
     allure.severity('critical');
 
-    // Setup with DHL shipper pointing to WireMock on port 18080
+    // Setup with DHL shipper pointing to WireMock
+    // CI: http://wiremock:8080 (Docker internal), Local: http://localhost:18080
+    const wiremockUrl = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
     const masterdata = await createMasterdata({
         shipOnCloseLU: true,
         shipperConfig: {
-            apiUrl: 'http://localhost:18080',
+            apiUrl: wiremockUrl,
             applicationID: 'mock_app',
             applicationToken: 'mock_token',
             accountNumber: '22222222220104',
