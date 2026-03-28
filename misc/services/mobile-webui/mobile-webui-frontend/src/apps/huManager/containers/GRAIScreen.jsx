@@ -78,6 +78,8 @@ const GRAIScreen = () => {
     <div className="grai-screen">
       <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
 
+      {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
+
       <div className="grai-count" data-testid="grai-count">
         {trl('huManager.action.scanGRAI.count', { scanned: assignedGrais.length, total: tuCount })}
         {extraGrais.length > 0 && (
@@ -131,8 +133,6 @@ const GRAIScreen = () => {
           onNo={() => setShowClearAllDialog(false)}
         />
       )}
-
-      {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
     </div>
   );
 };
