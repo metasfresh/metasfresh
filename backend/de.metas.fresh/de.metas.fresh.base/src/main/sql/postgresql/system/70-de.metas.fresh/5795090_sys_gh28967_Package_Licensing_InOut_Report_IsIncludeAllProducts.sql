@@ -1,25 +1,8 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- gh#28967: Add IsIncludeAllProducts parameter to Package_Licensing_InOut_Report
+-- When Y (default): include all products regardless of packaging masterdata
+-- When N: only include products with packaging masterdata for the given country (old behavior)
 
+-- 1) Drop old signatures and create updated function
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Report(p_DateFrom              timestamp with time zone,
                                                               p_DateTo                timestamp with time zone,
                                                               p_Country_id            numeric)
@@ -168,4 +151,129 @@ ORDER BY io.movementdate, io.documentno, p.value
 
 $$
     LANGUAGE sql STABLE
+;
+
+-- 2) AD_Element for IsIncludeAllProducts
+INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy,
+                        IsActive, EntityType, ColumnName, Name, PrintName)
+VALUES (584691 /*From ID Server*/, 0, 0, '2026-03-21 12:00', 100, '2026-03-21 12:00', 100,
+        'Y', 'D', 'IsIncludeAllProducts', 'Alle Produkte einbeziehen', 'Alle Produkte einbeziehen')
+;
+
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description,
+                            IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, 584691, 'Alle Produkte einbeziehen', 'Alle Produkte einbeziehen', NULL,
+       'N', 0, 0, '2026-03-21 12:00', 100, '2026-03-21 12:00', 100, 'Y'
+FROM AD_Language l
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 584691)
+;
+
+-- de_DE translation (base language — IsTranslated stays N)
+UPDATE AD_Element_Trl
+SET IsTranslated   = 'N',
+    Name           = 'Alle Produkte einbeziehen',
+    PrintName      = 'Alle Produkte einbeziehen',
+    Description    = 'Produkte ohne Verpackungslizenz-Stammdaten für das gewählte Land mit einbeziehen',
+    Updated        = '2026-03-21 12:00',
+    UpdatedBy      = 100
+WHERE AD_Element_ID = 584691
+  AND AD_Language = 'de_DE'
+;
+SELECT update_ad_element_on_ad_element_trl_update(584691, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_DE');
+
+-- de_CH translation
+UPDATE AD_Element_Trl
+SET IsTranslated   = 'Y',
+    Name           = 'Alle Produkte einbeziehen',
+    PrintName      = 'Alle Produkte einbeziehen',
+    Description    = 'Produkte ohne Verpackungslizenz-Stammdaten für das gewählte Land mit einbeziehen',
+    Updated        = '2026-03-21 12:00',
+    UpdatedBy      = 100
+WHERE AD_Element_ID = 584691
+  AND AD_Language = 'de_CH'
+;
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_CH');
+
+-- en_US translation
+UPDATE AD_Element_Trl
+SET IsTranslated   = 'Y',
+    Name           = 'Include All Products',
+    PrintName      = 'Include All Products',
+    Description    = 'Include products that have no packaging licensing master data for the selected country',
+    Updated        = '2026-03-21 12:00',
+    UpdatedBy      = 100
+WHERE AD_Element_ID = 584691
+  AND AD_Language = 'en_US'
+;
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
+
+-- 3) AD_Process_Para for detail report (585503)
+INSERT INTO AD_Process_Para (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID, AD_Process_Para_ID,
+                             AD_Reference_ID, ColumnName, Created, CreatedBy, EntityType, FieldLength,
+                             IsActive, IsAutocomplete, IsCentrallyMaintained, IsEncrypted, IsMandatory, IsRange,
+                             Name, SeqNo, DefaultValue, Updated, UpdatedBy)
+VALUES (0, 584691 /*From ID Server*/, 0, 585503, 543158 /*From ID Server*/,
+        20, 'IsIncludeAllProducts', '2026-03-21 12:00', 100, 'D', 0,
+        'Y', 'N', 'Y', 'N', 'Y', 'N',
+        'Alle Produkte einbeziehen', 40, 'Y', '2026-03-21 12:00', 100)
+;
+
+INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Description, Help, Name,
+                                 IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, 543158, t.Description, t.Help, t.Name,
+       'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Process_Para t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND t.AD_Process_Para_ID = 543158
+  AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID)
+;
+
+-- Propagate element translations (en_US name/description) to process parameter labels
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
+
+-- 4) AD_Process_Para for summary report (585504)
+INSERT INTO AD_Process_Para (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID, AD_Process_Para_ID,
+                             AD_Reference_ID, ColumnName, Created, CreatedBy, EntityType, FieldLength,
+                             IsActive, IsAutocomplete, IsCentrallyMaintained, IsEncrypted, IsMandatory, IsRange,
+                             Name, SeqNo, DefaultValue, Updated, UpdatedBy)
+VALUES (0, 584691 /*From ID Server*/, 0, 585504, 543159 /*From ID Server*/,
+        20, 'IsIncludeAllProducts', '2026-03-21 12:00', 100, 'D', 0,
+        'Y', 'N', 'Y', 'N', 'Y', 'N',
+        'Alle Produkte einbeziehen', 40, 'Y', '2026-03-21 12:00', 100)
+;
+
+INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Description, Help, Name,
+                                 IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, 543159, t.Description, t.Help, t.Name,
+       'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Process_Para t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND t.AD_Process_Para_ID = 543159
+  AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID)
+;
+
+-- Propagate element translations (en_US name/description) to process parameter labels
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584691, 'en_US');
+
+-- 5) Update SQLStatement on detail report to pass the new parameter
+UPDATE AD_Process
+SET SQLStatement = 'SELECT * FROM report.Package_Licensing_InOut_Report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, ''@IsIncludeAllProducts@'')',
+    Updated      = '2026-03-21 12:00',
+    UpdatedBy    = 100
+WHERE AD_Process_ID = 585503
+;
+
+-- 6) Update SQLStatement on summary report to pass the new parameter
+UPDATE AD_Process
+SET SQLStatement = 'SELECT * FROM report.Package_Licensing_InOut_Summary_Report( @DateFrom/null@, @DateTo/null@, @C_Country_ID/null@, ''@IsIncludeAllProducts@'')',
+    Updated      = '2026-03-21 12:00',
+    UpdatedBy    = 100
+WHERE AD_Process_ID = 585504
 ;
