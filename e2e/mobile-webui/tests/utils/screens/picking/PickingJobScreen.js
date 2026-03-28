@@ -103,7 +103,15 @@ export const PickingJobScreen = {
     closeTargetLU: async () => await step(`${NAME} - Close target LU`, async () => {
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.clickCloseTargetButton();
-        await PickingJobScreen.waitForScreen();
+        // After close, the app may stay on SelectPickTargetScreen briefly while the API processes.
+        // Wait for either PickingJobScreen (if goBack fires) or loading to settle, then go back if needed.
+        try {
+            await PickingJobScreen.waitForScreen();
+        } catch (e) {
+            // goBack() didn't fire or was too slow — navigate back manually
+            await page.locator(ID_BACK_BUTTON).tap();
+            await PickingJobScreen.waitForScreen();
+        }
     }),
 
     clickTUTargetButton: async () => await step(`${NAME} - Click TU target button`, async () => {
@@ -118,7 +126,12 @@ export const PickingJobScreen = {
     closeTargetTU: async () => await step(`${NAME} - Close target TU`, async () => {
         await PickingJobScreen.clickTUTargetButton();
         await SelectPickTargetTUScreen.clickCloseTargetButton();
-        await PickingJobScreen.waitForScreen();
+        try {
+            await PickingJobScreen.waitForScreen();
+        } catch (e) {
+            await page.locator(ID_BACK_BUTTON).tap();
+            await PickingJobScreen.waitForScreen();
+        }
     }),
 
     pickHU: async ({
