@@ -40,6 +40,9 @@ import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -79,6 +82,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
+		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -99,6 +103,7 @@ public class CreateMasterdataCommand
 				.warehouses(warehouses)
 				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
+				.shippers(shippers)
 				.handlingUnits(hus)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
@@ -270,6 +275,20 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request.getMobileConfig())
 				//
+				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateShipperResponse> createShippers()
+	{
+		return process(request.getShippers(), this::createShipper);
+	}
+
+	private JsonCreateShipperResponse createShipper(final String identifier, final JsonCreateShipperRequest request)
+	{
+		return CreateShipperCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build().execute();
 	}
 
