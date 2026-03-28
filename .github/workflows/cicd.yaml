@@ -2499,7 +2499,32 @@ jobs:
                       return a;
                   }
 
-                  function createBuildElement(branchName, build) {
+                  async function discoverReports(basePath) {
+                      var reports = [];
+                      var categories = [
+                          { prefix: 'Allure', dir: '/allure/' },
+                          { prefix: 'JUnit', dir: '/junit/' }
+                      ];
+                      for (var i = 0; i < categories.length; i++) {
+                          var cat = categories[i];
+                          try {
+                              var resp = await fetch(basePath + cat.dir);
+                              if (!resp.ok) continue;
+                              var entries = await resp.json();
+                              entries.forEach(function(entry) {
+                                  if (entry.type === 'directory') {
+                                      reports.push({
+                                          name: cat.prefix + ': ' + entry.name,
+                                          path: cat.dir + entry.name + '/'
+                                      });
+                                  }
+                              });
+                          } catch (e) { /* directory doesn't exist yet */ }
+                      }
+                      return reports;
+                  }
+
+                  async function createBuildElement(branchName, build) {
                       const buildDiv = document.createElement('div');
                       buildDiv.className = 'build';
 
@@ -2521,29 +2546,22 @@ jobs:
                       linksDiv.className = 'report-links';
 
                       const basePath = '/branches/' + encodeURIComponent(branchName) + '/builds/' + encodeURIComponent(build.version);
+                      const reports = await discoverReports(basePath);
 
-                      const reports = [
-                          { name: 'Allure: Cucumber', path: '/allure/cucumber/' },
-                          { name: 'Allure: Mobile', path: '/allure/mobile-webui/' },
-                          { name: 'Allure: Frontend', path: '/allure/frontend-webui/' },
-                          { name: 'JUnit: Backend', path: '/junit/backend/' },
-                          { name: 'JUnit: Camel', path: '/junit/camel/' },
-                          { name: 'JUnit: Jest', path: '/junit/jest/' },
-                          { name: 'JUnit: Cucumber', path: '/junit/cucumber/' },
-                          { name: 'JUnit: Mobile PW', path: '/junit/playwright-mobile/' },
-                          { name: 'JUnit: Frontend PW', path: '/junit/playwright-frontend/' }
-                      ];
-
-                      reports.forEach(function(report) {
-                          const link = createLink(basePath + report.path, report.name);
-                          linksDiv.appendChild(link);
-                      });
+                      if (reports.length === 0) {
+                          linksDiv.appendChild(createTextElement('span', 'No reports', 'loading'));
+                      } else {
+                          reports.forEach(function(report) {
+                              const link = createLink(basePath + report.path, report.name);
+                              linksDiv.appendChild(link);
+                          });
+                      }
 
                       buildDiv.appendChild(linksDiv);
                       return buildDiv;
                   }
 
-                  function createBranchElement(branchData) {
+                  async function createBranchElement(branchData) {
                       const branchDiv = document.createElement('div');
                       branchDiv.className = 'branch';
 
@@ -2555,9 +2573,9 @@ jobs:
 
                       // Show all builds (metadata is capped to 3 per branch at publish time)
                       const builds = branchData.builds;
-                      builds.forEach(function(build) {
-                          buildsDiv.appendChild(createBuildElement(branchData.branch, build));
-                      });
+                      for (var i = 0; i < builds.length; i++) {
+                          buildsDiv.appendChild(await createBuildElement(branchData.branch, builds[i]));
+                      }
 
                       branchDiv.appendChild(buildsDiv);
                       return branchDiv;
@@ -2587,7 +2605,7 @@ jobs:
                                   const branchResponse = await fetch('/_metadata/' + file.name);
                                   if (branchResponse.ok) {
                                       const branchData = await branchResponse.json();
-                                      container.appendChild(createBranchElement(branchData));
+                                      container.appendChild(await createBranchElement(branchData));
                                   }
                               } catch (e) {
                                   console.error('Error loading branch:', file.name, e);
