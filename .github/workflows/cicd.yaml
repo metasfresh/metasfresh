@@ -2679,7 +2679,7 @@ jobs:
 
           MARKER="<!-- allure-reports -->"
           BODY="${MARKER}
-          ### 📊 Allure Test Reports
+          ### 📊 Test Reports
 
           **Build:** \`${VERSION}\`
 
