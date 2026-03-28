@@ -583,7 +583,11 @@ public class HUTraceEventsService
 				.eventTime(Instant.now());
 
 		final List<I_M_HU> vhus = huAccessService.retrieveVhus(hu);
+		// If the HU is being removed from its parent and has no new parent yet (e.g., being destroyed),
+		// retrieveTopLevelHuId returns 0. Fall back to hu itself as the new top-level — consistent with
+		// the same pattern used in createAndAddEventsForInventoryLines.
 		final HuId newTopLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(hu));
+		final HuId newTopLevelHuIdEffective = newTopLevelHuId != null ? newTopLevelHuId : HuId.ofRepoId(hu.getM_HU_ID());
 
 		final HuId oldTopLevelHuId;
 		if (parentHUItemOld == null)
@@ -623,7 +627,7 @@ public class HUTraceEventsService
 					.lotNumber(lotNumberHUAttributeValue);
 			huTraceRepository.addEvent(builder.build());
 
-			builder.topLevelHuId(newTopLevelHuId)
+			builder.topLevelHuId(newTopLevelHuIdEffective)
 					.qty(productAndQty.get().getRight());
 			huTraceRepository.addEvent(builder.build());
 		}

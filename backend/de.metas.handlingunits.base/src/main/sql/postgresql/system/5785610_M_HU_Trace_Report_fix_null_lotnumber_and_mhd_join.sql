@@ -1,21 +1,18 @@
 -- =====================================================================================
--- MODIFIED M_HU_Trace_Report Function
+-- Migration: Fix two bugs in M_HU_Trace_Report function
 -- =====================================================================================
--- MODIFICATION SUMMARY:
--- This function has been extended to support TWO product flows:
--- 
--- 1. MANUFACTURED PRODUCTS (Original Flow):
---    Purchase → Material Receipt → Manufacturing (Production Issue/Receipt) → Shipment
+-- BUG A (Section 5 — PRODUCTION_RECEIPT_DETAIL):
+--   INNER JOIN m_hu_attribute → LEFT JOIN m_hu_attribute for the MHD (best-before)
+--   attribute (M_Attribute_ID = 540020). Products without a best-before date were
+--   silently excluded from PRODUCTION_RECEIPT_DETAIL rows.
 --
--- 2. NON-MANUFACTURED PRODUCTS (New Flow - Added):
---    Purchase → Material Receipt (issotrx=N) → Shipment (issotrx=Y)
---
--- KEY CHANGES:
--- - Added new section "DIRECT_SALE_DETAIL" (similar to PRODUCTION_RECEIPT_DETAL)
--- - This new section traces non-manufactured products from purchase receipt to customer shipment
--- - Links purchase receipts (issotrx=N) to sales shipments (issotrx=Y) via lot numbers
--- - Shows vendor information from purchase and customer information from shipment
--- - Enhanced Material Receipts and Material Shipments sections to better handle both flows
+-- BUG B (Section 6 — DIRECT_SALE_DETAIL):
+--   Two NULL-unsafe comparisons on lotnumber replaced with IS NOT DISTINCT FROM:
+--   1. The LEFT JOIN condition linking shipment_trace to t (already fixed in previous
+--      version of this script, kept here for completeness)
+--   2. The NOT EXISTS guard: "WHERE pt.lotnumber = t.lotnumber" → IS NOT DISTINCT FROM.
+--      Products with lotnumber=NULL had no DIRECT_SALE_DETAIL row because NULL = NULL
+--      evaluates to FALSE (not TRUE) in SQL.
 -- =====================================================================================
 
 drop function if exists m_hu_trace_report(numeric);
