@@ -724,10 +724,7 @@ public class M_HU_StepDef
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			validateHUStorage(row);
-		}
+		DataTableRows.of(table).forEach(this::validateHUStorage);
 	}
 
 	/**
@@ -957,14 +954,12 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void validateHUStorage(@NonNull final Map<String, String> row)
+	private void validateHUStorage(final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final HuId huId = huTable.getId(huIdentifier);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
-
+		final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+		assertThat(huId).isNotNull();
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
 		final Optional<I_M_HU_Storage> huStorageRecord = getSingleHUStorageRecord(huId);
 
 		final String qty = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Qty);
