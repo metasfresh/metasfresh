@@ -107,6 +107,16 @@ services:
     ports:
       - "${PAPERCUT_SMTP_PORT}:25"
       - "${PAPERCUT_MGMT_PORT}:37408"
+
+  wiremock:
+    image: wiremock/wiremock:3.13.0
+    container_name: ${BRANCH_NAME}_wiremock
+    ports:
+      - "${WIREMOCK_PORT:-18080}:8080"
+    volumes:
+      - ../wiremock/mappings:/home/wiremock/mappings
+      - ../wiremock/__files:/home/wiremock/__files
+
 volumes:
   metasfresh_postgres:
     name: ${BRANCH_NAME}_metasfresh_postgres
