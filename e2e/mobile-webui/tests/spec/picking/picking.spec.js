@@ -8,8 +8,9 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
-import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -279,6 +280,52 @@ test('Test picking line complete status - draft | in progress | complete', async
     });
 
     await PickingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan HU and cancel — nothing picked', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('Cancel picking after scanning HU (QA scenario 1)');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+
+    // Scan the HU directly — dialog opens
+    await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.expectQtyEntered('3');
+
+    // Cancel — nothing should be picked
+    await GetQuantityDialog.clickCancel();
+    await PickingJobScreen.waitForScreen();
+
+    // Verify: still 0 TU picked
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: []
+                    }
+                }
+            }
+        },
+    });
 });
 
 test.describe('Picking Job Completion', () => {
