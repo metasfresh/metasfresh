@@ -100,6 +100,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1
@@ -219,6 +221,8 @@ services:
     depends_on:
       mobile:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1
