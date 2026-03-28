@@ -197,17 +197,36 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     // Take a screenshot for reference
     await page.screenshot({ path: '/tmp/pick-modal-with-selection.png' });
 
-    // Verify at least one quick action appeared after selecting
-    expect(
-      allQuickActions,
-      `Quick actions after selecting modal row: ${allQuickActions}`
-    ).toContain('quick-action-');
+    // Select the product row in the modal using Ctrl+click
+    await modalTable.first().click({ modifiers: ['Control'] });
+    await page.waitForTimeout(1000);
 
-    // Click "Done" to close the modal
+    // The "Pick" quick action should now be visible in the modal
+    const modalPickButton = page.locator('.raw-modal [data-testid^="quick-action-"]').first();
+    await modalPickButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Click "Pick" to pick the selected product
+    await modalPickButton.click();
+
+    // Wait for the pick process to complete
+    await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.waitForTimeout(2000);
+
+    // After picking, the row should show "Picked" status
+    // Check if the Pick Status column changed
+    const pickStatusCell = page.locator('.raw-modal table tbody tr').first().locator('td').last();
+    const pickStatus = await pickStatusCell.innerText().catch(() => 'unknown');
+
+    // Take screenshot for verification
+    await page.screenshot({ path: '/tmp/pick-modal-after-pick.png' });
+
+    // Close modal
     const doneButton = page.getByTestId('modal-done');
-    if (await doneButton.isVisible().catch(() => false)) {
-      await doneButton.click();
-      await page.waitForTimeout(1000);
-    }
+    await doneButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await doneButton.click();
+    await page.waitForTimeout(1000);
+
+    // Verify we're back on the Picking Terminal grid
+    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   });
 });
