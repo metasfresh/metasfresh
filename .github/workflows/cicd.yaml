@@ -2329,6 +2329,64 @@ jobs:
 
                   result["failures"].append(failure)
 
+          # JUnit suites (Allure-generated HTML from JUnit XML has same widget structure)
+          junit_dir = os.path.join(build_dir, "junit")
+          junit_suites = ["backend", "camel", "jest", "cucumber", "playwright-mobile", "playwright-frontend"]
+          for suite in junit_suites:
+              suite_dir = os.path.join(junit_dir, suite)
+              summary_file = os.path.join(suite_dir, "widgets", "summary.json")
+              if not os.path.isfile(summary_file):
+                  continue
+
+              with open(summary_file, "r") as f:
+                  summary = json.load(f)
+
+              stats = summary.get("statistic", {})
+              result["suites"][f"junit/{suite}"] = {
+                  "total": stats.get("total", 0),
+                  "passed": stats.get("passed", 0),
+                  "failed": stats.get("failed", 0),
+                  "broken": stats.get("broken", 0),
+                  "skipped": stats.get("skipped", 0)
+              }
+
+              if stats.get("failed", 0) == 0 and stats.get("broken", 0) == 0:
+                  continue
+
+              tc_dir = os.path.join(suite_dir, "data", "test-cases")
+              if not os.path.isdir(tc_dir):
+                  continue
+
+              for tc_file in glob.glob(os.path.join(tc_dir, "*.json")):
+                  with open(tc_file, "r") as f:
+                      try:
+                          tc = json.load(f)
+                      except json.JSONDecodeError:
+                          continue
+
+                  status = tc.get("status", "")
+                  if status not in ("failed", "broken"):
+                      continue
+
+                  failure = {
+                      "suite": f"junit/{suite}",
+                      "name": tc.get("name", ""),
+                      "fullName": tc.get("fullName", ""),
+                      "status": status,
+                      "message": tc.get("statusMessage", ""),
+                      "trace": tc.get("statusTrace", ""),
+                  }
+
+                  steps_list = tc.get("testStage", {}).get("steps", [])
+                  failed_steps = [
+                      {"name": s.get("name", ""), "status": s.get("status", "")}
+                      for s in steps_list if s.get("status") in ("failed", "broken")
+                  ]
+                  if failed_steps:
+                      failure["failedSteps"] = failed_steps
+
+                  result["failures"].append(failure)
+
           # Write combined failures.json at build level
           output_file = os.path.join(build_dir, "failures.json")
           with open(output_file, "w") as f:
@@ -2465,9 +2523,15 @@ jobs:
                       const basePath = '/branches/' + encodeURIComponent(branchName) + '/builds/' + encodeURIComponent(build.version);
 
                       const reports = [
-                          { name: 'Frontend', path: '/allure/frontend-webui/' },
-                          { name: 'Mobile', path: '/allure/mobile-webui/' },
-                          { name: 'Cucumber', path: '/allure/cucumber/' }
+                          { name: 'Allure: Cucumber', path: '/allure/cucumber/' },
+                          { name: 'Allure: Mobile', path: '/allure/mobile-webui/' },
+                          { name: 'Allure: Frontend', path: '/allure/frontend-webui/' },
+                          { name: 'JUnit: Backend', path: '/junit/backend/' },
+                          { name: 'JUnit: Camel', path: '/junit/camel/' },
+                          { name: 'JUnit: Jest', path: '/junit/jest/' },
+                          { name: 'JUnit: Cucumber', path: '/junit/cucumber/' },
+                          { name: 'JUnit: Mobile PW', path: '/junit/playwright-mobile/' },
+                          { name: 'JUnit: Frontend PW', path: '/junit/playwright-frontend/' }
                       ];
 
                       reports.forEach(function(report) {
@@ -2576,14 +2640,17 @@ jobs:
             exit 0
           fi
 
-          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          BUILD_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}"
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          for report_type in ${{ steps.inventory.outputs.reports }}; do
-            echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
+          for report_type in ${{ steps.inventory.outputs.allure_reports }}; do
+            echo "| Allure: ${report_type} | [Open report](${BUILD_URL}/allure/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
-          FAILURES_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/failures.json"
+          for report_type in ${{ steps.inventory.outputs.junit_reports }}; do
+            echo "| JUnit: ${report_type} | [Open report](${BUILD_URL}/junit/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
+          done
+          FAILURES_URL="${BUILD_URL}/failures.json"
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Machine-readable:** [failures.json](${FAILURES_URL})" >> $GITHUB_STEP_SUMMARY
 
@@ -2601,10 +2668,13 @@ jobs:
             exit 0
           fi
 
-          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          BUILD_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}"
           REPORT_LINKS=""
-          for report_type in ${{ steps.inventory.outputs.reports }}; do
-            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          for report_type in ${{ steps.inventory.outputs.allure_reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| Allure: ${report_type} | [Open report](${BUILD_URL}/allure/${report_type}/) |"$'\n'
+          done
+          for report_type in ${{ steps.inventory.outputs.junit_reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| JUnit: ${report_type} | [Open report](${BUILD_URL}/junit/${report_type}/) |"$'\n'
           done
 
           MARKER="<!-- allure-reports -->"
