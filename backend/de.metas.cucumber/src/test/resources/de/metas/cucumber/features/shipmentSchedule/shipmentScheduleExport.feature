@@ -57,7 +57,6 @@ Feature: Shipment schedule export rest-api
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
 
-
   @Id:S0150_210
   Scenario: Export oxid shipment candidate
     Given load AD_User:

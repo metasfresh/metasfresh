@@ -30,7 +30,6 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -69,7 +68,7 @@ import java.util.Set;
  *
  * <pre>
  *  Table:              C_Invoice (318)
- *  Document Types:     ARI, ARC, ARF, API, APC
+ *  Document Types:     ARI, ARC, ARF, API, APC, APF
  * </pre>
  *
  * @author Jorg Janke
@@ -82,7 +81,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final MatchInvoiceService matchInvoiceService;
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
@@ -315,26 +313,29 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** ARI, ARF
 		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.SalesInvoice.equals(docBaseType)
-				|| DocBaseType.SalesProformaInvoice.equals(docBaseType))
+		if(!docBaseType.isFinancial())
+		{
+			return ImmutableList.of();
+		}
+		else if (docBaseType.isSalesInvoice())
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DocBaseType.SalesCreditMemo.equals(docBaseType))
+		else if (docBaseType.isSalesCreditMemo())
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DocBaseType.PurchaseInvoice.equals(docBaseType)
+		else if (docBaseType.isPurchaseInvoice()
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.PurchaseCreditMemo.equals(docBaseType))
+		else if (docBaseType.isPurchaseCreditMemo())
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}

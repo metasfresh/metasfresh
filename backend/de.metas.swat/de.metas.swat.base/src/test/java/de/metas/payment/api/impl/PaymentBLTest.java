@@ -135,6 +135,7 @@ public class PaymentBLTest
 			invoice.setC_DocType_ID(docType.getC_DocType_ID());
 			invoice.setIsSOTrx(docType.isSOTrx());
 			invoice.setProcessed(true);
+			invoice.setIsFinancial(InvoiceDocBaseType.ofCode(docType.getDocBaseType()).isFinancial());
 			saveRecord(invoice);
 		}
 

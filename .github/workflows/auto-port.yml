@@ -50,7 +50,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
        endsWith(github.event.workflow_run.head_branch, '_release'))
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -418,7 +418,7 @@ jobs:
 
           # Find source PRs associated with the triggering cicd commit
           SOURCE_PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
-            --jq '.[].number' 2>/dev/null || true)
+            --jq '[.[] | select(.merged_at != null)] | .[].number' 2>/dev/null || true)
 
           if [[ -z "$SOURCE_PRS" ]]; then
             echo "No source PRs found for commit $HEAD_SHA, skipping traceability"

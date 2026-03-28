@@ -244,6 +244,7 @@ public class PaymentAllocationBuilderTest
 			invoice.setC_Invoice_ID(invoiceId);
 			invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setIsFinancial(type.isFinancial());
 			invoice.setIsSOTrx(docType.isSOTrx());
 			invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
 			invoice.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -336,7 +337,7 @@ public class PaymentAllocationBuilderTest
 			@Nullable final String overUnderAmt,
 			@Nullable final String paymentOverUnderAmt,
 			@Nullable final CurrencyId currency,
-			boolean payableDocumentIsCreditMemo
+			final boolean payableDocumentIsCreditMemo
 	)
 	{
 		final LocalDate dateTrxParsed = LocalDate.parse(date);
@@ -394,12 +395,12 @@ public class PaymentAllocationBuilderTest
 		assertInvoiceAllocatedAmt(invoiceId, BigDecimal.valueOf(expectedAllocatedAmtInt));
 	}
 
-	private void assertInvoicePaymentStatus(final PayableDocument invoice, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final PayableDocument invoice, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		assertInvoicePaymentStatus(invoice.getInvoiceId(), expectedPaymentStatus, expectedOpenAmt);
 	}
 
-	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final boolean ignoreProcessed = false;
