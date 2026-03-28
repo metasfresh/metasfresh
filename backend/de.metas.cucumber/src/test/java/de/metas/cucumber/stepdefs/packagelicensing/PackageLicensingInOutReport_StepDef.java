@@ -7,6 +7,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
@@ -143,7 +144,7 @@ public class PackageLicensingInOutReport_StepDef
 		final BigDecimal movementQty = row.getAsBigDecimal("MovementQty");
 
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		final int orgId = OrgId.MAIN.getRepoId();
 
 		// Create BPartner first (needed for both warehouse and InOut)
 		final int bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
@@ -216,15 +217,22 @@ public class PackageLicensingInOutReport_StepDef
 	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string}")
 	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo) throws SQLException
 	{
+		executeReport(countryCode, dateFrom, dateTo, "Y");
+	}
+
+	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string} and IsIncludeAllProducts {string}")
+	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo, @NonNull final String isIncludeAllProducts) throws SQLException
+	{
 		reportResults.clear();
 
 		final int countryId = getCountryIdByCode(countryCode);
-		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Report(?, ?, ?)";
+		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Report(?, ?, ?, ?)";
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
 			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
 			pstmt.setInt(3, countryId);
+			pstmt.setString(4, isIncludeAllProducts);
 
 			try (final ResultSet rs = pstmt.executeQuery())
 			{
@@ -348,6 +356,12 @@ public class PackageLicensingInOutReport_StepDef
 
 	private int insertPackageLicensingMaterialGroup(final int countryId, @NonNull final String name)
 	{
+		final int existingId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_PackageLicensing_MaterialGroup_ID FROM M_PackageLicensing_MaterialGroup WHERE Name=" + sqlQuote(name) + " AND C_Country_ID=" + countryId + " AND IsActive='Y' LIMIT 1");
+		if (existingId > 0)
+		{
+			return existingId;
+		}
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PACKAGELICENSING_MATERIALGROUP_SEQ')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_PackageLicensing_MaterialGroup "
@@ -360,6 +374,12 @@ public class PackageLicensingInOutReport_StepDef
 
 	private int insertPackageLicensingProductGroup(final int countryId, @NonNull final String name)
 	{
+		final int existingId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_PackageLicensing_ProductGroup_ID FROM M_PackageLicensing_ProductGroup WHERE Name=" + sqlQuote(name) + " AND C_Country_ID=" + countryId + " AND IsActive='Y' LIMIT 1");
+		if (existingId > 0)
+		{
+			return existingId;
+		}
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PACKAGELICENSING_PRODUCTGROUP_SEQ')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_PackageLicensing_ProductGroup "
@@ -372,6 +392,12 @@ public class PackageLicensingInOutReport_StepDef
 
 	private void insertProductPackageLicensingProductGroup(final int productId, final int productGroupId)
 	{
+		final int existingId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_Product_PackageLicensing_ProductGroup_ID FROM M_Product_PackageLicensing_ProductGroup WHERE M_Product_ID=" + productId + " AND M_PackageLicensing_ProductGroup_ID=" + productGroupId + " AND IsActive='Y' LIMIT 1");
+		if (existingId > 0)
+		{
+			return;
+		}
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PRODUCT_PACKAGELICENSING_PRODUCTGROUP_SEQ')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Product_PackageLicensing_ProductGroup "
@@ -383,6 +409,12 @@ public class PackageLicensingInOutReport_StepDef
 
 	private void insertProductSmallPackagingMaterial(final int productId, final int materialGroupId)
 	{
+		final int existingId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_Product_SmallPackagingMaterial_ID FROM M_Product_SmallPackagingMaterial WHERE M_Product_ID=" + productId + " AND M_PackageLicensing_MaterialGroup_ID=" + materialGroupId + " AND IsActive='Y' LIMIT 1");
+		if (existingId > 0)
+		{
+			return;
+		}
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PRODUCT_SMALLPACKAGINGMATERIAL_SEQ')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Product_SmallPackagingMaterial "
@@ -394,6 +426,12 @@ public class PackageLicensingInOutReport_StepDef
 
 	private void insertProductOuterPackagingMaterial(final int productId, final int materialGroupId)
 	{
+		final int existingId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_Product_OuterPackagingMaterial_ID FROM M_Product_OuterPackagingMaterial WHERE M_Product_ID=" + productId + " AND M_PackageLicensing_MaterialGroup_ID=" + materialGroupId + " AND IsActive='Y' LIMIT 1");
+		if (existingId > 0)
+		{
+			return;
+		}
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PRODUCT_OUTERPACKAGINGMATERIAL_SEQ')");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Product_OuterPackagingMaterial "
@@ -422,11 +460,12 @@ public class PackageLicensingInOutReport_StepDef
 	private static int createWarehouse(final int clientId, final int orgId, @NonNull final String value, final int locationId, final int bpartnerId, final int bpartnerLocationId)
 	{
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_Warehouse_seq')");
+		final String uniqueValue = value + "_" + id;
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO M_Warehouse (M_Warehouse_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
 						+ "Value, Name, Separator, C_Location_ID, C_BPartner_ID, C_BPartner_Location_ID) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", '*', " + locationId + ", " + bpartnerId + ", " + bpartnerLocationId + ")",
+						+ sqlQuote(uniqueValue) + ", " + sqlQuote(uniqueValue) + ", '*', " + locationId + ", " + bpartnerId + ", " + bpartnerLocationId + ")",
 				ITrx.TRXNAME_None);
 		return id;
 	}
@@ -446,13 +485,14 @@ public class PackageLicensingInOutReport_StepDef
 	private static int createBPartner(final int clientId, final int orgId, @NonNull final String value)
 	{
 		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('C_BPartner_seq')");
+		final String uniqueValue = value + "_" + id;
 		final int bpGroupId = DB.getSQLValueEx(ITrx.TRXNAME_None,
 				"SELECT C_BP_Group_ID FROM C_BP_Group WHERE AD_Client_ID=" + clientId + " AND IsActive='Y' ORDER BY IsDefault DESC, C_BP_Group_ID LIMIT 1");
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"INSERT INTO C_BPartner (C_BPartner_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
 						+ "Value, Name, IsCustomer, IsVendor, C_BP_Group_ID) "
 						+ "VALUES (" + id + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
-						+ sqlQuote(value) + ", " + sqlQuote(value) + ", 'Y', 'Y', " + bpGroupId + ")",
+						+ sqlQuote(uniqueValue) + ", " + sqlQuote(uniqueValue) + ", 'Y', 'Y', " + bpGroupId + ")",
 				ITrx.TRXNAME_None);
 		return id;
 	}
