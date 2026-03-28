@@ -471,3 +471,172 @@ test('Check launcher already started indicator', async ({ page }) => {
         { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: true }
     ]);
 });
+
+//
+// Unpick wrong HU, repick correct one:
+// Pick from HU1, realize it's wrong, unpick via step screen, pick from HU2 instead, complete.
+// Verifies that state is consistent after undo (line returns to 0 TU picked).
+//
+// noinspection JSUnusedLocalSymbols
+test('Unpick wrong HU, repick correct one', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Unpick wrong HU and pick correct one');
+    allure.severity('critical');
+
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { "BP1": {} },
+            warehouses: { "wh": {} },
+            pickingSlots: { slot1: {} },
+            products: { "P1": { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                "HU2": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }]
+                },
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await test.step("Pick from HU1 (wrong one)", async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    });
+
+    await test.step("Unpick HU1", async () => {
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.clickStepButton({ index: 0 });
+        await PickingJobStepScreen.unpick();
+        await PickingJobLineScreen.goBack();
+    });
+
+    await test.step("Verify line is back to unpicked state", async () => {
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    });
+
+    await test.step("Pick from HU2 (correct one) and complete", async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    });
+
+    await PickingJobScreen.complete();
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+        }
+    });
+});
+
+//
+// Scan invalid HU QR code and recover:
+// Scan a non-existent HU QR code → error toast → verify screen still functional → pick real HU → complete.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan invalid HU QR code and recover', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast('Scanning non-existent HU QR code', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}',
+            isScanDirectly: true,
+        });
+    });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.complete();
+});
+
+//
+// Partial pick blocked, recover by picking remaining:
+// With allowCompletingPartialPickingJob=N, pick 1 of 3 TU → complete → error toast →
+// pick remaining 2 TU → complete successfully.
+//
+// noinspection JSUnusedLocalSymbols
+test('Partial pick blocked, recover by picking remaining', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Partial pick completion blocked then recovery');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: false });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyEntered: 1,
+        expectQtyEntered: "3",
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+    });
+
+    await expectErrorToast('Partial pick completion should be blocked', async () => {
+        await PickingJobScreen.complete();
+    });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        expectQtyEntered: '0',
+        qtyEntered: '2',
+    });
+    await PickingJobScreen.complete();
+});

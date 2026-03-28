@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_CustomerLabelName;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_Description;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_EAN_CU;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason;
 import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason;
@@ -67,6 +69,7 @@ public class C_BPartner_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
 	private final BPartnerProductStepDefData bpartnerProductTable;
+	private final C_BPartner_Product_Raw_StepDefData bpartnerProductRawTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
 	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
@@ -74,10 +77,12 @@ public class C_BPartner_Product_StepDef
 	public C_BPartner_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final BPartnerProductStepDefData bpartnerProductTable,
+			@NonNull final C_BPartner_Product_Raw_StepDefData bpartnerProductRawTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerProductTable = bpartnerProductTable;
+		this.bpartnerProductRawTable = bpartnerProductRawTable;
 		this.bPartnerTable = bPartnerTable;
 	}
 
@@ -185,6 +190,72 @@ public class C_BPartner_Product_StepDef
 		saveRecord(bPartnerProductRecord);
 
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Product_ID)
-				.ifPresent(i -> bpartnerProductTable.putOrReplace(i, ProductRepository.fromRecord(bPartnerProductRecord)));
+				.ifPresent(i -> {
+					bpartnerProductTable.putOrReplace(i, ProductRepository.fromRecord(bPartnerProductRecord));
+					bpartnerProductRawTable.putOrReplace(i, bPartnerProductRecord);
+				});
 	}
+
+	/**
+	 * Updates C_BPartner_Product fields and saves (triggers interceptor).
+	 * Supported columns: C_BPartner_Product_ID.Identifier (required), GTIN, EAN_CU, UPC, EAN13_ProductCode.
+	 */
+	@Given("update C_BPartner_Product:")
+	public void update_C_BPartner_Product(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_BPartner_Product_ID)
+				.forEach(this::updateBPartnerProduct);
+	}
+
+	private void updateBPartnerProduct(@NonNull final DataTableRow row)
+	{
+		final I_C_BPartner_Product record = row.getAsIdentifier().lookupIn(bpartnerProductRawTable);
+		assertThat(record).isNotNull();
+		InterfaceWrapperHelper.refresh(record);
+
+		row.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(value -> record.setGTIN(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_UPC).ifPresent(value -> record.setUPC(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_EAN_CU).ifPresent(value -> record.setEAN_CU(nullToken2Null(value)));
+		row.getAsOptionalString(COLUMNNAME_EAN13_ProductCode).ifPresent(value -> record.setEAN13_ProductCode(nullToken2Null(value)));
+
+		saveRecord(record);
+		bpartnerProductRawTable.putOrReplace(row.getAsIdentifier(), record);
+	}
+
+	/**
+	 * Verifies C_BPartner_Product fields. Only checks the columns provided.
+	 * Supported columns: C_BPartner_Product_ID.Identifier (required), GTIN, EAN_CU, UPC, EAN13_ProductCode.
+	 * The record is refreshed from DB before assertion.
+	 */
+	@Then("C_BPartner_Product is verified:")
+	public void c_bpartner_product_is_verified(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_BPartner_Product_ID)
+				.forEach(this::verifyBPartnerProductFields);
+	}
+
+	private void verifyBPartnerProductFields(@NonNull final DataTableRow row)
+	{
+		final I_C_BPartner_Product record = row.getAsIdentifier().lookupIn(bpartnerProductRawTable);
+		assertThat(record).isNotNull();
+		InterfaceWrapperHelper.refresh(record);
+
+		row.getAsOptionalString(COLUMNNAME_GTIN)
+				.ifPresent(expected -> assertThat(record.getGTIN()).as("GTIN").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalString(COLUMNNAME_EAN_CU)
+				.ifPresent(expected -> assertThat(record.getEAN_CU()).as("EAN_CU").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalString(COLUMNNAME_UPC)
+				.ifPresent(expected -> assertThat(record.getUPC()).as("UPC").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode)
+				.ifPresent(expected -> assertThat(record.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
+	}
+
+	@Nullable
+	private static String nullToken2Null(@NonNull final String value)
+	{
+		return "null".equals(value) ? null : value;
+	}
+
 }
