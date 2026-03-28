@@ -15,7 +15,7 @@ WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .
 
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress clean test-compile --offline
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --no-transfer-progress -T1C clean test-compile --offline
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml

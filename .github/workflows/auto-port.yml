@@ -41,7 +41,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
        endsWith(github.event.workflow_run.head_branch, '_release'))
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
       - uses: actions/checkout@v4
         with:
