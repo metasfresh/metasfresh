@@ -139,6 +139,18 @@ export const PAYMENT_WINDOW_ID = 195;
 export const FORECAST_WINDOW_ID = 328;
 
 // ============================================================================
+// PICKING WINDOWS
+// ============================================================================
+
+/**
+ * Picking Terminal V2 (Kommissionier-Terminal v2)
+ * Custom view backed by PackageableViewFactoryV2
+ * Window ID: 540485
+ * Description: Browse-all picking terminal showing shipment schedules
+ */
+export const PICKING_TERMINAL_V2_WINDOW_ID = 540485;
+
+// ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
 
