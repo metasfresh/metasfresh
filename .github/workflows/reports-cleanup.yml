@@ -157,8 +157,10 @@ jobs:
                       except (json.JSONDecodeError, KeyError):
                           pass
 
-                  # --- Stale branch ---
-                  if newest_ts > 0:
+                  # --- Stale branch (private repos only) ---
+                  # For public reports, branch existence is checked via GitHub API below.
+                  # For private repos we don't have the branch list, so fall back to age.
+                  if label_prefix and newest_ts > 0:
                       age_days = (now - newest_ts) / 86400
                       if age_days > MAX_BRANCH_AGE_DAYS:
                           size = dir_size(branch_dir)
