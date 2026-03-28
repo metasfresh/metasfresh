@@ -1,3 +1,6 @@
+-- Replace MovementQty with TotalSalesQty in Package_Licensing_Product_Report.
+-- Aligns hotfix with prod.
+
 DROP FUNCTION IF EXISTS report.Package_Licensing_Product_Report(numeric);
 DROP FUNCTION IF EXISTS report.Package_Licensing_Product_Report(numeric, varchar);
 DROP FUNCTION IF EXISTS report.Package_Licensing_Product_Report(timestamp with time zone, timestamp with time zone, numeric, varchar);

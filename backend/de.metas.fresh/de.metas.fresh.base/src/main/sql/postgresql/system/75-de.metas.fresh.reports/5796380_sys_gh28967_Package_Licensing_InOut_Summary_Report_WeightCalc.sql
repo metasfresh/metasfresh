@@ -1,3 +1,8 @@
+-- Fix weight calculation in Package_Licensing_InOut_Summary_Report:
+-- 1. Use (PurchaseQty - ForeignSalesQty) instead of MovementQty for weight calculation
+-- 2. Add ROUND(..., 3) to aggregated weight values
+-- Aligns hotfix with prod.
+
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
     p_DateFrom             timestamp with time zone,
     p_DateTo               timestamp with time zone,
@@ -52,7 +57,7 @@ DECLARE
     v_report_func_call        text;
     v_column_aliases_list     text;
     v_prefixed_aliases_list   text;
-    v_q_prefixed_aliases_list text; -- **NEW: q.Glas, q.Kunststoff, etc.**
+    v_q_prefixed_aliases_list text;
 
 BEGIN
 
@@ -81,7 +86,6 @@ BEGIN
     INTO v_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
 
-    -- **NEW: Create the q. prefix list for the outer SELECT**
     SELECT TRIM(STRING_AGG(FORMAT('q.%I', material), ', '))
     INTO v_q_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
@@ -126,12 +130,12 @@ BEGIN
     SELECT
         q.ProductGroup,
         q.PackagingType,
-        %6$s -- **FIX: q.Glas, q.Kunststoff, etc.**
+        %6$s
     FROM (
         -- Inner Query: UNION ALL with sort column
         -- HEADER ROW
         SELECT
-               0 AS sort_order, -- Sort column (Integer)
+               0 AS sort_order,
                '---HEADER---'::varchar AS ProductGroup,
                'Material Name'::varchar AS PackagingType,
                %1$s -- v_header_cols_list
@@ -140,7 +144,7 @@ BEGIN
 
         -- DATA ROWS: Wrapped Aggregation
         SELECT
-            1 AS sort_order, -- Sort column (Integer)
+            1 AS sort_order,
             agg.ProductGroup,
             agg.PackagingType,
             %2$s -- v_prefixed_aliases_list
@@ -185,7 +189,7 @@ $f$,
                     v_data_cols_list, -- %3$s
                     v_report_func_call, -- %4$s
                     v_materials_sql_array, -- %5$s
-                    v_q_prefixed_aliases_list -- **%6$s (New q. prefixed list)**
+                    v_q_prefixed_aliases_list -- %6$s
              );
 
     -- 6) Execute and return the result.
