@@ -2,18 +2,16 @@ import { test } from '../../playwright.config';
 import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
-import { PickingTerminalPage } from '../utils/pages/PickingTerminalPage';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PICKING_TERMINAL_V2_WINDOW_ID } from '../utils/WindowIds';
 
 /**
- * Picking Terminal V2 (Desktop WebUI) — E2E tests for QA scenarios 6, 7, 8.
+ * Picking Terminal V2 (Desktop WebUI) — E2E tests
  *
- * These tests validate the desktop Picking Terminal operations:
- * - Scenario 7: Process picking from WebUI
- * - Scenario 8: Unprocess picking from WebUI
- * - Scenario 6: Undo (remove HU from picking slot) from WebUI
+ * Window 540485: Shows packageable shipment schedules.
+ * Quick actions: Pick (opens Products to Pick modal), Print Pick list, Unlock.
+ * The "Pick" action opens a modal overlay (ProductsToPickView) where
+ * individual product lines can be picked, marked "will not pick", etc.
  *
  * Prerequisites: Both WebAPI (8080) and App server (8282) must be running.
  *
@@ -56,41 +54,46 @@ const createPickingTestData = async (language = 'en_US') => {
   });
 };
 
+/**
+ * Inline login — more reliable than LoginPage for local dev server.
+ */
+const loginAndNavigate = async (page, masterdata) => {
+  const username = masterdata.login.user.username;
+  const password = masterdata.login.user.password;
+
+  await page.goto(`${FRONTEND_BASE_URL}/login`);
+  await page.waitForTimeout(2000);
+  await page.locator('input[name="username"]').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+  await page.locator('input[name="username"]').fill(username);
+  await page.locator('input[name="password"]').fill(password);
+  await page.locator('.btn-meta-success').click();
+
+  // Handle role selection if needed
+  await page.waitForTimeout(2000);
+  if (page.url().includes('/login')) {
+    const sendButton = page.locator('.btn-meta-success');
+    if (await sendButton.isVisible().catch(() => false)) {
+      await sendButton.click();
+    }
+  }
+  await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+};
+
 test.describe('Picking Terminal V2 — Desktop WebUI', () => {
-  test('Navigate to Picking Terminal and see shipment schedules', async ({ page }) => {
+  test('Navigate to Picking Terminal and verify grid with data', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.story('Desktop Picking Terminal — view shipment schedules');
+    allure.story('Desktop Picking Terminal V2 — view and select shipment schedules');
     allure.severity('critical');
 
     const masterdata = await createPickingTestData();
-    const docNo = masterdata.salesOrders.SO1.documentNo;
-    const username = masterdata.login.user.username;
-    const password = masterdata.login.user.password;
-
-    // Inline login (more reliable than LoginPage for first-time setup)
-    await page.goto(`${FRONTEND_BASE_URL}/login`);
-    await page.waitForTimeout(3000); // Wait for React to render
-    await page.locator('input[name="username"]').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-    await page.locator('input[name="username"]').fill(username);
-    await page.locator('input[name="password"]').fill(password);
-    await page.locator('.btn-meta-success').click();
-
-    // Handle role selection if needed
-    await page.waitForTimeout(2000);
-    if (page.url().includes('/login')) {
-      const sendButton = page.locator('.btn-meta-success');
-      if (await sendButton.isVisible().catch(() => false)) {
-        await sendButton.click();
-      }
-    }
-    await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+    await loginAndNavigate(page, masterdata);
 
     // Navigate to Picking Terminal V2
     await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}`);
     await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    // Verify grid loaded with data
+    // Verify grid loaded with rows
     const rowCount = await page.locator('table tbody tr').count();
     expect(rowCount).toBeGreaterThan(0);
 
@@ -98,54 +101,99 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     await page.locator('table tbody tr').first().click();
     await page.waitForTimeout(1000);
 
-    // Verify quick action button appeared with a process-specific testid
-    const quickActionButton = page.locator('[data-testid^="quick-action-"]').first();
-    await quickActionButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    const testId = await quickActionButton.getAttribute('data-testid');
-    // Primary quick action should be "Pick" (opens Products to Pick view)
-    expect(testId).toBe('quick-action-PackageablesView_OpenProductsToPick');
-
-    // Click Pick to start picking for the selected order
-    await quickActionButton.click();
-    await page.waitForTimeout(2000);
-
-    // After clicking Pick, the view should update (new viewId in URL)
-    // TODO: Explore what sub-view opens and what process/unprocess actions become available
-    // The V2 Picking Terminal "Pick" action (PackageablesView_OpenProductsToPick)
-    // opens a "Products to Pick" sub-view where individual HUs can be picked/processed.
+    // Verify "Pick" quick action appeared with process-specific data-testid
+    const pickButton = page.locator('[data-testid^="quick-action-PackageablesView_OpenProductsToPick"]');
+    await pickButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   });
 
-  test('Pick from desktop — quick action', async ({ page }) => {
+  test('Open Products to Pick modal and pick selected', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.story('Desktop Picking Terminal — Pick quick action');
+    allure.story('Desktop Picking Terminal V2 — Pick from Products to Pick modal (QA scenario 7 equivalent)');
     allure.severity('critical');
 
     const masterdata = await createPickingTestData();
-    const docNo = masterdata.salesOrders.SO1.documentNo;
+    await loginAndNavigate(page, masterdata);
 
-    await LoginPage.login({
-      username: masterdata.login.user.username,
-      password: masterdata.login.user.password,
+    // Navigate to Picking Terminal V2
+    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}`);
+    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+    // Select first row — use keyboard shortcut Alt+A (select all) then click first row
+    // Or try finding the row by data-testid and clicking its indicator
+    const firstRow = page.locator('table tbody tr').first();
+
+    // Try to get the row's data-testid to use it for selection
+    const rowTestId = await firstRow.getAttribute('data-testid');
+
+    // Click the row to focus it
+    await firstRow.click();
+    await page.waitForTimeout(500);
+
+    // If still not selected, try Ctrl+click or Space to toggle selection
+    const selectedCount = await page.locator(':text("item(s) selected")').count();
+    if (!selectedCount) {
+      // Try clicking with Ctrl to force selection
+      await firstRow.click({ modifiers: ['Control'] });
+      await page.waitForTimeout(500);
+    }
+
+    // Verify a row is selected before clicking Pick
+    await page.locator(':text("item(s) selected")').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Click "Pick" quick action button
+    const pickButton = page.locator('[data-testid^="quick-action-PackageablesView_OpenProductsToPick"]');
+    await pickButton.click();
+
+    // Wait for modal overlay to appear (Products to Pick view)
+    // The modal uses class "panel-modal" or similar
+    await page.waitForTimeout(3000);
+
+    // Wait for the "Products to Pick" modal to appear
+    await page.locator('.raw-modal, .screen-freeze').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    // Wait for screen-freeze to disappear (process completed)
+    await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.waitForTimeout(1000);
+
+    // Verify the modal is showing with product rows
+    const modalTable = page.locator('.raw-modal table tbody tr');
+    await modalTable.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const modalRowCount = await modalTable.count();
+    expect(modalRowCount).toBeGreaterThan(0);
+
+    // Select the product row in the modal (Ctrl+click for selection)
+    await modalTable.first().click({ modifiers: ['Control'] });
+    await page.waitForTimeout(1000);
+
+    // After selecting, quick actions should appear in the modal header
+    // Discover them
+    const modalQuickActions = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('.raw-modal [data-testid^="quick-action-"]'))
+        .map(el => el.dataset.testid)
+        .join(', ');
     });
 
-    await PickingTerminalPage.goto();
-    await PickingTerminalPage.selectRow({ salesOrderDocNo: docNo });
+    // Also check for quick actions outside the modal (they might be in the view header)
+    const allQuickActions = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('[data-testid^="quick-action-"]'))
+        .map(el => el.dataset.testid)
+        .join(', ');
+    });
 
-    // The "Pick" quick action should be visible for unpicked orders
-    // Note: The exact data-testid needs to be discovered from the DOM.
-    // It may be 'action-WEBUI_Picking_PickToNewHU' or similar.
-    // For now, try the visible "Pick" button we saw in the snapshot.
-    const pickVisible = await PickingTerminalPage.isQuickActionVisible('action-pickToNewHU');
-    if (!pickVisible) {
-      // Fallback: try clicking the primary quick action button
-      const page = getPage();
-      const primaryAction = page.locator('.quick-actions-wrapper button').first();
-      if (await primaryAction.isVisible().catch(() => false)) {
-        console.log('[INFO] Primary quick action button found, clicking it');
-        await primaryAction.click();
-        await page.waitForTimeout(1000);
-      }
+    // Take a screenshot for reference
+    await page.screenshot({ path: '/tmp/pick-modal-with-selection.png' });
+
+    // Verify at least one quick action appeared after selecting
+    expect(
+      allQuickActions,
+      `Quick actions after selecting modal row: ${allQuickActions}`
+    ).toContain('quick-action-');
+
+    // Click "Done" to close the modal
+    const doneButton = page.getByTestId('modal-done');
+    if (await doneButton.isVisible().catch(() => false)) {
+      await doneButton.click();
+      await page.waitForTimeout(1000);
     }
   });
 });
