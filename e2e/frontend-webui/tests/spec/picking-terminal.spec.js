@@ -90,11 +90,29 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}`);
     await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    // Verify data appears — find our order by document number
-    const ourRow = page.locator('table tbody tr').filter({ hasText: docNo });
-    // The order may be on a later page; for now just verify the grid loaded
+    // Verify grid loaded with data
     const rowCount = await page.locator('table tbody tr').count();
     expect(rowCount).toBeGreaterThan(0);
+
+    // Select first row
+    await page.locator('table tbody tr').first().click();
+    await page.waitForTimeout(1000);
+
+    // Verify quick action button appeared with a process-specific testid
+    const quickActionButton = page.locator('[data-testid^="quick-action-"]').first();
+    await quickActionButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const testId = await quickActionButton.getAttribute('data-testid');
+    // Primary quick action should be "Pick" (opens Products to Pick view)
+    expect(testId).toBe('quick-action-PackageablesView_OpenProductsToPick');
+
+    // Click Pick to start picking for the selected order
+    await quickActionButton.click();
+    await page.waitForTimeout(2000);
+
+    // After clicking Pick, the view should update (new viewId in URL)
+    // TODO: Explore what sub-view opens and what process/unprocess actions become available
+    // The V2 Picking Terminal "Pick" action (PackageablesView_OpenProductsToPick)
+    // opens a "Products to Pick" sub-view where individual HUs can be picked/processed.
   });
 
   test('Pick from desktop — quick action', async ({ page }) => {
