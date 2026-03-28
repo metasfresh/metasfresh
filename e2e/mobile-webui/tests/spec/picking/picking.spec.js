@@ -592,3 +592,77 @@ test('TU picking with CU-per-TU > 1 — step qty displayed as TU count', async (
         }
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Switch device mid-picking — logout and resume on new session', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('Device switching mid-picking (QA scenario 13)');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    // === DEVICE 1: Start picking, pick partially, leave ===
+    await test.step('Device 1: Start job and pick partially', async () => {
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+        // Pick 2 out of 3 TUs
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            expectQtyEntered: '3',
+            qtyEntered: '2',
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+
+        // Leave without completing — simulates closing the app on device 1
+        await PickingJobScreen.goBack();
+        await PickingJobsListScreen.waitForScreen();
+    });
+
+    await test.step('Device 1: Logout', async () => {
+        await PickingJobsListScreen.goBack();
+        await ApplicationsListScreen.logout();
+    });
+
+    // === DEVICE 2: Login and resume the same job ===
+    await test.step('Device 2: Login and find the in-progress job', async () => {
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+
+        // Job should show "already started" indicator
+        await PickingJobsListScreen.expectJobButtons([
+            { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: true }
+        ]);
+    });
+
+    await test.step('Device 2: Resume and complete the job', async () => {
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+        // Should see 2 TU already picked from device 1
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+
+        // Pick the remaining 1 TU
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            expectQtyEntered: '0',
+            qtyEntered: '1',
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.complete();
+    });
+});
