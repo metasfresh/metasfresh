@@ -1,11 +1,13 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_DocType_PrintOptions
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_DocType_PrintOptions 
 {
 
@@ -202,6 +204,27 @@ public interface I_C_DocType_PrintOptions
 
 	ModelColumn<I_C_DocType_PrintOptions, Object> COLUMN_PRINTER_OPTS_IsPrintLogo = new ModelColumn<>(I_C_DocType_PrintOptions.class, "PRINTER_OPTS_IsPrintLogo", null);
 	String COLUMNNAME_PRINTER_OPTS_IsPrintLogo = "PRINTER_OPTS_IsPrintLogo";
+
+	/**
+	 * Set Print Prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPRINTER_OPTS_IsPrintPrices (boolean PRINTER_OPTS_IsPrintPrices);
+
+	/**
+	 * Get Print Prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPRINTER_OPTS_IsPrintPrices();
+
+	ModelColumn<I_C_DocType_PrintOptions, Object> COLUMN_PRINTER_OPTS_IsPrintPrices = new ModelColumn<>(I_C_DocType_PrintOptions.class, "PRINTER_OPTS_IsPrintPrices", null);
+	String COLUMNNAME_PRINTER_OPTS_IsPrintPrices = "PRINTER_OPTS_IsPrintPrices";
 
 	/**
 	 * Set Print Totals.

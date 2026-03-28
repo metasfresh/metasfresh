@@ -89,7 +89,10 @@ public final class Debouncer<T>
 		final CustomizableThreadFactory threadFactory = new CustomizableThreadFactory(threadNamePrefix + "-");
 		threadFactory.setDaemon(true);
 
-		return new ScheduledThreadPoolExecutor(1, threadFactory);
+		final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, threadFactory);
+		executor.setKeepAliveTime(60, TimeUnit.SECONDS);
+		executor.allowCoreThreadTimeOut(true);
+		return executor;
 	}
 
 	public String toString()

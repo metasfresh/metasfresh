@@ -1,6 +1,6 @@
 ﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric)
 RETURNS TABLE 
 	(
 	ad_org_id numeric,
@@ -48,7 +48,7 @@ FROM
 		AND rs.AD_Table_ID = (SELECT Get_Table_ID( 'C_OrderLine' ))
 	INNER JOIN C_OrderLine ol ON rs.C_OrderLine_ID = ol.C_OrderLine_ID
 WHERE
-	iol.M_InOut_ID = record_id
+	iol.M_InOut_ID = p_record_id
 
 UNION
 DISTINCT
@@ -79,7 +79,7 @@ SELECT ol.AD_Org_ID,
 FROM
     M_InOutLine iol
         INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
-WHERE iol.M_InOut_ID = record_id
+WHERE iol.M_InOut_ID = p_record_id
 
 LIMIT 1
 $$
