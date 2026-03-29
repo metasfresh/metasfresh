@@ -89,6 +89,33 @@ export const BarcodeScannerComponent = {
         }, selector);
     }),
 
+    typeBatch: async ({ codes, testId }) => await test.step(
+        `${NAME} - Type batch of ${codes.length} scanned codes`,
+        async () => {
+            if (!Array.isArray(codes) || codes.length === 0) {
+                throw new Error("Invalid codes provided. Must be a non-empty array.");
+            }
+
+            console.log(`Scanning batch of ${codes.length} codes:\n` + codes.join('\n'));
+
+            await BarcodeScannerComponent.waitToAttach({ testId });
+
+            // Mirrors DataWedge RFID keystroke output: all tags typed rapidly
+            // with Enter separator between them (default DataWedge config).
+            // Same dispatch pattern as type(), but with Enter after each code.
+            await page.evaluate((codesArr) => {
+                for (const code of codesArr) {
+                    for (const char of code) {
+                        document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                        document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                    }
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                }
+            }, codes);
+        }
+    ),
+
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
     }),
