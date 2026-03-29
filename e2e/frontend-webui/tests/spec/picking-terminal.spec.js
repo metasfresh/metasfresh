@@ -396,14 +396,74 @@ test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
     const rowCount = await page.locator('table tbody tr').count();
     expect(rowCount).toBe(1);
 
-    // 6. Click the row
-    await page.locator('table tbody tr').first().click();
+    // 6. Select the row — click the row's first cell to trigger selection
+    //    The V1 terminal auto-opens the included PickingSlotView when a row is selected
+    const row = page.locator('table tbody tr').first();
+    await row.locator('td').first().click();
     await page.waitForTimeout(2000);
 
-    // 7. Take screenshot for analysis — shows the V1 terminal with potential included view
+    // Check if selection happened
+    const isSelected = await row.evaluate((el) => el.classList.contains('row-selected'));
+    if (!isSelected) {
+      // Fallback: try clicking the row's text cell (second column)
+      await row.locator('td').nth(1).click();
+      await page.waitForTimeout(1000);
+    }
+
+    // 7. The V1 terminal should show the shipment schedule in the left grid
+    //    and an included PickingSlotView on the right when a row is selected.
+    //    The row has supportIncludedViews=true and includedView with pickingSlot viewId.
+
+    // Check if included view appeared (right-side panel)
+    const includedViewPanel = page.locator('.document-list-included');
+    const hasIncluded = await includedViewPanel.isVisible().catch(() => false);
+
+    // If included view is visible, the V1 terminal is fully loaded
+    if (hasIncluded) {
+      // Select picking slot in the included view
+      const slotRow = includedViewPanel.locator('table tbody tr').first();
+      await slotRow.click({ modifiers: ['Control'] });
+      await page.waitForTimeout(1000);
+
+      // Check for "Open HU selection window" action
+      const huEditorAction = page.locator('[data-testid*="WEBUI_Picking_HUEditor_Launcher"]');
+      if (await huEditorAction.isVisible().catch(() => false)) {
+        // Click to open HU editor modal — this is the V1 desktop picking mechanism
+        await huEditorAction.click();
+        await page.waitForTimeout(2000);
+
+        // The HU editor modal should show source HUs
+        const huModal = page.locator('.raw-modal');
+        if (await huModal.isVisible().catch(() => false)) {
+          // Select the source HU and pick it
+          const huRow = huModal.locator('table tbody tr').first();
+          if (await huRow.isVisible().catch(() => false)) {
+            await huRow.click({ modifiers: ['Control'] });
+            await page.waitForTimeout(500);
+
+            // Look for "Pick to new HU" or similar action in the HU editor
+            const pickAction = huModal.locator('[data-testid*="Pick"], [data-testid*="pick"]').first();
+            if (await pickAction.isVisible().catch(() => false)) {
+              await pickAction.click();
+              await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
+              await page.waitForTimeout(1000);
+            }
+          }
+
+          // Close HU editor modal
+          const modalDone = page.getByTestId('modal-done');
+          if (await modalDone.isVisible().catch(() => false)) {
+            await modalDone.click();
+            await page.waitForTimeout(1000);
+          }
+        }
+      }
+    }
+
+    // Take screenshot for analysis
     await page.screenshot({ path: '/tmp/v1-picking-terminal-with-data.png' });
 
-    // 8. Verify our order data is shown
+    // Verify our order data is shown
     const docNo = masterdata.salesOrders.SO1.documentNo;
     const pageContent = await page.content();
     expect(pageContent).toContain(docNo);
