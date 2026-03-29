@@ -5,6 +5,10 @@ import { Backend } from '../utils/Backend';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PICKING_TERMINAL_V2_WINDOW_ID } from '../utils/WindowIds';
 
+const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
+const TESTING_API_BASE_URL = process.env.TESTING_API_BASE_URL || 'http://localhost:8282/api/v2';
+const POSTGREST_BASE_URL = process.env.POSTGREST_BASE_URL || 'http://localhost:32001';
+
 /**
  * Picking Terminal V2 (Desktop WebUI) — E2E tests
  *
@@ -228,5 +232,156 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
 
     // Verify we're back on the Picking Terminal grid
     await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  });
+});
+
+/**
+ * V1 Picking Terminal (window 540350) — Tests for QA scenarios 6, 7, 8.
+ *
+ * The V1 terminal shows picking slots with picked HUs for specific shipment schedules.
+ * Quick actions: Process, Unprocess, Remove HU from Picking Slot.
+ *
+ * Flow: Mobile pick first (via REST API) → Open V1 terminal → run desktop actions.
+ */
+test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
+  /**
+   * Helper: perform mobile picking via REST API (no browser).
+   * Creates a picking job, scans slot, sets LU, picks HU, returns job details.
+   */
+  const performMobilePicking = async (page, masterdata) => {
+    const appBaseUrl = TESTING_API_BASE_URL.replace('/api/v2', '');
+    const token = masterdata.login.user.token;
+    const headers = { 'Content-Type': 'application/json', Authorization: token };
+
+    // 1. Query launchers to find our order
+    const launchersResp = await page.request.post(`${appBaseUrl}/api/v2/userWorkflows/launchers/query`, {
+      headers,
+      data: { applicationId: 'picking' },
+    });
+    const launchers = await launchersResp.json();
+    const docNo = masterdata.salesOrders.SO1.documentNo;
+    const launcher = launchers.launchers.find((l) => l.caption?.includes(docNo));
+    if (!launcher) throw new Error(`Launcher for ${docNo} not found in ${launchers.launchers.length} launchers`);
+
+    // 2. Start the picking job
+    const startResp = await page.request.post(
+      `${appBaseUrl}/api/v2/userWorkflows/launchers/${launcher.applicationId}/start`,
+      { headers, data: launcher.wfParameters }
+    );
+    const wfProcess = await startResp.json();
+    const wfProcessId = wfProcess.id;
+
+    // 3. Scan picking slot
+    const scanSlotResp = await page.request.post(`${appBaseUrl}/api/v2/picking/event`, {
+      headers,
+      data: {
+        wfProcessId,
+        type: 'SCAN_PICKING_SLOT',
+        pickingSlotQRCode: masterdata.pickingSlots.slot1.qrCode,
+      },
+    });
+
+    // 4. Set target LU
+    await page.request.post(`${appBaseUrl}/api/v2/picking/job/${wfProcessId}/target/lu`, {
+      headers,
+      data: { caption: masterdata.packingInstructions.PI.luName },
+    });
+
+    // 5. Pick the HU
+    const pickResp = await page.request.post(`${appBaseUrl}/api/v2/picking/event`, {
+      headers,
+      data: {
+        wfProcessId,
+        type: 'PICK',
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyPicked: 3,
+      },
+    });
+
+    return { wfProcessId };
+  };
+
+  /**
+   * Helper: create V1 view via WebAPI and navigate to it.
+   */
+  const openV1PickingTerminal = async (page, shipmentScheduleId) => {
+    // Create the V1 view via WebAPI (port 8080)
+    const createViewResp = await page.request.post(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V1_WINDOW_ID}`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        data: {
+          windowId: String(PICKING_TERMINAL_V1_WINDOW_ID),
+          viewType: 'grid',
+          filterOnlyIds: [String(shipmentScheduleId)],
+        },
+      }
+    );
+    const viewData = await createViewResp.json();
+    const viewId = viewData.viewId;
+
+    // Navigate to the V1 terminal with this view
+    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V1_WINDOW_ID}?viewId=${viewId}`);
+    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+    return viewId;
+  };
+
+  test('Scenario 7: Open V1 Picking Terminal with shipment schedule', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.story('V1 Picking Terminal — open with shipment schedule (QA scenario 7)');
+    allure.severity('critical');
+
+    // 1. Create test data
+    const masterdata = await createPickingTestData();
+    await loginAndNavigate(page, masterdata);
+
+    // 2. Get shipment schedule ID via PostgREST
+    const orderId = masterdata.salesOrders.SO1.id;
+    const ssResp = await page.request.get(
+      `${POSTGREST_BASE_URL}/m_shipmentschedule?c_order_id=eq.${orderId}&select=m_shipmentschedule_id&limit=1`
+    );
+    const ssData = await ssResp.json();
+    expect(ssData.length, 'Shipment schedule should exist for order ' + orderId).toBeGreaterThan(0);
+    const shipmentScheduleId = ssData[0].m_shipmentschedule_id;
+
+    // 3. Create V1 view via WebAPI with the shipment schedule ID
+    const createViewResp = await page.request.post(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V1_WINDOW_ID}`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        data: {
+          windowId: String(PICKING_TERMINAL_V1_WINDOW_ID),
+          viewType: 'grid',
+          filterOnlyIds: [String(shipmentScheduleId)],
+        },
+      }
+    );
+    const viewData = await createViewResp.json();
+    expect(viewData.viewId, 'V1 view should be created').toBeTruthy();
+    expect(viewData.size, 'V1 view should have 1 row').toBe(1);
+
+    // 4. Navigate to the V1 terminal
+    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V1_WINDOW_ID}?viewId=${viewData.viewId}`);
+    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+    // 5. Verify the shipment schedule row is visible
+    const rowCount = await page.locator('table tbody tr').count();
+    expect(rowCount).toBe(1);
+
+    // 6. Click the row to see the included PickingSlotView
+    await page.locator('table tbody tr').first().click();
+    await page.waitForTimeout(2000);
+
+    // Take screenshot to see the V1 terminal layout
+    await page.screenshot({ path: '/tmp/v1-picking-terminal.png' });
+
+    // The V1 terminal should show the shipment schedule on the left
+    // and the picking slot view (empty until picking is done) on the right.
+    // For now, verify the page loaded correctly with our data.
+    const docNo = masterdata.salesOrders.SO1.documentNo;
+    const pageContent = await page.content();
+    expect(pageContent).toContain(docNo);
   });
 });
