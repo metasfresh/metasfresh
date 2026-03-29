@@ -2120,7 +2120,7 @@ jobs:
             ALLURE_LINKS="${ALLURE_LINKS}<li><a href=\"${suite}/\">${suite}</a></li>"
           done
           if [ -n "$ALLURE_LINKS" ]; then
-            ssh reports-server "cat > ${SERVER_PATH}/allure/index.html" <<EOF
+            ssh reports-server "mkdir -p ${SERVER_PATH}/allure && cat > ${SERVER_PATH}/allure/index.html" <<EOF
           <!DOCTYPE html>
           <html><head><title>Allure Reports — ${VERSION}</title>
           <style>body{font-family:sans-serif;margin:40px}a{color:#0066cc}</style>
@@ -2435,7 +2435,7 @@ jobs:
                                       });
                                   }
                               });
-                          } catch (e) { /* directory doesn't exist yet */ }
+                          } catch (e) { console.warn('discoverReports: ' + cat.dir, e.message); }
                       }
                       return reports;
                   }

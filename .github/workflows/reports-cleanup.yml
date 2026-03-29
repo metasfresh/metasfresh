@@ -174,10 +174,11 @@ jobs:
                           continue
 
                   # --- Deleted branch (no longer exists on GitHub) ---
-                  # Only for public reports (not private repos which use different repos)
-                  if not label_prefix and github_branches and branch not in github_branches:
+                  # Only for public reports (not private repos which use different repos).
+                  # Skip if newest_ts == 0 (no valid timestamps) — let the "No metadata" block handle it.
+                  if not label_prefix and github_branches and branch not in github_branches and newest_ts > 0:
                       # Grace period: only remove if last build is older than DELETED_BRANCH_GRACE_DAYS
-                      age_days = (now - newest_ts) / 86400 if newest_ts > 0 else 999
+                      age_days = (now - newest_ts) / 86400
                       if age_days > DELETED_BRANCH_GRACE_DAYS:
                           size = dir_size(branch_dir)
                           shutil.rmtree(branch_dir)
