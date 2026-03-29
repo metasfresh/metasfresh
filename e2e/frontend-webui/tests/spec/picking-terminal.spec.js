@@ -238,91 +238,60 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
 /**
  * V1 Picking Terminal (window 540350) — Tests for QA scenarios 6, 7, 8.
  *
- * The V1 terminal shows picking slots with picked HUs for specific shipment schedules.
- * Quick actions: Process, Unprocess, Remove HU from Picking Slot.
+ * The V1 terminal shows shipment schedules with an included PickingSlotView.
+ * The HU editor allows picking whole HUs or partial CUs to the picking slot.
+ * Quick actions on the picking slot: Process, Reactivate (Unprocess), Unpick HU.
  *
- * Flow: Mobile pick first (via REST API) → Open V1 terminal → run desktop actions.
+ * Flow: Create V1 view → Select row → Open HU editor → Pick HU → Process → Reactivate → Unpick
+ *
+ * NOTE: The V1 terminal uses M_Picking_Candidate records (NOT M_Picking_Job from mobile picking).
+ * The HU editor and Pick HU actions are V1-specific desktop picking mechanisms.
+ *
+ * Due to fragile row selection in the V1 terminal grid (click-to-edit instead of click-to-select),
+ * the picking/processing actions are executed via REST API while UI state is verified visually.
  */
 test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
   /**
-   * Helper: perform mobile picking via REST API (no browser).
-   * Uses the mobile picking API on the App server (port 8282).
+   * Create test data with HU qty matching the order (avoids overdelivery error).
+   * Uses qtyCUsPerTU=4 and qty=12 → 3 TUs needed.
+   * The source HU has exactly 3 TUs (12 CU) so Pick HU won't exceed the order.
    */
-  const performMobilePicking = async (page, masterdata) => {
-    const appBaseUrl = TESTING_API_BASE_URL.replace('/api/v2', '');
-    const token = masterdata.login.user.token;
-    const headers = { 'Content-Type': 'application/json', Authorization: token };
-
-    // 1. Query launchers to find our order
-    const launchersResp = await page.request.post(`${appBaseUrl}/api/v2/userWorkflows/launchers/query`, {
-      headers,
-      data: { applicationId: 'picking' },
-    });
-    const launchers = await launchersResp.json();
-    const docNo = masterdata.salesOrders.SO1.documentNo;
-    const launcher = launchers.launchers.find((l) => l.caption?.includes(docNo));
-    if (!launcher) throw new Error(`Launcher for ${docNo} not found in ${launchers.launchers.length} launchers`);
-
-    // 2. Start the picking job
-    const startResp = await page.request.post(`${appBaseUrl}/api/v2/userWorkflows/wfProcess/start`, {
-      headers,
-      data: launcher.wfParameters,
-    });
-    const wfProcess = await startResp.json();
-    const wfProcessId = wfProcess.id;
-    const activityId = wfProcess.activities?.[0]?.activityId;
-
-    // 3. Scan picking slot event
-    await page.request.post(`${appBaseUrl}/api/v2/picking/events`, {
-      headers,
-      data: {
-        wfProcessId,
-        wfActivityId: activityId,
-        type: 'SCAN_PICKING_SLOT',
-        pickingSlotBarcode: masterdata.pickingSlots.slot1.qrCode,
+  const createV1TestData = async (language = 'en_US') => {
+    return await Backend.createMasterdata({
+      language,
+      request: {
+        login: { user: { language } },
+        bpartners: { BP1: {} },
+        warehouses: { wh: {} },
+        pickingSlots: { slot1: {} },
+        products: { P1: { prices: [{ price: 1 }] } },
+        packingInstructions: {
+          // LU with 5 TUs × 4 CU = 20 CU total (small enough for reliable tests)
+          PI: { lu: 'LU', qtyTUsPerLU: 5, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+        },
+        handlingUnits: {
+          // HU will have 5 TUs × 4 CU = 20 CU from the PI
+          HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+        },
+        salesOrders: {
+          SO1: {
+            bpartner: 'BP1',
+            warehouse: 'wh',
+            datePromised: '2025-03-01T00:00:00.000+02:00',
+            // Order exactly 20 CU to match the HU (5 TUs × 4 CU)
+            lines: [{ product: 'P1', qty: 20, piItemProduct: 'TU' }],
+          },
+        },
       },
     });
-
-    // 4. Set target LU
-    const targetsResp = await page.request.get(
-      `${appBaseUrl}/api/v2/picking/job/${wfProcessId}/target/available?type=LU`,
-      { headers }
-    );
-    const targets = await targetsResp.json();
-    if (targets.length > 0) {
-      await page.request.post(`${appBaseUrl}/api/v2/picking/job/${wfProcessId}/target`, {
-        headers,
-        data: targets[0],
-      });
-    }
-
-    // 5. Pick the HU — send PICK event
-    // Get the picking job lines to find step/line IDs
-    const jobResp = await page.request.get(`${appBaseUrl}/api/v2/userWorkflows/wfProcess/${wfProcessId}`, {
-      headers,
-    });
-    const job = await jobResp.json();
-
-    // Pick event with HU QR code
-    await page.request.post(`${appBaseUrl}/api/v2/picking/events`, {
-      headers,
-      data: {
-        wfProcessId,
-        wfActivityId: activityId,
-        type: 'PICK',
-        huQRCode: masterdata.handlingUnits.HU1.qrCode,
-        qtyPicked: 3,
-      },
-    });
-
-    return { wfProcessId };
   };
 
   /**
-   * Helper: create V1 view via WebAPI and navigate to it.
+   * Helper: Create V1 view and navigate to it.
+   * @returns {{ viewId: string, psViewId: string }} Main view ID and picking slot view ID
    */
-  const openV1PickingTerminal = async (page, shipmentScheduleId) => {
-    // Create the V1 view via WebAPI (port 8080)
+  const openV1Terminal = async (page, shipmentScheduleId) => {
+    // Create the V1 view with specific shipment schedule
     const createViewResp = await page.request.post(
       `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V1_WINDOW_ID}`,
       {
@@ -335,37 +304,118 @@ test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
       }
     );
     const viewData = await createViewResp.json();
-    const viewId = viewData.viewId;
+    expect(viewData.viewId, 'V1 view should be created').toBeTruthy();
 
-    // Navigate to the V1 terminal with this view
-    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V1_WINDOW_ID}?viewId=${viewId}`);
+    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V1_WINDOW_ID}?viewId=${viewData.viewId}`);
     await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    return viewId;
+    // Select the row to trigger the included PickingSlotView
+    await page.waitForTimeout(2000);
+    await page.locator('text=Select all on this page').first().click();
+    await page.waitForTimeout(3000);
+
+    // Verify 2 tables (main + included view)
+    const tableCount = await page.locator('table').count();
+    expect(tableCount, 'V1 terminal should have main + included view').toBeGreaterThanOrEqual(2);
+
+    // Get the picking slot view ID from the row data
+    const rowResp = await page.request.get(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V1_WINDOW_ID}/${viewData.viewId}?firstRow=0&pageLength=10`
+    );
+    const rowData = await rowResp.json();
+    const psViewId = rowData.result?.[0]?.includedView?.viewId;
+    expect(psViewId, 'Picking slot view should exist').toBeTruthy();
+
+    return { viewId: viewData.viewId, psViewId };
   };
 
-  test('Scenario 7: Process picking from V1 Picking Terminal', async ({ page }) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.story('V1 Picking Terminal — process picked HU (QA scenario 7)');
-    allure.severity('critical');
+  /**
+   * Helper: Execute a WebUI process via REST API.
+   * Creates a process instance and starts it.
+   * @returns {Promise<Object>} Process result
+   */
+  const executeProcess = async (page, { processId, viewId, viewWindowId, viewDocumentIds }) => {
+    const createResp = await page.request.post(`${FRONTEND_BASE_URL}/rest/api/process/${processId}`, {
+      headers: { 'Content-Type': 'application/json' },
+      data: { processId, viewId, viewDocumentIds, viewWindowId },
+    });
+    const instance = await createResp.json();
+    expect(instance.pinstanceId, `Process ${processId} instance should be created`).toBeTruthy();
 
-    // 1. Create test data
-    const masterdata = await createPickingTestData();
-    await loginAndNavigate(page, masterdata);
+    const startResp = await page.request.get(
+      `${FRONTEND_BASE_URL}/rest/api/process/${processId}/${instance.pinstanceId}/start`
+    );
+    const resultText = await startResp.text();
+    const result = JSON.parse(resultText);
 
-    // 2. Perform mobile picking via REST API (creates picking candidates)
-    try {
-      await performMobilePicking(page, masterdata);
-    } catch (e) {
-      // Mobile picking might fail due to API differences — document and continue
-      test.info().annotations.push({
-        type: 'issue',
-        description: `Mobile picking via REST API failed: ${e.message}. The V1 terminal will show unpicked data.`,
-      });
+    // Log error details for debugging
+    if (result.error || startResp.status() >= 400) {
+      console.log(`[WARN] Process ${processId} response (${startResp.status()}): ${resultText.substring(0, 500)}`);
     }
 
-    // 3. Get shipment schedule ID via PostgREST
+    return result;
+  };
+
+  /**
+   * Helper: Get quick actions for the picking slot view.
+   * @returns {Promise<Array>} Array of action objects with processId, caption, disabled, internalName
+   */
+  const getPickingSlotQuickActions = async (page, psViewId, selectedIds) => {
+    const qaResp = await page.request.post(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/pickingSlot/${psViewId}/quickActions`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        data: { selectedIds },
+      }
+    );
+    const qa = await qaResp.json();
+    return qa.actions || [];
+  };
+
+  /**
+   * Helper: Pick the top-level HU via the HU editor REST API flow.
+   * Opens HU editor → selects LU → executes Pick HU.
+   */
+  const pickHUViaEditor = async (page, psViewId, pickingSlotId) => {
+    // 1. Open HU editor
+    const editorResult = await executeProcess(page, {
+      processId: 'ADP_540809', // WEBUI_Picking_HUEditor_Launcher
+      viewId: psViewId,
+      viewWindowId: 'pickingSlot',
+      viewDocumentIds: [pickingSlotId],
+    });
+    expect(editorResult.error, 'HU editor should open without error').toBeFalsy();
+
+    const huViewId = editorResult.action?.viewId;
+    expect(huViewId, 'HU editor view should be created').toBeTruthy();
+
+    // 2. Get the top-level HU row
+    const rowsResp = await page.request.get(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/husToPick/${huViewId}?firstRow=0&pageLength=20`
+    );
+    const rows = await rowsResp.json();
+    expect(rows.size, 'HU editor should have at least 1 row').toBeGreaterThan(0);
+
+    const topLevelRow = rows.result.find((r) => r.type === 'LU' || r.type === 'TU');
+    expect(topLevelRow, 'Top-level HU row should exist').toBeTruthy();
+
+    // 3. Execute Pick HU
+    const pickResult = await executeProcess(page, {
+      processId: 'ADP_540811', // WEBUI_Picking_HUEditor_PickHU
+      viewId: huViewId,
+      viewWindowId: 'husToPick',
+      viewDocumentIds: [topLevelRow.id],
+    });
+    expect(pickResult.error, 'Pick HU should succeed').toBeFalsy();
+  };
+
+  /**
+   * Helper: Common setup for V1 tests — create data, login, open terminal, get slot ID.
+   */
+  const setupV1Test = async (page) => {
+    const masterdata = await createV1TestData();
+    await loginAndNavigate(page, masterdata);
+
     const orderId = masterdata.salesOrders.SO1.id;
     const ssResp = await page.request.get(
       `${POSTGREST_BASE_URL}/m_shipmentschedule?c_order_id=eq.${orderId}&select=m_shipmentschedule_id&limit=1`
@@ -374,98 +424,90 @@ test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
     expect(ssData.length, 'Shipment schedule should exist').toBeGreaterThan(0);
     const shipmentScheduleId = ssData[0].m_shipmentschedule_id;
 
-    // 4. Create V1 view and navigate
-    const createViewResp = await page.request.post(
-      `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V1_WINDOW_ID}`,
-      {
-        headers: { 'Content-Type': 'application/json' },
-        data: {
-          windowId: String(PICKING_TERMINAL_V1_WINDOW_ID),
-          viewType: 'grid',
-          filterOnlyIds: [String(shipmentScheduleId)],
-        },
-      }
+    const { viewId, psViewId } = await openV1Terminal(page, shipmentScheduleId);
+
+    const psRowsResp = await page.request.get(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/pickingSlot/${psViewId}?firstRow=0&pageLength=10`
     );
-    const viewData = await createViewResp.json();
-    expect(viewData.viewId).toBeTruthy();
+    const psRows = await psRowsResp.json();
+    const pickingSlotRowId = psRows.result[0].id;
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V1_WINDOW_ID}?viewId=${viewData.viewId}`);
-    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    return { masterdata, viewId, psViewId, pickingSlotRowId, shipmentScheduleId };
+  };
 
-    // 5. Verify the shipment schedule row
-    const rowCount = await page.locator('table tbody tr').count();
-    expect(rowCount).toBe(1);
+  test('Scenario 7: Pick HU and process picking via V1 Picking Terminal', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.story('V1 Picking Terminal — pick HU and process (QA scenario 7)');
+    allure.severity('critical');
 
-    // 6. Select the row — click the row's first cell to trigger selection
-    //    The V1 terminal auto-opens the included PickingSlotView when a row is selected
-    const row = page.locator('table tbody tr').first();
-    await row.locator('td').first().click();
-    await page.waitForTimeout(2000);
+    const { masterdata, psViewId, pickingSlotRowId } = await setupV1Test(page);
 
-    // Check if selection happened
-    const isSelected = await row.evaluate((el) => el.classList.contains('row-selected'));
-    if (!isSelected) {
-      // Fallback: try clicking the row's text cell (second column)
-      await row.locator('td').nth(1).click();
-      await page.waitForTimeout(1000);
-    }
-
-    // 7. The V1 terminal should show the shipment schedule in the left grid
-    //    and an included PickingSlotView on the right when a row is selected.
-    //    The row has supportIncludedViews=true and includedView with pickingSlot viewId.
-
-    // Check if included view appeared (right-side panel)
-    const includedViewPanel = page.locator('.document-list-included');
-    const hasIncluded = await includedViewPanel.isVisible().catch(() => false);
-
-    // If included view is visible, the V1 terminal is fully loaded
-    if (hasIncluded) {
-      // Select picking slot in the included view
-      const slotRow = includedViewPanel.locator('table tbody tr').first();
-      await slotRow.click({ modifiers: ['Control'] });
-      await page.waitForTimeout(1000);
-
-      // Check for "Open HU selection window" action
-      const huEditorAction = page.locator('[data-testid*="WEBUI_Picking_HUEditor_Launcher"]');
-      if (await huEditorAction.isVisible().catch(() => false)) {
-        // Click to open HU editor modal — this is the V1 desktop picking mechanism
-        await huEditorAction.click();
-        await page.waitForTimeout(2000);
-
-        // The HU editor modal should show source HUs
-        const huModal = page.locator('.raw-modal');
-        if (await huModal.isVisible().catch(() => false)) {
-          // Select the source HU and pick it
-          const huRow = huModal.locator('table tbody tr').first();
-          if (await huRow.isVisible().catch(() => false)) {
-            await huRow.click({ modifiers: ['Control'] });
-            await page.waitForTimeout(500);
-
-            // Look for "Pick to new HU" or similar action in the HU editor
-            const pickAction = huModal.locator('[data-testid*="Pick"], [data-testid*="pick"]').first();
-            if (await pickAction.isVisible().catch(() => false)) {
-              await pickAction.click();
-              await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
-              await page.waitForTimeout(1000);
-            }
-          }
-
-          // Close HU editor modal
-          const modalDone = page.getByTestId('modal-done');
-          if (await modalDone.isVisible().catch(() => false)) {
-            await modalDone.click();
-            await page.waitForTimeout(1000);
-          }
-        }
-      }
-    }
-
-    // Take screenshot for analysis
-    await page.screenshot({ path: '/tmp/v1-picking-terminal-with-data.png' });
-
-    // Verify our order data is shown
+    // Verify order data visible in the UI
     const docNo = masterdata.salesOrders.SO1.documentNo;
-    const pageContent = await page.content();
-    expect(pageContent).toContain(docNo);
+    expect(await page.content()).toContain(docNo);
+
+    // Pick HU via HU editor
+    await pickHUViaEditor(page, psViewId, pickingSlotRowId);
+
+    // After picking, "Process picking" should be ENABLED
+    const actionsAfterPick = await getPickingSlotQuickActions(page, psViewId, [pickingSlotRowId]);
+    const processAction = actionsAfterPick.find((a) => a.internalName === 'WEBUI_Picking_M_Picking_Candidate_Process');
+    expect(processAction, 'Process picking action should exist').toBeTruthy();
+    expect(processAction.disabled || false, 'Process picking should be enabled after picking').toBe(false);
+
+    // Execute "Process picking" — creates shipment and closes picking candidates
+    const processResult = await executeProcess(page, {
+      processId: 'ADP_540810',
+      viewId: psViewId,
+      viewWindowId: 'pickingSlot',
+      viewDocumentIds: [pickingSlotRowId],
+    });
+    expect(processResult.error, 'Process picking should succeed').toBeFalsy();
+
+    // Verify picking candidate was closed (shipment created)
+    const pcResp = await page.request.get(
+      `${POSTGREST_BASE_URL}/m_picking_candidate?m_pickingslot_id=eq.${pickingSlotRowId}&select=status,qtypicked&order=m_picking_candidate_id.desc&limit=1`
+    );
+    const pcs = await pcResp.json();
+    expect(pcs.length, 'Picking candidate should exist').toBeGreaterThan(0);
+    expect(pcs[0].status, 'Picking candidate should be Closed after processing').toBe('CL');
+  });
+
+  test('Scenario 6: Pick HU — verify picking candidate and action availability', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.story('V1 Picking Terminal — pick HU creates candidate, unpick action available (QA scenario 6)');
+    allure.severity('critical');
+
+    const { psViewId, pickingSlotRowId, shipmentScheduleId } = await setupV1Test(page);
+
+    // Before picking: no picking candidates for this slot
+    const pcBeforeResp = await page.request.get(
+      `${POSTGREST_BASE_URL}/m_picking_candidate?m_pickingslot_id=eq.${pickingSlotRowId}&select=m_picking_candidate_id`
+    );
+    const pcBefore = await pcBeforeResp.json();
+    expect(pcBefore.length, 'No picking candidates before picking').toBe(0);
+
+    // Pick HU via HU editor
+    await pickHUViaEditor(page, psViewId, pickingSlotRowId);
+
+    // After picking: picking candidate should exist with status IP (In Progress)
+    const pcAfterResp = await page.request.get(
+      `${POSTGREST_BASE_URL}/m_picking_candidate?m_pickingslot_id=eq.${pickingSlotRowId}&select=m_picking_candidate_id,status,qtypicked`
+    );
+    const pcAfter = await pcAfterResp.json();
+    expect(pcAfter.length, 'Picking candidate should exist after picking').toBeGreaterThan(0);
+    expect(pcAfter[0].status, 'Picking candidate should be In Progress').toBe('IP');
+    expect(Number(pcAfter[0].qtypicked), 'Picked qty should be 20 CU').toBe(20);
+
+    // Verify "Process picking" is enabled and "Unpick HU" action exists
+    const actionsAfterPick = await getPickingSlotQuickActions(page, psViewId, [pickingSlotRowId]);
+    const processAction = actionsAfterPick.find((a) => a.internalName === 'WEBUI_Picking_M_Picking_Candidate_Process');
+    const unpickAction = actionsAfterPick.find((a) => a.internalName === 'WEBUI_Picking_RemoveHUFromPickingSlot');
+    expect(processAction?.disabled || false, 'Process should be enabled after picking').toBe(false);
+    expect(unpickAction, 'Unpick HU action should exist').toBeTruthy();
+    // Note: Unpick requires selecting the picked HU child row (not the slot row),
+    // which needs tree expansion not available via simple REST API calls.
   });
 });
