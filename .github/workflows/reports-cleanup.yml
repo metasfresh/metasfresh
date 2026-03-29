@@ -60,6 +60,21 @@ jobs:
             StrictHostKeyChecking accept-new
           EOF
 
+      - name: Fetch existing GitHub branches
+        if: steps.check-secret.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch all branch names from GitHub, sanitize them the same way as cicd.yaml,
+          # and upload to the server so the cleanup script knows which branches still exist.
+          gh api repos/${{ github.repository }}/branches --paginate --jq '.[].name' \
+            | while read -r branch; do
+                echo "$branch" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.\n-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//'
+              done \
+            | sort -u > /tmp/github-branches.txt
+          echo "Found $(wc -l < /tmp/github-branches.txt) branches on GitHub"
+          ssh reports-server "cat > /tmp/github-branches.txt" < /tmp/github-branches.txt
+
       - name: Run cleanup
         if: steps.check-secret.outputs.available == 'true'
         id: cleanup
@@ -74,6 +89,14 @@ jobs:
           MAX_BUILDS_PER_BRANCH = 3
           MAX_BRANCH_AGE_DAYS = 30
           MAX_ORPHAN_BUILD_AGE_DAYS = 7
+          DELETED_BRANCH_GRACE_DAYS = 2
+
+          # Load sanitized branch names from GitHub
+          github_branches = set()
+          gh_branches_file = Path("/tmp/github-branches.txt")
+          if gh_branches_file.exists():
+              github_branches = set(gh_branches_file.read_text().strip().splitlines())
+              print(f"Loaded {len(github_branches)} GitHub branches for existence check")
 
           def get_avail_bytes():
               stat = os.statvfs(str(REPORTS_ROOT))
@@ -134,8 +157,10 @@ jobs:
                       except (json.JSONDecodeError, KeyError):
                           pass
 
-                  # --- Stale branch ---
-                  if newest_ts > 0:
+                  # --- Stale branch (private repos only) ---
+                  # For public reports, branch existence is checked via GitHub API below.
+                  # For private repos we don't have the branch list, so fall back to age.
+                  if label_prefix and newest_ts > 0:
                       age_days = (now - newest_ts) / 86400
                       if age_days > MAX_BRANCH_AGE_DAYS:
                           size = dir_size(branch_dir)
@@ -144,6 +169,23 @@ jobs:
                               metadata_file.unlink()
                           removed_branches.append(
                               f"{label} (stale: {int(age_days)}d, {fmt(size)})"
+                          )
+                          freed += size
+                          continue
+
+                  # --- Deleted branch (no longer exists on GitHub) ---
+                  # Only for public reports (not private repos which use different repos).
+                  # Skip if newest_ts == 0 (no valid timestamps) — let the "No metadata" block handle it.
+                  if not label_prefix and github_branches and branch not in github_branches and newest_ts > 0:
+                      # Grace period: only remove if last build is older than DELETED_BRANCH_GRACE_DAYS
+                      age_days = (now - newest_ts) / 86400
+                      if age_days > DELETED_BRANCH_GRACE_DAYS:
+                          size = dir_size(branch_dir)
+                          shutil.rmtree(branch_dir)
+                          if metadata_file.exists():
+                              metadata_file.unlink()
+                          removed_branches.append(
+                              f"{label} (deleted from GitHub, {int(age_days)}d since last build, {fmt(size)})"
                           )
                           freed += size
                           continue
