@@ -2,11 +2,10 @@ import { test } from '../../playwright.config';
 import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PICKING_TERMINAL_V2_WINDOW_ID } from '../utils/WindowIds';
 
 const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
-const TESTING_API_BASE_URL = process.env.TESTING_API_BASE_URL || 'http://localhost:8282/api/v2';
 const POSTGREST_BASE_URL = process.env.POSTGREST_BASE_URL || 'http://localhost:32001';
 
 /**
@@ -119,17 +118,8 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     const masterdata = await createPickingTestData();
     await loginAndNavigate(page, masterdata);
 
-    // Navigate to Picking Terminal V2
-    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}`);
-    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-
-    // Select a single row — click on the row number cell (leftmost column)
-    // In view mode, we need to click the row indicator area.
-    // The first column often contains a row number or selection indicator.
+    // Find a row that's NOT locked (no Picking User)
     const firstRow = page.locator('table tbody tr').first();
-
-    // Find a row that's NOT locked (no Picking User) — those without text in Picking User column
-    // The 5th column (index 4) is "Picking User"
     let targetRow = null;
     const rowCount = await page.locator('table tbody tr').count();
     for (let i = 0; i < rowCount; i++) {
@@ -141,20 +131,16 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
         break;
       }
     }
-
     if (!targetRow) {
-      // All rows are locked — just use first row
       targetRow = firstRow;
     }
 
-    // Click the row's first cell (row number) to select it
+    // Click the row to select it
     await targetRow.locator('td').first().click();
     await page.waitForTimeout(1000);
 
-    // Check if selected
     const isSelected = await targetRow.evaluate((el) => el.classList.contains('row-selected'));
     if (!isSelected) {
-      // Try double-clicking the row indicator
       await targetRow.locator('td').first().dblclick();
       await page.waitForTimeout(500);
     }
@@ -163,13 +149,10 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     const pickButton = page.locator('[data-testid^="quick-action-PackageablesView_OpenProductsToPick"]');
     await pickButton.click();
 
-    // Wait for modal overlay to appear (Products to Pick view)
-    // The modal uses class "panel-modal" or similar
     await page.waitForTimeout(3000);
 
     // Wait for the "Products to Pick" modal to appear
     await page.locator('.raw-modal, .screen-freeze').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-    // Wait for screen-freeze to disappear (process completed)
     await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.waitForTimeout(1000);
 
@@ -183,28 +166,6 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     await modalTable.first().click({ modifiers: ['Control'] });
     await page.waitForTimeout(1000);
 
-    // After selecting, quick actions should appear in the modal header
-    // Discover them
-    const modalQuickActions = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('.raw-modal [data-testid^="quick-action-"]'))
-        .map(el => el.dataset.testid)
-        .join(', ');
-    });
-
-    // Also check for quick actions outside the modal (they might be in the view header)
-    const allQuickActions = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('[data-testid^="quick-action-"]'))
-        .map(el => el.dataset.testid)
-        .join(', ');
-    });
-
-    // Take a screenshot for reference
-    await page.screenshot({ path: '/tmp/pick-modal-with-selection.png' });
-
-    // Select the product row in the modal using Ctrl+click
-    await modalTable.first().click({ modifiers: ['Control'] });
-    await page.waitForTimeout(1000);
-
     // The "Pick" quick action should now be visible in the modal
     const modalPickButton = page.locator('.raw-modal [data-testid^="quick-action-"]').first();
     await modalPickButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -215,14 +176,6 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     // Wait for the pick process to complete
     await page.locator('.screen-freeze').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.waitForTimeout(2000);
-
-    // After picking, the row should show "Picked" status
-    // Check if the Pick Status column changed
-    const pickStatusCell = page.locator('.raw-modal table tbody tr').first().locator('td').last();
-    const pickStatus = await pickStatusCell.innerText().catch(() => 'unknown');
-
-    // Take screenshot for verification
-    await page.screenshot({ path: '/tmp/pick-modal-after-pick.png' });
 
     // Close modal
     const doneButton = page.getByTestId('modal-done');
@@ -253,8 +206,7 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
 test.describe('Picking Terminal V1 — Process/Unprocess/Remove', () => {
   /**
    * Create test data with HU qty matching the order (avoids overdelivery error).
-   * Uses qtyCUsPerTU=4 and qty=12 → 3 TUs needed.
-   * The source HU has exactly 3 TUs (12 CU) so Pick HU won't exceed the order.
+   * PI: 5 TUs × 4 CU/TU = 20 CU total. Order qty = 20 CU.
    */
   const createV1TestData = async (language = 'en_US') => {
     return await Backend.createMasterdata({
