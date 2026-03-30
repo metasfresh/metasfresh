@@ -48,40 +48,50 @@ const createMasterdata = async () => {
 test.describe('Barcode Scanner Input Modes', () => {
 
     // noinspection JSUnusedLocalSymbols
-    test('scan input field visible on browsers without CSS :has() support', async ({ page }) => {
-        allure.epic('E0105: Picking');
-        allure.tag('F00230: MobileUI Picking');
-        allure.tag('F00230');
-        allure.story('Barcode scanner input visible on older WebViews (Android 11)');
-        allure.severity('critical');
-
-        const masterdata = await createMasterdata();
-
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-
-        // Verify the barcode scanner container has the expected CSS class
-        await BarcodeScannerComponent.expectContainerHasClass('has-video');
-
-        // Inject CSS that nullifies any :has() rules — simulates older WebView behavior.
-        // The class-based selectors (.has-video/.no-video) should keep the input visible.
-        await page.addStyleTag({
-            content: `
-                .barcode-scanner:has(video) .input-text { position: static !important; opacity: 1 !important; z-index: auto !important; }
-                .barcode-scanner:not(:has(video)) { display: block !important; }
-                .barcode-scanner:not(:has(video)) .input-text { flex-grow: unset !important; }
-            `
+    test.describe('Older WebView without CSS :has() support', () => {
+        // Launch Chromium with :has() pseudo-class disabled — simulates Android 11 WebView (Chrome <105)
+        test.use({
+            launchOptions: {
+                args: [
+                    '--no-sandbox',
+                    '--disable-blink-features=CSSPseudoHas',
+                    '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282',
+                    '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests',
+                    '--disable-site-isolation-trials',
+                    '--disable-web-security',
+                    '--ignore-certificate-errors',
+                    '--allow-insecure-localhost',
+                    '--allow-running-insecure-content',
+                ],
+            },
         });
 
-        // The input should still be visible thanks to .has-video class-based selector
-        await BarcodeScannerComponent.expectInputVisible();
+        // noinspection JSUnusedLocalSymbols
+        test('scan input field visible and scanning works', async ({ page }) => {
+            allure.epic('E0105: Picking');
+            allure.tag('F00230: MobileUI Picking');
+            allure.tag('F00230');
+            allure.story('Barcode scanner input visible on older WebViews (Android 11)');
+            allure.severity('critical');
 
-        // Verify scanning still works
-        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-        await PickingJobScreen.expectPickingSlotButtonGreen();
+            const masterdata = await createMasterdata();
+
+            await LoginScreen.login(masterdata.login.user);
+            await ApplicationsListScreen.expectVisible();
+            await ApplicationsListScreen.startApplication('picking');
+            await PickingJobsListScreen.waitForScreen();
+            await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+            // Verify the barcode scanner container has the class-based selector (not relying on :has())
+            await BarcodeScannerComponent.expectContainerHasClass('has-video');
+
+            // Verify the input is visible and within the viewport
+            await BarcodeScannerComponent.expectInputVisible();
+
+            // Verify scanning still works
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+            await PickingJobScreen.expectPickingSlotButtonGreen();
+        });
     });
 
     // noinspection JSUnusedLocalSymbols
