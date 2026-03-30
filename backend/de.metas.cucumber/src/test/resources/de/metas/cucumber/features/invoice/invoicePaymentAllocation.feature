@@ -356,18 +356,19 @@ Feature: invoice payment allocation
       | inv_160                     | payment_160                 | 3.57       | 0                |
 
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID      |
-      # alloc1: credit memo compensation (CM vs invoice)
-      | C_Receivable_Acct      | 2.38 EUR    | 0 EUR       | customer1     | alloc1         |
-      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | customer1     | alloc1         |
-      # alloc2: payment vs invoice
-      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       | customer1     | alloc2         |
-      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    | customer1     | alloc2         |
-      # invoice postings
-      | C_Receivable_Acct      |             |             | customer1     | salesInvoice1  |
-      | *                      |             |             |               | salesInvoice1  |
-      | C_Receivable_Acct      |             |             | customer1     | salesCreditMemo1 |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
+      # salesInvoice1 posting (GrandTotal=5.95)
+      | C_Receivable_Acct      | 5.95 EUR    | 0 EUR       | customer1     | salesInvoice1    |
+      | *                      |             |             |               | salesInvoice1    |
+      # salesCreditMemo1 posting (GrandTotal=2.38)
+      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | customer1     | salesCreditMemo1 |
       | *                      |             |             |               | salesCreditMemo1 |
+      # alloc1: credit memo compensation (CM vs invoice)
+      | C_Receivable_Acct      | 2.38 EUR    | 0 EUR       | customer1     | alloc1           |
+      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | customer1     | alloc1           |
+      # alloc2: payment vs invoice
+      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       | customer1     | alloc2           |
+      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    | customer1     | alloc2           |
     And Fact_Acct records balances for documents alloc1 are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -650,17 +651,18 @@ Feature: invoice payment allocation
 
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID       |
+      # inv_220 posting (GrandTotal=5.95)
+      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | customer1     | inv_220         |
+      | *                     |             |             |               | inv_220         |
+      # credit_memo_220 posting (GrandTotal=2.38)
+      | V_Liability_Acct      | 2.38 EUR    | 0 EUR       | customer1     | credit_memo_220 |
+      | *                     |             |             |               | credit_memo_220 |
       # alloc1: credit memo compensation (CM vs invoice)
       | V_Liability_Acct      | 0 EUR       | 2.38 EUR    | customer1     | alloc1          |
       | V_Liability_Acct      | 2.38 EUR    | 0 EUR       | customer1     | alloc1          |
       # alloc2: payment vs invoice
       | V_Liability_Acct      | 3.57 EUR    | 0 EUR       | customer1     | alloc2          |
       | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    | customer1     | alloc2          |
-      # invoice postings
-      | V_Liability_Acct      |             |             | customer1     | inv_220         |
-      | *                     |             |             |               | inv_220         |
-      | V_Liability_Acct      |             |             | customer1     | credit_memo_220 |
-      | *                     |             |             |               | credit_memo_220 |
     And Fact_Acct records balances for documents alloc1 are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
@@ -796,13 +798,15 @@ Feature: invoice payment allocation
     # Verify: the credit memo compensation allocation has Fact_Acct entries
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
+      # salesInv_cma_100 posting (GrandTotal=11.90)
+      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | salesInv_cma_100 |
+      | *                     |             |             |               | salesInv_cma_100 |
+      # salesCM_cma_100 posting (GrandTotal=11.90)
+      | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | customer1     | salesCM_cma_100  |
+      | *                     |             |             |               | salesCM_cma_100  |
+      # alloc_cm: credit memo compensation
       | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | alloc_cm         |
       | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | customer1     | alloc_cm         |
-      # invoice postings
-      | C_Receivable_Acct     |             |             | customer1     | salesInv_cma_100 |
-      | *                     |             |             |               | salesInv_cma_100 |
-      | C_Receivable_Acct     |             |             | customer1     | salesCM_cma_100  |
-      | *                     |             |             |               | salesCM_cma_100  |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -873,13 +877,15 @@ Feature: invoice payment allocation
     # Verify: allocation has Fact_Acct entries — DR for credit memo, CR for invoice
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID       |
+      # salesInvoice posting (GrandTotal=11.90)
+      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | salesInvoice    |
+      | *                     |             |             |               | salesInvoice    |
+      # salesCreditMemo posting (GrandTotal=5.95)
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | customer1     | salesCreditMemo |
+      | *                     |             |             |               | salesCreditMemo |
+      # alloc_cm: credit memo compensation
       | C_Receivable_Acct     | 5.95 EUR    | 0 EUR       | customer1     | alloc_cm        |
       | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | customer1     | alloc_cm        |
-      # invoice postings
-      | C_Receivable_Acct     |             |             | customer1     | salesInvoice    |
-      | *                     |             |             |               | salesInvoice    |
-      | C_Receivable_Acct     |             |             | customer1     | salesCreditMemo |
-      | *                     |             |             |               | salesCreditMemo |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -922,13 +928,121 @@ Feature: invoice payment allocation
     # Verify: allocation has Fact_Acct entries — CR for credit memo, DR for invoice
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID          |
+      # purchaseInvoice posting (GrandTotal=11.90)
+      | V_Liability_Acct      | 0 EUR       | 11.90 EUR   | vendor1       | purchaseInvoice    |
+      | *                     |             |             |               | purchaseInvoice    |
+      # purchaseCreditMemo posting (GrandTotal=5.95)
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | vendor1       | purchaseCreditMemo |
+      | *                     |             |             |               | purchaseCreditMemo |
+      # alloc_cm: credit memo compensation
       | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | vendor1       | alloc_cm           |
       | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | vendor1       | alloc_cm           |
-      # invoice postings
-      | V_Liability_Acct      |             |             | vendor1       | purchaseInvoice    |
-      | *                     |             |             |               | purchaseInvoice    |
-      | V_Liability_Acct      |             |             | vendor1       | purchaseCreditMemo |
-      | *                     |             |             |               | purchaseCreditMemo |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_200
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @F00700
+  Scenario: sales-purchase invoice compensation (CH Verrechnung) - Fact_Acct entries
+    # Same BPartner is both customer and vendor. A sales invoice is compensated against a purchase invoice.
+    # This is legal in Switzerland (Verrechnung) and produces cross-account clearing entries.
+    Given metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSys200 |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPL200     | pricingSys200      | DE           | EUR           | true  |
+      | purchasePL200  | pricingSys200      | DE           | EUR           | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | salesPLV200    | salesPL200     |
+      | purchasePLV200 | purchasePL200  |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | bp200      | Y          | Y        | pricingSys200      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier  | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bp200_loc   | bp200         | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product200 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV200            | product200   | 10.00    | PCE      |
+      | purchasePLV200         | product200   | 5.00     | PCE      |
+
+    # Sales invoice: GrandTotal = 11.90 EUR
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInv200     | bp200         | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | salesInv200  | product200   | 1 PCE       |
+    And the invoice identified by salesInv200 is completed
+
+    # Purchase invoice: GrandTotal = 5.95 EUR
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInv200  | bp200         | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID   | M_Product_ID | QtyInvoiced |
+      | purchaseInv200 | product200   | 1 PCE       |
+    And the invoice identified by purchaseInv200 is completed
+
+    # Compensate: sales invoice vs purchase invoice (no payment)
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.Purchase.C_Invoice_ID.Identifier |
+      | salesInv200             | purchaseInv200                       |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | IsPaid |
+      | purchaseInv200          | true   |
+
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |
+      | salesInv200                 | alloc200                          |
+
+    # Verify: allocation has Fact_Acct entries — cross-account compensation
+    # Sales invoice side: C_Receivable CR (clearing the receivable)
+    # Purchase invoice side: V_Liability DR (clearing the liability)
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID      |
+      # salesInv200 posting (GrandTotal=11.90)
+      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | bp200         | salesInv200    |
+      | *                     |             |             |               | salesInv200    |
+      # purchaseInv200 posting (GrandTotal=5.95)
+      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | bp200         | purchaseInv200 |
+      | *                     |             |             |               | purchaseInv200 |
+      # alloc200: sales-purchase compensation
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | bp200         | alloc200       |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | bp200         | alloc200       |
+    And Fact_Acct records balances for documents alloc200 are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | -5.95 EUR     |
+      | V_Liability_Acct      | 5.95 EUR      |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
