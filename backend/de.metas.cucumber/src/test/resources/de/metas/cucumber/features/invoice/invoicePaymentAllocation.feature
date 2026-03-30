@@ -792,13 +792,33 @@ Feature: invoice payment allocation
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
 
-    # Now reverse the credit memo — this creates reversal allocations
+    # Now reverse the credit memo — this creates reversal allocations:
+    # 1. A reversal of alloc_cm (undoing the CM-vs-invoice allocation)
+    # 2. A new allocation matching the CM against its reversal (reversed invoice allocation)
     And the invoice identified by salesCM_cma_100 is reversed
 
     Then validate created invoices
       | C_Invoice_ID     | IsPaid |
       | salesInv_cma_100 | false  |
       | salesCM_cma_100  | true   |
+
+    # After reversal, the CM has allocations: alloc_cm (original, now reversed) + alloc_cm_reversed (reversal) + alloc_cm_rev_pair (CM vs its reversal)
+    # Verify: the reversal-of-original allocation also has Fact_Acct
+    And validate C_AllocationLines for invoice salesCM_cma_100
+      | OPT.Amount | OPT.C_AllocationHdr_ID |
+      | -11.90     | alloc_cm               |
+      | 11.90      | alloc_cm_reversed      |
+      | -11.90     | alloc_cm_rev_pair      |
+
+    # The reversed allocation (CM vs its reversal) must have Fact_Acct entries (tests createDirectInvoiceAllocationSource)
+    And Fact_Acct records balances for documents alloc_cm_rev_pair are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | 0 EUR         |
+
+    # Overall: all allocation Fact_Acct entries for this CM should net to zero
+    And Fact_Acct records balances for documents alloc_cm,alloc_cm_reversed,alloc_cm_rev_pair are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | 0 EUR         |
 
 
 # ############################################################################################################################################
