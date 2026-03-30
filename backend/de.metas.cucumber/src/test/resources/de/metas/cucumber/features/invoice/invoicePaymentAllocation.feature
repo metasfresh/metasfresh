@@ -1014,19 +1014,19 @@ Feature: invoice payment allocation
     # Purchase invoice side: V_Liability DR (clearing the liability)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID      |
-      # salesInv200 posting (GrandTotal=11.90)
-      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | bp200         | salesInv200    |
-      | *                     |             |             |               | salesInv200    |
-      # purchaseInv200 posting (GrandTotal=5.95)
-      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | bp200         | purchaseInv200 |
-      | *                     |             |             |               | purchaseInv200 |
-      # alloc200: sales-purchase compensation
       | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | bp200         | alloc200       |
       | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | bp200         | alloc200       |
+      # invoice postings
+      | C_Receivable_Acct     |             |             | bp200         | salesInv200    |
+      | *                     |             |             |               | salesInv200    |
+      | V_Liability_Acct      |             |             | bp200         | purchaseInv200 |
+      | *                     |             |             |               | purchaseInv200 |
     And Fact_Acct records balances for documents alloc200 are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | -5.95 EUR     |
       | V_Liability_Acct      | 5.95 EUR      |
+
+
 
 
 
