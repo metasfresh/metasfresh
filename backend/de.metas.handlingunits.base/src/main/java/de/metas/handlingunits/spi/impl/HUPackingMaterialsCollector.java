@@ -394,7 +394,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * @param count how many to add
 	 * @param huPackingMaterialCollectorSource
 	 */
-	public void addM_HU_PI(@NonNull final I_M_HU_PI huPI, @NonNull final BigDecimal count, @Nullable final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
+	public void addM_HU_PI(@NonNull final I_M_HU_PI huPI, final int count, @Nullable final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
 		if (disabled)
 		{
@@ -405,7 +405,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				"errorIfHuIsAdded=true, so addM_HU_PI may not be called; parameters: huPI={}; count={}; huPackingMaterialCollectorSource={}",
 				huPI, count, huPackingMaterialCollectorSource);
 
-		if (count.signum() <= 0)
+		if (count <= 0)
 		{
 			return;
 		}
@@ -434,7 +434,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitType = handlingUnitsBL.getHU_UnitType(huPI);
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
 		{
-			countTUs += count.intValueExact();
+			countTUs += count;
 		}
 	}
 

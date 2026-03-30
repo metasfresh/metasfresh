@@ -273,28 +273,29 @@ public class HUShipmentPackingMaterialLinesBuilder
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.releasePackingMaterialForTUHUsRecursively(tuAssignmentsQuery);
 		// Must reset packingMaterialsCollectorFromHUs internal counter so mergeBackToParentAndClear() at line 323 doesn't contaminate the parent collector's TU count
-		packingMaterialsCollectorFromHUs.getAndResetCountTUs();
+		final int packingMaterial_countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
 		// Instead of relying on the packingMaterialsCollectorFromHUs.getAndResetCountTUs(), we're re-counting the number of distinct TUs assigned to this line.
-		// Why? Glad you asked. Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
+		// Why? Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
 		// That mechanism is designed to prevent double-counting of TUs/LUs when multiple InOutLines reference the same TU/LU.
 		// But the customer's gripe is that the shipment document looks weird, as if no TU has been assigned to a shipment line. And that would happen if multiple lines are packed into the same TU.
-		final BigDecimal countTUs_Calculated = BigDecimal.valueOf(huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine));
+		final BigDecimal display_countTUs_Calculated = BigDecimal.valueOf(huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine));
 
 		//
 		// Collect TU packing materials from overrides
 		BigDecimal countTUs_Override = shipmentLine.getQtyTU_Override();
 		// Case: we need to initialize the overrides, so we are using the countTUs_Calculated if it's a value set there.
-		if (initializeOverrides && countTUs_Calculated.signum() > 0)
+		if (initializeOverrides && display_countTUs_Calculated.signum() > 0)
 		{
-			countTUs_Override = countTUs_Calculated;
+			countTUs_Override = display_countTUs_Calculated;
 		}
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromOverrides = packingMaterialsCollector.splitNew();
 		final I_M_HU_PI_Item_Product huPIItemProduct = shipmentLine.getM_HU_PI_Item_Product_Override();
 		if (huPIItemProduct != null)
 		{
+			final int packingMaterial_countTUs_Override = initializeOverrides && packingMaterial_countTUs_Calculated > 0 ? packingMaterial_countTUs_Calculated : shipmentLine.getQtyTU_Override().intValueExact();
 			final I_M_HU_PI huPI = huPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override, shipmentLineSource);
+			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, packingMaterial_countTUs_Override, shipmentLineSource);
 		}
 		//
 		// Collect LU packing materials from overrides
@@ -306,7 +307,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_HU_PI luPI = handlingUnitsDAO.retrieveDefaultLUOrNull(ctx, adOrgId);
 			if (luPI != null)
 			{
-				packingMaterialsCollector.addM_HU_PI(luPI, BigDecimal.ONE, shipmentLineSource);
+				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLineSource);
 			}
 
 			_manualLUCollected = true;
@@ -325,7 +326,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		//
 		// Update Qty TU of this shipment line
-		shipmentLine.setQtyTU_Calculated(countTUs_Calculated);
+		shipmentLine.setQtyTU_Calculated(display_countTUs_Calculated);
 		if (initializeOverrides)
 		{
 			shipmentLine.setQtyTU_Override(countTUs_Override);
