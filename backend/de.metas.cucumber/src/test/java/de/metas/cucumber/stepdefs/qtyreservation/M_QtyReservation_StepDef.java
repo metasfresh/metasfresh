@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -34,7 +35,7 @@ import de.metas.inoutcandidate.qty_reservation.CreateQtyReservationRequest;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.inoutcandidate.qty_reservation.SupplyType;
-import de.metas.project.ProjectId;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -42,9 +43,13 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_QtyReservation;
+
+import javax.annotation.Nullable;
 
 /**
  * Step definitions for {@code M_QtyReservation}.
@@ -71,6 +76,8 @@ import org.compiere.model.I_M_QtyReservation;
  *   <li><b>QtyTU</b> — (required) transport-unit quantity (e.g. number of pallets / boxes)</li>
  *   <li><b>SupplyType</b> — (optional, default {@code OH}) supply type code: {@code OH} = on-hand, {@code PS} = planned supply</li>
  *   <li><b>C_Project_ID</b> — (optional, identifier-ref) project to link; when set, also propagates {@code C_Project_ID} to the sales order line</li>
+ *   <li><b>AttributesKey</b> — (optional) raw attributes key string (§&§-separated M_AttributeValue_IDs); mutually exclusive with {@code M_AttributeSetInstance_ID}</li>
+ *   <li><b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) ASI whose storage-relevant attributes are used to compute the AttributesKey; mutually exclusive with {@code AttributesKey}</li>
  * </ul>
  *
  * <h3>{@code validate M_QtyReservations:}</h3>
@@ -98,6 +105,7 @@ public class M_QtyReservation_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData asiTable;
 
 	/**
 	 * Creates {@code M_QtyReservation} records directly in the DB, bypassing the cockpit V2 UI process.
@@ -111,34 +119,31 @@ public class M_QtyReservation_StepDef
 
 	private void createReservation(@NonNull final DataTableRow row)
 	{
-		final ProjectId projectId = row.getAsOptionalIdentifier("C_Project_ID")
-				.map(projectTable::get)
-				.map(project -> ProjectId.ofRepoId(project.getC_Project_ID()))
-				.orElse(null);
-
-		final QtyReservationId qtyReservationId = qtyReservationService.makeReservation(CreateQtyReservationRequest.builder()
-				.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
-				.productId(row.getAsIdentifier("M_Product_ID").lookupNotNullIdIn(productTable))
-				.warehouseId(row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIdIn(warehouseTable))
-				.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
-				.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
-				.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
-				.projectId(projectId)
-				.build());
-
-		// final I_M_QtyReservation record = InterfaceWrapperHelper.newInstance(I_M_QtyReservation.class);
-		// record.setC_Order_ID(orderLine.getC_Order_ID());
-		// record.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		// record.setM_Product_ID(productId);
-		// record.setM_Warehouse_ID(warehouseId);
-		// record.setQty(qty.toBigDecimal());
-		// record.setQtyDelivered(BigDecimal.ZERO);
-		// record.setQtyTU(qtyTU);
-		// record.setC_UOM_ID(qty.getUomId().getRepoId());
-		// record.setSupplyType(supplyType);
-		// InterfaceWrapperHelper.saveRecord(record);
+		final QtyReservationId qtyReservationId = qtyReservationService.makeReservation(
+				CreateQtyReservationRequest.builder()
+						.orderAndLineId(orderLineTable.getOrderAndLineId(row.getAsIdentifier("C_OrderLine_ID")))
+						.productId(row.getAsIdentifier("M_Product_ID").lookupNotNullIdIn(productTable))
+						.warehouseId(row.getAsIdentifier("M_Warehouse_ID").lookupNotNullIdIn(warehouseTable))
+						.supplyType(row.getAsOptionalEnum("SupplyType", SupplyType.class).orElse(SupplyType.ON_HAND))
+						.qtyTU(QtyTU.ofInt(row.getAsInt("QtyTU")))
+						.qty(row.getAsQuantity("Qty", "C_UOM_ID", uomDAO::getByX12DE355))
+						.projectId(row.getAsOptionalIdentifier("C_Project_ID").map(projectTable::getId).orElse(null))
+						.attributesKey(extractAttributesKey(row))
+						.build()
+		);
 
 		row.getAsOptionalIdentifier().ifPresent(id -> qtyReservationTable.putOrReplace(id, qtyReservationId));
+	}
+
+	@Nullable
+	private AttributesKey extractAttributesKey(final @NonNull DataTableRow row)
+	{
+		return row.getAsOptionalString("AttributesKey")
+				.map(AttributesKey::ofString)
+				.orElseGet(() -> row.getAsOptionalIdentifier(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
+						.map(asiTable::getId)
+						.flatMap(AttributesKeys::createAttributesKeyFromASIStorageAttributes)
+						.orElse(null));
 	}
 
 	/**

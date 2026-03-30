@@ -45,7 +45,7 @@ public class QtyReservationService
 		if (request.getProjectId() != null)
 		{
 			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
-			// assume the ProjectValue attribute will be automatically set/updated in ASI 
+			// assume the ProjectValue attribute will be automatically set/updated in ASI
 			orderLineBL.save(orderLine);
 		}
 
