@@ -272,14 +272,14 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.releasePackingMaterialForTUHUsRecursively(tuAssignmentsQuery);
-		//I'm not sure if this is needed, keeping it around for the ResetCountTUs part.
+		// Must reset packingMaterialsCollectorFromHUs internal counter so mergeBackToParentAndClear() at line 323 doesn't contaminate the parent collector's TU count
 		packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
 		// Instead of relying on the packingMaterialsCollectorFromHUs.getAndResetCountTUs(), we're re-counting the number of distinct TUs assigned to this line.
 		// Why? Glad you asked. Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
 		// That mechanism is designed to prevent double-counting of TUs/LUs when multiple InOutLines reference the same TU/LU.
 		// But the customer's gripe is that the shipment document looks weird, as if no TU has been assigned to a shipment line. And that would happen if multiple lines are packed into the same TU.
-		final BigDecimal countTUs_Calculated = huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine);
+		final BigDecimal countTUs_Calculated = BigDecimal.valueOf(huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine));
 
 		//
 		// Collect TU packing materials from overrides

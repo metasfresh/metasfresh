@@ -40,7 +40,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -172,7 +171,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	IQueryBuilder<I_M_HU_Assignment> retrieveTUHUAssignmentsForModelQuery(Object model);
 
-	BigDecimal retrieveDistinctAssignedTUsForModel(Object model);
+	int retrieveDistinctAssignedTUsForModel(Object model);
 
 	/**
 	 * Retrieves those "sub" assignments that reference the same top-level HU and data-record as the given <code>assigment</code>, but also reference a particular (sub-)component of the top-level HU

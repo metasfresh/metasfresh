@@ -28,7 +28,6 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -247,14 +246,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public BigDecimal retrieveDistinctAssignedTUsForModel(final Object model)
+	public int retrieveDistinctAssignedTUsForModel(final Object model)
 	{
-		return BigDecimal.valueOf(retrieveTUHUAssignmentsForModelQuery(model)
+		return retrieveTUHUAssignmentsForModelQuery(model)
 				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID)
 				.create()
-				.stream()
-				.distinct()
-				.count());
+				.count();
 	}
 
 	@Override

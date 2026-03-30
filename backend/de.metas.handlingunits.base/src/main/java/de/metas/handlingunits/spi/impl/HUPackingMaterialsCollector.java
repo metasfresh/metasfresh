@@ -434,7 +434,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitType = handlingUnitsBL.getHU_UnitType(huPI);
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
 		{
-			countTUs += count.intValue();
+			countTUs += count.intValueExact();
 		}
 	}
 
