@@ -356,16 +356,21 @@ Feature: invoice payment allocation
       | inv_160                     | payment_160                 | 3.57       | 0                |
 
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
-      | C_Receivable_Acct      | 2.38 EUR    | 0 EUR       | alloc1    |
-      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | alloc1    |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID      |
+      # alloc1: credit memo compensation (CM vs invoice)
+      | C_Receivable_Acct      | 2.38 EUR    | 0 EUR       | customer1     | alloc1         |
+      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | customer1     | alloc1         |
+      # alloc2: payment vs invoice
+      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       | customer1     | alloc2         |
+      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    | customer1     | alloc2         |
+      # invoice postings
+      | C_Receivable_Acct      |             |             | customer1     | salesInvoice1  |
+      | *                      |             |             |               | salesInvoice1  |
+      | C_Receivable_Acct      |             |             | customer1     | salesCreditMemo1 |
+      | *                      |             |             |               | salesCreditMemo1 |
     And Fact_Acct records balances for documents alloc1 are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
-    And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
-      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       | alloc2    |
-      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    | alloc2    |
 
   @Id:S0132_170
   @from:cucumber
@@ -644,16 +649,21 @@ Feature: invoice payment allocation
       | inv_220                     | payment_220                 | -3.57      | 0                |
 
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 0 EUR       | 2.38 EUR    | alloc1    |
-      | V_Liability_Acct      | 2.38 EUR    | 0 EUR       | alloc1    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID       |
+      # alloc1: credit memo compensation (CM vs invoice)
+      | V_Liability_Acct      | 0 EUR       | 2.38 EUR    | customer1     | alloc1          |
+      | V_Liability_Acct      | 2.38 EUR    | 0 EUR       | customer1     | alloc1          |
+      # alloc2: payment vs invoice
+      | V_Liability_Acct      | 3.57 EUR    | 0 EUR       | customer1     | alloc2          |
+      | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    | customer1     | alloc2          |
+      # invoice postings
+      | V_Liability_Acct      |             |             | customer1     | inv_220         |
+      | *                     |             |             |               | inv_220         |
+      | V_Liability_Acct      |             |             | customer1     | credit_memo_220 |
+      | *                     |             |             |               | credit_memo_220 |
     And Fact_Acct records balances for documents alloc1 are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
-    And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 3.57 EUR    | 0 EUR       | alloc2    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    | alloc2    |
 
   @Id:S0132_230
   @from:cucumber
@@ -785,9 +795,14 @@ Feature: invoice payment allocation
 
     # Verify: the credit memo compensation allocation has Fact_Acct entries
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | alloc_cm  |
-      | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | alloc_cm  |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
+      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | alloc_cm         |
+      | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | customer1     | alloc_cm         |
+      # invoice postings
+      | C_Receivable_Acct     |             |             | customer1     | salesInv_cma_100 |
+      | *                     |             |             |               | salesInv_cma_100 |
+      | C_Receivable_Acct     |             |             | customer1     | salesCM_cma_100  |
+      | *                     |             |             |               | salesCM_cma_100  |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -857,9 +872,14 @@ Feature: invoice payment allocation
 
     # Verify: allocation has Fact_Acct entries — DR for credit memo, CR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | C_Receivable_Acct     | 5.95 EUR    | 0 EUR       | alloc_cm  |
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | alloc_cm  |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID       |
+      | C_Receivable_Acct     | 5.95 EUR    | 0 EUR       | customer1     | alloc_cm        |
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | customer1     | alloc_cm        |
+      # invoice postings
+      | C_Receivable_Acct     |             |             | customer1     | salesInvoice    |
+      | *                     |             |             |               | salesInvoice    |
+      | C_Receivable_Acct     |             |             | customer1     | salesCreditMemo |
+      | *                     |             |             |               | salesCreditMemo |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -901,9 +921,14 @@ Feature: invoice payment allocation
 
     # Verify: allocation has Fact_Acct entries — CR for credit memo, DR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | alloc_cm  |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc_cm  |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID          |
+      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | vendor1       | alloc_cm           |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | vendor1       | alloc_cm           |
+      # invoice postings
+      | V_Liability_Acct      |             |             | vendor1       | purchaseInvoice    |
+      | *                     |             |             |               | purchaseInvoice    |
+      | V_Liability_Acct      |             |             | vendor1       | purchaseCreditMemo |
+      | *                     |             |             |               | purchaseCreditMemo |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
