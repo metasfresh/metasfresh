@@ -32,7 +32,9 @@ import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceTax;
@@ -218,15 +220,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else if (countPayments == 0 && countInvoices > 0)
 		{
-			if (isReversedInvoiceAllocation())
-			{
-				return facts; // nothing to do, analog to isReversedPaymentAllocation()
-			}
-			else
-			{
-				// because we have just one fact line per allocation line
-				fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
-			}
+			// because we have just one fact line per allocation line
+			fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 		}
 
 		for (final DocLine_Allocation line : getDocLines())
@@ -297,6 +292,20 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				{
 					final AmountSourceAndAcct compensationAmt = createPurchaseSalesInvoiceFacts(fact, line);
 					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(compensationAmt);
+				}
+
+				//
+				// Credit memo compensation (same SOTrx, invoice vs credit memo)
+				{
+					final AmountSourceAndAcct creditMemoCompensationAmt = createCreditMemoCompensationFacts(fact, line);
+					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(creditMemoCompensationAmt);
+				}
+
+				//
+				// Direct allocation for reversed invoice allocations (no payment, no counter-line)
+				{
+					final AmountSourceAndAcct directAllocationAmt = createDirectInvoiceAllocationSource(fact, line);
+					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(directAllocationAmt);
 				}
 
 				//
@@ -407,23 +416,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		boolean firstPaymentIsReversalOfSecond = firstPayment.getReversal_ID() == secondPayment.getC_Payment_ID();
 		boolean secondPaymentIsReversalOfFirst = secondPayment.getReversal_ID() == firstPayment.getC_Payment_ID();
 		return firstPaymentIsReversalOfSecond || secondPaymentIsReversalOfFirst;
-	}
-
-	private boolean isReversedInvoiceAllocation()
-	{
-		if (!mightBeReversedAllocation())
-		{
-			return false;
-		}
-
-		// note: the p_lines are not each others' counter doc lines, i.e. DocLine_Allocation.getCounterDocLine() == null and getCounter_AllocationLine_ID == 0
-		final List<DocLine_Allocation> lines = getDocLines();
-		final I_C_Invoice firstInvoice = lines.get(0).getC_Invoice();
-		final I_C_Invoice secondInvoice = lines.get(1).getC_Invoice();
-
-		boolean firstInvoiceIsReversalOfSecond = firstInvoice.getReversal_ID() == secondInvoice.getC_Invoice_ID();
-		boolean secondInvoiceIsReversalOfFirst = secondInvoice.getReversal_ID() == firstInvoice.getC_Invoice_ID();
-		return firstInvoiceIsReversalOfSecond || secondInvoiceIsReversalOfFirst;
 	}
 
 	private boolean mightBeReversedAllocation()
@@ -964,6 +956,139 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Return how much was booked here.
 		return factLine.getAmtSourceAndAcctDrOrCr();
+	}
+
+	/**
+	 * Creates the {@link FactLine} to book the credit memo compensation (same SOTrx, invoice vs credit memo).
+	 * <p>
+	 * When a regular invoice (ARI/API) is allocated against a credit memo (ARC/APC) of the same transaction type
+	 * without any payment, this method creates the clearing entry for the credit memo side.
+	 * The regular invoice's clearing entry is then created by {@link #createInvoiceFacts}.
+	 */
+	private AmountSourceAndAcct createCreditMemoCompensationFacts(final Fact fact, final DocLine_Allocation line)
+	{
+		final AcctSchema as = fact.getAcctSchema();
+
+		if (!line.isCreditMemoInvoiceToCompensate(as.getId()))
+		{
+			return AmountSourceAndAcct.ZERO;
+		}
+
+		Check.assume(!line.hasPaymentDocument(),
+				"Credit memo compensation line shall not have a payment: {}", line);
+
+		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
+		if (compensationAmtSource.signum() == 0)
+		{
+			return AmountSourceAndAcct.ZERO;
+		}
+
+		final DocLine_Allocation counterLine = line.getCounterDocLine();
+		Check.assumeNotNull(counterLine, "counterLine not null");
+
+		// Verify amounts match
+		final BigDecimal counterCompensationAmtSource = counterLine.getAllocatedAmt();
+		if (compensationAmtSource.compareTo(counterCompensationAmtSource.negate()) != 0)
+		{
+			throw newPostingException()
+					.setFact(fact)
+					.setDocLine(line)
+					.setDetailMessage("Counter credit memo shall have matching allocated amount: " + counterLine);
+		}
+
+		if (!as.isAccrual())
+		{
+			throw newPostingException()
+					.setFact(fact)
+					.setDocLine(line)
+					.setDetailMessage("Cash based accounting not supported for credit memo compensation");
+		}
+
+		// Use the counter-invoice's currency conversion context for proper multi-currency handling
+		final CurrencyConversionContext currencyConversionCtx;
+		if (fact.isAccountingCurrency(counterLine.getInvoiceCurrencyId()))
+		{
+			currencyConversionCtx = null;
+		}
+		else
+		{
+			currencyConversionCtx = counterLine.getInvoiceCurrencyConversionCtx();
+		}
+
+		// Create fact line for the counter credit memo
+		final FactLineBuilder factLineBuilder = fact.createLine()
+				.setDocLine(counterLine)
+				.setCurrencyId(getCurrencyId())
+				.setCurrencyConversionCtx(currencyConversionCtx)
+				.orgId(counterLine.getInvoiceOrgId())
+				.bPartnerAndLocationId(counterLine.getInvoiceBPartnerId(), counterLine.getInvoiceBPartnerLocationId())
+				.alsoAddZeroLine();
+
+		if (counterLine.isSOTrxInvoice())
+		{
+			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
+			// ARC: DR to clear the credit memo's receivable
+			factLineBuilder.setAmtSource(compensationAmtSource, null);
+		}
+		else
+		{
+			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
+			// APC: CR to clear the credit memo's liability
+			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
+		}
+
+		final FactLine factLine = factLineBuilder.buildAndAddNotNull();
+
+		// Mark both lines as compensated
+		line.markAsCreditMemoInvoiceCompensated(as);
+		counterLine.markAsCreditMemoInvoiceCompensated(as);
+
+		return factLine.getAmtSourceAndAcctDrOrCr();
+	}
+
+	/**
+	 * Creates the source amount for direct invoice allocations (no payment, no counter-line).
+	 * <p>
+	 * This handles reversed invoice allocations where two invoices (e.g., credit memo + its reversal)
+	 * are allocated together without any payment or counter-line linkage.
+	 * The allocated amount flows directly to {@link #createInvoiceFacts} for clearing.
+	 *
+	 * @return the allocated amount as both source and accounting amount (using invoice's FX rate to ensure zero gain/loss)
+	 */
+	private AmountSourceAndAcct createDirectInvoiceAllocationSource(final Fact fact, final DocLine_Allocation line)
+	{
+		if (line.hasPaymentDocument() || line.getCounterDocLine() != null)
+		{
+			return AmountSourceAndAcct.ZERO;
+		}
+
+		final BigDecimal allocatedAmt = line.getAllocatedAmt();
+		if (allocatedAmt.signum() == 0)
+		{
+			return AmountSourceAndAcct.ZERO;
+		}
+
+		// Compute amtAcct using the invoice's conversion context.
+		// This ensures allocationAcctOnPaymentDate equals allocationAcctOnInvoiceDate,
+		// producing zero gain/loss (correct: a reversal is not a realization event).
+		final BigDecimal amtAcct;
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			amtAcct = allocatedAmt;
+		}
+		else
+		{
+			final AcctSchema as = fact.getAcctSchema();
+			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+			final CurrencyConversionResult convResult = currencyBL.convert(
+					line.getInvoiceCurrencyConversionCtx(),
+					allocatedAmt,
+					getCurrencyId(),
+					as.getCurrencyId());
+			amtAcct = convResult.getAmount();
+		}
+
+		return AmountSourceAndAcct.of(allocatedAmt, amtAcct);
 	}
 
 	/**
