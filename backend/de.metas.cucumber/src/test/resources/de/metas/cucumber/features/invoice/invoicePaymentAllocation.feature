@@ -2839,48 +2839,36 @@ Feature: invoice payment allocation
   @F00700
   Scenario: sales credit memo allocated against sales invoice - Fact_Acct entries (no payment)
     Given metasfresh contains M_Products:
-      | Identifier      |
-      | product_cma_110 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
-      | salesPLV               | product_cma_110 | 100.00   | PCE      |
-    # Create the sales invoice (ARI) — GrandTotal = 119.00 EUR (100 + 19% VAT)
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 10.00    | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInv_cma_110 | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID     | M_Product_ID    | QtyInvoiced |
-      | salesInv_cma_110 | product_cma_110 | 1 PCE       |
-    And the invoice identified by salesInv_cma_110 is completed
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | salesInvoice | product      | 1 PCE       |
+    And the invoice identified by salesInvoice is completed
 
-    # Create the sales credit memo (ARC) — GrandTotal = 59.50 EUR (50 + 19% VAT)
-    And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesCM_cma_110 | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
-    And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID    | M_Product_ID    | QtyInvoiced |
-      | salesCM_cma_110 | product_cma_110 | 0.5 PCE     |
-    And the invoice identified by salesCM_cma_110 is completed
-
-    # Allocate credit memo against invoice (no payment)
-    And allocate invoices (credit memo/purchase) to invoices
-      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
-      | salesInv_cma_110        | salesCM_cma_110                        |
-
-    Then validate created invoices
-      | C_Invoice_ID.Identifier | IsPaid |
-      | salesCM_cma_110         | true   |
+    # Create credit memo linked to the invoice (auto-creates allocation with counter-lines)
+    And create credit memo for C_Invoice
+      | CreditMemo      | C_Invoice_ID | CreditMemo.PriceEntered |
+      | salesCreditMemo | salesInvoice | 5.00                    |
+    And the invoice identified by salesCreditMemo is completed
 
     And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |
-      | salesCM_cma_110             | alloc_cma_110                     |
+      | C_Invoice_ID    | Amount | C_AllocationHdr_ID |
+      | salesCreditMemo | -5.95  | alloc_cm           |
+      | salesInvoice    | 5.95   | alloc_cm           |
 
     # Verify: allocation has Fact_Acct entries — DR for credit memo, CR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID     |
-      | C_Receivable_Acct     | 59.50 EUR   | 0 EUR       | alloc_cma_110 |
-      | C_Receivable_Acct     | 0 EUR       | 59.50 EUR   | alloc_cma_110 |
-    And Fact_Acct records balances for documents alloc_cma_110 are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | C_Receivable_Acct     | 5.95 EUR    | 0 EUR       | alloc_cm  |
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | alloc_cm  |
+    And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
 
@@ -2895,48 +2883,36 @@ Feature: invoice payment allocation
   @F00700
   Scenario: purchase credit memo allocated against purchase invoice - Fact_Acct entries (no payment)
     Given metasfresh contains M_Products:
-      | Identifier      |
-      | product_cma_120 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
-      | purchasePLV            | product_cma_120 | 100.00   | PCE      |
-    # Create the purchase invoice (API) — GrandTotal = 119.00 EUR (100 + 19% VAT)
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product      | 10.00    | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier          | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | purchaseInv_cma_120 | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID        | M_Product_ID    | QtyInvoiced |
-      | purchaseInv_cma_120 | product_cma_120 | 1 PCE       |
-    And the invoice identified by purchaseInv_cma_120 is completed
+      | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
+      | purchaseInvoice | product      | 1 PCE       |
+    And the invoice identified by purchaseInvoice is completed
 
-    # Create the purchase credit memo (APC) — GrandTotal = 59.50 EUR (50 + 19% VAT)
-    And metasfresh contains C_Invoice:
-      | Identifier         | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | purchaseCM_cma_120 | vendor1       | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
-    And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID       | M_Product_ID    | QtyInvoiced |
-      | purchaseCM_cma_120 | product_cma_120 | 0.5 PCE     |
-    And the invoice identified by purchaseCM_cma_120 is completed
-
-    # Allocate credit memo against invoice (no payment)
-    And allocate invoices (credit memo/purchase) to invoices
-      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
-      | purchaseInv_cma_120     | purchaseCM_cma_120                     |
-
-    Then validate created invoices
-      | C_Invoice_ID.Identifier | IsPaid |
-      | purchaseCM_cma_120      | true   |
+    # Create credit memo linked to the invoice (auto-creates allocation with counter-lines)
+    And create credit memo for C_Invoice
+      | CreditMemo         | C_Invoice_ID    | CreditMemo.PriceEntered |
+      | purchaseCreditMemo | purchaseInvoice | 5.00                    |
+    And the invoice identified by purchaseCreditMemo is completed
 
     And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |
-      | purchaseCM_cma_120          | alloc_cma_120                     |
+      | C_Invoice_ID       | Amount | C_AllocationHdr_ID |
+      | purchaseCreditMemo | 5.95   | alloc_cm           |
+      | purchaseInvoice    | -5.95  | alloc_cm           |
 
     # Verify: allocation has Fact_Acct entries — CR for credit memo, DR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID     |
-      | V_Liability_Acct      | 0 EUR       | 59.50 EUR   | alloc_cma_120 |
-      | V_Liability_Acct      | 59.50 EUR   | 0 EUR       | alloc_cma_120 |
-    And Fact_Acct records balances for documents alloc_cma_120 are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | alloc_cm  |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc_cm  |
+    And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
 
