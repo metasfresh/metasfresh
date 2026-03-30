@@ -47,14 +47,23 @@ const createMasterdata = async () => {
 
 test.describe('Barcode Scanner Input Modes', () => {
 
+    // Uses Chromium 104 (pre-:has() support) to simulate Android 11 WebView.
+    // Download: curl -L -o /tmp/chromium-old.zip "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1010000%2Fchrome-linux.zip?alt=media"
+    // Extract: unzip -qo /tmp/chromium-old.zip -d /tmp/chromium-old
+    const OLD_CHROMIUM_PATH = '/tmp/chromium-old/chrome-linux/chrome';
+
     // noinspection JSUnusedLocalSymbols
     test.describe('Older WebView without CSS :has() support', () => {
-        // Launch Chromium with :has() pseudo-class disabled — simulates Android 11 WebView (Chrome <105)
+        test.skip(() => {
+            try { require('fs').accessSync(OLD_CHROMIUM_PATH, require('fs').constants.X_OK); return false; }
+            catch { return true; }
+        }, `Chromium 104 not found at ${OLD_CHROMIUM_PATH} — see download instructions above`);
+
         test.use({
             launchOptions: {
+                executablePath: OLD_CHROMIUM_PATH,
                 args: [
                     '--no-sandbox',
-                    '--disable-blink-features=CSSPseudoHas',
                     '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282',
                     '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests',
                     '--disable-site-isolation-trials',
