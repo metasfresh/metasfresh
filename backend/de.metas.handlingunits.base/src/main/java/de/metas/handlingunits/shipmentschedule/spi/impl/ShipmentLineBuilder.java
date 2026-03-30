@@ -2,6 +2,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.SetMultimap;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -19,7 +20,6 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
@@ -54,6 +54,7 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -139,9 +140,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	 * Loading Units(LUs)/Transport Units(TUs) to assign to the shipment line that will be created
 	 */
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
-	private Set<HuId> alreadyAssignedTUIds = null; // to be configured by called
+	@Setter
+	private SetMultimap<InOutLineId, HuId> alreadyAssignedTUIdsForLine; // to be configured by called
 
-	@Getter
+	@Setter @Getter
 	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
@@ -575,7 +577,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		for (final HUTopLevel huToAssign : husToAssign)
 		{
 			// transfer packing materials only if this TU was not already assigned to other document line (partial TUs case)
-			final boolean isTransferPackingMaterials = alreadyAssignedTUIds.add(huToAssign.getTuHUId());
+			final boolean isTransferPackingMaterials = alreadyAssignedTUIdsForLine.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), huToAssign.getTuHUId());
 
 			huShipmentAssignmentBL.assignHU(shipmentLine, huToAssign, isTransferPackingMaterials);
 			haveHUAssigments = true;
@@ -700,20 +702,4 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				|| getQtyTypeToUse().isOnlyUseToDeliver();
 	}
 
-	/**
-	 * Sets a online {@link Set} which contains the list of TU Ids which were already assigned.
-	 * <p>
-	 * This set will be updated by this builder when TUs are assigned.
-	 * <p>
-	 * When this shipment line will try to assign an TU which is on this list, it will set the {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>false</code>.
-	 */
-	public void setAlreadyAssignedTUIds(final Set<HuId> alreadyAssignedTUIds)
-	{
-		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
-	}
-
-	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		this.qtyTypeToUse = qtyTypeToUse;
-	}
 }
