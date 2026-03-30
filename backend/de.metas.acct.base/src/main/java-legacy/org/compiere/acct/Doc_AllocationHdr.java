@@ -220,8 +220,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else if (countPayments == 0 && countInvoices > 0)
 		{
-			// because we have just one fact line per allocation line
-			fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+			if (mightBeReversedAllocation())
+			{
+				// Reversed invoice allocations produce two DR lines (positive + negative) that net to zero.
+				// PerDocumentFactTrxStrategy doesn't support this pattern, so disable it.
+				fact.setFactTrxLinesStrategy(null);
+			}
+			else
+			{
+				// because we have just one fact line per allocation line
+				fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+			}
 		}
 
 		for (final DocLine_Allocation line : getDocLines())
@@ -1049,7 +1058,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	/**
 	 * Creates the source amount for direct invoice allocations (no payment, no counter-line).
 	 * <p>
-	 * This handles reversed invoice allocations where two invoices (e.g., credit memo + its reversal)
+	 * This is a catch-all for any invoice-only allocation line that has no payment and no counter-line.
+	 * The primary use case is reversed invoice allocations where two invoices (e.g., credit memo + its reversal)
 	 * are allocated together without any payment or counter-line linkage.
 	 * The allocated amount flows directly to {@link #createInvoiceFacts} for clearing.
 	 *
@@ -1068,6 +1078,15 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			return AmountSourceAndAcct.ZERO;
 		}
 
+		final AcctSchema as = fact.getAcctSchema();
+		if (!as.isAccrual())
+		{
+			throw newPostingException()
+					.setFact(fact)
+					.setDocLine(line)
+					.setDetailMessage("Cash based accounting not supported for direct invoice allocation");
+		}
+
 		// Compute amtAcct using the invoice's conversion context.
 		// This ensures allocationAcctOnPaymentDate equals allocationAcctOnInvoiceDate,
 		// producing zero gain/loss (correct: a reversal is not a realization event).
@@ -1078,7 +1097,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else
 		{
-			final AcctSchema as = fact.getAcctSchema();
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 			final CurrencyConversionResult convResult = currencyBL.convert(
 					line.getInvoiceCurrencyConversionCtx(),
