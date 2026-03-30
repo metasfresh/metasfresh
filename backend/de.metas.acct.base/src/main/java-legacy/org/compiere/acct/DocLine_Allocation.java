@@ -133,6 +133,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final int m_Counter_AllocationLine_ID;
 	private DocLine_Allocation counterDocLine;
 	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
+	private final Set<AcctSchemaId> creditMemoAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
 	private final PaymentId _paymentId;
 	private final I_C_Payment _payment;
@@ -334,6 +335,46 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	public void markAsSalesPurchaseInvoiceCompensated(final AcctSchema as)
 	{
 		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getId());
+		Check.assume(added, "Line should not be already compensated: {}", this);
+	}
+
+	/**
+	 * @return true if this line is a non-credit-memo invoice with a same-SOTrx credit memo counter-line,
+	 * not yet compensated for the given accounting schema.
+	 * Only the non-CM line drives the compensation to avoid double-posting.
+	 */
+	public boolean isCreditMemoInvoiceToCompensate(final AcctSchemaId acctSchemaId)
+	{
+		if (creditMemoAlreadyCompensated_AcctSchemaIds.contains(acctSchemaId))
+		{
+			return false;
+		}
+
+		if (!hasInvoiceDocument())
+		{
+			return false;
+		}
+
+		// Only the non-credit-memo line drives the compensation
+		if (isCreditMemoInvoice())
+		{
+			return false;
+		}
+
+		final DocLine_Allocation counterLine = getCounterDocLine();
+		if (counterLine == null || !counterLine.hasInvoiceDocument())
+		{
+			return false;
+		}
+
+		// Same SOTrx, counter is credit memo
+		return isSOTrxInvoice() == counterLine.isSOTrxInvoice()
+				&& counterLine.isCreditMemoInvoice();
+	}
+
+	public void markAsCreditMemoInvoiceCompensated(final AcctSchema as)
+	{
+		final boolean added = creditMemoAlreadyCompensated_AcctSchemaIds.add(as.getId());
 		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
