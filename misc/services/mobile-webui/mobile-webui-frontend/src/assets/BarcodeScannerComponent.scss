@@ -39,17 +39,10 @@
   }
 }
 
-.barcode-scanner:has(video) {
-  .input-text {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1;
-    opacity: 0.8;
-  }
-}
-
+// Input is rendered ABOVE the video in normal document flow (not overlaid).
+// Overlaying with position:absolute + z-index does not work reliably on
+// Android 11 WebView due to SurfaceView video compositing (the native video
+// layer ignores CSS z-index and covers overlaid HTML content).
 .barcode-scanner:not(:has(video)) {
   display: flex;
 
