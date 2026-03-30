@@ -118,35 +118,59 @@ test.describe('Picking Terminal V2 — Desktop WebUI', () => {
     const masterdata = await createPickingTestData();
     await loginAndNavigate(page, masterdata);
 
-    // Find a row that's NOT locked (no Picking User)
-    const firstRow = page.locator('table tbody tr').first();
-    let targetRow = null;
-    const rowCount = await page.locator('table tbody tr').count();
-    for (let i = 0; i < rowCount; i++) {
-      const row = page.locator('table tbody tr').nth(i);
-      const pickingUserCell = row.locator('td').nth(4);
-      const pickingUserText = await pickingUserCell.innerText().catch(() => '');
-      if (!pickingUserText.trim()) {
-        targetRow = row;
-        break;
+    // Get our shipment schedule ID for filtered view
+    const orderId = masterdata.salesOrders.SO1.id;
+    const ssResp = await page.request.get(
+      `${POSTGREST_BASE_URL}/m_shipmentschedule?c_order_id=eq.${orderId}&select=m_shipmentschedule_id&limit=1`
+    );
+    const ssData = await ssResp.json();
+    expect(ssData.length).toBeGreaterThan(0);
+    const ssId = ssData[0].m_shipmentschedule_id;
+
+    // Create a V2 view filtered to only our shipment schedule
+    const createViewResp = await page.request.post(
+      `${FRONTEND_BASE_URL}/rest/api/documentView/${PICKING_TERMINAL_V2_WINDOW_ID}`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        data: {
+          windowId: String(PICKING_TERMINAL_V2_WINDOW_ID),
+          viewType: 'grid',
+          filterOnlyIds: [String(ssId)],
+        },
       }
-    }
-    if (!targetRow) {
-      targetRow = firstRow;
-    }
+    );
+    const viewData = await createViewResp.json();
 
-    // Click the row to select it
-    await targetRow.locator('td').first().click();
+    await page.goto(`${FRONTEND_BASE_URL}/window/${PICKING_TERMINAL_V2_WINDOW_ID}?viewId=${viewData.viewId}`);
+    await page.locator('table thead tr').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+    // Select our row — click the <tr> element directly (not <td>) to trigger row selection
+    // Clicking <td> enters cell edit mode; clicking <tr> triggers the row onClick handler
+    const docNo = masterdata.salesOrders.SO1.documentNo;
+    const ourRow = page.locator('table tbody tr').filter({ hasText: docNo }).first();
+    if (await ourRow.isVisible().catch(() => false)) {
+      // Our row is visible (filterOnlyIds worked) — click it
+      await ourRow.click();
+    } else {
+      // filterOnlyIds not supported yet — find an unlocked row in the full view
+      let targetRow = page.locator('table tbody tr').first();
+      const rowCount = await page.locator('table tbody tr').count();
+      for (let i = 0; i < rowCount; i++) {
+        const row = page.locator('table tbody tr').nth(i);
+        const pickingUserCell = row.locator('td').nth(4);
+        const pickingUserText = await pickingUserCell.innerText().catch(() => '');
+        if (!pickingUserText.trim()) {
+          targetRow = row;
+          break;
+        }
+      }
+      await targetRow.click();
+    }
     await page.waitForTimeout(1000);
-
-    const isSelected = await targetRow.evaluate((el) => el.classList.contains('row-selected'));
-    if (!isSelected) {
-      await targetRow.locator('td').first().dblclick();
-      await page.waitForTimeout(500);
-    }
 
     // Click "Pick" quick action button
     const pickButton = page.locator('[data-testid^="quick-action-PackageablesView_OpenProductsToPick"]');
+    await pickButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await pickButton.click();
 
     await page.waitForTimeout(3000);
