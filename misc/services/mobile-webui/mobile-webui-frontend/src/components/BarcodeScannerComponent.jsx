@@ -87,7 +87,11 @@ const BarcodeScannerComponent = ({
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
+  const [cameraFailed, setCameraFailed] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
+
+  const effectiveShowVideo = isShowVideo && !cameraFailed;
+  const effectiveShowInputText = isShowInputText || cameraFailed;
 
   //
   // Video
@@ -98,13 +102,20 @@ const BarcodeScannerComponent = ({
 
     if (isShowVideo) {
       const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-        if (mountedRef.current === false) {
-          controls.stop();
-        } else if (typeof result !== 'undefined') {
-          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-        }
-      });
+      codeReader
+        .decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+          if (mountedRef.current === false) {
+            controls.stop();
+          } else if (typeof result !== 'undefined') {
+            validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+          }
+        })
+        .catch((err) => {
+          console.error('Camera initialization failed, falling back to text input', err);
+          if (mountedRef.current) {
+            setCameraFailed(true);
+          }
+        });
     }
 
     return () => {
@@ -118,7 +129,7 @@ const BarcodeScannerComponent = ({
 
   useEffect(
     () => {
-      if (isShowVideo) {
+      if (effectiveShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
       inputTextRef?.current?.focus();
@@ -254,16 +265,16 @@ const BarcodeScannerComponent = ({
   };
 
   return (
-    <div className="barcode-scanner">
+    <div className={`barcode-scanner ${effectiveShowVideo ? 'has-video' : 'no-video'}`}>
       {isProcessing && <Spinner />}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      {effectiveShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
       {!isProcessing && (
         <input
           id="input-text"
           key="input-text"
           ref={inputTextRef}
           className="input-text"
-          type={isShowInputText ? 'text' : 'hidden'}
+          type={effectiveShowInputText ? 'text' : 'hidden'}
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
