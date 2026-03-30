@@ -165,12 +165,13 @@ export const GetQuantityDialog = {
 //
 
 const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
     if (await locator.count() > 0) {
         try {
             await expect(locator).toBeDisabled();
         } catch (e) {
-            // Element may have been removed between count() and toBeDisabled()
-            // (dialog closed faster than expected). Missing is as good as disabled.
             if (await locator.count() === 0) return;
             throw e;
         }
