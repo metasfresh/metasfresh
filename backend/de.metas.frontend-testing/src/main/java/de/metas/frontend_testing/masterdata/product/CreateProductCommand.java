@@ -403,6 +403,13 @@ public class CreateProductCommand
 			lineRecord.setQtyBOM(line.getQty());
 		}
 
+		if (line.getIssuingTolerancePerc() != null)
+		{
+			lineRecord.setIsEnforceIssuingTolerance(true);
+			lineRecord.setIssuingTolerance_ValueType("P"); // Percentage
+			lineRecord.setIssuingTolerance_Perc(line.getIssuingTolerancePerc());
+		}
+
 		saveRecord(lineRecord);
 	}
 

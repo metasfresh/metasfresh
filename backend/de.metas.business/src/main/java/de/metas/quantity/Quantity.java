@@ -673,9 +673,9 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				percent.addToBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.addToBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 
@@ -687,9 +687,9 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.subtractFromBase(this.qty, this.uom.getStdPrecision()),
+				percent.subtractFromBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.subtractFromBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.subtractFromBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 

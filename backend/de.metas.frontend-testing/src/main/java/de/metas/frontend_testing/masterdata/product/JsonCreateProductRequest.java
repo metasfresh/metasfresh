@@ -103,5 +103,6 @@ public class JsonCreateProductRequest
 		@Nullable X12DE355 uom;
 		@Nullable BOMComponentType componentType;
 		@Nullable BOMComponentIssueMethod issueMethod;
+		@Nullable BigDecimal issuingTolerancePerc;
 	}
 }
