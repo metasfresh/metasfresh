@@ -23,10 +23,8 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.SetMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -160,14 +158,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private CalculateShippingDateRule calculateShippingDateRule = CalculateShippingDateRule.NONE;
 
 	/**
-	 * A map of TUs which are assigned to different shipment lines.
+	 * A list of TUs which are assigned to different shipment lines.
 	 * <p>
-	 * This map is shared between all shipment lines from all shipments which are produced by this producer.
+	 * This list is shared between all shipment lines from all shipments which are produced by this producer.
 	 * <p>
-	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment for each InOutLineId.
-	 * Changed from a simple Set to a multimap so that, for each InOutLineId, each relevant TU is considered at least once.
+	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
-	private SetMultimap<InOutLineId, HuId> tuIdsAlreadyAssignedToShipmentLine = HashMultimap.create();
+	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
@@ -680,7 +677,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
-			currentShipmentLineBuilder.setAlreadyAssignedTUIdsForLine(tuIdsAlreadyAssignedToShipmentLine);
+			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 		}
 
 		//

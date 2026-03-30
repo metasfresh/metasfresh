@@ -28,6 +28,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -246,6 +247,17 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
+	public BigDecimal retrieveDistinctAssignedTUsForModel(final Object model)
+	{
+		return BigDecimal.valueOf(retrieveTUHUAssignmentsForModelQuery(model)
+				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID)
+				.create()
+				.stream()
+				.distinct()
+				.count());
+	}
+
+	@Override
 	public List<I_M_HU_Assignment> retrieveIncludedHUAssignments(final I_M_HU_Assignment assignment)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, assignment);
@@ -393,7 +405,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final IQuery<I_M_HU_Assignment> huAssigmentQuery = createHUAssignmentQuery(hu, topLevel, -1);
 
 		final List<I_M_HU_Assignment> list = huAssigmentQuery.list();
-		
+
 		final LinkedHashSet<TableRecordReference> references = new LinkedHashSet<>();
 		for (final I_M_HU_Assignment huAssignment : list)
 		{

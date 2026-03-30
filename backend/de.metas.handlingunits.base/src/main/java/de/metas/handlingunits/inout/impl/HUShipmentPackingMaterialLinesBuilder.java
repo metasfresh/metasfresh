@@ -22,17 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOut;
-
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
@@ -56,6 +45,16 @@ import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSourc
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOut;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -273,13 +272,20 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.releasePackingMaterialForTUHUsRecursively(tuAssignmentsQuery);
-		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
+		//I'm not sure if this is needed, keeping it around for the ResetCountTUs part.
+		packingMaterialsCollectorFromHUs.getAndResetCountTUs();
+
+		// Instead of relying on the packingMaterialsCollectorFromHUs.getAndResetCountTUs(), we're re-counting the number of distinct TUs assigned to this line.
+		// Why? Glad you asked. Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
+		// That mechanism is designed to prevent double-counting of TUs/LUs when multiple InOutLines reference the same TU/LU.
+		// But the customer's gripe is that the shipment document looks weird, as if no TU has been assigned to a shipment line. And that would happen if multiple lines are packed into the same TU.
+		final BigDecimal countTUs_Calculated = huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine);
 
 		//
 		// Collect TU packing materials from overrides
-		int countTUs_Override = shipmentLine.getQtyTU_Override().intValueExact();
+		BigDecimal countTUs_Override = shipmentLine.getQtyTU_Override();
 		// Case: we need to initialize the overrides, so we are using the countTUs_Calculated if it's a value set there.
-		if (initializeOverrides && countTUs_Calculated > 0)
+		if (initializeOverrides && countTUs_Calculated.signum() > 0)
 		{
 			countTUs_Override = countTUs_Calculated;
 		}
@@ -300,7 +306,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_HU_PI luPI = handlingUnitsDAO.retrieveDefaultLUOrNull(ctx, adOrgId);
 			if (luPI != null)
 			{
-				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLineSource);
+				packingMaterialsCollector.addM_HU_PI(luPI, BigDecimal.ONE, shipmentLineSource);
 			}
 
 			_manualLUCollected = true;
@@ -319,10 +325,10 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		//
 		// Update Qty TU of this shipment line
-		shipmentLine.setQtyTU_Calculated(BigDecimal.valueOf(countTUs_Calculated));
+		shipmentLine.setQtyTU_Calculated(countTUs_Calculated);
 		if (initializeOverrides)
 		{
-			shipmentLine.setQtyTU_Override(BigDecimal.valueOf(countTUs_Override));
+			shipmentLine.setQtyTU_Override(countTUs_Override);
 		}
 		InterfaceWrapperHelper.save(shipmentLine);
 
