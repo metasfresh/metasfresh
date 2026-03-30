@@ -779,28 +779,26 @@ Feature: invoice payment allocation
 
     # At this point alloc_cm is the auto-created allocation of CM against invoice
     And validate C_AllocationLines
-      | C_Invoice_ID    | Amount | C_AllocationHdr_ID |
-      | salesCM_cma_100 | -11.90 | alloc_cm           |
-      | salesInv_cma_100| 11.90  | alloc_cm           |
+      | C_Invoice_ID     | Amount | C_AllocationHdr_ID |
+      | salesCM_cma_100  | -11.90 | alloc_cm           |
+      | salesInv_cma_100 | 11.90  | alloc_cm           |
 
     # Verify: the credit memo compensation allocation has Fact_Acct entries
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
       | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | alloc_cm  |
       | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | alloc_cm  |
-    And Fact_Acct records balances for documents:
-      | AD_Table_ID.TableName | Record_ID |
-      | C_AllocationHdr       | alloc_cm  |
+    And Fact_Acct records balances for documents alloc_cm are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | 0 EUR         |
 
-    # Now reverse the credit memo — this creates a reversal allocation
+    # Now reverse the credit memo — this creates reversal allocations
     And the invoice identified by salesCM_cma_100 is reversed
 
-    # The reversal creates allocations: one to undo the CM-vs-invoice, and one for the CM-vs-its-reversal
-    # The CM-vs-reversal allocation is a reversed invoice allocation and must produce Fact_Acct
     Then validate created invoices
-      | C_Invoice_ID    | IsPaid |
-      | salesInv_cma_100| false  |
-      | salesCM_cma_100 | true   |
+      | C_Invoice_ID     | IsPaid |
+      | salesInv_cma_100 | false  |
+      | salesCM_cma_100  | true   |
 
 
 # ############################################################################################################################################
@@ -845,12 +843,16 @@ Feature: invoice payment allocation
       | C_Invoice_ID.Identifier | IsPaid |
       | salesCM_cma_110         | true   |
 
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |
+      | salesCM_cma_110             | alloc_cma_110                     |
+
     # Verify: allocation has Fact_Acct entries — DR for credit memo, CR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | C_Receivable_Acct     | 59.50 EUR   | 0 EUR       | alloc1    |
-      | C_Receivable_Acct     | 0 EUR       | 59.50 EUR   | alloc1    |
-    And Fact_Acct records balances for documents alloc1 are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID     |
+      | C_Receivable_Acct     | 59.50 EUR   | 0 EUR       | alloc_cma_110 |
+      | C_Receivable_Acct     | 0 EUR       | 59.50 EUR   | alloc_cma_110 |
+    And Fact_Acct records balances for documents alloc_cma_110 are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
 
@@ -897,11 +899,15 @@ Feature: invoice payment allocation
       | C_Invoice_ID.Identifier | IsPaid |
       | purchaseCM_cma_120      | true   |
 
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |
+      | purchaseCM_cma_120          | alloc_cma_120                     |
+
     # Verify: allocation has Fact_Acct entries — CR for credit memo, DR for invoice
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 0 EUR       | 59.50 EUR   | alloc1    |
-      | V_Liability_Acct      | 59.50 EUR   | 0 EUR       | alloc1    |
-    And Fact_Acct records balances for documents alloc1 are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID     |
+      | V_Liability_Acct      | 0 EUR       | 59.50 EUR   | alloc_cma_120 |
+      | V_Liability_Acct      | 59.50 EUR   | 0 EUR       | alloc_cma_120 |
+    And Fact_Acct records balances for documents alloc_cma_120 are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
