@@ -47,62 +47,6 @@ const createMasterdata = async () => {
 
 test.describe('Barcode Scanner Input Modes', () => {
 
-    // Uses Chromium 104 (pre-:has() support) to simulate Android 11 WebView.
-    // Download: curl -L -o /tmp/chromium-old.zip "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1010000%2Fchrome-linux.zip?alt=media"
-    // Extract: unzip -qo /tmp/chromium-old.zip -d /tmp/chromium-old
-    const OLD_CHROMIUM_PATH = '/tmp/chromium-old/chrome-linux/chrome';
-
-    // noinspection JSUnusedLocalSymbols
-    test.describe('Older WebView without CSS :has() support', () => {
-        test.skip(() => {
-            try { require('fs').accessSync(OLD_CHROMIUM_PATH, require('fs').constants.X_OK); return false; }
-            catch { return true; }
-        }, `Chromium 104 not found at ${OLD_CHROMIUM_PATH} — see download instructions above`);
-
-        test.use({
-            launchOptions: {
-                executablePath: OLD_CHROMIUM_PATH,
-                args: [
-                    '--no-sandbox',
-                    '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282',
-                    '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests',
-                    '--disable-site-isolation-trials',
-                    '--disable-web-security',
-                    '--ignore-certificate-errors',
-                    '--allow-insecure-localhost',
-                    '--allow-running-insecure-content',
-                ],
-            },
-        });
-
-        // noinspection JSUnusedLocalSymbols
-        test('scan input field visible and scanning works', async ({ page }) => {
-            allure.epic('E0105: Picking');
-            allure.tag('F00230: MobileUI Picking');
-            allure.tag('F00230');
-            allure.story('Barcode scanner input visible on older WebViews (Android 11)');
-            allure.severity('critical');
-
-            const masterdata = await createMasterdata();
-
-            await LoginScreen.login(masterdata.login.user);
-            await ApplicationsListScreen.expectVisible();
-            await ApplicationsListScreen.startApplication('picking');
-            await PickingJobsListScreen.waitForScreen();
-            await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-
-            // Verify the barcode scanner container has the class-based selector (not relying on :has())
-            await BarcodeScannerComponent.expectContainerHasClass('has-video');
-
-            // Verify the input is visible and within the viewport
-            await BarcodeScannerComponent.expectInputVisible();
-
-            // Verify scanning still works
-            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-            await PickingJobScreen.expectPickingSlotButtonGreen();
-        });
-    });
-
     // noinspection JSUnusedLocalSymbols
     test('scan barcode via keyboard events', async ({ page }) => {
         allure.epic('E0105: Picking');

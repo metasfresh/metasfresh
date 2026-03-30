@@ -39,9 +39,7 @@
   }
 }
 
-// NOTE: Do NOT use :has() pseudo-class here — it requires Chrome 105+
-// and enterprise Zebra devices (Android 10/11) often run older WebViews.
-.barcode-scanner.has-video {
+.barcode-scanner:has(video) {
   .input-text {
     position: absolute;
     top: 0;
@@ -52,7 +50,7 @@
   }
 }
 
-.barcode-scanner.no-video {
+.barcode-scanner:not(:has(video)) {
   display: flex;
 
   .input-text {

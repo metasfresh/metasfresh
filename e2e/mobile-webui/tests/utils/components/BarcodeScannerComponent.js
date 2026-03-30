@@ -92,23 +92,4 @@ export const BarcodeScannerComponent = {
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
     }),
-
-    expectContainerHasClass: async (expectedClass) => await test.step(`${NAME} - Expect container has class '${expectedClass}'`, async () => {
-        await expect(page.locator('.barcode-scanner')).toHaveClass(new RegExp(`\\b${expectedClass}\\b`));
-    }),
-
-    expectInputVisible: async () => await test.step(`${NAME} - Expect input field to be visible`, async () => {
-        const input = page.locator('#input-text');
-        await expect(input).toBeVisible();
-
-        // Verify the input is within the viewport (not pushed off-screen)
-        const box = await input.boundingBox();
-        expect(box, 'Input field should have a bounding box').not.toBeNull();
-        expect(box.height, 'Input field should have non-zero height').toBeGreaterThan(0);
-        expect(box.width, 'Input field should have non-zero width').toBeGreaterThan(0);
-
-        const viewport = page.viewportSize();
-        expect(box.y, 'Input field top should be within viewport').toBeLessThan(viewport.height);
-        expect(box.y + box.height, 'Input field bottom should be within viewport').toBeGreaterThan(0);
-    }),
 }
