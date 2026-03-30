@@ -343,7 +343,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	 * not yet compensated for the given accounting schema.
 	 * Only the non-CM line drives the compensation to avoid double-posting.
 	 */
-	public boolean isCreditMemoInvoiceToCompensate(final AcctSchemaId acctSchemaId)
+	public boolean isInvoiceWithCreditMemoCounterLine(final AcctSchemaId acctSchemaId)
 	{
 		if (creditMemoAlreadyCompensated_AcctSchemaIds.contains(acctSchemaId))
 		{
