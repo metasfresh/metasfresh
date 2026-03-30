@@ -32,9 +32,7 @@ import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceTax;
@@ -220,17 +218,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else if (countPayments == 0 && countInvoices > 0)
 		{
-			if (mightBeReversedAllocation())
-			{
-				// Reversed invoice allocations produce two DR lines (positive + negative) that net to zero.
-				// PerDocumentFactTrxStrategy doesn't support this pattern, so disable it.
-				fact.setFactTrxLinesStrategy(null);
-			}
-			else
-			{
-				// because we have just one fact line per allocation line
-				fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
-			}
+			// because we have just one fact line per allocation line
+			fact.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 		}
 
 		for (final DocLine_Allocation line : getDocLines())
@@ -313,8 +302,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				//
 				// Direct allocation for reversed invoice allocations (no payment, no counter-line)
 				{
-					final AmountSourceAndAcct directAllocationAmt = createDirectInvoiceAllocationSource(fact, line);
-					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(directAllocationAmt);
+					createDirectInvoiceAllocationFacts(fact, line);
 				}
 
 				//
@@ -1005,7 +993,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
-		if (!line.isCreditMemoInvoiceToCompensate(as.getId()))
+		if (!line.isInvoiceWithCreditMemoCounterLine(as.getId()))
 		{
 			return AmountSourceAndAcct.ZERO;
 		}
@@ -1083,16 +1071,19 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Creates the source amount for direct invoice allocations (no payment, no counter-line).
+	 * Creates the {@link FactLine} for direct invoice allocations (no payment, no counter-line).
 	 * <p>
-	 * This is a catch-all for any invoice-only allocation line that has no payment and no counter-line.
-	 * The primary use case is reversed invoice allocations where two invoices (e.g., credit memo + its reversal)
+	 * This handles reversed invoice allocations where two invoices (e.g., credit memo + its reversal)
 	 * are allocated together without any payment or counter-line linkage.
-	 * The allocated amount flows directly to {@link #createInvoiceFacts} for clearing.
-	 *
-	 * @return the allocated amount as both source and accounting amount (using invoice's FX rate to ensure zero gain/loss)
+	 * Each line creates its own receivable/liability clearing entry directly.
+	 * <p>
+	 * Tested by S0465_CMA_100 (the reversal part after the credit memo is reversed).
+	 * <p>
+	 * Note: This method creates the final FactLine and returns ZERO so that {@link #createInvoiceFacts}
+	 * does not create a duplicate entry. The FactTrxLinesStrategy is disabled because reversed allocations
+	 * produce two DR lines (positive + negative) that net to zero but violate the 1-DR-N-CR pattern.
 	 */
-	private AmountSourceAndAcct createDirectInvoiceAllocationSource(final Fact fact, final DocLine_Allocation line)
+	private AmountSourceAndAcct createDirectInvoiceAllocationFacts(final Fact fact, final DocLine_Allocation line)
 	{
 		if (line.hasPaymentDocument() || line.getCounterDocLine() != null)
 		{
@@ -1114,26 +1105,63 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Cash based accounting not supported for direct invoice allocation");
 		}
 
-		// Compute amtAcct using the invoice's conversion context.
-		// This ensures allocationAcctOnPaymentDate equals allocationAcctOnInvoiceDate,
-		// producing zero gain/loss (correct: a reversal is not a realization event).
-		final BigDecimal amtAcct;
+		// Reversed allocations produce two DR lines (positive + negative) that net to zero.
+		// PerDocumentFactTrxStrategy doesn't support this pattern, so disable it.
+		fact.setFactTrxLinesStrategy(null);
+
+		// Use the invoice's currency conversion context for proper multi-currency handling
+		final CurrencyConversionContext currencyConversionCtx;
 		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
 		{
-			amtAcct = allocatedAmt;
+			currencyConversionCtx = null;
 		}
 		else
 		{
-			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-			final CurrencyConversionResult convResult = currencyBL.convert(
-					line.getInvoiceCurrencyConversionCtx(),
-					allocatedAmt,
-					getCurrencyId(),
-					as.getCurrencyId());
-			amtAcct = convResult.getAmount();
+			currencyConversionCtx = line.getInvoiceCurrencyConversionCtx();
 		}
 
-		return AmountSourceAndAcct.of(allocatedAmt, amtAcct);
+		// Create the clearing FactLine directly (same pattern as createCreditMemoCompensationFacts)
+		final FactLineBuilder factLineBuilder = fact.createLine()
+				.setDocLine(line)
+				.setCurrencyId(getCurrencyId())
+				.setCurrencyConversionCtx(currencyConversionCtx)
+				.orgId(line.getInvoiceOrgId())
+				.bPartnerAndLocationId(line.getInvoiceBPartnerId(), line.getInvoiceBPartnerLocationId())
+				.alsoAddZeroLine();
+
+		if (line.isSOTrxInvoice())
+		{
+			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
+			if (line.isCreditMemoInvoice())
+			{
+				// ARC (or ARC reversal): DR to clear receivable
+				factLineBuilder.setAmtSource(allocatedAmt, null);
+			}
+			else
+			{
+				// ARI: CR to clear receivable
+				factLineBuilder.setAmtSource(null, allocatedAmt);
+			}
+		}
+		else
+		{
+			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
+			if (line.isCreditMemoInvoice())
+			{
+				// APC (or APC reversal): CR to clear liability
+				factLineBuilder.setAmtSource(null, allocatedAmt.negate());
+			}
+			else
+			{
+				// API: DR to clear liability
+				factLineBuilder.setAmtSource(allocatedAmt, null);
+			}
+		}
+
+		factLineBuilder.buildAndAdd();
+
+		// Return ZERO so createInvoiceFacts does not create a duplicate entry
+		return AmountSourceAndAcct.ZERO;
 	}
 
 	/**
