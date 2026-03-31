@@ -47,14 +47,16 @@ const createMasterdata = async () => {
     });
 };
 
-test.describe('Barcode Scanner Input Modes', () => {
+test.describe('Picking Quick Scan', () => {
 
+    // Quick-scan via keyboard events: scan HU QR code directly from the picking job screen
+    // without pressing the "Scan" button. The system auto-resolves which line the HU belongs to.
     // noinspection JSUnusedLocalSymbols
-    test('scan barcode via keyboard events', async ({ page }) => {
+    test('quick-scan HU via keyboard events', async ({ page }) => {
         allure.epic('E0105: Picking');
         allure.tag('F00230: MobileUI Picking');
         allure.tag('F00230');
-        allure.story('Barcode scanner keyboard input mode');
+        allure.story('Quick-scan HU from picking job screen (keyboard mode)');
         allure.severity('critical');
 
         const masterdata = await createMasterdata();
@@ -102,11 +104,11 @@ test.describe('Barcode Scanner Input Modes', () => {
     // on hardware (manual test on Zebra MC3300x).
     //
     // noinspection JSUnusedLocalSymbols
-    test('scan barcode via IME text injection', async ({ page: _page }) => {
+    test('quick-scan HU via IME text injection', async ({ page: _page }) => {
         allure.epic('E0105: Picking');
         allure.tag('F00230: MobileUI Picking');
         allure.tag('F00230');
-        allure.story('Barcode scanner IME input mode (Zebra DataWedge)');
+        allure.story('Quick-scan HU from picking job screen (IME/DataWedge mode)');
         allure.severity('critical');
 
         const masterdata = await createMasterdata();
