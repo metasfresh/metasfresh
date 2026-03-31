@@ -41,6 +41,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -176,7 +177,7 @@ import java.util.Set;
 
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
-		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true);
+		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, Env.getClientAndOrgId());
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
 			return ProductLookupDescriptor
