@@ -125,8 +125,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.QueryType";
-	private static final String SYSCONFIG_FALLBACK_TO_BASE_PRICELIST = //
-			"FallbackToBasePricelist";
 
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE_CONSTANT_ATP = "ATP";
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE_CONSTANT_AFS = "AFS";
@@ -162,6 +160,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final String ATTRIBUTE_ASI = "asi";
 
 	private final boolean excludeBOMProducts;
+	private final boolean isFallbackToBasePricelist;
 
 	@Getter
 	private final int searchStringMinLength;
@@ -178,7 +177,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -195,6 +195,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
 
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -202,7 +204,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -218,6 +221,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
 	}
 
 	@Override
@@ -529,8 +533,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final List<PriceListVersionId> relevantPriceListVersionIds;
-		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true);
-		if (isFallbackToBasePriceList)
+		if (isFallbackToBasePricelist)
 		{
 			relevantPriceListVersionIds = priceListDAO.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
 		}
