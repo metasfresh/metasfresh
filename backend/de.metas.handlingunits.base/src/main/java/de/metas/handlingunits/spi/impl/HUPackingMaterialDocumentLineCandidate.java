@@ -22,20 +22,8 @@ package de.metas.handlingunits.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.util.comparator.NullComparator;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -46,6 +34,16 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.comparator.NullComparator;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Packing Material Document Line candidate.
