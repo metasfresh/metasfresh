@@ -48,6 +48,49 @@ const createMasterdata = async () => {
     });
 };
 
+/**
+ * Verifies that scanning an HU for a very small BOM qty (0.00384 kg) shows the correct
+ * non-zero qty in the dialog, not "0" as reported in tf201#242.
+ */
+// noinspection JSUnusedLocalSymbols
+test('Issue raw material with very small qty (0.00384 kg) shows non-zero qty after scan', async ({ page }) => {
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {},
+            uoms: { KGM: { precision: 5 } },
+            warehouses: { wh: {} },
+            products: {
+                COMP: { uom: 'KGM' },
+                BOM: { bom: { lines: [{ product: 'COMP', qty: 0.00384, uom: 'KGM', issuingTolerancePerc: 1 }] } },
+            },
+            packingInstructions: {
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'BOM', qtyCUsPerTU: 10 },
+            },
+            handlingUnits: {
+                HU: { product: 'COMP', warehouse: 'wh', qty: 1 },
+            },
+            manufacturingOrders: {
+                PP1: { warehouse: 'wh', product: 'BOM', qty: 1, datePromised: '2026-03-31T00:00:00.000+02:00' },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+    await RawMaterialIssueLineScreen.scanQRCode({
+        qrCode: masterdata.handlingUnits.HU.qrCode,
+        expectQtyEntered: '0.00384',
+    });
+    await RawMaterialIssueLineScreen.goBack();
+});
+
 // noinspection JSUnusedLocalSymbols
 test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({ page }) => {
     const masterdata = await createMasterdata();
