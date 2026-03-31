@@ -20,6 +20,13 @@ export const ApplicationsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    expectLogoutButtonReachable: async () => await test.step(`${NAME} - Expect logout button reachable by scrolling`, async () => {
+        const logoutButton = page.locator('#logout-button');
+        await expect(logoutButton).toBeVisible();
+        await logoutButton.scrollIntoViewIfNeeded();
+        await expect(logoutButton).toBeInViewport();
+    }),
+
     startApplication: async (applicationId) => await test.step(`${NAME} - Start application ${applicationId}`, async () => {
         await page.locator('#' + applicationId + '-button').tap();
     }),
