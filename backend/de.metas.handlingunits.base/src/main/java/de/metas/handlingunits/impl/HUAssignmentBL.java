@@ -32,6 +32,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -400,7 +401,15 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		{
 			if (handlingUnitsBL.isAggregateHU(hu))
 			{
-				countTUs += handlingUnitsDAO.retrieveParentItem(hu).getQty().intValueExact();
+				final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(hu);
+				if (parentItem != null)
+				{
+					countTUs += parentItem.getQty().intValueExact();
+				}
+				else
+				{
+					countTUs += 1; // fallback: count as single TU if hierarchy is inconsistent
+				}
 			}
 			else
 			{

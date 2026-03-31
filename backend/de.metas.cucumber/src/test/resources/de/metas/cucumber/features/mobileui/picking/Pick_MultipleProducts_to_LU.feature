@@ -301,6 +301,7 @@ Feature: mobileUI Picking - Pick multiple products to LU
     And expect current picking target
       | Existing_LU |
       | lu          |
+    # aggTU is lazy registered here
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
       |                   |              | 2         | 1     | aggTU      | 1     | lu         | N         |
