@@ -404,7 +404,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 				final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(hu);
 				if (parentItem != null)
 				{
-					countTUs += parentItem.getQty().intValueExact();
+					countTUs += parentItem.getQty().intValue();
 				}
 				else
 				{

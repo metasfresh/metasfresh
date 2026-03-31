@@ -248,6 +248,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	@Override
 	public List<I_M_HU> retrieveDistinctAssignedTUsForModel(final Object model)
 	{
+		// andCollect uses IN(...) on M_TU_HU_ID, so duplicate TU IDs from sub-assignments are deduplicated naturally.
 		return retrieveTUHUAssignmentsForModelQuery(model)
 				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID)
 				.create()
