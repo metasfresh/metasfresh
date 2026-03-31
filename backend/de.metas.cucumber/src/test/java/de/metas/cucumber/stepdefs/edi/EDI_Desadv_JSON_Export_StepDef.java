@@ -92,7 +92,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 
 			final int expectedMainArticles = row.getAsInt("MainArticleCount");
 			final int expectedSubArticles = row.getAsInt("SubArticleCount");
-			final Boolean expectedIsDeliveryClosed = row.getAsOptionalBoolean("IsDeliveryClosed").orElse(null);
+			final Boolean expectedIsDeliveryClosed = row.getAsOptionalBoolean("IsDeliveryClosed").toBooleanOrNull();
 
 			int actualMainArticles = 0;
 			int actualSubArticles = 0;
