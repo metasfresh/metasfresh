@@ -20,14 +20,20 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Report(p_DateFrom   timestamp with time zone,
-                                                              p_DateTo     timestamp with time zone,
-                                                              p_Country_id numeric)
+DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Report(p_DateFrom              timestamp with time zone,
+                                                              p_DateTo                timestamp with time zone,
+                                                              p_Country_id            numeric)
+;
+DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Report(p_DateFrom              timestamp with time zone,
+                                                              p_DateTo                timestamp with time zone,
+                                                              p_Country_id            numeric,
+                                                              p_IsIncludeAllProducts  varchar)
 ;
 
-CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Report(p_DateFrom   timestamp with time zone,
-                                                                 p_DateTo     timestamp with time zone,
-                                                                 p_Country_id numeric)
+CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Report(p_DateFrom              timestamp with time zone,
+                                                                 p_DateTo                timestamp with time zone,
+                                                                 p_Country_id            numeric,
+                                                                 p_IsIncludeAllProducts  varchar DEFAULT 'Y')
 
     RETURNS TABLE
             (
@@ -130,16 +136,18 @@ FROM m_inout io
 
 WHERE io.movementdate BETWEEN p_DateFrom AND p_DateTo
   AND io.DocStatus IN ('CO', 'CL')
-  -- Must have packaging data for the given country
-  AND EXISTS (SELECT 1
-              FROM M_Product_PackageLicensing_ProductGroup pppg
-                       JOIN M_PackageLicensing_ProductGroup pg
-                            ON pg.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
-                                AND pg.IsActive = 'Y'
-                                AND pg.C_Country_ID = p_Country_id
-              WHERE pppg.M_Product_ID = p.M_Product_ID
-                AND pppg.IsActive = 'Y')
-  AND (EXISTS (SELECT 1
+  -- When IsIncludeAllProducts='N', only include products with packaging data for the given country
+  AND (COALESCE(p_IsIncludeAllProducts, 'Y') = 'Y'
+    OR EXISTS (SELECT 1
+               FROM M_Product_PackageLicensing_ProductGroup pppg
+                        JOIN M_PackageLicensing_ProductGroup pg
+                             ON pg.M_PackageLicensing_ProductGroup_ID = pppg.M_PackageLicensing_ProductGroup_ID
+                                 AND pg.IsActive = 'Y'
+                                 AND pg.C_Country_ID = p_Country_id
+               WHERE pppg.M_Product_ID = p.M_Product_ID
+                 AND pppg.IsActive = 'Y'))
+  AND (COALESCE(p_IsIncludeAllProducts, 'Y') = 'Y'
+    OR EXISTS (SELECT 1
                FROM M_Product_SmallPackagingMaterial spm
                         JOIN M_PackageLicensing_MaterialGroup mg
                              ON mg.M_PackageLicensing_MaterialGroup_ID = spm.M_PackageLicensing_MaterialGroup_ID

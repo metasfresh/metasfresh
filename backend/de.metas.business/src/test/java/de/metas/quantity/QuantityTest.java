@@ -550,6 +550,36 @@ public class QuantityTest
 	}
 
 	@Nested
+	class isZeroOrNegative
+	{
+		private I_C_UOM uom;
+
+		@BeforeEach
+		void init()
+		{
+			uom = uomHelper.createUOM("uom", 2);
+		}
+
+		@Test
+		void positive()
+		{
+			assertThat(Quantity.of("1", uom).isZeroOrNegative()).isFalse();
+		}
+
+		@Test
+		void zero()
+		{
+			assertThat(Quantity.of("0", uom).isZeroOrNegative()).isTrue();
+		}
+
+		@Test
+		void negative()
+		{
+			assertThat(Quantity.of("-1", uom).isZeroOrNegative()).isTrue();
+		}
+	}
+
+	@Nested
 	class spreadEqually
 	{
 		@Test

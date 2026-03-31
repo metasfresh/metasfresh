@@ -1074,4 +1074,5 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedulePA.save(shipmentSchedule);
 		logger.debug("Updated C_Project_ID={} on M_ShipmentSchedule_ID={} from C_OrderLine_ID={}", projectId, shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId);
 	}
+
 }
