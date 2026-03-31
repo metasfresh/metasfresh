@@ -18,6 +18,7 @@ const createMasterdata = async () => {
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {},
+            uoms: { KGM: { precision: 5 } },
             warehouses: { wh: {} },
             products: {
                 COMP_SMALL: { uom: 'KGM' },
