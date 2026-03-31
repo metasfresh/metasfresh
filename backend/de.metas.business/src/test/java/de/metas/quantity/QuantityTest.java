@@ -353,12 +353,8 @@ public class QuantityTest
 			final I_C_UOM uomKg = uomHelper.createUOM("kg", 3);
 			final Quantity qty = new Quantity(new BigDecimal("0.00384"), uomKg);
 
-			final Quantity upper = qty.add(Percent.of(1));
-			final Quantity lower = qty.subtract(Percent.of(1));
-
-			assertThat(upper.toBigDecimal()).isEqualByComparingTo("0.00388");
-			assertThat(lower.toBigDecimal()).isEqualByComparingTo("0.00380");
-			assertThat(upper.toBigDecimal()).isGreaterThan(lower.toBigDecimal());
+			assertThat(qty.add(Percent.of(1)).toBigDecimal()).isEqualByComparingTo("0.00388");
+			assertThat(qty.subtract(Percent.of(1)).toBigDecimal()).isEqualByComparingTo("0.00380");
 		}
 	}
 

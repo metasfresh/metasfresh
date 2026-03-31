@@ -92,6 +92,10 @@ test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({
                 huStatus: 'A',
                 storages: { BOM: '1 PCE' },
             },
+            [masterdata.handlingUnits.HU_SMALL.qrCode]: {
+                huStatus: 'A',
+                storages: { COMP_SMALL: '0.98087 KGM' },
+            },
         },
     });
 });

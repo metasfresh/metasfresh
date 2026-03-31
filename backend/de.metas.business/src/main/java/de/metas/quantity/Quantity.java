@@ -665,6 +665,10 @@ public final class Quantity implements Comparable<Quantity>
 		return add(of(qtyToAdd, uom));
 	}
 
+	/**
+	 * Precision used is {@code max(UOM.StdPrecision, qty.scale())} to avoid
+	 * truncating significant digits when the value has more decimals than the UOM declares.
+	 */
 	public Quantity add(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
@@ -679,6 +683,7 @@ public final class Quantity implements Comparable<Quantity>
 				this.sourceUom);
 	}
 
+	/** @see #add(Percent) */
 	public Quantity subtract(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
