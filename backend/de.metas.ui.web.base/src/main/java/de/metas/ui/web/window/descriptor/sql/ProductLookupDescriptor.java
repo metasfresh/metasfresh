@@ -125,6 +125,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.QueryType";
+	private static final String SYSCONFIG_FALLBACK_TO_BASE_PRICELIST = //
+			"FallbackToBasePricelist";
 
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE_CONSTANT_ATP = "ATP";
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE_CONSTANT_AFS = "AFS";
@@ -163,6 +165,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	@Getter
 	private final int searchStringMinLength;
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
@@ -189,7 +194,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 	}
 
@@ -213,7 +217,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 	}
 
@@ -525,12 +528,20 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return;
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		final List<PriceListVersionId> relevantPriceListVersionIds;
+		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true);
+		if (isFallbackToBasePriceList)
+		{
+			relevantPriceListVersionIds = priceListDAO.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		}
+		else
+		{
+			relevantPriceListVersionIds = ImmutableList.of(priceListVersionId);
+		}
 
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
-				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(allPriceListVersionIds, sqlWhereClauseParams::collectAll))
+				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(relevantPriceListVersionIds, sqlWhereClauseParams::collectAll))
 				.append(" AND pp.IsActive=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
 	}
@@ -782,13 +793,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final ZonedDateTime date = getEffectivePricingDate(evalCtx);
-		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
+		return priceListDAO.retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
-	@Nullable
+	@NonNull
 	private ZonedDateTime getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> param_PricingDate.getValueAsZonedDateTime(evalCtx),
 				SystemTime::asZonedDateTime);
 	}
@@ -886,7 +897,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private String getAvailableStockQueryActivatedInSysConfig()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
@@ -927,7 +937,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Properties ctx = Env.getCtx();
 
-		return Services.get(ISysConfigBL.class).getBooleanValue(
+		return sysConfigBL.getBooleanValue(
 				SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE,
 				true,
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
@@ -973,7 +983,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private boolean isFullTextSearchEnabled()
 	{
-		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
+		final boolean disabled = sysConfigBL.getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
 		return !disabled;
 	}
 
