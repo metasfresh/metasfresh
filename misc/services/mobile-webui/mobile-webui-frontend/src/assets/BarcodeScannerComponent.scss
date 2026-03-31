@@ -9,14 +9,18 @@
   }
 
   .input-text {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    margin: 10px;
+    padding: 8px 12px;
     font-size: 2em;
-    z-index: 1;
-    opacity: 0.8;
     text-align: center;
+    border: 2px solid $grey-lighter;
+    border-radius: 4px;
+    width: calc(100% - 20px);
+
+    &:focus {
+      border-color: $base-mf-green;
+      outline: none;
+    }
   }
 
   // Visually hidden but focusable input for background barcode scanning.
@@ -59,5 +63,17 @@
     .input-text {
       font-size: 1em;
     }
+  }
+}
+
+// Input is rendered ABOVE the video in normal document flow (not overlaid).
+// Overlaying with position:absolute + z-index does not work reliably on
+// Android 11 WebView due to SurfaceView video compositing (the native video
+// layer ignores CSS z-index and covers overlaid HTML content).
+.barcode-scanner:not(:has(video)) {
+  display: flex;
+
+  .input-text {
+    flex-grow: 1;
   }
 }
