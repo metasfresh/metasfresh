@@ -243,7 +243,8 @@ Feature: EDI DESADV export via postgREST
               "OrderPOReference": "testReference",
               "QtyOrderedInDesadvLineUOM": 100,
               "QtyDeliveredInInvoicingUOM": 100,
-              "QtyDeliveredInDesadvLineUOM": 100
+              "QtyDeliveredInDesadvLineUOM": 100,
+              "IsDeliveryClosed": true
             },
             "QtyCUsPerLU": 100,
             "QtyCUsPerTU": 10,
@@ -435,8 +436,8 @@ Feature: EDI DESADV export via postgREST
     # the main article's pack absorbs the sub-article packs.
     # Result: 1 main article LineItem (IsSubArticle=false) + 2 sub-article LineItems (IsSubArticle=true with MainArticleLine)
     Then verify DESADV JSON export has compensation group packing:
-      | PackingCount | MainArticleCount | SubArticleCount |
-      | 1            | 1                | 2               |
+      | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
+      | 1            | 1                | 2               | true             |
 
     And after not more than 1s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
@@ -559,8 +560,8 @@ Feature: EDI DESADV export via postgREST
 }
     """
     Then verify DESADV JSON export has compensation group packing:
-      | PackingCount | MainArticleCount | SubArticleCount |
-      | 1            | 1                | 0               |
+      | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
+      | 1            | 1                | 0               | true             |
 
     # Export shipment 2 and verify it also has exactly 1 pack (not 2)
     And add HTTP headers
@@ -580,5 +581,5 @@ Feature: EDI DESADV export via postgREST
 }
     """
     Then verify DESADV JSON export has compensation group packing:
-      | PackingCount | MainArticleCount | SubArticleCount |
-      | 1            | 1                | 0               |
+      | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
+      | 1            | 1                | 0               | true             |
