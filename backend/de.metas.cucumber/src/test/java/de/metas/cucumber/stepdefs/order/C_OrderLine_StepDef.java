@@ -439,6 +439,13 @@ public class C_OrderLine_StepDef
 				orderLine.setM_AttributeSetInstance_ID(asiId);
 			}
 
+			final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				orderLine.setC_Project_ID(project.getC_Project_ID());
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);

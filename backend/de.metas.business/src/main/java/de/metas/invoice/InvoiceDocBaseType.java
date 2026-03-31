@@ -34,10 +34,12 @@ import javax.annotation.Nullable;
 
 public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 {
-	VendorInvoice(DocBaseType.PurchaseInvoice, SOTrx.PURCHASE, false),//
-	VendorCreditMemo(DocBaseType.PurchaseCreditMemo, SOTrx.PURCHASE, true),//
-	CustomerInvoice(DocBaseType.SalesInvoice, SOTrx.SALES, false),//
-	CustomerCreditMemo(DocBaseType.SalesCreditMemo, SOTrx.SALES, true), //
+	VendorInvoice(DocBaseType.PurchaseInvoice, SOTrx.PURCHASE, false),
+	VendorCreditMemo(DocBaseType.PurchaseCreditMemo, SOTrx.PURCHASE, true),
+	PurchaseProFormaInvoice(DocBaseType.PurchaseProformaInvoice, SOTrx.PURCHASE,false),
+	SalesProFormaInvoice(DocBaseType.SalesProformaInvoice, SOTrx.SALES,false),
+	CustomerInvoice(DocBaseType.SalesInvoice, SOTrx.SALES, false),
+	CustomerCreditMemo(DocBaseType.SalesCreditMemo, SOTrx.SALES, true),
 	//
 	/**
 	 * Legacy commission/salary invoice
@@ -70,6 +72,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	@Nullable
 	public static InvoiceDocBaseType ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
@@ -139,6 +142,11 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	public boolean isOutgoingCash()
 	{
 		return !isIncomingCash();
+	}
+
+	public boolean isFinancial()
+	{
+		return docBaseType.isFinancial();
 	}
 
 }

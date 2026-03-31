@@ -227,9 +227,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "postal": "l1_postal",
         "region": "l1_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -275,9 +273,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "postal": "l2_postal",
         "region": "l2_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -472,9 +468,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -631,9 +625,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -790,9 +782,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -949,9 +939,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -997,9 +985,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "postal": "newLocation-_postal",
         "region": "newLocation-_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10

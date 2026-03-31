@@ -15,7 +15,7 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.EventTestHelper;
@@ -26,6 +26,8 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
@@ -142,15 +144,17 @@ public class DDOrderCandidateAdvisedHandlerTests
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+		final DemandCandidateHandler demandCandidateHandler = new DemandCandidateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				postMaterialEventService,
 				availableToPromiseRepository,
 				stockCandidateService,
-				supplyCandidateHandler);
+				supplyCandidateHandler,
+				Mockito.mock(MaterialPlanningContextHelper.class),
+				new PPOrderCandidateDemandMatcher());
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
-				demandCandiateHandler,
+				demandCandidateHandler,
 				supplyCandidateHandler));
 
 		ddOrderCandidateAdvisedHandler = new DDOrderCandidateAdvisedHandler(

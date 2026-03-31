@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -165,7 +166,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
-	List<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
+	ImmutableList<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
 
@@ -341,7 +342,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@NonNull
 	List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
 
-	Optional<ShipperId> getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+	@Nullable
+	ShipperId getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder

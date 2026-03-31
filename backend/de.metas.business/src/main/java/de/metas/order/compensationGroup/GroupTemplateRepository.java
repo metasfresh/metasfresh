@@ -88,6 +88,7 @@ public class GroupTemplateRepository
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID()))
 				.name(schemaRecord.getName())
+				.isInheritPackingInstruction(schemaRecord.isInheritPackingInstruction())
 				.activityId(ActivityId.ofRepoIdOrNull(schemaRecord.getC_Activity_ID()))
 				.regularLinesToAdd(mainLines)
 				.compensationLines(compensationLines)

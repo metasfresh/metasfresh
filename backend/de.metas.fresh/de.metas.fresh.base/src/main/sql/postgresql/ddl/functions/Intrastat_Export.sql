@@ -51,16 +51,20 @@ $$
 SELECT CustomsTariff                                                    AS CNCode,
        productName                                                      AS GoodsDescription,
        deliveryCountry                                                  AS CountryDestinationConsignment,
-       deliveredFromCountry                                             AS CountryOfOrigin,
+       CASE
+           WHEN p_IntrastatDeclarationType = 'Export' THEN deliveredFromCountry
+           ELSE COALESCE(OriginCountry, deliveryCountry)
+       END                                                              AS CountryOfOrigin,
        p_IntrastaNatureOfTransaction                                    AS IntrastaNatureOfTransaction,
        TO_CHAR(weight, 'FM9999999D000')                                  AS NetMass,
        TO_CHAR(movementqty, 'FM9999999D000')                             AS SupplementaryUnits,
        TO_CHAR(grandtotal, 'FM9999999D00')                               AS InvoiceValue,
        TO_CHAR(grandtotal, 'FM9999999D00')                               AS StatisticalValue,
-       CASE WHEN p_IntrastatDeclarationType = 'Export' THEN vataxid END AS RecipientVATNo
-FROM de_metas_endcustomer_fresh_reports.M_InOut_V
+       CASE WHEN p_IntrastatDeclarationType = 'Export' THEN vataxid END AS "Recipient-VAT-No"
+FROM de_metas_endcustomer_fresh_reports.Intrastat_Report_V
 WHERE (C_Period_ID = p_C_Period_ID OR p_C_Period_ID = -1)
   AND (c_year_id = p_c_year_id OR p_c_year_id = -1)
+  AND issotrx = CASE WHEN p_IntrastatDeclarationType = 'Export' THEN 'Y' ELSE 'N' END
 
 
 $$

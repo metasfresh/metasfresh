@@ -79,9 +79,10 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/CLAUDE.md.backup
 .mcp.json
 **/claude-docs
+**/REVIEW.md
 /docs/
 
-.m2-local
+
 
 # dev-mode artifacts extracted from CI images
 .dev-artifacts/
@@ -92,3 +93,6 @@ nul
 
 /mcp-scripts/**/*
 
+**/allure-results/**/*
+**/playwright-report/**/*
+**/test-results/**/*

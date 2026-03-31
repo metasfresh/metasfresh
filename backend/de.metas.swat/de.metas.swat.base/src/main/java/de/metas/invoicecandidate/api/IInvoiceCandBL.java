@@ -450,4 +450,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * (null, null) => null
 	 */
 	Optional<ProjectId> extractCommonProjectId(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
+	/**
+	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
 }

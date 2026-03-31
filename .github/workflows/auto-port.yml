@@ -50,7 +50,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
        endsWith(github.event.workflow_run.head_branch, '_release'))
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -172,17 +172,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # -----------------------------------------------------------
-          # Helper: detect DDL/migration script changes in the merge diff.
-          # Sets HAS_DDL=true and DDL_FILES if SQL migration or DDL
-          # reference files are part of the diff vs the target branch.
+          # Helper: detect DDL reference file changes in the merge diff.
+          # Sets HAS_DDL=true and DDL_FILES if files under */ddl/*
+          # (CREATE/ALTER TABLE/VIEW definitions) are part of the diff.
           # When DDL changes are present, auto-merge labels are omitted
-          # because a human must verify that migration scripts are correct
-          # for the target branch's DB schema.
+          # because a human must verify schema changes are correct for
+          # the target branch. Regular migration scripts (under system/)
+          # are safe to auto-merge.
           # -----------------------------------------------------------
           detect_ddl_changes() {
             DDL_FILES=$(git diff --name-only "origin/$TARGET"..HEAD -- \
-              '*/sql/postgresql/system/' \
-              '*/sql/postgresql/ddl/' \
+              ':(glob)**/sql/postgresql/ddl/**' \
             | head -50)
             if [[ -n "$DDL_FILES" ]]; then
               HAS_DDL=true
@@ -418,7 +418,7 @@ jobs:
 
           # Find source PRs associated with the triggering cicd commit
           SOURCE_PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
-            --jq '.[].number' 2>/dev/null || true)
+            --jq '[.[] | select(.merged_at != null)] | .[].number' 2>/dev/null || true)
 
           if [[ -z "$SOURCE_PRS" ]]; then
             echo "No source PRs found for commit $HEAD_SHA, skipping traceability"

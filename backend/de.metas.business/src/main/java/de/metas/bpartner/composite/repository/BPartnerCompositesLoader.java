@@ -26,6 +26,7 @@ import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.composite.SalesRepContact;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.CreditLimitType;
@@ -621,6 +622,7 @@ final class BPartnerCompositesLoader
 				.accountZip(bankAccountRecord.getA_Zip())
 				.accountCity(bankAccountRecord.getA_City())
 				.accountCountry(bankAccountRecord.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(bankAccountRecord.getBPBankAcctUse()))
 				.build();
 	}
 
