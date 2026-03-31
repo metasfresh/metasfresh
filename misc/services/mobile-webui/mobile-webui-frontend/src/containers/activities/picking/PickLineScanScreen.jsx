@@ -93,10 +93,11 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
+        expectedProductNo: productNo,
         customQRCodeFormats,
         pickingUnit,
       }),
-    [productId, customQRCodeFormats, pickingUnit]
+    [productId, productNo, customQRCodeFormats, pickingUnit]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -189,6 +190,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 export const convertScannedBarcodeToResolvedResult = async ({
   scannedBarcode,
   expectedProductId,
+  expectedProductNo,
   customQRCodeFormats,
   pickingUnit,
 }) => {
@@ -225,7 +227,7 @@ export const convertScannedBarcodeToResolvedResult = async ({
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit, huInfoFromBackend });
+  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit, huInfoFromBackend, expectedProductNo });
 };
 
 //
@@ -234,7 +236,12 @@ export const convertScannedBarcodeToResolvedResult = async ({
 //
 //
 
-const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, huInfoFromBackend }) => {
+const convertQRCodeObjectToResolvedResult = async ({
+  parsedQRCode,
+  pickingUnit,
+  huInfoFromBackend,
+  expectedProductNo,
+}) => {
   const result = {
     qrCode: parsedQRCode,
   };
@@ -254,18 +261,28 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, 
   result.scannedHU = {
     huUnitType: parsedQRCode.huUnitType,
   };
-  if (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) {
-    let huInfo = huInfoFromBackend;
-    if (huInfo == null) {
-      try {
-        huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode) });
-        result.scannedHU.qtyTUs = huInfo.qtyTUs;
-      } catch (error) {
-        console.warn('Failed to get LU info. Ignored', error);
-      }
+
+  // gh#29069: fetch HU info from backend when needed (LU in TU-picking, or whole-TU pick for overdelivery check)
+  let huInfo = huInfoFromBackend;
+  const needsBackendInfo =
+    (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) ||
+    parsedQRCode.isTUToBePickedAsWhole === true;
+
+  if (needsBackendInfo && huInfo == null) {
+    try {
+      huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode), productNo: expectedProductNo });
+    } catch (error) {
+      console.warn('Failed to get HU info from backend. Ignored', error);
     }
-    if (huInfo != null) {
+  }
+
+  if (huInfo != null) {
+    if (huInfo.qtyTUs != null) {
       result.scannedHU.qtyTUs = huInfo.qtyTUs;
+    }
+    // gh#29069: use actual product qty from HU as qtyInitial for overdelivery prompt
+    if (huInfo.productQty != null) {
+      result.qtyInitial = parseFloat(huInfo.productQty);
     }
   }
 

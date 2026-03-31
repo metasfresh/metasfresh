@@ -9,6 +9,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -18,5 +19,7 @@ public class JsonHUInfo
 	@Nullable String id;
 	@NonNull JsonHUType unitType;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Integer qtyTUs;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) BigDecimal productQty;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String productUom;
 	@Nullable JsonHUQRCode huQRCode;
 }

@@ -152,10 +152,12 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const getScannedHUQRCodeInfo = ({ qrCode }) => {
-  return axios
-    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode })
-    .then((response) => unboxAxiosResponse(response));
+export const getScannedHUQRCodeInfo = ({ qrCode, productNo = null }) => {
+  const body = { scannedCode: qrCode };
+  if (productNo) {
+    body.productNo = productNo;
+  }
+  return axios.post(`${apiBasePath}/picking/hu/byScannedCode`, body).then((response) => unboxAxiosResponse(response));
 };
 
 export const getNextEligibleLineToPack = ({ wfProcessId, huScannedCode, excludeLineId }) => {
