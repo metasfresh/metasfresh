@@ -343,21 +343,10 @@ public class QuantityTest
 		public void smallQty_scaleExceedsUomPrecision()
 		{
 			final I_C_UOM uomKg = uomHelper.createUOM("kg", 3);
-			final Quantity qty = new Quantity(new BigDecimal("0.00384"), uomKg);
-
-			final Quantity result = qty.add(Percent.of(1));
-
-			// Expected: 0.00384 * 1.01 = 0.0038784, rounded to scale 5 = 0.00388
-			assertThat(result.toBigDecimal()).isGreaterThan(new BigDecimal("0.00384"));
-			assertThat(result.toBigDecimal()).isEqualByComparingTo("0.00388");
+			assertThat(new Quantity(new BigDecimal("0.00384"), uomKg).add(Percent.of(1)).toBigDecimal())
+					.isEqualByComparingTo("0.00388"); // 0.00384 * 1.01 = 0.0038784, rounded to scale 5
 		}
 
-		/**
-		 * The tolerance band (qty-1%, qty+1%) must not collapse to a single point
-		 * when the quantity has more decimal places than the UOM's StdPrecision.
-		 *
-		 * @see <a href="https://github.com/metasfresh/me03/issues/28242">me03#28242</a>
-		 */
 		@Test
 		public void smallQty_toleranceBandNotCollapsed()
 		{
@@ -367,11 +356,9 @@ public class QuantityTest
 			final Quantity upper = qty.add(Percent.of(1));
 			final Quantity lower = qty.subtract(Percent.of(1));
 
-			// The tolerance band must not collapse to a single point
+			assertThat(upper.toBigDecimal()).isEqualByComparingTo("0.00388");
+			assertThat(lower.toBigDecimal()).isEqualByComparingTo("0.00380");
 			assertThat(upper.toBigDecimal()).isGreaterThan(lower.toBigDecimal());
-			// The original qty must be within the tolerance band
-			assertThat(qty.toBigDecimal()).isGreaterThanOrEqualTo(lower.toBigDecimal());
-			assertThat(qty.toBigDecimal()).isLessThanOrEqualTo(upper.toBigDecimal());
 		}
 	}
 
@@ -401,13 +388,8 @@ public class QuantityTest
 		public void smallQty_scaleExceedsUomPrecision()
 		{
 			final I_C_UOM uomKg = uomHelper.createUOM("kg", 3);
-			final Quantity qty = new Quantity(new BigDecimal("0.00384"), uomKg);
-
-			final Quantity result = qty.subtract(Percent.of(1));
-
-			// Expected: 0.00384 * 0.99 = 0.0038016, rounded to scale 5 = 0.00380
-			assertThat(result.toBigDecimal()).isLessThan(new BigDecimal("0.00384"));
-			assertThat(result.toBigDecimal()).isEqualByComparingTo("0.00380");
+			assertThat(new Quantity(new BigDecimal("0.00384"), uomKg).subtract(Percent.of(1)).toBigDecimal())
+					.isEqualByComparingTo("0.00380"); // 0.00384 * 0.99 = 0.0038016, rounded to scale 5
 		}
 	}
 

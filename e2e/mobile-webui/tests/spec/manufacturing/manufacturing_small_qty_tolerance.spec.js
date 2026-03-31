@@ -6,36 +6,25 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
+
 /**
  * me03#28242: mobile UI production does not work with very small quantities (e.g. 0.01913 kg)
  * when issuing tolerance is enforced.
- *
- * Root cause: Quantity.add/subtract(Percent) rounds the base qty to C_UOM.StdPrecision
- * before computing the tolerance band, collapsing it for sub-gram quantities.
  */
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            login: {
-                user: { language: 'en_US' },
-            },
+            login: { user: { language: 'en_US' } },
             mobileConfig: {},
-            warehouses: {
-                wh: {},
-            },
+            warehouses: { wh: {} },
             products: {
                 COMP_SMALL: { uom: 'KGM' },
                 BOM: {
                     bom: {
                         lines: [
-                            {
-                                product: 'COMP_SMALL',
-                                qty: 0.01913,
-                                uom: 'KGM',
-                                issuingTolerancePerc: 1,
-                            },
+                            { product: 'COMP_SMALL', qty: 0.01913, uom: 'KGM', issuingTolerancePerc: 1 },
                         ],
                     },
                 },
@@ -70,11 +59,13 @@ test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({
         documentNo: masterdata.manufacturingOrders.PP1.documentNo,
     });
 
-    // Issue the small qty component — this should succeed with the fix
-    // Before the fix, tolerance band collapses to a single point and rejects the qty
+    // Issue the small qty component (0.01913 kg with 1% tolerance enforced).
+    // The scanQRCode issues the full HU qty needed for the BOM line.
+    // expectQtyEntered verifies the issued qty matches what the BOM requires.
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
     await RawMaterialIssueLineScreen.scanQRCode({
         qrCode: masterdata.handlingUnits.HU_SMALL.qrCode,
+        expectQtyEntered: '0.01913',
     });
     await RawMaterialIssueLineScreen.goBack();
 
