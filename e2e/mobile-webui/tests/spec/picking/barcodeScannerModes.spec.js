@@ -1,5 +1,7 @@
 import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
+import { page, FAST_ACTION_TIMEOUT } from "../../utils/common";
+import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -118,6 +120,40 @@ test.describe('Barcode Scanner Input Modes', () => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU' });
 
         await PickingJobScreen.complete();
+    });
+
+    // Regression test for me03#28834: the hidden barcode scanner on the picking job screen
+    // must use type="text" (not type="hidden") so that Zebra DataWedge IME mode can establish
+    // an InputConnection and inject scanned text. type="hidden" inputs cannot receive focus,
+    // causing DataWedge text injection to silently fail.
+    // noinspection JSUnusedLocalSymbols
+    test('hidden barcode scanner input is IME-compatible (not type=hidden)', async ({ page: _page }) => {
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Quick-scan hidden input must be type=text for DataWedge IME');
+        allure.severity('critical');
+
+        const masterdata = await createMasterdata();
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+        // The BarcodeScannerButton renders a hidden BarcodeScannerComponent with isShowInputText=false.
+        // Verify the input element is type="text" (IME-compatible) not type="hidden" (breaks IME).
+        await test.step('Verify hidden scanner input is type=text and inputMode=none', async () => {
+            const scannerInput = page.locator('#input-text');
+            await scannerInput.waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+            await expect(scannerInput).toHaveAttribute('type', 'text');
+            await expect(scannerInput).toHaveAttribute('inputmode', 'none');
+        });
     });
 
 });
