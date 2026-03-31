@@ -246,12 +246,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public int retrieveDistinctAssignedTUsForModel(final Object model)
+	public List<I_M_HU> retrieveDistinctAssignedTUsForModel(final Object model)
 	{
 		return retrieveTUHUAssignmentsForModelQuery(model)
 				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID)
 				.create()
-				.count();
+				.list();
 	}
 
 	@Override

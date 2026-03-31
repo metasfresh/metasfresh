@@ -25,6 +25,7 @@ package de.metas.handlingunits.inout.impl;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -69,6 +70,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -279,7 +281,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// Why? Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
 		// That mechanism is designed to prevent double-counting of TUs/LUs when multiple InOutLines reference the same TU/LU.
 		// But the customer's gripe is that the shipment document looks weird, as if no TU has been assigned to a shipment line. And that would happen if multiple lines are packed into the same TU.
-		final BigDecimal display_countTUs_Calculated = BigDecimal.valueOf(huAssignmentDAO.retrieveDistinctAssignedTUsForModel(shipmentLine));
+		final BigDecimal display_countTUs_Calculated = BigDecimal.valueOf(huAssignmentBL.retrieveTUCountForModel(shipmentLine));
 
 		//
 		// Collect TU packing materials from overrides
