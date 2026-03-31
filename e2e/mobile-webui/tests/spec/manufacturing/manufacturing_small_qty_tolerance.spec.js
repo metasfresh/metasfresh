@@ -6,8 +6,6 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
-import { allure } from 'allure-playwright';
-
 /**
  * me03#28242: mobile UI production does not work with very small quantities (e.g. 0.01913 kg)
  * when issuing tolerance is enforced.
@@ -62,12 +60,6 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({ page }) => {
-    await allure.epic('E0160: Manufacturing Execution');
-    await allure.feature('F8030: MobileUI Manufacturing');
-    await allure.story('Issue raw material with very small quantity and enforced tolerance');
-    await allure.severity('critical');
-    await allure.issue('28242', 'https://github.com/metasfresh/me03/issues/28242');
-
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
