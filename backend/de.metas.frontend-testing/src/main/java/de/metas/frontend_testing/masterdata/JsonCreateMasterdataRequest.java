@@ -11,6 +11,7 @@ import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfi
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
+import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
@@ -37,6 +38,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
+	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, JsonCreateProductRequest> products;
 	@Nullable Map<String, JsonCreateResourceRequest> resources;
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
