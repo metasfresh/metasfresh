@@ -2797,12 +2797,13 @@ Feature: invoice payment allocation
   @allure.label.feature:F00700_Invoicing
   @F00700
   Scenario: reverse correction - credit memo reversed, allocation produces Fact_Acct
+    # Amounts match issue summary: credit memo GrandTotal = 105.60 EUR (net 88.74 + 19% VAT 16.86)
     Given metasfresh contains M_Products:
       | Identifier      |
       | product_cma_100 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
-      | salesPLV               | product_cma_100 | 10.00    | PCE      |
+      | salesPLV               | product_cma_100 | 88.74    | PCE      |
     And metasfresh contains C_Invoice:
       | Identifier        | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInv_cma_100  | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
@@ -2814,27 +2815,27 @@ Feature: invoice payment allocation
     # Create credit memo against the invoice (auto-allocates CM against invoice)
     And create credit memo for C_Invoice
       | CreditMemo         | C_Invoice_ID     | CreditMemo.PriceEntered |
-      | salesCM_cma_100    | salesInv_cma_100 | 10.00                   |
+      | salesCM_cma_100    | salesInv_cma_100 | 88.74                   |
     And the invoice identified by salesCM_cma_100 is completed
 
     # At this point alloc_cm is the auto-created allocation of CM against invoice
     And validate C_AllocationLines
-      | C_Invoice_ID     | Amount | C_AllocationHdr_ID |
-      | salesCM_cma_100  | -11.90 | alloc_cm           |
-      | salesInv_cma_100 | 11.90  | alloc_cm           |
+      | C_Invoice_ID     | Amount  | C_AllocationHdr_ID |
+      | salesCM_cma_100  | -105.60 | alloc_cm           |
+      | salesInv_cma_100 | 105.60  | alloc_cm           |
 
     # Verify: the credit memo compensation allocation has Fact_Acct entries
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
-      # salesInv_cma_100 posting (GrandTotal=11.90)
-      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | salesInv_cma_100 |
+      # salesInv_cma_100 posting (GrandTotal=105.60)
+      | C_Receivable_Acct     | 105.60 EUR  | 0 EUR       | customer1     | salesInv_cma_100 |
       | *                     |             |             |               | salesInv_cma_100 |
-      # salesCM_cma_100 posting (GrandTotal=11.90)
-      | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | customer1     | salesCM_cma_100  |
+      # salesCM_cma_100 posting (GrandTotal=105.60)
+      | C_Receivable_Acct     | 0 EUR       | 105.60 EUR  | customer1     | salesCM_cma_100  |
       | *                     |             |             |               | salesCM_cma_100  |
       # alloc_cm: credit memo compensation
-      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | alloc_cm         |
-      | C_Receivable_Acct     | 0 EUR       | 11.90 EUR   | customer1     | alloc_cm         |
+      | C_Receivable_Acct     | 105.60 EUR  | 0 EUR       | customer1     | alloc_cm         |
+      | C_Receivable_Acct     | 0 EUR       | 105.60 EUR  | customer1     | alloc_cm         |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -2850,14 +2851,13 @@ Feature: invoice payment allocation
       | salesCM_cma_100  | true   |
 
     # After reversal, the CM has allocations: alloc_cm (original, now reversed) + alloc_cm_reversed (reversal) + alloc_cm_rev_pair (CM vs its reversal)
-    # Verify: the reversal-of-original allocation also has Fact_Acct
     And validate C_AllocationLines for invoice salesCM_cma_100
       | OPT.Amount | OPT.C_AllocationHdr_ID |
-      | -11.90     | alloc_cm               |
-      | 11.90      | alloc_cm_reversed      |
-      | -11.90     | alloc_cm_rev_pair      |
+      | -105.60    | alloc_cm               |
+      | 105.60     | alloc_cm_reversed      |
+      | -105.60    | alloc_cm_rev_pair      |
 
-    # The reversed allocation (CM vs its reversal) must have Fact_Acct entries (tests createDirectInvoiceAllocationSource)
+    # The reversed allocation (CM vs its reversal) must have Fact_Acct entries (tests createDirectInvoiceAllocationFacts)
     And Fact_Acct records balances for documents alloc_cm_rev_pair are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -2877,12 +2877,13 @@ Feature: invoice payment allocation
   @allure.label.feature:F00700_Invoicing
   @F00700
   Scenario: sales credit memo allocated against sales invoice - Fact_Acct entries (no payment)
+    # Amounts match issue summary: credit memo GrandTotal = 75.10 EUR (net 63.11 + 19% VAT 11.99)
     Given metasfresh contains M_Products:
       | Identifier |
       | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | salesPLV               | product      | 10.00    | PCE      |
+      | salesPLV               | product      | 500.00   | PCE      |
     And metasfresh contains C_Invoice:
       | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInvoice | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
@@ -2891,29 +2892,29 @@ Feature: invoice payment allocation
       | salesInvoice | product      | 1 PCE       |
     And the invoice identified by salesInvoice is completed
 
-    # Create credit memo linked to the invoice (auto-creates allocation with counter-lines)
+    # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
     And create credit memo for C_Invoice
       | CreditMemo      | C_Invoice_ID | CreditMemo.PriceEntered |
-      | salesCreditMemo | salesInvoice | 5.00                    |
+      | salesCreditMemo | salesInvoice | 63.11                   |
     And the invoice identified by salesCreditMemo is completed
 
     And validate C_AllocationLines
       | C_Invoice_ID    | Amount | C_AllocationHdr_ID |
-      | salesCreditMemo | -5.95  | alloc_cm           |
-      | salesInvoice    | 5.95   | alloc_cm           |
+      | salesCreditMemo | -75.10 | alloc_cm           |
+      | salesInvoice    | 75.10  | alloc_cm           |
 
     # Verify: allocation has Fact_Acct entries — DR for credit memo, CR for invoice
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID       |
-      # salesInvoice posting (GrandTotal=11.90)
-      | C_Receivable_Acct     | 11.90 EUR   | 0 EUR       | customer1     | salesInvoice    |
+      # salesInvoice posting (GrandTotal=595.00)
+      | C_Receivable_Acct     | 595.00 EUR  | 0 EUR       | customer1     | salesInvoice    |
       | *                     |             |             |               | salesInvoice    |
-      # salesCreditMemo posting (GrandTotal=5.95)
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | customer1     | salesCreditMemo |
+      # salesCreditMemo posting (GrandTotal=75.10)
+      | C_Receivable_Acct     | 0 EUR       | 75.10 EUR   | customer1     | salesCreditMemo |
       | *                     |             |             |               | salesCreditMemo |
-      # alloc_cm: credit memo compensation
-      | C_Receivable_Acct     | 5.95 EUR    | 0 EUR       | customer1     | alloc_cm        |
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | customer1     | alloc_cm        |
+      # alloc_cm: credit memo compensation (amount matches issue: 75.10)
+      | C_Receivable_Acct     | 75.10 EUR   | 0 EUR       | customer1     | alloc_cm        |
+      | C_Receivable_Acct     | 0 EUR       | 75.10 EUR   | customer1     | alloc_cm        |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | C_Receivable_Acct     | 0 EUR         |
@@ -2928,12 +2929,13 @@ Feature: invoice payment allocation
   @allure.label.feature:F00700_Invoicing
   @F00700
   Scenario: purchase credit memo allocated against purchase invoice - Fact_Acct entries (no payment)
+    # Amounts match issue summary: credit memo GrandTotal = 75.10 EUR (net 63.11 + 19% VAT 11.99)
     Given metasfresh contains M_Products:
       | Identifier |
       | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | purchasePLV            | product      | 10.00    | PCE      |
+      | purchasePLV            | product      | 500.00   | PCE      |
     And metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | purchaseInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
@@ -2942,29 +2944,29 @@ Feature: invoice payment allocation
       | purchaseInvoice | product      | 1 PCE       |
     And the invoice identified by purchaseInvoice is completed
 
-    # Create credit memo linked to the invoice (auto-creates allocation with counter-lines)
+    # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
     And create credit memo for C_Invoice
       | CreditMemo         | C_Invoice_ID    | CreditMemo.PriceEntered |
-      | purchaseCreditMemo | purchaseInvoice | 5.00                    |
+      | purchaseCreditMemo | purchaseInvoice | 63.11                   |
     And the invoice identified by purchaseCreditMemo is completed
 
     And validate C_AllocationLines
       | C_Invoice_ID       | Amount | C_AllocationHdr_ID |
-      | purchaseCreditMemo | 5.95   | alloc_cm           |
-      | purchaseInvoice    | -5.95  | alloc_cm           |
+      | purchaseCreditMemo | 75.10  | alloc_cm           |
+      | purchaseInvoice    | -75.10 | alloc_cm           |
 
     # Verify: allocation has Fact_Acct entries — CR for credit memo, DR for invoice
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID          |
-      # purchaseInvoice posting (GrandTotal=11.90)
-      | V_Liability_Acct      | 0 EUR       | 11.90 EUR   | vendor1       | purchaseInvoice    |
+      # purchaseInvoice posting (GrandTotal=595.00)
+      | V_Liability_Acct      | 0 EUR       | 595.00 EUR  | vendor1       | purchaseInvoice    |
       | *                     |             |             |               | purchaseInvoice    |
-      # purchaseCreditMemo posting (GrandTotal=5.95)
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | vendor1       | purchaseCreditMemo |
+      # purchaseCreditMemo posting (GrandTotal=75.10)
+      | V_Liability_Acct      | 75.10 EUR   | 0 EUR       | vendor1       | purchaseCreditMemo |
       | *                     |             |             |               | purchaseCreditMemo |
-      # alloc_cm: credit memo compensation
-      | V_Liability_Acct      | 0 EUR       | 5.95 EUR    | vendor1       | alloc_cm           |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | vendor1       | alloc_cm           |
+      # alloc_cm: credit memo compensation (amount matches issue: 75.10)
+      | V_Liability_Acct      | 0 EUR       | 75.10 EUR   | vendor1       | alloc_cm           |
+      | V_Liability_Acct      | 75.10 EUR   | 0 EUR       | vendor1       | alloc_cm           |
     And Fact_Acct records balances for documents alloc_cm are matching
       | AccountConceptualName | SourceBalance |
       | V_Liability_Acct      | 0 EUR         |
