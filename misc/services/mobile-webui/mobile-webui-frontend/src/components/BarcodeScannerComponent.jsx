@@ -256,7 +256,6 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
       {!isProcessing && (
         <input
           id="input-text"
@@ -273,6 +272,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
     </div>
   );
 };
