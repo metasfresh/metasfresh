@@ -14,6 +14,24 @@
     text-align: center;
   }
 
+  // Visually hidden but focusable input for background barcode scanning.
+  // Used by BarcodeScannerButton to capture DataWedge IME text injection
+  // without showing a visible input field. Must NOT use type="hidden" or
+  // display:none — those break Android InputConnection. (me03#28834)
+  .input-text-offscreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
   .loading {
     position: absolute;
     z-index: 999;

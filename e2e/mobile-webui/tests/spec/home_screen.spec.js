@@ -63,6 +63,25 @@ test.describe('Scan HU codes', () => {
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.huId });
     });
 
+    // Tests the BarcodeScannerComponent in IME mode (Zebra DataWedge text injection)
+    // on the home screen. This is a generic scanner test — not tied to any specific workflow.
+    // The home screen scanner is a visible BarcodeScannerComponent (not hidden like in picking).
+    // noinspection JSUnusedLocalSymbols
+    test('Scan HU QR Code via IME', async ({ page }) => {
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');
+        allure.story('Scan HU codes from home screen via IME (Zebra DataWedge)');
+        allure.severity('critical');
+
+        const masterdata = await createMasterdata();
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.scanBarcodeViaIME(masterdata.handlingUnits.HU1.qrCode);
+        await HUManagerScreen.waitForScreen();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
     // noinspection JSUnusedLocalSymbols
     test('Scan ExternalBarcode', async ({ page }) => {
         // === ALLURE METADATA ===
