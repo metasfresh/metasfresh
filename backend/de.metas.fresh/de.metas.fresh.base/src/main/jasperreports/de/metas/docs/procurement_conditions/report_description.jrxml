@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-12-05T13:09:36 -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/procurement_conditions/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.7715610000000017"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotfix.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -21,15 +20,42 @@
 	<queryString>
 		<![CDATA[select * from de_metas_endcustomer_fresh_reports.docs_flatrate_term_procurement_report_description($P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
-	<field name="flatrate_term_id" class="java.math.BigDecimal"/>
-	<field name="bpartnername" class="java.lang.String"/>
-	<field name="bpartnervalue" class="java.lang.String"/>
-	<field name="username" class="java.lang.String"/>
-	<field name="productname" class="java.lang.String"/>
-	<field name="uom" class="java.lang.String"/>
-	<field name="note" class="java.lang.String"/>
-	<field name="startdate" class="java.lang.String"/>
-	<field name="enddate" class="java.lang.String"/>
+	<field name="contractno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="contractno"/>
+		<property name="com.jaspersoft.studio.field.label" value="contractno"/>
+	</field>
+	<field name="bpartnername" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpartnername"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpartnername"/>
+	</field>
+	<field name="bpartnervalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpartnervalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpartnervalue"/>
+	</field>
+	<field name="username" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="username"/>
+		<property name="com.jaspersoft.studio.field.label" value="username"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
+		<property name="com.jaspersoft.studio.field.label" value="uom"/>
+	</field>
+	<field name="note" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="note"/>
+		<property name="com.jaspersoft.studio.field.label" value="note"/>
+	</field>
+	<field name="startdate" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="startdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="startdate"/>
+	</field>
+	<field name="enddate" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="enddate"/>
+		<property name="com.jaspersoft.studio.field.label" value="enddate"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -97,9 +123,9 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{flatrate_term_id}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{contractno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-11" x="37" y="89" width="133" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02"/>
@@ -123,7 +149,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{planning}]]></textFieldExpression>
 			</textField>
