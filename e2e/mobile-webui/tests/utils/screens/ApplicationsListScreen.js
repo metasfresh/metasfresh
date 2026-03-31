@@ -50,4 +50,8 @@ export const ApplicationsListScreen = {
     scanBarcode: async (barcode) => await test.step(`${NAME} - Scan barcode`, async () => {
         await BarcodeScannerComponent.type(barcode);
     }),
+
+    scanBarcodeViaIME: async (barcode) => await test.step(`${NAME} - Scan barcode via IME`, async () => {
+        await BarcodeScannerComponent.typeViaIME(barcode);
+    }),
 }
