@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
@@ -153,18 +154,13 @@ public class ExternalSystemScriptedExportConversionService
 		return parameters;
 	}
 
-	/**
-	 * Tries to read the DocumentNo from the outbound record table.
-	 * Returns null if the table doesn't have a DocumentNo column or the record is not found.
-	 */
 	@Nullable
-	private static String retrieveDocumentNo(@NonNull final String tableName, @NonNull final String recordId)
+	private String retrieveDocumentNo(@NonNull final String tableName, @NonNull final String recordId)
 	{
 		try
 		{
-			final String sql = "SELECT DocumentNo FROM " + tableName
-					+ " WHERE " + tableName + "_ID = ?";
-			return DB.getSQLValueStringEx(null, sql, Integer.parseInt(recordId));
+			final int adTableId = tableDAO.retrieveTableId(tableName);
+			return Services.get(IDocumentBL.class).getDocumentNo(getCtx(), adTableId, Integer.parseInt(recordId));
 		}
 		catch (final Exception e)
 		{
