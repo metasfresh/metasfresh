@@ -71,9 +71,10 @@ const startPickingJob_LU_TU = async (masterdata) => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    return { pickingJobId };
 };
 
 //
@@ -129,13 +130,14 @@ const startPickingJob_LU_CU = async (masterdata) => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({
         qrCode: masterdata.pickingSlots.slot1.qrCode,
         expectNextScreen: 'PickLineScanScreen',
         gotoPickingJobScreen: true,
     });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+    return { pickingJobId };
 };
 
 //
@@ -152,7 +154,7 @@ test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => 
     allure.severity('critical');
 
     const masterdata = await createMasterdata_LU_TU({ showPromptWhenOverPicking: true, orderQtyCUs: 12 });
-    await startPickingJob_LU_TU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_TU(masterdata);
 
     await test.step('Scan LU, enter 8 TUs (more than 3 needed), confirm overdelivery', async () => {
         await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
@@ -165,6 +167,19 @@ test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => 
         await YesNoDialog.clickYesButton();
 
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '8 TU', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '32 PCE', qtyTUs: 8, qtyLUs: 1, processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+        });
     });
 });
 
@@ -248,7 +263,7 @@ test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => 
     allure.severity('critical');
 
     const masterdata = await createMasterdata_LU_CU({ showPromptWhenOverPicking: true, orderQtyCUs: 10 });
-    await startPickingJob_LU_CU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_CU(masterdata);
 
     await test.step('Scan LU, enter 25 CUs (more than 10 ordered), confirm overdelivery', async () => {
         await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
@@ -261,6 +276,22 @@ test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => 
         await YesNoDialog.clickYesButton();
 
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '25 Stk', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '25 PCE', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '975 PCE' } },
+            },
+        });
     });
 });
 
