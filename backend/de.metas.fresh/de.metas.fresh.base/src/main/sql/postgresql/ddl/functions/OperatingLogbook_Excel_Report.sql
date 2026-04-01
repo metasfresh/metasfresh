@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION report.OperatingLogbook_Excel_Report(IN p_MovementDat
                 ServicePerformed        varchar,
                 InvoiceDocumentNo       varchar,
                 PurchaseOrderDocumentNo varchar,
-                TakeoverDate            date,
+                TakeoverDate            text,
                 QuantityInTons          numeric,
                 WasteCodeNumber         varchar,
                 WasteProducerName       varchar,
@@ -61,7 +61,7 @@ $$
 SELECT 'B + T Eingang'                                                                       AS ServicePerformed,
        inv.DocumentNo                                                                        AS InvoiceDocumentNo,
        ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                                                AS TakeoverDate,
        iol.MovementQty                                                                       AS QuantityInTons,
        COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
@@ -109,6 +109,7 @@ WHERE io.IsSOTrx = 'N'
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
   AND wh.Value != 'DropshipWarehouse'
+  AND prod.AVV_No is NOT NULL
 
 UNION ALL
 
@@ -118,7 +119,7 @@ UNION ALL
 SELECT 'B + T'                                                                               AS ServicePerformed,
        inv.DocumentNo                                                                        AS InvoiceDocumentNo,
        ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                                                AS TakeoverDate,
        iol.MovementQty                                                                       AS QuantityInTons,
        COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
@@ -164,6 +165,7 @@ WHERE io.IsSOTrx = 'N'
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
   AND wh.Value = 'DropshipWarehouse'
+  AND prod.AVV_No is NOT NULL
 
 UNION ALL
 
@@ -173,7 +175,7 @@ UNION ALL
 SELECT 'H + M'                                                                               AS ServicePerformed,
        inv_sales.DocumentNo                                                                  AS InvoiceDocumentNo,
        ord_sales.DocumentNo                                                                  AS PurchaseOrderDocumentNo,
-       io.MovementDate                                                                       AS TakeoverDate,
+       TO_CHAR(io.MovementDate, 'DD.MM.YYYY')                                                AS TakeoverDate,
        iol.MovementQty                                                                       AS QuantityInTons,
        COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
@@ -211,6 +213,7 @@ WHERE io.IsSOTrx = 'Y'
   AND io.DocStatus IN ('CO', 'CL')
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
+  AND prod.AVV_No is NOT NULL
 
 ORDER BY ServicePerformed,
          TakeoverDate,
