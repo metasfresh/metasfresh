@@ -31,13 +31,7 @@ BEGIN
         jsonb_agg(
                 jsonb_build_object(
                         'DesadvLine', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
-                                          || jsonb_build_object('IsDeliveryClosed',
-                                                CASE WHEN diol.desadvlinetotalqtydelivered IS NOT NULL
-                                                     THEN diol.desadvlinetotalqtydelivered >= COALESCE(edl_lat.qtyordered_override, edl_lat.qtyordered)
-                                                     WHEN COALESCE(edl_lat.qtyordered_override, edl_lat.qtyordered, 0) = 0
-                                                     THEN true
-                                                     ELSE false
-                                                END)
+                                          || jsonb_build_object('IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(edl_lat.qtyordered_override, edl_lat.qtyordered), true))
                 ) ORDER BY edl_lat.line
         )
     INTO v_lines_no_pack_json
@@ -49,20 +43,11 @@ BEGIN
              LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = iol_diol.m_inoutline_id AND diol.edi_desadvline_id = edl_lat.edi_desadvline_id
     WHERE edl_lat.edi_desadv_id = p_edi_desadv_id -- Filter by parameter!
       AND edl_lat.isactive = 'Y'
-      -- Include lines that either have a shipment line in this InOut (shipped but no pack),
-      -- OR have no shipment line at all (not shipped — qty delivered = 0, must still appear in DESADV)
-      AND (
-          EXISTS (
-              SELECT 1 FROM m_inoutline iol_exist
-              WHERE iol_exist.m_inout_id = p_m_inout_id
-                AND iol_exist.edi_desadvline_id = edl_lat.edi_desadvline_id
-          )
-          OR NOT EXISTS (
-              SELECT 1 FROM m_inoutline iol_any
-                       JOIN m_inout io_any ON io_any.m_inout_id = iol_any.m_inout_id AND io_any.docstatus IN ('CO', 'CL')
-              WHERE iol_any.edi_desadvline_id = edl_lat.edi_desadvline_id
-          )
-      )
+      AND EXISTS (
+        SELECT 1 FROM m_inoutline iol_exist
+        WHERE iol_exist.m_inout_id = p_m_inout_id
+          AND iol_exist.edi_desadvline_id = edl_lat.edi_desadvline_id
+    )
       AND NOT EXISTS (
         SELECT 1
         FROM edi_desadv_pack_item edpi_check
