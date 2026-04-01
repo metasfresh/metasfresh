@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.edi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import io.cucumber.datatable.DataTable;
@@ -171,13 +172,13 @@ public class EDI_Desadv_JSON_Export_StepDef
 
 		assertThat(noPacking.isArray()).as("DesadvLineWithNoPacking should be an array").isTrue();
 
-		final var expectedRows = DataTableRows.of(dataTable);
+		final DataTableRows expectedRows = DataTableRows.of(dataTable);
 		assertThat(noPacking.size())
 				.as("Expected %d entries in DesadvLineWithNoPacking", expectedRows.size())
 				.isEqualTo(expectedRows.size());
 
 		int index = 0;
-		for (final var row : expectedRows)
+		for (final DataTableRow row : expectedRows)
 		{
 			final JsonNode entry = noPacking.get(index);
 			final JsonNode desadvLine = entry.path("DesadvLine");
