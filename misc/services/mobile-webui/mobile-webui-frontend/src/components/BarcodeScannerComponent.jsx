@@ -256,7 +256,6 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
       {/* IMPORTANT: Always use type="text" — never type="hidden".
           When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
           instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
@@ -279,6 +278,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
     </div>
   );
 };
