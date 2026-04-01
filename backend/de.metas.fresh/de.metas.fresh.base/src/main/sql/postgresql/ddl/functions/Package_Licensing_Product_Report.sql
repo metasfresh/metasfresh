@@ -12,9 +12,9 @@ CREATE OR REPLACE FUNCTION report.Package_Licensing_Product_Report(
             (
                 ProductValue               varchar,
                 ProductName                varchar,
-                MovementQty                numeric,
                 PurchaseQty                numeric,
                 ForeignSalesQty            numeric,
+                TotalSalesQty              numeric,
                 UOMSymbol                  varchar,
                 Weight                     numeric,
                 ProductGroup               varchar,
@@ -33,9 +33,9 @@ $$
 -- Same columns as the detail report, minus per-InOut fields (DocumentNo, MovementDate, CountryCode).
 SELECT r.ProductValue,
        r.ProductName,
-       SUM(r.MovementQty)       AS MovementQty,
        SUM(r.PurchaseQty)       AS PurchaseQty,
        SUM(r.ForeignSalesQty)   AS ForeignSalesQty,
+       SUM(r.TotalSalesQty)     AS TotalSalesQty,
        r.UOMSymbol,
        r.Weight,
        r.ProductGroup,
