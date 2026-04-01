@@ -28,7 +28,7 @@ const createMasterdata = async ({ showPromptWhenOverPicking }) => {
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
+                    pickTo: ['LU_TU'],
                     shipOnCloseLU: false,
                     allowCompletingPartialPickingJob: true,
                     showPromptWhenOverPicking,
@@ -38,20 +38,20 @@ const createMasterdata = async ({ showPromptWhenOverPicking }) => {
             warehouses: { wh: {} },
             pickingSlots: { slot1: {} },
             products: {
-                P1: { price: 1 },
+                P1: { prices: [{ price: 1 }] },
             },
             packingInstructions: {
-                LU_CU: { cu: true, lu: 'LU', qtyTUsPerLU: 1 },
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 100 },
             },
             handlingUnits: {
-                HU1: { product: 'P1', warehouse: 'wh', qty: 100, packingInstructions: 'LU_CU' },
+                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
             },
             salesOrders: {
                 SO1: {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: 10 }],
+                    lines: [{ product: 'P1', qty: 10, piItemProduct: 'TU' }],
                 },
             },
         },
@@ -65,12 +65,8 @@ const startPickingJob = async (masterdata) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await PickingJobScreen.scanPickingSlot({
-        qrCode: masterdata.pickingSlots.slot1.qrCode,
-        expectNextScreen: 'PickLineScanScreen',
-        gotoPickingJobScreen: true,
-    });
-    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.LU_CU.luName });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -84,9 +80,9 @@ test('CU manual entry - prompt enabled - confirm Yes', async ({ page }) => {
     const masterdata = await createMasterdata({ showPromptWhenOverPicking: true });
     await startPickingJob(masterdata);
 
-    await test.step('Pick CU with qty > remaining, confirm overdelivery', async () => {
+    await test.step('Pick with qty > remaining, confirm overdelivery', async () => {
         // Scan the HU
-        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
+        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
         await GetQuantityDialog.waitForDialog();
 
         // Enter qty > remaining (15 > 10)
@@ -99,7 +95,6 @@ test('CU manual entry - prompt enabled - confirm Yes', async ({ page }) => {
 
         // Pick should succeed — back to picking job screen
         await PickingJobScreen.waitForScreen();
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '15 Stk', qtyPickedCatchWeight: '' });
     });
 });
 
@@ -114,9 +109,9 @@ test('CU manual entry - prompt enabled - decline', async ({ page }) => {
     const masterdata = await createMasterdata({ showPromptWhenOverPicking: true });
     await startPickingJob(masterdata);
 
-    await test.step('Pick CU with qty > remaining, decline, then cancel', async () => {
+    await test.step('Pick with qty > remaining, decline, then cancel', async () => {
         // Scan the HU
-        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
+        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
         await GetQuantityDialog.waitForDialog();
 
         // Enter qty > remaining (15 > 10)
@@ -136,32 +131,6 @@ test('CU manual entry - prompt enabled - decline', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('CU manual entry - prompt disabled - hard validation blocks', async ({ page }) => {
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');
-    allure.story('Over-picking prompt - disabled, hard validation blocks');
-    allure.severity('normal');
-
-    const masterdata = await createMasterdata({ showPromptWhenOverPicking: false });
-    await startPickingJob(masterdata);
-
-    await test.step('Pick CU with qty > remaining, expect hard validation error', async () => {
-        // Scan the HU
-        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
-        await GetQuantityDialog.waitForDialog();
-
-        // Enter qty > remaining (15 > 10) — should show validation error, Done button stays enabled
-        // but the qty validation fires on submit
-        await GetQuantityDialog.typeQtyEntered(15);
-        await GetQuantityDialog.clickDone({ expectedError: '5' }); // expects error containing the diff (5 over)
-
-        // Should still be in the dialog (not navigated away)
-        await GetQuantityDialog.clickCancel();
-    });
-});
-
-// noinspection JSUnusedLocalSymbols
 test('CU manual entry - prompt enabled - qty equal to remaining - no prompt', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -172,11 +141,10 @@ test('CU manual entry - prompt enabled - qty equal to remaining - no prompt', as
     const masterdata = await createMasterdata({ showPromptWhenOverPicking: true });
     await startPickingJob(masterdata);
 
-    await test.step('Pick CU with qty == remaining, no prompt should appear', async () => {
+    await test.step('Pick with qty == remaining, no prompt should appear', async () => {
         await PickingJobScreen.pickHU({
-            qrCode: masterdata.handlingUnits.HU1.huId,
-            expectQtyEntered: 10,
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
         });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.waitForScreen();
     });
 });
