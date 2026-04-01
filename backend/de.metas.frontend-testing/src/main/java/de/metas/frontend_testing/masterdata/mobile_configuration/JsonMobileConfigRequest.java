@@ -59,6 +59,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 		@Nullable Boolean allowQuickPackAll;
+		@Nullable Boolean showPromptWhenOverPicking;
 
 		@Nullable List<Customer> customers;
 		
