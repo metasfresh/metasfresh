@@ -88,20 +88,20 @@ FROM M_InOut io
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
          LEFT JOIN C_InvoiceLine invl ON iol.M_InOutLine_ID = invl.M_InOutLine_ID
          LEFT JOIN LATERAL (
-                            SELECT inv_inner.DocumentNo
-                            FROM C_InvoiceLine invl_inner
-                                     INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
-                            WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-                            ORDER BY inv_inner.C_Invoice_ID
-                            LIMIT 1
-                            ) inv ON TRUE
+    SELECT inv_inner.DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    ORDER BY inv_inner.C_Invoice_ID
+    LIMIT 1
+    ) inv ON TRUE
          LEFT JOIN LATERAL (
-                            SELECT rsa.M_ReceiptSchedule_ID
-                            FROM M_ReceiptSchedule_Alloc rsa
-                            WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-                            ORDER BY rsa.M_ReceiptSchedule_ID
-                            LIMIT 1
-                            ) rsa ON TRUE
+    SELECT rsa.M_ReceiptSchedule_ID
+    FROM M_ReceiptSchedule_Alloc rsa
+    WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+    ORDER BY rsa.M_ReceiptSchedule_ID
+    LIMIT 1
+    ) rsa ON TRUE
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
         rs.M_Warehouse_Dest_ID,
@@ -158,20 +158,20 @@ FROM M_InOut io
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
          LEFT JOIN C_InvoiceLine invl ON iol.M_InOutLine_ID = invl.M_InOutLine_ID
          LEFT JOIN LATERAL (
-                            SELECT inv_inner.DocumentNo
-                            FROM C_InvoiceLine invl_inner
-                                     INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
-                            WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-                            ORDER BY inv_inner.C_Invoice_ID
-                            LIMIT 1
-                            ) inv ON TRUE
+    SELECT inv_inner.DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    ORDER BY inv_inner.C_Invoice_ID
+    LIMIT 1
+    ) inv ON TRUE
          LEFT JOIN LATERAL (
-                            SELECT rsa.M_ReceiptSchedule_ID
-                            FROM M_ReceiptSchedule_Alloc rsa
-                            WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-                            ORDER BY rsa.M_ReceiptSchedule_ID
-                            LIMIT 1
-                            ) rsa ON true
+    SELECT rsa.M_ReceiptSchedule_ID
+    FROM M_ReceiptSchedule_Alloc rsa
+    WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+    ORDER BY rsa.M_ReceiptSchedule_ID
+    LIMIT 1
+    ) rsa ON true
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
         rs.M_Warehouse_Dest_ID,
@@ -227,14 +227,14 @@ FROM M_InOut io
          LEFT JOIN C_Order ord_sales ON ol_sales.C_Order_ID = ord_sales.C_Order_ID AND ord_sales.IsSOTrx = 'Y'
          LEFT JOIN C_InvoiceLine invl_sales ON iol.M_InOutLine_ID = invl_sales.M_InOutLine_ID
          LEFT JOIN LATERAL (
-                            SELECT inv_inner.DocumentNo
-                            FROM C_InvoiceLine invl_inner
-                                     INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
-                                AND inv_inner.IsSOTrx = 'Y'
-                            WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-                            ORDER BY inv_inner.C_Invoice_ID
-                            LIMIT 1
-                            ) inv_sales ON TRUE
+    SELECT inv_inner.DocumentNo
+    FROM C_InvoiceLine invl_inner
+             INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
+        AND inv_inner.IsSOTrx = 'Y'
+    WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
+    ORDER BY inv_inner.C_Invoice_ID
+    LIMIT 1
+    ) inv_sales ON TRUE
          LEFT JOIN M_Warehouse wh_source ON io.M_Warehouse_ID = wh_source.M_Warehouse_ID
          LEFT JOIN C_BPartner bp_wh_source ON wh_source.C_BPartner_ID = bp_wh_source.C_BPartner_ID
          LEFT JOIN AD_Org org_source ON wh_source.AD_Org_ID = org_source.AD_Org_ID
