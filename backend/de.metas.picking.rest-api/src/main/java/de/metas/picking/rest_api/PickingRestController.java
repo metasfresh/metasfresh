@@ -61,6 +61,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+
+import java.math.BigDecimal;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -268,7 +270,7 @@ public class PickingRestController
 					.findFirst()
 					.ifPresent(p -> builder
 							.productNo(p.getProductValue())
-							.productQty(new java.math.BigDecimal(p.getQty()))
+							.productQty(new BigDecimal(p.getQty()))
 							.productUom(p.getUom()));
 		}
 
