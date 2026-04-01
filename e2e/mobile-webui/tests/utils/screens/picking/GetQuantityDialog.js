@@ -13,7 +13,7 @@ export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
@@ -93,8 +93,7 @@ export const GetQuantityDialog = {
     }),
 
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
-        const errorMessage = page.locator('#qty-input').locator('..').locator('..').locator('p.help.is-danger');
-        await expect(errorMessage).toContainText(expectedText);
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
