@@ -1,27 +1,11 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Fix: include unshipped DESADV lines in DesadvLineWithNoPacking
+-- Previously, the function only included lines that had a matching m_inoutline
+-- in the current shipment. Lines with QtyDelivered=0 (not shipped at all) were
+-- excluded because no m_inoutline exists for them.
+-- Now: also include DESADV lines that have no completed shipment line anywhere.
+-- Also fixes IsDeliveryClosed for unshipped lines: returns false when there's
+-- outstanding ordered qty and no delivery tracking row, instead of defaulting to true.
 
--- Function for desadv lines with no pack
--- Ensure edi_desadv_line_object_v is defined and efficient
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
