@@ -24,6 +24,7 @@ import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerCo
 //
 // ----- LU/TU masterdata: 4 CUs per TU, 20 TUs per LU -----
 // Order qty is in CUs. qty=12 with 4 CUs/TU = 3 TUs to pick.
+// HU1 = LU with 20 TUs × 4 CUs = 80 CUs total.
 //
 
 const createMasterdata_LU_TU = async ({ showPromptWhenOverPicking, orderQtyCUs = 12 }) => {
@@ -142,7 +143,7 @@ const startPickingJob_LU_CU = async (masterdata) => {
 
 //
 // ===== LU/TU picking mode: scan LU, pick TUs =====
-// Order: 12 CUs = 3 TUs (4 CUs per TU). LU has 20 TUs.
+// Order: 12 CUs = 3 TUs (4 CUs per TU). LU has 20 TUs (80 CUs).
 //
 
 // noinspection JSUnusedLocalSymbols
@@ -174,10 +175,13 @@ test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => 
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            qtyPicked: [{ qtyPicked: '32 PCE', qtyTUs: 8, qtyLUs: 1, processed: false, shipmentLineId: '-' }],
+                            qtyPicked: [{ qtyPicked: '32 PCE', qtyTUs: 8, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
                         },
                     },
                 },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '48 PCE' } },
             },
         });
     });
@@ -192,7 +196,7 @@ test('LU/TU: over-pick TUs - prompt enabled - decline', async ({ page }) => {
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_TU({ showPromptWhenOverPicking: true, orderQtyCUs: 12 });
-    await startPickingJob_LU_TU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_TU(masterdata);
 
     await test.step('Scan LU, enter 8 TUs, decline overdelivery, cancel dialog', async () => {
         await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
@@ -207,6 +211,21 @@ test('LU/TU: over-pick TUs - prompt enabled - decline', async ({ page }) => {
         await GetQuantityDialog.waitForDialog();
         await GetQuantityDialog.clickCancel();
     });
+
+    await test.step('Verify nothing was picked', async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [] },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '80 PCE' } },
+            },
+        });
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -218,7 +237,7 @@ test('LU/TU: pick exact TU qty - prompt enabled - no prompt', async ({ page }) =
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_TU({ showPromptWhenOverPicking: true, orderQtyCUs: 12 });
-    await startPickingJob_LU_TU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_TU(masterdata);
 
     await test.step('Scan LU, pick exactly 3 TUs — no prompt should appear', async () => {
         await PickingJobScreen.pickHU({
@@ -226,6 +245,22 @@ test('LU/TU: pick exact TU qty - prompt enabled - no prompt', async ({ page }) =
             expectQtyEntered: 3,
         });
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '68 PCE' } },
+            },
+        });
     });
 });
 
@@ -238,7 +273,7 @@ test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_TU({ showPromptWhenOverPicking: false, orderQtyCUs: 12 });
-    await startPickingJob_LU_TU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_TU(masterdata);
 
     await test.step('Prompt disabled — pick exact qty, verify existing behavior unchanged', async () => {
         await PickingJobScreen.pickHU({
@@ -246,6 +281,22 @@ test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
             expectQtyEntered: 3,
         });
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '68 PCE' } },
+            },
+        });
     });
 });
 
@@ -283,13 +334,13 @@ test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => 
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            qtyPicked: [{ qtyPicked: '25 PCE', processed: false, shipmentLineId: '-' }],
+                            qtyPicked: [{ qtyPicked: '25 PCE', qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'vhu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
                         },
                     },
                 },
             },
             hus: {
-                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '975 PCE' } },
+                HU1: { huStatus: 'A', storages: { P1: '975 PCE' } },
             },
         });
     });
@@ -304,7 +355,7 @@ test('LU/CU: over-pick CUs - prompt enabled - decline', async ({ page }) => {
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_CU({ showPromptWhenOverPicking: true, orderQtyCUs: 10 });
-    await startPickingJob_LU_CU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_CU(masterdata);
 
     await test.step('Scan LU, enter 25 CUs, decline overdelivery, cancel dialog', async () => {
         await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
@@ -319,6 +370,21 @@ test('LU/CU: over-pick CUs - prompt enabled - decline', async ({ page }) => {
         await GetQuantityDialog.waitForDialog();
         await GetQuantityDialog.clickCancel();
     });
+
+    await test.step('Verify nothing was picked', async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [] },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '1000 PCE' } },
+            },
+        });
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -330,7 +396,7 @@ test('LU/CU: pick exact CU qty - prompt enabled - no prompt', async ({ page }) =
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_CU({ showPromptWhenOverPicking: true, orderQtyCUs: 10 });
-    await startPickingJob_LU_CU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_CU(masterdata);
 
     await test.step('Scan LU, pick exactly 10 CUs — no prompt should appear', async () => {
         await PickingJobScreen.pickHU({
@@ -338,6 +404,22 @@ test('LU/CU: pick exact CU qty - prompt enabled - no prompt', async ({ page }) =
             expectQtyEntered: 10,
         });
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '10 PCE', qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'vhu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
+            },
+        });
     });
 });
 
@@ -350,7 +432,7 @@ test('LU/CU: prompt disabled - regression guard', async ({ page }) => {
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_CU({ showPromptWhenOverPicking: false, orderQtyCUs: 10 });
-    await startPickingJob_LU_CU(masterdata);
+    const { pickingJobId } = await startPickingJob_LU_CU(masterdata);
 
     await test.step('Prompt disabled — pick exact qty, verify existing behavior unchanged', async () => {
         await PickingJobScreen.pickHU({
@@ -358,5 +440,21 @@ test('LU/CU: prompt disabled - regression guard', async ({ page }) => {
             expectQtyEntered: 10,
         });
         await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '10 Stk', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: '10 PCE', qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'vhu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                        },
+                    },
+                },
+            },
+            hus: {
+                HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
+            },
+        });
     });
 });
