@@ -2871,6 +2871,63 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0465_CMA_130
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @F00700
+  Scenario: standalone credit memo reversed - allocation produces balanced Fact_Acct
+    # A standalone credit memo (not allocated against any invoice) is reversed.
+    # The reversal creates an allocation (CM vs its reversal) which must produce balanced Fact_Acct entries.
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 200.00   | PCE      |
+
+    # Create standalone sales credit memo (ARC) - not linked to any invoice
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | standaloneCM    | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | standaloneCM | product      | 1 PCE       |
+    And the invoice identified by standaloneCM is completed
+
+    # Verify the credit memo invoice itself is posted
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID    |
+      | C_Receivable_Acct     | 0 EUR       | 238.00 EUR  | customer1     | standaloneCM |
+      | *                     |             |             |               | standaloneCM |
+
+    # Now reverse the credit memo
+    And the invoice identified by standaloneCM is reversed
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | standaloneCM | true   |
+
+    # The reversal creates an allocation matching the CM against its reversal
+    And validate C_AllocationLines for invoice standaloneCM
+      | OPT.Amount | OPT.C_AllocationHdr_ID |
+      | -238.00    | alloc_cm_reversal      |
+
+    # The allocation must have Fact_Acct entries with correct per-line DR/CR signs.
+    # Original CM invoice posted C_Receivable CR 238.00 => allocation must clear with DR 238.00 (positive DR, not negative).
+    # Reversal CM invoice posted C_Receivable DR 238.00 => allocation must clear with CR 238.00.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID         |
+      | C_Receivable_Acct     | 238.00 EUR  | 0 EUR       | customer1     | alloc_cm_reversal |
+      | C_Receivable_Acct     | 0 EUR       | 238.00 EUR  | customer1     | alloc_cm_reversal |
+    And Fact_Acct records balances for documents alloc_cm_reversal are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | 0 EUR         |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
   @Id:S0465_CMA_110
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
