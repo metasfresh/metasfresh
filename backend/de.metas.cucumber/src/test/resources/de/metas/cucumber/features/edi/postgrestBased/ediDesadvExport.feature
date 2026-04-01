@@ -583,3 +583,106 @@ Feature: EDI DESADV export via postgREST
     Then verify DESADV JSON export has compensation group packing:
       | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
       | 1            | 1                | 0               | true             |
+
+  @Id:S0468_040
+  @from:cucumber
+  Scenario: DESADV export includes unshipped order lines in DesadvLineWithNoPacking
+
+    # Two products: one will be shipped, one will NOT be shipped at all
+    Given metasfresh contains M_Products:
+      | Identifier      |
+      | prod_shipped    |
+      | prod_notShipped |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID    |
+      | bp_shipped            | customer1     | prod_shipped    |
+      | bp_notShipped         | customer1     | prod_notShipped |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID | Name        |
+      | pm_shipped              | prod_shipped | pmShipped   |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
+      | huPkgCodeLU_ns        | ISO1          | LU          |
+      | huPkgCodeTU_ns        | CART          | TU          |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID     |
+      | huPILU_ns      |
+      | huPITU_ns      |
+      | huPIVirtual_ns |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID     | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_ns       | huPILU_ns      | LU          | Y         |                       |
+      | huPIVerTU_ns       | huPITU_ns      | TU          | Y         | huPkgCodeTU_ns        |
+      | huPIVerCU_ns       | huPIVirtual_ns | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_ns              | huPIVerLU_ns       | 10  | HU       | huPITU_ns         |                         |
+      | huPiItemTU_ns              | huPIVerTU_ns       | 0   | PM       |                    | pm_shipped              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_ns             | huPiItemTU_ns    | prod_shipped | 10  | 2025-01-01 | huPkgCodeLU_ns                    | nsLuGTIN                         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
+      | salesPLV               | prod_shipped    | 5.00     | PCE      |
+      | salesPLV               | prod_notShipped | 3.00     | PCE      |
+
+    # Order with 2 lines
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference   |
+      | o_ns       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | partialShipRef    |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID    | QtyEntered | OPT.M_HU_PI_Item_Product_ID |
+      | ol_shipped    | o_ns       | prod_shipped    | 100        | huPiProd_ns                 |
+      | ol_notShipped | o_ns       | prod_notShipped | 50         |                             |
+    And the order identified by o_ns is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_shipped    | ol_shipped     | N             |
+      | ss_notShipped | ol_notShipped  | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+
+    # Only ship the first line — the second line is NOT shipped at all
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_shipped                       | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo     |
+      | ss_shipped                       | s_ns                  | shipment_ns_ID          | shipment_ns_DocumentNo      |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | d_ns                     | customer1                | o_ns                  | P                | d_ns         |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_ns       | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ns_ID@"
+    }
+  ]
+}
+    """
+    # The shipped line should be in Packings, the unshipped line should be in DesadvLineWithNoPacking
+    Then verify DESADV JSON export has compensation group packing:
+      | PackingCount | MainArticleCount | SubArticleCount | IsDeliveryClosed |
+      | 1            | 1                | 0               | true             |
+
+    And verify DESADV JSON export has DesadvLineWithNoPacking:
+      | OrderLine | QtyOrderedInDesadvLineUOM | QtyDeliveredInDesadvLineUOM | IsDeliveryClosed |
+      | 20        | 50                        | 0                           | false            |
