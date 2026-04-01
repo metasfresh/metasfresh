@@ -672,6 +672,10 @@ public final class Quantity implements Comparable<Quantity>
 		return add(of(qtyToAdd, uom));
 	}
 
+	/**
+	 * Precision used is {@code max(UOM.StdPrecision, qty.scale())} to avoid
+	 * truncating significant digits when the value has more decimals than the UOM declares.
+	 */
 	public Quantity add(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
@@ -680,12 +684,13 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				percent.addToBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.addToBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 
+	/** @see #add(Percent) */
 	public Quantity subtract(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
@@ -694,9 +699,9 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.subtractFromBase(this.qty, this.uom.getStdPrecision()),
+				percent.subtractFromBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.subtractFromBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.subtractFromBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 
