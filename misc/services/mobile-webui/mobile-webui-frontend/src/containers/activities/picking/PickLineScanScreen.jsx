@@ -93,10 +93,12 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
+        expectedProductNo: productNo,
+        isShowPromptWhenOverPicking,
         customQRCodeFormats,
         pickingUnit,
       }),
-    [productId, customQRCodeFormats, pickingUnit]
+    [productId, productNo, isShowPromptWhenOverPicking, customQRCodeFormats, pickingUnit]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -189,6 +191,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 export const convertScannedBarcodeToResolvedResult = async ({
   scannedBarcode,
   expectedProductId,
+  expectedProductNo,
+  isShowPromptWhenOverPicking,
   customQRCodeFormats,
   pickingUnit,
 }) => {
@@ -225,7 +229,13 @@ export const convertScannedBarcodeToResolvedResult = async ({
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit, huInfoFromBackend });
+  return convertQRCodeObjectToResolvedResult({
+    parsedQRCode,
+    pickingUnit,
+    huInfoFromBackend,
+    expectedProductNo,
+    isShowPromptWhenOverPicking,
+  });
 };
 
 //
@@ -234,7 +244,13 @@ export const convertScannedBarcodeToResolvedResult = async ({
 //
 //
 
-const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, huInfoFromBackend }) => {
+const convertQRCodeObjectToResolvedResult = async ({
+  parsedQRCode,
+  pickingUnit,
+  huInfoFromBackend,
+  expectedProductNo,
+  isShowPromptWhenOverPicking,
+}) => {
   const result = {
     qrCode: parsedQRCode,
   };
@@ -254,6 +270,8 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, 
   result.scannedHU = {
     huUnitType: parsedQRCode.huUnitType,
   };
+
+  // Existing behavior: fetch HU info for LU in TU-picking (qtyTUs)
   if (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) {
     let huInfo = huInfoFromBackend;
     if (huInfo == null) {
@@ -266,6 +284,23 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, 
     }
     if (huInfo != null) {
       result.scannedHU.qtyTUs = huInfo.qtyTUs;
+    }
+  }
+
+  // gh#29069: For whole-TU picks with overdelivery prompt enabled,
+  // fetch actual product qty from backend so the prompt can detect overdelivery.
+  // The backend picks the full HU storage qty when isPickWholeTU=true,
+  // so we need the actual qty to compare against remaining.
+  if (parsedQRCode.isTUToBePickedAsWhole === true && isShowPromptWhenOverPicking) {
+    try {
+      const huInfo =
+        huInfoFromBackend ??
+        (await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode), productNo: expectedProductNo }));
+      if (huInfo?.productQty != null) {
+        result.qtyInitial = parseFloat(huInfo.productQty);
+      }
+    } catch (error) {
+      console.warn('Failed to get HU product qty for overdelivery check. Ignored', error);
     }
   }
 

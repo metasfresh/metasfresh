@@ -253,12 +253,26 @@ public class PickingRestController
 		}
 		final JsonHU hu = hus.get(0);
 
-		return JsonHUInfo.builder()
+		final JsonHUInfo.JsonHUInfoBuilder builder = JsonHUInfo.builder()
 				.id(hu.getId())
 				.unitType(hu.getUnitType())
 				.qtyTUs(hu.getQtyTUs())
-				.huQRCode(hu.getQrCode())
-				.build();
+				.huQRCode(hu.getQrCode());
+
+		// gh#29069: return product info for overdelivery detection
+		final String productNo = request.getProductNo();
+		if (productNo != null && hu.getProducts() != null)
+		{
+			hu.getProducts().stream()
+					.filter(p -> productNo.equals(p.getProductValue()))
+					.findFirst()
+					.ifPresent(p -> builder
+							.productNo(p.getProductValue())
+							.productQty(new java.math.BigDecimal(p.getQty()))
+							.productUom(p.getUom()));
+		}
+
+		return builder.build();
 	}
 
 	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)
