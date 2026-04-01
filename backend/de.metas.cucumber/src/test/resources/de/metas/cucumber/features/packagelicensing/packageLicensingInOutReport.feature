@@ -40,10 +40,10 @@ Feature: Package Licensing InOut Report (gh#28487, gh#28967)
     When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-01-01" to "2026-02-01"
 
     Then the Package Licensing InOut Report result contains:
-      | DocumentNo           | MovementQty | PurchaseQty | ForeignSalesQty | MaterialType    | SmallPackagingMaterial | SmallPackagingWeight | OuterPackagingMaterial | OuterPackagingWeight | PackagingInstructionFactor |
-      | PLIO_RECEIPT_AT      | 100         | 100         |                 | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
-      | PLIO_SHIP_FOREIGN_DE | -50         |             | 50              | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
-      | PLIO_SHIP_DOMESTIC   | -30         |             |                 | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
+      | DocumentNo           | PurchaseQty | ForeignSalesQty | TotalSalesQty | MaterialType    | SmallPackagingMaterial | SmallPackagingWeight | OuterPackagingMaterial | OuterPackagingWeight | PackagingInstructionFactor |
+      | PLIO_RECEIPT_AT      | 100         |                 |               | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
+      | PLIO_SHIP_FOREIGN_DE |             | 50              | 50            | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
+      | PLIO_SHIP_DOMESTIC   |             |                 | 30            | Lebensmittel AT | Glas AT                | 0.150                | Kunststoffe AT         | 0.030                | 20                        |
 
     And the Package Licensing InOut Report result does not contain DocumentNo "PLIO_DRAFT_RECEIPT"
 
@@ -67,8 +67,8 @@ Feature: Package Licensing InOut Report (gh#28487, gh#28967)
     When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-02-01" to "2026-03-01"
 
     Then the Package Licensing InOut Report result contains:
-      | DocumentNo      | MovementQty | PurchaseQty | ForeignSalesQty | MaterialType   | SmallPackagingMaterial | OuterPackagingMaterial |
-      | PLIO_RECEIPT_DE | 75          | 75          |                 | Tiernahrung AT | PPK AT                 | Papier AT              |
+      | DocumentNo      | PurchaseQty | ForeignSalesQty | TotalSalesQty | MaterialType   | SmallPackagingMaterial | OuterPackagingMaterial |
+      | PLIO_RECEIPT_DE | 75          |                 |               | Tiernahrung AT | PPK AT                 | Papier AT              |
 
   @Id:S28967_10
   Scenario: S28967_10 - IsIncludeAllProducts=Y includes products without packaging masterdata
@@ -91,9 +91,9 @@ Feature: Package Licensing InOut Report (gh#28487, gh#28967)
     When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-03-01" to "2026-04-01" and IsIncludeAllProducts "Y"
 
     Then the Package Licensing InOut Report result contains:
-      | DocumentNo      | MovementQty | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
-      | PLIO_WITH_DATA  | 50          | 50          | Lebensmittel AT2 | Lebensmittel AT2 | Glas AT2               | Kunststoffe AT2        |
-      | PLIO_NO_DATA    | 80          | 80          |                  |                  |                        |                        |
+      | DocumentNo      | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
+      | PLIO_WITH_DATA  | 50          | Lebensmittel AT2 | Lebensmittel AT2 | Glas AT2               | Kunststoffe AT2        |
+      | PLIO_NO_DATA    | 80          |                  |                  |                        |                        |
 
   @Id:S28967_20
   Scenario: S28967_20 - IsIncludeAllProducts=N excludes products without packaging masterdata
@@ -115,7 +115,7 @@ Feature: Package Licensing InOut Report (gh#28487, gh#28967)
     When the Package Licensing InOut Report is executed with C_Country_ID for country code "AT" and date range "2026-04-01" to "2026-05-01" and IsIncludeAllProducts "N"
 
     Then the Package Licensing InOut Report result contains:
-      | DocumentNo       | MovementQty | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
-      | PLIO_WITH_DATA_N | 50          | 50          | Lebensmittel AT3 | Lebensmittel AT3 | Glas AT3               | Kunststoffe AT3        |
+      | DocumentNo       | PurchaseQty | ProductGroup     | MaterialType     | SmallPackagingMaterial | OuterPackagingMaterial |
+      | PLIO_WITH_DATA_N | 50          | Lebensmittel AT3 | Lebensmittel AT3 | Glas AT3               | Kunststoffe AT3        |
 
     And the Package Licensing InOut Report result does not contain DocumentNo "PLIO_NO_DATA_N"

@@ -82,7 +82,6 @@ public class SupplyRequiredHandlerHelper
 				.warehouseId(warehouseId)
 				.plantId(plantId)
 				.productId(productId)
-				.includeWithNullProductId(false)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 
