@@ -65,6 +65,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *     <li>{@code PackingCount} (required) — expected number of packing entries after merging</li>
 	 *     <li>{@code MainArticleCount} (required) — expected number of main article line items</li>
 	 *     <li>{@code SubArticleCount} (required) — expected number of sub-article line items</li>
+	 *     <li>{@code IsDeliveryClosed} (optional) — if set, verifies that all DesadvLine objects have this value</li>
 	 * </ul>
 	 * <p>
 	 * Example usage:
@@ -91,6 +92,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 
 			final int expectedMainArticles = row.getAsInt("MainArticleCount");
 			final int expectedSubArticles = row.getAsInt("SubArticleCount");
+			final Boolean expectedIsDeliveryClosed = row.getAsOptionalBoolean("IsDeliveryClosed").toBooleanOrNull();
 
 			int actualMainArticles = 0;
 			int actualSubArticles = 0;
@@ -118,6 +120,17 @@ public class EDI_Desadv_JSON_Export_StepDef
 						assertThat(mainArticleLine.isNull())
 								.as("Non-sub-article should have MainArticleLine=null")
 								.isTrue();
+					}
+
+					if (expectedIsDeliveryClosed != null)
+					{
+						final JsonNode desadvLine = item.path("DesadvLine");
+						assertThat(desadvLine.has("IsDeliveryClosed"))
+								.as("DesadvLine should contain IsDeliveryClosed field")
+								.isTrue();
+						assertThat(desadvLine.path("IsDeliveryClosed").asBoolean())
+								.as("DesadvLine.IsDeliveryClosed")
+								.isEqualTo(expectedIsDeliveryClosed);
 					}
 				}
 			}
