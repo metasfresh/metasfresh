@@ -177,9 +177,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 				.as("Expected %d entries in DesadvLineWithNoPacking", expectedRows.size())
 				.isEqualTo(expectedRows.size());
 
-		int index = 0;
-		for (final DataTableRow row : expectedRows)
-		{
+		expectedRows.forEach((row, index) -> {
 			final JsonNode entry = noPacking.get(index);
 			final JsonNode desadvLine = entry.path("DesadvLine");
 			assertThat(desadvLine.isMissingNode()).as("Entry %d should have DesadvLine", index).isFalse();
@@ -209,8 +207,6 @@ public class EDI_Desadv_JSON_Export_StepDef
 						.as("DesadvLineWithNoPacking[%d].IsDeliveryClosed", index)
 						.isEqualTo(expectedIsDeliveryClosed);
 			}
-
-			index++;
-		}
+		});
 	}
 }
