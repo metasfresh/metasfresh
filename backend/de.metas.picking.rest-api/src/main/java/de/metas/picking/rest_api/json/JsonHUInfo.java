@@ -21,7 +21,7 @@ public class JsonHUInfo
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Integer qtyTUs;
 	@Nullable JsonHUQRCode huQRCode;
 
-	// gh#29069: product info for overdelivery detection
+	// Product info for overdelivery detection (see PickLineScanScreen)
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String productNo;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) BigDecimal productQty;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String productUom;

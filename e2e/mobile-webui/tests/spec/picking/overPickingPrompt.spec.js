@@ -104,7 +104,7 @@ const createMasterdata_LU_CU = async ({ showPromptWhenOverPicking, orderQtyCUs =
             warehouses: { wh: {} },
             pickingSlots: { slot1: {} },
             products: {
-                P1: { price: 1 },
+                P1: { prices: [{ price: 1 }] },
             },
             packingInstructions: {
                 PI1: { tu: 'TU', product: 'P1', qtyCUsPerTU: 100, lu: 'LU', qtyTUsPerLU: 20 },
@@ -149,7 +149,7 @@ const startPickingJob_LU_CU = async (masterdata) => {
 // noinspection JSUnusedLocalSymbols
 test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/TU mode, pick more TUs than ordered');
     allure.severity('critical');
@@ -190,7 +190,7 @@ test('LU/TU: over-pick TUs - prompt enabled - confirm Yes', async ({ page }) => 
 // noinspection JSUnusedLocalSymbols
 test('LU/TU: over-pick TUs - prompt enabled - decline', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/TU mode, decline overdelivery');
     allure.severity('normal');
@@ -231,7 +231,7 @@ test('LU/TU: over-pick TUs - prompt enabled - decline', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('LU/TU: pick exact TU qty - prompt enabled - no prompt', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/TU mode, exact qty, no prompt fires');
     allure.severity('normal');
@@ -267,7 +267,7 @@ test('LU/TU: pick exact TU qty - prompt enabled - no prompt', async ({ page }) =
 // noinspection JSUnusedLocalSymbols
 test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/TU mode, prompt disabled, pick exact qty');
     allure.severity('normal');
@@ -308,7 +308,7 @@ test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/CU mode, pick more CUs than ordered');
     allure.severity('critical');
@@ -349,7 +349,7 @@ test('LU/CU: over-pick CUs - prompt enabled - confirm Yes', async ({ page }) => 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU: over-pick CUs - prompt enabled - decline', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/CU mode, decline overdelivery');
     allure.severity('normal');
@@ -390,7 +390,7 @@ test('LU/CU: over-pick CUs - prompt enabled - decline', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('LU/CU: pick exact CU qty - prompt enabled - no prompt', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/CU mode, exact qty, no prompt fires');
     allure.severity('normal');
@@ -426,7 +426,7 @@ test('LU/CU: pick exact CU qty - prompt enabled - no prompt', async ({ page }) =
 // noinspection JSUnusedLocalSymbols
 test('LU/CU: prompt disabled - regression guard', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
+    allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Over-picking prompt - LU/CU mode, prompt disabled, pick exact qty');
     allure.severity('normal');

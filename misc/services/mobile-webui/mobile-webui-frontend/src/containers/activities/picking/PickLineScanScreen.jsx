@@ -287,7 +287,7 @@ const convertQRCodeObjectToResolvedResult = async ({
     }
   }
 
-  // gh#29069: For whole-TU picks with overdelivery prompt enabled,
+  // For whole-TU picks with overdelivery prompt enabled,
   // fetch actual product qty from backend so the prompt can detect overdelivery.
   // The backend picks the full HU storage qty when isPickWholeTU=true,
   // so we need the actual qty to compare against remaining.
@@ -304,7 +304,7 @@ const convertQRCodeObjectToResolvedResult = async ({
     }
   }
 
-  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
+  // console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
   return result;
 };
 
