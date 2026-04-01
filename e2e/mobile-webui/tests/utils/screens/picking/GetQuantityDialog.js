@@ -84,6 +84,19 @@ export const GetQuantityDialog = {
         await expect(radioButton).toBeChecked();
     }),
 
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        const errorMessage = page.locator('#qty-input').locator('..').locator('..').locator('p.help.is-danger');
+        await expect(errorMessage).toContainText(expectedText);
+    }),
+
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
         let doneButton = page.getByTestId('done-button');
 
