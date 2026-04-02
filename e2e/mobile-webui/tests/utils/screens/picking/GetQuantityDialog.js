@@ -24,6 +24,11 @@ export const GetQuantityDialog = {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
+    expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
+        const testId = `userInfo_${captionKey}`;
+        await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').type(`${qty}`);
     }),
