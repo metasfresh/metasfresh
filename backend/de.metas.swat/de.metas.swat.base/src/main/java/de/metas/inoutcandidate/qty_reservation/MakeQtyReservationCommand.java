@@ -6,7 +6,6 @@ import de.metas.order.OrderAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -23,8 +22,7 @@ import javax.annotation.Nullable;
 @Builder
 public class MakeQtyReservationCommand
 {
-	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
+	@NonNull IOrderLineBL orderLineBL;
 	@NonNull QtyReservationService qtyReservationService;
 	@Nullable ProjectRepository projectRepository;
 	@NonNull MaterialCockpitV2RowVO rowVO;
