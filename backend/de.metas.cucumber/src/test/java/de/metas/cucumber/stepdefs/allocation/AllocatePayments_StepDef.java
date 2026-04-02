@@ -31,9 +31,13 @@ import de.metas.banking.payment.paymentallocation.PaymentToAllocate;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
+import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -41,6 +45,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
@@ -54,7 +60,9 @@ import org.compiere.model.I_C_Payment;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +82,7 @@ public class AllocatePayments_StepDef
 
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_Payment_StepDefData paymentTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -237,5 +246,94 @@ public class AllocatePayments_StepDef
 				.as("There should be just one 'PaymentToAllocate' for a given C_Payment_ID");
 
 		return paymentToAllocateList.get(0);
+	}
+
+	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
+	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
+	{
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier("C_Invoice_ID")
+					.map(invoiceIdentifier -> buildPayableDocumentFromRow(invoiceIdentifier, row))
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
+					.map(invoiceIdentifier -> buildPayableDocumentFromRow(invoiceIdentifier, row))
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
+					.map(invoiceIdentifier -> buildPayableDocumentFromRow(invoiceIdentifier, row))
+					.ifPresent(payableDocuments::add);
+		});
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.build();
+	}
+
+	@NonNull
+	private PayableDocument buildPayableDocumentFromRow(
+			@NonNull final StepDefDataIdentifier invoiceIdentifier,
+			@NonNull final DataTableRow row)
+	{
+		return preparePayableDocumentFromRow(invoiceIdentifier, row).build();
+	}
+
+	@NonNull
+	private PayableDocumentBuilder preparePayableDocumentFromRow(
+			@NonNull final StepDefDataIdentifier invoiceIdentifier,
+			@NonNull final DataTableRow row)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final List<InvoiceToAllocate> invoiceToAllocateList = paymentAllocationRepository.retrieveInvoicesToAllocate(
+				InvoiceToAllocateQuery.builder()
+						.evaluationDate(invoice.getDateInvoiced().toLocalDateTime().atZone(timeZone))
+						.onlyInvoiceId(invoiceId)
+						.build()
+		);
+
+		assertThat(invoiceToAllocateList)
+				.as("There should be just one 'InvoiceToAllocate' for a given C_Invoice_ID")
+				.hasSize(1);
+
+		final InvoiceToAllocate invoiceToAllocate = invoiceToAllocateList.get(0);
+		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
+		Money payAmt = invoiceOpenMoneyAmt;
+
+		// Discount
+		Money discountAmt = row.getAsOptionalMoney("DiscountAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null);
+		if (discountAmt == null)
+		{
+			discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		}
+		if (discountAmt != null)
+		{
+			payAmt = payAmt.subtract(discountAmt);
+		}
+
+		final AllocationAmounts amounts = AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.build();
+
+		return PayableDocument.builder()
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.bpartnerId(invoiceToAllocate.getBpartnerId())
+				.documentNo(invoiceToAllocate.getDocumentNo())
+				.soTrx(invoiceToAllocate.getDocBaseType().getSoTrx())
+				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
+				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
+				.date(invoiceToAllocate.getDateInvoiced())
+				.dateAcct(invoiceToAllocate.getDateAcct())
+				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
+				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
+				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
 	}
 }
