@@ -93,13 +93,7 @@ FROM M_InOut io
     WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
     GROUP BY iol.M_InOutLine_ID
     ) inv ON TRUE
-         LEFT JOIN LATERAL (
-    SELECT rsa.M_ReceiptSchedule_ID
-    FROM M_ReceiptSchedule_Alloc rsa
-    WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-    ORDER BY rsa.M_ReceiptSchedule_ID
-    LIMIT 1
-    ) rsa ON TRUE
+         LEFT JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
         rs.M_Warehouse_Dest_ID,
@@ -161,13 +155,7 @@ FROM M_InOut io
     WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
     GROUP BY iol.M_InOutLine_ID
     ) inv ON TRUE
-         LEFT JOIN LATERAL (
-    SELECT rsa.M_ReceiptSchedule_ID
-    FROM M_ReceiptSchedule_Alloc rsa
-    WHERE rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-    ORDER BY rsa.M_ReceiptSchedule_ID
-    LIMIT 1
-    ) rsa ON TRUE
+         LEFT JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
          LEFT JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
          LEFT JOIN M_Warehouse wh_dest ON wh_dest.M_Warehouse_ID = COALESCE(
         rs.M_Warehouse_Dest_ID,
