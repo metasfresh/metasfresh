@@ -156,12 +156,11 @@ FROM M_InOut io
          LEFT JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
          LEFT JOIN LATERAL (
-    SELECT inv_inner.DocumentNo
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
     FROM C_InvoiceLine invl_inner
              INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
     WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-    ORDER BY inv_inner.C_Invoice_ID
-    LIMIT 1
+    GROUP BY iol.M_InOutLine_ID
     ) inv ON TRUE
          LEFT JOIN LATERAL (
     SELECT rsa.M_ReceiptSchedule_ID
@@ -224,13 +223,12 @@ FROM M_InOut io
          LEFT JOIN C_OrderLine ol_sales ON iol.C_OrderLine_ID = ol_sales.C_OrderLine_ID
          LEFT JOIN C_Order ord_sales ON ol_sales.C_Order_ID = ord_sales.C_Order_ID AND ord_sales.IsSOTrx = 'Y'
          LEFT JOIN LATERAL (
-    SELECT inv_inner.DocumentNo
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
     FROM C_InvoiceLine invl_inner
              INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
         AND inv_inner.IsSOTrx = 'Y'
     WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-    ORDER BY inv_inner.C_Invoice_ID
-    LIMIT 1
+    GROUP BY iol.M_InOutLine_ID
     ) inv_sales ON TRUE
          LEFT JOIN M_Warehouse wh_source ON io.M_Warehouse_ID = wh_source.M_Warehouse_ID
          LEFT JOIN C_BPartner bp_wh_source ON wh_source.C_BPartner_ID = bp_wh_source.C_BPartner_ID
