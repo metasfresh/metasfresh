@@ -18,6 +18,10 @@ export const RawMaterialIssueLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    clickScanButton: async () => await test.step(`${NAME} - Click Scan button`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+    }),
+
     scanQRCode: async ({ qrCode, expectQtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
