@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 @Builder
 public class MakeQtyReservationCommand
 {
-	private static final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@NonNull QtyReservationService qtyReservationService;
 	@Nullable ProjectRepository projectRepository;
