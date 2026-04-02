@@ -780,8 +780,9 @@ Feature: invoice payment allocation
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInv_cma_100  | bpartner_1    | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID      | M_Product_ID    | QtyInvoiced |
-      | salesInv_cma_100  | product_cma_100 | 1 PCE       |
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+
+      | il_auto    | salesInv_cma_100                      | product_cma_100                      | 1          | PCE               |
     And the invoice identified by salesInv_cma_100 is completed
 
     # Create credit memo against the invoice (auto-allocates CM against invoice)
@@ -792,7 +793,7 @@ Feature: invoice payment allocation
 
     # At this point alloc_cm is the auto-created allocation of CM against invoice
     And validate C_AllocationLines
-      | C_Invoice_ID     | Amount  | C_AllocationHdr_ID |
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.C_AllocationHdr_ID.Identifier |
       | salesCM_cma_100  | -105.60 | alloc_cm           |
       | salesInv_cma_100 | 105.60  | alloc_cm           |
 
@@ -818,7 +819,7 @@ Feature: invoice payment allocation
     And the invoice identified by salesCM_cma_100 is reversed
 
     Then validate created invoices
-      | C_Invoice_ID     | IsPaid |
+      | C_Invoice_ID.Identifier | OPT.IsPaid |
       | salesInv_cma_100 | false  |
       | salesCM_cma_100  | true   |
 
@@ -860,8 +861,8 @@ Feature: invoice payment allocation
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInvoice | bpartner_1    | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced |
-      | salesInvoice | product      | 1 PCE       |
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | il_auto    | salesInvoice            | product                 | 1           | PCE               |
     And the invoice identified by salesInvoice is completed
 
     # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
@@ -871,7 +872,7 @@ Feature: invoice payment allocation
     And the invoice identified by salesCreditMemo is completed
 
     And validate C_AllocationLines
-      | C_Invoice_ID    | Amount | C_AllocationHdr_ID |
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.C_AllocationHdr_ID.Identifier |
       | salesCreditMemo | -75.10 | alloc_cm           |
       | salesInvoice    | 75.10  | alloc_cm           |
 
@@ -912,8 +913,9 @@ Feature: invoice payment allocation
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | purchaseInvoice | bpartner_1    | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
-      | purchaseInvoice | product      | 1 PCE       |
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+
+      | il_auto    | purchaseInvoice                      | product                      | 1          | PCE               |
     And the invoice identified by purchaseInvoice is completed
 
     # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
@@ -923,7 +925,7 @@ Feature: invoice payment allocation
     And the invoice identified by purchaseCreditMemo is completed
 
     And validate C_AllocationLines
-      | C_Invoice_ID       | Amount | C_AllocationHdr_ID |
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.C_AllocationHdr_ID.Identifier |
       | purchaseCreditMemo | 75.10  | alloc_cm           |
       | purchaseInvoice    | -75.10 | alloc_cm           |
 
@@ -985,8 +987,8 @@ Feature: invoice payment allocation
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInv200     | bp200         | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced |
-      | salesInv200  | product200   | 1 PCE       |
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | il_auto    | salesInv200             | product200              | 1           | PCE               |
     And the invoice identified by salesInv200 is completed
 
     # Purchase invoice: GrandTotal = 5.95 EUR
@@ -994,8 +996,9 @@ Feature: invoice payment allocation
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | purchaseInv200  | bp200         | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID   | M_Product_ID | QtyInvoiced |
-      | purchaseInv200 | product200   | 1 PCE       |
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+
+      | il_auto    | purchaseInv200                      | product200                      | 1          | PCE               |
     And the invoice identified by purchaseInv200 is completed
 
     # Compensate: sales invoice vs purchase invoice (no payment)
