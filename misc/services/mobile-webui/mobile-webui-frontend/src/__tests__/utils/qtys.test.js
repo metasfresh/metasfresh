@@ -74,6 +74,14 @@ describe('qtys tests', () => {
       // Explicit precision overrides derived precision
       [{ qty: 0.019125, uom: 'kg', precision: 999 }, '19.125', 'g'],  // explicit 999 → shows all
       [{ qty: 0.019125, uom: 'kg', precision: 1 }, '19.1', 'g'],      // explicit 1 → truncates
+
+      // Rounding behavior (toFixed uses standard rounding: half-up for most cases)
+      [{ qty: 0.019155, uom: 'kg', precision: 1 }, '19.2', 'g'],     // 19.155 rounded to 1 decimal → 19.2 (rounds up)
+      [{ qty: 0.019145, uom: 'kg', precision: 1 }, '19.1', 'g'],     // 19.145 rounded to 1 decimal → 19.1 (rounds down)
+      [{ qty: 0.019195, uom: 'kg', precision: 1 }, '19.2', 'g'],     // 19.195 rounded to 1 decimal → 19.2 (rounds up)
+      [{ qty: 1.555, uom: 'kg', precision: 2 }, '1.55', 'kg'],       // 1.555 → 1.55 (JS floating-point: 1.555 is stored as 1.554999... so toFixed rounds down)
+      [{ qty: 1.554, uom: 'kg', precision: 2 }, '1.55', 'kg'],       // 1.554 rounded to 2 decimals → 1.55 (rounds down)
+      [{ qty: 0.009999, uom: 'kg', precision: 2 }, '10', 'g'],       // 9.999 g rounded to 2 decimals → 10.00 → "10" (rounds up across boundary)
     ];
 
     for (const [input, expectedQtyStr, expectedUom] of expectations) {
