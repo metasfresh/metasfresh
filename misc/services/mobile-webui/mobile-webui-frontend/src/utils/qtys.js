@@ -38,7 +38,7 @@ export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolera
 
 const countDecimalPlaces = (num) => {
   if (num == null || !isFinite(num)) return 0;
-  const str = String(num);
+  const str = String(num).replace(/0+$/, '');
   const dotIndex = str.indexOf('.');
   return dotIndex < 0 ? 0 : str.length - dotIndex - 1;
 };

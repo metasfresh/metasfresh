@@ -5,9 +5,7 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
-import { RawMaterialIssueLineScanScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScanScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
-import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
 /**
  * me03#28242: mobile UI production does not work with very small quantities (e.g. 0.01913 kg)
@@ -86,21 +84,13 @@ test('Issue raw material with very small qty (0.00384 kg) shows non-zero qty aft
     await ManufacturingJobsListScreen.waitForScreen();
     await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-    // Decompose scanQRCode to insert display precision assertions
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.waitForScreen();
-    await RawMaterialIssueLineScreen.clickScanButton();
-    await RawMaterialIssueLineScanScreen.waitForScreen();
-    await RawMaterialIssueLineScanScreen.typeQRCode(masterdata.handlingUnits.HU.qrCode);
-    await GetQuantityDialog.waitForDialog();
-
-    // Verify qty input shows exact value, not 0
-    await GetQuantityDialog.expectQtyEntered('0.00384');
-    // Verify display labels show "3.84 g" (not "4 g" or "0 g")
-    await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick_Total', expectedValue: '3.84 g' });
-    await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick', expectedValue: '3.84 g' });
-
-    await GetQuantityDialog.fillAndPressDone({});
+    await RawMaterialIssueLineScreen.scanQRCode({
+        qrCode: masterdata.handlingUnits.HU.qrCode,
+        expectQtyEntered: '0.00384',
+        expectQtyTarget: '3.84 g',
+        expectQtyRemaining: '3.84 g',
+    });
     await RawMaterialIssueLineScreen.goBack();
 });
 
@@ -116,21 +106,13 @@ test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({
         documentNo: masterdata.manufacturingOrders.PP1.documentNo,
     });
 
-    // Decompose scanQRCode to insert display precision assertions
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.waitForScreen();
-    await RawMaterialIssueLineScreen.clickScanButton();
-    await RawMaterialIssueLineScanScreen.waitForScreen();
-    await RawMaterialIssueLineScanScreen.typeQRCode(masterdata.handlingUnits.HU_SMALL.qrCode);
-    await GetQuantityDialog.waitForDialog();
-
-    // Verify qty input and display labels
-    await GetQuantityDialog.expectQtyEntered('0.01913');
-    await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick_Total', expectedValue: '19.13 g' });
-    await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick', expectedValue: '19.13 g' });
-
-    await GetQuantityDialog.fillAndPressDone({});
-    await RawMaterialIssueLineScreen.waitForScreen();
+    await RawMaterialIssueLineScreen.scanQRCode({
+        qrCode: masterdata.handlingUnits.HU_SMALL.qrCode,
+        expectQtyEntered: '0.01913',
+        expectQtyTarget: '19.13 g',
+        expectQtyRemaining: '19.13 g',
+    });
     await RawMaterialIssueLineScreen.goBack();
 
     // Receive the finished product
