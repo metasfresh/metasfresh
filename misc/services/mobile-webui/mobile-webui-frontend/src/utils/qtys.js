@@ -58,7 +58,10 @@ const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
 };
 
 export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
-  let qtyEffective = qty ?? 0;
+  let qtyEffective = Number(qty ?? 0);
+  if (!isFinite(qtyEffective)) {
+    qtyEffective = 0;
+  }
   let uomEffective = uom;
   let decimalShift = 0;
 
