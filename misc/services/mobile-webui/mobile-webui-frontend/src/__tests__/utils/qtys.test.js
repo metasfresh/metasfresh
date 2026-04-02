@@ -49,7 +49,7 @@ describe('qtys tests', () => {
     }
   });
 
-  describe('formatQtyToHumanReadable - precision derived from qty decimal places', () => {
+  describe('formatQtyToHumanReadable', () => {
     const expectations = [
       // [ { qty, uom, precision }, expectedQtyStr, expectedUom ]
 
@@ -58,34 +58,53 @@ describe('qtys tests', () => {
       [{ qty: 0.01913, uom: 'kg' }, '19.13', 'g'], // 5 decimals - 3 shift = 2
       [{ qty: 0.00384, uom: 'kg' }, '3.84', 'g'], // 5 decimals - 3 shift = 2
       [{ qty: 0.00765, uom: 'kg' }, '7.65', 'g'], // 5 decimals - 3 shift = 2
-      [{ qty: 0.1, uom: 'kg' }, '100', 'g'], // 1 decimal - 3 shift = 0 (but >=1 so no conversion) → actually 0.1 < 1 → converts to 100 g, precision max(1-3,0)=0
+      [{ qty: 0.1, uom: 'kg' }, '100', 'g'], // 0.1 < 1 → 100 g, precision max(1-3,0)=0
 
       // Very small kg → mg conversion
       [{ qty: 0.0000012, uom: 'kg' }, '1.2', 'mg'], // 7 decimals, 2 shifts (kg→g→mg) = 7-6=1
 
       // Normal kg quantities (no conversion, qty >= 1)
-      [{ qty: 100, uom: 'kg' }, '100', 'kg'], // 0 decimals, no shift
-      [{ qty: 1.5, uom: 'kg' }, '1.5', 'kg'], // 1 decimal, no shift
-      [{ qty: 2.25, uom: 'kg' }, '2.25', 'kg'], // 2 decimals, no shift
+      [{ qty: 100, uom: 'kg' }, '100', 'kg'],
+      [{ qty: 1.5, uom: 'kg' }, '1.5', 'kg'],
+      [{ qty: 2.25, uom: 'kg' }, '2.25', 'kg'],
 
       // Non-kg UOM (no conversion possible)
-      [{ qty: 0.5, uom: 'PCE' }, '0.5', 'PCE'], // 1 decimal, no shift, default precision max(1,4)=4 → but only 1 significant decimal
+      [{ qty: 0.5, uom: 'PCE' }, '0.5', 'PCE'],
 
-      // Explicit precision overrides derived precision
-      [{ qty: 0.019125, uom: 'kg', precision: 999 }, '19.125', 'g'], // explicit 999 → shows all
-      [{ qty: 0.019125, uom: 'kg', precision: 1 }, '19.1', 'g'], // explicit 1 → truncates
+      // Explicit precision overrides derived precision (honored up to internal cap of 20)
+      [{ qty: 0.019125, uom: 'kg', precision: 999 }, '19.125', 'g'],
+      [{ qty: 0.019125, uom: 'kg', precision: 1 }, '19.1', 'g'],
 
-      // Rounding behavior (toFixed uses standard rounding: half-up for most cases)
-      [{ qty: 0.019155, uom: 'kg', precision: 1 }, '19.2', 'g'], // 19.155 rounded to 1 decimal → 19.2 (rounds up)
-      [{ qty: 0.019145, uom: 'kg', precision: 1 }, '19.1', 'g'], // 19.145 rounded to 1 decimal → 19.1 (rounds down)
-      [{ qty: 0.019195, uom: 'kg', precision: 1 }, '19.2', 'g'], // 19.195 rounded to 1 decimal → 19.2 (rounds up)
-      [{ qty: 1.555, uom: 'kg', precision: 2 }, '1.55', 'kg'], // 1.555 → 1.55 (JS floating-point: 1.555 is stored as 1.554999... so toFixed rounds down)
-      [{ qty: 1.554, uom: 'kg', precision: 2 }, '1.55', 'kg'], // 1.554 rounded to 2 decimals → 1.55 (rounds down)
-      [{ qty: 0.009999, uom: 'kg', precision: 2 }, '10', 'g'], // 9.999 g rounded to 2 decimals → 10.00 → "10" (rounds up across boundary)
+      // Rounding behavior (toFixed uses standard rounding)
+      [{ qty: 0.019155, uom: 'kg', precision: 1 }, '19.2', 'g'], // rounds up
+      [{ qty: 0.019145, uom: 'kg', precision: 1 }, '19.1', 'g'], // rounds down
+      [{ qty: 0.019195, uom: 'kg', precision: 1 }, '19.2', 'g'], // rounds up
+      [{ qty: 1.555, uom: 'kg', precision: 2 }, '1.55', 'kg'], // JS float: 1.555 stored as 1.554999...
+      [{ qty: 1.554, uom: 'kg', precision: 2 }, '1.55', 'kg'], // rounds down
+      [{ qty: 0.009999, uom: 'kg', precision: 2 }, '10', 'g'], // rounds up across boundary
+
+      // String inputs
+      [{ qty: '0', uom: 'kg' }, '0', 'kg'], // string zero — no conversion
+      [{ qty: '0.00384', uom: 'kg' }, '3.84', 'g'], // string number
+      [{ qty: '100', uom: 'kg' }, '100', 'kg'], // string integer
+      [{ qty: '1.5', uom: 'kg' }, '1.5', 'kg'], // string decimal
+
+      // Invalid/edge case inputs → treated as 0
+      [{ qty: 'abc', uom: 'kg' }, '0', 'kg'], // non-numeric string
+      [{ qty: '', uom: 'kg' }, '0', 'kg'], // empty string
+      [{ qty: null, uom: 'kg' }, '0', 'kg'], // null
+      [{ qty: undefined, uom: 'kg' }, '0', 'kg'], // undefined
+      [{ qty: NaN, uom: 'kg' }, '0', 'kg'], // NaN
+      [{ qty: 0, uom: 'kg' }, '0', 'kg'], // numeric zero
+
+      // Negative quantities (by-products in manufacturing)
+      [{ qty: -0.00384, uom: 'kg' }, '-3.84', 'g'], // negative small qty
+      [{ qty: -100, uom: 'kg' }, '-100', 'kg'], // negative normal qty
+      [{ qty: -0.0000012, uom: 'kg' }, '-1.2', 'mg'], // negative very small → mg
     ];
 
     for (const [input, expectedQtyStr, expectedUom] of expectations) {
-      const label = `qty=${input.qty} uom=${input.uom}${
+      const label = `qty=${JSON.stringify(input.qty)} uom=${input.uom}${
         input.precision != null ? ' precision=' + input.precision : ''
       } -> "${expectedQtyStr} ${expectedUom}"`;
       it(label, () => {
