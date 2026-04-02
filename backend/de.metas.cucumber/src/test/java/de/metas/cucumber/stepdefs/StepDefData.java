@@ -77,7 +77,7 @@ public abstract class StepDefData<T>
 		{
 			return false;
 		}
-		
+
 		return records.containsKey(identifier);
 	}
 
@@ -90,18 +90,20 @@ public abstract class StepDefData<T>
 
 	public void put(
 			@NonNull final StepDefDataIdentifier identifier,
-			@NonNull final T record)
+			@NonNull final T newRecord)
 	{
-		final RecordDataItem<T> recordDataItem = newRecordDataItem(record);
+		final RecordDataItem<T> recordDataItem = newRecordDataItem(newRecord);
 
-		assertNotAlreadyMappedToOtherIdentifier(identifier, record);
+		assertNotAlreadyMappedToOtherIdentifier(identifier, newRecord);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
-				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
+				.as("An identifier may be used just once, but %s was already used."
+						+ "\n\toldRecord: %s"
+						+ "\n\tnewRecord: %s", identifier, oldRecord, newRecord)
 				.isNull();
 
-		logger.info("put: {}={}", identifier, record);
+		logger.info("put: {}={}", identifier, newRecord);
 	}
 
 	private void assertNotAlreadyMappedToOtherIdentifier(final @NonNull StepDefDataIdentifier identifier, final @NonNull T record)
@@ -217,7 +219,7 @@ public abstract class StepDefData<T>
 	{
 		if (identifier.isNullPlaceholder())
 		{
-			throw new AdempiereException("null identifier is shall not be used when getting from " + this);
+			throw new AdempiereException("null identifier shall not be used when getting from " + this);
 		}
 
 		return records.get(identifier);
@@ -297,8 +299,8 @@ public abstract class StepDefData<T>
 
 		@NonNull
 		Instant recordAdded;
-		@NonNull
 
+		@NonNull
 		Instant recordUpdated;
 
 		public T getRecord()

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,7 +41,7 @@ import java.util.function.IntFunction;
 @EqualsAndHashCode
 public final class StepDefDataIdentifier
 {
-	public static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
+	private static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
 
 	public static final String SUFFIX = "Identifier";
 
@@ -89,7 +89,12 @@ public final class StepDefDataIdentifier
 
 	public static StepDefDataIdentifier nextUnnamed()
 	{
-		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
+		return nextUnnamed(PREFIX_Unnamed);
+	}
+
+	public static StepDefDataIdentifier nextUnnamed(@NonNull final String prefix)
+	{
+		return ofString(prefix + nextUnnamedIdentifierId.getAndIncrement());
 	}
 
 	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2)
@@ -98,6 +103,7 @@ public final class StepDefDataIdentifier
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return getAsString();
@@ -107,6 +113,8 @@ public final class StepDefDataIdentifier
 	{
 		return this.equals(NULL);
 	}
+
+	public boolean isNotNullPlaceholder() {return !isNullPlaceholder();}
 
 	public String getAsString()
 	{
@@ -138,6 +146,9 @@ public final class StepDefDataIdentifier
 		return result;
 	}
 
+	/**
+	 * @return null if the identifier is equal to {@link #NULL}
+	 */
 	@Nullable
 	public <T> T lookupIn(@NonNull final StepDefData<T> table)
 	{
@@ -155,6 +166,12 @@ public final class StepDefDataIdentifier
 		{
 			return null;
 		}
+		return lookupNotNullIdIn(table);
+	}
+
+	@NonNull
+	public <ID extends RepoIdAware> ID lookupNotNullIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
+	{
 		return table.getId(this);
 	}
 

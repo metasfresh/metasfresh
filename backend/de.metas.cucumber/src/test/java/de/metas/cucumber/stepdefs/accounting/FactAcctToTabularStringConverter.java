@@ -139,6 +139,7 @@ public class FactAcctToTabularStringConverter
 			return null;
 		}
 
+		// taxTable.getFirstIdentifierById not available (C_Tax_StepDefData doesn't implement StepDefDataGetIdAware on this branch)
 		return taxDAO.getTaxById(taxId).getName() + "/" + taxId.getRepoId();
 	}
 
@@ -146,6 +147,16 @@ public class FactAcctToTabularStringConverter
 	private String extractDocumentRef(final I_Fact_Acct record)
 	{
 		final TableRecordReference documentRef = TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID());
+		if (identifiersResolver != null)
+		{
+			final StepDefDataIdentifier identifier = identifiersResolver.getIdentifier(documentRef).orElse(null);
+			if (identifier != null)
+			{
+				return identifier.getAsString() + "/" + documentRef.getRecord_ID();
+			}
+		}
+
+		// Fallback:
 		return documentRef.toString();
 	}
 

@@ -91,6 +91,7 @@ public class FactAcctBalanceMacher
 			softly.assertThat(actual).as(description.newWithMessage("SourceBalance")).isEqualTo(sourceBalance);
 		}
 		// qty assertion disabled — MixedQuantity not available on soft_panda_hotfix
+		// (getQty() returns null, so this block would never execute anyway)
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")

@@ -147,15 +147,9 @@ public class FactAcctMatchersFactory
 			return Optional.empty();
 		}
 
-		// taxTable.getIdOptional and taxDAO.getIdByName not available on this branch
-		// Tax matching by identifier is not used in allocation accounting tests
-		TaxId taxId = null;
-		if (taxId != null)
-		{
-			return Optional.of(taxId);
-		}
-
-		taxId = identifier.getAsId(TaxId.class);
+		// taxTable.getIdOptional and taxDAO.getIdByName not available on soft_panda_hotfix
+		// (C_Tax_StepDefData doesn't implement StepDefDataGetIdAware, ITaxDAO lacks getIdByName)
+		final TaxId taxId = identifier.getAsId(TaxId.class);
 		return Optional.of(taxId);
 	}
 
@@ -172,7 +166,7 @@ public class FactAcctMatchersFactory
 	private Optional<InvoiceId> extractInvoiceId(final @NonNull DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Invoice_ID").orElse(null);
-		return identifier == null ? null : invoiceTable.getOptional(identifier).map(inv -> InvoiceId.ofRepoId(inv.getC_Invoice_ID()));
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(invoiceTable));
 	}
 
 }

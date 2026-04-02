@@ -22,29 +22,23 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.allocation.api.PaymentAllocationLineId;
-import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
-import de.metas.invoice.InvoiceId;
-import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.assertj.core.api.SoftAssertions;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,36 +71,67 @@ public class C_AllocationLine_StepDef
 	@And("validate C_AllocationLines")
 	public void validate_C_AllocationLines(@NonNull final DataTable dataTable)
 	{
-		final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds = new HashSet<>();
-		DataTableRows.of(dataTable)
-				.forEach(row -> validate_C_AllocationLine(row, alreadyCheckedLineIds));
-	}
-
-	private void validate_C_AllocationLine(@NonNull final DataTableRow row, @NonNull final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds)
-	{
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(id -> InvoiceId.ofRepoId(invoiceTable.get(id).getC_Invoice_ID()))
-				.orElse(null);
-		final PaymentId paymentId = row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(id -> PaymentId.ofRepoId(paymentTable.get(id).getC_Payment_ID()))
-				.orElse(null);
-
-		final IQueryBuilder<I_C_AllocationLine> queryBuilder = queryBL.createQueryBuilder(I_C_AllocationLine.class)
-				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId);
-		if (!alreadyCheckedLineIds.isEmpty())
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
 		{
-			queryBuilder.addNotInArrayFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID, alreadyCheckedLineIds);
+			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer invoiceId = Optional.ofNullable(invoiceIdentifier)
+					.map(identifier -> invoiceTable.get(identifier).getC_Invoice_ID())
+					.orElse(null);
+
+			final String paymentIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer paymentId = Optional.ofNullable(paymentIdentifier)
+					.map(identifier -> paymentTable.get(paymentIdentifier).getC_Payment_ID())
+					.orElse(null);
+
+			final I_C_AllocationLine singleAllocationLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+					.create()
+					.firstOnlyNotNull(I_C_AllocationLine.class);
+
+			final BigDecimal amount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_Amount);
+			final BigDecimal overUnderAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_OverUnderAmt);
+			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_WriteOffAmt);
+			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_DiscountAmt);
+
+			if (amount != null)
+			{
+				assertThat(singleAllocationLine.getAmount()).isEqualTo(amount);
+			}
+
+			if (overUnderAmt != null)
+			{
+				assertThat(singleAllocationLine.getOverUnderAmt()).isEqualTo(overUnderAmt);
+			}
+
+			if (writeOffAmt != null)
+			{
+				assertThat(singleAllocationLine.getWriteOffAmt()).isEqualTo(writeOffAmt);
+			}
+			if (discountAmt != null)
+			{
+				assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(discountAmt);
+			}
+
+			// Store C_AllocationHdr if identifier is provided
+			final String allocHdrIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (allocHdrIdentifier != null)
+			{
+				final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(singleAllocationLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+				allocationHdrTable.putOrReplace(StepDefDataIdentifier.ofString(allocHdrIdentifier), hdr);
+			}
+			else
+			{
+				final String allocHdrIdentifier2 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID);
+				if (allocHdrIdentifier2 != null)
+				{
+					final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(singleAllocationLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+					allocationHdrTable.putOrReplace(StepDefDataIdentifier.ofString(allocHdrIdentifier2), hdr);
+				}
+			}
 		}
-		final I_C_AllocationLine allocationLine = queryBuilder.create().firstNotNull(I_C_AllocationLine.class);
-
-		validateAllocationLine(allocationLine, row);
-
-		alreadyCheckedLineIds.add(PaymentAllocationLineId.ofRepoId(allocationLine.getC_AllocationHdr_ID(), allocationLine.getC_AllocationLine_ID()));
 	}
 
 	@And("^validate C_AllocationLines for invoice (.*)$")
@@ -114,49 +139,43 @@ public class C_AllocationLine_StepDef
 			@NonNull final String invoiceIdentifier,
 			@NonNull final DataTable dataTable)
 	{
-		final Integer invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
-
-		final ImmutableList<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		final List<I_C_AllocationLine> allocLines = new java.util.ArrayList<>(queryBL.createQueryBuilder(I_C_AllocationLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.create()
-				.listImmutable(I_C_AllocationLine.class);
+				.list());
 
-		assertThat(allocationLines).hasSameSizeAs(dataTable.asMaps());
+		DataTableRows.of(dataTable).forEach(row -> {
+			final BigDecimal expectedAmount = row.getAsOptionalBigDecimal("Amount").orElse(null);
 
-		DataTableRows.of(dataTable)
-				.forEach((row, index) -> validateAllocationLine(allocationLines.get(index), row));
+			final I_C_AllocationLine matchingLine = allocLines.stream()
+					.filter(line -> expectedAmount == null || line.getAmount().compareTo(expectedAmount) == 0)
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("No C_AllocationLine found for invoice " + invoiceIdentifier
+							+ " with Amount=" + expectedAmount + ". Existing lines: " + allocLines));
+
+			allocLines.remove(matchingLine);
+
+			row.getAsOptionalIdentifier("C_AllocationHdr_ID").ifPresent(allocHdrId -> {
+				final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(matchingLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+				allocationHdrTable.putOrReplace(allocHdrId, hdr);
+			});
+		});
 	}
 
 	@And("there are no allocation lines for invoice")
 	public void invoices_are_not_allocated(@NonNull final DataTable table)
 	{
-		DataTableRows.of(table).forEach(row -> {
-			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+		final List<Map<String, String>> rows = table.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
 			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
-			assertThat(allocationLines).isEmpty();
-		});
-	}
 
-	private void validateAllocationLine(
-			@NonNull final I_C_AllocationLine allocationLine,
-			@NonNull final DataTableRow row)
-	{
-		final SoftAssertions softly = new SoftAssertions();
-
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualByComparingTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(amount));
-
-		softly.assertAll();
-
-		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
-				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, allocationLine.getC_AllocationHdr()));
+			assertThat(allocationLines.isEmpty()).isEqualTo(true);
+		}
 	}
 }

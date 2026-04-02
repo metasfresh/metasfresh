@@ -102,4 +102,32 @@ public class IdentifiersResolver
 		return invoiceTable.getOptional(identifier)
 				.map(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 	}
+
+	/** Reverse lookup: find the StepDefDataIdentifier for a given TableRecordReference */
+	@NonNull
+	public Optional<StepDefDataIdentifier> getIdentifier(@NonNull final TableRecordReference ref)
+	{
+		final String tableName = ref.getTableName();
+		final int recordId = ref.getRecord_ID();
+
+		if (I_C_Invoice.Table_Name.equals(tableName))
+		{
+			return invoiceTable.getIdentifiers().stream()
+					.filter(id -> invoiceTable.getOptional(id).map(inv -> inv.getC_Invoice_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		if (I_C_Payment.Table_Name.equals(tableName))
+		{
+			return paymentTable.getIdentifiers().stream()
+					.filter(id -> paymentTable.getOptional(id).map(pay -> pay.getC_Payment_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		if (I_C_AllocationHdr.Table_Name.equals(tableName))
+		{
+			return allocationTable.getIdentifiers().stream()
+					.filter(id -> allocationTable.getOptional(id).map(alloc -> alloc.getC_AllocationHdr_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		return Optional.empty();
+	}
 }
