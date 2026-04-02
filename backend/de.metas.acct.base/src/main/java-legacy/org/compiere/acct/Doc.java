@@ -957,7 +957,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final BankAccountId bpBankAccountId = getBPBankAccountId();
 		if (bpBankAccountId == null)
 		{
-			throw newPostingException().setDetailMessage("No Bank Statement set");
+			// Fallback to account from accounting schema default accounts
+			if (acctType == BankAccountAcctType.RealizedGain_Acct)
+			{
+				return acctSchema.getDefaultAccounts().getRealizedGainAcct();
+			}
+			else if (acctType == BankAccountAcctType.RealizedLoss_Acct)
+			{
+				return acctSchema.getDefaultAccounts().getRealizedLossAcct();
+			}
+			else
+			{
+				throw newPostingException().setDetailMessage("No Bank Account set and no default account available for " + acctType);
+			}
 		}
 
 		return getAccountProvider().getBankAccountAccount(acctSchema.getId(), bpBankAccountId, acctType);
