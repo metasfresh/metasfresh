@@ -359,11 +359,11 @@ Feature: invoice payment allocation
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
       # salesInvoice1 posting (GrandTotal=5.95)
-      | C_Receivable_Acct      | 5.95 EUR    | 0 EUR       | bpartner_1    | salesInvoice1    |
-      | *                      |             |             |               | salesInvoice1    |
+      | C_Receivable_Acct      | 5.95 EUR    | 0 EUR       | bpartner_1    | inv_160          |
+      | *                      |             |             |               | inv_160          |
       # salesCreditMemo1 posting (GrandTotal=2.38)
-      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | bpartner_1    | salesCreditMemo1 |
-      | *                      |             |             |               | salesCreditMemo1 |
+      | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | bpartner_1    | credit_memo_160  |
+      | *                      |             |             |               | credit_memo_160  |
       # alloc1: credit memo compensation (CM vs invoice)
       | C_Receivable_Acct      | 2.38 EUR    | 0 EUR       | bpartner_1    | alloc1           |
       | C_Receivable_Acct      | 0 EUR       | 2.38 EUR    | bpartner_1    | alloc1           |
@@ -822,7 +822,7 @@ Feature: invoice payment allocation
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | salesInv_cma_100 | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | CO | false |
-      | salesCM_cma_100  | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | CO | true  |
+      | salesCM_cma_100  | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | RE | true  |
 
     # After reversal, the CM has allocations: alloc_cm (original, now reversed) + alloc_cm_reversed (reversal) + alloc_cm_rev_pair (CM vs its reversal)
     And validate C_AllocationLines for invoice salesCM_cma_100
@@ -1008,8 +1008,8 @@ Feature: invoice payment allocation
       | salesInv200             | purchaseInv200                       |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | IsPaid |
-      | purchaseInv200          | true   |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | purchaseInv200          | bp200                    | bp200_loc                         | 30 Tage netto | true      | CO        | true       |
 
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.C_AllocationHdr_ID.Identifier |

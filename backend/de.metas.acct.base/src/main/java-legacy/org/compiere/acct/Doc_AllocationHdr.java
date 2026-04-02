@@ -1119,8 +1119,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// ARC (or ARC reversal): DR to clear receivable
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// ARC (or ARC reversal): DR to clear the CM's receivable (CR on invoice side).
+				// allocatedAmt is negative for the original CM and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 			else
 			{
@@ -1133,8 +1135,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// APC (or APC reversal): CR to clear liability
-				factLineBuilder.setAmtSource(null, allocatedAmt.negate());
+				// APC (or APC reversal): CR to clear the CM's liability (DR on invoice side).
+				// allocatedAmt is positive for the original CM and negative for the reversal,
+				// so we use it directly (without negate) to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(null, allocatedAmt);
 			}
 			else
 			{

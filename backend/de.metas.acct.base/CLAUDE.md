@@ -1,0 +1,1 @@
+/home/teo/workspaces/ai/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.acct.base/CLAUDE.md
