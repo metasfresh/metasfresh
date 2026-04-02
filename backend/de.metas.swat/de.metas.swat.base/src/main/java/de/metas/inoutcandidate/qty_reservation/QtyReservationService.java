@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +41,12 @@ public class QtyReservationService
 					+ orderLineProductId.getRepoId());
 		}
 
-		final QtyReservationId qtyReservationId = repository.createReservation(request);
+		final CreateQtyReservationRequest effectiveRequest = capQtyToOrderLine(request);
+		final QtyReservationId qtyReservationId = repository.createReservation(effectiveRequest);
 
-		if (request.getProjectId() != null)
+		if (effectiveRequest.getProjectId() != null)
 		{
-			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
+			orderLine.setC_Project_ID(effectiveRequest.getProjectId().getRepoId());
 			// assume the ProjectValue attribute will be automatically set/updated in ASI
 			orderLineBL.save(orderLine);
 		}
@@ -52,6 +54,27 @@ public class QtyReservationService
 		invalidateShipmentSchedulesForSalesOrderLine(orderLine);
 
 		return qtyReservationId;
+	}
+
+	/**
+	 * Cap the reservation's CU qty so it does not exceed the order line's QtyOrdered.
+	 * <p>
+	 * This prevents over-reservation when the cockpit row's CU/TU ratio differs from
+	 * the order line's effective CU/TU (e.g. partially-filled last TU:
+	 * order needs 20 CU in 3 TU, but stock TUs average 10 CU each → uncapped = 30 CU).
+	 */
+	private CreateQtyReservationRequest capQtyToOrderLine(
+			@NonNull final CreateQtyReservationRequest request)
+	{
+		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(request.getOrderAndLineId());
+		final Quantity cappedQty = request.getQty().min(qtyOrdered);
+
+		if (cappedQty.toBigDecimal().compareTo(request.getQty().toBigDecimal()) == 0)
+		{
+			return request;
+		}
+
+		return request.withQty(cappedQty);
 	}
 
 	public void deleteReservation(@NonNull final DeleteQtyReservationRequest request)
