@@ -87,12 +87,11 @@ FROM M_InOut io
          LEFT JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
          LEFT JOIN C_Order ord ON ol.C_Order_ID = ord.C_Order_ID
          LEFT JOIN LATERAL (
-    SELECT inv_inner.DocumentNo
+    SELECT STRING_AGG(DISTINCT inv_inner.DocumentNo, ', ' ORDER BY inv_inner.DocumentNo) AS DocumentNo
     FROM C_InvoiceLine invl_inner
              INNER JOIN C_Invoice inv_inner ON invl_inner.C_Invoice_ID = inv_inner.C_Invoice_ID
     WHERE invl_inner.M_InOutLine_ID = iol.M_InOutLine_ID
-    ORDER BY inv_inner.C_Invoice_ID
-    LIMIT 1
+    GROUP BY iol.M_InOutLine_ID
     ) inv ON TRUE
          LEFT JOIN LATERAL (
     SELECT rsa.M_ReceiptSchedule_ID
