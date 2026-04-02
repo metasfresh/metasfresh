@@ -21,7 +21,7 @@ SELECT 1000000                                                         AS ad_cli
        NULL                                                            AS help,
        NULL                                                            AS upc,
        NULL                                                            AS sku,
-       CASE T_Item."Base Unit of Measure" -- x12de355: Map Grundhöfer Produktiv "Base Unit of Measure"
+       CASE T_Item."Base Unit of Measure" -- x12de355: Map Navision "Base Unit of Measure"
            WHEN 'KG' THEN 'KGM'
            WHEN 'ST' THEN 'PCE'
                      ELSE uom.x12de355
@@ -29,7 +29,7 @@ SELECT 1000000                                                         AS ad_cli
        NULL::numeric                                                   AS c_uom_id,
        'Standard'                                                      AS productcategory_value,
        NULL::numeric                                                   AS m_product_category_id,
-       CASE T_Item."Type" -- producttype: Map Grundhöfer Produktiv Type (0 for Item, 1 for Service)
+       CASE T_Item."Type" -- producttype: Map Navision Type (0 for Item, 1 for Service)
            WHEN 0 THEN 'I'
            WHEN 1 THEN 'S'
                   ELSE 'I'
