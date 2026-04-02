@@ -820,9 +820,9 @@ Feature: invoice payment allocation
     And the invoice identified by salesCM_cma_100 is reversed
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | OPT.IsPaid |
-      | salesInv_cma_100 | false  |
-      | salesCM_cma_100  | true   |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | salesInv_cma_100 | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | CO | false |
+      | salesCM_cma_100  | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | CO | true  |
 
     # After reversal, the CM has allocations: alloc_cm (original, now reversed) + alloc_cm_reversed (reversal) + alloc_cm_rev_pair (CM vs its reversal)
     And validate C_AllocationLines for invoice salesCM_cma_100
@@ -1060,8 +1060,8 @@ Feature: invoice payment allocation
     And the reversal of invoice inv_rev_ari is identified by inv_rev_ari_reversal
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | OPT.IsPaid |
-      | inv_rev_ari             | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | inv_rev_ari | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | RE | true |
 
     And validate C_AllocationLines for invoice inv_rev_ari
       | OPT.C_AllocationHdr_ID.Identifier |
@@ -1111,8 +1111,8 @@ Feature: invoice payment allocation
     And the reversal of invoice cm_rev_arc is identified by cm_rev_arc_reversal
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | OPT.IsPaid |
-      | cm_rev_arc              | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | cm_rev_arc | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | RE | true |
 
     And validate C_AllocationLines for invoice cm_rev_arc
       | OPT.C_AllocationHdr_ID.Identifier |
@@ -1151,8 +1151,8 @@ Feature: invoice payment allocation
     And the reversal of invoice inv_rev_api is identified by inv_rev_api_reversal
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | OPT.IsPaid |
-      | inv_rev_api             | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | inv_rev_api | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | RE | true |
 
     And validate C_AllocationLines for invoice inv_rev_api
       | OPT.C_AllocationHdr_ID.Identifier |
@@ -1202,8 +1202,8 @@ Feature: invoice payment allocation
     And the reversal of invoice cm_rev_apc is identified by cm_rev_apc_reversal
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | OPT.IsPaid |
-      | cm_rev_apc              | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | cm_rev_apc | bpartner_1 | bpartner_location_1 | 30 Tage netto | true | RE | true |
 
     And validate C_AllocationLines for invoice cm_rev_apc
       | OPT.C_AllocationHdr_ID.Identifier |
