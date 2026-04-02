@@ -210,6 +210,8 @@ test('LU/TU: over-pick TUs - prompt enabled - decline', async ({ page }) => {
 
         await GetQuantityDialog.waitForDialog();
         await GetQuantityDialog.clickCancel();
+
+        await PickingJobScreen.waitForScreen();
     });
 
     await test.step('Verify nothing was picked', async () => {
@@ -269,11 +271,23 @@ test('LU/TU: prompt disabled - regression guard', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('Over-picking prompt - LU/TU mode, prompt disabled, pick exact qty');
+    allure.story('Over-picking prompt - LU/TU mode, prompt disabled, over-entry blocked + exact qty pick');
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_TU({ showPromptWhenOverPicking: false, orderQtyCUs: 12 });
     const { pickingJobId } = await startPickingJob_LU_TU(masterdata);
+
+    await test.step('Prompt disabled — enter qty > remaining, Done button blocked, no prompt', async () => {
+        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(3);
+        await GetQuantityDialog.typeQtyEntered(8);
+        await GetQuantityDialog.expectDoneDisabled();
+        await GetQuantityDialog.expectQtyValidationError('above max');
+        await GetQuantityDialog.clickCancel();
+
+        await PickingJobScreen.waitForScreen();
+    });
 
     await test.step('Prompt disabled — pick exact qty, verify existing behavior unchanged', async () => {
         await PickingJobScreen.pickHU({
@@ -369,6 +383,8 @@ test('LU/CU: over-pick CUs - prompt enabled - decline', async ({ page }) => {
 
         await GetQuantityDialog.waitForDialog();
         await GetQuantityDialog.clickCancel();
+
+        await PickingJobScreen.waitForScreen();
     });
 
     await test.step('Verify nothing was picked', async () => {
@@ -428,11 +444,23 @@ test('LU/CU: prompt disabled - regression guard', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.feature('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('Over-picking prompt - LU/CU mode, prompt disabled, pick exact qty');
+    allure.story('Over-picking prompt - LU/CU mode, prompt disabled, over-entry blocked + exact qty pick');
     allure.severity('normal');
 
     const masterdata = await createMasterdata_LU_CU({ showPromptWhenOverPicking: false, orderQtyCUs: 10 });
     const { pickingJobId } = await startPickingJob_LU_CU(masterdata);
+
+    await test.step('Prompt disabled — enter qty > remaining, Done button blocked, no prompt', async () => {
+        await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.huId);
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(10);
+        await GetQuantityDialog.typeQtyEntered(25);
+        await GetQuantityDialog.expectDoneDisabled();
+        await GetQuantityDialog.expectQtyValidationError('above max');
+        await GetQuantityDialog.clickCancel();
+
+        await PickingJobScreen.waitForScreen();
+    });
 
     await test.step('Prompt disabled — pick exact qty, verify existing behavior unchanged', async () => {
         await PickingJobScreen.pickHU({
