@@ -401,6 +401,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return soTrxInvoice;
 	}
 
+	public final boolean isAPI()
+	{
+		return hasInvoiceDocument() && !isSOTrxInvoice() && !isCreditMemoInvoice();
+	}
+
 	/**
 	 * @deprecated Please use {@link #isSOTrxInvoice()}
 	 */

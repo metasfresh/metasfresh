@@ -841,12 +841,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
-			// ARC
-			if (line.isCreditMemoInvoice())
+			final DocLine_Allocation counterLine = line.getCounterDocLine();
+
+			// ARC that is not allocated against another invoice
+			if (line.isCreditMemoInvoice() && counterLine == null)
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
-			// ARI
+			// ARI or ARC that is allocated against the other invoice
 			else
 			{
 				factLineBuilder.setAmtSource(null, allocationSource);
@@ -864,7 +866,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			// API
 			else
 			{
-				factLineBuilder.setAmtSource(allocationSource, null);
+				// API counter-invoice
+				final DocLine_Allocation counterLine = line.getCounterDocLine();
+				if (counterLine != null && counterLine.isAPI())
+				{
+					factLineBuilder.setAmtSource(null, allocationSource);
+				}
+				// other
+				else
+				{
+					factLineBuilder.setAmtSource(allocationSource, null);
+				}
 			}
 		}
 
