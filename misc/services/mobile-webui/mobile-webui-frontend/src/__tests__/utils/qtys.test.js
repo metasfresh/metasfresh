@@ -1,4 +1,4 @@
-import { countDecimalPlaces } from '../../utils/qtys';
+import { countDecimalPlaces, formatQtyToHumanReadable } from '../../utils/qtys';
 
 describe('qtys tests', () => {
   describe('countDecimalPlaces', () => {
@@ -46,6 +46,43 @@ describe('qtys tests', () => {
 
     for (const [input, expected] of expectations) {
       it(JSON.stringify(input) + ' -> ' + expected, () => expect(countDecimalPlaces(input)).toBe(expected));
+    }
+  });
+
+  describe('formatQtyToHumanReadable - precision derived from qty decimal places', () => {
+    const expectations = [
+      // [ { qty, uom, precision }, expectedQtyStr, expectedUom ]
+
+      // Small kg quantities auto-converted to grams — precision derived from qty decimals minus shift
+      [{ qty: 0.019125, uom: 'kg' }, '19.125', 'g'],    // 6 decimals - 3 shift = 3
+      [{ qty: 0.01913, uom: 'kg' }, '19.13', 'g'],       // 5 decimals - 3 shift = 2
+      [{ qty: 0.00384, uom: 'kg' }, '3.84', 'g'],        // 5 decimals - 3 shift = 2
+      [{ qty: 0.00765, uom: 'kg' }, '7.65', 'g'],        // 5 decimals - 3 shift = 2
+      [{ qty: 0.1, uom: 'kg' }, '100', 'g'],             // 1 decimal - 3 shift = 0 (but >=1 so no conversion) → actually 0.1 < 1 → converts to 100 g, precision max(1-3,0)=0
+
+      // Very small kg → mg conversion
+      [{ qty: 0.0000012, uom: 'kg' }, '1.2', 'mg'],      // 7 decimals, 2 shifts (kg→g→mg) = 7-6=1
+
+      // Normal kg quantities (no conversion, qty >= 1)
+      [{ qty: 100, uom: 'kg' }, '100', 'kg'],            // 0 decimals, no shift
+      [{ qty: 1.5, uom: 'kg' }, '1.5', 'kg'],            // 1 decimal, no shift
+      [{ qty: 2.25, uom: 'kg' }, '2.25', 'kg'],          // 2 decimals, no shift
+
+      // Non-kg UOM (no conversion possible)
+      [{ qty: 0.5, uom: 'PCE' }, '0.5', 'PCE'],          // 1 decimal, no shift, default precision max(1,4)=4 → but only 1 significant decimal
+
+      // Explicit precision overrides derived precision
+      [{ qty: 0.019125, uom: 'kg', precision: 999 }, '19.125', 'g'],  // explicit 999 → shows all
+      [{ qty: 0.019125, uom: 'kg', precision: 1 }, '19.1', 'g'],      // explicit 1 → truncates
+    ];
+
+    for (const [input, expectedQtyStr, expectedUom] of expectations) {
+      const label = `qty=${input.qty} uom=${input.uom}${input.precision != null ? ' precision=' + input.precision : ''} -> "${expectedQtyStr} ${expectedUom}"`;
+      it(label, () => {
+        const result = formatQtyToHumanReadable(input);
+        expect(result.qtyEffectiveStr).toBe(expectedQtyStr);
+        expect(result.uomEffective).toBe(expectedUom);
+      });
     }
   });
 });
