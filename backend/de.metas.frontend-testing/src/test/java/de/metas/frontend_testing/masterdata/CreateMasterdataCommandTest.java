@@ -341,6 +341,7 @@ public class CreateMasterdataCommandTest
 				.handlingUnits(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
+				.purchaseOrders(ImmutableMap.of())
 				.distributionOrders(ImmutableMap.of())
 				.manufacturingOrders(ImmutableMap.of())
 				.inventories(ImmutableMap.of())

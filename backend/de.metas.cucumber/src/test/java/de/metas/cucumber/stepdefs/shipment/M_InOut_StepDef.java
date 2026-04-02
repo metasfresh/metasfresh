@@ -182,21 +182,19 @@ public class M_InOut_StepDef
 	 * Validate M_InOut records (shipments or material receipts).
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) alias from M_InOut_StepDefData<br>
-	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) expected business partner<br>
-	 *   <b>C_BPartner_Location_ID</b> — (required, identifier-ref) expected BP location<br>
-	 *   <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
-	 *   <b>processed</b> — (required) true/false<br>
-	 *   <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
-	 *   <b>POReference</b> — (optional) expected PO reference<br>
-	 *   <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
-	 *   <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
-	 *   <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
-	 *   <b>ExternalId</b> — (optional) expected external ID<br>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) alias from M_InOut_StepDefData<br>
+	 * <b>C_BPartner_ID</b> — (required, identifier-ref) expected business partner<br>
+	 * <b>C_BPartner_Location_ID</b> — (required, identifier-ref) expected BP location<br>
+	 * <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
+	 * <b>processed</b> — (required) true/false<br>
+	 * <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
+	 * <b>POReference</b> — (optional) expected PO reference<br>
+	 * <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
+	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
+	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
+	 * <b>ExternalId</b> — (optional) expected external ID<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And validate the created shipments
 	 *   | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | processed | DocStatus |
 	 *   | shipment_1 | bpartner_1    | bpLocation_1           | 2022-05-17  | true      | CO        |
@@ -280,15 +278,13 @@ public class M_InOut_StepDef
 	 * Each row specifies its own QuantityType, IsCompleteShipments, and IsShipmentDateToday.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
-	 *   <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
-	 *   <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
-	 *   <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
-	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 * <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
+	 * <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
+	 * <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
+	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
 	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
 	 *   | shipmentSchedule_1    | D            | true                | false               |
@@ -302,8 +298,9 @@ public class M_InOut_StepDef
 					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
 					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+					final boolean isOnTheFlyPickToPackingInstructions = tableRow.getAsOptionalBoolean(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions).orElse(false);
 
-					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.of(tableRow));
+					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, isOnTheFlyPickToPackingInstructions, DataTableRows.of(tableRow));
 				}
 		);
 	}
@@ -316,12 +313,13 @@ public class M_InOut_StepDef
 					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
 					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+					final boolean isOnTheFlyPickToPackingInstructions = tableRow.getAsOptionalBoolean(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions).orElse(false);
 
 					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
 
 					try
 					{
-						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, isOnTheFlyPickToPackingInstructions, DataTableRows.ofRows(ImmutableList.of(tableRow)));
 
 						assertThat(errorMessage).as("An error message should had been thrown!").isNull();
 					}
@@ -340,12 +338,10 @@ public class M_InOut_StepDef
 	 * All shipment schedules in the DataTable are enqueued together (single workpackage).
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
-	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
 	 *   | M_ShipmentSchedule_ID |
 	 *   | shipmentSchedule_1    |
@@ -358,13 +354,14 @@ public class M_InOut_StepDef
 			final boolean isShipToday,
 			@NonNull final DataTable table)
 	{
-		invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.of(table));
+		invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, false, DataTableRows.of(table));
 	}
 
 	public void invokeGenerateShipmentsProcess0(
 			@NonNull final String quantityType,
 			final boolean isCompleteShipments,
 			final boolean isShipToday,
+			final boolean isOnTheFlyPickToPackingInstructions,
 			@NonNull final DataTableRows dataTable)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> qtysToDeliverOverride = ImmutableMap.builder();
@@ -396,7 +393,8 @@ public class M_InOut_StepDef
 				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
 				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
 				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
-				.isShipmentDateToday(StringUtils.toBoolean(isShipToday));
+				.isShipmentDateToday(StringUtils.toBoolean(isShipToday))
+				.onTheFlyPickToPackingInstructions(isOnTheFlyPickToPackingInstructions);
 
 		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParametersBuilder.build());
@@ -410,16 +408,14 @@ public class M_InOut_StepDef
 	 * Stores the found M_InOut in M_InOut_StepDefData under the given identifier.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
-	 *   <b>M_InOut_ID</b> — (required) alias to store the found shipment under<br>
-	 *   <b>DocStatus</b> — (optional) filter by doc status (CO, DR, etc.)<br>
-	 *   <b>OPT.IgnoreCreated.M_InOut_ID.Identifier</b> — (optional) comma-separated shipment identifiers to skip<br>
-	 *   <b>REST.Context.M_InOut_ID</b> — (optional) store M_InOut_ID in REST test context variable<br>
-	 *   <b>REST.Context.DocumentNo</b> — (optional) store DocumentNo in REST test context variable<br>
+	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
+	 * <b>M_InOut_ID</b> — (required) alias to store the found shipment under<br>
+	 * <b>DocStatus</b> — (optional) filter by doc status (CO, DR, etc.)<br>
+	 * <b>OPT.IgnoreCreated.M_InOut_ID.Identifier</b> — (optional) comma-separated shipment identifiers to skip<br>
+	 * <b>REST.Context.M_InOut_ID</b> — (optional) store M_InOut_ID in REST test context variable<br>
+	 * <b>REST.Context.DocumentNo</b> — (optional) store DocumentNo in REST test context variable<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And after not more than 60s, M_InOut is found:
 	 *   | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
 	 *   | shipmentSchedule_1    | shipment_1 | CO        |
@@ -521,8 +517,7 @@ public class M_InOut_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And the shipment identified by shipment_1 is reversed as shipment_1_reversal
 	 * </pre>
 	 */
@@ -549,8 +544,7 @@ public class M_InOut_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns (none — parameters are in the step text)
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And the shipment identified by shipment_1 is completed
 	 * And the shipment identified by shipment_1 is reversed
 	 * And the material receipt identified by receipt_1 is completed
@@ -599,13 +593,12 @@ public class M_InOut_StepDef
 	 * Validates DocStatus and optionally C_Order_ID. Stores both the line and header in StepDefData.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>QtyEntered</b> — (required) quantity to match the M_InOutLine by<br>
-	 *   <b>M_InOutLine_ID</b> — (required, identifier) alias to store the found shipment line<br>
-	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment header<br>
-	 *   <b>DocStatus</b> — (required) expected document status (CO, DR, etc.)<br>
-	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) narrow search to lines for a specific order line<br>
-	 *   <b>C_Order_ID</b> — (optional, identifier-ref) assert the shipment belongs to a specific order<br>
+	 * @cucumber.columns <b>QtyEntered</b> — (required) quantity to match the M_InOutLine by<br>
+	 * <b>M_InOutLine_ID</b> — (required, identifier) alias to store the found shipment line<br>
+	 * <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment header<br>
+	 * <b>DocStatus</b> — (required) expected document status (CO, DR, etc.)<br>
+	 * <b>C_OrderLine_ID</b> — (optional, identifier-ref) narrow search to lines for a specific order line<br>
+	 * <b>C_Order_ID</b> — (optional, identifier-ref) assert the shipment belongs to a specific order<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, C_OrderLine_StepDefData, C_Order_StepDefData
 	 */
 	@And("load M_InOut:")
@@ -651,12 +644,10 @@ public class M_InOut_StepDef
 	 * Perform an arbitrary document action on a shipment/receipt. Uses DocAction codes directly (CO, RC, RA, VO, CL).
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment to process<br>
-	 *   <b>DocAction</b> — (required) document action code: CO, RC, RA, VO, CL<br>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) the shipment to process<br>
+	 * <b>DocAction</b> — (required) document action code: CO, RC, RA, VO, CL<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And perform shipment document action
 	 *   | M_InOut_ID | DocAction |
 	 *   | shipment_1 | RC        |
@@ -677,9 +668,8 @@ public class M_InOut_StepDef
 	 * Locate M_InOut via M_ShipmentSchedule_QtyPicked and store it in StepDefData.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
-	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment<br>
+	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
+	 * <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
 	 */
 	@Then("locate M_InOut by shipment schedule Id")
@@ -735,22 +725,20 @@ public class M_InOut_StepDef
 	 * Uses legacy DataTableUtil (not DataTableRow). Stores created record in M_InOut_StepDefData.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the created record<br>
-	 *   <b>C_BPartner_ID.Identifier</b> — (required) business partner<br>
-	 *   <b>C_BPartner_Location_ID.Identifier</b> — (required) BP location<br>
-	 *   <b>IsSOTrx</b> — (required) true=shipment, false=receipt<br>
-	 *   <b>DeliveryRule</b> — (required) delivery rule code<br>
-	 *   <b>DeliveryViaRule</b> — (required) delivery via rule code<br>
-	 *   <b>FreightCostRule</b> — (required) freight cost rule code<br>
-	 *   <b>M_Warehouse_ID.Identifier</b> — (required) warehouse<br>
-	 *   <b>MovementDate</b> — (required) movement date<br>
-	 *   <b>MovementType</b> — (required) movement type code<br>
-	 *   <b>PriorityRule</b> — (required) priority rule code<br>
-	 *   <b>OPT.DocBaseType</b> — (optional) doc base type + OPT.DocSubType for doc type lookup<br>
+	 * @cucumber.columns <b>M_InOut_ID.Identifier</b> — (required) alias to store the created record<br>
+	 * <b>C_BPartner_ID.Identifier</b> — (required) business partner<br>
+	 * <b>C_BPartner_Location_ID.Identifier</b> — (required) BP location<br>
+	 * <b>IsSOTrx</b> — (required) true=shipment, false=receipt<br>
+	 * <b>DeliveryRule</b> — (required) delivery rule code<br>
+	 * <b>DeliveryViaRule</b> — (required) delivery via rule code<br>
+	 * <b>FreightCostRule</b> — (required) freight cost rule code<br>
+	 * <b>M_Warehouse_ID.Identifier</b> — (required) warehouse<br>
+	 * <b>MovementDate</b> — (required) movement date<br>
+	 * <b>MovementType</b> — (required) movement type code<br>
+	 * <b>PriorityRule</b> — (required) priority rule code<br>
+	 * <b>OPT.DocBaseType</b> — (optional) doc base type + OPT.DocSubType for doc type lookup<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Warehouse_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And metasfresh contains M_InOut:
 	 *   | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule |
 	 *   | shipment_1            | bpartner_1               | bpLocation_1                      | true    | F            | D               | I               | warehouse_1               | 2022-05-17   | C-           | 5            |
@@ -823,10 +811,9 @@ public class M_InOut_StepDef
 	 * Poll for a customer return M_InOut matching a C_Order and C_DocType.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order the return is linked to<br>
-	 *   <b>C_DocType_ID</b> — (required, identifier-ref) the expected doc type<br>
-	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found customer return<br>
+	 * @cucumber.columns <b>C_Order_ID</b> — (required, identifier-ref) the order the return is linked to<br>
+	 * <b>C_DocType_ID</b> — (required, identifier-ref) the expected doc type<br>
+	 * <b>M_InOut_ID</b> — (required, identifier) alias to store the found customer return<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_DocType_StepDefData, M_InOut_StepDefData
 	 */
 	@And("^after not more than (.*)s, Customer Return is found:$")
@@ -912,8 +899,7 @@ public class M_InOut_StepDef
 	 * Optionally validates the error message against an AD_Message record.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>AD_Message_ID</b> — (optional, identifier-ref) expected error message from AD_Message<br>
+	 * @cucumber.columns <b>AD_Message_ID</b> — (optional, identifier-ref) expected error message from AD_Message<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, AD_Message_StepDefData
 	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
@@ -946,13 +932,11 @@ public class M_InOut_StepDef
 	 * Looks up by Reversal_ID pointing back to the original, validates DocStatus.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the reversal record<br>
-	 *   <b>Reversal_ID.Identifier</b> — (required) alias of the original (reversed) M_InOut<br>
-	 *   <b>DocStatus</b> — (optional) expected doc status of the reversal<br>
+	 * @cucumber.columns <b>M_InOut_ID.Identifier</b> — (required) alias to store the reversal record<br>
+	 * <b>Reversal_ID.Identifier</b> — (required) alias of the original (reversed) M_InOut<br>
+	 * <b>DocStatus</b> — (optional) expected doc status of the reversal<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And after not more than 60s, locate reversal M_InOut
 	 *   | M_InOut_ID.Identifier | Reversal_ID.Identifier | DocStatus |
 	 *   | shipment_1_reversal   | shipment_1             | RE        |
@@ -1053,12 +1037,10 @@ public class M_InOut_StepDef
 	 * Copies lines with Return_Origin_InOutLine_ID and sets the return warehouse/locator.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) source shipment to create return from<br>
-	 *   <b>CustomerReturn_ID</b> — (required, identifier) alias to store the created customer return<br>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) source shipment to create return from<br>
+	 * <b>CustomerReturn_ID</b> — (required, identifier) alias to store the created customer return<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And generate customer return from shipment
 	 *   | M_InOut_ID | CustomerReturn_ID |
 	 *   | shipment_1 | customerReturn_1  |
@@ -1116,12 +1098,10 @@ public class M_InOut_StepDef
 	 * Load the first HU assigned to an M_InOut and store it in M_HU_StepDefData.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment/receipt to look up HUs for<br>
-	 *   <b>M_HU_ID</b> — (required, identifier) alias to store the first assigned HU<br>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) shipment/receipt to look up HUs for<br>
+	 * <b>M_HU_ID</b> — (required, identifier) alias to store the first assigned HU<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_HU_StepDefData
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * And load HUs assigned to M_InOut
 	 *   | M_InOut_ID | M_HU_ID          |
 	 *   | shipment_1 | shipment_1_hu    |

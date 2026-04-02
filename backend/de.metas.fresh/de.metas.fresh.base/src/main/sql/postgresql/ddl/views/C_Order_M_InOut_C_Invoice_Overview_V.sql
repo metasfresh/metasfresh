@@ -41,6 +41,8 @@ SELECT ROW_NUMBER() OVER (ORDER BY ad_Table_id, head_id, line_id) AS C_Order_M_I
        doc.qty,
        doc.linenetamt,
        COALESCE(stock.qtyonhand, 0)                               AS current_qty_sum,
+       doc.priceactual,
+       doc.c_orderline_id,
        doc.ad_client_id,
        doc.ad_org_id,
        doc.created,
@@ -75,7 +77,8 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              ol.qtyordered                                             AS qty,
              ol.m_hu_pi_item_product_id,
              ol.priceactual,
-             ol.linenetamt
+             ol.linenetamt,
+             ol.c_orderline_id
       FROM c_order o
                JOIN c_orderline ol ON ol.c_order_id = o.c_order_id
       UNION
@@ -109,7 +112,8 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              iol.movementqty,
              iol.m_hu_pi_item_product_id,
              NULL,
-             NULL
+             NULL,
+             iol.c_orderline_id
       FROM m_inout io
                JOIN m_inoutline iol ON iol.m_inout_id = io.m_inout_id
 
@@ -144,7 +148,8 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
              il.qtyinvoiced,
              il.m_hu_pi_item_product_id,
              il.priceactual,
-             il.linenetamt
+             il.linenetamt,
+             il.c_orderline_id
       FROM c_invoice i
                JOIN c_invoiceline il
                     ON il.c_invoice_id = i.c_invoice_id) doc
