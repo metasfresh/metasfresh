@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class CreateQtyReservationRequest
 {
 	@NonNull OrderAndLineId orderAndLineId;
@@ -29,20 +29,4 @@ public class CreateQtyReservationRequest
 	@NonNull Quantity qty;
 	@Nullable AttributesKey attributesKey;
 	@Nullable ProjectId projectId;
-
-	public CreateQtyReservationRequest withQty(@NonNull final Quantity newQty)
-	{
-		return builder()
-				.orderAndLineId(orderAndLineId)
-				.productId(productId)
-				.warehouseId(warehouseId)
-				.vendorBPartnerId(vendorBPartnerId)
-				.supplyType(supplyType)
-				.datePromised(datePromised)
-				.qtyTU(qtyTU)
-				.qty(newQty)
-				.attributesKey(attributesKey)
-				.projectId(projectId)
-				.build();
-	}
 }

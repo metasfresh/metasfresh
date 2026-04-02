@@ -1,9 +1,12 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,6 +31,10 @@ public class MakeQtyReservationCommand
 
 	public QtyReservationId execute()
 	{
+		final Quantity qtyCUFromStock = rowVO.computeQtyCUToReserve(qtyToReserveTU);
+		final Quantity qtyOrdered = Services.get(IOrderLineBL.class).getQtyOrdered(salesOrderAndLineId);
+		final Quantity qtyCU = qtyCUFromStock.min(qtyOrdered);
+
 		return qtyReservationService.makeReservation(
 				CreateQtyReservationRequest.builder()
 						.orderAndLineId(salesOrderAndLineId)
@@ -39,7 +46,7 @@ public class MakeQtyReservationCommand
 						.attributesKey(rowVO.getAttributesKey())
 						.projectId(extractProjectId())
 						.qtyTU(qtyToReserveTU)
-						.qty(rowVO.computeQtyCUToReserve(qtyToReserveTU))
+						.qty(qtyCU)
 						.build());
 	}
 
