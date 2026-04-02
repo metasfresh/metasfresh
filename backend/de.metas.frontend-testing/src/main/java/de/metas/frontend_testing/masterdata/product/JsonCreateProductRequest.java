@@ -112,5 +112,6 @@ public class JsonCreateProductRequest
 		@Nullable BOMComponentType componentType;
 		@Nullable BOMComponentIssueMethod issueMethod;
 		@Nullable String pickingInstruction;
+		@Nullable BigDecimal issuingTolerancePerc;
 	}
 }
