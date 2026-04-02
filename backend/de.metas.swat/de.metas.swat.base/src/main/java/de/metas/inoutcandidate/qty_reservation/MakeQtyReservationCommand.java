@@ -23,6 +23,8 @@ import javax.annotation.Nullable;
 @Builder
 public class MakeQtyReservationCommand
 {
+	private static final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	@NonNull QtyReservationService qtyReservationService;
 	@Nullable ProjectRepository projectRepository;
 	@NonNull MaterialCockpitV2RowVO rowVO;
@@ -31,10 +33,6 @@ public class MakeQtyReservationCommand
 
 	public QtyReservationId execute()
 	{
-		final Quantity qtyCUFromStock = rowVO.computeQtyCUToReserve(qtyToReserveTU);
-		final Quantity qtyOrdered = Services.get(IOrderLineBL.class).getQtyOrdered(salesOrderAndLineId);
-		final Quantity qtyCU = qtyCUFromStock.min(qtyOrdered);
-
 		return qtyReservationService.makeReservation(
 				CreateQtyReservationRequest.builder()
 						.orderAndLineId(salesOrderAndLineId)
@@ -46,8 +44,23 @@ public class MakeQtyReservationCommand
 						.attributesKey(rowVO.getAttributesKey())
 						.projectId(extractProjectId())
 						.qtyTU(qtyToReserveTU)
-						.qty(qtyCU)
+						.qty(computeQtyCUToReserve())
 						.build());
+	}
+
+	/**
+	 * Compute the CU quantity to reserve, capped at the order line's QtyOrdered.
+	 * <p>
+	 * The cockpit row's CU/TU ratio reflects the average fill level of stock TUs.
+	 * When the order line has a partially-filled last TU (e.g., 20 CU in 3 TU with
+	 * capacity 10 CU/TU), the stock-derived CU (3 × 10 = 30) would exceed the
+	 * actual order need (20). Capping at QtyOrdered prevents over-reservation.
+	 */
+	private Quantity computeQtyCUToReserve()
+	{
+		final Quantity qtyCUFromStock = rowVO.computeQtyCUToReserve(qtyToReserveTU);
+		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(salesOrderAndLineId);
+		return qtyCUFromStock.min(qtyOrdered);
 	}
 
 	@Nullable

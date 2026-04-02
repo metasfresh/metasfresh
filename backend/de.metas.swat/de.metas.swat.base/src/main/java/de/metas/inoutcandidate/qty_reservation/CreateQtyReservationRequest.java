@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class CreateQtyReservationRequest
 {
 	@NonNull OrderAndLineId orderAndLineId;
