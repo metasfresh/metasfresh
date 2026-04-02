@@ -38,4 +38,5 @@ public class C_BPartner_StepDefData extends StepDefData<I_C_BPartner>
 	{
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
+
 }

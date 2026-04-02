@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,25 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.invoice;
+package de.metas.cucumber.stepdefs.accounting;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.invoice.InvoiceId;
-import org.compiere.model.I_C_Invoice;
+import de.metas.util.Services;
+import io.cucumber.java.en.And;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_PeriodControl;
+import org.compiere.model.X_C_PeriodControl;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_Invoice_StepDefData extends StepDefData<I_C_Invoice> implements StepDefDataGetIdAware<InvoiceId, I_C_Invoice>
+public class C_PeriodControl_StepDef
 {
-	public C_Invoice_StepDefData()
-	{
-		super(I_C_Invoice.class);
-	}
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Override
-	public InvoiceId extractIdFromRecord(final I_C_Invoice record)
+	@And("^all periods are open$")
+	public void all_periods_are_open()
 	{
-		return InvoiceId.ofRepoId(record.getC_Invoice_ID());
+		queryBL.createQueryBuilder(I_C_PeriodControl.class)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_PeriodControl.COLUMNNAME_PeriodStatus, X_C_PeriodControl.PERIODSTATUS_Open)
+				.execute();
 	}
 }

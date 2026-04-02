@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.allocation;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.util.Services;
@@ -31,6 +33,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
@@ -51,14 +55,17 @@ public class C_AllocationLine_StepDef
 
 	final C_Invoice_StepDefData invoiceTable;
 	final C_Payment_StepDefData paymentTable;
+	final C_AllocationHdr_StepDefData allocationHdrTable;
 
 	public C_AllocationLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_Payment_StepDefData paymentTable
+			@NonNull final C_Payment_StepDefData paymentTable,
+			@NonNull final C_AllocationHdr_StepDefData allocationHdrTable
 	)
 	{
 		this.invoiceTable = invoiceTable;
 		this.paymentTable = paymentTable;
+		this.allocationHdrTable = allocationHdrTable;
 	}
 
 	@And("validate C_AllocationLines")
@@ -107,7 +114,54 @@ public class C_AllocationLine_StepDef
 			{
 				assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(discountAmt);
 			}
+
+			// Store C_AllocationHdr if identifier is provided
+			final String allocHdrIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (allocHdrIdentifier != null)
+			{
+				final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(singleAllocationLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+				allocationHdrTable.putOrReplace(StepDefDataIdentifier.ofString(allocHdrIdentifier), hdr);
+			}
+			else
+			{
+				final String allocHdrIdentifier2 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID);
+				if (allocHdrIdentifier2 != null)
+				{
+					final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(singleAllocationLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+					allocationHdrTable.putOrReplace(StepDefDataIdentifier.ofString(allocHdrIdentifier2), hdr);
+				}
+			}
 		}
+	}
+
+	@And("^validate C_AllocationLines for invoice (.*)$")
+	public void validate_C_AllocationLines_for_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		final List<I_C_AllocationLine> allocLines = new java.util.ArrayList<>(queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.create()
+				.list());
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final BigDecimal expectedAmount = row.getAsOptionalBigDecimal("Amount").orElse(null);
+
+			final I_C_AllocationLine matchingLine = allocLines.stream()
+					.filter(line -> expectedAmount == null || line.getAmount().compareTo(expectedAmount) == 0)
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("No C_AllocationLine found for invoice " + invoiceIdentifier
+							+ " with Amount=" + expectedAmount + ". Existing lines: " + allocLines));
+
+			allocLines.remove(matchingLine);
+
+			row.getAsOptionalIdentifier("C_AllocationHdr_ID").ifPresent(allocHdrId -> {
+				final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(matchingLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+				allocationHdrTable.putOrReplace(allocHdrId, hdr);
+			});
+		});
 	}
 
 	@And("there are no allocation lines for invoice")

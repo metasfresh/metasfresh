@@ -33,6 +33,8 @@ import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
@@ -54,6 +56,7 @@ import org.compiere.model.I_C_Payment;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -148,6 +151,33 @@ public class AllocatePayments_StepDef
 				.allowPartialAllocations(true)
 				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
 				.allowPurchaseSalesInvoiceCompensation(paymentDocuments.isEmpty() && payableDocuments.size() > 1)
+				.build();
+	}
+
+	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
+	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
+	{
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier("C_Invoice_ID")
+					.map(id -> buildPayableDocument(id.getAsString()))
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
+					.map(id -> buildPayableDocument(id.getAsString()))
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
+					.map(id -> buildPayableDocument(id.getAsString()))
+					.ifPresent(payableDocuments::add);
+		});
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
 				.build();
 	}
 
