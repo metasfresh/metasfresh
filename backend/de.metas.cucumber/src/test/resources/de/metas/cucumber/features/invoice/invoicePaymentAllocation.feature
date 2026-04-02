@@ -777,7 +777,7 @@ Feature: invoice payment allocation
       | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID |
       | paymentAllocPLV               | product_cma_100 | 88.74    | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier        | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInv_cma_100  | bpartner_1    | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID      | M_Product_ID    | QtyInvoiced |
@@ -786,8 +786,8 @@ Feature: invoice payment allocation
 
     # Create credit memo against the invoice (auto-allocates CM against invoice)
     And create credit memo for C_Invoice
-      | CreditMemo         | C_Invoice_ID     | CreditMemo.PriceEntered |
-      | salesCM_cma_100    | salesInv_cma_100 | 88.74                   |
+      | CreditMemo.Identifier | C_Invoice_ID.Identifier | CreditMemo.PriceEntered | CreditMemo.C_DocType_ID.Name |
+      | salesCM_cma_100       | salesInv_cma_100        | 88.74                   | Gutschrift                   |
     And the invoice identified by salesCM_cma_100 is completed
 
     # At this point alloc_cm is the auto-created allocation of CM against invoice
@@ -857,17 +857,17 @@ Feature: invoice payment allocation
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | paymentAllocPLV               | product      | 500.00   | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInvoice | bpartner_1    | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced |
       | salesInvoice | product      | 1 PCE       |
     And the invoice identified by salesInvoice is completed
 
     # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
     And create credit memo for C_Invoice
-      | CreditMemo      | C_Invoice_ID | CreditMemo.PriceEntered |
-      | salesCreditMemo | salesInvoice | 63.11                   |
+      | CreditMemo.Identifier | C_Invoice_ID.Identifier | CreditMemo.PriceEntered | CreditMemo.C_DocType_ID.Name |
+      | salesCreditMemo       | salesInvoice            | 63.11                   | Gutschrift                   |
     And the invoice identified by salesCreditMemo is completed
 
     And validate C_AllocationLines
@@ -909,7 +909,7 @@ Feature: invoice payment allocation
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | paymentAllocPLVNotSO            | product      | 500.00   | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | purchaseInvoice | bpartner_1    | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
@@ -918,8 +918,8 @@ Feature: invoice payment allocation
 
     # Create credit memo: GrandTotal = 75.10 EUR (partial credit of the 595.00 invoice)
     And create credit memo for C_Invoice
-      | CreditMemo         | C_Invoice_ID    | CreditMemo.PriceEntered |
-      | purchaseCreditMemo | purchaseInvoice | 63.11                   |
+      | CreditMemo.Identifier | C_Invoice_ID.Identifier | CreditMemo.PriceEntered | CreditMemo.C_DocType_ID.Name |
+      | purchaseCreditMemo    | purchaseInvoice         | 63.11                   | Gutschrift (Lieferant)       |
     And the invoice identified by purchaseCreditMemo is completed
 
     And validate C_AllocationLines
@@ -970,7 +970,7 @@ Feature: invoice payment allocation
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
       | bp200      | Y          | Y        | pricingSys200      |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier  | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | Identifier | C_BPartner_ID.Identifier | IsShipToDefault | IsBillToDefault |
       | bp200_loc   | bp200         | Y               | Y               |
     And metasfresh contains M_Products:
       | Identifier |
@@ -982,16 +982,16 @@ Feature: invoice payment allocation
 
     # Sales invoice: GrandTotal = 11.90 EUR
     And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInv200     | bp200         | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced |
       | salesInv200  | product200   | 1 PCE       |
     And the invoice identified by salesInv200 is completed
 
     # Purchase invoice: GrandTotal = 5.95 EUR
     And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | purchaseInv200  | bp200         | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID   | M_Product_ID | QtyInvoiced |
