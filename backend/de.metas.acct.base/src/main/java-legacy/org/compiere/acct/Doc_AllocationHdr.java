@@ -1138,8 +1138,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 			else
 			{
-				// API: DR to clear liability
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// API (or API reversal): DR to clear the invoice's liability (CR on invoice side).
+				// allocatedAmt is negative for the original invoice and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 		}
 
