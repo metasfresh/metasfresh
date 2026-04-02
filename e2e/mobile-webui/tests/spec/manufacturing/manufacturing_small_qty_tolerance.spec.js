@@ -50,7 +50,8 @@ const createMasterdata = async () => {
 
 /**
  * Verifies that scanning an HU for a very small BOM qty (0.00384 kg) shows the correct
- * non-zero qty in the dialog, not "0" as reported in tf201#242.
+ * non-zero qty in the dialog and displays the correct precision in the info labels.
+ * Covers tf201#242: "zeigt dann nach Scannen die Menge 0 an"
  */
 // noinspection JSUnusedLocalSymbols
 test('Issue raw material with very small qty (0.00384 kg) shows non-zero qty after scan', async ({ page }) => {
@@ -87,6 +88,8 @@ test('Issue raw material with very small qty (0.00384 kg) shows non-zero qty aft
     await RawMaterialIssueLineScreen.scanQRCode({
         qrCode: masterdata.handlingUnits.HU.qrCode,
         expectQtyEntered: '0.00384',
+        expectQtyTarget: '3.84 g',
+        expectQtyRemaining: '3.84 g',
     });
     await RawMaterialIssueLineScreen.goBack();
 });
@@ -103,13 +106,12 @@ test('Issue raw material with small qty (0.01913 kg) and 1% tolerance', async ({
         documentNo: masterdata.manufacturingOrders.PP1.documentNo,
     });
 
-    // Issue the small qty component (0.01913 kg with 1% tolerance enforced).
-    // The scanQRCode issues the full HU qty needed for the BOM line.
-    // expectQtyEntered verifies the issued qty matches what the BOM requires.
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
     await RawMaterialIssueLineScreen.scanQRCode({
         qrCode: masterdata.handlingUnits.HU_SMALL.qrCode,
         expectQtyEntered: '0.01913',
+        expectQtyTarget: '19.13 g',
+        expectQtyRemaining: '19.13 g',
     });
     await RawMaterialIssueLineScreen.goBack();
 
