@@ -2967,6 +2967,177 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0465_CMA_140
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @F00700
+  Scenario: purchase invoice (API) reversed - allocation produces balanced Fact_Acct per invoice
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product      | 200.00   | PCE      |
+
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInv | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | purchaseInv  | product      | 1 PCE       |
+    And the invoice identified by purchaseInv is completed
+
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID   |
+      | V_Liability_Acct      | 0 EUR       | 238.00 EUR  | vendor1       | purchaseInv |
+      | *                     |             |             |               | purchaseInv |
+
+    And the invoice identified by purchaseInv is reversed
+    And the reversal of invoice purchaseInv is identified by reversalInv
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | purchaseInv  | true   |
+
+    And validate C_AllocationLines for invoice purchaseInv
+      | OPT.Amount | OPT.C_AllocationHdr_ID |
+      | -238.00    | alloc_reversal         |
+
+    # Allocation per-line: must clear each invoice's V_Liability posting
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr | C_BPartner_ID | C_Invoice_ID | Record_ID      |
+      | V_Liability_Acct      | 238.00 EUR   | 0 EUR       | vendor1       | purchaseInv  | alloc_reversal |
+      | V_Liability_Acct      | -238.00 EUR  | 0 EUR       | vendor1       | reversalInv  | alloc_reversal |
+    # Allocation overall balance
+    And Fact_Acct records balances for documents alloc_reversal are matching
+      | AccountConceptualName | SourceBalance |
+      | V_Liability_Acct      | 0 EUR         |
+
+    # Cross-document: each invoice fully cleared
+    And Fact_Acct records balances for documents purchaseInv,reversalInv,alloc_reversal are matching
+      | AccountConceptualName | C_Invoice_ID | AmtSourceDr | AmtSourceCr | SourceBalance |
+      | V_Liability_Acct      | purchaseInv  | 238.00 EUR  | 238.00 EUR  | 0 EUR         |
+      | V_Liability_Acct      | reversalInv  | -238.00 EUR | -238.00 EUR | 0 EUR         |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_150
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @F00700
+  Scenario: sales invoice (ARI) reversed - allocation produces balanced Fact_Acct per invoice
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product      | 200.00   | PCE      |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInv   | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | salesInv     | product      | 1 PCE       |
+    And the invoice identified by salesInv is completed
+
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID |
+      | C_Receivable_Acct     | 238.00 EUR  | 0 EUR       | customer1     | salesInv  |
+      | *                     |             |             |               | salesInv  |
+
+    And the invoice identified by salesInv is reversed
+    And the reversal of invoice salesInv is identified by reversalInv
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | salesInv     | true   |
+
+    And validate C_AllocationLines for invoice salesInv
+      | OPT.Amount | OPT.C_AllocationHdr_ID |
+      | 238.00     | alloc_reversal         |
+
+    # Allocation per-line: must clear each invoice's C_Receivable posting
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr  | C_BPartner_ID | C_Invoice_ID | Record_ID      |
+      | C_Receivable_Acct     | 0 EUR       | 238.00 EUR   | customer1     | salesInv     | alloc_reversal |
+      | C_Receivable_Acct     | 0 EUR       | -238.00 EUR  | customer1     | reversalInv  | alloc_reversal |
+    # Allocation overall balance
+    And Fact_Acct records balances for documents alloc_reversal are matching
+      | AccountConceptualName | SourceBalance |
+      | C_Receivable_Acct     | 0 EUR         |
+
+    # Cross-document: each invoice fully cleared
+    And Fact_Acct records balances for documents salesInv,reversalInv,alloc_reversal are matching
+      | AccountConceptualName | C_Invoice_ID | AmtSourceDr | AmtSourceCr | SourceBalance |
+      | C_Receivable_Acct     | salesInv     | 238.00 EUR  | 238.00 EUR  | 0 EUR         |
+      | C_Receivable_Acct     | reversalInv  | -238.00 EUR | -238.00 EUR | 0 EUR         |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_CMA_160
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @F00700
+  Scenario: purchase credit memo (APC) reversed - allocation produces balanced Fact_Acct per invoice
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product      | 200.00   | PCE      |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseCM | vendor1       | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | purchaseCM   | product      | 1 PCE       |
+    And the invoice identified by purchaseCM is completed
+
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID  |
+      | V_Liability_Acct      | 238.00 EUR  | 0 EUR       | vendor1       | purchaseCM |
+      | *                     |             |             |               | purchaseCM |
+
+    And the invoice identified by purchaseCM is reversed
+    And the reversal of invoice purchaseCM is identified by reversalCM
+
+    Then validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | purchaseCM   | true   |
+
+    And validate C_AllocationLines for invoice purchaseCM
+      | OPT.Amount | OPT.C_AllocationHdr_ID |
+      | 238.00     | alloc_reversal         |
+
+    # Allocation per-line: must clear each invoice's V_Liability posting
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr  | C_BPartner_ID | C_Invoice_ID | Record_ID      |
+      | V_Liability_Acct      | 0 EUR       | 238.00 EUR   | vendor1       | purchaseCM   | alloc_reversal |
+      | V_Liability_Acct      | 0 EUR       | -238.00 EUR  | vendor1       | reversalCM   | alloc_reversal |
+    # Allocation overall balance
+    And Fact_Acct records balances for documents alloc_reversal are matching
+      | AccountConceptualName | SourceBalance |
+      | V_Liability_Acct      | 0 EUR         |
+
+    # Cross-document: each invoice fully cleared
+    And Fact_Acct records balances for documents purchaseCM,reversalCM,alloc_reversal are matching
+      | AccountConceptualName | C_Invoice_ID | AmtSourceDr | AmtSourceCr | SourceBalance |
+      | V_Liability_Acct      | purchaseCM   | 238.00 EUR  | 238.00 EUR  | 0 EUR         |
+      | V_Liability_Acct      | reversalCM   | -238.00 EUR | -238.00 EUR | 0 EUR         |
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
   @Id:S0465_CMA_110
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
