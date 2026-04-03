@@ -28,10 +28,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointRepository;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
@@ -64,6 +65,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
@@ -86,7 +88,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
-	@NonNull private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
+	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -113,8 +115,18 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
+		return getParameters(config, context, outboundDataProcessRecordId, null);
+	}
 
-		final ExternalSystemOutboundEndpoint endpoint = externalSystemOutboundEndpointRepository.getById(config.getExternalSystemOutboundEndpointId());
+	@NonNull
+	public Map<String, String> getParameters(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			@NonNull final Properties context,
+			@NonNull final String outboundDataProcessRecordId,
+			@Nullable final String errorContext)
+	{
+
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 		final String outboundEndpointData = toJson(endpoint);
 
 		final Map<String, String> parameters = new HashMap<>();
@@ -125,10 +137,15 @@ public class ExternalSystemScriptedExportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getTableId()));
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
 
+		if (errorContext != null)
+		{
+			parameters.put(PARAM_ERROR_CONTEXT, errorContext);
+		}
+
 		return parameters;
 	}
 
-	private String toJson(@NonNull final ExternalSystemOutboundEndpoint endpoint)
+	private String toJson(@NonNull final ExternalSystemEndpoint endpoint)
 	{
 		try
 		{
@@ -239,27 +256,42 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+	}
+
+	@NonNull
+	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId,
+			@Nullable final ExternalSystemErrorContext errorContext)
+	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		try
 		{
-			ProcessInfo.builder()
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setRecord(configTableId, config.getId().getRepoId())
 					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
 					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-					.addParameter(PARAM_Record_ID, recordId)
-					.buildAndPrepareExecution()
-					.executeSync();
+					.addParameter(PARAM_Record_ID, recordId);
+
+			if (errorContext != null)
+			{
+				processInfoBuilder.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
+			}
+
+			final ProcessInfo processInfo = processInfoBuilder.buildAndPrepareExecution().executeSync().getProcessInfo();
+
+			return ExternalSystemInvocationResult.success(processInfo.getPinstanceId());
 		}
 		catch (final Exception e)
 		{
 			log.warn("{} process failed for Config ID {}, Record ID: {}",
 					InvokeScriptedExportConversionAction.class.getName(),
 					config.getId(), recordId, e);
-			return Collections.singletonList(e);
+			return ExternalSystemInvocationResult.error(e);
 		}
-		return Collections.emptyList();
 	}
 
 	public List<ExternalSystemScriptedExportConversionConfig> getByParentConfigIdAndTableAndClientId(@NonNull final ExternalSystemParentConfigId parentConfigId,

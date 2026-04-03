@@ -31,16 +31,17 @@ public class M_InOut
 	}
 
 	/**
-	 * If the given <code>inOut</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
+	 * Validates the InOut and links it to a DESADV if eligible.
 	 * <p>
-	 * Note that if the EDI-status changes to something else later on, the inOut shall remain assigned. Its not this MV's problem.
+	 * When {@link DesadvBL#isOneDesadvPerShipment(de.metas.esb.edi.model.I_EDI_Desadv)} is true and the InOut
+	 * is linked to a DESADV that is currently Sent or DontSend, the DESADV is reopened to Pending
+	 * via {@link DesadvBL#reopenDesadvIfNeeded(EDIDesadvId)}.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void addToDesadv(final I_M_InOut inOut)
 	{
 		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
 		{
-			// no EDI for customer return (for the time being)
 			return;
 		}
 
@@ -49,9 +50,14 @@ public class M_InOut
 			return;
 		}
 
-		if (EDIDesadvId.ofRepoIdOrNull(inOut.getEDI_Desadv_ID()) == null)
+		final EDIDesadvId existingDesadvId = EDIDesadvId.ofRepoIdOrNull(inOut.getEDI_Desadv_ID());
+		if (existingDesadvId == null)
 		{
 			desadvBL.addToDesadvCreateForInOutIfNotExist(inOut);
+		}
+		else
+		{
+			desadvBL.reopenDesadvIfNeeded(existingDesadvId);
 		}
 	}
 
@@ -74,5 +80,25 @@ public class M_InOut
 	public void updateEdiExportStatusOnReverse(final I_M_InOut inOut)
 	{
 		inOut.setEDI_ExportStatus(EDIExportStatus.DontSend.getCode());
+	}
+
+	/**
+	 * Triggers DESADV status recomputation when an InOut's EDI_ExportStatus changes.
+	 * <p>
+	 * When {@link DesadvBL#isOneDesadvPerShipment(de.metas.esb.edi.model.I_EDI_Desadv)} is true,
+	 * the DESADV status is derived from all linked InOut statuses
+	 * via {@link DesadvBL#recomputeDesadvStatusFromInOuts(EDIDesadvId)}.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = I_M_InOut.COLUMNNAME_EDI_ExportStatus)
+	public void recomputeDesadvStatusOnInOutStatusChange(final I_M_InOut inOut)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoIdOrNull(inOut.getEDI_Desadv_ID());
+		if (desadvId == null)
+		{
+			return;
+		}
+
+		desadvBL.recomputeDesadvStatusFromInOuts(desadvId);
 	}
 }

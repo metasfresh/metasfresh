@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { PickingJobsListScreen } from './PickingJobsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
@@ -9,7 +9,7 @@ const containerElement = () => page.locator('#WFLaunchersScanBarcodeScreen');
 
 export const PickingJobsListScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     scanQRCode: async (qrCode) => await test.step(`${NAME} - Scan code ${qrCode}`, async () => {

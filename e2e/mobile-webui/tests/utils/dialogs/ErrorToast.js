@@ -1,4 +1,4 @@
-import { page } from '../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../common';
 
 //
 // IMPORTANT: DO NOT import playwright.config.js because you will introduce a circular dependency.
@@ -19,6 +19,6 @@ export const ErrorToast = {
 
     closePopup: async () => {
         await page.locator('.Toastify__close-button--error').tap();
-        await containerElement().waitFor({ state: 'detached' });
+        await containerElement().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     },
 }

@@ -13,7 +13,7 @@ export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
@@ -24,8 +24,34 @@ export const GetQuantityDialog = {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
+    expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
+        const testId = `userInfo_${captionKey}`;
+        await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').type(`${qty}`);
+    }),
+
+    expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+    }),
+
+    expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
+        await expect(page.getByTestId('lotNo')).not.toBeVisible();
+    }),
+
+    expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
+    }),
+
+    expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
+        const field = page.getByTestId('lotNo');
+        await clickAndType(field, lotNo);
     }),
 
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
@@ -86,7 +112,7 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor(); // atm that's the only indicator that we switched to manual input
+        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
@@ -98,7 +124,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -111,6 +137,9 @@ export const GetQuantityDialog = {
         }
         if (qtyEntered != null) {
             await GetQuantityDialog.typeQtyEntered(qtyEntered);
+        }
+        if (lotNo != null) {
+            await GetQuantityDialog.typeLotNo(lotNo);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);
@@ -141,8 +170,16 @@ export const GetQuantityDialog = {
 //
 
 const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
     if (await locator.count() > 0) {
-        await expect(locator).toBeDisabled();
+        try {
+            await expect(locator).toBeDisabled();
+        } catch (e) {
+            if (await locator.count() === 0) return;
+            throw e;
+        }
     }
 };
 

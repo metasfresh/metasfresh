@@ -60,6 +60,11 @@ public class C_Invoice
 			return;
 		}
 
+		if(ediExportStatus != null && ediExportStatus.isError())
+		{
+			return;
+		}
+
 		ediDocumentBL.updateEdiExportStatus(invoice);
 	}
 

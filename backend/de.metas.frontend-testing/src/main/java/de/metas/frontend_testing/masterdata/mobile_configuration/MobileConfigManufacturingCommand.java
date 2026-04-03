@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata.mobile_configuration;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
@@ -29,6 +30,10 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(request.getIsAllowIssuingAnyHU()));
 		}
+		if (request.getReceiveUnitType() != null)
+		{
+			newConfigBuilder.receiveUnitType(ReceiveUnitType.ofCode(request.getReceiveUnitType()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -36,6 +41,7 @@ class MobileConfigManufacturingCommand
 		return JsonMobileConfigResponse.Manufacturing.builder()
 				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
 				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
+				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
 				.build();
 	}
 

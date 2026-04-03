@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page } from '../../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
@@ -13,8 +13,8 @@ const containerElement = () => page.locator('#MaterialReceiptLineScreen');
 
 export const MaterialReceiptLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
-        await page.locator('.loading').waitFor({ state: 'detached' });
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -71,5 +71,12 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();
         await ManufacturingJobScreen.waitForScreen();
+    }),
+
+    expectHeaderProperty:  async ({ caption, value }) => await test.step(`${NAME} - Check header property "${caption}" = "${value}"`, async () => {
+        const row = await page.locator(
+            `tr:has(th:text-is("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
     }),
 };

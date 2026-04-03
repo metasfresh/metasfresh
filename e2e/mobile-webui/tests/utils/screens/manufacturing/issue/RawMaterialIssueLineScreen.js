@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page } from '../../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScanScreen } from './RawMaterialIssueLineScanScreen';
@@ -11,17 +11,24 @@ const containerElement = () => page.locator('#RawMaterialIssueLineScreen');
 
 export const RawMaterialIssueLineScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
     }),
 
-    scanQRCode: async ({ qrCode, expectQtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
+    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
+        if (expectQtyTarget != null) {
+            await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick_Total', expectedValue: expectQtyTarget });
+        }
+        if (expectQtyRemaining != null) {
+            await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick', expectedValue: expectQtyRemaining });
+        }
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
         await RawMaterialIssueLineScreen.waitForScreen();
     }),

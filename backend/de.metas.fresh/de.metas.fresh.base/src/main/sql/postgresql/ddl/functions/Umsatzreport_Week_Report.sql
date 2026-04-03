@@ -49,13 +49,14 @@ RETURNS TABLE
 	year_difference numeric,
 	year_difference_percentage numeric,
 	attributesetinstance character varying(60),
-	ad_org_id numeric
+	ad_org_id numeric,
+	delivery_bp_name character varying(100)
 )
 
 AS
 $$
 SELECT
-	CASE WHEN Length(name) <= 45 THEN name ELSE substring(name FOR 43 ) || '...' END AS name,
+	report._merge_bp_name(name, delivery_bp_name) AS name,
 	Base_Week,
 	Comp_Week,
 	Base_Year,
@@ -76,7 +77,8 @@ SELECT
 
 
 	Attributes as attributesetinstance,
-	ad_org_id
+	ad_org_id,
+	delivery_bp_name
 FROM
 	(
 		SELECT
@@ -91,25 +93,29 @@ FROM
 			SUM( CASE WHEN 
 						fa.DateAcct::date >= (select (to_timestamp($2 || ' ' ||(select fiscalyear from c_year where c_year_id =$1 AND isActive = 'Y'),'IW IYYY')))::date AND
 						fa.DateAcct::date <= ((select (to_timestamp($2 || ' ' ||(select fiscalyear from c_year where c_year_id =$1 AND isActive = 'Y'),'IW IYYY')))+ interval '6' day)::date
-				THEN 	(CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
+				THEN 	(CASE WHEN i.IsSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
 			AS base_week_sum,
 			
 			SUM( CASE WHEN fap.C_Year_ID = $1 AND fa.DateAcct::date <= ((select (to_timestamp($2 || ' ' ||(select fiscalyear from c_year where c_year_id =$1 AND isActive = 'Y'),'IW IYYY')))+ interval '6' day)::date
-				THEN (CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
+				THEN (CASE WHEN i.IsSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
 			AS base_year_sum,
 
 			SUM( CASE WHEN 
 						fa.DateAcct::date >= (select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$3 AND isActive = 'Y'),'IW IYYY')))::date AND
 						fa.DateAcct::date <= ((select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$3 AND isActive = 'Y'),'IW IYYY')))+ interval '6' day)::date
-				THEN 	(CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
+				THEN 	(CASE WHEN i.IsSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END ) 
 			AS comp_week_sum,
 
 			SUM( CASE WHEN fap.C_Year_ID = $3 AND fa.DateAcct::date <= ((select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$3 AND isActive = 'Y'),'IW IYYY')))+ interval '6' day)::date
-				THEN (CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END )   
+				THEN (CASE WHEN i.IsSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END) ELSE 0 END )   
 			AS comp_year_sum,
 
 			att.Attributes,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(
+				CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END,
+				bp_orderer.Name
+			) AS delivery_bp_name
 		FROM
 			Fact_Acct fa
 			INNER JOIN C_Year y ON y.C_Year_ID = $1 AND y.isActive = 'Y'
@@ -129,9 +135,15 @@ FROM
 					SELECT 	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
 					GROUP BY M_AttributeSetInstance_ID
 					) att ON $6 = att.M_AttributeSetInstance_ID
+
+			-- DropShip / delivery recipient joins
+			LEFT JOIN C_OrderLine ol_ds ON il.C_OrderLine_ID = ol_ds.C_OrderLine_ID AND ol_ds.isActive = 'Y'
+			LEFT JOIN C_Order ord ON ol_ds.C_Order_ID = ord.C_Order_ID AND ord.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_dropship ON ord.DropShip_BPartner_ID = bp_dropship.C_BPartner_ID AND bp_dropship.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_orderer ON ord.C_BPartner_ID = bp_orderer.C_BPartner_ID AND bp_orderer.isActive = 'Y'
 		WHERE	
 					AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
-					AND IsSOtrx = $5 AND fa.isActive = 'Y'
+					AND i.IsSOtrx = $5 AND fa.isActive = 'Y'
 					AND ( 
 				-- If the given attribute set instance has values set... 
 				CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $6 )
@@ -166,7 +178,8 @@ FROM
 			y.fiscalYear,
 			cy.fiscalYear,
 			att.Attributes,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)
 	) a
 ORDER BY
 	base_year_sum DESC
@@ -221,6 +234,7 @@ CREATE FUNCTION report.umsatzreport_week_report
 
 	attributesetinstance character varying(60),
 	ad_org_id numeric,
+	delivery_bp_name character varying(100),
 	unionorder integer
 )
 
@@ -248,6 +262,7 @@ UNION ALL
 		END AS year_difference_percentage,
 		attributesetinstance,
 		ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
 		2 AS UnionOrder
 		
 	FROM 

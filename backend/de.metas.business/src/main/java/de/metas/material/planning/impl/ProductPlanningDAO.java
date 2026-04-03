@@ -35,6 +35,8 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.mforecast.generator.ForecastCalculationMethod;
+import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
@@ -131,11 +133,17 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.transferTimeDays(record.getTransfertTime().intValueExact())
 				.leadTimeDays(record.getDeliveryTime_Promised().intValueExact())
 				.isManufactured(StringUtils.toBoolean(record.getIsManufactured()))
+				.isManufacturedLot4Lot(record.isManufacturedLot4Lot())
 				.isPurchased(StringUtils.toBoolean(record.getIsPurchased()))
 				.maxManufacturedQtyPerOrderDispo(extractMaxManufacturedQtyPerOrderDispo(record))
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.ofNullableCode(record.getOnMaterialReceiptWithDestWarehouse()))
 				.manufacturingAggregationId(record.getC_Manufacturing_Aggregation_ID())
+				.forecastCalculationMethod(ForecastCalculationMethod.ofNullableCode(record.getForecast_CalculationMethod()))
+				.forecastPrecisionUnit(ForecastPrecisionUnit.ofNullableCode(record.getForecast_PrecisionUnit()))
+				.forecastFrequency(record.getForecast_Frequency())
+				.forecastBufferTime(record.getForecast_BufferTime())
+				.isExcludeFromForecast(record.isExcludeFromForecast())
 				.build();
 	}
 
@@ -160,6 +168,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setTransfertTime(BigDecimal.valueOf(from.getTransferTimeDays()));
 		record.setDeliveryTime_Promised(BigDecimal.valueOf(from.getLeadTimeDays()));
 		record.setIsManufactured(StringUtils.ofBoolean(from.isManufactured()));
+		record.setIsManufacturedLot4Lot(from.isManufacturedLot4Lot());
 		record.setIsPurchased(StringUtils.ofBoolean(from.isPurchased()));
 		record.setMaxManufacturedQtyPerOrderDispo(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().toBigDecimal() : null);
 		record.setMaxManufacturedQtyPerOrderDispo_UOM_ID(from.getMaxManufacturedQtyPerOrderDispo() != null ? from.getMaxManufacturedQtyPerOrderDispo().getUomId().getRepoId() : -1);
@@ -169,6 +178,11 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(from.getMaturingConfigId()));
 		record.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(from.getMaturingConfigLineId()));
 		record.setC_Manufacturing_Aggregation_ID(from.getManufacturingAggregationId() > 0 ? from.getManufacturingAggregationId() : -1);
+		record.setForecast_CalculationMethod(from.getForecastCalculationMethod() != null ? from.getForecastCalculationMethod().getCode() : null);
+		record.setForecast_PrecisionUnit(from.getForecastPrecisionUnit() != null ? from.getForecastPrecisionUnit().getCode() : null);
+		record.setForecast_Frequency(from.getForecastFrequency() != null ? from.getForecastFrequency() : 0);
+		record.setForecast_BufferTime(from.getForecastBufferTime() != null ? from.getForecastBufferTime() : 0);
+		record.setIsExcludeFromForecast(from.isExcludeFromForecast());
 	}
 
 	@Nullable
@@ -310,6 +324,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();

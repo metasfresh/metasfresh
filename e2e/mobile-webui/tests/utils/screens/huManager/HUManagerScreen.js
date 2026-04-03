@@ -14,7 +14,8 @@ const containerElement = () => page.locator('#HUManagerScreen');
 
 export const HUManagerScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -90,6 +91,14 @@ export const HUManagerScreen = {
         await HUManagerScreen.clickButton({ testId: 'bulk-actions-button' });
         await HUBulkActionsScreen.waitForScreen();
         await HUBulkActionsScreen.move({ targetLocator });
-    })
+    }),
+
+    expectButtonVisible: async ({ testId }) => await test.step(`${NAME} - Expect "${testId}" button visible`, async () => {
+        await expect(page.getByTestId(testId)).toBeVisible();
+    }),
+
+    openGRAIScreen: async () => await test.step(`${NAME} - Open GRAI Screen`, async () => {
+        await page.getByTestId('scan-grai-button').tap();
+    }),
 };
 

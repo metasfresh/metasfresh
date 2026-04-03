@@ -33,8 +33,12 @@ export const useKeyboardBarcodeReader = ({
         }
       }
 
-      // Ignore key events with Ctrl, Alt or Meta modifiers
-      if (event.ctrlKey || event.altKey || event.metaKey) {
+      // Ignore key events with Ctrl or Meta modifiers
+      if (event.ctrlKey || event.metaKey) {
+        return;
+      }
+      // Allow altKey for printable characters (Zebra MC3300x firmware sets altKey=true on scanner keystrokes)
+      if (event.altKey && event.key.length !== 1) {
         return;
       }
 
@@ -58,6 +62,11 @@ export const useKeyboardBarcodeReader = ({
         if (now - lastKeyTimeRef.current < rateMs) {
           bufferRef.current += event.key;
           onReadInProgress?.(bufferRef.current);
+          // Prevent the browser from also inserting the character into a focused input.
+          // The hook handles value updates via onReadInProgress. Without this, the character
+          // would be inserted twice: once by onReadInProgress and once by the browser's default action.
+          // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
+          event.preventDefault();
         }
         //
         // Type rate dropped => send the collected string if any

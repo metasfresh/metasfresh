@@ -18,6 +18,9 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -88,6 +91,18 @@ public class PickingJobHUService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUGraiService huGraiService;
+
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	{
+		return huGraiService.getSnapshots(huIds);
+	}
+
+	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
+	{
+		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
+	}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{
@@ -135,6 +150,11 @@ public class PickingJobHUService
 	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
 	{
 		return huAttributesBL.getAttributeValue(hu, attributeCode);
+	}
+
+	public Optional<IAttributeValue> getAttributeValueIfExists(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return huAttributesBL.getAttributeValueIfExists(hu, attributeCode);
 	}
 
 	public boolean isLoadingUnit(final I_M_HU hu) {return handlingUnitsBL.isLoadingUnit(hu);}

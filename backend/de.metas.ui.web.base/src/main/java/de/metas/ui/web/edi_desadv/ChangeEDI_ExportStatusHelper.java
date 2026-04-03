@@ -28,7 +28,7 @@ import de.metas.document.archive.DocOutboundLogId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
@@ -54,7 +54,7 @@ import java.util.List;
 @UtilityClass
 public class ChangeEDI_ExportStatusHelper
 {
-	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 	@NonNull private final ADReferenceService adReferenceService = ADReferenceService.get();
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
@@ -95,30 +95,32 @@ public class ChangeEDI_ExportStatusHelper
 
 	public void EDI_DesadvDoIt(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus, final boolean isProcessed)
 	{
-		final I_EDI_Desadv edi = desadvDAO.retrieveById(desadvId);
-
-		final List<I_M_InOut> inOuts = desadvDAO.retrieveAllInOuts(edi);
-		for (final I_M_InOut inOut : inOuts)
+		final I_EDI_Desadv edi = desadvBL.getById(desadvId);
+		final List<I_M_InOut> inOuts = desadvBL.retrieveAllInOuts(edi);
+		// The shipment Export States should be changed on shipments itself
+		if(!desadvBL.isOneDesadvPerShipment(desadvId))
 		{
-			if(targetExportStatus.isPending())
+			for (final I_M_InOut inOut : inOuts)
 			{
-				if(EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isInProgressOrSend())
+				if(targetExportStatus.isPending())
+				{
+					if(EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isInProgressOrSend())
+					{
+						inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+					}
+					ediDocumentBL.updateEdiExportStatus(inOut);
+				}
+				else
 				{
 					inOut.setEDI_ExportStatus(targetExportStatus.getCode());
 				}
-				ediDocumentBL.updateEdiExportStatus(inOut);
+				inOutDAO.save(inOut);
 			}
-			else
-			{
-				inOut.setEDI_ExportStatus(targetExportStatus.getCode());
-			}
-			inOutDAO.save(inOut);
 		}
 
-		//TODO: check if we need to set different values if one inout is not matching targetExportStatus (e.g. in case of invalid)
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
 		edi.setProcessed(isProcessed);
-		desadvDAO.save(edi);
+		desadvBL.save(edi);
 	}
 
 	public void C_DocOutbound_LogDoIt(final EDIExportStatus targetExportStatus, final DocOutboundLogId logId)
@@ -152,6 +154,35 @@ public class ChangeEDI_ExportStatusHelper
 			invoice.setEDI_ExportStatus(targetExportStatus.getCode());
 		}
 		invoiceDAO.save(invoice);
+	}
+
+	/**
+	 * Changes the EDI export status of a single M_InOut and triggers DESADV status recomputation.
+	 * <p>
+	 * If {@code targetExportStatus = Pending}, re-runs validation via {@link EDIDocumentBL#updateEdiExportStatus(I_M_InOut)}.
+	 * If validation fails, the status is set to {@code Invalid} with {@code EDIErrorMsg} populated.
+	 * <p>
+	 * After the InOut status is changed, the linked DESADV status is recomputed bottom-up
+	 * (automatically triggered by the M_InOut model validator).
+	 *
+	 * @param inOut the InOut to update
+	 * @param targetExportStatus the new status (Pending or DontSend)
+	 */
+	public void M_InOutDoIt(@NonNull final I_M_InOut inOut, @NonNull final EDIExportStatus targetExportStatus)
+	{
+		if (targetExportStatus.isPending())
+		{
+			// Re-validate the InOut; if invalid, updateEdiExportStatus sets status to Invalid + populates EDIErrorMsg
+			ediDocumentBL.updateEdiExportStatus(inOut);
+		}
+		else
+		{
+			// Directly set the new status (e.g. DontSend)
+			inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+		}
+
+		inOutDAO.save(inOut);
+		// Note: DESADV status recomputation is automatically triggered by M_InOut.recomputeDesadvStatusOnInOutStatusChange
 	}
 
 	@NonNull

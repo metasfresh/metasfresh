@@ -29,7 +29,6 @@ import de.metas.edi.api.ValidationState;
 import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -79,12 +78,12 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 
 		// Mark the document as: EDI starting
-		document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
+		document.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		InterfaceWrapperHelper.save(document);
 
 		desadvBL.retrieveAllInOuts(desadv)
 				.stream()
-				.peek(shipment -> shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted))
+				.peek(shipment -> shipment.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode()))
 				.forEach(shipmentBL::save);
 
 		try
@@ -93,7 +92,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
-			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			document.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
 
 			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
 			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));

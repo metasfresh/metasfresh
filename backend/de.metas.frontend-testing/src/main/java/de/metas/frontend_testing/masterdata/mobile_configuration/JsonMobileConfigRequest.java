@@ -121,5 +121,6 @@ public class JsonMobileConfigRequest
 	{
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
+		@Nullable String receiveUnitType;
 	}
 }

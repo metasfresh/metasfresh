@@ -142,6 +142,8 @@ public class BPartnerDAO implements IBPartnerDAO
 			.build();
 
 	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
+	public static final AdMessageKey MSG_BPARTNER_VALUE_NOT_UNIQUE = AdMessageKey.of("BPartner_Value_NotUnique");
+	public static final AdMessageKey MSG_BPARTNER_VALUE_NOT_UNIQUE_REST = AdMessageKey.of("BPartner_Value_NotUnique_REST");
 
 	@Override
 	public void save(@NonNull final I_C_BPartner bpartner)
@@ -315,6 +317,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Nullable
+	@Override
 	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
 	{
 		if (contactId == null)
@@ -489,6 +492,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId())
@@ -509,6 +513,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
@@ -820,6 +825,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@Nullable
 	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		return retrievePricingSystemIdOrNull(bpartnerId, soTrx, ITrx.TRXNAME_None);
@@ -1602,8 +1608,75 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
 		}
 
-		final int bpartnerRepoId = queryBuilder.create().firstId();
-		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
+				.listIds(BPartnerId::ofRepoId);
+
+		return disambiguateOrThrow(candidates, query.getBpartnerValue(), query.getIsCustomerFilter(), query.getIsVendorFilter());
+	}
+
+	/**
+	 * Given a list of BPartner candidates, returns the single match or tries to disambiguate using IsCustomer/IsVendor flags.
+	 * Throws a user-friendly error if disambiguation fails (still ambiguous or no match after filtering).
+	 *
+	 * @param lookupKey the Value or Name used for the lookup (for error messages)
+	 */
+	private Optional<BPartnerId> disambiguateOrThrow(
+			@NonNull final ImmutableList<BPartnerId> candidates,
+			@Nullable final String lookupKey,
+			@Nullable final Boolean isCustomerFilter,
+			@Nullable final Boolean isVendorFilter)
+	{
+		if (candidates.isEmpty())
+		{
+			return Optional.empty();
+		}
+		if (candidates.size() == 1)
+		{
+			return Optional.of(candidates.get(0));
+		}
+
+		// Multiple results: try to disambiguate using IsCustomer/IsVendor flags
+		if (isCustomerFilter != null || isVendorFilter != null)
+		{
+			final Optional<BPartnerId> disambiguated = disambiguateByCustomerVendorFlag(candidates, isCustomerFilter, isVendorFilter);
+			if (disambiguated.isPresent())
+			{
+				return disambiguated;
+			}
+		}
+
+		// Still ambiguous: throw user-friendly error
+		throw new AdempiereException(MSG_BPARTNER_VALUE_NOT_UNIQUE, lookupKey, candidates.size())
+				.markAsUserValidationError();
+	}
+
+	private Optional<BPartnerId> disambiguateByCustomerVendorFlag(
+			@NonNull final List<BPartnerId> candidates,
+			@Nullable final Boolean isCustomer,
+			@Nullable final Boolean isVendor)
+	{
+		final ImmutableList<BPartnerId> filtered = candidates.stream()
+				.filter(id -> {
+					final I_C_BPartner bp = getById(id);
+					if (isCustomer != null && bp.isCustomer() != isCustomer)
+					{
+						return false;
+					}
+					if (isVendor != null && bp.isVendor() != isVendor)
+					{
+						return false;
+					}
+					return true;
+				})
+				.collect(ImmutableList.toImmutableList());
+
+		if (filtered.size() == 1)
+		{
+			return Optional.of(filtered.get(0));
+		}
+
+		// Still ambiguous or no match
+		return Optional.empty();
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByNameIfExists(@NonNull final BPartnerQuery query)
@@ -1617,9 +1690,10 @@ public class BPartnerDAO implements IBPartnerDAO
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
 		}
 
-		final int bpartnerRepoId = queryBuilder.create()
-				.firstId();
-		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
+				.listIds(BPartnerId::ofRepoId);
+
+		return disambiguateOrThrow(candidates, query.getBpartnerName(), query.getIsCustomerFilter(), query.getIsVendorFilter());
 	}
 
 	private <T> IQueryBuilder<T> createQueryBuilder(
@@ -2007,9 +2081,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<ShipperId> getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	@Nullable
+	public ShipperId getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-		return bpLocation != null ? ShipperId.optionalOfRepoId(bpLocation.getM_Shipper_ID()) : Optional.empty();
+		if (bpLocation == null) {return null;}
+		return ShipperId.ofRepoIdOrNull(bpLocation.getM_Shipper_ID());
 	}
 }

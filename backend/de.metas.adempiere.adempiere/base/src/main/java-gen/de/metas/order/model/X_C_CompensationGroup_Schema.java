@@ -65,13 +65,25 @@ public class X_C_CompensationGroup_Schema extends org.compiere.model.PO implemen
 	}
 
 	@Override
+	public void setIsInheritPackingInstruction (final boolean IsInheritPackingInstruction)
+	{
+		set_Value (COLUMNNAME_IsInheritPackingInstruction, IsInheritPackingInstruction);
+	}
+
+	@Override
+	public boolean isInheritPackingInstruction()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInheritPackingInstruction);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}

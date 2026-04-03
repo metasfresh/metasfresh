@@ -84,7 +84,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
+import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -119,6 +121,7 @@ public class DesadvBL
 
 	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
+	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
 
 	@VisibleForTesting
 	public static DesadvBL newInstanceForUnitTesting()
@@ -127,13 +130,19 @@ public class DesadvBL
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(DesadvBL.class,
 				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
-						EDIDesadvInOutLineDAO.newInstanceForUnitTesting())
+						EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
+						EDIBPartnerConfigService.newInstanceForUnitTesting())
 		);
 	}
 
 	public I_EDI_Desadv getById(@NonNull final EDIDesadvId id)
 	{
 		return desadvDAO.retrieveById(id);
+	}
+
+	public void save(@NonNull final I_EDI_Desadv ediDesadv)
+	{
+		desadvDAO.save(ediDesadv);
 	}
 
 	public List<I_EDI_DesadvLine> retrieveLinesByIds(final Collection<Integer> desadvLineIds)
@@ -729,6 +738,12 @@ public class DesadvBL
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
+		// should always be opposite of recomputeDesadvStatusFromInOuts
+		if (isOneDesadvPerShipment(desadv))
+		{
+			return;
+		}
+
 		final String ediExportStatus = Check.assumeNotNull(desadv.getEDI_ExportStatus(), "EDI_ExportStatus is not null; EDI_DesadvID={}", desadv.getEDI_Desadv_ID());
 		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
 				.stream()
@@ -970,5 +985,166 @@ public class DesadvBL
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
 		return desadvDAO.retrieveAllInOuts(desadv);
+	}
+
+	@NonNull
+	public List<I_EDI_DesadvLine> retrieveAllDesadvLines(@NonNull final I_EDI_Desadv desadv)
+	{
+		return desadvDAO.retrieveAllDesadvLines(desadv);
+	}
+
+	@NonNull
+	public List<I_C_Order> retrieveAllOrders(final I_EDI_Desadv desadv)
+	{
+		return desadvDAO.retrieveAllOrders(desadv);
+	}
+
+	public boolean isOneDesadvPerShipment(@NonNull final EDIDesadvId desadvId)
+	{
+		return isOneDesadvPerShipment(getById(desadvId));
+	}
+
+	public boolean isOneDesadvPerShipment(@NonNull final I_EDI_Desadv desadv)
+	{
+		if(sysConfigBL.getBooleanValue(SYS_CONFIG_OneDesadvPerShipment, false))
+		{
+			return true;
+		}
+
+		final BPartnerId bPartnerId = getEffectiveDropshipPartnerId(desadv);
+		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId);
+
+	}
+
+	/**
+	 * Recomputes the DESADV export status based on the statuses of all linked shipments (M_InOut).
+	 * <p>
+	 * This applies only when {@link #isOneDesadvPerShipment(I_EDI_Desadv)} returns true
+	 * (either via sysconfig or when using ExternalSystem for this BPartner).
+	 * In this mode, each shipment is exported individually, so the DESADV status is derived from
+	 * the aggregate of all shipment statuses, rather than being set manually.
+	 * <p>
+	 * Rules are evaluated top-to-bottom, first match wins:
+	 * <ol>
+	 *   <li>Any linked InOut is Invalid → DESADV Invalid + aggregated error message</li>
+	 *   <li>Any linked InOut is Error (and none Invalid) → DESADV Error + aggregated error message</li>
+	 *   <li>All linked InOuts are Sent or DontSend AND FulfillmentPercent >= 100% → DESADV Sent, clear error message</li>
+	 *   <li>Any linked InOut is Pending, Enqueued, or SendingStarted, OR FulfillmentPercent < 100% → DESADV Pending, clear error message</li>
+	 * </ol>
+	 */
+	public void recomputeDesadvStatusFromInOuts(@NonNull final EDIDesadvId desadvId)
+	{
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(desadvId);
+
+		// should always be opposite of propagateEDIStatus
+		if (!isOneDesadvPerShipment(desadv))
+		{
+			logger.debug("Skipping recompute for DESADV {} (not in per-shipment mode)", desadvId);
+			return;
+		}
+
+		final List<I_M_InOut> allInOuts = desadvDAO.retrieveAllInOuts(desadv);
+
+		if (allInOuts.isEmpty())
+		{
+			logger.debug("No InOuts linked to DESADV {}, keeping current status", desadvId);
+			return;
+		}
+
+		final List<I_M_InOut> invalidInOuts = allInOuts.stream()
+				.filter(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isInvalid())
+				.collect(ImmutableList.toImmutableList());
+
+		final List<I_M_InOut> errorInOuts = allInOuts.stream()
+				.filter(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isError())
+				.collect(ImmutableList.toImmutableList());
+
+		if (!invalidInOuts.isEmpty())
+		{
+			final String aggregatedError = buildAggregatedErrorMessage(invalidInOuts);
+			desadv.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
+			desadv.setEDIErrorMsg(aggregatedError);
+			desadvDAO.save(desadv);
+			logger.info("DESADV {} set to Invalid due to {} invalid InOuts: {}", desadvId, invalidInOuts.size(), aggregatedError);
+			return;
+		}
+
+		if (!errorInOuts.isEmpty())
+		{
+			final String aggregatedError = buildAggregatedErrorMessage(errorInOuts);
+			desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
+			desadv.setEDIErrorMsg(aggregatedError);
+			desadvDAO.save(desadv);
+			logger.info("DESADV {} set to Error due to {} error InOuts: {}", desadvId, errorInOuts.size(), aggregatedError);
+			return;
+		}
+
+		final boolean allProcessed = allInOuts.stream()
+				.allMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isProcessed());
+
+		final BigDecimal fulfillmentPercent = desadv.getFulfillmentPercent();
+
+		if (allProcessed && fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0)
+		{
+			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
+			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
+			desadv.setEDI_ExportStatus(ediExportStatus.getCode());
+			desadv.setEDIErrorMsg(null);
+			desadvDAO.save(desadv);
+			logger.info("DESADV {} auto-closed to Sent (all InOuts sent/don't send, fulfillment {}%)", desadvId, fulfillmentPercent);
+			return;
+		}
+
+		desadv.setEDI_ExportStatus(EDIExportStatus.Pending.getCode());
+		desadv.setEDIErrorMsg(null);
+		desadvDAO.save(desadv);
+		logger.debug("DESADV {} set to Pending (fulfillment {}%, allProcessed={})", desadvId, fulfillmentPercent, allProcessed);
+	}
+
+	/**
+	 * Builds a formatted message listing multiple InOuts with their status and optional error details.
+	 * <p>
+	 * Examples:
+	 * <ul>
+	 *   <li>For error aggregation: "Shipment 1234: error message; InOut 5678: another error"</li>
+	 * </ul>
+	 */
+	public String buildAggregatedErrorMessage(@NonNull final List<I_M_InOut> inOuts)
+	{
+
+			return inOuts.stream()
+					.map(inOut -> {
+						final String docNo = inOut.getDocumentNo();
+						final String errorMsg = Check.isBlank(inOut.getEDIErrorMsg())
+								? "No error message"
+								: inOut.getEDIErrorMsg();
+						return "Shipment " + docNo + ": " + errorMsg;
+					})
+					.collect(Collectors.joining("; "));
+	}
+
+	/**
+	 * Reopens a processed DESADV to Pending when a new InOut is linked.
+	 * <p>
+	 * Only applies when {@link #isOneDesadvPerShipment(I_EDI_Desadv)} is true
+	 * (per-shipment export mode via sysconfig or ExternalSystem).
+	 */
+	public void reopenDesadvIfNeeded(@NonNull final EDIDesadvId desadvId)
+	{
+		final I_EDI_Desadv desadv = desadvDAO.retrieveById(desadvId);
+
+		if (!isOneDesadvPerShipment(desadv))
+		{
+			return;
+		}
+
+		final EDIExportStatus currentStatus = EDIExportStatus.ofCode(desadv.getEDI_ExportStatus());
+		if (currentStatus.isProcessed())
+		{
+			desadv.setEDI_ExportStatus(EDIExportStatus.Pending.getCode());
+			desadv.setEDIErrorMsg(null);
+			desadvDAO.save(desadv);
+			logger.info("DESADV {} reopened to Pending (new InOut linked to previously-closed DESADV)", desadvId);
+		}
 	}
 }

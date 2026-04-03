@@ -11,6 +11,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -108,6 +109,14 @@ public class InvoiceHeaderImplBuilder
 
 	private String incotermLocation;
 
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCodeId;
+
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCode2Id;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -162,6 +171,10 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
+		// promotion codes
+		invoiceHeader.setPromotionCodeId(getPromotionCodeId());
+		invoiceHeader.setPromotionCode2Id(getPromotionCode2Id());
+
 		return invoiceHeader;
 	}
 
@@ -189,6 +202,16 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Incoterms_ID(final int incoterms_id)
 	{
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public void setPromotionCodeId(@Nullable final PromotionCodeId promotionCodeId)
+	{
+		this.promotionCodeId = checkOverride("PromotionCodeId", this.promotionCodeId, promotionCodeId);
+	}
+
+	public void setPromotionCode2Id(@Nullable final PromotionCodeId promotionCode2Id)
+	{
+		this.promotionCode2Id = checkOverride("PromotionCode2Id", this.promotionCode2Id, promotionCode2Id);
 	}
 
 	public String getIncotermLocation()

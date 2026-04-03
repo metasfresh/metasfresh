@@ -22,13 +22,15 @@ describe('TableHeader', () => {
     const html = wrapperTableCMenu.html();
 
     expect(html).not.toContain(`<th class="indent"></th>`);
-    // Updated expectations to include data-testid attributes
-    expect(html).toContain(`<th class="td-sm" data-testid="column-R_Request_ID">Request</th>`);
-    expect(html).toContain(`<th class="td-lg" data-testid="column-R_RequestType_ID">Request Type</th>`);
-    expect(html).toContain(`<th class="td-md" data-testid="column-Created">Created</th>`);
-    expect(html).toContain(`<th class="td-lg" data-testid="column-CreatedBy">Created By</th>`);
-    expect(html).toContain(`<th class="td-lg" data-testid="column-Summary">Summary</th>`);
-    expect(html).toContain(`<th class="td-md" data-testid="column-AD_Org_ID">Organisation</th>`);
+    // Check column headers with data-testid and resize handles
+    expect(html).toContain(`data-testid="column-R_Request_ID">Request`);
+    expect(html).toContain(`data-testid="column-R_RequestType_ID">Request Type`);
+    expect(html).toContain(`data-testid="column-Created">Created`);
+    expect(html).toContain(`data-testid="column-CreatedBy">Created By`);
+    expect(html).toContain(`data-testid="column-Summary">Summary`);
+    expect(html).toContain(`data-testid="column-AD_Org_ID">Organisation`);
+    // Verify resize handles are present
+    expect(html).toContain(`column-resize-handle`);
   });
 
   it('should have indent present', () => {

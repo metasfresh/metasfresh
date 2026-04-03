@@ -57,7 +57,8 @@ CREATE TABLE report.fresh_statistics
   param_product_category character varying(60),
   param_attributes character varying(255),
   ad_org_id numeric,
-  iso_code char(3)
+  iso_code char(3),
+  c_bpartner_id numeric
 )
 WITH (
   OIDS=FALSE
@@ -100,7 +101,8 @@ SELECT
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $6 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7) AS Param_Attributes,
 	a.ad_org_id,
-	a.iso_code
+	a.iso_code,
+	bp.C_BPartner_ID
 
 FROM
 	(

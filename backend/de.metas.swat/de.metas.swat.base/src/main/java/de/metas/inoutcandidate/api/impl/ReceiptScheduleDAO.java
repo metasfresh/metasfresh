@@ -314,7 +314,10 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
+				// NOTE: IsClosed=Y always implies Processed=Y (see ReceiptScheduleBL.close/reopen).
+				// Both filters are kept for clarity and as a safety net.
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsClosed, false)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
@@ -328,7 +331,10 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID, orderId)
+				// NOTE: IsClosed=Y always implies Processed=Y (see ReceiptScheduleBL.close/reopen).
+				// Both filters are kept for clarity and as a safety net.
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsClosed, false)
 				.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
 				.create()
 				.anyMatch();

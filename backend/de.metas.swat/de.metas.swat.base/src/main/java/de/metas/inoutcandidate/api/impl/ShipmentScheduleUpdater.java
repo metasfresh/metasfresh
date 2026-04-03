@@ -56,7 +56,6 @@ import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -84,6 +83,7 @@ import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ReservationKey;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
@@ -149,8 +149,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
-		final StockRepository stockRepository = new StockRepository();
-		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
+		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = ShipmentScheduleQtyOnHandStorageFactory.newInstanceForUnitTesting();
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
@@ -280,7 +279,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 				sched.setQtyDelivered(qtyDelivered);
-				
+
 				//
 				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
@@ -536,7 +535,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Get the QtyOnHand storages suitable for our order line
 			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
+			final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(sched);
+			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable(reservationKey);
 
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
@@ -678,6 +678,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return; // we are done
 		}
 
+		final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched.getSched());
+
 		// Shipment Lines (i.e. candidate lines)
 		final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
 
@@ -697,7 +699,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Adjust the quantity that can be delivered from this storage line
 			// Check: Not enough On Hand
-			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
+			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex, reservationKey);
 			if (qtyToDeliver.compareTo(qtyAvailable) > 0
 					&& qtyAvailable.signum() >= 0)         // positive storage
 			{

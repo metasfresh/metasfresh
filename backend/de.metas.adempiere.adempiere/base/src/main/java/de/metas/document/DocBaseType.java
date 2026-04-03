@@ -26,6 +26,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	ARReceipt(X_C_DocType.DOCBASETYPE_ARReceipt),
 	SalesOrder(X_C_DocType.DOCBASETYPE_SalesOrder),
 	SalesProformaInvoice(X_C_DocType.DOCBASETYPE_ARProFormaInvoice),
+	PurchaseProformaInvoice(X_C_DocType.DOCBASETYPE_APProFormaInvoice),
 	Shipment(X_C_DocType.DOCBASETYPE_MaterialDelivery),
 	MaterialReceipt(X_C_DocType.DOCBASETYPE_MaterialReceipt),
 	MaterialMovement(X_C_DocType.DOCBASETYPE_MaterialMovement),
@@ -58,6 +59,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	RemittanceAdvice(X_C_DocType.DOCBASETYPE_RemittanceAdvice),
 	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BOMFormula),
 	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
+	AnalysisReport(X_C_DocType.DOCBASETYPE_AnalysisReport),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;
@@ -92,36 +94,47 @@ public enum DocBaseType implements ReferenceListAwareEnum
 				|| isShipment()
 				|| isSalesInvoice()
 				|| isSalesCreditMemo()
-				|| isARReceipt();
+				|| isARReceipt()
+				|| isSalesProformaInvoice();
 	}
 
 	public String getTableName()
 	{
-		if(isShipment() || isReceipt() || isARReceipt()) return I_M_InOut.Table_Name;
-		else if(isSalesOrder() || isPurchaseOrder()) return I_C_Order.Table_Name;
-		else if(isSalesInvoice() || isPurchaseInvoice() || isPurchaseCreditMemo()) return I_C_Invoice.Table_Name;
-		else throw new AdempiereException("No known tableName found for DocBaseType " + code);
+		if (isShipment() || isReceipt() || isARReceipt())
+			return I_M_InOut.Table_Name;
+		else if (isSalesOrder() || isPurchaseOrder())
+			return I_C_Order.Table_Name;
+		else if (isSalesInvoice() || isSalesCreditMemo() || isSalesProformaInvoice() || isPurchaseInvoice() || isPurchaseCreditMemo() || isPurchaseProformaInvoice())
+			return I_C_Invoice.Table_Name;
+		else
+			throw new AdempiereException("No known tableName found for DocBaseType " + code);
 	}
 
 	public boolean isSalesOrder() {return SalesOrder.equals(this);}
 
 	public boolean isPurchaseOrder() {return PurchaseOrder.equals(this);}
 
-	public boolean isSalesInvoice() { return SalesInvoice.equals(this); }
+	public boolean isSalesInvoice() {return SalesInvoice.equals(this);}
 
-	public boolean isPurchaseInvoice() { return PurchaseInvoice.equals(this); }
+	public boolean isSalesProformaInvoice() {return SalesProformaInvoice.equals(this);}
 
-	public boolean isSalesCreditMemo() { return SalesCreditMemo.equals(this); }
+	public boolean isPurchaseInvoice() {return PurchaseInvoice.equals(this);}
 
-	public boolean isPurchaseCreditMemo() { return PurchaseCreditMemo.equals(this); }
+	public boolean isSalesCreditMemo() {return SalesCreditMemo.equals(this);}
 
-	public boolean isDunningDoc(){return DunningDoc.equals((this));}
+	public boolean isPurchaseCreditMemo() {return PurchaseCreditMemo.equals(this);}
 
-	public boolean isShipment(){ return Shipment.equals(this); }
+	public boolean isPurchaseProformaInvoice() {return PurchaseProformaInvoice.equals(this);}
 
-	public boolean isARReceipt(){ return ARReceipt.equals(this); }
+	public boolean isDunningDoc() {return DunningDoc.equals((this));}
 
-	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
+	public boolean isShipment() {return Shipment.equals(this);}
 
-	public boolean isShipperTransportation(){ return ShipperTransportation.equals(this); }
+	public boolean isARReceipt() {return ARReceipt.equals(this);}
+
+	public boolean isReceipt() {return MaterialReceipt.equals(this);}
+
+	public boolean isShipperTransportation() {return ShipperTransportation.equals(this);}
+
+	public boolean isFinancial() {return !isPurchaseProformaInvoice() && !isSalesProformaInvoice();}
 }

@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -280,7 +257,28 @@ public interface I_C_BPartner
 	String COLUMNNAME_BPartner_Parent_ID = "BPartner_Parent_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Notizen/Anmerkungen.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPInfo (@Nullable java.lang.String BPInfo);
+
+	/**
+	 * Get Notizen/Anmerkungen.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_BPInfo = new ModelColumn<>(I_C_BPartner.class, "BPInfo", null);
+	String COLUMNNAME_BPInfo = "BPInfo";
+
+	/**
+	 * Set Geschäftspartner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -289,7 +287,7 @@ public interface I_C_BPartner
 	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -625,8 +623,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_ContactStatusInfoVendor = "ContactStatusInfoVendor";
 
 	/**
-	 * Set Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -635,8 +633,8 @@ public interface I_C_BPartner
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1275,6 +1273,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
+	 * Set GRAI Required.
+	 * Determines whether GRAIs are required at picking completion
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGRAIRequired (java.lang.String GRAIRequired);
+
+	/**
+	 * Get GRAI Required.
+	 * Determines whether GRAIs are required at picking completion
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getGRAIRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_GRAIRequired = new ModelColumn<>(I_C_BPartner.class, "GRAIRequired", null);
+	String COLUMNNAME_GRAIRequired = "GRAIRequired";
+
+	/**
 	 * Set Haddex Control Nr..
 	 *
 	 * <br>Type: String
@@ -1296,7 +1317,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
-	 * Set Incoterm Location.
+	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1306,7 +1327,7 @@ public interface I_C_BPartner
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
+	 * Get IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1340,6 +1361,31 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
 	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
+	 * Set Invoice Email.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoice_Email (@Nullable java.lang.String Invoice_Email);
+
+	/**
+	 * Get Invoice Email.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getInvoice_Email();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Invoice_Email = new ModelColumn<>(I_C_BPartner.class, "Invoice_Email", null);
+	String COLUMNNAME_Invoice_Email = "Invoice_Email";
 
 	/**
 	 * Set Invoice Print Format.
@@ -1702,6 +1748,52 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Factorer.
+	 * Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFactorer (boolean IsFactorer);
+
+	/**
+	 * Get Factorer.
+	 * Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFactorer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFactorer = new ModelColumn<>(I_C_BPartner.class, "IsFactorer", null);
+	String COLUMNNAME_IsFactorer = "IsFactorer";
+
+	/**
+	 * Set Factoring.
+	 * The business partner sells its receivables (invoices) to a factor to obtain immediate liquidity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFactoring (boolean IsFactoring);
+
+	/**
+	 * Get Factoring.
+	 * The business partner sells its receivables (invoices) to a factor to obtain immediate liquidity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFactoring();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFactoring = new ModelColumn<>(I_C_BPartner.class, "IsFactoring", null);
+	String COLUMNNAME_IsFactoring = "IsFactoring";
+
+	/**
 	 * Set Full LU Required.
 	 * This flag indicates whether the partner requires the loading unit (LU) to be full when adding product quantities to an order line. If the flag is set to 'Y', it means the order line must contain a full loading unit. If it is set to 'N', partial loading units are allowed.
 	 *
@@ -1966,8 +2058,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
 
 	/**
-	 * Set Summary Level.
-	 * This is a summary entity
+	 * Set Zusammenfassungseintrag.
+	 * Dies ist ein Zusammenfassungseintrag
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1976,8 +2068,8 @@ public interface I_C_BPartner
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Summary Level.
-	 * This is a summary entity
+	 * Get Zusammenfassungseintrag.
+	 * Dies ist ein Zusammenfassungseintrag
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2367,6 +2459,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2376,6 +2469,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2414,8 +2508,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -2424,8 +2518,8 @@ public interface I_C_BPartner
 	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -3473,7 +3567,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_DocTypeTarget_ID = "SO_DocTypeTarget_ID";
 
 	/**
-	 * Set Notiz Auftragsart.
+	 * Set SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3482,7 +3576,7 @@ public interface I_C_BPartner
 	void setSO_TargetDocTypeReason (@Nullable java.lang.String SO_TargetDocTypeReason);
 
 	/**
-	 * Get Notiz Auftragsart.
+	 * Get SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3695,4 +3789,46 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new ModelColumn<>(I_C_BPartner.class, "VendorCategory", null);
 	String COLUMNNAME_VendorCategory = "VendorCategory";
+
+	/**
+	 * Set Waste disposer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWasteDisposerNo (@Nullable java.lang.String WasteDisposerNo);
+
+	/**
+	 * Get Waste disposer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWasteDisposerNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_WasteDisposerNo = new ModelColumn<>(I_C_BPartner.class, "WasteDisposerNo", null);
+	String COLUMNNAME_WasteDisposerNo = "WasteDisposerNo";
+
+	/**
+	 * Set Waste producer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWasteProducerNo (@Nullable java.lang.String WasteProducerNo);
+
+	/**
+	 * Get Waste producer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWasteProducerNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_WasteProducerNo = new ModelColumn<>(I_C_BPartner.class, "WasteProducerNo", null);
+	String COLUMNNAME_WasteProducerNo = "WasteProducerNo";
 }

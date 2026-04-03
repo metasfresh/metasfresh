@@ -181,7 +181,9 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             expect(soDocumentNo.length).toBeGreaterThan(0);
 
             // Add document number as parameter for easy identification
-            allure.parameter('Document No', soDocumentNo);
+            // excluded: true prevents this dynamic value from affecting Allure's historyId,
+            // so failed retry attempts are properly linked to the successful retry
+            allure.parameter('Document No', soDocumentNo, { excluded: true });
 
             console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
@@ -366,12 +368,12 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             // Attach validation summary
             const validationHtml = `<table border="1">
                 <tr><th>Check</th><th>Status</th><th>Value</th></tr>
-                <tr><td>Sales Order Created</td><td>✓ PASS</td><td>${soDocumentNo}</td></tr>
-                <tr><td>PDF Generated</td><td>✓ PASS</td><td>${download.suggestedFilename()}</td></tr>
-                <tr><td>Shipment Created</td><td>✓ PASS</td><td>Yes</td></tr>
-                <tr><td>Shipment-PDF Generated</td><td>✓ PASS</td><td>${shipmentDownload.suggestedFilename()}</td></tr>
-                <tr><td>Invoice Created</td><td>✓ PASS</td><td>Yes</td></tr>
-                <tr><td>Invoice-PDF Generated</td><td>✓ PASS</td><td>${invoiceDownload.suggestedFilename()}</td></tr>
+                <tr><td>Sales Order Created</td><td>PASS</td><td>${soDocumentNo}</td></tr>
+                <tr><td>PDF Generated</td><td>PASS</td><td>${download.suggestedFilename()}</td></tr>
+                <tr><td>Shipment Created</td><td>PASS</td><td>Yes</td></tr>
+                <tr><td>Shipment-PDF Generated</td><td>PASS</td><td>${shipmentDownload.suggestedFilename()}</td></tr>
+                <tr><td>Invoice Created</td><td>PASS</td><td>Yes</td></tr>
+                <tr><td>Invoice-PDF Generated</td><td>PASS</td><td>${invoiceDownload.suggestedFilename()}</td></tr>
             </table>`;
             allure.attachment('Validation Results', validationHtml, 'text/html');
         });

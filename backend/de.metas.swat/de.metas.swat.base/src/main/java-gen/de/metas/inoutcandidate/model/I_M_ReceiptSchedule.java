@@ -1731,6 +1731,27 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isIsClosed();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
 	 * Set Packaging capacity.
 	 * Capacity in the respective product's unit of measuerement
 	 *

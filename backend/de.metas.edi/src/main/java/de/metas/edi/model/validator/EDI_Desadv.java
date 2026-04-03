@@ -23,7 +23,6 @@ package de.metas.edi.model.validator;
  */
 
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
@@ -47,26 +46,25 @@ import java.util.List;
 public class EDI_Desadv
 {
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	@NonNull private final DesadvBL desadvBL;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDesadvDelete(final I_EDI_Desadv desadv)
 	{
-		final List<I_EDI_DesadvLine> allLines = desadvDAO.retrieveAllDesadvLines(desadv);
+		final List<I_EDI_DesadvLine> allLines = desadvBL.retrieveAllDesadvLines(desadv);
 		for (final I_EDI_DesadvLine line : allLines)
 		{
 			InterfaceWrapperHelper.delete(line);
 		}
 
-		final List<I_M_InOut> allInOuts = desadvDAO.retrieveAllInOuts(desadv);
+		final List<I_M_InOut> allInOuts = desadvBL.retrieveAllInOuts(desadv);
 		for (final I_M_InOut inOut : allInOuts)
 		{
 			inOut.setEDI_Desadv_ID(0);
 			InterfaceWrapperHelper.save(inOut);
 		}
 
-		final List<I_C_Order> allIOrders = desadvDAO.retrieveAllOrders(desadv);
+		final List<I_C_Order> allIOrders = desadvBL.retrieveAllOrders(desadv);
 		for (final I_C_Order order : allIOrders)
 		{
 			order.setEDI_Desadv_ID(0);
@@ -75,7 +73,14 @@ public class EDI_Desadv
 	}
 
 	/**
-	 * Update InOuts' export status when their DESADV is changed. Also updates the DESADV's processing and processed flags.
+	 * Updates DESADV's processing and processed flags, and propagates status to linked InOuts if applicable.
+	 * <p>
+	 * When {@link DesadvBL#isOneDesadvPerShipment(de.metas.esb.edi.model.I_EDI_Desadv)} is false (atomic mode):
+	 * all status changes are propagated top-down to InOuts.
+	 * <p>
+	 * When {@link DesadvBL#isOneDesadvPerShipment(de.metas.esb.edi.model.I_EDI_Desadv)} is true (per-shipment mode):
+	 * only Pending, Enqueued, and DontSend are propagated. Sent, SendingStarted, Error, and Invalid
+	 * are computed from InOut statuses via {@link DesadvBL#recomputeDesadvStatusFromInOuts(de.metas.edi.api.EDIDesadvId)}.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus)

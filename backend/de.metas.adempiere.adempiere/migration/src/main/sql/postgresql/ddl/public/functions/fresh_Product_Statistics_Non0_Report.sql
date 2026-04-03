@@ -33,9 +33,9 @@ AS
 $BODY$
 
 
-SELECT *
+SELECT x.*
 FROM report.fresh_product_statistics_report x
-         LEFT JOIN c_bpartner bp ON x.bp_value = bp.value and bp.ad_org_id = x.ad_org_id
+         LEFT JOIN c_bpartner bp ON x.c_bpartner_id = bp.c_bpartner_id
 WHERE (period1sum != 0
     OR period2sum != 0
     OR period3sum != 0

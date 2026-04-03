@@ -68,49 +68,62 @@
         
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>generate-de.metas.banking.camt53.schema.camt053.001.02</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_02</schemaDirectory>
-                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <episode>false</episode>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>generate-de.metas.banking.camt53.schema.camt053.001.04</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</schemaDirectory>
-                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <episode>false</episode>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.3</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <!--
+                Regenerate JAXB sources from XSD schemas in src/main/resources/**/*.xsd.
+                Run this profile whenever a schema file changes:
+                  mvn generate-sources -Pregenerate-jaxb-sources
+                Or regenerate all JAXB modules at once:
+                  ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+                After regeneration, commit the changed java-xjc files together with the XSD change.
+            -->
+            <id>regenerate-jaxb-sources</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.jaxb2.maven2</groupId>
+                        <artifactId>maven-jaxb2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-de.metas.banking.camt53.schema.camt053.001.02</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_02</schemaDirectory>
+                                    <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                                    <episode>false</episode>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-de.metas.banking.camt53.schema.camt053.001.04</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</schemaDirectory>
+                                    <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                                    <episode>false</episode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+                            <dependency>
+                                <groupId>org.glassfish.jaxb</groupId>
+                                <artifactId>jaxb-runtime</artifactId>
+                                <version>2.3.3</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

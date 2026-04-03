@@ -48,6 +48,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -401,6 +402,8 @@ public final class AggregationEngine
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
+			invoiceHeader.setPromotionCodeId(PromotionCodeId.ofRepoIdOrNull(icRecord.getC_PromotionCode_ID()));
+			invoiceHeader.setPromotionCode2Id(PromotionCodeId.ofRepoIdOrNull(icRecord.getC_PromotionCode2_ID()));
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
 			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))

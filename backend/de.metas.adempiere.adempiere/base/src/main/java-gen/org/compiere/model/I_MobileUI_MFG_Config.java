@@ -163,6 +163,27 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_MobileUI_MFG_Config_ID = "MobileUI_MFG_Config_ID";
 
 	/**
+	 * Set Receive Unit Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReceiveUnitType (java.lang.String ReceiveUnitType);
+
+	/**
+	 * Get Receive Unit Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getReceiveUnitType();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_ReceiveUnitType = new ModelColumn<>(I_MobileUI_MFG_Config.class, "ReceiveUnitType", null);
+	String COLUMNNAME_ReceiveUnitType = "ReceiveUnitType";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -62,6 +62,8 @@ public interface IPaymentDocument
 
 	LocalDate getDate();
 
+	LocalDate getDateAcct();
+
 	ClientAndOrgId getClientAndOrgId();
 
 	PaymentCurrencyContext getPaymentCurrencyContext();

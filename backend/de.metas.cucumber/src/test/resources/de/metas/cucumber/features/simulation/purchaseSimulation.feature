@@ -74,8 +74,8 @@ Feature: create purchase simulation
 @allure.label.feature:F00106
   Scenario: Create Sales Order. Create C_PurchaseCandidate. Create C_Order for it. Reactivate and reduce qty. C_PurchaseCandidate is not adjusted.
     When update existing PP_Product_Plannings
-      | Identifier | IsCreatePlan |
-      | ppln_1     | true         |
+      | Identifier | IsCreatePlan | OPT.IsDocComplete |
+      | ppln_1     | true         | true              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
       | o_1        | true    | customer_1    | 2021-04-04  | 2021-04-04T00:00:00Z |
@@ -91,10 +91,6 @@ Feature: create purchase simulation
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-04T00:00:00Z | 100 | -100                   |                         |
       | c_2        | SUPPLY            | PURCHASE                  | p_1          | 2021-04-04T00:00:00Z | 100 | 0                      | pc_1                    |
-
-    And the following C_PurchaseCandidates are enqueued for generating C_Orders
-      | C_PurchaseCandidate_ID |
-      | pc_1                   |
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |

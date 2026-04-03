@@ -280,13 +280,31 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateSubProducer(@NonNull final ImportRecordsSelection selection)
 	{
-		// Set M_Warehouse_ID
-		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET SubProducer_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner bp WHERE i.SubProducerBPartner_Value=bp.value) ")
-				.append("WHERE SubProducer_BPartner_ID IS NULL ")
+		// Step 1: resolve where exactly one vendor BPartner matches
+		final StringBuilder sqlUnique = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET SubProducer_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp")
+				.append(" WHERE i.SubProducerBPartner_Value=bp.value")
+				.append(" AND bp.AD_Client_ID=i.AD_Client_ID")
+				.append(" AND bp.AD_Org_ID IN (i.AD_Org_ID, 0)")
+				.append(" AND bp.IsVendor='Y'")
+				.append(" AND bp.IsActive='Y'")
+				.append(" HAVING count(*)=1) ")
+				.append("WHERE SubProducer_BPartner_ID IS NULL AND SubProducerBPartner_Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sqlUnique.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Step 2: mark remaining ambiguous rows as errors
+		final StringBuilder sqlError = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET I_IsImported='E',")
+				.append(" I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple vendor BPartners found for SubProducerBPartner_Value=\"'||i.SubProducerBPartner_Value||'\"' ")
+				.append("WHERE SubProducer_BPartner_ID IS NULL AND SubProducerBPartner_Value IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append("AND (SELECT count(*) FROM C_BPartner bp WHERE i.SubProducerBPartner_Value=bp.value")
+				.append(" AND bp.AD_Client_ID=i.AD_Client_ID AND bp.AD_Org_ID IN (i.AD_Org_ID, 0)")
+				.append(" AND bp.IsVendor='Y' AND bp.IsActive='Y') > 1 ")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public int countRecordsWithErrors(@NonNull final ImportRecordsSelection selection)

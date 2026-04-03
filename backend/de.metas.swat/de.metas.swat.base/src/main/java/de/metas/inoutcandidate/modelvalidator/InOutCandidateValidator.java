@@ -29,7 +29,7 @@ import org.compiere.model.I_M_Product;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
- *
+ * <p>
  * NOTE: atm we have modelChange/docValidate interceptors here. Please don't add more like this but consider creating separate model interceptors.
  *
  * @author ts
@@ -51,7 +51,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
-		engine.addModelValidator(new M_InOut_Shipment(), client);
+		//engine.addModelValidator(new M_InOut_Shipment(), client); // converted to spring bean
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123

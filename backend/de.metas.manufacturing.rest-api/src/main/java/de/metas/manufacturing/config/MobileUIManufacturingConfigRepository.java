@@ -12,6 +12,7 @@ import org.compiere.model.I_MobileUI_MFG_Config;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +23,7 @@ public class MobileUIManufacturingConfigRepository
 	private static final MobileUIManufacturingConfig DEFAULT_CONFIG = MobileUIManufacturingConfig.builder()
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+			.receiveUnitType(ReceiveUnitType.CU)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -32,10 +34,11 @@ public class MobileUIManufacturingConfigRepository
 			.tableName(I_MobileUI_UserProfile_MFG.Table_Name)
 			.build();
 
-	public MobileUIManufacturingConfig getConfig(@NonNull final UserId userId, @NonNull final ClientId clientId)
+	@NonNull
+	public MobileUIManufacturingConfig getConfig(@Nullable final UserId userId, @NonNull final ClientId clientId)
 	{
 		return MobileUIManufacturingConfig.merge(
-						getUserConfig(userId),
+						userId != null ? getUserConfig(userId) : null,
 						getGlobalConfig(clientId),
 						DEFAULT_CONFIG
 				)
@@ -75,6 +78,7 @@ public class MobileUIManufacturingConfigRepository
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.ofNullableString(record.getIsScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofNullableString(record.getIsAllowIssuingAnyHU()))
+				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.build();
 	}
 
@@ -82,6 +86,7 @@ public class MobileUIManufacturingConfigRepository
 	{
 		record.setIsScanResourceRequired(from.getIsScanResourceRequired().toBooleanString());
 		record.setIsAllowIssuingAnyHU(from.getIsAllowIssuingAnyHU().toBooleanString());
+		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -99,6 +104,7 @@ public class MobileUIManufacturingConfigRepository
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.ofBoolean(record.isScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(record.isAllowIssuingAnyHU()))
+				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.build();
 	}
 

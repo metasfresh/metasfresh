@@ -80,34 +80,25 @@
 
     <build>
         <plugins>
+            <!-- Adds java-xjc source roots for compile without regenerating.
+                 To regenerate after an XSD change: mvn generate-sources -Pregenerate-jaxb-sources
+                 Or: ./misc/dev-support/scripts/regenerate-jaxb-sources.sh -->
             <plugin>
-                <!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip -->
-                <!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.02.zip -->
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
-                        <id>generate-de.metas.payment.esr.camt054.001.06</id>
+                        <id>add-jaxb-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/camt.054.001.06</schemaDirectory>
-                            <generatePackage>de.metas.payment.camt054_001_06</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_06</generateDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>generate-de.metas.payment.esr.camt054.001.02</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd/camt.054.001.02</schemaDirectory>
-                            <generatePackage>de.metas.payment.camt054_001_02</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_02</generateDirectory>
+                            <sources>
+                                <source>src/main/java-xjc_camt054_001_06</source>
+                                <source>src/main/java-xjc_camt054_001_02</source>
+                            </sources>
                         </configuration>
                     </execution>
                 </executions>
@@ -127,5 +118,56 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!--
+                Regenerate JAXB sources from XSD schemas in src/main/xsd/.
+                Run this profile whenever a schema file changes:
+                  mvn generate-sources -Pregenerate-jaxb-sources
+                Or regenerate all JAXB modules at once:
+                  ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+                After regeneration, commit the changed java-xjc files together with the XSD change.
+                XSD sources:
+                  camt.054.001.06: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip
+                  camt.054.001.02: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.02.zip
+            -->
+            <id>regenerate-jaxb-sources</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.jaxb2.maven2</groupId>
+                        <artifactId>maven-jaxb2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-de.metas.payment.esr.camt054.001.06</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/camt.054.001.06</schemaDirectory>
+                                    <generatePackage>de.metas.payment.camt054_001_06</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_06</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-de.metas.payment.esr.camt054.001.02</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/camt.054.001.02</schemaDirectory>
+                                    <generatePackage>de.metas.payment.camt054_001_02</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_02</generateDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -271,4 +271,13 @@ public interface AdempiereDatabase
 	 *            are already exception handling and just want to use this method to get whatever info you can (and not to throw yet another exception).
 	 */
 	String getConnectionBackendId(Connection connection, boolean throwDBException);
+
+	/**
+	 * Get names of database functions in the current schema whose names match a SQL LIKE pattern (case-insensitive).
+	 * Results are ordered alphabetically.
+	 *
+	 * @param namePattern SQL LIKE pattern (e.g. {@code "%MaterialCockpit_SelectForOrderLine"})
+	 * @return matching function names (lowercase, as stored in pg_proc), never null
+	 */
+	java.util.List<String> getFunctionsLike(String namePattern);
 }   // AdempiereDatabase

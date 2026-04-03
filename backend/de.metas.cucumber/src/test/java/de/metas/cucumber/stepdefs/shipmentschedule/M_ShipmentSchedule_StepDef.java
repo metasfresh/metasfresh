@@ -52,6 +52,7 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
@@ -105,6 +106,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -165,6 +167,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
+	@NonNull private final C_Project_StepDefData projectTable;
 
 	private final TestContext testContext;
 
@@ -370,17 +373,25 @@ public class M_ShipmentSchedule_StepDef
 				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
 	}
 
+	/**
+	 * Invalidates all listed shipment schedules in a single batch call so that the background processor
+	 * picks them all up in the same recompute run. This is important when scenarios depend on FIFO
+	 * allocation across multiple schedules competing for the same stock: if each schedule were
+	 * invalidated in a separate call the processor might recompute them in independent batches,
+	 * each refreshing available-stock from the DB and thus both seeing the full on-hand quantity.
+	 */
 	@And("recompute shipment schedules")
 	public void recompute_shipment_schedules(@NonNull final DataTable dataTable)
 	{
+		final ImmutableSet.Builder<ShipmentScheduleId> ids = ImmutableSet.builder();
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-			shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ImmutableSet.of(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID())));
+			ids.add(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 		}
+		shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ids.build());
 	}
 
 	@And("^after not more than (.*)s, shipment schedule is recomputed$")
@@ -893,6 +904,13 @@ public class M_ShipmentSchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isScheduledForPicking()).as("IsScheduledForPicking").isEqualTo(expected));
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking)
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getQtyScheduledForPicking()).as("QtyScheduledForPicking").isEqualTo(expected));
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			softly.assertThat(shipmentSchedule.getC_Project_ID()).as("C_Project_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(project.getC_Project_ID());
+		}
 
 		softly.assertAll();
 	}

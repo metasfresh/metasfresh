@@ -205,10 +205,160 @@ public class HUReservationService
 
 	private ImmutableList<I_M_HU> getHUsToReserve(final @NonNull ReserveHUsRequest reservationRequest)
 	{
-		return handlingUnitsDAO.getByIds(reservationRequest.getHuIds())
-				.stream()
+		// Step 1: Load all HUs from the request
+		final List<I_M_HU> allHUs = handlingUnitsDAO.getByIds(reservationRequest.getHuIds());
+
+		// Step 2: Build the complete Set of input HU IDs FIRST (order-independent)
+		final Set<HuId> allHuIds = allHUs.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Step 3: Filter out HUs whose ancestors are in the Set
+		// Step 4: Filter out already reserved HUs
+		// Step 5: Filter out HUs whose ancestors are already reserved (even if ancestor not in input list)
+		// Step 6: Filter out HUs that have any reserved descendants
+		final ImmutableList<I_M_HU> toReserveHUs = allHUs.stream()
+				.filter(hu -> !hasAncestorInList(hu, allHuIds))
 				.filter(hu -> !hu.isReserved())
+				.filter(hu -> !hasReservedAncestor(hu))
+				.filter(hu -> !hasReservedDescendant(hu))
 				.collect(ImmutableList.toImmutableList());
+
+		// Step 7: After filtering, delete any existing child reservations for HUs we're about to reserve
+		deleteChildReservations(toReserveHUs);
+
+		return toReserveHUs;
+	}
+
+	/**
+	 * Deletes existing reservations for all descendants (children, grandchildren, etc.) of the given HUs.
+	 * This ensures that when we reserve a parent HU, any existing child reservations are removed
+	 * to prevent double-reservation.
+	 *
+	 * @param hus The HUs that are being reserved (we'll delete reservations for their children)
+	 */
+	private void deleteChildReservations(final @NonNull List<I_M_HU> hus)
+	{
+		final Set<HuId> childHuIds = hus.stream()
+				.flatMap(hu -> getDescendantHuIds(hu).stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (!childHuIds.isEmpty())
+		{
+			deleteReservationsByVHUIdsInTrx(childHuIds);
+		}
+	}
+
+	/**
+	 * Recursively collects all descendant HU IDs (children, grandchildren, etc.) for the given HU.
+	 *
+	 * @param hu The parent HU
+	 * @return Set of all descendant HU IDs
+	 */
+	private Set<HuId> getDescendantHuIds(final @NonNull I_M_HU hu)
+	{
+		final List<I_M_HU> children = handlingUnitsDAO.retrieveIncludedHUs(hu);
+		if (children.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet.Builder<HuId> descendantIds = ImmutableSet.builder();
+		for (final I_M_HU child : children)
+		{
+			descendantIds.add(HuId.ofRepoId(child.getM_HU_ID()));
+			// Recursively add grandchildren, great-grandchildren, etc.
+			descendantIds.addAll(getDescendantHuIds(child));
+		}
+
+		return descendantIds.build();
+	}
+
+	/**
+	 * Checks if the given HU has any ancestor (parent, grandparent, etc.) in the provided Set.
+	 * This method walks up the hierarchy until it finds an ancestor in the Set or reaches the root.
+	 * <p>
+	 * This ensures order-independent filtering: whether the input is [parent, child] or [child, parent],
+	 * the result will be the same - only the parent will be kept.
+	 *
+	 * @param hu The HU to check
+	 * @param huIds The Set of HU IDs from the original input (for O(1) lookup)
+	 * @return true if any ancestor is found in the Set, false otherwise
+	 */
+	@VisibleForTesting
+	boolean hasAncestorInList(final @NonNull I_M_HU hu, final @NonNull Set<HuId> huIds)
+	{
+		I_M_HU parent = handlingUnitsDAO.retrieveParent(hu);
+
+		while (parent != null)
+		{
+			final HuId parentId = HuId.ofRepoId(parent.getM_HU_ID());
+			if (huIds.contains(parentId))
+			{
+				return true; // Found an ancestor in the input list
+			}
+			parent = handlingUnitsDAO.retrieveParent(parent);
+		}
+
+		return false; // No ancestor found in the input list
+	}
+
+	/**
+	 * Checks if the given HU has any ancestor that is already reserved.
+	 * This prevents creating a reservation for a child HU when its parent is already reserved.
+	 * <p>
+	 * This is a critical business rule: if a parent HU is reserved, we should not allow
+	 * reserving its children, as the parent reservation already includes all child inventory.
+	 *
+	 * @param hu The HU to check
+	 * @return true if any ancestor is already reserved, false otherwise
+	 */
+	@VisibleForTesting
+	boolean hasReservedAncestor(final @NonNull I_M_HU hu)
+	{
+		I_M_HU parent = handlingUnitsDAO.retrieveParent(hu);
+
+		while (parent != null)
+		{
+			if (parent.isReserved())
+			{
+				return true; // Found a reserved ancestor
+			}
+			parent = handlingUnitsDAO.retrieveParent(parent);
+		}
+
+		return false; // No reserved ancestor found
+	}
+
+	/**
+	 * Checks if the given HU has any descendant (child, grandchild, etc.) that is already reserved.
+	 * This prevents creating a reservation for a parent HU when any of its children are already reserved.
+	 * <p>
+	 * This is a critical business rule: if a child HU is reserved, we should not allow
+	 * reserving its parent, as that would create a conflict with the existing child reservation.
+	 *
+	 * @param hu The HU to check
+	 * @return true if any descendant is already reserved, false otherwise
+	 */
+	@VisibleForTesting
+	boolean hasReservedDescendant(final @NonNull I_M_HU hu)
+	{
+		final List<I_M_HU> children = handlingUnitsDAO.retrieveIncludedHUs(hu);
+
+		for (final I_M_HU child : children)
+		{
+			if (child.isReserved())
+			{
+				return true; // Found a reserved child
+			}
+			// Recursively check grandchildren
+			if (hasReservedDescendant(child))
+			{
+				return true; // Found a reserved grandchild
+			}
+		}
+
+		return false; // No reserved descendants found
 	}
 
 	/**
@@ -261,9 +411,30 @@ public class HUReservationService
 		return retrieveQuantity(request, this::isHuReservable);
 	}
 
-	public Quantity retrieveUnreservableQty(@NonNull final RetrieveHUsQtyRequest request)
+	/**
+	 * Retrieves the total quantity that is actually reserved for the given HU IDs.
+	 * This method looks up actual reservation entries from the database rather than just checking the reserved flag.
+	 *
+	 * @param request Contains the HU IDs and product ID to check
+	 * @return The sum of all reserved quantities for the given HU IDs
+	 */
+	public Quantity retrieveActualReservedQty(@NonNull final RetrieveHUsQtyRequest request)
 	{
-		return retrieveQuantity(request, this::isHuUnreservable);
+		final ImmutableList<HUReservationEntry> entries = huReservationRepository.getEntriesByVHUIds(request.getHuIds());
+
+		if (entries.isEmpty())
+		{
+			final I_C_UOM stockingUomRecord = productBL.getStockUOM(request.getProductId());
+			return Quantity.zero(stockingUomRecord);
+		}
+
+		return entries.stream()
+				.map(HUReservationEntry::getQtyReserved)
+				.reduce(Quantity::add)
+				.orElseGet(() -> {
+					final I_C_UOM stockingUomRecord = productBL.getStockUOM(request.getProductId());
+					return Quantity.zero(stockingUomRecord);
+				});
 	}
 
 	private Quantity retrieveQuantity(
@@ -324,15 +495,6 @@ public class HUReservationService
 			return false;
 		}
 		return huStatusBL.isStatusActive(huRecord) && !huRecord.isReserved();
-	}
-
-	private boolean isHuUnreservable(@NonNull final I_M_HU huRecord)
-	{
-		if (!handlingUnitsBL.isVirtual(huRecord))
-		{
-			return false;
-		}
-		return huStatusBL.isStatusActive(huRecord) && huRecord.isReserved();
 	}
 
 	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)

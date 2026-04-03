@@ -4,9 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -19,6 +25,8 @@ import de.metas.manufacturing.job.model.ValidateLocatorInfo;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -45,6 +53,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -60,7 +69,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PPOrderSourceHUService sourceHUService;
@@ -177,4 +188,26 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		final ImmutableSet<HuId> huIds = sourceHUService.getSourceHUIds(ppOrderId);
 		return handlingUnitsBL.getLocatorIds(huIds);
 	}
+
+	public HUPIItemProduct getTUPIItemProduct(@NonNull final HUPIItemProductId id)
+	{
+		return huPIItemProductDAO.getById(id);
+	}
+
+	public Optional<HUPIItemProductId> getDefaultTUPIItemProductId(@NonNull final ProductId productId, @NonNull final Instant date)
+	{
+		final I_M_HU_PI_Item_Product defaultPIIP = huPIItemProductDAO.retrieveDefaultForProduct(productId, date.atZone(SystemTime.zoneId()));
+		return defaultPIIP != null
+				? Optional.of(HUPIItemProductId.ofRepoId(defaultPIIP.getM_HU_PI_Item_Product_ID()))
+				: Optional.empty();
+	}
+
+	public Optional<HUPIItemProductId> getSalesOrderTUPIItemProductId(@NonNull final OrderLineId salesOrderLineId)
+	{
+		final I_C_OrderLine salesOrderLine = orderDAO.getOrderLineById(salesOrderLineId, I_C_OrderLine.class);
+		return salesOrderLine != null
+				? HUPIItemProductId.optionalOfRepoId(salesOrderLine.getM_HU_PI_Item_Product_ID())
+				: Optional.empty();
+	}
+
 }

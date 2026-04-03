@@ -204,7 +204,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const stepsById = line?.steps ?? {};
 
   return {
-    caption: line?.caption,
+    caption: line?.caption, // aka productName
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),

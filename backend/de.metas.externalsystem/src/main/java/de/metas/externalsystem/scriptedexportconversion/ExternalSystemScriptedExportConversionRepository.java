@@ -34,7 +34,7 @@ import de.metas.cache.ICacheResetListener;
 import de.metas.document.DocBaseType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -112,9 +112,10 @@ public class ExternalSystemScriptedExportConversionRepository
 	private ExternalSystemScriptedExportConversionRepository.ExternalSystemScriptedExportConversionMap retrieveMap()
 	{
 		return new ExternalSystemScriptedExportConversionMap(queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedExportConversion.class)
-			     .addOnlyActiveRecordsFilter()
-				 .create()
-				 .stream()
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID)
+				.create()
+				.stream()
 				.map(this::fromRecord)
 				.collect(ImmutableList.toImmutableList())
 		);
@@ -127,7 +128,7 @@ public class ExternalSystemScriptedExportConversionRepository
 		return ExternalSystemScriptedExportConversionConfig.builder()
 				.id(ExternalSystemScriptedExportConversionConfigId.ofRepoId(config.getExternalSystem_Config_ScriptedExportConversion_ID()))
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
-				.externalSystemOutboundEndpointId(ExternalSystemOutboundEndpointId.ofRepoId(config.getExternalSystem_Outbound_Endpoint_ID()))
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(config.getExternalSystem_Endpoint_ID()))
 				.value(config.getExternalSystemValue())
 				.description(config.getDescription())
 				.outboundDataProcessId(AdProcessId.ofRepoIdOrNull(config.getAD_Process_OutboundData_ID()))

@@ -9,6 +9,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -86,7 +87,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId, final ProjectId projectId)
 	{
 		final I_M_InOut inout = getM_InOut();
 		final I_M_InOutLine inoutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
@@ -94,6 +95,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 
 		inoutLine.setM_Product_ID(ProductId.toRepoId( productId));
 		inoutLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
+		inoutLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		// NOTE: don't save it
 
 		return new EmptiesInOutLinePackingMaterialDocumentLine(inoutLine);

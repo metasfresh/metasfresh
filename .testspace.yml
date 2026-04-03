@@ -3,6 +3,9 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - epic_party_hotfix
+  - taloned_owl_hotfix
+  - taloned_owl_release
   - organic_goat_hotfix
   - organic_goat_release
   - temporary_test202412_hotfix
@@ -58,6 +61,8 @@ release:
   - science_vessel_uat
   - science_vessel_hotfix
   - science_vessel_release
+  - memorable_shiny_hotfix
+  - memorable_shiny_release
   - secondary_opinion_uat
   - secondary_opinion_hotfix
   - tenacious_d_uat

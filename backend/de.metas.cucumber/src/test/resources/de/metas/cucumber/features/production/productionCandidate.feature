@@ -126,7 +126,6 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier | QtyEntered |
       | oc_1                             | 2          |
 
-  @flaky
   @Id:S0129.2_190
   @from:cucumber
 @allure.label.epic:E0160_Manufacturing_Execution
@@ -188,6 +187,8 @@ Feature: Production dispo scenarios
       | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2500 | -2500 | warehouseStd   | oc_1                  |
 
     And the order identified by o_2 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |

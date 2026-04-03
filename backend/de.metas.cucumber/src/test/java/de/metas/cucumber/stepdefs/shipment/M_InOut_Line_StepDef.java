@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -31,6 +30,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
@@ -60,6 +61,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -96,6 +98,7 @@ public class M_InOut_Line_StepDef
 	private final M_Locator_StepDefData locatorTable;
 	private final M_HU_PI_Item_Product_StepDefData huPIItemProductTable;
 	private final M_AttributeSetInstance_StepDefData asiTable;
+	private final C_Project_StepDefData projectTable;
 
 	@And("^validate the created (shipment|material receipt) lines$")
 	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
@@ -106,15 +109,21 @@ public class M_InOut_Line_StepDef
 	private void loadAndValidateAInOutLine(final DataTableRow row)
 	{
 		final I_M_InOutLine inoutLine = loadInOutLine(row);
+		SharedTestContext.put("inoutLine", inoutLine);
 		validateInOutLine(inoutLine, row);
 	}
 
-	private static void validateInOutLine(final I_M_InOutLine inoutLine, final DataTableRow row)
+	private void validateInOutLine(final I_M_InOutLine inoutLine, final DataTableRow row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
 		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
 		row.getAsOptionalString(I_M_InOutLine.COLUMNNAME_ExternalId).ifPresent(externalId -> softly.assertThat(inoutLine.getExternalId()).as("ExternalId").isEqualTo(externalId));
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> {
+					final I_C_Project project = projectTable.get(projectIdentifier);
+					softly.assertThat(inoutLine.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+				});
 		softly.assertAll();
 	}
 
@@ -137,6 +146,10 @@ public class M_InOut_Line_StepDef
 				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
+		// When multiple lines exist for the same product (e.g. one shipment line per reservation with different attributes),
+		// movementqty can be used as an additional filter to uniquely identify a line.
+		row.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
+				.ifPresent(movementQty -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, movementQty));
 
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
 

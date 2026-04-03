@@ -1159,9 +1159,21 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setIsClosed (final boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, IsClosed);
+	}
+
+	@Override
+	public boolean isIsClosed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
 	@Override

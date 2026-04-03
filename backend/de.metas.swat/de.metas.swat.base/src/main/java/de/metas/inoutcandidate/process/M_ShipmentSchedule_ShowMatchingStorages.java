@@ -1,24 +1,24 @@
 package de.metas.inoutcandidate.process;
 
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.cockpit.stock.StockDataQuery;
+import de.metas.process.JavaProcess;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ReservationKey;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.cockpit.stock.StockDataQuery;
-import de.metas.process.JavaProcess;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-	shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+			shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
 
 	@Override
 	protected void prepare()
@@ -40,7 +40,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
 		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable());
+		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable(ReservationKey.NO_KEY));
 
 		for (int storageIndex = 0; storageIndex < storageDetails.size(); storageIndex++)
 		{

@@ -306,6 +306,7 @@ public class ManufacturingJobLoaderAndSaver
 				.coProductBOMLineId(null)
 				.receivingTarget(extractReceivingTarget(ppOrder))
 				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
+				.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
 				.build();
 
 	}

@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -38,7 +38,7 @@ public class MsgFromMfContext
 	private String script;
 	private String scriptReturnValue;
 
-	@NonNull private final JsonExternalSystemOutboundEndpoint endpointParameters;
+	@NonNull private final JsonExternalSystemEndpoint endpointParameters;
 	
 	@NonNull private final String outboundRecordTableName;
 	@NonNull private final String outboundRecordId;
