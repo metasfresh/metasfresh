@@ -222,7 +222,7 @@
 				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
 					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="PRINTER_OPTS_IsPrintPrices}">
+				<subreportParameter name="PRINTER_OPTS_IsPrintPrices">
 					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
