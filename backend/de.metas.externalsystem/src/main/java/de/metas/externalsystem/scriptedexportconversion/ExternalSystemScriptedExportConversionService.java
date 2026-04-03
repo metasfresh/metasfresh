@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
@@ -69,6 +70,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
@@ -134,8 +136,15 @@ public class ExternalSystemScriptedExportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, outboundEndpointData);
-		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getTableId()));
+		final String tableName = tableDAO.retrieveTableName(config.getTableId());
+		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableName);
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
+
+		final String documentNo = retrieveDocumentNo(tableName, outboundDataProcessRecordId);
+		if (documentNo != null)
+		{
+			parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO, documentNo);
+		}
 
 		if (errorContext != null)
 		{
@@ -143,6 +152,21 @@ public class ExternalSystemScriptedExportConversionService
 		}
 
 		return parameters;
+	}
+
+	@Nullable
+	private String retrieveDocumentNo(@NonNull final String tableName, @NonNull final String recordId)
+	{
+		try
+		{
+			final int adTableId = tableDAO.retrieveTableId(tableName);
+			return Services.get(IDocumentBL.class).getDocumentNo(getCtx(), adTableId, Integer.parseInt(recordId));
+		}
+		catch (final Exception e)
+		{
+			// Table may not have a DocumentNo column — that's fine, just return null
+			return null;
+		}
 	}
 
 	private String toJson(@NonNull final ExternalSystemEndpoint endpoint)
