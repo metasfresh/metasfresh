@@ -202,23 +202,31 @@ public class ShipmentScheduleWithHUService
 		@Nullable StockQtyAndUOMQty quantityToDeliverOverride;
 
 		/**
-		 * Fails if no picked HUs were found when processing a single schedule.
-		 * When processing multiple schedules (batch mode), schedules with no picked HUs are skipped with a warning.
+		 * When {@code true}, throws an exception if no picked HUs are found.
+		 * <p>
+		 * Behavior:
+		 * <ul>
+		 * <li><b>Single-schedule mode</b> ({@code isBatchProcessing=false}): Exception is thrown when {@code true}</li>
+		 * <li><b>Batch mode</b> ({@code isBatchProcessing=true}): Always skips with warning (this flag is ignored)</li>
+		 * </ul>
 		 * Applies only when <code>quantityType</code> is PickedQty.
 		 */
 		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
 		/**
-		 * Indicates whether this request is part of a batch processing multiple schedules.
+		 * Indicates whether this request is part of a batch processing multiple <b>unprocessed</b> schedules.
+		 * <p>
+		 * Determined by {@link ShipmentScheduleAndJobSchedulesCollection#countUnprocessed()} > 1.
 		 */
 		@Builder.Default boolean isBatchProcessing = false;
 
 		public static PrepareForSingleShipmentScheduleRequestBuilder builderFrom(
 				@NonNull final ShipmentScheduleAndJobSchedules schedule,
-				@NonNull final PrepareForShipmentSchedulesRequest request)
+				@NonNull final PrepareForShipmentSchedulesRequest request,
+				final int unprocessedSchedulesCount)
 		{
 			final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
-			final boolean isBatchProcessing = request.getSchedules().size() > 1;
+			final boolean isBatchProcessing = unprocessedSchedulesCount > 1;
 
 			return PrepareForSingleShipmentScheduleRequest.builder()
 					//.huContext(huContext)
@@ -246,6 +254,9 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
+		// Count unprocessed schedules to determine if this is batch processing
+		final int unprocessedSchedulesCount = request.getSchedules().countUnprocessed();
+
 		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
 		{
 			// Skip already processed candidates
@@ -257,7 +268,7 @@ public class ShipmentScheduleWithHUService
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentSchedule(schedule.getShipmentSchedule()))
 			{
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
-						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request)
+						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request, unprocessedSchedulesCount)
 								.huContext(huContext)
 								.build()
 				);
@@ -630,8 +641,9 @@ public class ShipmentScheduleWithHUService
 				return Collections.emptyList();
 			}
 
-			// In batch mode: log warning and skip this schedule
-			if (request.isBatchProcessing())
+			// In batch mode: always log warning and skip (failOnSingleScheduleWithNoPickedHUs is ignored)
+			// In single mode: check failOnSingleScheduleWithNoPickedHUs flag
+			if (request.isBatchProcessing() || !request.isFailOnSingleScheduleWithNoPickedHUs())
 			{
 				Loggables.withLogger(logger, Level.WARN)
 						.addLog("Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs). Continuing with remaining schedules.",
@@ -639,12 +651,9 @@ public class ShipmentScheduleWithHUService
 				return Collections.emptyList();
 			}
 
-			// Single schedule mode: fail if configured to do so
-			if (request.isFailOnSingleScheduleWithNoPickedHUs())
-			{
-				Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", shipmentScheduleId);
-				throw new AdempiereException(MSG_NoQtyPicked);
-			}
+			// Single schedule mode with failOnSingleScheduleWithNoPickedHUs=true: throw exception
+			Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", shipmentScheduleId);
+			throw new AdempiereException(MSG_NoQtyPicked);
 		}
 
 		return candidatesForPick;

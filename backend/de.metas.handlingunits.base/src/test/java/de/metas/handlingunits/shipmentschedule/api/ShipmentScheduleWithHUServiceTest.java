@@ -226,6 +226,35 @@ class ShipmentScheduleWithHUServiceTest
 	}
 
 	/**
+	 * Edge case: 2 schedules submitted, but 1 already processed
+	 * Should throw exception (single unprocessed schedule mode, not batch mode)
+	 */
+	@Test
+	void batchProcessing_edgeCase_twoSchedules_oneAlreadyProcessed_shouldThrowException()
+	{
+		// Given: 2 schedules submitted, but first one is already processed
+		final I_M_ShipmentSchedule schedule1 = createShipmentSchedule(ShipmentScheduleId.ofRepoId(601));
+		schedule1.setProcessed(true); // Already processed
+		InterfaceWrapperHelper.save(schedule1);
+
+		final I_M_ShipmentSchedule schedule2 = createShipmentSchedule(ShipmentScheduleId.ofRepoId(602));
+		// schedule2 is NOT processed, has no picked HUs
+
+		final ShipmentScheduleAndJobSchedulesCollection schedules = ShipmentScheduleAndJobSchedulesCollection
+				.ofShipmentSchedules(ImmutableList.of(schedule1, schedule2));
+
+		final ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest request = ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest.builder()
+				.schedules(schedules)
+				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
+				.failOnSingleScheduleWithNoPickedHUs(true)
+				.build();
+
+		// When/Then: Should throw exception (only 1 unprocessed schedule, NOT batch mode)
+		assertThatThrownBy(() -> shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
 	 * Batch processing behavior:
 	 * Verify that WARN log is emitted when a schedule is skipped in batch mode
 	 */
