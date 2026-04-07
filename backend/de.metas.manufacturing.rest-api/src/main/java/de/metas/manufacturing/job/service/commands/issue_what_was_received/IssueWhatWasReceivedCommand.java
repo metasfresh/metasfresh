@@ -176,12 +176,6 @@ public class IssueWhatWasReceivedCommand
 
 	private void issueForWhatWasReceived(@NonNull final RawMaterialsIssueLine rawMaterialsIssueLine)
 	{
-		if (rawMaterialsIssueLine.getQtyToIssue().signum() <= 0)
-		{
-			logger.debug("Skipping issue line due to qtyToIssue <= 0: {}", rawMaterialsIssueLine);
-			return;
-		}
-
 		// issue exact qty for what was received, don't cap it as rawMaterialsIssueLine.getQtyToIssue() because if, due to packing, a finished product may be delivered in greater qty than ordered
 		// ex: product A packed in x10 TUs, QtyOrdered=3, QtyReceived=10. In that case, issue for the whole received qty (10), not just for the ordered qty.
 		final Quantity quantityToIssueForWhatWasReceived = computeQtyToIssueBasedOnFinishedGoodReceipt(rawMaterialsIssueLine);
