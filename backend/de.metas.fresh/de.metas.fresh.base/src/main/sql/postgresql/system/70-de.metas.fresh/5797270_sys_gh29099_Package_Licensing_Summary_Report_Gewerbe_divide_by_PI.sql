@@ -1,3 +1,9 @@
+-- gh#29099: In the summary report, divide OuterPackagingWeight by PackagingInstructionFactor for Gewerbe rows.
+-- OuterPackagingWeight is the weight of the entire outer package (e.g. one cardboard box),
+-- not the per-unit weight. To get the per-unit outer packaging weight, we divide by the
+-- PackagingInstructionFactor (number of units per outer package).
+-- Haushalt (SmallPackagingWeight) is already per-unit and remains unchanged.
+
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
     p_DateFrom             timestamp with time zone,
     p_DateTo               timestamp with time zone,
