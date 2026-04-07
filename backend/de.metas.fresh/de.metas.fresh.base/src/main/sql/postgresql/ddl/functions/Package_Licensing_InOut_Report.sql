@@ -112,13 +112,18 @@ SELECT io.DocumentNo,
           AND opm.IsActive = 'Y'
         LIMIT 1)                                                                               AS OuterPackagingMaterial,
        p.OuterPackagingWeight,
-       -- Packaging instruction factor: prefer the PI actually used on this InOut line, fall back to product default
+       -- Packaging instruction factor (CUs per TU). Fallback chain:
+       -- 1) PI from the InOut line (only if Qty > 0 to skip "No Packing Item" placeholder)
+       -- 2) Actual CU/TU ratio from the movement (MovementQty / QtyEnteredTU)
+       -- 3) Product's default PI from masterdata
        COALESCE(
-           piip_iol.Qty,
+           NULLIF(piip_iol.Qty, 0),
+           CASE WHEN iol.QtyEnteredTU > 0 AND iol.MovementQty != 0 THEN ABS(iol.MovementQty / iol.QtyEnteredTU) END,
            (SELECT piip.Qty
             FROM M_HU_PI_Item_Product piip
             WHERE piip.M_Product_ID = p.M_Product_ID
               AND piip.IsActive = 'Y'
+              AND piip.Qty > 0
             ORDER BY piip.IsDefaultForProduct DESC, piip.Created DESC
             LIMIT 1)
        )                                                                                       AS PackagingInstructionFactor
