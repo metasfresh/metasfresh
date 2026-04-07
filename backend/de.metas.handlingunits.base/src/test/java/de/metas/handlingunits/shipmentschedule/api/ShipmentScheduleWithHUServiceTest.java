@@ -281,7 +281,7 @@ class ShipmentScheduleWithHUServiceTest
 		final long warnCount = logAppender.list.stream()
 				.filter(event -> event.getLevel() == Level.WARN)
 				.filter(event -> event.getFormattedMessage().contains("Skipping shipment schedule"))
-				.filter(event -> event.getFormattedMessage().contains("Continuing with remaining schedules"))
+				.filter(event -> event.getFormattedMessage().contains("batch processing"))
 				.count();
 
 		assertThat(warnCount)

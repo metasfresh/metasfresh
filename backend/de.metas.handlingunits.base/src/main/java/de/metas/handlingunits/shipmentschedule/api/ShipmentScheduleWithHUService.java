@@ -217,7 +217,7 @@ public class ShipmentScheduleWithHUService
 		 * Indicates if this request is part of batch processing (multiple unprocessed schedules).
 		 * Computed once at request creation time and cannot be changed afterward.
 		 */
-		boolean isBatchProcessing;
+		@Builder.Default boolean isBatchProcessing = false;
 
 		public static PrepareForSingleShipmentScheduleRequestBuilder builderFrom(
 				@NonNull final ShipmentScheduleAndJobSchedules schedule,
