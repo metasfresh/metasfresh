@@ -161,6 +161,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *     <li>{@code QtyOrderedInDesadvLineUOM} (required) — expected ordered qty</li>
 	 *     <li>{@code QtyDeliveredInDesadvLineUOM} (required) — expected delivered qty</li>
 	 *     <li>{@code IsDeliveryClosed} (optional) — expected value of IsDeliveryClosed</li>
+	 *     <li>{@code QtyCUsPerTU} (optional) — expected consumer units per traded unit (from order line's QtyItemCapacity)</li>
 	 * </ul>
 	 */
 	@Then("verify DESADV JSON export has DesadvLineWithNoPacking:")
@@ -207,6 +208,15 @@ public class EDI_Desadv_JSON_Export_StepDef
 						.as("DesadvLineWithNoPacking[%d].IsDeliveryClosed", index)
 						.isEqualTo(expectedIsDeliveryClosed);
 			}
+
+			row.getAsOptionalInt("QtyCUsPerTU").ifPresent(expectedQtyCUsPerTU -> {
+				assertThat(entry.has("QtyCUsPerTU"))
+						.as("DesadvLineWithNoPacking[%d] should contain QtyCUsPerTU", index)
+						.isTrue();
+				assertThat(entry.path("QtyCUsPerTU").asInt())
+						.as("DesadvLineWithNoPacking[%d].QtyCUsPerTU", index)
+						.isEqualTo(expectedQtyCUsPerTU);
+			});
 		});
 	}
 }

@@ -684,5 +684,5 @@ Feature: EDI DESADV export via postgREST
       | 1            | 1                | 0               | true             |
 
     And verify DESADV JSON export has DesadvLineWithNoPacking:
-      | OrderLine | QtyOrderedInDesadvLineUOM | QtyDeliveredInDesadvLineUOM | IsDeliveryClosed |
-      | 20        | 50                        | 0                           | false            |
+      | OrderLine | QtyOrderedInDesadvLineUOM | QtyDeliveredInDesadvLineUOM | IsDeliveryClosed | QtyCUsPerTU |
+      | 20        | 50                        | 0                           | false            | 0           |
