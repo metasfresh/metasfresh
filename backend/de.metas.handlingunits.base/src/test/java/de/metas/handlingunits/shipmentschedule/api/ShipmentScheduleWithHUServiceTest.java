@@ -256,7 +256,8 @@ class ShipmentScheduleWithHUServiceTest
 
 	/**
 	 * Batch processing behavior:
-	 * Verify that WARN log is emitted when a schedule is skipped in batch mode
+	 * Verify that schedules with no picked HUs are skipped without throwing exception in batch mode.
+	 * Also verifies WARN log is emitted (if Loggables routes to SLF4J in test environment).
 	 */
 	@Test
 	void batchProcessing_multipleSchedules_shouldLogWarningWhenSkippingSchedule()
@@ -275,18 +276,24 @@ class ShipmentScheduleWithHUServiceTest
 
 		// When: Process batch
 		logAppender.list.clear(); // Clear any previous logs
-		shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request);
+		final ImmutableList<ShipmentScheduleWithHU> result = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(request);
 
-		// Then: Should have logged WARN messages for skipped schedules
+		// Then: Primary assertion - no exception thrown and empty result
+		assertThat(result)
+				.as("Batch mode should skip schedules with no picked HUs without throwing exception")
+				.isEmpty();
+
+		// Secondary assertion - verify logs (may not work if Loggables doesn't route to SLF4J in tests)
 		final long warnCount = logAppender.list.stream()
 				.filter(event -> event.getLevel() == Level.WARN)
 				.filter(event -> event.getFormattedMessage().contains("Skipping shipment schedule"))
 				.filter(event -> event.getFormattedMessage().contains("batch processing"))
 				.count();
 
+		// Note: This assertion may be fragile if Loggables routes to work-package log instead of SLF4J
 		assertThat(warnCount)
-				.as("Should log WARN for each skipped schedule in batch mode")
-				.isEqualTo(2); // Both schedules should be logged as skipped
+				.as("Should log WARN for each skipped schedule (if Loggables routes to SLF4J)")
+				.isEqualTo(2);
 	}
 
 	/**

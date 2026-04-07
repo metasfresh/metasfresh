@@ -215,8 +215,8 @@ public class ShipmentScheduleWithHUService
 		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
 		/**
-		 * Indicates if this request is part of batch processing (multiple unprocessed schedules).
-		 * Computed once at request creation time and cannot be changed afterward.
+		 * Whether this request is part of a batch (determined by the caller from countUnprocessed()).
+		 * Must remain stable across all schedules in one batch.
 		 */
 		@Builder.Default boolean isBatchProcessing = false;
 
