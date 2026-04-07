@@ -206,27 +206,25 @@ public class ShipmentScheduleWithHUService
 		 * <p>
 		 * Behavior:
 		 * <ul>
-		 * <li><b>Single-schedule mode</b> ({@code isBatchProcessing=false}): Exception is thrown when {@code true}</li>
-		 * <li><b>Batch mode</b> ({@code isBatchProcessing=true}): Always skips with warning (this flag is ignored)</li>
+		 * <li><b>Single-schedule mode</b> ({@code isBatchProcessing()=false}): Exception is thrown when {@code true}</li>
+		 * <li><b>Batch mode</b> ({@code isBatchProcessing()=true}): Always skips with warning (this flag is ignored)</li>
 		 * </ul>
 		 * Applies only when <code>quantityType</code> is PickedQty.
 		 */
 		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
 		/**
-		 * Indicates whether this request is part of a batch processing multiple <b>unprocessed</b> schedules.
-		 * <p>
-		 * Determined by {@link ShipmentScheduleAndJobSchedulesCollection#countUnprocessed()} > 1.
+		 * Indicates if this request is part of batch processing (multiple unprocessed schedules).
+		 * Computed once at request creation time and cannot be changed afterward.
 		 */
-		@Builder.Default boolean isBatchProcessing = false;
+		boolean isBatchProcessing;
 
 		public static PrepareForSingleShipmentScheduleRequestBuilder builderFrom(
 				@NonNull final ShipmentScheduleAndJobSchedules schedule,
 				@NonNull final PrepareForShipmentSchedulesRequest request,
-				final int unprocessedSchedulesCount)
+				final boolean isBatchProcessing)
 		{
 			final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
-			final boolean isBatchProcessing = unprocessedSchedulesCount > 1;
 
 			return PrepareForSingleShipmentScheduleRequest.builder()
 					//.huContext(huContext)
@@ -254,8 +252,12 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		// Count unprocessed schedules to determine if this is batch processing
-		final int unprocessedSchedulesCount = request.getSchedules().countUnprocessed();
+		// Compute batch mode once at the beginning based on unprocessed count.
+		// Must be computed here (not in PrepareForSingleShipmentScheduleRequest) to:
+		// 1. Prevent manual override via builder
+		// 2. Ensure same value used for all schedules in this batch (stable throughout the loop)
+		// 3. Base decision on actual unprocessed count at batch start time
+		final boolean isBatchProcessing = request.getSchedules().countUnprocessed() > 1;
 
 		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
 		{
@@ -268,7 +270,7 @@ public class ShipmentScheduleWithHUService
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentSchedule(schedule.getShipmentSchedule()))
 			{
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
-						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request, unprocessedSchedulesCount)
+						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request, isBatchProcessing)
 								.huContext(huContext)
 								.build()
 				);
@@ -645,9 +647,11 @@ public class ShipmentScheduleWithHUService
 			// In single mode: check failOnSingleScheduleWithNoPickedHUs flag
 			if (request.isBatchProcessing() || !request.isFailOnSingleScheduleWithNoPickedHUs())
 			{
-				Loggables.withLogger(logger, Level.WARN)
-						.addLog("Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs). Continuing with remaining schedules.",
-								shipmentScheduleId);
+				final String logMessage = request.isBatchProcessing()
+						? "Skipping shipment schedule {} in batch processing - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs)."
+						: "Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs).";
+				
+				Loggables.withLogger(logger, Level.WARN).addLog(logMessage, shipmentScheduleId);
 				return Collections.emptyList();
 			}
 
