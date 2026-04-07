@@ -65,7 +65,8 @@ public class ShipmentServiceTestImpl implements IShipmentService
 	public static ShipmentServiceTestImpl newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
+		// Spring context returns non-null in unit test mode even though static analysis can't prove it
+		// noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentServiceTestImpl.class,
 				() -> new ShipmentServiceTestImpl(

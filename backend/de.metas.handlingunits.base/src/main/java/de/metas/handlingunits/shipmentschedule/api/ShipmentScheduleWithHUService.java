@@ -151,7 +151,8 @@ public class ShipmentScheduleWithHUService
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
+		// Spring context returns non-null in unit test mode even though static analysis can't prove it
+		// noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()))
@@ -650,7 +651,7 @@ public class ShipmentScheduleWithHUService
 				final String logMessage = request.isBatchProcessing()
 						? "Skipping shipment schedule {} in batch processing - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs)."
 						: "Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs).";
-				
+
 				Loggables.withLogger(logger, Level.WARN).addLog(logMessage, shipmentScheduleId);
 				return Collections.emptyList();
 			}
