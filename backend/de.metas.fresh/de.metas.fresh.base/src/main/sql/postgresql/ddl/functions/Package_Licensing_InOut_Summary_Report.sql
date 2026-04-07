@@ -52,7 +52,7 @@ DECLARE
     v_report_func_call        text;
     v_column_aliases_list     text;
     v_prefixed_aliases_list   text;
-    v_q_prefixed_aliases_list text; -- **NEW: q.Glas, q.Kunststoff, etc.**
+    v_q_prefixed_aliases_list text;
 
 BEGIN
 
@@ -81,7 +81,6 @@ BEGIN
     INTO v_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
 
-    -- **NEW: Create the q. prefix list for the outer SELECT**
     SELECT TRIM(STRING_AGG(FORMAT('q.%I', material), ', '))
     INTO v_q_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
@@ -126,7 +125,7 @@ BEGIN
     SELECT
         q.ProductGroup,
         q.PackagingType,
-        %6$s -- **FIX: q.Glas, q.Kunststoff, etc.**
+        %6$s
     FROM (
         -- Inner Query: UNION ALL with sort column
         -- HEADER ROW
@@ -187,7 +186,7 @@ $f$,
                     v_data_cols_list, -- %3$s
                     v_report_func_call, -- %4$s
                     v_materials_sql_array, -- %5$s
-                    v_q_prefixed_aliases_list -- **%6$s (New q. prefixed list)**
+                    v_q_prefixed_aliases_list
              );
 
     -- 6) Execute and return the result.

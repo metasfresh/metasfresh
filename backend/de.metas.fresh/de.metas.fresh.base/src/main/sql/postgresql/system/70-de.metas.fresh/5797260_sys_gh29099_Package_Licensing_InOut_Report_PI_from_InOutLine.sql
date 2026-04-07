@@ -96,11 +96,12 @@ SELECT io.DocumentNo,
        p.OuterPackagingWeight,
        -- Packaging instruction factor (CUs per TU). Fallback chain:
        -- 1) PI from the InOut line (only if Qty > 0 to skip "No Packing Item" placeholder)
-       -- 2) Actual CU/TU ratio from the movement (MovementQty / QtyEnteredTU)
+       -- 2) Actual CU/TU ratio from the movement (MovementQty / QtyEnteredTU),
+       --    but only when QtyEnteredTU > 1 (QtyEnteredTU=1 is often a default, not an actual TU count)
        -- 3) Product's default PI from masterdata
        COALESCE(
            NULLIF(piip_iol.Qty, 0),
-           CASE WHEN iol.QtyEnteredTU > 0 AND iol.MovementQty != 0 THEN ABS(iol.MovementQty / iol.QtyEnteredTU) END,
+           CASE WHEN iol.QtyEnteredTU > 1 AND iol.MovementQty != 0 THEN ABS(iol.MovementQty / iol.QtyEnteredTU) END,
            (SELECT piip.Qty
             FROM M_HU_PI_Item_Product piip
             WHERE piip.M_Product_ID = p.M_Product_ID
