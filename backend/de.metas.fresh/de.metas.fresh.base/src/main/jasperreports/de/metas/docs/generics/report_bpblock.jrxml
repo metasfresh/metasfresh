@@ -21,9 +21,12 @@
 	<parameter name="bp_loc_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_id}, $P{doctype}, $P{bp_loc_id}, $P{RECORD_ID} )
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_id}, $P{doctype}, $P{bp_loc_id}, $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
 	<field name="org_addressline" class="java.lang.String"/>

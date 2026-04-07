@@ -19,7 +19,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	bprep.* from MKTG_Campaign_ContactPerson  cmpg_contact
-join de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( cmpg_contact.ad_org_ID, 'mkt', null,cmpg_contact.mktg_contactperson_id) as bprep on 1=1
+join de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( cmpg_contact.ad_org_ID, 'mkt', null,cmpg_contact.mktg_contactperson_id, $P{ad_language}) as bprep on 1=1
 where cmpg_contact.mktg_campaign_id = $P{RECORD_ID}
 ;]]>
 	</queryString>

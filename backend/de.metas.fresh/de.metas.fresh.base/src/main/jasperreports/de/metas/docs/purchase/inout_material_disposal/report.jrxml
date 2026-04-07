@@ -102,6 +102,9 @@
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$F{m_inout_id}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>

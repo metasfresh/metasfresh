@@ -60,6 +60,9 @@
 				<subreportParameter name="doctype">
 					<subreportParameterExpression><![CDATA[new String("ft")]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
 			</subreport>

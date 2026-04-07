@@ -111,6 +111,9 @@
 				<subreportParameter name="bp_loc_id">
 					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
