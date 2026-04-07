@@ -13,7 +13,7 @@ export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
@@ -82,6 +82,18 @@ export const GetQuantityDialog = {
     expectQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Expect qty not found reason '${reason}'`, async () => {
         const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
         await expect(radioButton).toBeChecked();
+    }),
+
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {

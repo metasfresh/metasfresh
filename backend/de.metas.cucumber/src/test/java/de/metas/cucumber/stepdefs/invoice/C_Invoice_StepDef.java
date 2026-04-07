@@ -219,6 +219,19 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	@And("^the reversal of invoice (.*) is identified by (.*)$")
+	public void identify_reversal_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String reversalIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+		final int reversalId = invoice.getReversal_ID();
+		Check.assume(reversalId > 0, "Invoice {} must have a reversal", invoiceIdentifier);
+		final I_C_Invoice reversal = InterfaceWrapperHelper.load(reversalId, I_C_Invoice.class);
+		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
+	}
+
 	@And("load C_Invoice:")
 	public void loadC_Invoice(@NonNull final DataTable dataTable)
 	{
