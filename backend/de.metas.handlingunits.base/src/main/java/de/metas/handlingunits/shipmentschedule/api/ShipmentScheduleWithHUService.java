@@ -150,7 +150,8 @@ public class ShipmentScheduleWithHUService
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
-		Adempiere.enableUnitTestMode();
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()))
@@ -171,8 +172,9 @@ public class ShipmentScheduleWithHUService
 		 */
 		@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
 		@NonNull @Builder.Default QtyToDeliverMap qtyToDeliverOverrides = QtyToDeliverMap.EMPTY;
-		@Builder.Default boolean isFailIfNoPickedHUs = true;
+		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
+		@Nullable
 		public StockQtyAndUOMQty getQtyToDeliverOverride(@NonNull final ShipmentScheduleId shipmentScheduleId)
 		{
 			return qtyToDeliverOverrides.getQtyToDeliver(shipmentScheduleId);
@@ -200,16 +202,23 @@ public class ShipmentScheduleWithHUService
 		@Nullable StockQtyAndUOMQty quantityToDeliverOverride;
 
 		/**
-		 * Fails if no picked HUs were found.
+		 * Fails if no picked HUs were found when processing a single schedule.
+		 * When processing multiple schedules (batch mode), schedules with no picked HUs are skipped with a warning.
 		 * Applies only when <code>quantityType</code> is PickedQty.
 		 */
-		@Builder.Default boolean isFailIfNoPickedHUs = true;
+		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
+
+		/**
+		 * Indicates whether this request is part of a batch processing multiple schedules.
+		 */
+		@Builder.Default boolean isBatchProcessing = false;
 
 		public static PrepareForSingleShipmentScheduleRequestBuilder builderFrom(
 				@NonNull final ShipmentScheduleAndJobSchedules schedule,
 				@NonNull final PrepareForShipmentSchedulesRequest request)
 		{
 			final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
+			final boolean isBatchProcessing = request.getSchedules().size() > 1;
 
 			return PrepareForSingleShipmentScheduleRequest.builder()
 					//.huContext(huContext)
@@ -217,8 +226,9 @@ public class ShipmentScheduleWithHUService
 					.quantityType(request.getQuantityTypeToUse())
 					.onlyLUIds(request.getOnlyLUIds())
 					.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
-					.isFailIfNoPickedHUs(request.isFailIfNoPickedHUs())
+					.failOnSingleScheduleWithNoPickedHUs(request.isFailOnSingleScheduleWithNoPickedHUs())
 					.quantityToDeliverOverride(request.getQtyToDeliverOverride(shipmentScheduleId))
+					.isBatchProcessing(isBatchProcessing)
 					;
 		}
 
@@ -607,22 +617,34 @@ public class ShipmentScheduleWithHUService
 	{
 		final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = prepareShipmentScheduleWithHUForPick(request);
 
-		if (request.isFailIfNoPickedHUs() && candidatesForPick.isEmpty())
+		if (candidatesForPick.isEmpty())
 		{
-			// the parameter insists that we use qtyPicked records, but there is none
-			// => nothing to do, basically
+			final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 
 			// If we got no qty picked records just because they were already delivered,
 			// don't fail this workpackage but just log the issue (task 09048)
-			final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 			final boolean wereDelivered = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsQuery(shipmentScheduleId).create().anyMatch();
 			if (wereDelivered)
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", shipmentScheduleId);
 				return Collections.emptyList();
 			}
-			Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", shipmentScheduleId);
-			throw new AdempiereException(MSG_NoQtyPicked);
+
+			// In batch mode: log warning and skip this schedule
+			if (request.isBatchProcessing())
+			{
+				Loggables.withLogger(logger, Level.WARN)
+						.addLog("Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs). Continuing with remaining schedules.",
+								shipmentScheduleId);
+				return Collections.emptyList();
+			}
+
+			// Single schedule mode: fail if configured to do so
+			if (request.isFailOnSingleScheduleWithNoPickedHUs())
+			{
+				Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", shipmentScheduleId);
+				throw new AdempiereException(MSG_NoQtyPicked);
+			}
 		}
 
 		return candidatesForPick;

@@ -64,7 +64,8 @@ public class ShipmentServiceTestImpl implements IShipmentService
 
 	public static ShipmentServiceTestImpl newInstanceForUnitTesting()
 	{
-		Adempiere.enableUnitTestMode();
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentServiceTestImpl.class,
 				() -> new ShipmentServiceTestImpl(
@@ -94,7 +95,7 @@ public class ShipmentServiceTestImpl implements IShipmentService
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
-						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.failOnSingleScheduleWithNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found (tests expect failures)
 						.build()
 		);
 
