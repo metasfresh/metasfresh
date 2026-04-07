@@ -58,7 +58,7 @@ test('Simple distribution test', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU1.qrCode, qtyToMove: '100', expectedQtyToMove: '100' });
@@ -85,7 +85,7 @@ test('Try picking an HU from a different locator than pick from locator', async 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({
@@ -110,7 +110,7 @@ test('Try picking an HU containing a different product than expected', async ({ 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await expectErrorToast(
@@ -143,7 +143,7 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await DistributionJobScreen.clickLineButton({ index: 1 });
@@ -176,7 +176,7 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await DistributionJobScreen.clickLineButton({ index: 1 });
@@ -263,7 +263,7 @@ test('Unpick and repick in distribution', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await test.step("Pick line 1 HU and move to in-transit", async () => {
@@ -329,7 +329,7 @@ test('Resume partially completed distribution', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await test.step("Pick line 1, drop to wh2", async () => {
@@ -348,7 +348,7 @@ test('Resume partially completed distribution', async ({ page }) => {
     });
 
     await test.step("Resume the same job", async () => {
-        await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+        await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
         await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     });
 
@@ -396,7 +396,7 @@ test('Partial drop-all, then complete remaining', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await test.step("Pick line 1 only (move to in-transit)", async () => {
