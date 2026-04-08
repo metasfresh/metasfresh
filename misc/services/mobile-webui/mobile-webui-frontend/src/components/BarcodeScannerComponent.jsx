@@ -285,14 +285,6 @@ const BarcodeScannerComponent = ({
   );
 };
 
-const Spinner = () => {
-  return (
-    <div className="loading">
-      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
-    </div>
-  );
-};
-
 BarcodeScannerComponent.propTypes = {
   testId: PropTypes.string,
   isShowInputText: PropTypes.bool,
