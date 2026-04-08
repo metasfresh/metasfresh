@@ -351,21 +351,28 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowId, dataId).then((response) => {
-        dispatch(
-          patch(
-            'window',
-            documentType,
-            parentDataId,
-            null,
-            null,
-            triggerField,
-            response.data // it's OK to patch using the newly created record ID (instead of key/caption value)
-          )
-        ).then(() => {
-          this.removeModal();
+      this.setState({ pending: true });
+      processNewRecord('window', windowId, dataId)
+        .then((response) => {
+          dispatch(
+            patch(
+              'window',
+              documentType,
+              parentDataId,
+              null,
+              null,
+              triggerField,
+              response.data // it's OK to patch using the newly created record ID (instead of key/caption value)
+            )
+          ).then(() => {
+            this.removeModal();
+          });
+        })
+        .catch(() => {
+          if (this.mounted) {
+            this.setState({ pending: false });
+          }
         });
-      });
     } else {
       if (closeCallback) {
         closeCallback({
@@ -404,6 +411,11 @@ class Modal extends Component {
    */
   handleClose = () => {
     const { modalSaveStatus, modalType, dispatch } = this.props;
+    const { pending } = this.state;
+
+    if (pending) {
+      return;
+    }
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
