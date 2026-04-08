@@ -42,6 +42,11 @@ export const BarcodeScannerComponent = {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
                 document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
             }
+            // Terminate with Enter, matching real hardware scanner behavior (DataWedge default).
+            // Without this, rapid consecutive scans can merge buffers in useKeyboardBarcodeReader
+            // because the rate-drop flush (300ms) hasn't fired yet.
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
         }, scannedCode);
     }),
 

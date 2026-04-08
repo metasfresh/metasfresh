@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.i18n.ITranslatableString;
@@ -33,6 +34,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Function;
@@ -59,6 +61,15 @@ public class JsonPickingJobStep
 			final JsonOpts jsonOpts,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
+		return of(step, null, jsonOpts, getUOMSymbolById);
+	}
+
+	public static JsonPickingJobStep of(
+			final PickingJobStep step,
+			@Nullable final PickingJobLine line,
+			final JsonOpts jsonOpts,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
+	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
@@ -70,14 +81,31 @@ public class JsonPickingJobStep
 				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
 				.collect(ImmutableList.toImmutableList());
 
+		// When pickingUnit=TU, convert the step's CU qty to TU count for display.
+		// The step stores qtyToPick in CU (base UOM), but the frontend/user should see TU count.
+		final String uom;
+		final BigDecimal qtyToPick;
+		if (line != null && line.getPickingUnit().isTU())
+		{
+			uom = "TU";
+			qtyToPick = line.getPackingInfo()
+					.computeQtyTUsOfTotalCUs(step.getQtyToPick(), step.getProductId())
+					.toBigDecimal();
+		}
+		else
+		{
+			uom = step.getQtyToPick().getUOMSymbol();
+			qtyToPick = step.getQtyToPick().toBigDecimal();
+		}
+
 		return builder()
 				.pickingStepId(step.getId().getAsString())
 				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
 				.productId(step.getProductId().getAsString())
 				.productNo(step.getProductValueAndName().getValue())
 				.productName(step.getProductValueAndName().getNameTrl(adLanguage))
-				.uom(step.getQtyToPick().getUOMSymbol())
-				.qtyToPick(step.getQtyToPick().toBigDecimal())
+				.uom(uom)
+				.qtyToPick(qtyToPick)
 				.mainPickFrom(mainPickFrom)
 				.pickFromAlternatives(pickFromAlternatives)
 				.build();
