@@ -289,7 +289,12 @@ public class BPartnerQuickInputService
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
 												 @NonNull final NewRecordContext newRecordContext)
 	{
-		Check.assume(!template.isProcessed(), "{} not already processed", template);
+		if (template.isProcessed())
+		{
+			final int existingBPartnerId = template.getC_BPartner_ID();
+			Check.assume(existingBPartnerId > 0, "Already processed template {} must have a C_BPartner_ID", template);
+			return BPartnerId.ofRepoId(existingBPartnerId);
+		}
 
 		final BooleanWithReason canCreateNewBPartner = Env.getUserRolePermissions()
 				.checkCanCreateNewRecord(
