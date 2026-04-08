@@ -210,6 +210,52 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				startDate);
 	}
 
+	/**
+	 * Verifies that extending a middle term of an existing chain (A → B, then extend B to create C)
+	 * causes all three terms (A, B, C) to receive MasterEndDate = C.EndDate.
+	 * This exercises the predecessor-walking logic in FlatrateBL.extendContractAndNotifyUser().
+	 */
+	@Test
+	public void extendFromMiddleOfChain_allTermsGetMasterEndDateUpdated_test()
+	{
+		// Setup: create term A and extend it once to get B (chain: A → B)
+		final I_C_Flatrate_Term termA = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne);
+
+		final ContractExtendingRequest extendA = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
+				.contract(termA)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(extendA);
+
+		final I_C_Flatrate_Term termB = InterfaceWrapperHelper.load(termA.getC_FlatrateTerm_Next_ID(), I_C_Flatrate_Term.class);
+		assertThat(termB).isNotNull();
+
+		// Act: extend B to create C (chain becomes A → B → C)
+		final ContractExtendingRequest extendB = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(2))
+				.contract(termB)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(extendB);
+
+		final I_C_Flatrate_Term termC = InterfaceWrapperHelper.load(termB.getC_FlatrateTerm_Next_ID(), I_C_Flatrate_Term.class);
+		assertThat(termC).isNotNull();
+
+		// Reload termA: the predecessor update saves a DAO-fetched copy, so the original reference is stale.
+		final I_C_Flatrate_Term termAReloaded = InterfaceWrapperHelper.load(termA.getC_Flatrate_Term_ID(), I_C_Flatrate_Term.class);
+
+		// Assert: all three terms must share MasterEndDate = C.EndDate
+		final Timestamp expectedMasterEndDate = TimeUtil.addDays(TimeUtil.addYears(startDate, 3), -1);
+		assertThat(termAReloaded.getMasterEndDate()).as("termA.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		assertThat(termB.getMasterEndDate()).as("termB.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		assertThat(termC.getMasterEndDate()).as("termC.MasterEndDate").isEqualTo(expectedMasterEndDate);
+	}
+
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
 	{
 		final I_C_Flatrate_Term nextflatrateTerm = currentflatrateTerm.getC_FlatrateTerm_Next();
