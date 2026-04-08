@@ -2426,15 +2426,33 @@ jobs:
                           try {
                               var resp = await fetch(basePath + cat.dir);
                               if (!resp.ok) continue;
-                              var entries = await resp.json();
-                              entries.forEach(function(entry) {
-                                  if (entry.type === 'directory') {
-                                      reports.push({
-                                          name: cat.prefix + ': ' + entry.name,
-                                          path: cat.dir + entry.name + '/'
-                                      });
-                                  }
-                              });
+                              var text = await resp.text();
+                              var entries;
+                              try {
+                                  entries = JSON.parse(text);
+                                  entries.forEach(function(entry) {
+                                      if (entry.type === 'directory') {
+                                          reports.push({
+                                              name: cat.prefix + ': ' + entry.name,
+                                              path: cat.dir + entry.name + '/'
+                                          });
+                                      }
+                                  });
+                              } catch (jsonErr) {
+                                  // index.html served instead of autoindex JSON — parse links
+                                  var parser = new DOMParser();
+                                  var doc = parser.parseFromString(text, 'text/html');
+                                  doc.querySelectorAll('a[href]').forEach(function(a) {
+                                      var href = a.getAttribute('href');
+                                      if (href.endsWith('/') && href !== '../') {
+                                          var name = href.replace(/\/$/, '');
+                                          reports.push({
+                                              name: cat.prefix + ': ' + name,
+                                              path: cat.dir + name + '/'
+                                          });
+                                      }
+                                  });
+                              }
                           } catch (e) { console.warn('discoverReports: ' + cat.dir, e.message); }
                       }
                       return reports;
