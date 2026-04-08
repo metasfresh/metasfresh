@@ -139,12 +139,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -1106,7 +1105,8 @@ public class FlatrateBL implements IFlatrateBL
 		seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
 
 		ContractExtendingRequest currentRequest = request;
-		I_C_Flatrate_Transition nextTransition = null;
+		I_C_Flatrate_Transition nextTransition;
+		// order is irrelevant; updateMasterEndDateIfNeeded sorts by EndDate
 		final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
 
 		contracts.add(currentRequest.getContract());
@@ -1152,19 +1152,19 @@ public class FlatrateBL implements IFlatrateBL
 		final List<I_C_Flatrate_Term> predecessors = new ArrayList<>();
 		// Use term IDs (not conditions IDs) for cycle detection: the same conditions template may
 		// legitimately be reused across multiple terms, so conditions-ID tracking causes false positives.
-		final Set<FlatrateTermId> seenPredecessorTermIds = new HashSet<>();
-		seenPredecessorTermIds.add(FlatrateTermId.ofRepoId(request.getContract().getC_Flatrate_Term_ID()));
+		final Map<FlatrateTermId, String> seenPredecessorTermIds = new HashMap<>();
+		seenPredecessorTermIds.put(FlatrateTermId.ofRepoId(request.getContract().getC_Flatrate_Term_ID()), request.getContract().getC_Flatrate_Conditions().getName());
 		I_C_Flatrate_Term predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(request.getContract());
 		while (predecessor != null)
 		{
 			// infinite loop detection: guard against cycles in the term chain
-			if (seenPredecessorTermIds.contains(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID())))
+			if (seenPredecessorTermIds.containsKey(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID())))
 			{
 				final I_C_Flatrate_Conditions predecessorConditions = predecessor.getC_Flatrate_Conditions();
 				Check.assumeNotNull(predecessorConditions, "C_Flatrate_Conditions shall not be null!");
-				throw new AdempiereException(MSG_INFINITE_LOOP, predecessorConditions.getName(), seenPredecessorTermIds);
+				throw new AdempiereException(MSG_INFINITE_LOOP, predecessorConditions.getName(), seenPredecessorTermIds.values());
 			}
-			seenPredecessorTermIds.add(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID()));
+			seenPredecessorTermIds.put(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID()), predecessor.getC_Flatrate_Conditions().getName());
 
 			predecessors.add(0, predecessor);
 			predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(predecessor);
