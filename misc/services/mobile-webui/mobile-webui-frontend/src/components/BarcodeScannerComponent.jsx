@@ -187,13 +187,14 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
       {/* IMPORTANT: Always use type="text" — never type="hidden".
           When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
           instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
           type="hidden" inputs cannot receive focus, so Android InputConnection is never established
           and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
           IME-compatible while remaining invisible to the user. (me03#28834) */}
+      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
+          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
       {!isProcessing && (
         <input
           key="input-text"
@@ -207,6 +208,7 @@ const BarcodeScannerComponent = ({
           onKeyUp={handleInputTextKeyPress}
         />
       )}
+      <video key="video" ref={videoRef} width="100%" height="100%" />
     </div>
   );
 };
