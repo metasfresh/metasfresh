@@ -27,6 +27,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 @Data
 @Builder
 public class MsgFromMfContext
@@ -39,7 +41,10 @@ public class MsgFromMfContext
 	private String scriptReturnValue;
 
 	@NonNull private final JsonExternalSystemEndpoint endpointParameters;
-	
+
 	@NonNull private final String outboundRecordTableName;
 	@NonNull private final String outboundRecordId;
+
+	/** DocumentNo of the outbound record (e.g., shipment or invoice number). May be null if the table has no DocumentNo column. */
+	@Nullable private final String outboundDocumentNo;
 }

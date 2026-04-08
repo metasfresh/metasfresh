@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.edi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import io.cucumber.datatable.DataTable;
@@ -65,6 +66,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *     <li>{@code PackingCount} (required) — expected number of packing entries after merging</li>
 	 *     <li>{@code MainArticleCount} (required) — expected number of main article line items</li>
 	 *     <li>{@code SubArticleCount} (required) — expected number of sub-article line items</li>
+	 *     <li>{@code IsDeliveryClosed} (optional) — if set, verifies that all DesadvLine objects have this value</li>
 	 * </ul>
 	 * <p>
 	 * Example usage:
@@ -91,6 +93,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 
 			final int expectedMainArticles = row.getAsInt("MainArticleCount");
 			final int expectedSubArticles = row.getAsInt("SubArticleCount");
+			final Boolean expectedIsDeliveryClosed = row.getAsOptionalBoolean("IsDeliveryClosed").toBooleanOrNull();
 
 			int actualMainArticles = 0;
 			int actualSubArticles = 0;
@@ -119,6 +122,17 @@ public class EDI_Desadv_JSON_Export_StepDef
 								.as("Non-sub-article should have MainArticleLine=null")
 								.isTrue();
 					}
+
+					if (expectedIsDeliveryClosed != null)
+					{
+						final JsonNode desadvLine = item.path("DesadvLine");
+						assertThat(desadvLine.has("IsDeliveryClosed"))
+								.as("DesadvLine should contain IsDeliveryClosed field")
+								.isTrue();
+						assertThat(desadvLine.path("IsDeliveryClosed").asBoolean())
+								.as("DesadvLine.IsDeliveryClosed")
+								.isEqualTo(expectedIsDeliveryClosed);
+					}
 				}
 			}
 
@@ -134,6 +148,75 @@ public class EDI_Desadv_JSON_Export_StepDef
 			{
 				assertThat(mainLine).as("MainArticleLine should be > 0").isGreaterThan(0);
 			}
+		});
+	}
+
+	/**
+	 * Verifies the {@code DesadvLineWithNoPacking} array in the DESADV JSON export.
+	 * Each row in the DataTable represents an expected entry.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code OrderLine} (required) — expected order line number</li>
+	 *     <li>{@code QtyOrderedInDesadvLineUOM} (required) — expected ordered qty</li>
+	 *     <li>{@code QtyDeliveredInDesadvLineUOM} (required) — expected delivered qty</li>
+	 *     <li>{@code IsDeliveryClosed} (optional) — expected value of IsDeliveryClosed</li>
+	 *     <li>{@code QtyCUsPerTU} (optional) — expected consumer units per traded unit (from order line's QtyItemCapacity)</li>
+	 * </ul>
+	 */
+	@Then("verify DESADV JSON export has DesadvLineWithNoPacking:")
+	public void verifyDesadvLineWithNoPacking(@NonNull final DataTable dataTable) throws Exception
+	{
+		final String responseBody = testContext.getApiResponseBodyAsString();
+		final JsonNode root = objectMapper.readTree(responseBody);
+		final JsonNode noPacking = root.path("metasfresh_DESADV").path("DesadvLineWithNoPacking");
+
+		assertThat(noPacking.isArray()).as("DesadvLineWithNoPacking should be an array").isTrue();
+
+		final DataTableRows expectedRows = DataTableRows.of(dataTable);
+		assertThat(noPacking.size())
+				.as("Expected %d entries in DesadvLineWithNoPacking", expectedRows.size())
+				.isEqualTo(expectedRows.size());
+
+		expectedRows.forEach((row, index) -> {
+			final JsonNode entry = noPacking.get(index);
+			final JsonNode desadvLine = entry.path("DesadvLine");
+			assertThat(desadvLine.isMissingNode()).as("Entry %d should have DesadvLine", index).isFalse();
+
+			final int expectedOrderLine = row.getAsInt("OrderLine");
+			assertThat(desadvLine.path("OrderLine").asInt())
+					.as("DesadvLineWithNoPacking[%d].OrderLine", index)
+					.isEqualTo(expectedOrderLine);
+
+			final int expectedQtyOrdered = row.getAsInt("QtyOrderedInDesadvLineUOM");
+			assertThat(desadvLine.path("QtyOrderedInDesadvLineUOM").asInt())
+					.as("DesadvLineWithNoPacking[%d].QtyOrderedInDesadvLineUOM", index)
+					.isEqualTo(expectedQtyOrdered);
+
+			final int expectedQtyDelivered = row.getAsInt("QtyDeliveredInDesadvLineUOM");
+			assertThat(desadvLine.path("QtyDeliveredInDesadvLineUOM").asInt())
+					.as("DesadvLineWithNoPacking[%d].QtyDeliveredInDesadvLineUOM", index)
+					.isEqualTo(expectedQtyDelivered);
+
+			final Boolean expectedIsDeliveryClosed = row.getAsOptionalBoolean("IsDeliveryClosed").toBooleanOrNull();
+			if (expectedIsDeliveryClosed != null)
+			{
+				assertThat(desadvLine.has("IsDeliveryClosed"))
+						.as("DesadvLineWithNoPacking[%d] should contain IsDeliveryClosed", index)
+						.isTrue();
+				assertThat(desadvLine.path("IsDeliveryClosed").asBoolean())
+						.as("DesadvLineWithNoPacking[%d].IsDeliveryClosed", index)
+						.isEqualTo(expectedIsDeliveryClosed);
+			}
+
+			row.getAsOptionalInt("QtyCUsPerTU").ifPresent(expectedQtyCUsPerTU -> {
+				assertThat(entry.has("QtyCUsPerTU"))
+						.as("DesadvLineWithNoPacking[%d] should contain QtyCUsPerTU", index)
+						.isTrue();
+				assertThat(entry.path("QtyCUsPerTU").asInt())
+						.as("DesadvLineWithNoPacking[%d].QtyCUsPerTU", index)
+						.isEqualTo(expectedQtyCUsPerTU);
+			});
 		});
 	}
 }
