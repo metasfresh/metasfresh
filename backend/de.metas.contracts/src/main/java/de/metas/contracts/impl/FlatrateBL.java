@@ -1144,11 +1144,34 @@ public class FlatrateBL implements IFlatrateBL
 		while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
 		// Also collect predecessor contracts (those before the initial contract in the chain)
-		// so their MasterEndDate is updated as well.
+		// so their MasterEndDate is updated as well. Walk back only as long as the predecessor's
+		// transition is ExtendAll (mirroring the forward loop's while-condition).
 		final List<I_C_Flatrate_Term> predecessors = new ArrayList<>();
+		final Map<Integer, String> seenPredecessorConditions = new LinkedHashMap<>();
+		seenPredecessorConditions.put(
+				request.getContract().getC_Flatrate_Conditions_ID(),
+				request.getContract().getC_Flatrate_Conditions().getName());
 		I_C_Flatrate_Term predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(request.getContract());
 		while (predecessor != null)
 		{
+			final I_C_Flatrate_Conditions predecessorConditions = predecessor.getC_Flatrate_Conditions();
+			Check.assumeNotNull(predecessorConditions, "C_Flatrate_Conditions shall not be null!");
+			final I_C_Flatrate_Transition predecessorTransition = predecessorConditions.getC_Flatrate_Transition();
+			Check.assumeNotNull(predecessorTransition, "C_Flatrate_Transition shall not be null!");
+
+			if (!X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(predecessorTransition.getExtensionType())
+					|| predecessorTransition.getC_Flatrate_Conditions_Next_ID() <= 0)
+			{
+				break;
+			}
+
+			// infinite loop detection (same guard as forward loop)
+			if (seenPredecessorConditions.containsKey(predecessorConditions.getC_Flatrate_Conditions_ID()))
+			{
+				throw new AdempiereException(MSG_INFINITE_LOOP, predecessorConditions.getName(), seenPredecessorConditions.values());
+			}
+			seenPredecessorConditions.put(predecessorConditions.getC_Flatrate_Conditions_ID(), predecessorConditions.getName());
+
 			predecessors.add(0, predecessor);
 			predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(predecessor);
 		}
