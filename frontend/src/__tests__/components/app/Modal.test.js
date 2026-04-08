@@ -148,9 +148,16 @@ describe('Modal test', () => {
       attachTo: document.getElementById('container'),
     });
 
-    // Simulate two rapid handleClose calls (as if Done was clicked twice)
-    modalRef.handleClose();
-    modalRef.handleClose();
+    // Simulate two rapid handleClose calls (as if Done was clicked twice).
+    // Each call is wrapped in act() to ensure React flushes setState({ pending: true })
+    // between calls — matching production behavior where each click is a separate DOM event.
+    const { act } = require('react-dom/test-utils');
+    act(() => {
+      modalRef.handleClose();
+    });
+    act(() => {
+      modalRef.handleClose();
+    });
 
     // processNewRecord should only be called once — the second call is blocked by the pending guard
     expect(processNewRecordSpy).toHaveBeenCalledTimes(1);
