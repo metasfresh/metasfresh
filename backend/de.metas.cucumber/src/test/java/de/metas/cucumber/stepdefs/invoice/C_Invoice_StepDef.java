@@ -34,7 +34,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
