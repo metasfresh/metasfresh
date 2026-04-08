@@ -139,6 +139,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1104,7 +1105,8 @@ public class FlatrateBL implements IFlatrateBL
 		seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
 
 		ContractExtendingRequest currentRequest = request;
-		I_C_Flatrate_Transition nextTransition = null;
+		I_C_Flatrate_Transition nextTransition;
+		// order is irrelevant; updateMasterEndDateIfNeeded sorts by EndDate
 		final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
 
 		contracts.add(currentRequest.getContract());
@@ -1143,29 +1145,59 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
-		updateMasterEndDateIfNeeded(contracts, request.getContract());
+		// Also collect predecessor contracts (those before the initial contract in the chain)
+		// so their MasterEndDate is updated as well.
+		// MasterEndDate must reflect the last EndDate for every term in the chain, regardless of
+		// transition type, so we walk all the way back to the root.
+		final List<I_C_Flatrate_Term> predecessors = new ArrayList<>();
+		// Use term IDs (not conditions IDs) for cycle detection: the same conditions template may
+		// legitimately be reused across multiple terms, so conditions-ID tracking causes false positives.
+		final Map<FlatrateTermId, String> seenPredecessorTermIds = new HashMap<>();
+		seenPredecessorTermIds.put(FlatrateTermId.ofRepoId(request.getContract().getC_Flatrate_Term_ID()), request.getContract().getC_Flatrate_Conditions().getName());
+		I_C_Flatrate_Term predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(request.getContract());
+		while (predecessor != null)
+		{
+			// infinite loop detection: guard against cycles in the term chain
+			if (seenPredecessorTermIds.containsKey(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID())))
+			{
+				final I_C_Flatrate_Conditions predecessorConditions = predecessor.getC_Flatrate_Conditions();
+				Check.assumeNotNull(predecessorConditions, "C_Flatrate_Conditions shall not be null!");
+				throw new AdempiereException(MSG_INFINITE_LOOP, predecessorConditions.getName(), seenPredecessorTermIds.values());
+			}
+			seenPredecessorTermIds.put(FlatrateTermId.ofRepoId(predecessor.getC_Flatrate_Term_ID()), predecessor.getC_Flatrate_Conditions().getName());
+
+			predecessors.add(0, predecessor);
+			predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(predecessor);
+		}
+		contracts.addAll(predecessors);
+
+		updateMasterEndDateIfNeeded(contracts);
 	}
 
 	/**
-	 * Update <code>masterenddate</code> only for contract of which we know the entire period
+	 * Update <code>masterenddate</code> for all contracts in the chain.
+	 * MasterEndDate is the EndDate of the last term in the chain.
 	 */
-	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
+	private void updateMasterEndDateIfNeeded(@NonNull final List<I_C_Flatrate_Term> contracts)
 	{
-		final I_C_Flatrate_Conditions initialConditions = initialContract.getC_Flatrate_Conditions();
-		final I_C_Flatrate_Transition initialTransition = initialConditions.getC_Flatrate_Transition();
-		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(initialTransition.getExtensionType()))
+		if (contracts.isEmpty())
 		{
-			final Timestamp endDate = contracts.stream()
-					.sorted(Comparator.comparing(I_C_Flatrate_Term::getEndDate).reversed())
-					.findFirst()
-					.map(I_C_Flatrate_Term::getEndDate)
-					.orElse(null);
+			return;
+		}
 
-			contracts.forEach(contract -> {
+		final Timestamp endDate = contracts.stream()
+				.sorted(Comparator.comparing(I_C_Flatrate_Term::getEndDate).reversed())
+				.findFirst()
+				.map(I_C_Flatrate_Term::getEndDate)
+				.orElse(null);
+
+		contracts.forEach(contract -> {
+			if (contract.getMasterEndDate() == null || !contract.getMasterEndDate().equals(endDate))
+			{
 				contract.setMasterEndDate(endDate);
 				save(contract);
-			});
-		}
+			}
+		});
 	}
 
 	private void extendContractAndNotifyUserIfRequired(final @NonNull ContractExtendingRequest request)
