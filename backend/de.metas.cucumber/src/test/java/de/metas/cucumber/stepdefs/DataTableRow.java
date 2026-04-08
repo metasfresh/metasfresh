@@ -416,10 +416,17 @@ public class DataTableRow
 	}
 
 	@NonNull
-	public Optional<Integer> getAsOptionalInt(@NonNull final String columnName)
+	public Optional<Integer> getAsOptionalInteger(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
 				.flatMap(valueStr -> parseOptionalInt(valueStr, columnName));
+	}
+
+	@NonNull
+	public java.util.OptionalInt getAsOptionalInt(@NonNull final String columnName)
+	{
+		final Optional<Integer> opt = getAsOptionalInteger(columnName);
+		return opt.isPresent() ? java.util.OptionalInt.of(opt.get()) : java.util.OptionalInt.empty();
 	}
 
 	private static Optional<Integer> parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
@@ -587,7 +594,7 @@ public class DataTableRow
 						() -> getAsOptionalString(columnName),
 						() -> getAsOptionalString(columnName + ".CountryCode")
 				)
-				.map(CountryCode::ofAlpha2);
+				.map(code -> CountryCode.builder().alpha2(code).alpha3(code).build());
 	}
 
 	public Money getAsMoney(

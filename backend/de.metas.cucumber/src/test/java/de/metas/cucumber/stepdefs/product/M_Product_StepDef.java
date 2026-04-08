@@ -338,7 +338,7 @@ public class M_Product_StepDef
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)
 	{
-		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
+		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIgiut statusdentifier");
 
 		final Optional<ProductId> productIdOptional = productLookupService
 				.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID)
@@ -402,7 +402,7 @@ public class M_Product_StepDef
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 
-		row.getAsOptionalInt(I_M_Product.COLUMNNAME_M_Product_ID)
+		row.getAsOptionalInteger(I_M_Product.COLUMNNAME_M_Product_ID)
 				.map(ProductId::ofRepoId)
 				.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}

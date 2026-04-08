@@ -171,7 +171,7 @@ public class M_QtyReservation_StepDef
 									softly.assertThat(qtyReservation.getQtyDelivered())
 											.as("M_QtyReservation[%d].QtyDelivered", qtyReservation.getId().getRepoId())
 											.isEqualTo(expectedQtyDelivered));
-					row.getAsOptionalInt("QtyTU")
+					row.getAsOptionalInteger("QtyTU")
 							.map(QtyTU::ofInt)
 							.ifPresent(expectedQtyTU ->
 									softly.assertThat(qtyReservation.getQtyTU())

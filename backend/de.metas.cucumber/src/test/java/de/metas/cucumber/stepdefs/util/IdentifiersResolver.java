@@ -70,83 +70,98 @@ public class IdentifiersResolver
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
 	{
-		final String commaSeparatedIdentifiersNorm = StringUtils.trimBlankToNull(commaSeparatedIdentifiers);
-		if (commaSeparatedIdentifiersNorm == null || commaSeparatedIdentifiersNorm.equals("-"))
+		final String norm = StringUtils.trimBlankToNull(commaSeparatedIdentifiers);
+		if (norm == null || norm.equals("-"))
 		{
 			return ImmutableSet.of();
 		}
-
-		return getTableRecordReferences(StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedIdentifiersNorm));
+		return getTableRecordReferences(StepDefDataIdentifier.ofCommaSeparatedString(norm));
 	}
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferences(@NonNull final List<StepDefDataIdentifier> identifiers)
 	{
-		return identifiers.stream()
-				.map(this::getTableRecordReference)
-				.collect(ImmutableSet.toImmutableSet());
+		final HashSet<TableRecordReference> result = new HashSet<>();
+		for (final StepDefDataIdentifier identifier : identifiers)
+		{
+			result.add(getTableRecordReference(identifier));
+		}
+		return ImmutableSet.copyOf(result);
 	}
 
 	@NonNull
 	public TableRecordReference getTableRecordReference(@NonNull final StepDefDataIdentifier identifier)
 	{
-		final ArrayList<TableRecordReference> result = new ArrayList<>();
-		invoiceTable.getIdOptional(identifier)
-				.map(id -> TableRecordReference.of(I_C_Invoice.Table_Name, id))
-				.ifPresent(result::add);
-		paymentTable.getIdOptional(identifier)
-				.map(id -> TableRecordReference.of(I_C_Payment.Table_Name, id))
-				.ifPresent(result::add);
-		allocationTable.getIdOptional(identifier)
-				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
-				.ifPresent(result::add);
-		matchInvTable.getIdOptional(identifier)
-				.map(MatchInvId::toRecordRef)
-				.ifPresent(result::add);
-		inOutTable.getIdOptional(identifier)
-				.map(InOutId::toRecordRef)
-				.ifPresent(result::add);
-		orderTable.getIdOptional(identifier)
-				.map(OrderId::toRecordRef)
-				.ifPresent(result::add);
-		dunningDocTable.getIdOptional(identifier)
-				.map(DunningDocId::toRecordRef)
-				.ifPresent(result::add);
+		final ArrayList<TableRecordReference> candidates = new ArrayList<>();
+		invoiceTable.getOptional(identifier)
+				.map(inv -> TableRecordReference.of(I_C_Invoice.Table_Name, inv.getC_Invoice_ID()))
+				.ifPresent(candidates::add);
+		paymentTable.getOptional(identifier)
+				.map(pay -> TableRecordReference.of(I_C_Payment.Table_Name, pay.getC_Payment_ID()))
+				.ifPresent(candidates::add);
+		allocationTable.getOptional(identifier)
+				.map(alloc -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, alloc.getC_AllocationHdr_ID()))
+				.ifPresent(candidates::add);
+		inOutTable.getOptional(identifier)
+				.map(inOut -> TableRecordReference.of(I_M_InOut.Table_Name, inOut.getM_InOut_ID()))
+				.ifPresent(candidates::add);
 
-		if (result.isEmpty())
+		if (candidates.isEmpty())
 		{
-			throw new AdempiereException("No known document found for identifier: " + identifier);
+			throw new AdempiereException("No record found for identifier: " + identifier);
 		}
-		else if (result.size() > 1)
+		if (candidates.size() > 1)
 		{
-			throw new AdempiereException("More than one document found for identifier " + identifier + ": " + result);
+			throw new AdempiereException("Multiple records found for identifier: " + identifier + " => " + candidates);
 		}
-		else
-		{
-			return result.get(0);
-		}
+		return candidates.get(0);
 	}
 
-	public Optional<StepDefDataIdentifier> getIdentifier(final TableRecordReference documentRef)
+	@NonNull
+	public TableRecordReferenceSet getTableRecordReferenceSetOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
 	{
-		final String tableName = documentRef.getTableName();
-		final int recordId = documentRef.getRecord_ID();
+		return TableRecordReferenceSet.of(getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers));
+	}
 
-		switch (tableName)
+	@NonNull
+	public Optional<InvoiceId> resolveOptionalInvoiceId(@Nullable final StepDefDataIdentifier identifier)
+	{
+		if (identifier == null)
 		{
-			case I_C_Invoice.Table_Name:
-				return invoiceTable.getFirstIdentifierById(InvoiceId.ofRepoId(recordId));
-			case I_C_Payment.Table_Name:
-				return paymentTable.getFirstIdentifierById(PaymentId.ofRepoId(recordId));
-			case I_C_AllocationHdr.Table_Name:
-				return allocationTable.getFirstIdentifierById(PaymentAllocationId.ofRepoId(recordId));
-			case I_M_MatchInv.Table_Name:
-				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
-			case I_M_InOut.Table_Name:
-				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
-			default:
-				return Optional.empty();
+			return Optional.empty();
 		}
+		return invoiceTable.getOptional(identifier)
+				.map(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+	}
+
+	/**
+	 * Reverse lookup: find the StepDefDataIdentifier for a given TableRecordReference
+	 */
+	@NonNull
+	public Optional<StepDefDataIdentifier> getIdentifier(@NonNull final TableRecordReference ref)
+	{
+		final String tableName = ref.getTableName();
+		final int recordId = ref.getRecord_ID();
+
+		if (I_C_Invoice.Table_Name.equals(tableName))
+		{
+			return invoiceTable.getIdentifiers().stream()
+					.filter(id -> invoiceTable.getOptional(id).map(inv -> inv.getC_Invoice_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		if (I_C_Payment.Table_Name.equals(tableName))
+		{
+			return paymentTable.getIdentifiers().stream()
+					.filter(id -> paymentTable.getOptional(id).map(pay -> pay.getC_Payment_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		if (I_C_AllocationHdr.Table_Name.equals(tableName))
+		{
+			return allocationTable.getIdentifiers().stream()
+					.filter(id -> allocationTable.getOptional(id).map(alloc -> alloc.getC_AllocationHdr_ID() == recordId).orElse(false))
+					.findFirst();
+		}
+		return Optional.empty();
 	}
 
 	public TableRecordReferenceSet getAccountableDocumentRefs()

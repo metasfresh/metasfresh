@@ -338,7 +338,7 @@ public class M_HU_StepDef
 		row.getAsOptionalBoolean("IsAggregate")
 				.ifPresent(isAggregate -> assertThat(handlingUnitsBL.isAggregateHU(hu)).as("isAggregate").isEqualTo(isAggregate));
 
-		row.getAsOptionalInt("QtyTUs")
+		row.getAsOptionalInteger("QtyTUs")
 				.map(QtyTU::ofInt)
 				.ifPresent(qtyTUs -> assertThat(handlingUnitsBL.getTUsCount(hu)).as("QtyTUs").isEqualTo(qtyTUs));
 
