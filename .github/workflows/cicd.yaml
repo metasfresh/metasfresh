@@ -325,6 +325,14 @@ jobs:
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
+      - name: extract-swingui
+        run: |
+          docker cp "$(docker create --name swingui-extract metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}):/backend/metasfresh-dist/swingui/target/metasfresh-dist-swingui-10.0.0-client.zip" ./metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}.zip && docker rm swingui-extract
+          ls -la metasfresh-swingui-*.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}
+          path: metasfresh-swingui-${{ needs.init.outputs.tag-fixed }}.zip
       - name: disk-cleanup
         run: |
           docker system prune -af --filter "until=1h"
