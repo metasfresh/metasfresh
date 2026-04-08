@@ -23,7 +23,7 @@ import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Env;
+import org.compiere.util.Language;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +78,7 @@ class BPartnerQuickInputServiceCreateFromTemplateTest
 		final NewRecordContext ctx = NewRecordContext.builder()
 				.loginOrgId(OrgId.ofRepoId(1))
 				.loggedUserId(UserId.ofRepoId(1))
-				.loginLanguage(Env.DEFAULT_LANGUAGE)
+				.loginLanguage(Language.getBaseAD_Language())
 				.build();
 
 		// When: createBPartnerFromTemplate is called again (e.g. double-click)
