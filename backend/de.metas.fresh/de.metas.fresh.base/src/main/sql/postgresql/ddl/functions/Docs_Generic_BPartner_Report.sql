@@ -4,20 +4,10 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartne
                                                                                          p_record_id numeric)
 ;
 
-
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
-                                                                                         p_doctype   text,
-                                                                                         p_bp_loc_id numeric,
-                                                                                         p_record_id numeric,
-                                                                                         p_Language  Character Varying(6))
-;
-
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
                                                                                  p_doctype   text,
                                                                                  p_bp_loc_id numeric,
-                                                                                 p_record_id numeric,
-                                                                                 p_Language  Character Varying(6) DEFAULT 'de_DE')
+                                                                                 p_record_id numeric)
 
     RETURNS TABLE
             (
@@ -30,6 +20,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report
                 gln             text,
                 addressblock    text
             )
+    STABLE
+    LANGUAGE sql
 
 AS
 $BODY$
@@ -44,10 +36,10 @@ SELECT x.org_name,
        CASE
            WHEN p_bp_loc_id IS NOT NULL
                THEN
-               COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
+                   COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
            WHEN p_doctype = 'shn'
                THEN
-               COALESCE(bpl.address, '')
+                   COALESCE(bpl.address, '')
            WHEN p_doctype = 'o'
                THEN o.BPartnerAddress
            WHEN p_doctype = 'o_delivery'
@@ -61,7 +53,7 @@ SELECT x.org_name,
            WHEN p_doctype = 'l'
                THEN tl.BPartnerAddress
            WHEN p_doctype = 'lt'
-               THEN COALESCE(bpg_trl.name || ' ', bpg.name || ' ', '') || COALESCE(bp.name || ' ', '') ||
+               THEN COALESCE(bpg.name || ' ', '') || COALESCE(bp.name || ' ', '') ||
                     COALESCE(bp.name2 || E'\n', E'\n') ||
                     COALESCE(letter.BPartnerAddress, '')
            WHEN p_doctype = 'd'
@@ -74,32 +66,32 @@ SELECT x.org_name,
                THEN COALESCE(mktbp.name || E'\n', '') || COALESCE(mktbpl.address, '')
            WHEN p_doctype = 'ci'
                THEN ci.BPartnerAddress
-           WHEN p_doctype = 'di' -- Delivery Instructions
-               THEN ''
+		   WHEN p_doctype = 'di' -- Delivery Instructions 
+		       THEN ''
                ELSE 'Incompatible Parameter!'
        END || E'\n' AS addressblock
-FROM (SELECT COALESCE(org_bp.name, '')  AS org_name,
-             TRIM(
-                     COALESCE(org_bp.name || ', ', '') ||
-                     COALESCE(loc.address1 || ' ', '') ||
-                     COALESCE(loc.postal || ' ', '') ||
-                     COALESCE(loc.city, '')
-             )                          AS org_addressline,
-             COALESCE(loc.address1, '') AS address1,
-             COALESCE(loc.postal, '')   AS postal,
-             COALESCE(loc.city, '')     AS city,
-             c.Name                     AS country
-      FROM ad_orginfo oi
-               JOIN c_bpartner_location org_bpl
-                    ON org_bpl.c_bpartner_location_ID = oi.orgbp_location_id
-               JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
-               JOIN C_Country c ON loc.C_Country_ID = c.C_Country_ID
-               JOIN C_BPartner org_bp ON org_bpl.c_bpartner_id = org_bp.c_bpartner_id
-      WHERE oi.ad_org_id = p_org_id) x
+FROM (
+         SELECT COALESCE(org_bp.name, '')  AS org_name,
+                TRIM(
+                                    COALESCE(org_bp.name || ', ', '') ||
+                                    COALESCE(loc.address1 || ' ', '') ||
+                                    COALESCE(loc.postal || ' ', '') ||
+                                    COALESCE(loc.city, '')
+                    )                      AS org_addressline,
+                COALESCE(loc.address1, '') AS address1,
+                COALESCE(loc.postal, '')   AS postal,
+                COALESCE(loc.city, '')     AS city,
+                c.Name                     AS country
+         FROM ad_orginfo oi
+                  JOIN c_bpartner_location org_bpl
+                       ON org_bpl.c_bpartner_location_ID = oi.orgbp_location_id
+                  JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
+                  JOIN C_Country c ON loc.C_Country_ID = c.C_Country_ID
+                  JOIN C_BPartner org_bp ON org_bpl.c_bpartner_id = org_bp.c_bpartner_id
+         WHERE oi.ad_org_id = p_org_id) x
          LEFT JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_ID = p_bp_loc_id
          LEFT JOIN C_BPartner bp ON bp.C_BPartner_ID = bpl.C_BPartner_ID
          LEFT JOIN C_Greeting bpg ON bp.C_Greeting_id = bpg.C_Greeting_ID
-         LEFT JOIN c_greeting_trl bpg_trl ON (bpg_trl.C_Greeting_id = bp.C_Greeting_ID AND bpg_trl.AD_Language = p_Language)
          LEFT JOIN C_Location l ON bpl.C_Location_id = l.C_Location_ID
          LEFT JOIN C_Country lcou ON l.C_Country_id = lcou.C_Country_ID
          LEFT JOIN C_Region r ON l.C_Region_id = r.C_Region_ID
@@ -121,18 +113,20 @@ FROM (SELECT COALESCE(org_bp.name, '')  AS org_name,
          LEFT JOIN C_Orderline ol ON ol.C_OrderLine_ID = p_record_id
     -- Retrieve 1 (random) in out linked to the given order line
     -- We assume that the the BPartner address is not changed in between. (backed with pomo)
-         LEFT JOIN (SELECT rs.Record_ID,
-                           MAX(iol.M_InOut_ID) AS M_InOut_ID
-                    FROM M_ReceiptSchedule rs
-                             JOIN M_ReceiptSchedule_Alloc rsa
-                                  ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
-                             JOIN M_InOutLine iol ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-                    WHERE AD_Table_ID = (SELECT AD_Table_ID
-                                         FROM AD_Table
-                                         WHERE TableName = 'C_OrderLine'
-                                           AND isActive = 'Y')
-                      AND rs.isActive = 'Y'
-                    GROUP BY rs.Record_ID) io_id ON io_id.Record_ID = ol.C_OrderLine_ID
+         LEFT JOIN (
+    SELECT rs.Record_ID,
+           MAX(iol.M_InOut_ID) AS M_InOut_ID
+    FROM M_ReceiptSchedule rs
+             JOIN M_ReceiptSchedule_Alloc rsa
+                  ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
+             JOIN M_InOutLine iol ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+    WHERE AD_Table_ID = (SELECT AD_Table_ID
+                         FROM AD_Table
+                         WHERE TableName = 'C_OrderLine'
+                           AND isActive = 'Y')
+      AND rs.isActive = 'Y'
+    GROUP BY rs.Record_ID
+) io_id ON io_id.Record_ID = ol.C_OrderLine_ID
          LEFT JOIN M_InOut freshio ON io_id.M_InOut_ID = freshio.M_InOut_ID
          LEFT JOIN C_DunningDoc d ON d.C_DunningDoc_ID = p_record_id
          LEFT JOIN C_RfQResponse rfqr ON rfqr.C_RfQResponse_ID = p_record_id
