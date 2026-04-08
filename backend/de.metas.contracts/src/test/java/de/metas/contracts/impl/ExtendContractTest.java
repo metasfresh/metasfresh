@@ -1,25 +1,6 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.location.impl.DummyDocumentLocationBL;
-import de.metas.pricing.PricingSystemId;
-import de.metas.user.UserRepository;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -31,18 +12,36 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(), new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
 	}
 
 	@Test
@@ -58,7 +57,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+		flatrateBL.extendContractAndNotifyUser(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -77,7 +76,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+		flatrateBL.extendContractAndNotifyUser(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -96,7 +95,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+		flatrateBL.extendContractAndNotifyUser(context);
 
 		I_C_Flatrate_Term curentContract = contract;
 		do
@@ -134,7 +133,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.build();
 
 		assertThatThrownBy(() -> {
-			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+			flatrateBL.extendContractAndNotifyUser(context);
 		}).isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP.toAD_Message());
 	}
@@ -212,6 +211,54 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				startDate);
 	}
 
+	/**
+	 * Verifies that extending a middle term of an existing chain (A → B, then extend B to create C)
+	 * causes all three terms (A, B, C) to receive MasterEndDate = C.EndDate.
+	 * This exercises the predecessor-walking logic in FlatrateBL.extendContractAndNotifyUser().
+	 */
+	@Test
+	public void extendFromMiddleOfChain_allTermsGetMasterEndDateUpdated_test()
+	{
+		// Setup: create term A and extend it once to get B (chain: A → B)
+		final I_C_Flatrate_Term termA = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne);
+
+		final ContractExtendingRequest extendA = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
+				.contract(termA)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+		flatrateBL.extendContractAndNotifyUser(extendA);
+
+		final I_C_Flatrate_Term termB = InterfaceWrapperHelper.load(termA.getC_FlatrateTerm_Next_ID(), I_C_Flatrate_Term.class);
+		assertThat(termB).isNotNull();
+
+		// Act: extend B to create C (chain becomes A → B → C)
+		final ContractExtendingRequest extendB = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(2))
+				.contract(termB)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+		flatrateBL.extendContractAndNotifyUser(extendB);
+
+		final I_C_Flatrate_Term termC = InterfaceWrapperHelper.load(termB.getC_FlatrateTerm_Next_ID(), I_C_Flatrate_Term.class);
+		assertThat(termC).isNotNull();
+
+		// Reload termA: the predecessor update saves a DAO-fetched copy, so the original reference is stale.
+		final I_C_Flatrate_Term termAReloaded = InterfaceWrapperHelper.load(termA.getC_Flatrate_Term_ID(), I_C_Flatrate_Term.class);
+
+		// Assert: all three terms must share MasterEndDate = C.EndDate
+		final Timestamp expectedMasterEndDate = TimeUtil.addDays(TimeUtil.addYears(startDate, 3), -1);
+		assertThat(termAReloaded.getMasterEndDate()).as("termA.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		// term B already contains the correct data, since it was used to create C via  de.metas.contracts.IFlatrateBL.extendContractAndNotifyUser
+		assertThat(termB.getMasterEndDate()).as("termB.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		assertThat(termC.getMasterEndDate()).as("termC.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		assertThat(termC.getEndDate()).as("termC.EndDate").isEqualTo(expectedMasterEndDate);
+	}
+
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
 	{
 		final I_C_Flatrate_Term nextflatrateTerm = currentflatrateTerm.getC_FlatrateTerm_Next();
@@ -226,20 +273,12 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(nextflatrateTerm.getMasterEndDate());
 		assertThat(nextflatrateTerm.getMasterStartDate()).isNotNull();
 		assertThat(currentflatrateTerm.isAutoRenew()).isEqualTo(nextflatrateTerm.isAutoRenew());
-		if (currentflatrateTerm.isAutoRenew())
-		{
-			assertThat(currentflatrateTerm.getMasterEndDate()).isNull();
-			assertThat(nextflatrateTerm.getMasterEndDate()).isNull();
-		}
-		else
-		{
-			assertThat(currentflatrateTerm.getMasterEndDate()).isNotNull();
-			assertThat(nextflatrateTerm.getMasterEndDate()).isNotNull();
+		assertThat(currentflatrateTerm.getMasterEndDate()).isNotNull();
+		assertThat(nextflatrateTerm.getMasterEndDate()).isNotNull();
 
-			final Timestamp expectedMasterEndDate = TimeUtil.addDays(TimeUtil.addYears(startDate, 2), -1);
-			assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
-			assertThat(nextflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
-		}
+		final Timestamp expectedMasterEndDate = TimeUtil.addDays(TimeUtil.addYears(startDate, 2), -1);
+		assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
+		assertThat(nextflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(currentflatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);

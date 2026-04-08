@@ -555,7 +555,7 @@ public class C_Flatrate_Term
 	private void setMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		Timestamp masterEndDate = null;
-		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isNew(term))
 		{
 			masterEndDate = term.getEndDate();
 		}
