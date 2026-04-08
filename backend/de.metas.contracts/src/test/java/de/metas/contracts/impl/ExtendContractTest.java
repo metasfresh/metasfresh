@@ -256,7 +256,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		// term B already contains the correct data, since it was used to create C via  de.metas.contracts.IFlatrateBL.extendContractAndNotifyUser
 		assertThat(termB.getMasterEndDate()).as("termB.MasterEndDate").isEqualTo(expectedMasterEndDate);
 		assertThat(termC.getMasterEndDate()).as("termC.MasterEndDate").isEqualTo(expectedMasterEndDate);
-		assertThat(termC.getEndDate()).as("termC.MasterEndDate").isEqualTo(expectedMasterEndDate);
+		assertThat(termC.getEndDate()).as("termC.EndDate").isEqualTo(expectedMasterEndDate);
 	}
 
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
