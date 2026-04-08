@@ -1143,6 +1143,17 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
+		// Also collect predecessor contracts (those before the initial contract in the chain)
+		// so their MasterEndDate is updated as well.
+		final List<I_C_Flatrate_Term> predecessors = new ArrayList<>();
+		I_C_Flatrate_Term predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(request.getContract());
+		while (predecessor != null)
+		{
+			predecessors.add(0, predecessor);
+			predecessor = flatrateDAO.retrieveAncestorFlatrateTerm(predecessor);
+		}
+		contracts.addAll(predecessors);
+
 		updateMasterEndDateIfNeeded(contracts, request.getContract());
 	}
 
