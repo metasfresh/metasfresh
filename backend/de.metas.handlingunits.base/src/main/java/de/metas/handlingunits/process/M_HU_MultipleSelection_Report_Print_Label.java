@@ -2,6 +2,7 @@ package de.metas.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -15,6 +16,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -63,6 +65,8 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	private AdProcessId p_AD_Process_ID;
 	@Param(mandatory = true, parameterName = IMassPrintingService.PARAM_PrintCopies)
 	private int p_PrintCopies;
+	@Param(parameterName = "IsPrintPreview")
+	private boolean isPrintPreview;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -79,6 +83,8 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		final PInstanceId selectionId = getPinstanceId();
+
 		final List<HUToReport> topLevelHus = new ArrayList<>();
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
@@ -96,34 +102,42 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 				.filter(hu -> hu.getHUUnitType() != VHU)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
-		huqrCodesService.generateForExistingHUs(huIdSet);
+		if (getProcessInfo().isPrintPreview())
+		{
+			final QRCodePDFResource pdf = huqrCodesService.createPdfForSelectionOfHUIds(selectionId, p_AD_Process_ID);
+			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
+		}
+		else
+		{
+			final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+			huqrCodesService.generateForExistingHUs(huIdSet);
 
-		topLevelHus.stream()
-				.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
-				.forEach(topLevelHu -> {
-					labelService.printNow(HULabelDirectPrintRequest.builder()
-												  .onlyOneHUPerPrint(true)
-												  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
-												  .printFormatProcessId(p_AD_Process_ID)
-												  .hu(topLevelHu)
-												  .build());
-
-					if (topLevelHu.getHUUnitType() == LU && !topLevelHu.getIncludedHUs().isEmpty())
-					{
-						final List<HUToReport> sortedIncludedHUs = topLevelHu.getIncludedHUs()
-								.stream()
-								.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
-								.collect(ImmutableList.toImmutableList());
-
+			topLevelHus.stream()
+					.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
+					.forEach(topLevelHu -> {
 						labelService.printNow(HULabelDirectPrintRequest.builder()
 													  .onlyOneHUPerPrint(true)
 													  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
 													  .printFormatProcessId(p_AD_Process_ID)
-													  .hus(sortedIncludedHUs)
+													  .hu(topLevelHu)
 													  .build());
-					}
-				});
+
+						if (topLevelHu.getHUUnitType() == LU && !topLevelHu.getIncludedHUs().isEmpty())
+						{
+							final List<HUToReport> sortedIncludedHUs = topLevelHu.getIncludedHUs()
+									.stream()
+									.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
+									.collect(ImmutableList.toImmutableList());
+
+							labelService.printNow(HULabelDirectPrintRequest.builder()
+														  .onlyOneHUPerPrint(true)
+														  .printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
+														  .printFormatProcessId(p_AD_Process_ID)
+														  .hus(sortedIncludedHUs)
+														  .build());
+						}
+					});
+		}
 		return MSG_OK;
 	}
 }
