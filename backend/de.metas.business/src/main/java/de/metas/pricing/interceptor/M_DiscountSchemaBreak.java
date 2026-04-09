@@ -1,15 +1,26 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.pricing.interceptor;
-
-import java.math.BigDecimal;
-import java.util.Set;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_DiscountSchemaBreak;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -33,30 +44,20 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Set;
 
 @Interceptor(I_M_DiscountSchemaBreak.class)
 @Component
@@ -65,6 +66,11 @@ public class M_DiscountSchemaBreak
 	private static final Logger logger = LogManager.getLogger(M_DiscountSchemaBreak.class);
 
 	private static final AdMessageKey MSG_UnderLimitPriceWithExplanation = AdMessageKey.of("UnderLimitPriceWithExplanation");
+
+	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_DiscountSchemaBreak schemaBreak)
@@ -84,7 +90,7 @@ public class M_DiscountSchemaBreak
 			schemaBreak.setIsValid(true);
 			schemaBreak.setNotValidReason(null);
 		}
-		catch (AdempiereException ex)
+		catch (final AdempiereException ex)
 		{
 			// NOTE: catch only AdempiereExceptions. All others like NPE etc shall be propagated.
 			logger.debug("Schema break become invalid", ex);
@@ -117,12 +123,12 @@ public class M_DiscountSchemaBreak
 		}
 		else if (priceOverrideType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
-			countryIds = Services.get(IPriceListDAO.class).retrieveCountryIdsByPricingSystem(priceOverride.getBasePricingSystemId());
-
+			Check.assumeNotNull(priceOverride.getBasePricingSystemId(), "BasePricingSystemId may not be null M_DiscountSchemaBreak_ID={} for priceOverrideType={}", schemaBreak.getM_DiscountSchemaBreak_ID(), priceOverrideType);
+			countryIds = priceListDAO.retrieveCountryIdsByPricingSystem(priceOverride.getBasePricingSystemId());
 		}
 		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
-			countryIds = Services.get(IPricingBL.class).getPriceLimitCountryIds();
+			countryIds = pricingBL.getPriceLimitCountryIds();
 		}
 		else
 		{
@@ -159,7 +165,6 @@ public class M_DiscountSchemaBreak
 			return;
 		}
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 				.priceActual(BigDecimal.ZERO) // N/A
 				.priceLimit(BigDecimal.ZERO) // N/A
@@ -181,11 +186,12 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
+	@Nullable
 	private PricingConditionsResult calculatePricingConditions(final CalculatePricingConditionsRequest request)
 	{
 		try
 		{
-			return Services.get(IPricingConditionsService.class)
+			return pricingConditionsService
 					.calculatePricingConditions(request)
 					.orElse(null);
 		}
@@ -203,11 +209,8 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private static CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
+	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final PricingConditionsBreak pricingConditionsBreak = context.getPricingConditionsBreak();
 		final PricingConditionsBreakMatchCriteria matchCriteria = pricingConditionsBreak.getMatchCriteria();
 
@@ -220,11 +223,12 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setUomId(productBL.getStockUOMId(productId));
 		pricingCtx.setSOTrx(context.getSoTrx());
 		pricingCtx.setQty(qty);
+		pricingCtx.setPricingSystemId(pricingConditionsBreak.getPriceSpecification().getBasePricingSystemId());
 
 		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);
 		pricingCtx.setCountryId(context.getCountryId());
 
-		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
+		return CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getPricingConditionsIdOrNull())
 				.forcePricingConditionsBreak(pricingConditionsBreak)
 				// .qty(pricingCtx.getQty())
@@ -232,7 +236,6 @@ public class M_DiscountSchemaBreak
 				// .productId(pricingCtx.getM_Product_ID())
 				.pricingCtx(pricingCtx)
 				.build();
-		return request;
 	}
 
 	@lombok.Value
@@ -240,11 +243,11 @@ public class M_DiscountSchemaBreak
 	private static class PriceLimitEnforceContext
 	{
 		@NonNull
-		final PricingConditionsBreak pricingConditionsBreak;
+		PricingConditionsBreak pricingConditionsBreak;
 		@NonNull
-		final SOTrx soTrx;
+		SOTrx soTrx;
 		@NonNull
-		private CountryId countryId;
+		CountryId countryId;
 	}
 
 }
