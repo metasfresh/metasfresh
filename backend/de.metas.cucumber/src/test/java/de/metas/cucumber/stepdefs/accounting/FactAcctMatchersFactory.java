@@ -147,13 +147,20 @@ public class FactAcctMatchersFactory
 			return Optional.empty();
 		}
 
-		final TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
+		TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
 		if (taxId != null)
 		{
 			return Optional.of(taxId);
 		}
 
-		return Optional.of(identifier.getAsId(TaxId.class));
+		taxId = taxDAO.getIdByName(identifier.getAsString(), StepDefConstants.CLIENT_ID).orElse(null);
+		if (taxId != null)
+		{
+			return Optional.of(taxId);
+		}
+
+		taxId = identifier.getAsId(TaxId.class);
+		return Optional.of(taxId);
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
