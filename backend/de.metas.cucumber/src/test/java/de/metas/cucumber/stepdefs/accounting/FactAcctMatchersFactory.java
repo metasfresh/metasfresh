@@ -147,10 +147,13 @@ public class FactAcctMatchersFactory
 			return Optional.empty();
 		}
 
-		// taxTable.getIdOptional and taxDAO.getIdByName not available on soft_panda_hotfix
-		// (C_Tax_StepDefData doesn't implement StepDefDataGetIdAware, ITaxDAO lacks getIdByName)
-		final TaxId taxId = identifier.getAsId(TaxId.class);
-		return Optional.of(taxId);
+		final TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
+		if (taxId != null)
+		{
+			return Optional.of(taxId);
+		}
+
+		return Optional.of(identifier.getAsId(TaxId.class));
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
