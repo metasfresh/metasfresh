@@ -58,7 +58,7 @@ public class AccountingCucumberHelper
 	
 	public static void waitUtilPosted(final TableRecordReferenceSet recordRefs) throws InterruptedException
 	{
-		waitUtilPosted(recordRefs.toSet());
+		waitUtilPosted(ImmutableSet.copyOf(recordRefs));
 	}
 
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
@@ -88,13 +88,13 @@ public class AccountingCucumberHelper
 			{
 				return true;
 			}
-			else if (postingStatus.isNotPosted())
+			else if (postingStatus == PostingStatus.Error)
 			{
-				return false;
+				throw new AdempiereException("Document " + recordRef + " has posting error: " + postingInfo.getStackTrace());
 			}
 			else
 			{
-				throw new AdempiereException("Document " + recordRef + " has posting error: " + postingInfo.getStackTrace());
+				return false;
 			}
 		});
 	}
@@ -113,7 +113,7 @@ public class AccountingCucumberHelper
 			return Stream.empty();
 		}
 
-		final ImmutableListMultimap<String, TableRecordReference> recordRefsByTableName = Multimaps.index(recordRefs.toSet(), TableRecordReference::getTableName);
+		final ImmutableListMultimap<String, TableRecordReference> recordRefsByTableName = Multimaps.index(ImmutableSet.copyOf(recordRefs), TableRecordReference::getTableName);
 
 		final StringBuilder finalSql = new StringBuilder();
 		final ArrayList<Object> finalSqlParams = new ArrayList<>();

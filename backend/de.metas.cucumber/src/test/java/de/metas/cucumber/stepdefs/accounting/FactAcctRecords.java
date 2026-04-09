@@ -123,7 +123,7 @@ public class FactAcctRecords
 
 	@Nullable
 	private static Quantity extractQtyOrNull(final I_Fact_Acct record)
-	{
+		{
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		return uomId != null ? Quantitys.of(record.getQty(), uomId) : null;
 	}
