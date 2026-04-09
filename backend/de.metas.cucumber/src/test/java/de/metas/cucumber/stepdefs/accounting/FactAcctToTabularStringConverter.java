@@ -108,7 +108,7 @@ public class FactAcctToTabularStringConverter
 			{
 				continue;
 			}
-			if (row.containsColumn(columnName))
+			if (row.getCell(columnName) != null)
 			{
 				continue;
 			}
