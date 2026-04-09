@@ -62,6 +62,11 @@ BEGIN
     FROM C_Country
     WHERE C_Country_ID = p_Country_id;
 
+    -- Guard: if country not resolvable, use empty string (never matches a real country code)
+    IF v_org_country_code IS NULL THEN
+        v_org_country_code := '';
+    END IF;
+
     SELECT ARRAY_AGG(name)
     INTO C_REQUIRED_MATERIALS
     FROM (SELECT DISTINCT NAME

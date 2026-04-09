@@ -80,9 +80,10 @@ sales AS (
     FROM detail d
     GROUP BY d.ProductValue
 ),
--- Products that only have sales (no purchases) — still need to appear
+-- Products that only have sales (no purchases) — still need to appear.
+-- Use DISTINCT ON to avoid duplicates when PackagingInstructionFactor varies across InOut lines.
 sales_only_products AS (
-    SELECT DISTINCT
+    SELECT DISTINCT ON (d.ProductValue)
            d.ProductValue,
            d.ProductName,
            d.UOMSymbol,
@@ -96,6 +97,7 @@ sales_only_products AS (
            d.PackagingInstructionFactor
     FROM detail d
     WHERE NOT EXISTS (SELECT 1 FROM purchases pu WHERE pu.ProductValue = d.ProductValue)
+    ORDER BY d.ProductValue, d.PackagingInstructionFactor NULLS LAST
 ),
 -- Combine purchase rows + sales-only rows, rank per product
 combined AS (
