@@ -104,7 +104,15 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 
 		//
 		// Primary: resolve from actual HU assignments
-		final List<I_M_HU_Assignment> huAssignments = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUAssignmentsForModel(inoutLine);
+		final int adTableId = InterfaceWrapperHelper.getModelTableId(inoutLine);
+		final int recordId = InterfaceWrapperHelper.getId(inoutLine);
+		final List<I_M_HU_Assignment> huAssignments = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Assignment.class, inoutLine)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
 		I_M_HU_PI firstTuPI = null;
 		boolean hasMultipleDistinctPIs = false;
 
