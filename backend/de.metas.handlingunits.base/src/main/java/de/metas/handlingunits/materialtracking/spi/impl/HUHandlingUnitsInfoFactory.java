@@ -49,13 +49,11 @@ import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
+import org.adempiere.exceptions.AdempiereException;
 
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {
 	@Override
-	@Nullable
 	public IHandlingUnitsInfo createFromModel(@NonNull final Object model)
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
@@ -80,7 +78,6 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		}
 	}
 
-	@Nullable
 	private IHandlingUnitsInfo createFromInOutLine(final I_M_InOutLine inoutLine)
 	{
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -88,7 +85,16 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		final I_M_HU_PI tuPI = huInOutBL.getTU_HU_PI(inoutLine);
 		if (tuPI == null)
 		{
-			return null;
+			final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+			throw new AdempiereException("Cannot determine TU Packing Instructions for InOutLine."
+					+ " M_InOutLine_ID=" + inoutLine.getM_InOutLine_ID()
+					+ ", M_InOut_ID=" + inout.getM_InOut_ID()
+					+ " (DocNo=" + inout.getDocumentNo() + ")"
+					+ ", Line=" + inoutLine.getLine()
+					+ ", M_Product_ID=" + inoutLine.getM_Product_ID()
+					+ ", M_HU_PI_Item_Product_ID=" + inoutLine.getM_HU_PI_Item_Product_ID()
+					+ ", C_OrderLine_ID=" + inoutLine.getC_OrderLine_ID()
+					+ ". Please set M_HU_PI_Item_Product on the InOutLine or its linked OrderLine.");
 		}
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
