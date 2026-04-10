@@ -7,23 +7,47 @@ import {
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from "../utils/common";
-import { PICKING_TERMINAL_V2_WINDOW_ID } from "../utils/WindowIds";
+import {
+  PICKING_TERMINAL_V1_WINDOW_ID,
+  PICKING_TERMINAL_V2_WINDOW_ID,
+} from "../utils/WindowIds";
 
-const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
 const POSTGREST_BASE_URL =
   process.env.POSTGREST_BASE_URL || "http://localhost:32001";
 
+// V1 Picking process IDs (AD_Process)
+const PROCESS_HU_EDITOR_LAUNCHER = "ADP_540809";
+const PROCESS_PROCESS_PICKING = "ADP_540810";
+const PROCESS_HU_EDITOR_PICK_HU = "ADP_540811";
+
+// V1 Picking quick action internal names
+const ACTION_PROCESS_PICKING = "WEBUI_Picking_M_Picking_Candidate_Process";
+const ACTION_UNPICK_HU = "WEBUI_Picking_RemoveHUFromPickingSlot";
+
 /**
- * Picking Terminal V2 (Desktop WebUI) — E2E tests
+ * Skip the current test if PostgREST is not reachable.
+ * PostgREST is available locally but not in CI.
+ */
+const skipIfNoPostgREST = async () => {
+  const ok = await fetch(`${POSTGREST_BASE_URL}/`, {
+    signal: AbortSignal.timeout(5000),
+  })
+    .then((r) => r.ok)
+    .catch(() => false);
+  test.skip(!ok, "PostgREST not available");
+};
+
+/**
+ * Picking Terminal E2E tests — Desktop WebUI
  *
- * Window 540485: Shows packageable shipment schedules.
- * Quick actions: Pick (opens Products to Pick modal), Print Pick list, Unlock.
- * The "Pick" action opens a modal overlay (ProductsToPickView) where
- * individual product lines can be picked, marked "will not pick", etc.
+ * V2 (window 540485): Browse-all picking terminal showing shipment schedules.
+ * V1 (window 540350): Classic picking terminal with included PickingSlotView and HU editor.
  *
- * Prerequisites: Both WebAPI (8080) and App server (8282) must be running.
+ * V1 tests execute picking/processing via REST API due to fragile grid row selection
+ * (click-to-edit instead of click-to-select in the V1 terminal).
  *
- * me03#29090
+ * Prerequisites: WebAPI (8080) + App server (8282) must be running.
+ * V1/V2 modal tests additionally require PostgREST for shipment schedule lookup.
  */
 
 const createPickingTestData = async (language = "en_US") => {
@@ -31,15 +55,6 @@ const createPickingTestData = async (language = "en_US") => {
     language,
     request: {
       login: { user: { language } },
-      mobileConfig: {
-        picking: {
-          aggregationType: "sales_order",
-          allowPickingAnyCustomer: true,
-          allowPickingAnyHU: true,
-          createShipmentPolicy: "CL",
-          pickTo: ["LU_TU"],
-        },
-      },
       bpartners: { BP1: {} },
       warehouses: { wh: {} },
       pickingSlots: { slot1: {} },
@@ -197,12 +212,7 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
   test("Open Products to Pick modal and pick selected", async ({ page }) => {
     // This test needs PostgREST to reliably find the shipment schedule.
     // PostgREST is not available in CI — skip there, run locally.
-    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
-      signal: AbortSignal.timeout(5000),
-    })
-      .then((r) => r.ok)
-      .catch(() => false);
-    test.skip(!postgrestOk, "PostgREST not available");
+    await skipIfNoPostgREST();
 
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
@@ -436,11 +446,11 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     const psViewId = rowData.result?.[0]?.includedView?.viewId;
     expect(psViewId, "Picking slot view should exist").toBeTruthy();
 
-    return { viewId: viewData.viewId, psViewId };
+    return { psViewId };
   };
 
   /**
-   * Helper: Execute a WebUI process via REST API.
+   * Execute a WebUI process via the 2-step REST API (create instance + start).
    * Creates a process instance and starts it.
    * @returns {Promise<Object>} Process result
    */
@@ -500,7 +510,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
   const pickHUViaEditor = async (page, psViewId, pickingSlotId) => {
     // 1. Open HU editor
     const editorResult = await executeProcess(page, {
-      processId: "ADP_540809", // WEBUI_Picking_HUEditor_Launcher
+      processId: PROCESS_HU_EDITOR_LAUNCHER,
       viewId: psViewId,
       viewWindowId: "pickingSlot",
       viewDocumentIds: [pickingSlotId],
@@ -529,7 +539,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
 
     // 3. Execute Pick HU
     const pickResult = await executeProcess(page, {
-      processId: "ADP_540811", // WEBUI_Picking_HUEditor_PickHU
+      processId: PROCESS_HU_EDITOR_PICK_HU,
       viewId: huViewId,
       viewWindowId: "husToPick",
       viewDocumentIds: [topLevelRow.id],
@@ -553,7 +563,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
       docNo,
     );
 
-    const { viewId, psViewId } = await openV1Terminal(page, shipmentScheduleId);
+    const { psViewId } = await openV1Terminal(page, shipmentScheduleId);
 
     const psRowsResp = await page.request.get(
       `${FRONTEND_BASE_URL}/rest/api/documentView/pickingSlot/${psViewId}?firstRow=0&pageLength=10`,
@@ -561,24 +571,13 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     const psRows = await psRowsResp.json();
     const pickingSlotRowId = psRows.result[0].id;
 
-    return {
-      masterdata,
-      viewId,
-      psViewId,
-      pickingSlotRowId,
-      shipmentScheduleId,
-    };
+    return { masterdata, psViewId, pickingSlotRowId };
   };
 
   test("Scenario 7: Pick HU and process picking via V1 Picking Terminal", async ({
     page,
   }) => {
-    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
-      signal: AbortSignal.timeout(5000),
-    })
-      .then((r) => r.ok)
-      .catch(() => false);
-    test.skip(!postgrestOk, "PostgREST not available");
+    await skipIfNoPostgREST();
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
     allure.story("V1 Picking Terminal — pick HU and process (QA scenario 7)");
@@ -598,7 +597,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
       pickingSlotRowId,
     ]);
     const processAction = actionsAfterPick.find(
-      (a) => a.internalName === "WEBUI_Picking_M_Picking_Candidate_Process",
+      (a) => a.internalName === ACTION_PROCESS_PICKING,
     );
     expect(processAction, "Process picking action should exist").toBeTruthy();
     expect(
@@ -608,7 +607,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
 
     // Execute "Process picking" — creates shipment and closes picking candidates
     const processResult = await executeProcess(page, {
-      processId: "ADP_540810",
+      processId: PROCESS_PROCESS_PICKING,
       viewId: psViewId,
       viewWindowId: "pickingSlot",
       viewDocumentIds: [pickingSlotRowId],
@@ -623,7 +622,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
       [pickingSlotRowId],
     );
     const processAfter = actionsAfterProcess.find(
-      (a) => a.internalName === "WEBUI_Picking_M_Picking_Candidate_Process",
+      (a) => a.internalName === ACTION_PROCESS_PICKING,
     );
     // After processing, the Process action should either be gone or disabled
     if (processAfter) {
@@ -637,12 +636,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
   test("Scenario 6: Pick HU — verify picking candidate and action availability", async ({
     page,
   }) => {
-    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
-      signal: AbortSignal.timeout(5000),
-    })
-      .then((r) => r.ok)
-      .catch(() => false);
-    test.skip(!postgrestOk, "PostgREST not available");
+    await skipIfNoPostgREST();
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
     allure.story(
@@ -660,10 +654,10 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
       pickingSlotRowId,
     ]);
     const processAction = actionsAfterPick.find(
-      (a) => a.internalName === "WEBUI_Picking_M_Picking_Candidate_Process",
+      (a) => a.internalName === ACTION_PROCESS_PICKING,
     );
     const unpickAction = actionsAfterPick.find(
-      (a) => a.internalName === "WEBUI_Picking_RemoveHUFromPickingSlot",
+      (a) => a.internalName === ACTION_UNPICK_HU,
     );
     expect(
       processAction?.disabled || false,

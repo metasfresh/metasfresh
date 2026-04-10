@@ -150,6 +150,14 @@ export const FORECAST_WINDOW_ID = 328;
  */
 export const PICKING_TERMINAL_V2_WINDOW_ID = 540485;
 
+/**
+ * Picking Terminal V1 (Kommissionier-Terminal)
+ * Custom view backed by PackageableView with included PickingSlotView
+ * Window ID: 540350
+ * Description: Classic picking terminal with HU editor
+ */
+export const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
+
 // ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
