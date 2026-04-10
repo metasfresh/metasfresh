@@ -103,7 +103,9 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
-		// Primary: resolve from actual HU assignments
+		// Primary: resolve from actual HU assignments.
+		// Use a plain query (not retrieveTopLevelHUAssignmentsForModel) because we want ALL assignments,
+		// including derived ones that have M_TU_HU_ID set — those let us resolve the TU PI directly.
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(inoutLine);
 		final int recordId = InterfaceWrapperHelper.getId(inoutLine);
 		final List<I_M_HU_Assignment> huAssignments = Services.get(IQueryBL.class)
@@ -116,13 +118,15 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		I_M_HU_PI firstTuPI = null;
 		boolean hasMultipleDistinctPIs = false;
 
+		// First pass: derived assignments with M_TU_HU_ID explicitly set — most reliable TU PI source.
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
-			// Prefer M_TU_HU — the assignment already knows which HU is the TU
-			final I_M_HU tuHU = huAssignment.getM_TU_HU_ID() > 0
-					? huAssignment.getM_TU_HU()
-					: huAssignment.getM_HU();
+			if (huAssignment.getM_TU_HU_ID() <= 0)
+			{
+				continue;
+			}
 
+			final I_M_HU tuHU = huAssignment.getM_TU_HU();
 			if (tuHU == null || handlingUnitsBL.isVirtual(tuHU))
 			{
 				continue;
@@ -136,6 +140,30 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			else if (firstTuPI.getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
 			{
 				hasMultipleDistinctPIs = true;
+			}
+		}
+
+		// Second pass: if no derived assignment had a usable TU, fall back to top-level M_HU.
+		// This works when the top-level HU itself is a TU (no LU involved).
+		if (firstTuPI == null)
+		{
+			for (final I_M_HU_Assignment huAssignment : huAssignments)
+			{
+				final I_M_HU hu = huAssignment.getM_HU();
+				if (hu == null || handlingUnitsBL.isVirtual(hu))
+				{
+					continue;
+				}
+
+				final I_M_HU_PI huPI = handlingUnitsBL.getPI(hu);
+				if (firstTuPI == null)
+				{
+					firstTuPI = huPI;
+				}
+				else if (firstTuPI.getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
+				{
+					hasMultipleDistinctPIs = true;
+				}
 			}
 		}
 

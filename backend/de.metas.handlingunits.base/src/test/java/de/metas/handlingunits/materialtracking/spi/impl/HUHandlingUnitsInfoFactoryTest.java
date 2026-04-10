@@ -208,24 +208,48 @@ public class HUHandlingUnitsInfoFactoryTest
 		return hu;
 	}
 
+	/**
+	 * Creates HU assignments like production code does for receipts:
+	 * 1. A top-level assignment (M_HU only, M_TU_HU/M_LU_HU = null) — created by assignHU/transferHandlingUnit
+	 * 2. A derived assignment with M_TU_HU set — created by createTradingUnitDerivedAssignmentBuilder
+	 *
+	 * @see de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU
+	 */
 	private void createHUAssignment(final I_M_InOutLine inoutLine, final I_M_HU topLevelHU, final I_M_HU tuHU)
 	{
-		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
-		assignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
-		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
-		assignment.setM_HU(topLevelHU);
-		assignment.setM_TU_HU(tuHU);
-		saveRecord(assignment);
+		// top-level assignment (like assignHU creates)
+		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
+		topLevelAssignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
+		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		topLevelAssignment.setM_HU(topLevelHU);
+		// M_TU_HU and M_LU_HU intentionally left null
+		saveRecord(topLevelAssignment);
+
+		// derived assignment with TU info (like createTradingUnitDerivedAssignmentBuilder creates)
+		final I_M_HU_Assignment derivedAssignment = newInstance(I_M_HU_Assignment.class);
+		derivedAssignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
+		derivedAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		derivedAssignment.setM_HU(topLevelHU);
+		derivedAssignment.setM_TU_HU(tuHU);
+		saveRecord(derivedAssignment);
 	}
 
 	private void createHUAssignment_LU_TU(final I_M_InOutLine inoutLine, final I_M_HU luHU, final I_M_HU tuHU)
 	{
-		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
-		assignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
-		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
-		assignment.setM_HU(luHU);
-		assignment.setM_LU_HU(luHU);
-		assignment.setM_TU_HU(tuHU);
-		saveRecord(assignment);
+		// top-level assignment
+		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
+		topLevelAssignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
+		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		topLevelAssignment.setM_HU(luHU);
+		saveRecord(topLevelAssignment);
+
+		// derived assignment with LU + TU
+		final I_M_HU_Assignment derivedAssignment = newInstance(I_M_HU_Assignment.class);
+		derivedAssignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
+		derivedAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		derivedAssignment.setM_HU(luHU);
+		derivedAssignment.setM_LU_HU(luHU);
+		derivedAssignment.setM_TU_HU(tuHU);
+		saveRecord(derivedAssignment);
 	}
 }
