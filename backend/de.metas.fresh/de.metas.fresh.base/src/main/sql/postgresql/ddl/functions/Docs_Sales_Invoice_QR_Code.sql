@@ -25,9 +25,13 @@ SELECT ('SPC' || E'\n' || --QRType
         '1' || E'\n' || --Coding
 
 -- Account: prefer QR-IBAN (for QRR), fallback to IBAN (for SCOR/NON)
+-- FIX: NULLIF converts empty string '' to NULL so the outer COALESCE
+--      can correctly fall through to the IBAN branch when no QR-IBAN is configured.
+--      Without NULLIF, inner COALESCE(..., '') always returns non-NULL (even ''),
+--      causing the outer COALESCE to short-circuit and never reach the IBAN branch.
         COALESCE(
-                REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban, ''), ' ', ''),
-                REPLACE(COALESCE(orgbpb_invoice.iban,    orgbpb.iban,    ''), ' ', ''),
+                NULLIF(REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban, ''), ' ', ''), ''),
+                NULLIF(REPLACE(COALESCE(orgbpb_invoice.iban,    orgbpb.iban,    ''), ' ', ''), ''),
                 ''
         ) || E'\n' ||
 

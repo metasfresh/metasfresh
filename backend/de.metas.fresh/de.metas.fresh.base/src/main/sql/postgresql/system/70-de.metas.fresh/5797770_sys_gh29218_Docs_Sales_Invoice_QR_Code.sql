@@ -25,9 +25,13 @@ SELECT ('SPC' || E'\n' || --QRType
         '1' || E'\n' || --Coding
 
 -- Account: prefer QR-IBAN (for QRR), fallback to IBAN (for SCOR/NON)
+-- FIX: NULLIF converts empty string '' to NULL so the outer COALESCE
+--      can correctly fall through to the IBAN branch when no QR-IBAN is configured.
+--      Without NULLIF, inner COALESCE(..., '') always returns non-NULL (even ''),
+--      causing the outer COALESCE to short-circuit and never reach the IBAN branch.
         COALESCE(
-                REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban, ''), ' ', ''),
-                REPLACE(COALESCE(orgbpb_invoice.iban,    orgbpb.iban,    ''), ' ', ''),
+                NULLIF(REPLACE(COALESCE(orgbpb_invoice.qr_iban, orgbpb.qr_iban, ''), ' ', ''), ''),
+                NULLIF(REPLACE(COALESCE(orgbpb_invoice.iban,    orgbpb.iban,    ''), ' ', ''), ''),
                 ''
         ) || E'\n' ||
 
@@ -159,7 +163,7 @@ FROM C_Invoice i
          JOIN c_currency cur          ON i.c_currency_id = cur.c_currency_id
 
     -- Org infos
-         JOIN AD_Org o                ON i.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
+         JOIN AD_Org o                ON i.AD_Org_ID = o.AD_Org_ID
          JOIN AD_OrgInfo oi           ON oi.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
          JOIN c_bpartner_location org_bpl ON oi.orgbp_location_id = org_bpl.c_bpartner_location_id
          JOIN c_location orgl         ON org_bpl.c_location_id = orgl.c_location_id
