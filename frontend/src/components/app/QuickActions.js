@@ -173,9 +173,7 @@ export class QuickActions extends Component {
                   ? 'tag-default '
                   : 'pointer ')
               }
-              data-testid={`quick-action-${
-                actions[0].internalName || actions[0].processId || 'button'
-              }`}
+              data-testid="quick-action-button"
               onMouseEnter={this.showListTooltip}
               onMouseLeave={this.hideListTooltip}
               onClick={this.onClick}
