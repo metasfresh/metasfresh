@@ -159,7 +159,7 @@ FROM C_Invoice i
          JOIN c_currency cur          ON i.c_currency_id = cur.c_currency_id
 
     -- Org infos
-         JOIN AD_Org o                ON i.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
+         JOIN AD_Org o                ON i.AD_Org_ID = o.AD_Org_ID
          JOIN AD_OrgInfo oi           ON oi.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
          JOIN c_bpartner_location org_bpl ON oi.orgbp_location_id = org_bpl.c_bpartner_location_id
          JOIN c_location orgl         ON org_bpl.c_location_id = orgl.c_location_id
