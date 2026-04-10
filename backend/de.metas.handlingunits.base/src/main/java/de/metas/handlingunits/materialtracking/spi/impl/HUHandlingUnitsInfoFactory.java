@@ -86,15 +86,17 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		if (tuPI == null)
 		{
 			final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
-			throw new AdempiereException("Cannot determine TU Packing Instructions for InOutLine."
-					+ " M_InOutLine_ID=" + inoutLine.getM_InOutLine_ID()
-					+ ", M_InOut_ID=" + inout.getM_InOut_ID()
-					+ " (DocNo=" + inout.getDocumentNo() + ")"
-					+ ", Line=" + inoutLine.getLine()
-					+ ", M_Product_ID=" + inoutLine.getM_Product_ID()
-					+ ", M_HU_PI_Item_Product_ID=" + inoutLine.getM_HU_PI_Item_Product_ID()
-					+ ", C_OrderLine_ID=" + inoutLine.getC_OrderLine_ID()
-					+ ". Please set M_HU_PI_Item_Product on the InOutLine or its linked OrderLine.");
+			throw new AdempiereException("Wareneingang " + inout.getDocumentNo() + ", Zeile " + inoutLine.getLine()
+					+ ": Packvorschrift-TU fehlt. Bitte in der Wareneingangszeile eine Packvorschrift-TU setzen."
+					+ " | Receipt " + inout.getDocumentNo() + ", Line " + inoutLine.getLine()
+					+ ": TU Packing Instructions missing. Please set a Packvorschrift-TU on the receipt line.")
+					.setParameter("M_InOut_ID", inout.getM_InOut_ID())
+					.setParameter("DocumentNo", inout.getDocumentNo())
+					.setParameter("M_InOutLine_ID", inoutLine.getM_InOutLine_ID())
+					.setParameter("Line", inoutLine.getLine())
+					.setParameter("M_Product_ID", inoutLine.getM_Product_ID())
+					.setParameter("M_HU_PI_Item_Product_ID", inoutLine.getM_HU_PI_Item_Product_ID())
+					.setParameter("C_OrderLine_ID", inoutLine.getC_OrderLine_ID());
 		}
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
