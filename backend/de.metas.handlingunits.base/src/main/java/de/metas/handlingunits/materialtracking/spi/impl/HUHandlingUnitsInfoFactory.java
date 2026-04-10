@@ -84,7 +84,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		final I_M_HU_PI tuPI = huInOutBL.getTU_HU_PI(inoutLine);
 		if (tuPI == null)
 		{
-			// TODO: shall we just return null or throw exception?
+			return null;
 		}
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
