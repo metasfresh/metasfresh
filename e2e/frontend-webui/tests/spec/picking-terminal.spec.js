@@ -195,6 +195,15 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
   });
 
   test("Open Products to Pick modal and pick selected", async ({ page }) => {
+    // This test needs PostgREST to reliably find the shipment schedule.
+    // PostgREST is not available in CI — skip there, run locally.
+    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
+      signal: AbortSignal.timeout(5000),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+    test.skip(!postgrestOk, "PostgREST not available");
+
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
     allure.story(
@@ -564,6 +573,12 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
   test("Scenario 7: Pick HU and process picking via V1 Picking Terminal", async ({
     page,
   }) => {
+    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
+      signal: AbortSignal.timeout(5000),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+    test.skip(!postgrestOk, "PostgREST not available");
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
     allure.story("V1 Picking Terminal — pick HU and process (QA scenario 7)");
@@ -622,6 +637,12 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
   test("Scenario 6: Pick HU — verify picking candidate and action availability", async ({
     page,
   }) => {
+    const postgrestOk = await fetch(`${POSTGREST_BASE_URL}/`, {
+      signal: AbortSignal.timeout(5000),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+    test.skip(!postgrestOk, "PostgREST not available");
     allure.epic("E0105: Picking");
     allure.tag("F00230.1: MobileUI Order-based Picking");
     allure.story(
