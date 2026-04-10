@@ -50,9 +50,12 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {
 	@Override
+	@Nullable
 	public IHandlingUnitsInfo createFromModel(@NonNull final Object model)
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
@@ -77,6 +80,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		}
 	}
 
+	@Nullable
 	private IHandlingUnitsInfo createFromInOutLine(final I_M_InOutLine inoutLine)
 	{
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
