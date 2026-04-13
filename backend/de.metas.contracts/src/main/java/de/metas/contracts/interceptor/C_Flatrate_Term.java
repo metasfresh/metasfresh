@@ -546,7 +546,7 @@ public class C_Flatrate_Term
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
 	public void updateMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		setMasterEndDate(term);
@@ -555,7 +555,7 @@ public class C_Flatrate_Term
 	private void setMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		Timestamp masterEndDate = null;
-		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isNew(term))
 		{
 			masterEndDate = term.getEndDate();
 		}
