@@ -30,15 +30,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Step definitions for testing {@code report.Package_Licensing_InOut_Report(date, date, country)}.
+ * Step definitions for testing the Package Licensing report SQL functions:
+ * <ul>
+ *   <li>{@code report.Package_Licensing_InOut_Report()} — detail report (per InOut line)</li>
+ *   <li>{@code report.Package_Licensing_Product_Report()} — product + vendor aggregation</li>
+ *   <li>{@code report.Package_Licensing_InOut_Summary_Report()} — Mengenmeldung pivot by material group</li>
+ * </ul>
  * <p>
  * Uses raw SQL for test data setup because no Java model classes exist
  * for the packaging licensing tables, and because the warehouse needs
  * a specific C_Location_ID (country) which the standard step defs don't support.
  * <p>
- * The SQL function is called directly via JDBC rather than through ExportToSpreadsheetProcess.
+ * The SQL functions are called directly via JDBC rather than through ExportToSpreadsheetProcess.
  *
  * @see <a href="https://github.com/metasfresh/metasfresh/issues/28487">gh#28487</a>
+ * @see <a href="https://github.com/metasfresh/metasfresh/issues/29223">gh#29223</a>
  */
 @RequiredArgsConstructor
 public class PackageLicensingInOutReport_StepDef
@@ -46,6 +52,14 @@ public class PackageLicensingInOutReport_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 
 	private final List<Map<String, String>> reportResults = new ArrayList<>();
+	private final List<Map<String, String>> productReportResults = new ArrayList<>();
+	private final List<Map<String, String>> summaryReportResults = new ArrayList<>();
+
+	/** Maps material group name to the Summary Report column name (e.g. "Glas AT" → "Material_M3_Weight"). */
+	private final Map<String, String> summaryMaterialColumnMapping = new LinkedHashMap<>();
+
+	/** Maps SharedBPartnerKey (from feature file) to C_BPartner_ID, for reusing the same vendor across multiple InOuts. */
+	private final Map<String, Integer> sharedBPartners = new LinkedHashMap<>();
 
 	/**
 	 * Sets up packaging licensing master data for the given products.
@@ -146,8 +160,22 @@ public class PackageLicensingInOutReport_StepDef
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = OrgId.MAIN.getRepoId();
 
-		// Create BPartner first (needed for both warehouse and InOut)
-		final int bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
+		// Create or reuse BPartner. When SharedBPartnerKey is provided, subsequent InOuts
+		// with the same key reuse the same BPartner (needed for exemption date range tests).
+		final String sharedBPartnerKey = row.getAsOptionalString("SharedBPartnerKey").orElse(null);
+		final int bpartnerId;
+		if (sharedBPartnerKey != null && sharedBPartners.containsKey(sharedBPartnerKey))
+		{
+			bpartnerId = sharedBPartners.get(sharedBPartnerKey);
+		}
+		else
+		{
+			bpartnerId = createBPartner(clientId, orgId, documentNo + "_BP");
+			if (sharedBPartnerKey != null)
+			{
+				sharedBPartners.put(sharedBPartnerKey, bpartnerId);
+			}
+		}
 
 		// Resolve or create warehouse location in the specified country
 		final int warehouseCountryId = getCountryIdByCode(warehouseCountryCode);
@@ -256,6 +284,9 @@ public class PackageLicensingInOutReport_StepDef
 					resultRow.put("OuterPackagingMaterial", rs.getString("OuterPackagingMaterial"));
 					resultRow.put("OuterPackagingWeight", bigDecimalToString(rs.getBigDecimal("OuterPackagingWeight")));
 					resultRow.put("PackagingInstructionFactor", bigDecimalToString(rs.getBigDecimal("PackagingInstructionFactor")));
+					resultRow.put("VendorName", rs.getString("VendorName"));
+					resultRow.put("VendorCountryCode", rs.getString("VendorCountryCode"));
+					resultRow.put("IsVendorPackageLicensingExempt", rs.getString("IsVendorPackageLicensingExempt"));
 					reportResults.add(resultRow);
 				}
 			}
@@ -343,6 +374,344 @@ public class PackageLicensingInOutReport_StepDef
 		org.assertj.core.api.Assertions.assertThat(found)
 				.as("DocumentNo=" + documentNo + " should NOT be in report results")
 				.isFalse();
+	}
+
+	/**
+	 * Asserts that a specific column is not null for a given DocumentNo in the detail report results.
+	 * Use this to verify that vendor info is populated on purchase receipts without knowing the exact value.
+	 *
+	 * @param columnName the report column to check (e.g. "VendorName")
+	 * @param documentNo the DocumentNo of the row to check
+	 */
+	@Then("the Package Licensing InOut Report result has non-null {string} for DocumentNo {string}")
+	public void verifyNonNullColumn(@NonNull final String columnName, @NonNull final String documentNo)
+	{
+		final Map<String, String> actualRow = reportResults.stream()
+				.filter(r -> documentNo.equals(r.get("DocumentNo")))
+				.findFirst()
+				.orElse(null);
+
+		org.assertj.core.api.Assertions.assertThat(actualRow)
+				.as("Report row for DocumentNo=" + documentNo)
+				.isNotNull();
+
+		if (actualRow != null)
+		{
+			org.assertj.core.api.Assertions.assertThat(actualRow.get(columnName))
+					.as(columnName + " for DocumentNo=" + documentNo + " should not be null")
+					.isNotNull();
+		}
+	}
+
+	/**
+	 * Sets up packaging licensing exemption flags on BPartners previously created via the InOut test data step.
+	 * The BPartner is identified by SharedBPartnerKey (must have been used in a prior InOut setup step).
+	 *
+	 * <pre>
+	 * | SharedBPartnerKey | IsPackageLicensingExempt | PackageLicensingExemptFrom | PackageLicensingExemptTo |
+	 * </pre>
+	 *
+	 * <ul>
+	 *   <li>{@code SharedBPartnerKey} — key used in the InOut test data step to identify the BPartner</li>
+	 *   <li>{@code IsPackageLicensingExempt} — 'Y' or 'N'</li>
+	 *   <li>{@code PackageLicensingExemptFrom} — optional start date (yyyy-MM-dd)</li>
+	 *   <li>{@code PackageLicensingExemptTo} — optional end date (yyyy-MM-dd)</li>
+	 * </ul>
+	 */
+	@And("package licensing BPartner exemption is set up:")
+	public void setupBPartnerExemption(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String key = row.getAsString("SharedBPartnerKey");
+			final Integer bpartnerId = sharedBPartners.get(key);
+			org.assertj.core.api.Assertions.assertThat(bpartnerId)
+					.as("SharedBPartnerKey=" + key + " must have been used in a prior InOut setup step")
+					.isNotNull();
+
+			final String isExempt = row.getAsString("IsPackageLicensingExempt");
+			final String exemptFrom = row.getAsOptionalString("PackageLicensingExemptFrom").orElse(null);
+			final String exemptTo = row.getAsOptionalString("PackageLicensingExemptTo").orElse(null);
+
+			final StringBuilder sql = new StringBuilder("UPDATE C_BPartner SET IsPackageLicensingExempt=")
+					.append(sqlQuote(isExempt));
+			if (exemptFrom != null)
+			{
+				sql.append(", PackageLicensingExemptFrom=").append(sqlQuote(exemptFrom)).append("::date");
+			}
+			if (exemptTo != null)
+			{
+				sql.append(", PackageLicensingExemptTo=").append(sqlQuote(exemptTo)).append("::date");
+			}
+			sql.append(" WHERE C_BPartner_ID=").append(bpartnerId);
+
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
+		});
+	}
+
+	/**
+	 * Executes {@code report.Package_Licensing_Product_Report()} and stores results for verification.
+	 * The product report aggregates the detail report to product + vendor level.
+	 *
+	 * @param countryCode ISO country code (e.g. "AT")
+	 * @param dateFrom    start of movement date range (yyyy-MM-dd)
+	 * @param dateTo      end of movement date range (yyyy-MM-dd)
+	 */
+	@When("the Package Licensing Product Report is executed with C_Country_ID for country code {string} and date range {string} to {string}")
+	public void executeProductReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo) throws SQLException
+	{
+		productReportResults.clear();
+
+		final int countryId = getCountryIdByCode(countryCode);
+		final String sql = "SELECT * FROM report.Package_Licensing_Product_Report(?, ?, ?, ?)";
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
+			pstmt.setInt(3, countryId);
+			pstmt.setString(4, "Y"); // IsIncludeAllProducts
+
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					final Map<String, String> resultRow = new LinkedHashMap<>();
+					resultRow.put("ProductValue", rs.getString("ProductValue"));
+					resultRow.put("ProductName", rs.getString("ProductName"));
+					resultRow.put("VendorName", rs.getString("VendorName"));
+					resultRow.put("VendorCountryCode", rs.getString("VendorCountryCode"));
+					resultRow.put("PurchaseQty", bigDecimalToString(rs.getBigDecimal("PurchaseQty")));
+					resultRow.put("ForeignSalesQty", bigDecimalToString(rs.getBigDecimal("ForeignSalesQty")));
+					resultRow.put("TotalSalesQty", bigDecimalToString(rs.getBigDecimal("TotalSalesQty")));
+					resultRow.put("UOMSymbol", rs.getString("UOMSymbol"));
+					resultRow.put("ProductGroup", rs.getString("ProductGroup"));
+					resultRow.put("MaterialType", rs.getString("MaterialType"));
+					resultRow.put("SmallPackagingMaterial", rs.getString("SmallPackagingMaterial"));
+					resultRow.put("SmallPackagingWeight", bigDecimalToString(rs.getBigDecimal("SmallPackagingWeight")));
+					resultRow.put("OuterPackagingMaterial", rs.getString("OuterPackagingMaterial"));
+					resultRow.put("OuterPackagingWeight", bigDecimalToString(rs.getBigDecimal("OuterPackagingWeight")));
+					resultRow.put("PackagingInstructionFactor", bigDecimalToString(rs.getBigDecimal("PackagingInstructionFactor")));
+					resultRow.put("IsVendorPackageLicensingExempt", rs.getString("IsVendorPackageLicensingExempt"));
+					productReportResults.add(resultRow);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Verifies Product Report rows, matched by {@code ProductName} + {@code VendorCountryCode} composite key.
+	 * Empty cells assert that the actual value is null.
+	 *
+	 * <pre>
+	 * | ProductName | VendorCountryCode | PurchaseQty | ForeignSalesQty | TotalSalesQty | IsVendorPackageLicensingExempt |
+	 * </pre>
+	 */
+	@Then("the Package Licensing Product Report result contains:")
+	public void verifyProductReportResults(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> expectedRows = dataTable.asMaps();
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> expectedRow : expectedRows)
+		{
+			final String expectedProductName = expectedRow.get("ProductName");
+			final String expectedVendorCountryCode = expectedRow.get("VendorCountryCode");
+			final String matchKey = "ProductName=" + expectedProductName + ", VendorCountryCode=" + expectedVendorCountryCode;
+
+			final Map<String, String> actualRow = productReportResults.stream()
+					.filter(r -> expectedProductName.equals(r.get("ProductName"))
+							&& (expectedVendorCountryCode == null || expectedVendorCountryCode.isEmpty()
+							? r.get("VendorCountryCode") == null
+							: expectedVendorCountryCode.equals(r.get("VendorCountryCode"))))
+					.findFirst()
+					.orElse(null);
+
+			softly.assertThat(actualRow)
+					.as("Product Report row for " + matchKey)
+					.isNotNull();
+
+			if (actualRow == null)
+			{
+				continue;
+			}
+
+			for (final Map.Entry<String, String> entry : expectedRow.entrySet())
+			{
+				final String col = entry.getKey();
+				if ("ProductName".equals(col) || "VendorCountryCode".equals(col))
+				{
+					continue; // already matched
+				}
+
+				final String expectedValue = entry.getValue();
+				final String actualValue = actualRow.get(col);
+
+				if (expectedValue == null || expectedValue.isEmpty())
+				{
+					softly.assertThat(actualValue)
+							.as(col + " for " + matchKey + " should be null/empty")
+							.isNullOrEmpty();
+				}
+				else if (isNumericColumn(col))
+				{
+					softly.assertThat(actualValue)
+							.as(col + " for " + matchKey + " should not be null")
+							.isNotNull();
+					if (actualValue != null)
+					{
+						softly.assertThat(new BigDecimal(actualValue))
+								.as(col + " for " + matchKey)
+								.isEqualByComparingTo(new BigDecimal(expectedValue));
+					}
+				}
+				else
+				{
+					softly.assertThat(actualValue)
+							.as(col + " for " + matchKey)
+							.isEqualTo(expectedValue);
+				}
+			}
+		}
+
+		softly.assertAll();
+	}
+
+	/**
+	 * Executes {@code report.Package_Licensing_InOut_Summary_Report()} and stores results for verification.
+	 * The summary report returns a pivot table with ProductGroup x PackagingType x MaterialGroup columns.
+	 * The first row is a header row (ProductGroup='---HEADER---') mapping material names to column positions.
+	 *
+	 * @param countryCode                  ISO country code (e.g. "AT")
+	 * @param dateFrom                     start of movement date range (yyyy-MM-dd)
+	 * @param dateTo                       end of movement date range (yyyy-MM-dd)
+	 * @param isExcludeDomesticPurchases   "Y" to exclude domestic + exempt vendors, "N" to include all
+	 */
+	@When("the Package Licensing Summary Report is executed with C_Country_ID for country code {string} and date range {string} to {string} and IsExcludeDomesticPurchases {string}")
+	public void executeSummaryReport(
+			@NonNull final String countryCode,
+			@NonNull final String dateFrom,
+			@NonNull final String dateTo,
+			@NonNull final String isExcludeDomesticPurchases) throws SQLException
+	{
+		summaryReportResults.clear();
+		summaryMaterialColumnMapping.clear();
+
+		final int countryId = getCountryIdByCode(countryCode);
+		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Summary_Report(?, ?, ?, ?)";
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
+			pstmt.setInt(3, countryId);
+			pstmt.setString(4, isExcludeDomesticPurchases);
+
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				boolean headerProcessed = false;
+				while (rs.next())
+				{
+					final String productGroup = rs.getString("ProductGroup");
+
+					// The first row is a header mapping material names to column positions
+					if ("---HEADER---".equals(productGroup) && !headerProcessed)
+					{
+						for (int i = 1; i <= 16; i++)
+						{
+							final String colName = "Material_M" + i + "_Weight";
+							final String materialName = rs.getString(colName);
+							if (materialName != null && !materialName.isEmpty())
+							{
+								summaryMaterialColumnMapping.put(materialName, colName);
+							}
+						}
+						headerProcessed = true;
+						continue;
+					}
+
+					final Map<String, String> resultRow = new LinkedHashMap<>();
+					resultRow.put("ProductGroup", productGroup);
+					resultRow.put("PackagingType", rs.getString("PackagingType"));
+					for (int i = 1; i <= 16; i++)
+					{
+						final String colName = "Material_M" + i + "_Weight";
+						resultRow.put(colName, rs.getString(colName));
+					}
+					summaryReportResults.add(resultRow);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Verifies Summary Report (Mengenmeldung) rows, matched by {@code ProductGroup} + {@code PackagingType}.
+	 * The {@code MaterialName} is resolved to the correct dynamic column via the header row mapping.
+	 * {@code Weight} is compared as BigDecimal.
+	 *
+	 * <pre>
+	 * | ProductGroup | PackagingType | MaterialName | Weight |
+	 * </pre>
+	 */
+	@Then("the Package Licensing Summary Report result contains:")
+	public void verifySummaryReportResults(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> expectedRows = dataTable.asMaps();
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> expectedRow : expectedRows)
+		{
+			final String productGroup = expectedRow.get("ProductGroup");
+			final String packagingType = expectedRow.get("PackagingType");
+			final String materialName = expectedRow.get("MaterialName");
+			final String expectedWeight = expectedRow.get("Weight");
+			final String matchKey = "ProductGroup=" + productGroup + ", PackagingType=" + packagingType + ", Material=" + materialName;
+
+			// Resolve material name to column via header mapping
+			final String colName = summaryMaterialColumnMapping.get(materialName);
+			softly.assertThat(colName)
+					.as("Material column mapping for " + materialName + " (available: " + summaryMaterialColumnMapping.keySet() + ")")
+					.isNotNull();
+
+			if (colName == null)
+			{
+				continue;
+			}
+
+			// Find the data row by ProductGroup + PackagingType
+			final Map<String, String> actualRow = summaryReportResults.stream()
+					.filter(r -> productGroup.equals(r.get("ProductGroup")) && packagingType.equals(r.get("PackagingType")))
+					.findFirst()
+					.orElse(null);
+
+			softly.assertThat(actualRow)
+					.as("Summary row for " + matchKey)
+					.isNotNull();
+
+			if (actualRow == null)
+			{
+				continue;
+			}
+
+			final String actualWeight = actualRow.get(colName);
+			if (expectedWeight == null || expectedWeight.isEmpty())
+			{
+				softly.assertThat(actualWeight)
+						.as("Weight for " + matchKey)
+						.isNullOrEmpty();
+			}
+			else
+			{
+				softly.assertThat(actualWeight)
+						.as("Weight for " + matchKey + " should not be null")
+						.isNotNull();
+				if (actualWeight != null)
+				{
+					softly.assertThat(new BigDecimal(actualWeight))
+							.as("Weight for " + matchKey)
+							.isEqualByComparingTo(new BigDecimal(expectedWeight));
+				}
+			}
+		}
+
+		softly.assertAll();
 	}
 
 	// --- Helper methods ---
