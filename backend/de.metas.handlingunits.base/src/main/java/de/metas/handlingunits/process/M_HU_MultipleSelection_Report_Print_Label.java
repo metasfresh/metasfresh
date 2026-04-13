@@ -102,14 +102,16 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 				.filter(hu -> hu.getHUUnitType() != VHU)
 				.collect(ImmutableList.toImmutableList());
 
+		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+
 		if (getProcessInfo().isPrintPreview())
 		{
-			final QRCodePDFResource pdf = huqrCodesService.createPdfForSelectionOfHUIds(selectionId, p_AD_Process_ID);
+			final QRCodePDFResource pdf = huqrCodesService.createPdfForHUIds(huIdSet);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 		}
 		else
 		{
-			final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+
 			huqrCodesService.generateForExistingHUs(huIdSet);
 
 			topLevelHus.stream()
