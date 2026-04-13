@@ -217,3 +217,49 @@ $f$,
 END;
 $$
 ;
+
+-- ==========================================================================
+-- AD metadata: add IsExcludeDomesticPurchases parameter to Mengenmeldung process
+-- ==========================================================================
+
+-- AD_Element
+INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, EntityType, IsActive, Name, PrintName, Description, Updated, UpdatedBy)
+VALUES (0, 584757 /*From ID Server*/, 0, 'IsExcludeDomesticPurchases', '2026-04-13 10:00', 0, 'D', 'Y',
+        'Inländische Einkäufe ausschließen', 'Inländische Einkäufe ausschl.',
+        'Wareneingänge von inländischen und vorlizenzierte Lieferanten von der Berechnung ausschließen',
+        '2026-04-13 10:00', 0);
+
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, 584757, e.Name, e.PrintName, e.Description, 'N', 0, 0, e.Created, 0, e.Updated, 0, 'Y'
+FROM AD_Language l, AD_Element e
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND e.AD_Element_ID = 584757
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl t WHERE t.AD_Language = l.AD_Language AND t.AD_Element_ID = 584757);
+
+UPDATE AD_Element_Trl SET Name = 'Exclude Domestic Purchases', PrintName = 'Excl. Domestic Purch.',
+                          Description = 'Exclude receipts from domestic and pre-licensed vendors from the calculation',
+                          IsTranslated = 'Y', Updated = '2026-04-13 10:00', UpdatedBy = 0
+WHERE AD_Element_ID = 584757 AND AD_Language = 'en_US';
+
+-- AD_Process_Para on Mengenmeldung (AD_Process_ID=585504)
+-- Using AD_Reference_ID=20 (YesNo), default 'Y'
+INSERT INTO AD_Process_Para (AD_Client_ID, AD_Element_ID, AD_Org_ID, AD_Process_ID, AD_Process_Para_ID, AD_Reference_ID,
+                             ColumnName, Created, CreatedBy, DefaultValue, EntityType, FieldLength, IsActive, IsCentrallyMaintained,
+                             IsMandatory, IsRange, Name, SeqNo, Updated, UpdatedBy)
+VALUES (0, 584757, 0, 585504, 543179 /*From ID Server*/, 20,
+        'IsExcludeDomesticPurchases', '2026-04-13 10:00', 0, 'Y', 'D', 1, 'Y', 'Y',
+        'Y', 'N', 'Inländische Einkäufe ausschließen', 50, '2026-04-13 10:00', 0);
+
+INSERT INTO AD_Process_Para_Trl (AD_Language, AD_Process_Para_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, 543179, pp.Name, pp.Description, pp.Help, 'N', 0, 0, pp.Created, 0, pp.Updated, 0, 'Y'
+FROM AD_Language l, AD_Process_Para pp
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND pp.AD_Process_Para_ID = 543179
+  AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl t WHERE t.AD_Language = l.AD_Language AND t.AD_Process_Para_ID = 543179);
+
+-- Update SQLStatement to pass the new parameter
+UPDATE AD_Process
+SET SQLStatement = 'SELECT * FROM report.Package_Licensing_InOut_Summary_Report(''@DateFrom@''::timestamp with time zone, ''@DateTo@''::timestamp with time zone, @C_Country_ID/null@, ''@IsExcludeDomesticPurchases@'')',
+    Updated = '2026-04-13 10:00',
+    UpdatedBy = 0
+WHERE AD_Process_ID = 585504;
