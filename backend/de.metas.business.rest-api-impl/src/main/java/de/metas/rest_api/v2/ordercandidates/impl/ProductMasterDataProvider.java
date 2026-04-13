@@ -1,8 +1,10 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -18,6 +20,8 @@ import lombok.Value;
 import lombok.With;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -80,24 +84,34 @@ public final class ProductMasterDataProvider
 			.<ProductCacheKey, ProductInfo>builder()
 			.cacheName(this.getClass().getSimpleName() + "-productInfoCache")
 			.tableName(I_M_Product.Table_Name)
+			.additionalTableNameToResetFor(I_M_HU_PI_Item_Product.Table_Name)
 			.build();
 
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productExternalIdentifier,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final LocalDate localDate,
 			@NonNull final OrgId orgId)
 	{
-		return productInfoCache.getOrLoad(
-				new ProductCacheKey(orgId, productExternalIdentifier),
-				this::getProductInfo0);
-
+		if (productExternalIdentifier.getType().equals(ExternalIdentifier.Type.GTIN))
+		{
+			// special threatment required
+			
+		}
+		else
+		{
+			return productInfoCache.getOrLoad(
+					new ProductCacheKey(orgId, productExternalIdentifier),
+					this::getProductInfo0);
+		}
 	}
 
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)
 	{
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
-		
+
 		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
-				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId())
+				.resolveProductExternalIdentifierSingle(productIdentifier, key.getOrgId())
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier.getRawValue())

@@ -175,7 +175,7 @@ public class WarehouseService
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
-		final ProductId productId = productLookupService.resolveProductExternalIdentifier(productIdentifier, orgId)
+		final ProductId productId = productLookupService.resolveProductExternalIdentifierSingle(productIdentifier, orgId)
 				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceIdentifier(productIdentifier.getRawValue())

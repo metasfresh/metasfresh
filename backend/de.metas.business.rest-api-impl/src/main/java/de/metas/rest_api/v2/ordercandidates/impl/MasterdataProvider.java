@@ -80,6 +80,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
@@ -211,11 +212,17 @@ public final class MasterdataProvider
 
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final LocalDate localDate,
 			@NonNull final OrgId orgId)
 	{
-		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+		return productMasterDataProvider.getProductInfo(productIdentifier,
+				bPartnerId,
+				localDate,
+				orgId);
 	}
 
+	
 	@Nullable
 	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{
@@ -296,7 +303,6 @@ public final class MasterdataProvider
 					.parentResource(request)
 					.build();
 		}
-
 		return shipperId;
 	}
 

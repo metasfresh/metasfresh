@@ -1,5 +1,6 @@
 package de.metas.handlingunits;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -27,21 +28,23 @@ public class HUPIItemProduct
 {
 	@NonNull HUPIItemProductId id;
 	@NonNull ITranslatableString name;
-	@Nullable String description;
+	@Nullable ITranslatableString description;
 	@NonNull HuPackingInstructionsItemId piItemId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qtyCUsPerTU;
 	@NonNull Boolean isOrderInTuUomWhenMatched;
+	@Nullable BPartnerId bPartnerId;
 
 	@Builder(toBuilder = true)
 	private HUPIItemProduct(
 			@NonNull final HUPIItemProductId id,
 			@NonNull final ITranslatableString name,
-			@Nullable final String description,
+			@Nullable final ITranslatableString description,
 			@NonNull final HuPackingInstructionsItemId piItemId,
 			@Nullable final ProductId productId,
 			@Nullable final Quantity qtyCUsPerTU,
-			@Nullable final Boolean isOrderInTuUomWhenMatched)
+			@Nullable final Boolean isOrderInTuUomWhenMatched,
+			@Nullable final BPartnerId bPartnerId)
 	{
 		this.id = id;
 		this.name = name;
@@ -50,12 +53,16 @@ public class HUPIItemProduct
 		this.productId = productId;
 		this.qtyCUsPerTU = qtyCUsPerTU != null && qtyCUsPerTU.signum() > 0 && !Quantity.isInfinite(qtyCUsPerTU.toBigDecimal()) ? qtyCUsPerTU : null;
 		this.isOrderInTuUomWhenMatched = coalesceNotNull(isOrderInTuUomWhenMatched, Boolean.FALSE);
+		this.bPartnerId = bPartnerId;
 	}
 
 	@Override
 	public String toString() {return name.getDefaultValue();}
 
-	public Optional<ProductId> getProductId() {return Optional.ofNullable(productId);}
+	public Optional<ProductId> getOptProductId() {return Optional.ofNullable(productId);}
+
+	@NonNull
+	public ProductId getProductId() {return Check.assumeNotNull(productId, "productId not null in HUPIItemProduct: {}", this);}
 
 	public boolean isAllowAnyProduct() {return productId == null;}
 
@@ -110,7 +117,7 @@ public class HUPIItemProduct
 		{
 			throw new AdempiereException("Cannot calculate qty of CUs for infinite capacity");
 		}
-		
+
 		return qtyTU.computeTotalQtyCUsUsingQtyCUsPerTU(qtyCUsPerTU);
 	}
 

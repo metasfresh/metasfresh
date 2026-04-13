@@ -499,7 +499,7 @@ public class GetProductsCommand
 		{
 			Check.assumeNotNull(productIdentifier, "ProductIdentifier must be set in case of single export!");
 
-			final ProductId productId = productLookupService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+			final ProductId productId = productLookupService.resolveProductExternalIdentifierSingle(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
 					.map(ProductAndHUPIItemProductId::getProductId)
 					.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
 							.appendParametersToMessage()

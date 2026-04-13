@@ -322,7 +322,7 @@ public class ProductRestService
 			}
 		}
 
-		return productLookupService.resolveProductExternalIdentifier(
+		return productLookupService.resolveProductExternalIdentifierSingle(
 				ExternalIdentifier.of(productIdentifier),
 				OrgId.ofRepoId(org.getAD_Org_ID()));
 	}

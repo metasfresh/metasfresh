@@ -79,7 +79,7 @@ public class BOMRestService
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
 
 		final ProductId finishedProductId = productLookupService
-				.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+				.resolveProductExternalIdentifierSingle(productExternalIdentifier, orgId)
 				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> new InvalidIdentifierException(request.getProductIdentifier()));
 
@@ -119,7 +119,7 @@ public class BOMRestService
 	{
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(lineRequest.getProductIdentifier());
 
-		final ProductId productId = productLookupService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId productId = productLookupService.resolveProductExternalIdentifierSingle(productExternalIdentifier, orgId)
 				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> new InvalidIdentifierException(lineRequest.getProductIdentifier()));
 

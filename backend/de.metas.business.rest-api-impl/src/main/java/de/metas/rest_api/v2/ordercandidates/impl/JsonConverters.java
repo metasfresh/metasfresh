@@ -120,8 +120,7 @@ public class JsonConverters
 
 		final String jsonProductIdentifier = request.getProductIdentifier();
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
-
+		
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
@@ -165,6 +164,14 @@ public class JsonConverters
 			paymentTermId = masterdataProvider.getPaymentTermId(paymentTerm, request, orgId);
 		}
 
+		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(
+				productIdentifier,
+				bPartnerInfo.getBpartnerId(),
+				CoalesceUtil.coalesceNotNull(request.getDateRequired(), request.getDateOrdered(), request.getDateCandidate()),
+				orgId);
+		
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
 		{
@@ -198,7 +205,7 @@ public class JsonConverters
 				.map(JsonDocTypeInfo::getDocSubType)
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
-
+		
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 		final BPartnerInfo billBPartnerInfo = masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null);
 
@@ -264,7 +271,6 @@ public class JsonConverters
 				//
 				.warehouseDestId(warehouseDestId)
 				.warehouseId(warehouseId)
-
 				.shipperId(shipperId)
 				.deliveryRule(deliveryRule)
 				.deliveryViaRule(request.getDeliveryViaRule())
@@ -274,13 +280,9 @@ public class JsonConverters
 				.isAutoInvoice(isAutoInvoice)
 				.invoiceRule(InvoiceRule.ofNullableCode(request.getInvoiceRule()))
 				.paymentRule(paymentRule)
-
 				.salesRepId(salesRepId)
-
 				.paymentTermId(paymentTermId)
-
 				.orderLineGroup(orderLineGroup)
-
 				.description(request.getDescription())
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())

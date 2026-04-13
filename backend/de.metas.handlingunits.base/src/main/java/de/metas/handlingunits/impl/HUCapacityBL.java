@@ -129,11 +129,11 @@ public class HUCapacityBL implements IHUCapacityBL
 		// first, get the productId of the product in question
 		if (itemDefProduct.isAllowAnyProduct())
 		{
-			return Check.assumeNotNull(productId, "M_HU_PI_Item_Product_ID={} has AllowAnyProduct='Y', so the given productId not may not be null", itemDefProduct.getProductId());
+			return Check.assumeNotNull(productId, "M_HU_PI_Item_Product_ID={} has AllowAnyProduct='Y', so the given productId  may not be null", itemDefProduct.getOptProductId());
 		}
 		else
 		{
-			final ProductId piipProductId = itemDefProduct.getProductId().orElse(null);
+			final ProductId piipProductId = itemDefProduct.getOptProductId().orElse(null);
 			if (productId == null)
 			{
 				if (piipProductId == null)

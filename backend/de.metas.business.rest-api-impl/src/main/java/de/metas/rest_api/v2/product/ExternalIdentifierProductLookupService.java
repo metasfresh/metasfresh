@@ -23,12 +23,14 @@
 package de.metas.rest_api.v2.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.gs1.GTIN;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -36,10 +38,7 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -49,12 +48,11 @@ import java.util.Optional;
 public class ExternalIdentifierProductLookupService
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	@NonNull
-	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
+	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifierSingle(
 			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId)
 	{
@@ -81,6 +79,7 @@ public class ExternalIdentifierProductLookupService
 
 			case GTIN:
 				return lookupProductByGTIN(productIdentifier);
+
 			default:
 				throw new InvalidIdentifierException(productIdentifier.getRawValue());
 		}
@@ -92,58 +91,18 @@ public class ExternalIdentifierProductLookupService
 			@NonNull final ExternalIdentifier productIdentifier)
 	{
 		final String gtin = productIdentifier.asGTIN();
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
+		final ImmutableList<HUPIItemProduct> hupiItemProducts = Services.get(IHUPIItemProductDAO.class).retrieveByGTIN(GTIN.ofString(gtin));
 
-		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(hupiFilter)
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
-				.orderBy(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.create().first();
-		if (hupi != null)
+		if (hupiItemProducts.size() > 1)
 		{
-			return ProductAndHUPIItemProductId.opt(
-					ProductId.ofRepoId(hupi.getM_Product_ID()),
-					HUPIItemProductId.ofRepoId(hupi.getM_HU_PI_Item_Product_ID()));
+			throw new InvalidIdentifierException(productIdentifier.getRawValue(), null, new DBMoreThanOneRecordsFoundException("More than one product found for GTIN: " + productIdentifier.asGTIN()));
 		}
-
-		// TODO refactor this logic and use some BPartnerProductDAO methods
-		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtin);
-
-		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(bppFilter)
-				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
-				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.create().first();
-		if (bpp != null)
+		if (hupiItemProducts.isEmpty())
 		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(bpp.getM_Product_ID()));
+			return Optional.empty();
 		}
-
-		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtin);
-		final I_M_Product p = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(pFilter)
-				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
-				.create().first();
-		if (p != null)
-		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(p.getM_Product_ID()));
-		}
-		return Optional.empty();
+		
+		final HUPIItemProduct hupiItemProduct = hupiItemProducts.get(0);
+		return ProductAndHUPIItemProductId.opt(hupiItemProduct.getProductId(), hupiItemProduct.getId());
 	}
-
 }

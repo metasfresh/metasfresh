@@ -22,12 +22,14 @@
 
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -49,7 +51,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,6 +67,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -80,6 +83,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static de.metas.handlingunits.HUPIItemProductId.VIRTUAL_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
@@ -87,6 +91,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	private final CCache<HUPIItemProductId, HUPIItemProduct> cacheById = CCache.<HUPIItemProductId, HUPIItemProduct>builder()
 			.tableName(I_M_HU_PI_Item_Product.Table_Name)
 			.build();
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id)
@@ -100,19 +106,117 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return fromRecord(record);
 	}
 
-	public static HUPIItemProduct fromRecord(final I_M_HU_PI_Item_Product record)
+	public static HUPIItemProduct fromRecord(@NonNull final I_M_HU_PI_Item_Product record)
 	{
 		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return HUPIItemProduct.builder()
 				.id(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID()))
 				.name(trls.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, record.getName()))
-				.description(StringUtils.trimBlankToNull(record.getDescription()))
+				.description(trls.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Description, record.getDescription()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(NumberUtils.stripTrailingDecimalZeros(record.getQty()), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isOrderInTuUomWhenMatched(record.isOrderInTuUomWhenMatched())
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.build();
+	}
+
+	private static final CCache<GTIN, ImmutableList<HUPIItemProduct>> gtinCache = CCache.<GTIN, ImmutableList<HUPIItemProduct>>builder()
+			.cacheName("HUPIItemProductByGTIN")
+			.tableName(I_M_HU_PI_Item_Product.Table_Name)
+			.additionalTableNameToResetFor(I_M_Product.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner_Product.Table_Name)
+			.build();
+
+	@NonNull
+	@Override
+	public ImmutableList<HUPIItemProduct> retrieveByGTIN(@NonNull final GTIN gtin)
+	{
+		return gtinCache.getOrLoad(gtin, this::retrieveByGTIN0);
+	}
+
+	@NonNull
+	private ImmutableList<HUPIItemProduct> retrieveByGTIN0(@NonNull final GTIN gtin)
+	{
+		final ImmutableList.Builder<HUPIItemProduct> result = ImmutableList.builder();
+
+		final String gtinStr = gtin.getAsString();
+
+		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtinStr)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtinStr);
+
+		final ImmutableList<I_M_HU_PI_Item_Product> hupiRecords = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(hupiFilter)
+				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
+				.orderBy(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.create()
+				.listImmutable();
+
+		result.addAll(CollectionUtils.map(hupiRecords, HUPIItemProductDAO::fromRecord));
+
+		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtinStr)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtinStr);
+
+		final ImmutableList<I_C_BPartner_Product> bppRecords = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(bppFilter)
+				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
+				.create()
+				.listImmutable();
+		result.addAll(
+				CollectionUtils.map(bppRecords, record ->
+				{
+					final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+					final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
+					return HUPIItemProduct.builder()
+							.id(HUPIItemProductId.VIRTUAL_HU)
+							.name(trls.getColumnTrl(I_C_BPartner_Product.COLUMNNAME_ProductName, record.getProductName()))
+							.description(trls.getColumnTrl(I_C_BPartner_Product.COLUMNNAME_ProductDescription, record.getProductDescription()))
+							.piItemId(HuPackingInstructionsItemId.VIRTUAL)
+							.productId(productId)
+							.qtyCUsPerTU(null)
+							.isOrderInTuUomWhenMatched(false)
+							.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+							.build();
+				}));
+
+		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtinStr)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtinStr);
+		final ImmutableList<I_M_Product> products = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(pFilter)
+				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.listImmutable();
+		result.addAll(
+				CollectionUtils.map(products, record ->
+				{
+					final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
+					return HUPIItemProduct.builder()
+							.id(HUPIItemProductId.VIRTUAL_HU)
+							.name(trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, record.getName()))
+							.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, record.getDescription()))
+							.piItemId(HuPackingInstructionsItemId.VIRTUAL)
+							.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+							.qtyCUsPerTU(null)
+							.isOrderInTuUomWhenMatched(false)
+							.bPartnerId(null)
+							.build();
+				}));
+
+		return result.build();
 	}
 
 	@Override
@@ -129,9 +233,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(final I_M_HU_PI_Item itemDef)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
 				.filter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -142,11 +247,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item_Product piip = getRecordById(HUPIItemProductId.VIRTUAL_HU);
+		final I_M_HU_PI_Item_Product piip = getRecordById(VIRTUAL_HU);
 
 		return Check.assumeNotNull(piip,
 				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
-				HUPIItemProductId.VIRTUAL_HU);
+				VIRTUAL_HU);
 	}
 
 	@Nullable
@@ -282,7 +387,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_None;
 
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
@@ -370,7 +474,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
 			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
 					HUPIItemProductId.TEMPLATE_HU,
-					HUPIItemProductId.VIRTUAL_HU);
+					VIRTUAL_HU);
 
 			filters.addFilter(infiniteCapacityFilter);
 		}
@@ -454,7 +558,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// Don't allow Virtual PIs
 		if (!queryVO.isAllowVirtualPI())
 		{
-			filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId.VIRTUAL_HU);
+			filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, VIRTUAL_HU);
 		}
 
 		//
@@ -511,7 +615,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IQueryOrderByBuilder<I_M_HU_PI_Item_Product> orderByBuilderToUse;
 		if (orderByBuilder == null)
 		{
-			orderByBuilderToUse = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
+			orderByBuilderToUse = queryBL.createQueryOrderByBuilder(I_M_HU_PI_Item_Product.class);
 		}
 		else
 		{
@@ -546,7 +650,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		//
 		// Final Query
-		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_PI_Item_Product.class, ctx, trxName);
 
 		final IQueryFilter<I_M_HU_PI_Item_Product> filter = createQueryFilter(ctx, queryVO);

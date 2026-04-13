@@ -343,7 +343,7 @@ public class M_Product_StepDef
 		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
 
 		final Optional<ProductId> productIdOptional = productLookupService
-				.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID)
+				.resolveProductExternalIdentifierSingle(ExternalIdentifier.of(externalIdentifier), ORG_ID)
 				.map(ProductAndHUPIItemProductId::getProductId);
 
 		assertThat(productIdOptional).isPresent();
