@@ -5,7 +5,7 @@ Feature: Package Licensing — Vendor Info, Domestic Filter, Exemption (gh#29223
   domestic purchase filter toggle in Mengenmeldung, and BPartner exemption date range.
   Reports are executed via the actual AD_Process (ExportToSpreadsheetProcess)
   and verified on the generated Excel output.
-  AD_Process Values:
+  Reports tested via AD_Process Values:
     - Package-Licencing-Report-Details (Bewegungsdetails)
     - Package-Licensing-Product-Report (Produktübersicht)
     - Package-Licencing-Summary-Report (Mengenmeldung)
