@@ -213,7 +213,8 @@ public class DefaultValueExpressionsFactory
 		{
 			return Optional.of(IStringExpression.NULL);
 		}
-		// If it's a SQL expression => compile it as SQL expression
+		// If it's a SQL expression => compile it as SQL expression (deferred evaluation with document context).
+		// For immediate evaluation without document context, see DB.resolveSqlDefaultValue()
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
 			final String sqlTemplate = defaultValueStr.substring(5).trim();

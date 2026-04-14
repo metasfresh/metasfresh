@@ -165,10 +165,10 @@ public class ValueToCopy
 		//(b) SQL Statement (for data integity & consistency)
 		//
 		String defStr = "";
-		if (defaultLogic.startsWith("@SQL="))
+		if (DB.isSqlDefaultValue(defaultLogic))
 		{
-			String sql = defaultLogic.substring(5); // w/o tag
-
+			String sql = defaultLogic.substring(5); // strip @SQL=
+			// Use PO-specific context for @Variable@ resolution (not global context)
 			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 			sql = Evaluator.parseContext(evaluatee, sql);
 			if (sql == null || Check.isBlank(sql))
@@ -177,30 +177,14 @@ public class ValueToCopy
 			}
 			else
 			{
-				PreparedStatement pstmt = null;
-				ResultSet rs = null;
 				try
 				{
-					pstmt = DB.prepareStatement(sql, po.get_TrxName());
-					rs = pstmt.executeQuery();
-					if (rs.next())
-					{
-						defStr = rs.getString(1);
-					}
-					else
-					{
-						log.warn("({}) - no Result: {}", columnName, sql);
-					}
+					defStr = DB.getSQLValueStringEx(po.get_TrxName(), sql);
 				}
-				catch (final SQLException e)
+				catch (final DBException e)
 				{
-					throw new DBException(e, sql)
-							.setParameter("columnName", columnName)
+					throw e.setParameter("columnName", columnName)
 							.appendParametersToMessage();
-				}
-				finally
-				{
-					DB.close(rs, pstmt);
 				}
 			}
 			if (defStr == null && parentPO != null && parentPO.get_ColumnIndex(columnName) >= 0)
@@ -217,7 +201,7 @@ public class ValueToCopy
 		//
 		//(c) Field DefaultValue === similar code in AStartRPDialog.getDefault ===
 		//
-		if (!Check.isBlank(defaultLogic) && !defaultLogic.startsWith("@SQL="))
+		if (!Check.isBlank(defaultLogic) && !DB.isSqlDefaultValue(defaultLogic))
 		{
 			// It is one or more variables/constants
 			final StringTokenizer st = new StringTokenizer(defaultLogic, ",;", false);
