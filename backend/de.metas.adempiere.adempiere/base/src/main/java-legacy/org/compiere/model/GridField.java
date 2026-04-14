@@ -700,7 +700,7 @@ public class GridField
 		/**
 		 * (c) Field DefaultValue === similar code in AStartRPDialog.getDefault ===
 		 */
-		if (!m_vo.DefaultValue.equals("") && !m_vo.DefaultValue.startsWith("@SQL="))
+		if (!m_vo.DefaultValue.equals("") && !DB.isSqlDefaultValue(m_vo.DefaultValue))
 		{
 			defStr = "";		// problem is with texts like 'sss;sss'
 			// It is one or more variables/constants

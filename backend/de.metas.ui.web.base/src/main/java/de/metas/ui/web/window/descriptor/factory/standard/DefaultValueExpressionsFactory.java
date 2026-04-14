@@ -21,6 +21,7 @@ import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStri
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -215,7 +216,7 @@ public class DefaultValueExpressionsFactory
 		}
 		// If it's a SQL expression => compile it as SQL expression (deferred evaluation with document context).
 		// For immediate evaluation without document context, see DB.resolveSqlDefaultValue()
-		else if (defaultValueStr.startsWith("@SQL="))
+		else if (DB.isSqlDefaultValue(defaultValueStr))
 		{
 			final String sqlTemplate = defaultValueStr.substring(5).trim();
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
