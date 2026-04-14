@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.report;
 
+import de.metas.cucumber.stepdefs.AD_Process_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;

@@ -1,6 +1,5 @@
-package de.metas.cucumber.stepdefs.report;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_AD_Process;
 
 public class AD_Process_StepDefData extends StepDefData<I_AD_Process>

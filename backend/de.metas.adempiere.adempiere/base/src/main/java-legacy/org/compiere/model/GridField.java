@@ -675,7 +675,7 @@ public class GridField
 			String sql = m_vo.DefaultValue.substring(DB.SQL_DEFAULT_VALUE_PREFIX.length());
 			// Use window-specific context for @Variable@ resolution (not global context)
 			sql = Env.parseContext(ctx, m_vo.WindowNo, sql, false, false);
-			if (sql.equals(""))
+			if (Check.isBlank(sql))
 			{
 				log.warn("({}) - Default SQL variable parse failed: {}", m_vo.getColumnName(), m_vo.DefaultValue);
 			}

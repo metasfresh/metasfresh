@@ -171,7 +171,7 @@ public class ValueToCopy
 			// Use PO-specific context for @Variable@ resolution (not global context)
 			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 			sql = Evaluator.parseContext(evaluatee, sql);
-			if (sql == null || Check.isBlank(sql))
+			if (Check.isBlank(sql))
 			{
 				log.warn("({}) - Default SQL variable parse failed: {}", columnName, defaultLogic);
 			}
