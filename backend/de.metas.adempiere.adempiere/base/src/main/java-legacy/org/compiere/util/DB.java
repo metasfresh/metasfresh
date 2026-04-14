@@ -1236,7 +1236,7 @@ public class DB
 
 	// --- @SQL= default value resolution utilities ---
 
-	private static final String SQL_DEFAULT_VALUE_PREFIX = "@SQL=";
+	public static final String SQL_DEFAULT_VALUE_PREFIX = "@SQL=";
 
 	/**
 	 * Returns {@code true} if the given default value string starts with the {@code @SQL=} prefix,

@@ -218,7 +218,7 @@ public class DefaultValueExpressionsFactory
 		// For immediate evaluation without document context, see DB.resolveSqlDefaultValue()
 		else if (DB.isSqlDefaultValue(defaultValueStr))
 		{
-			final String sqlTemplate = defaultValueStr.substring(5).trim();
+			final String sqlTemplate = defaultValueStr.substring(DB.SQL_DEFAULT_VALUE_PREFIX.length()).trim();
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
 			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression, fieldValueClass));
 		}

@@ -167,7 +167,7 @@ public class ValueToCopy
 		String defStr = "";
 		if (DB.isSqlDefaultValue(defaultLogic))
 		{
-			String sql = defaultLogic.substring(5); // strip @SQL=
+			String sql = defaultLogic.substring(DB.SQL_DEFAULT_VALUE_PREFIX.length());
 			// Use PO-specific context for @Variable@ resolution (not global context)
 			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 			sql = Evaluator.parseContext(evaluatee, sql);

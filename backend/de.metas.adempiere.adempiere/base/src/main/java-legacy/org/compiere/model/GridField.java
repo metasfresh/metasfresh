@@ -672,7 +672,7 @@ public class GridField
 		String defStr = "";
 		if (DB.isSqlDefaultValue(m_vo.DefaultValue))
 		{
-			String sql = m_vo.DefaultValue.substring(5); // strip @SQL=
+			String sql = m_vo.DefaultValue.substring(DB.SQL_DEFAULT_VALUE_PREFIX.length());
 			// Use window-specific context for @Variable@ resolution (not global context)
 			sql = Env.parseContext(ctx, m_vo.WindowNo, sql, false, false);
 			if (sql.equals(""))
