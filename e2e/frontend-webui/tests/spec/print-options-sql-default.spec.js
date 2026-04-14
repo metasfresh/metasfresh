@@ -17,14 +17,16 @@ import { expect, test } from '@playwright/test';
  */
 
 const SHIPMENT_WINDOW_ID = '169';
-const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080';
+// In CI: WEBAPI_BASE_URL=http://webui:80/rest/api (via nginx proxy)
+// Locally: http://localhost:8080/rest/api (direct to webapi)
+const WEBAPI_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 test.describe('Print Options @SQL= default resolution', () => {
   test.setTimeout(60000);
 
   test('Shipment printingOptions resolves @SQL= IsPrintLogo default to true', async ({ request }) => {
     // Step 1: Authenticate
-    const loginResp = await request.post(`${API_BASE}/rest/api/login/authenticate`, {
+    const loginResp = await request.post(`${WEBAPI_URL}/login/authenticate`, {
       data: { type: 'password', username: 'metasfresh', password: 'metasfresh' },
     });
     expect(loginResp.ok(), `Login failed with ${loginResp.status()}`).toBeTruthy();
@@ -33,21 +35,21 @@ test.describe('Print Options @SQL= default resolution', () => {
     const role = loginData.roles?.find((r) => r.caption?.includes('WebUI')) || loginData.roles?.[0];
     expect(role, 'No role found in login response').toBeTruthy();
 
-    const completeResp = await request.post(`${API_BASE}/rest/api/login/loginComplete`, {
+    const completeResp = await request.post(`${WEBAPI_URL}/login/loginComplete`, {
       data: { roleId: role.roleId, tenantId: role.tenantId, orgId: role.orgId },
     });
     expect(completeResp.ok(), `loginComplete failed with ${completeResp.status()}`).toBeTruthy();
 
     // Step 2: Find a shipment document via view
     const viewCreateResp = await request.post(
-      `${API_BASE}/rest/api/documentView/${SHIPMENT_WINDOW_ID}`,
+      `${WEBAPI_URL}/documentView/${SHIPMENT_WINDOW_ID}`,
       { data: { windowId: SHIPMENT_WINDOW_ID, viewType: 'grid', firstRow: 0, pageLength: 1 } }
     );
     expect(viewCreateResp.ok(), `Create view failed with ${viewCreateResp.status()}`).toBeTruthy();
     const viewData = await viewCreateResp.json();
 
     const rowsResp = await request.get(
-      `${API_BASE}/rest/api/documentView/${SHIPMENT_WINDOW_ID}/${viewData.viewId}?firstRow=0&pageLength=1`
+      `${WEBAPI_URL}/documentView/${SHIPMENT_WINDOW_ID}/${viewData.viewId}?firstRow=0&pageLength=1`
     );
     expect(rowsResp.ok(), `Get rows failed with ${rowsResp.status()}`).toBeTruthy();
     const rowsData = await rowsResp.json();
@@ -57,7 +59,7 @@ test.describe('Print Options @SQL= default resolution', () => {
 
     // Step 3: Call printingOptions endpoint — THE CRITICAL TEST
     const printResp = await request.get(
-      `${API_BASE}/rest/api/window/${SHIPMENT_WINDOW_ID}/${documentId}/printingOptions`
+      `${WEBAPI_URL}/window/${SHIPMENT_WINDOW_ID}/${documentId}/printingOptions`
     );
     expect(printResp.ok(), `printingOptions returned ${printResp.status()}`).toBeTruthy();
     const printOptions = await printResp.json();
