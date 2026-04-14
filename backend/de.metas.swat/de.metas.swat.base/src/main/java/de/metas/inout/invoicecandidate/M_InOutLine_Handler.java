@@ -126,12 +126,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
 
 	// Services
-	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
-	private final transient BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
-	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	@NonNull private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+	@NonNull private final transient BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
+	@NonNull private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
