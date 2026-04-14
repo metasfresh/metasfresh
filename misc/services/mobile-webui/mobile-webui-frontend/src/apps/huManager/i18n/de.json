@@ -51,6 +51,22 @@
       "windowName": "Etiketten drucken",
       "print": "Drucken",
       "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
+    },
+    "scanGRAI": {
+      "buttonCaption": "GRAI scannen",
+      "windowName": "GRAI scannen",
+      "count": "%(scanned)s / %(total)s GRAIs gescannt",
+      "countExtra": "(%(extra)s extra)",
+      "clearAll": {
+        "buttonCaption": "Alle löschen",
+        "confirmQuestion": "Alle %(count)s GRAIs entfernen?"
+      },
+      "send": {
+        "buttonCaption": "Senden"
+      },
+      "undo": {
+        "buttonCaption": "Rückgängig"
+      }
     }
   }
 }

@@ -51,7 +51,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 {
 	private static final Logger log = LogManager.getLogger(SupplyRequiredDecreasedHandler.class);
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
-	@NonNull private final SupplyRequiredHandlerHelper helper;
+	@NonNull private final MaterialPlanningContextHelper helper;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredDecreasedEvent>> getHandledEventType()

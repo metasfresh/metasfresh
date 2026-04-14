@@ -91,6 +91,14 @@ export const HUManagerScreen = {
         await HUManagerScreen.clickButton({ testId: 'bulk-actions-button' });
         await HUBulkActionsScreen.waitForScreen();
         await HUBulkActionsScreen.move({ targetLocator });
-    })
+    }),
+
+    expectButtonVisible: async ({ testId }) => await test.step(`${NAME} - Expect "${testId}" button visible`, async () => {
+        await expect(page.getByTestId(testId)).toBeVisible();
+    }),
+
+    openGRAIScreen: async () => await test.step(`${NAME} - Open GRAI Screen`, async () => {
+        await page.getByTestId('scan-grai-button').tap();
+    }),
 };
 

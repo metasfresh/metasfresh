@@ -57,6 +57,11 @@ public class AllocationBL implements IAllocationBL
 	@Nullable
 	public I_C_AllocationHdr autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
+		if (!invoice.isFinancial())
+		{
+			return null;
+		}
+
 		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice))
 		{
 			return null;
@@ -175,6 +180,11 @@ public class AllocationBL implements IAllocationBL
 											@NonNull final I_C_Payment payment,
 											final boolean ignoreIsAutoAllocateAvailableAmt)
 	{
+		if (!invoice.isFinancial())
+		{
+			return;
+		}
+
 		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice)
 				|| payment.getC_BPartner_ID() != invoice.getC_BPartner_ID())
 		{
@@ -276,8 +286,8 @@ public class AllocationBL implements IAllocationBL
 	{
 		final org.compiere.model.I_C_Invoice invoice = request.getInvoice();
 
-		Timestamp dateTrx;
-		Timestamp dateAcct;
+		final Timestamp dateTrx;
+		final Timestamp dateAcct;
 		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();

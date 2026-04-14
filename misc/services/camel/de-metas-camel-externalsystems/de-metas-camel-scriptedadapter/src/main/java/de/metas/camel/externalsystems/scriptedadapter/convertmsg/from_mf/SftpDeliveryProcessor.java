@@ -99,7 +99,8 @@ public class SftpDeliveryProcessor implements Processor
 			throw new RuntimeCamelException("SFTP auth type is not configured in endpoint parameters!");
 		}
 
-		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, Map.of());
+		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext);
+		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, filenameVariables);
 
 		final String body = msgFromMfContext.getScriptReturnValue();
 		if (body == null)
@@ -134,6 +135,19 @@ public class SftpDeliveryProcessor implements Processor
 				deleteTempKeyFileSilently(tempKeyFile);
 			}
 		}
+	}
+
+	@NonNull
+	private static Map<String, String> buildFilenameVariables(@NonNull final MsgFromMfContext context)
+	{
+		final var variables = new java.util.HashMap<String, String>();
+		if (!Check.isBlank(context.getOutboundDocumentNo()))
+		{
+			variables.put("documentno", context.getOutboundDocumentNo());
+		}
+		variables.put("table", context.getOutboundRecordTableName());
+		variables.put("recordid", context.getOutboundRecordId());
+		return variables;
 	}
 
 	@NonNull

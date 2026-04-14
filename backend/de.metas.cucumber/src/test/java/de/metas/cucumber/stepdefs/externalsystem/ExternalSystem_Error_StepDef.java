@@ -71,6 +71,8 @@ public class ExternalSystem_Error_StepDef
 		final org.compiere.model.I_M_InOut inout = inoutTable.get(inoutIdentifier);
 		assertThat(inout).isNotNull();
 
+		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		InterfaceWrapperHelper.refresh(inout);
 		final I_M_InOut ediInout = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
 		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInout.getEDI_AD_PInstance_ID());
 
@@ -140,6 +142,8 @@ public class ExternalSystem_Error_StepDef
 		final org.compiere.model.I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 		assertThat(invoice).isNotNull();
 
+		// Refresh from DB — EDI_AD_PInstance_ID is set asynchronously by the export process
+		InterfaceWrapperHelper.refresh(invoice);
 		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInvoice.getEDI_AD_PInstance_ID());
 

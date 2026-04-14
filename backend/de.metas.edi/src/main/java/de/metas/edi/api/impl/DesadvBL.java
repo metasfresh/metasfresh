@@ -301,7 +301,19 @@ public class DesadvBL
 	@Nullable
 	private static BigDecimal getQtyOrdered_Override(@Nullable final I_M_ShipmentSchedule schedule)
 	{
-		if (schedule == null || InterfaceWrapperHelper.isNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		if (schedule == null)
+		{
+			return null;
+		}
+
+		// When the shipment schedule is closed, the effective ordered qty is whatever was delivered
+		// (no more deliveries expected). This mirrors ShipmentScheduleEffectiveBL.computeQtyOrdered().
+		if (schedule.isClosed())
+		{
+			return schedule.getQtyDelivered();
+		}
+
+		if (InterfaceWrapperHelper.isNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
 		{
 			return null;
 		}
