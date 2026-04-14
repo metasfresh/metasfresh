@@ -67,6 +67,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -585,7 +586,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Order order = inOut.getC_Order();
 
-		if (inOut.getC_Order_ID() > 0)
+		if (OrderId.ofRepoIdOrNull(inOut.getC_Order_ID()) != null)
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setPaymentRule(order.getPaymentRule());
@@ -597,7 +598,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				icRecord.setEMail(order.getEMail());
 			}
 		}
-		else if (icRecord.getC_Order_ID() <= 0)
+		else if (OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID()) == null)
 		{
 			// don't attempt to "clear" the order data if it is already set/known.
 			icRecord.setC_Order(null);
