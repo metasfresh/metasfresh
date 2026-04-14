@@ -16,6 +16,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -82,6 +83,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		final PInstanceId selectionId = getPinstanceId();
 		final List<HUToReport> topLevelHus = new ArrayList<>();
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
@@ -103,7 +105,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 
 		if (isPrintPreview)
 		{
-			final QRCodePDFResource pdf = huqrCodesService.createPdfForHUIds(huIdSet);
+			final QRCodePDFResource pdf = huqrCodesService.createPdfForHUIds(huIdSet, selectionId, p_AD_Process_ID);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 		}
 		else
