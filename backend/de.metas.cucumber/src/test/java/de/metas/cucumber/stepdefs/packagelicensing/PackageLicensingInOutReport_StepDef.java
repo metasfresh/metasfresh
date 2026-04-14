@@ -8,9 +8,13 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import de.metas.organization.OrgId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
@@ -258,7 +262,7 @@ public class PackageLicensingInOutReport_StepDef
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
-			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 00:00:00"));
 			pstmt.setInt(3, countryId);
 			pstmt.setString(4, isIncludeAllProducts);
 
@@ -371,7 +375,7 @@ public class PackageLicensingInOutReport_StepDef
 	{
 		final boolean found = reportResults.stream()
 				.anyMatch(r -> documentNo.equals(r.get("DocumentNo")));
-		org.assertj.core.api.Assertions.assertThat(found)
+		assertThat(found)
 				.as("DocumentNo=" + documentNo + " should NOT be in report results")
 				.isFalse();
 	}
@@ -391,13 +395,13 @@ public class PackageLicensingInOutReport_StepDef
 				.findFirst()
 				.orElse(null);
 
-		org.assertj.core.api.Assertions.assertThat(actualRow)
+		assertThat(actualRow)
 				.as("Report row for DocumentNo=" + documentNo)
 				.isNotNull();
 
 		if (actualRow != null)
 		{
-			org.assertj.core.api.Assertions.assertThat(actualRow.get(columnName))
+			assertThat(actualRow.get(columnName))
 					.as(columnName + " for DocumentNo=" + documentNo + " should not be null")
 					.isNotNull();
 		}
@@ -424,7 +428,7 @@ public class PackageLicensingInOutReport_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String key = row.getAsString("SharedBPartnerKey");
 			final Integer bpartnerId = sharedBPartners.get(key);
-			org.assertj.core.api.Assertions.assertThat(bpartnerId)
+			assertThat(bpartnerId)
 					.as("SharedBPartnerKey=" + key + " must have been used in a prior InOut setup step")
 					.isNotNull();
 
@@ -432,19 +436,17 @@ public class PackageLicensingInOutReport_StepDef
 			final String exemptFrom = row.getAsOptionalString("PackageLicensingExemptFrom").orElse(null);
 			final String exemptTo = row.getAsOptionalString("PackageLicensingExemptTo").orElse(null);
 
-			final StringBuilder sql = new StringBuilder("UPDATE C_BPartner SET IsPackageLicensingExempt=")
-					.append(sqlQuote(isExempt));
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+			InterfaceWrapperHelper.setValue(bpartner, "IsPackageLicensingExempt", isExempt);
 			if (exemptFrom != null)
 			{
-				sql.append(", PackageLicensingExemptFrom=").append(sqlQuote(exemptFrom)).append("::date");
+				InterfaceWrapperHelper.setValue(bpartner, "PackageLicensingExemptFrom", java.sql.Timestamp.valueOf(exemptFrom + " 00:00:00"));
 			}
 			if (exemptTo != null)
 			{
-				sql.append(", PackageLicensingExemptTo=").append(sqlQuote(exemptTo)).append("::date");
+				InterfaceWrapperHelper.setValue(bpartner, "PackageLicensingExemptTo", java.sql.Timestamp.valueOf(exemptTo + " 00:00:00"));
 			}
-			sql.append(" WHERE C_BPartner_ID=").append(bpartnerId);
-
-			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
+			InterfaceWrapperHelper.save(bpartner);
 		});
 	}
 
@@ -466,7 +468,7 @@ public class PackageLicensingInOutReport_StepDef
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
-			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 00:00:00"));
 			pstmt.setInt(3, countryId);
 			pstmt.setString(4, "Y"); // IsIncludeAllProducts
 
@@ -600,7 +602,7 @@ public class PackageLicensingInOutReport_StepDef
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
-			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 23:59:59"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 00:00:00"));
 			pstmt.setInt(3, countryId);
 			pstmt.setString(4, isExcludeDomesticPurchases);
 
