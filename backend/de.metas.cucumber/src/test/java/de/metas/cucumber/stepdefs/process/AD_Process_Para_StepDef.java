@@ -11,10 +11,29 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
 /**
- * Step definitions for creating AD_Process_Para records in tests.
+ * Step definitions for creating {@link I_AD_Process_Para} records in tests.
  *
- * <p>Required columns: {@code AD_Process_ID} (identifier), {@code ColumnName}, {@code Name}
- * <p>Optional columns: {@code DefaultValue}, {@code AD_Reference_ID}, {@code Description}
+ * <p>Required columns:
+ * <ul>
+ *   <li>{@code AD_Process_ID} — identifier referencing the parent {@link I_AD_Process} (from {@link AD_Process_Create_StepDef})</li>
+ *   <li>{@code ColumnName} — parameter column name (e.g. {@code PRINTER_OPTS_IsPrintLogo})</li>
+ *   <li>{@code Name} — display name</li>
+ * </ul>
+ *
+ * <p>Optional columns:
+ * <ul>
+ *   <li>{@code DefaultValue} — default value string; supports {@code @SQL=} expressions</li>
+ *   <li>{@code AD_Reference_ID} — reference type (e.g. 20 for Yes-No)</li>
+ *   <li>{@code Description} — parameter description</li>
+ *   <li>{@code Identifier} — test-local reference for cross-step lookups</li>
+ * </ul>
+ *
+ * <p>Example:
+ * <pre>{@code
+ * Given metasfresh contains AD_Process_Paras:
+ *   | Identifier | AD_Process_ID | ColumnName               | Name       | DefaultValue | AD_Reference_ID |
+ *   | param      | process       | PRINTER_OPTS_IsPrintLogo | Print Logo | Y            | 20              |
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class AD_Process_Para_StepDef
@@ -22,6 +41,10 @@ public class AD_Process_Para_StepDef
 	@NonNull private final AD_Process_StepDefData processTable;
 	@NonNull private final AD_Process_Para_StepDefData processParaTable;
 
+	/**
+	 * Creates one or more {@link I_AD_Process_Para} records from the given data table.
+	 * The parent process must have been created first via {@link AD_Process_Create_StepDef}.
+	 */
 	@Given("metasfresh contains AD_Process_Paras:")
 	public void metasfresh_contains_ad_process_paras(@NonNull final DataTable dataTable)
 	{

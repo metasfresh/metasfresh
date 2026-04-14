@@ -10,13 +10,37 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 
 /**
- * Step definitions for creating AD_Process records in tests.
+ * Step definitions for creating {@link I_AD_Process} records in tests.
+ *
+ * <p>Required columns:
+ * <ul>
+ *   <li>{@code Value} — process value (unique identifier)</li>
+ *   <li>{@code Name} — display name</li>
+ * </ul>
+ *
+ * <p>Optional columns:
+ * <ul>
+ *   <li>{@code Classname} — Java class implementing the process</li>
+ *   <li>{@code Identifier} — test-local reference for cross-step lookups</li>
+ * </ul>
+ *
+ * <p>Example:
+ * <pre>{@code
+ * Given metasfresh contains AD_Processes:
+ *   | Identifier | Value            | Name              |
+ *   | process    | TestPrintProcess | Test Print Process |
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class AD_Process_Create_StepDef
 {
 	@NonNull private final AD_Process_StepDefData processTable;
 
+	/**
+	 * Creates one or more {@link I_AD_Process} records from the given data table.
+	 *
+	 * @see AD_Process_Para_StepDef for creating process parameters
+	 */
 	@Given("metasfresh contains AD_Processes:")
 	public void metasfresh_contains_ad_processes(@NonNull final DataTable dataTable)
 	{

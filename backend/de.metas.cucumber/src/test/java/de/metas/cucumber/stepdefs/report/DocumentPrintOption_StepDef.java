@@ -17,10 +17,18 @@ import org.compiere.model.I_AD_Process;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions for verifying document print option descriptors.
+ * Step definitions for verifying document print option descriptors resolved by
+ * {@link DocumentPrintOptionDescriptorsRepository}.
  *
- * <p>Verifies that {@link DocumentPrintOptionDescriptorsRepository} correctly resolves
- * print option defaults, including {@code @SQL=} expressions.
+ * <p>Verifies that print option defaults (including {@code @SQL=} expressions) are
+ * correctly resolved from {@code AD_Process_Para.DefaultValue}.
+ *
+ * <p>Example:
+ * <pre>{@code
+ * Then the print option descriptors for AD_Process "process" include:
+ *   | OptionName               | DefaultValue |
+ *   | PRINTER_OPTS_IsPrintLogo | true         |
+ * }</pre>
  */
 @RequiredArgsConstructor
 public class DocumentPrintOption_StepDef
@@ -29,9 +37,15 @@ public class DocumentPrintOption_StepDef
 	@NonNull private final DocumentPrintOptionDescriptorsRepository printOptionDescriptorsRepository;
 
 	/**
-	 * Verifies print option descriptors for a given process.
+	 * Verifies that the print option descriptors for the given process match expectations.
 	 *
-	 * <p>Required columns: {@code OptionName}, {@code DefaultValue} (true/false)
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code OptionName} — internal name of the print option (e.g. {@code PRINTER_OPTS_IsPrintLogo})</li>
+	 *   <li>{@code DefaultValue} — expected resolved default ({@code true} or {@code false})</li>
+	 * </ul>
+	 *
+	 * @param processIdentifierStr identifier of the AD_Process (from {@link de.metas.cucumber.stepdefs.process.AD_Process_Create_StepDef})
 	 */
 	@Then("the print option descriptors for AD_Process {string} include:")
 	public void the_print_option_descriptors_include(
