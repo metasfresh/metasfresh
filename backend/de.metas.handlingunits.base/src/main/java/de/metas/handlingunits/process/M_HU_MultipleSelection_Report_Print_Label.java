@@ -105,7 +105,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 
 		if (isPrintPreview)
 		{
-			final QRCodePDFResource pdf = huqrCodesService.createPdfForHUIds(huIdSet, selectionId, p_AD_Process_ID);
+			final QRCodePDFResource pdf = huqrCodesService.createPdfForSelectionOfHUIds(selectionId, p_AD_Process_ID);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 		}
 		else
