@@ -1,6 +1,7 @@
 package de.metas.banking.payment.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -28,6 +29,8 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.proforma.ProformaOrderAlloc;
+import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
@@ -36,6 +39,7 @@ import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
+import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,6 +47,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
@@ -66,13 +71,15 @@ public class PaySelectionBL implements IPaySelectionBL
 	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
 	private static final AdMessageKey MSG_CannotCreatePayment = AdMessageKey.of("PaySelectionLine.CannotCreatePayment");
 
-	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository = SpringContextHolder.instance.getBean(ProformaOrderAllocRepository.class);
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
@@ -339,16 +346,16 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	private I_C_Payment createPaymentForOrder(@NonNull final I_C_PaySelectionLine line)
 	{
-
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		Check.assume(line.getC_Order_ID() > 0, "Order is not null for {}", line);
+		Check.assumeNotNull(OrderId.ofRepoIdOrNull(line.getC_Order_ID()), "Order is not null for {}", line);
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
+		final OrderId orderId = OrderId.ofRepoId(line.getC_Order_ID());
+		final I_C_Order order = orderBL.getById(orderId);
 
-		return paymentBL.newBuilderOfOrder(order)
+		final DefaultPaymentBuilder builder = paymentBL.newBuilderOfOrder(order)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
 				.dateAcct(payDate)
@@ -358,9 +365,18 @@ public class PaySelectionBL implements IPaySelectionBL
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
 				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(line.getC_OrderPaySchedule_ID()))
-				.isAutoAllocateAvailableAmt(true)
-				//
-				.createAndProcess();
+				.isAutoAllocateAvailableAmt(true);
+
+		// If this order is allocated to a Proforma invoice, set Proforma_Invoice_ID on payment
+		final ImmutableList<ProformaOrderAlloc> proformaAllocs = proformaOrderAllocRepository.getByOrderId(orderId);
+
+		if (!proformaAllocs.isEmpty())
+		{
+			Check.assumeEquals(proformaAllocs.size(), 1, "Only one proforma allocation should exist for order: {}", orderId.getRepoId());
+			builder.proformaInvoiceId(proformaAllocs.get(0).getInvoiceId());
+		}
+
+		return builder.createAndProcess();
 	}
 
 	@Override

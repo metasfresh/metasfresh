@@ -330,6 +330,13 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	public final DefaultPaymentBuilder proformaInvoiceId(@Nullable final InvoiceId proformaInvoiceId)
+	{
+		assertNotBuilt();
+		payment.setProforma_Invoice_ID(InvoiceId.toRepoId(proformaInvoiceId));
+		return this;
+	}
+
 	public final DefaultPaymentBuilder description(final String description)
 	{
 		assertNotBuilt();

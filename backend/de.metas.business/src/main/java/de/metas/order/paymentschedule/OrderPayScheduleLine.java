@@ -55,7 +55,7 @@ public class OrderPayScheduleLine
 
 	@Setter @NonNull OrderPayScheduleStatus status;
 	@Setter @NonNull LocalDate dueDate;
-	final @NonNull Money dueAmount;
+	@Setter @NonNull Money dueAmount;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 

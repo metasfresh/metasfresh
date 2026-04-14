@@ -46,6 +46,8 @@ public class OrderSchedulingContext
 	@Nullable LocalDate ETADate;
 	@Nullable LocalDate invoiceDate;
 	@NonNull Money grandTotal;
+	/** Proforma invoice amount - used for LC pay schedules instead of order grandTotal */
+	@Nullable Money proformaAmount;
 	@NonNull CurrencyPrecision precision;
 	@NonNull PaymentTerm paymentTerm;
 

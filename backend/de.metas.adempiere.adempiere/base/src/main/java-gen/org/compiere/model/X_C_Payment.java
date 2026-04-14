@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -80715273L;
+	private static final long serialVersionUID = -13715061L;
 
     /** Standard Constructor */
     public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
@@ -1060,6 +1060,33 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getProforma_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_Proforma_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setProforma_Invoice(final org.compiere.model.I_C_Invoice Proforma_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_Proforma_Invoice_ID, org.compiere.model.I_C_Invoice.class, Proforma_Invoice);
+	}
+
+	@Override
+	public void setProforma_Invoice_ID (final int Proforma_Invoice_ID)
+	{
+		if (Proforma_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_Proforma_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_Proforma_Invoice_ID, Proforma_Invoice_ID);
+	}
+
+	@Override
+	public int getProforma_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Proforma_Invoice_ID);
 	}
 
 	@Override

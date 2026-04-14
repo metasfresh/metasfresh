@@ -22,9 +22,15 @@
 
 package de.metas.order.paymentschedule.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.proforma.ProformaOrderAlloc;
+import de.metas.invoice.proforma.ProformaOrderAllocRepository;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -35,10 +41,13 @@ import de.metas.order.paymentschedule.repository.OrderPayScheduleRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
@@ -81,13 +90,18 @@ public class OrderPayScheduleService
 
 	public void updatePayScheduleStatus(@NonNull final I_C_Order order)
 	{
+		updatePayScheduleStatus(order, false);
+	}
+
+	public void updatePayScheduleStatus(@NonNull final I_C_Order order, final boolean updateAmounts)
+	{
 		final OrderSchedulingContext context = extractContext(order);
 		if (context == null)
 		{
 			return;
 		}
 
-		orderPayScheduleRepository.updateById(context.getOrderId(), orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
+		orderPayScheduleRepository.updateById(context.getOrderId(), orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context, updateAmounts));
 	}
 
 	public void updatePayScheduleStatusesBeforeCommit(@NonNull final OrderId orderId)
@@ -147,6 +161,9 @@ public class OrderPayScheduleService
 			return null;
 		}
 
+		// Check if order has Proforma allocation and get the invoice amount for LC schedules
+		final Money proformaAmount = getProformaInvoiceAmount(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
+
 		return OrderSchedulingContext.builder()
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.orderDate(TimeUtil.asLocalDate(orderRecord.getDateOrdered()))
@@ -155,9 +172,28 @@ public class OrderPayScheduleService
 				.ETADate(TimeUtil.asLocalDate(orderRecord.getETA()))
 				.invoiceDate(TimeUtil.asLocalDate(orderRecord.getInvoiceDate()))
 				.grandTotal(grandTotal)
+				.proformaAmount(proformaAmount)
 				.precision(orderBL.getAmountPrecision(orderRecord))
 				.paymentTerm(paymentTerm)
 				.build();
+	}
+
+	@Nullable
+	private Money getProformaInvoiceAmount(@NonNull final OrderId orderId)
+	{
+		final ProformaOrderAllocRepository proformaOrderAllocRepository = SpringContextHolder.instance.getBean(ProformaOrderAllocRepository.class);
+		final ImmutableList<ProformaOrderAlloc> proformaAllocs = proformaOrderAllocRepository.getByOrderId(orderId);
+
+		if (proformaAllocs.isEmpty())
+		{
+			return null;
+		}
+		Check.assumeEquals(proformaAllocs.size(), 1, "Only one proforma allocation should exist for order: {}", orderId.getRepoId());
+
+		final InvoiceId proformaInvoiceId = proformaAllocs.get(0).getInvoiceId();
+		final I_C_Invoice proformaInvoice = Services.get(IInvoiceBL.class).getById(proformaInvoiceId);
+
+		return Money.of(proformaInvoice.getGrandTotal(), CurrencyId.ofRepoId(proformaInvoice.getC_Currency_ID()));
 	}
 
 	public void create(@NonNull final OrderPayScheduleCreateRequest request)

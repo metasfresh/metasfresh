@@ -154,7 +154,7 @@ public class PaymentStringProcessService
 		}
 
 		// only completed invoiced
-		if (!invoiceBL.isComplete(invoice))
+		if (!invoiceBL.isCompletedOrClosedOrReversed(invoice))
 		{
 			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_INVOICE_IS_NOT_COMPLETED));
 		}

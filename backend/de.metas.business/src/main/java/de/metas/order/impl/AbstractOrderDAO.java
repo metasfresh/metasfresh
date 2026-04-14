@@ -292,7 +292,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public boolean hasInOuts(final I_C_Order order)
+	public boolean hasInOuts(@NonNull final I_C_Order order)
 	{
 		return retrieveInOutsQuery(order)
 				.create()

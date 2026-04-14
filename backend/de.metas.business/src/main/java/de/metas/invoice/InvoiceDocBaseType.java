@@ -144,9 +144,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return !isIncomingCash();
 	}
 
-	public boolean isFinancial()
-	{
-		return docBaseType.isFinancial();
-	}
+	public boolean isFinancial() {return docBaseType.isFinancial();}
 
+	public boolean isPurchaseProformaInvoice() {return this == PurchaseProFormaInvoice;}
 }

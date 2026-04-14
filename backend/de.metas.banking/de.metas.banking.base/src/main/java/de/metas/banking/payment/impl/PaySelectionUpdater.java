@@ -209,6 +209,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
 				+ "\nUNION\n"
 				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
+		// Note: Proforma invoices (APF) are NOT included directly in pay selection.
+		// Instead, LC pay schedules created from Proforma allocation appear via buildOrderSql()
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
@@ -247,6 +249,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sql += " AND i.DocStatus IN (?,?)";
 			sqlParams.add(DocStatus.Completed);
 			sqlParams.add(DocStatus.Closed);
+		}
+
+		// Only financial invoices (exclude APF/Proforma invoices)
+		{
+			sql += " AND i.IsFinancial=?";
+			sqlParams.add(true);
 		}
 
 		// Only those invoices which are matching C_PaySelection's currency (07885)
@@ -407,9 +415,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " INNER JOIN C_OrderPaySchedule ops on o.C_Order_ID = ops.C_Order_ID "
 				+ " WHERE true AND ops.Status = ? "  //
 				;
+		// Note: Proforma reference is retrieved in createPaymentForOrder() via ProformaOrderAllocRepository
 		sqlParams.add(OrderPayScheduleStatus.Awaiting_Pay.getCode()); // #1
 
-		// Only COmpleted/CLosed payment
+		// Only Completed/Closed payment
 		{
 			sql += " AND o.DocStatus IN (?,?)";
 			sqlParams.add(DocStatus.Completed);
@@ -491,6 +500,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 		return sql;
 	}
+
+	// buildAPFSql() REMOVED: Proforma invoices (APF) should NOT appear in pay selection directly.
+	// Instead, LC pay schedules created from Proforma allocation appear via buildOrderSql()
 
 	private void createOrUpdatePaySelectionLine(final ResultSet rs) throws SQLException
 	{

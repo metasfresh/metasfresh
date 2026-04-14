@@ -48,14 +48,19 @@ class OrderPayScheduleCreateCommand
 
 		final ImmutableList.Builder<OrderPayScheduleCreateRequest.Line> linesBuilder = ImmutableList.builder();
 
-		Money totalScheduledAmount = Money.zero(context.getGrandTotal().getCurrencyId());
+		// Determine which base amount to use for ALL schedules
+		// If payment term has LC break AND Proforma is allocated, use Proforma amount for everything
+		// Otherwise use order grandTotal
+		final Money baseAmount = getBaseAmountForAllSchedules(context);
+
+		Money totalScheduledAmount = Money.zero(baseAmount.getCurrencyId());
 
 		for (int i = 0; i < termBreaks.size() - 1; i++)
 		{
 			final PaymentTermBreak termBreak = termBreaks.get(i);
 
 			// Calculate amount by percent
-			final Money lineDueAmount = context.getGrandTotal().multiply(termBreak.getPercent(), context.getPrecision());
+			final Money lineDueAmount = baseAmount.multiply(termBreak.getPercent(), context.getPrecision());
 
 			final OrderPayScheduleCreateRequest.Line line = toOrderPayScheduleCreateRequestLine(
 					context,
@@ -69,8 +74,8 @@ class OrderPayScheduleCreateCommand
 
 		final PaymentTermBreak lastTermBreak = termBreaks.get(termBreaks.size() - 1);
 
-		// Calculate the exact amount needed for the last line: Grand Total - accumulated total
-		final Money lastLineDueAmount = context.getGrandTotal().subtract(totalScheduledAmount);
+		// Calculate the exact amount needed for the last line: Base Amount - accumulated total
+		final Money lastLineDueAmount = baseAmount.subtract(totalScheduledAmount);
 
 		final OrderPayScheduleCreateRequest.Line lastLine = toOrderPayScheduleCreateRequestLine(
 				context,
@@ -85,6 +90,29 @@ class OrderPayScheduleCreateCommand
 				.build();
 
 		orderPayScheduleService.create(request);
+	}
+
+	/**
+	 * Returns the base amount to use for calculating ALL pay schedule line amounts.
+	 * If payment term contains any LC (Letter of Credit) break AND Proforma is allocated,
+	 * uses Proforma invoice amount for ALL schedules.
+	 * Otherwise, uses order grandTotal for all schedules.
+	 */
+	private static Money getBaseAmountForAllSchedules(@NonNull final OrderSchedulingContext context)
+	{
+		// Check if payment term has any LC break
+		final boolean hasLCBreak = context.getPaymentTerm().getSortedBreaks()
+				.stream()
+				.anyMatch(PaymentTermBreak::isLetterOfCredit);
+
+		// If has LC break and Proforma is allocated, use Proforma amount for everything
+		if (hasLCBreak && context.getProformaAmount() != null)
+		{
+			return context.getProformaAmount();
+		}
+
+		// Otherwise use order grandTotal
+		return context.getGrandTotal();
 	}
 
 	private static OrderPayScheduleCreateRequest.Line toOrderPayScheduleCreateRequestLine(

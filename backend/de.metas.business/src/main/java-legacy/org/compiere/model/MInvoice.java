@@ -1581,17 +1581,4 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setUser1_ID(originalInvoice.getUser1_ID());
 		setUser2_ID(originalInvoice.getUser2_ID());
 	}
-
-	/**
-	 * Document Status is Complete or Closed
-	 *
-	 * @return true if CO, CL or RE
-	 * @deprecated Please use {@link IInvoiceBL#isComplete(I_C_Invoice)}
-	 */
-	@Deprecated
-	public boolean isComplete()
-	{
-		return Services.get(IInvoiceBL.class).isComplete(this);
-	}    // isComplete
-
 }    // MInvoice

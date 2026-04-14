@@ -1,6 +1,7 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
@@ -64,7 +65,18 @@ public class OrderPaySchedule
 
 	public void updateStatusFromContext(final OrderSchedulingContext context)
 	{
+		updateStatusFromContext(context, false);
+	}
+
+	public void updateStatusFromContext(final OrderSchedulingContext context, final boolean updateAmounts)
+	{
 		final PaymentTerm paymentTerm = context.getPaymentTerm();
+
+		if (updateAmounts)
+		{
+			// Recalculate amounts similar to OrderPayScheduleCreateCommand logic
+			recalculateAmounts(context, paymentTerm);
+		}
 
 		for (final OrderPayScheduleLine line : lines)
 		{
@@ -75,6 +87,55 @@ public class OrderPaySchedule
 				line.applyAndProcess(dueDateAndStatus);
 			}
 		}
+	}
+
+	private void recalculateAmounts(final OrderSchedulingContext context, final PaymentTerm paymentTerm)
+	{
+		// Determine which base amount to use for ALL schedules
+		// If payment term has LC break AND Proforma is allocated, use Proforma amount for everything
+		// Otherwise use order grandTotal
+		final Money baseAmount = getBaseAmountForAllSchedules(context, paymentTerm);
+
+		Money totalScheduledAmount = Money.zero(baseAmount.getCurrencyId());
+
+		// Recalculate all lines except the last
+		for (int i = 0; i < lines.size() - 1; i++)
+		{
+			final OrderPayScheduleLine line = lines.get(i);
+			final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
+
+			final Money newDueAmount = baseAmount.multiply(termBreak.getPercent(), context.getPrecision());
+			line.setDueAmount(newDueAmount);
+
+			totalScheduledAmount = totalScheduledAmount.add(newDueAmount);
+		}
+
+		// Recalculate the last line as a remainder
+		if (!lines.isEmpty())
+		{
+			final OrderPayScheduleLine lastLine = lines.get(lines.size() - 1);
+			final Money lastLineDueAmount = baseAmount.subtract(totalScheduledAmount);
+			lastLine.setDueAmount(lastLineDueAmount);
+		}
+	}
+
+	private static Money getBaseAmountForAllSchedules(
+			@NonNull final OrderSchedulingContext context,
+			@NonNull final PaymentTerm paymentTerm)
+	{
+		// Check if the payment term has any LC break
+		final boolean hasLCBreak = paymentTerm.getSortedBreaks()
+				.stream()
+				.anyMatch(PaymentTermBreak::isLetterOfCredit);
+
+		// If it has LC break and Proforma is allocated, use Proforma amount for everything
+		if (hasLCBreak && context.getProformaAmount() != null)
+		{
+			return context.getProformaAmount();
+		}
+
+		// Otherwise use order grandTotal
+		return context.getGrandTotal();
 	}
 
 	public void markAsPaid(final OrderPayScheduleId orderPayScheduleId)

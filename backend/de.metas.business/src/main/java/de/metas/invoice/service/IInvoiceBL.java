@@ -303,7 +303,9 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
 	 */
-	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
+	boolean isCompletedOrClosedOrReversed(org.compiere.model.I_C_Invoice invoice);
+
+	boolean isCompletedOrClosed(I_C_Invoice invoice);
 
 	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 
@@ -388,6 +390,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * Allocate parent invoice against it's credit memo
 	 */
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
+
+	boolean isPurchaseProforma(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge

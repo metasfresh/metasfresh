@@ -1123,11 +1123,11 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * @return true if save
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		log.debug("New=" + newRecord);
 		if (newRecord
-				&& Services.get(IInvoiceBL.class).isComplete(getC_Invoice()))
+				&& Services.get(IInvoiceBL.class).isCompletedOrClosedOrReversed(getC_Invoice()))
 		{
 			throw new AdempiereException("@ParentComplete@ @C_InvoiceLine_ID@");
 		}
