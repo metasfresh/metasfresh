@@ -1,4 +1,6 @@
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.process;
+
+import de.metas.cucumber.stepdefs.StepDefData;
 
 import org.compiere.model.I_AD_Process;
 

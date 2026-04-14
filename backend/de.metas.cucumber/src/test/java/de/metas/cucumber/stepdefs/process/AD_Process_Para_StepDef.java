@@ -1,4 +1,4 @@
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.process;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
