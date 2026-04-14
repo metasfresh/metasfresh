@@ -7,6 +7,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -18,6 +20,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.assertj.core.api.SoftAssertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +52,109 @@ public class PackageLicensingInOutReport_StepDef
 {
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+
+	/** Results from the legacy direct-SQL detail report execution (used by packageLicensingInOutReport.feature). */
+	private final List<Map<String, String>> reportResults = new ArrayList<>();
+
+	// ---- Legacy steps for packageLicensingInOutReport.feature (direct SQL execution) ----
+
+	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string}")
+	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo) throws SQLException
+	{
+		executeReport(countryCode, dateFrom, dateTo, "Y");
+	}
+
+	@When("the Package Licensing InOut Report is executed with C_Country_ID for country code {string} and date range {string} to {string} and IsIncludeAllProducts {string}")
+	public void executeReport(@NonNull final String countryCode, @NonNull final String dateFrom, @NonNull final String dateTo, @NonNull final String isIncludeAllProducts) throws SQLException
+	{
+		reportResults.clear();
+		final int countryId = getCountryIdByCode(countryCode);
+		final String sql = "SELECT * FROM report.Package_Licensing_InOut_Report(?, ?, ?, ?)";
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setTimestamp(1, Timestamp.valueOf(dateFrom + " 00:00:00"));
+			pstmt.setTimestamp(2, Timestamp.valueOf(dateTo + " 00:00:00"));
+			pstmt.setInt(3, countryId);
+			pstmt.setString(4, isIncludeAllProducts);
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					final Map<String, String> row = new LinkedHashMap<>();
+					row.put("DocumentNo", rs.getString("DocumentNo"));
+					row.put("PurchaseQty", bigDecimalToString(rs.getBigDecimal("PurchaseQty")));
+					row.put("ForeignSalesQty", bigDecimalToString(rs.getBigDecimal("ForeignSalesQty")));
+					row.put("TotalSalesQty", bigDecimalToString(rs.getBigDecimal("TotalSalesQty")));
+					row.put("ProductGroup", rs.getString("ProductGroup"));
+					row.put("MaterialType", rs.getString("MaterialType"));
+					row.put("SmallPackagingMaterial", rs.getString("SmallPackagingMaterial"));
+					row.put("SmallPackagingWeight", bigDecimalToString(rs.getBigDecimal("SmallPackagingWeight")));
+					row.put("OuterPackagingMaterial", rs.getString("OuterPackagingMaterial"));
+					row.put("OuterPackagingWeight", bigDecimalToString(rs.getBigDecimal("OuterPackagingWeight")));
+					row.put("PackagingInstructionFactor", bigDecimalToString(rs.getBigDecimal("PackagingInstructionFactor")));
+					reportResults.add(row);
+				}
+			}
+		}
+	}
+
+	@Then("the Package Licensing InOut Report result contains:")
+	public void verifyReportResults(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> expectedRows = dataTable.asMaps();
+		final SoftAssertions softly = new SoftAssertions();
+		for (final Map<String, String> expectedRow : expectedRows)
+		{
+			final String expectedDocNo = expectedRow.get("DocumentNo");
+			final Map<String, String> actualRow = reportResults.stream()
+					.filter(r -> expectedDocNo.equals(r.get("DocumentNo")))
+					.findFirst().orElse(null);
+			softly.assertThat(actualRow).as("Row for DocumentNo=" + expectedDocNo).isNotNull();
+			if (actualRow == null) { continue; }
+			for (final Map.Entry<String, String> entry : expectedRow.entrySet())
+			{
+				final String col = entry.getKey();
+				if ("DocumentNo".equals(col)) { continue; }
+				final String expected = entry.getValue();
+				final String actual = actualRow.get(col);
+				if (expected == null || expected.isEmpty())
+				{
+					softly.assertThat(actual).as(col + " for " + expectedDocNo).isNullOrEmpty();
+				}
+				else if (isNumericColumn(col))
+				{
+					softly.assertThat(actual).as(col + " for " + expectedDocNo).isNotNull();
+					if (actual != null) { softly.assertThat(new BigDecimal(actual)).as(col + " for " + expectedDocNo).isEqualByComparingTo(new BigDecimal(expected)); }
+				}
+				else
+				{
+					softly.assertThat(actual).as(col + " for " + expectedDocNo).isEqualTo(expected);
+				}
+			}
+		}
+		softly.assertAll();
+	}
+
+	@Then("the Package Licensing InOut Report result does not contain DocumentNo {string}")
+	public void verifyDocumentNotInResults(@NonNull final String documentNo)
+	{
+		assertThat(reportResults.stream().anyMatch(r -> documentNo.equals(r.get("DocumentNo"))))
+				.as("DocumentNo=" + documentNo + " should NOT be in results").isFalse();
+	}
+
+	private static boolean isNumericColumn(@NonNull final String col)
+	{
+		return "TotalSalesQty".equals(col) || "PurchaseQty".equals(col) || "ForeignSalesQty".equals(col)
+				|| "Weight".equals(col) || "SmallPackagingWeight".equals(col) || "OuterPackagingWeight".equals(col)
+				|| "PackagingInstructionFactor".equals(col);
+	}
+
+	private static String bigDecimalToString(final BigDecimal value)
+	{
+		return value != null ? value.stripTrailingZeros().toPlainString() : null;
+	}
+
+	// ---- Data setup steps ----
 
 	/**
 	 * Sets up packaging licensing master data for the given products.

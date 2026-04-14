@@ -13,7 +13,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -120,7 +120,7 @@ public class ExportToSpreadsheet_StepDef
 				.isNotNull();
 
 		try (final InputStream is = reportResource.getInputStream();
-			 final Workbook workbook = new HSSFWorkbook(is))
+			 final Workbook workbook = WorkbookFactory.create(is))
 		{
 			final Sheet sheet = workbook.getSheetAt(0);
 			parseExcel(sheet);
