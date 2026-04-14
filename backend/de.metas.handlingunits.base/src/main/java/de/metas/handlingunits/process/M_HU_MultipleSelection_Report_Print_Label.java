@@ -83,8 +83,6 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final PInstanceId selectionId = getPinstanceId();
-
 		final List<HUToReport> topLevelHus = new ArrayList<>();
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
@@ -104,7 +102,7 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 
 		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
 
-		if (getProcessInfo().isPrintPreview())
+		if (isPrintPreview)
 		{
 			final QRCodePDFResource pdf = huqrCodesService.createPdfForHUIds(huIdSet);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
