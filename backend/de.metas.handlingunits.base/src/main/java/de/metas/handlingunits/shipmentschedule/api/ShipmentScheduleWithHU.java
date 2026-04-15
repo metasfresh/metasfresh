@@ -334,14 +334,12 @@ public class ShipmentScheduleWithHU
 	 * but only when the schedule ASI value is non-empty (i.e., not equal to its {@link IAttributeValue#getEmptyValue()}).
 	 * If the schedule ASI value IS empty/null, the HU value is kept.
 	 * <p>
-	 * Schedule ASI attributes with {@link IAttributeValue#isUseInASI()} == false are excluded.
-	 *
-	 * @param filteredHUAttributes  HU attributes already filtered by handler whitelist and non-empty check
-	 * @param schedAsiAttributes    schedule ASI attributes filtered only by {@link IAttributeValue#isUseInASI()}
+	 * @param filteredHUAttributes  HU attributes already filtered by handler whitelist, non-empty check, and isUseInASI
+	 * @param schedAsiAttributes    schedule ASI attributes already filtered by {@link IAttributeValue#isUseInASI()}
 	 * @return merged list of attribute values
 	 */
 	@VisibleForTesting
-	static ImmutableList<IAttributeValue> mergeAttributeValues(
+	public static ImmutableList<IAttributeValue> mergeAttributeValues(
 			@NonNull final List<IAttributeValue> filteredHUAttributes,
 			@NonNull final List<IAttributeValue> schedAsiAttributes)
 	{
@@ -352,14 +350,10 @@ public class ShipmentScheduleWithHU
 			merged.put(huAttr.getM_Attribute().getM_Attribute_ID(), huAttr);
 		}
 
-		// Overlay schedule ASI attributes — but only if non-empty
+		// Overlay schedule ASI attributes — but only if non-empty.
+		// Empty schedule values don't overwrite HU values (the HU value fills the gap).
 		for (final IAttributeValue schedAttr : schedAsiAttributes)
 		{
-			if (!schedAttr.isUseInASI())
-			{
-				continue;
-			}
-
 			final int attributeId = schedAttr.getM_Attribute().getM_Attribute_ID();
 			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
 

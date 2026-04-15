@@ -491,19 +491,6 @@ public class ShipmentScheduleWithHUTests
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
 		}
 
-		@Test
-		void schedASI_not_useInASI_is_excluded()
-		{
-			// Schedule ASI attribute with isUseInASI=false should be excluded
-			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", false);
-
-			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
-					Collections.emptyList(),
-					Arrays.asList(schedAttr));
-
-			assertThat(result).isEmpty();
-		}
-
 		/**
 		 * Creates a stub {@link IAttributeValue} with the given attribute ID, value, empty value, and useInASI flag.
 		 * Uses POJOWrapper-backed {@link I_M_Attribute} instances from the test environment.
