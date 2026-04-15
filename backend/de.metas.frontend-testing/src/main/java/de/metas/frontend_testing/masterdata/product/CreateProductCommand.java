@@ -53,6 +53,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -427,6 +428,13 @@ public class CreateProductCommand
 		if (line.getPickingInstruction() != null)
 		{
 			lineRecord.setPickingInstruction(line.getPickingInstruction());
+		}
+
+		if (line.getIssuingTolerancePerc() != null)
+		{
+			lineRecord.setIsEnforceIssuingTolerance(true);
+			lineRecord.setIssuingTolerance_ValueType(X_PP_Product_BOMLine.ISSUINGTOLERANCE_VALUETYPE_Percentage);
+			lineRecord.setIssuingTolerance_Perc(line.getIssuingTolerancePerc());
 		}
 
 		saveRecord(lineRecord);

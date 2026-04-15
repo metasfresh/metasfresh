@@ -6,6 +6,15 @@ SELECT io.m_inout_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
                'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
+               'TechnicalSenderGLN', (SELECT REGEXP_REPLACE(sl.gln::text, '\s+$'::text, ''::text)
+                                      FROM c_bpartner_location sl
+                                      WHERE sl.c_bpartner_id = org.org_bpartner_id
+                                        AND sl.isremitto = 'Y'
+                                        AND sl.gln IS NOT NULL
+                                        AND sl.gln <> ''
+                                        AND sl.isactive = 'Y'
+                                      ORDER BY sl.c_bpartner_location_id
+                                      LIMIT 1),
                'Parties', JSONB_BUILD_OBJECT(
                        'Supplier', COALESCE(bp_supplier.bpartner_json, '{}'::jsonb),
                        'Supplier_Location', COALESCE(bpl_supplier.bpartner_location_json, '{}'::jsonb),
@@ -23,7 +32,7 @@ SELECT io.m_inout_id,
                'EDI_Desadv_ID', d.edi_desadv_id,
                'MovementDate', io.movementdate,
                'POReference', COALESCE(d.poreference, io.poreference),
-               'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id),
+               'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
                'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
                'InvoicableQtyBasedOn', (SELECT edl_ib.invoicableqtybasedon
                                 FROM edi_desadvline edl_ib
@@ -32,7 +41,7 @@ SELECT io.m_inout_id,
                                 ORDER BY edl_ib.line
                                 LIMIT 1),
                'DeliveryViaRule', COALESCE(d.deliveryviarule, io.deliveryviarule),
-               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id),
+               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id, io.m_inout_id),
                'M_InOut_ID', io.m_inout_id,
                'DatePromised', o.datepromised)
        ) as embedded_json

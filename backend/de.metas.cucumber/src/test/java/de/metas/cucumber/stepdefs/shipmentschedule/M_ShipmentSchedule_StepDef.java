@@ -373,17 +373,25 @@ public class M_ShipmentSchedule_StepDef
 				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
 	}
 
+	/**
+	 * Invalidates all listed shipment schedules in a single batch call so that the background processor
+	 * picks them all up in the same recompute run. This is important when scenarios depend on FIFO
+	 * allocation across multiple schedules competing for the same stock: if each schedule were
+	 * invalidated in a separate call the processor might recompute them in independent batches,
+	 * each refreshing available-stock from the DB and thus both seeing the full on-hand quantity.
+	 */
 	@And("recompute shipment schedules")
 	public void recompute_shipment_schedules(@NonNull final DataTable dataTable)
 	{
+		final ImmutableSet.Builder<ShipmentScheduleId> ids = ImmutableSet.builder();
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-			shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ImmutableSet.of(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID())));
+			ids.add(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 		}
+		shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ids.build());
 	}
 
 	@And("^after not more than (.*)s, shipment schedule is recomputed$")

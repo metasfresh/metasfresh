@@ -251,7 +251,9 @@ Feature: EDI DESADV export via postgREST
             "GTIN_TU_PackingMaterial": "0575095404663",
             "QtyCUsPerLU_InInvoiceUOM": 100,
             "QtyCUsPerTU_InInvoiceUOM": 10,
-            "M_HU_PackagingCode_TU_Text": "ISO1"
+            "M_HU_PackagingCode_TU_Text": "CART",
+            "IsSubArticle": false,
+            "MainArticleLine": null
           }
         ],
         "IPA_SSCC18": "012345670010000005",
@@ -278,3 +280,305 @@ Feature: EDI DESADV export via postgREST
     And after not more than 1s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_1        | S                |
+
+  @Id:S0468_020
+  @from:cucumber
+  Scenario: DESADV export merges compensation group sub-articles into main article pack
+
+    # Three products: main article (Mischkarton) and two sub-articles
+    Given metasfresh contains M_Products:
+      | Identifier    | Value                     | Name                     |
+      | mainProduct   | compGroupMainProductValue | Mischkarton 4000g        |
+      | subProduct1   | compGroupSubProduct1Value | Tofu geräuchert 200g     |
+      | subProduct2   | compGroupSubProduct2Value | Tofu Natur 300g          |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID | OPT.GTIN         |
+      | bp_main               | customer1     | mainProduct  | mainProductGTIN   |
+      | bp_sub1               | customer1     | subProduct1  | subProduct1GTIN   |
+      | bp_sub2               | customer1     | subProduct2  | subProduct2GTIN   |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID | Name            |
+      | pm_main                 | mainProduct  | pmMainProduct   |
+      | pm_sub1                 | subProduct1  | pmSubProduct1   |
+      | pm_sub2                 | subProduct2  | pmSubProduct2   |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
+      | huPkgCodeLU           | ISO1          | LU          |
+      | huPkgCodeTU           | CART          | TU          |
+
+    # HU PI setup for main product
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | huPILU_main       |
+      | huPITU_main       |
+      | huPIVirtual_main  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID       | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_main     | huPILU_main      | LU          | Y         |                       |
+      | huPIVerTU_main     | huPITU_main      | TU          | Y         | huPkgCodeTU           |
+      | huPIVerCU_main     | huPIVirtual_main | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_main            | huPIVerLU_main     | 10  | HU       | huPITU_main       |                         |
+      | huPiItemTU_main            | huPIVerTU_main     | 0   | PM       |                    | pm_main                 |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID  | M_Product_ID | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_main           | huPiItemTU_main  | mainProduct  | 10  | 2025-01-01 | huPkgCodeLU                       | mainLuGTIN                       |
+
+    # HU PI setup for sub-product 1
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | huPILU_sub1       |
+      | huPITU_sub1       |
+      | huPIVirtual_sub1  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_sub1     | huPILU_sub1       | LU          | Y         |                       |
+      | huPIVerTU_sub1     | huPITU_sub1       | TU          | Y         | huPkgCodeTU           |
+      | huPIVerCU_sub1     | huPIVirtual_sub1  | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_sub1            | huPIVerLU_sub1     | 10  | HU       | huPITU_sub1       |                         |
+      | huPiItemTU_sub1            | huPIVerTU_sub1     | 0   | PM       |                    | pm_sub1                 |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID  | M_Product_ID | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_sub1           | huPiItemTU_sub1  | subProduct1  | 10  | 2025-01-01 | huPkgCodeLU                       | sub1LuGTIN                       |
+
+    # HU PI setup for sub-product 2
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | huPILU_sub2       |
+      | huPITU_sub2       |
+      | huPIVirtual_sub2  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_sub2     | huPILU_sub2       | LU          | Y         |                       |
+      | huPIVerTU_sub2     | huPITU_sub2       | TU          | Y         | huPkgCodeTU           |
+      | huPIVerCU_sub2     | huPIVirtual_sub2  | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_sub2            | huPIVerLU_sub2     | 10  | HU       | huPITU_sub2       |                         |
+      | huPiItemTU_sub2            | huPIVerTU_sub2     | 0   | PM       |                    | pm_sub2                 |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID  | M_Product_ID | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_sub2           | huPiItemTU_sub2  | subProduct2  | 10  | 2025-01-01 | huPkgCodeLU                       | sub2LuGTIN                       |
+
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | mainProduct  | 10.00    | PCE      |
+      | salesPLV               | subProduct1  | 3.00     | PCE      |
+      | salesPLV               | subProduct2  | 4.00     | PCE      |
+
+    # Create order with 3 lines in one compensation group
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference    |
+      | o_cg       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | compGroupReference |
+    And metasfresh contains C_Order_CompensationGroups:
+      | Identifier | C_Order_ID | Name        |
+      | cg_1       | o_cg       | Mischkarton |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID | C_Order_CompensationGroup_ID |
+      | ol_main    | o_cg       | mainProduct  | 10         | huPiProd_main           | cg_1                         |
+      | ol_sub1    | o_cg       | subProduct1  | 10         | huPiProd_sub1           | cg_1                         |
+      | ol_sub2    | o_cg       | subProduct2  | 10         | huPiProd_sub2           | cg_1                         |
+
+    And the order identified by o_cg is completed
+    And store order-values in TestContext
+      | C_Order_ID | Column     | REST.Context     |
+      | o_cg       | DocumentNo | o_cg_DocumentNo  |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_main    | ol_main        | N             |
+      | ss_sub1    | ol_sub1        | N             |
+      | ss_sub2    | ol_sub2        | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID.Identifier |
+      | ss_main                          |
+      | ss_sub1                          |
+      | ss_sub2                          |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo     |
+      | ss_main                          | s_cg                  | shipment_cg_ID          | shipment_cg_DocumentNo      |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | d_cg                     | customer1                | o_cg                  | P                | d_cg         |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_cg       | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_cg_ID@"
+    }
+  ]
+}
+    """
+    # The compensation group merging should produce 1 pack (from originally 3):
+    # the main article's pack absorbs the sub-article packs.
+    # Result: 1 main article LineItem (IsSubArticle=false) + 2 sub-article LineItems (IsSubArticle=true with MainArticleLine)
+    Then verify DESADV JSON export has compensation group packing:
+      | PackingCount | MainArticleCount | SubArticleCount |
+      | 1            | 1                | 2               |
+
+    And after not more than 1s, M_InOut records have the following export status
+      | M_InOut_ID | EDI_ExportStatus |
+      | s_cg       | S                |
+
+  @Id:S0468_030
+  @from:cucumber
+  Scenario: DESADV export with multiple shipments only includes packs from the requested shipment
+
+    # One simple product — no compensation groups needed (that's tested in S0468_020)
+    Given metasfresh contains M_Products:
+      | Identifier     |
+      | prod_multiShip |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID   |
+      | bp_ms                 | customer1     | prod_multiShip |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID   | Name       |
+      | pm_ms                   | prod_multiShip | pmMultiShip |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
+      | huPkgCodeLU_ms        | ISO1          | LU          |
+      | huPkgCodeTU_ms        | CART          | TU          |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID     |
+      | huPILU_ms      |
+      | huPITU_ms      |
+      | huPIVirtual_ms |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID     | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID |
+      | huPIVerLU_ms       | huPILU_ms      | LU          | Y         |                       |
+      | huPIVerTU_ms       | huPITU_ms      | TU          | Y         | huPkgCodeTU_ms        |
+      | huPIVerCU_ms       | huPIVirtual_ms | V           | Y         |                       |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID | M_HU_PackingMaterial_ID |
+      | huPiItemLU_ms              | huPIVerLU_ms       | 10  | HU       | huPITU_ms         |                         |
+      | huPiItemTU_ms              | huPIVerTU_ms       | 0   | PM       |                    | pm_ms                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID   | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huPiProd_ms             | huPiItemTU_ms    | prod_multiShip | 10  | 2025-01-01 | huPkgCodeLU_ms                    | msLuGTIN                         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID |
+      | salesPLV               | prod_multiShip | 5.00     | PCE      |
+
+    # Order 1 — POReference "multiShipRef"
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference  |
+      | o_ms_1     | true    | customer1     | 2025-04-17  | 2025-04-18Z  | multiShipRef |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID   | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_ms_1    | o_ms_1     | prod_multiShip | 10         | huPiProd_ms             |
+    And the order identified by o_ms_1 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_ms_1    | ol_ms_1        | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_ms_1                          | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo |
+      | ss_ms_1                          | s_ms_1                | shipment_ms1_ID         | shipment_ms1_DocNo      |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    # Order 2 — same BPartner, same POReference → reuses the same DESADV
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference  |
+      | o_ms_2     | true    | customer1     | 2025-04-17  | 2025-04-18Z  | multiShipRef |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID   | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_ms_2    | o_ms_2     | prod_multiShip | 10         | huPiProd_ms             |
+    And the order identified by o_ms_2 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_ms_2    | ol_ms_2        | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=2000000.
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_ms_2                          | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo |
+      | ss_ms_2                          | s_ms_2                | shipment_ms2_ID         | shipment_ms2_DocNo      |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    # Verify both shipments share the same DESADV (test precondition)
+    Then M_InOut records share the same EDI_Desadv:
+      | M_InOut_ID |
+      | s_ms_1     |
+      | s_ms_2     |
+
+    # Export shipment 1 and verify it has exactly 1 pack (not 2)
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_ms_1     | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ms1_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export has compensation group packing:
+      | PackingCount | MainArticleCount | SubArticleCount |
+      | 1            | 1                | 0               |
+
+    # Export shipment 2 and verify it also has exactly 1 pack (not 2)
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_ms2_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export has compensation group packing:
+      | PackingCount | MainArticleCount | SubArticleCount |
+      | 1            | 1                | 0               |

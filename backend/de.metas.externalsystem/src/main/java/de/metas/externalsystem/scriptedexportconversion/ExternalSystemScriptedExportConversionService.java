@@ -31,8 +31,8 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointRepository;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
@@ -88,7 +88,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
-	@NonNull private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
+	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -126,7 +126,7 @@ public class ExternalSystemScriptedExportConversionService
 			@Nullable final String errorContext)
 	{
 
-		final ExternalSystemOutboundEndpoint endpoint = externalSystemOutboundEndpointRepository.getById(config.getExternalSystemOutboundEndpointId());
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 		final String outboundEndpointData = toJson(endpoint);
 
 		final Map<String, String> parameters = new HashMap<>();
@@ -145,7 +145,7 @@ public class ExternalSystemScriptedExportConversionService
 		return parameters;
 	}
 
-	private String toJson(@NonNull final ExternalSystemOutboundEndpoint endpoint)
+	private String toJson(@NonNull final ExternalSystemEndpoint endpoint)
 	{
 		try
 		{

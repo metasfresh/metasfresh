@@ -38,10 +38,13 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
+import de.metas.project.ProjectId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -53,6 +56,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -704,26 +709,50 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
+		// Track which schedules were fully shipped in this shipment (MovementQty >= QtyOrdered)
+		final HashSet<ShipmentScheduleId> fullyShippedScheduleIds = new HashSet<>();
+		final HashSet<OrderId> orderIds = new HashSet<>();
+
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
 			{
 				for (final I_M_ShipmentSchedule shipmentScheduleRecord : shipmentSchedulePA.retrieveForInOutLine(iolrecord))
 				{
-					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+					final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+					final OrderId orderId = OrderId.ofRepoIdOrNull(shipmentScheduleRecord.getC_Order_ID());
+					if (orderId != null)
 					{
-						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
-						{
-							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
-									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
-							closeShipmentSchedule(shipmentScheduleRecord);
-						}
-						else
-						{
-							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
-									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
-						}
+						orderIds.add(orderId);
 					}
+
+					if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) >= 0)
+					{
+						fullyShippedScheduleIds.add(scheduleId);
+					}
+				}
+			}
+		}
+
+		// Close all schedules from the involved orders that were NOT fully shipped.
+		// This includes partially shipped schedules (MovementQty < QtyOrdered) and
+		// completely unshipped schedules (no shipment line at all).
+		for (final OrderId orderId : orderIds)
+		{
+			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
+			for (final ShipmentScheduleId scheduleId : allScheduleIds)
+			{
+				if (fullyShippedScheduleIds.contains(scheduleId))
+				{
+					logger.debug("Not closing shipment schedule {} - fully shipped in this delivery", scheduleId);
+					continue;
+				}
+
+				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
+				if (!schedule.isClosed())
+				{
+					logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
+					closeShipmentSchedule(schedule);
 				}
 			}
 		}
@@ -1019,4 +1048,31 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.modelClass(modelClass)
 				.build();
 	}
+
+	@Override
+	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getByOrderLineId(orderLineId);
+		if (shipmentSchedule == null)
+		{
+			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip project propagation", orderLineId);
+			return;
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			return;
+		}
+
+		final ProjectId schedProjectId = ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
+		if (ProjectId.equals(schedProjectId, projectId))
+		{
+			return;
+		}
+
+		shipmentSchedule.setC_Project_ID(ProjectId.toRepoId(projectId));
+		shipmentSchedulePA.save(shipmentSchedule);
+		logger.debug("Updated C_Project_ID={} on M_ShipmentSchedule_ID={} from C_OrderLine_ID={}", projectId, shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId);
+	}
+
 }

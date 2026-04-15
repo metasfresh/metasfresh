@@ -134,6 +134,9 @@ import java.util.Set;
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.piItemProductId(purchaseOrderItem.getHuPIItemProductId());
+		orderLineBuilder.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+		orderLineBuilder.qtyEnteredTU(purchaseOrderItem.getQtyEnteredTU());
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
 		{

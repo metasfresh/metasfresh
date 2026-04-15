@@ -538,6 +538,34 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1)
+			set_Value(COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else
+			set_Value(COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public void setQtyEnteredTU(@Nullable final BigDecimal QtyEnteredTU)
+	{
+		set_Value(COLUMNNAME_QtyEnteredTU, QtyEnteredTU);
+	}
+
+	@Override
+	@Nullable
+	public BigDecimal getQtyEnteredTU()
+	{
+		return get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredTU);
+	}
+
+	@Override
 	public void setM_Product_ID(final int M_Product_ID)
 	{
 		if (M_Product_ID < 1)

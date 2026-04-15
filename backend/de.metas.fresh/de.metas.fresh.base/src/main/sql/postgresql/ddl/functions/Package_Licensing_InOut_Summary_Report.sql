@@ -1,14 +1,22 @@
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric
+)
+;
+DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric,
+    p_IsIncludeAllProducts varchar
 )
 ;
 
 CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric,
+    p_IsIncludeAllProducts varchar DEFAULT 'Y'
 )
     RETURNS TABLE
             (
@@ -83,7 +91,7 @@ BEGIN
     SELECT TRIM(
                    STRING_AGG(
                            FORMAT(
-                                   '(SUM(t.material_weight) FILTER (WHERE t.material_name = %L))::varchar AS %I',
+                                   '(ROUND(SUM(t.material_weight) FILTER (WHERE t.material_name = %L), 3))::varchar AS %I',
                                    material_name,
                                    v_column_aliases[idx]
                            ),
@@ -108,8 +116,8 @@ BEGIN
 
     -- 4) Build the SQL statement to execute (separate function call argument)
     v_report_func_call := FORMAT(
-            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s)',
-            p_DateFrom, p_DateTo, p_Country_id
+            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s, p_IsIncludeAllProducts := %L)',
+            p_DateFrom, p_DateTo, p_Country_id, p_IsIncludeAllProducts
                           );
 
     -- 5) REWRITTEN V_SQL CONTENT - Wrapped the entire query to exclude the sort_order column
@@ -149,7 +157,7 @@ BEGIN
                     r.ProductGroup,
                     'Haushalt'::varchar AS PackagingType,
                     r.SmallPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.SmallPackagingMaterial = ANY(%5$s)
 
@@ -160,7 +168,7 @@ BEGIN
                     r.ProductGroup,
                     'Gewerbe'::varchar AS PackagingType,
                     r.OuterPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.OuterPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.OuterPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.OuterPackagingMaterial = ANY(%5$s)
             ) t

@@ -231,9 +231,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "postal": "l1_postal",
         "region": "l1_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -278,9 +276,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "postal": "l2_postal",
         "region": "l2_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -462,20 +458,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "repoId": 40
         },
         "locationType": {
-          "billTo": false,
-          "billToDefault": false,
-          "shipTo": false,
-          "shipToDefault": false,
-          "visitorsAddress": false,
-          "visitorsAddressDefault": false
+          "billTo": true,
+          "billToDefault": true,
+          "shipTo": true,
+          "shipToDefault": true,
+          "visitorsAddress": true,
+          "visitorsAddressDefault": true
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -654,20 +648,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "repoId": 40
         },
         "locationType": {
-          "billTo": false,
-          "billToDefault": false,
-          "shipTo": false,
-          "shipToDefault": false,
-          "visitorsAddress": false,
-          "visitorsAddressDefault": false
+          "billTo": true,
+          "billToDefault": true,
+          "shipTo": true,
+          "shipToDefault": true,
+          "visitorsAddress": true,
+          "visitorsAddressDefault": true
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -811,20 +803,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "repoId": 40
         },
         "locationType": {
-          "billTo": false,
-          "billToDefault": false,
-          "shipTo": false,
-          "shipToDefault": false,
-          "visitorsAddress": false,
-          "visitorsAddressDefault": false
+          "billTo": true,
+          "billToDefault": true,
+          "shipTo": true,
+          "shipToDefault": true,
+          "visitorsAddress": true,
+          "visitorsAddressDefault": true
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -968,20 +958,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "repoId": 40
         },
         "locationType": {
-          "billTo": false,
-          "billToDefault": false,
-          "shipTo": false,
-          "shipToDefault": false,
-          "visitorsAddress": false,
-          "visitorsAddressDefault": false
+          "billTo": true,
+          "billToDefault": true,
+          "shipTo": true,
+          "shipToDefault": true,
+          "visitorsAddress": true,
+          "visitorsAddressDefault": true
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -1026,9 +1014,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "postal": "newLocation_postal",
         "region": "newLocation_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -1103,8 +1089,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "active": true,
     "address1": "locationRecord.address1",
     "address2": "locationRecord.address2",
-    "billTo": false,
-    "billToDefault": false,
+    "billTo": true,
+    "billToDefault": true,
     "changeInfo": {
       "createdBy": 30,
       "createdMillis": 1561133544,
@@ -1124,10 +1110,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "region": "locationRecord.regionName",
     "remitTo": false,
     "replicationLookupDefault": false,
-    "shipTo": false,
-    "shipToDefault": false,
-    "visitorsAddress": false,
-    "visitorsAddressDefault": false
+    "shipTo": true,
+    "shipToDefault": true,
+    "visitorsAddress": true,
+    "visitorsAddressDefault": true
   }
 ]
 
@@ -1137,8 +1123,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "active": true,
     "address1": "locationRecord.address1",
     "address2": "locationRecord.address2",
-    "billTo": false,
-    "billToDefault": false,
+    "billTo": true,
+    "billToDefault": true,
     "changeInfo": {
       "createdBy": 30,
       "createdMillis": 1561133544,
@@ -1158,10 +1144,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "region": "locationRecord.regionName",
     "remitTo": false,
     "replicationLookupDefault": false,
-    "shipTo": false,
-    "shipToDefault": false,
-    "visitorsAddress": false,
-    "visitorsAddressDefault": false
+    "shipTo": true,
+    "shipToDefault": true,
+    "visitorsAddress": true,
+    "visitorsAddressDefault": true
   }
 ]
 
@@ -1171,8 +1157,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "active": true,
     "address1": "locationRecord.address1",
     "address2": "locationRecord.address2",
-    "billTo": false,
-    "billToDefault": false,
+    "billTo": true,
+    "billToDefault": true,
     "changeInfo": {
       "createdBy": 30,
       "createdMillis": 1561133544,
@@ -1192,10 +1178,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "region": "locationRecord.regionName",
     "remitTo": false,
     "replicationLookupDefault": false,
-    "shipTo": false,
-    "shipToDefault": false,
-    "visitorsAddress": false,
-    "visitorsAddressDefault": false
+    "shipTo": true,
+    "shipToDefault": true,
+    "visitorsAddress": true,
+    "visitorsAddressDefault": true
   }
 ]
 
@@ -1276,8 +1262,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
-        "billTo": false,
-        "billToDefault": false,
+        "billTo": true,
+        "billToDefault": true,
         "changeInfo": {
           "createdBy": 30,
           "createdMillis": 1561133544,
@@ -1297,10 +1283,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "shipTo": false,
-        "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "shipTo": true,
+        "shipToDefault": true,
+        "visitorsAddress": true,
+        "visitorsAddressDefault": true
       }
     ]
   }
@@ -1383,8 +1369,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
-        "billTo": false,
-        "billToDefault": false,
+        "billTo": true,
+        "billToDefault": true,
         "changeInfo": {
           "createdBy": 30,
           "createdMillis": 1561133544,
@@ -1404,10 +1390,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "shipTo": false,
-        "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "shipTo": true,
+        "shipToDefault": true,
+        "visitorsAddress": true,
+        "visitorsAddressDefault": true
       }
     ]
   }
@@ -1490,8 +1476,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
-        "billTo": false,
-        "billToDefault": false,
+        "billTo": true,
+        "billToDefault": true,
         "changeInfo": {
           "createdBy": 30,
           "createdMillis": 1561133544,
@@ -1511,10 +1497,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "shipTo": false,
-        "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "shipTo": true,
+        "shipToDefault": true,
+        "visitorsAddress": true,
+        "visitorsAddressDefault": true
       }
     ]
   }
@@ -1618,8 +1604,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "active": true,
             "address1": "locationRecord.address1",
             "address2": "locationRecord.address2",
-            "billTo": false,
-            "billToDefault": false,
+            "billTo": true,
+            "billToDefault": true,
             "changeInfo": {
               "createdBy": 30,
               "createdMillis": 1561133544,
@@ -1639,10 +1625,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "region": "locationRecord.regionName",
             "remitTo": false,
             "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "shipTo": true,
+            "shipToDefault": true,
+            "visitorsAddress": true,
+            "visitorsAddressDefault": true
           }
         ]
       },
@@ -1721,8 +1707,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "active": true,
             "address1": "locationRecord.address1_1",
             "address2": "locationRecord.address2_1",
-            "billTo": false,
-            "billToDefault": false,
+            "billTo": true,
+            "billToDefault": true,
             "changeInfo": {
               "createdBy": 31,
               "createdMillis": 1561133544,
@@ -1742,10 +1728,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "region": "locationRecord.regionName_1",
             "remitTo": false,
             "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "shipTo": true,
+            "shipToDefault": true,
+            "visitorsAddress": true,
+            "visitorsAddressDefault": true
           }
         ]
       }
@@ -1837,8 +1823,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "active": true,
             "address1": "locationRecord.address1_2",
             "address2": "locationRecord.address2_2",
-            "billTo": false,
-            "billToDefault": false,
+            "billTo": true,
+            "billToDefault": true,
             "changeInfo": {
               "createdBy": 32,
               "createdMillis": 1561133544,
@@ -1858,10 +1844,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "region": "locationRecord.regionName_2",
             "remitTo": false,
             "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "shipTo": true,
+            "shipToDefault": true,
+            "visitorsAddress": true,
+            "visitorsAddressDefault": true
           }
         ]
       },
@@ -1940,8 +1926,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "active": true,
             "address1": "locationRecord.address1_3",
             "address2": "locationRecord.address2_3",
-            "billTo": false,
-            "billToDefault": false,
+            "billTo": true,
+            "billToDefault": true,
             "changeInfo": {
               "createdBy": 33,
               "createdMillis": 1561133544,
@@ -1961,10 +1947,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "region": "locationRecord.regionName_3",
             "remitTo": false,
             "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "shipTo": true,
+            "shipToDefault": true,
+            "visitorsAddress": true,
+            "visitorsAddressDefault": true
           }
         ]
       }
@@ -2056,8 +2042,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "active": true,
             "address1": "locationRecord.address1_4",
             "address2": "locationRecord.address2_4",
-            "billTo": false,
-            "billToDefault": false,
+            "billTo": true,
+            "billToDefault": true,
             "changeInfo": {
               "createdBy": 34,
               "createdMillis": 1561133544,
@@ -2077,10 +2063,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "region": "locationRecord.regionName_4",
             "remitTo": false,
             "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "shipTo": true,
+            "shipToDefault": true,
+            "visitorsAddress": true,
+            "visitorsAddressDefault": true
           }
         ]
       }

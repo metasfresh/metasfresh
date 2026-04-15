@@ -1,4 +1,4 @@
-import { page } from '../../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { MaterialReceiptLineScreen } from './MaterialReceiptLineScreen';
@@ -9,7 +9,7 @@ const containerElement = () => page.locator('#ReceiptNewHUScreen');
 
 export const ReceiptNewHUScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {

@@ -83,6 +83,8 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
+	Stream<I_M_InOutLine> streamLinesByOrderLineIds(Set<OrderLineId> orderLineIds);
+
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
 	 */
@@ -119,7 +121,9 @@ public interface IInOutDAO extends ISingletonService
 
 	Stream<InOutId> streamInOutIdsByBPartnerId(BPartnerId bpartnerId);
 
-	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
+	List<I_M_InOutLine> retrieveLinesByInOutId(InOutId inOutId);
+
+	Set<InOutAndLineId> retrieveLineIdsByInOutId(InOutId inOutId);
 
 	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
@@ -149,4 +153,8 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 
 	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull OrderLineId orderLineId);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
 }

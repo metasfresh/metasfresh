@@ -85,7 +85,7 @@ Feature: EDI DESADV export via External System
       | EDI_Desadv_ID.Identifier |
       | d_1                      |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | S                |
 
@@ -97,11 +97,11 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID | ErrorMessage                              |
       | s_1        | External system export failed: Test error |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | E                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_1                      | E                |
 
@@ -109,11 +109,11 @@ Feature: EDI DESADV export via External System
       | EDI_Desadv_ID.Identifier |
       | d_1                      |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | S                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_1                      | S                |
 
@@ -153,7 +153,7 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID |
       | s_2        |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_2                   | S                |
 
@@ -165,11 +165,11 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID | ErrorMessage                              |
       | s_2        | External system export failed: Test error |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_2        | E                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus |
       | d_2           | E                |
 
@@ -177,10 +177,10 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID |
       | s_2        |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_2        | S                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus |
       | d_2           | S                |

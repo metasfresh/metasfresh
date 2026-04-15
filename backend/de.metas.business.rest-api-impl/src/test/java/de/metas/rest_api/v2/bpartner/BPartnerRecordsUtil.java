@@ -176,6 +176,12 @@ public class BPartnerRecordsUtil
 			bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 			bpartnerLocationRecord.setC_Location(locationRecord);
 			bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN + idOffSetStr);
+			bpartnerLocationRecord.setIsBillTo(true);
+			bpartnerLocationRecord.setIsBillToDefault(true);
+			bpartnerLocationRecord.setIsShipTo(true);
+			bpartnerLocationRecord.setIsShipToDefault(true);
+			bpartnerLocationRecord.setVisitorsAddress(true);
+			bpartnerLocationRecord.setIsDefaultVisitorAddress(true);
 			setCreatedByAndWhen(bpartnerLocationRecord, adUserId); // have to do it manually because we are setting the record ID too
 			saveRecord(bpartnerLocationRecord);
 

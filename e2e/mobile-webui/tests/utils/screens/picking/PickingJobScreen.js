@@ -22,6 +22,7 @@ const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with Pick
 export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     getPickingJobId: async () => {
@@ -34,7 +35,7 @@ export const PickingJobScreen = {
 
     scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
         const button = page.getByTestId(`scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`);
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toBeEnabled();
         await button.tap();
         await PickFromHUScanScreen.waitForScreen();
@@ -45,7 +46,7 @@ export const PickingJobScreen = {
 
     clickPickingSlotButton: async () => await step(`${NAME} - Click Picking Slot button`, async () => {
         const button = pickingSlotButton();
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toBeEnabled();
         await button.tap();
 
@@ -54,7 +55,7 @@ export const PickingJobScreen = {
 
     expectPickingSlotButtonGreen: async () => await step(`${NAME} - Expect Picking Slot button to be green`, async () => {
         const button = pickingSlotButton();
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await button.locator('.indicator-color-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
@@ -166,7 +167,7 @@ export const PickingJobScreen = {
             await step(`${NAME} - Waiting until line button color='${waitForColor}'`, async () => {
                 const expectedClassName = `indicator-color-${waitForColor}`;
                 const indicator = lineButton.locator(`[data-testid="indicator"].${expectedClassName}`);
-                await indicator.waitFor({ state: 'attached' });
+                await indicator.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
             });
         }
 

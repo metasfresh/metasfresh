@@ -31,12 +31,12 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+import de.metas.handlingunits.inout.returns.vendor.VendorReturnFromReceiptHUHandler;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -48,9 +48,10 @@ import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -61,7 +62,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -80,11 +80,13 @@ public class M_InOut
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final PickingJobService pickingJobService;
@@ -275,9 +277,6 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		//
-		// Services
-
 		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
 		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
 		{
@@ -295,9 +294,47 @@ public class M_InOut
 		// Receipt
 		else
 		{
+			if (inOutBL.isVendorReturn(inout))
+			{
+				return;
+			}
 			// TODO: destroy the HUs
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void processReturnsReactivation(final I_M_InOut inout)
+	{
+		//
+		// Shipment or customer return
+		if (inout.isSOTrx())
+		{
+			if (inOutBL.isCustomerReturn(inout))
+			{
+				inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+						.forEach(huShipmentAssignmentBL::reactivateCustomerReturnLine);
+			}
+			// TODO: change HUStatus from Shipped back to Picked
+			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
+			return;
+		}
+
+		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
+		if (!hasHUAssignments) // nothing to do if there are no HU assignments
+		{
+			return;
+		}
+
+		//
+		// Receipt or vendor return
+		if (inOutBL.isVendorReturn(inout))
+		{
+			huAssignmentBL.unassignAllHUs(inout);
+			inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+					.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
+		}
+
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -378,36 +415,67 @@ public class M_InOut
 		return sysConfigBL.getBooleanValue(SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned, true);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
-	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	/**
+	 * On vendor return completion (created by {@code M_InOut_GenerateVendorReturn}):
+	 * split/transform receipt HUs to correctly separate the returned quantities.
+	 * <p>
+	 * Only applies to vendor returns that have a {@code Return_Origin_InOut_ID}
+	 * (i.e., created from a receipt by the new process). Does NOT affect existing
+	 * HU-based vendor return or empties return flows.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void handleVendorReturnFromReceipt(final I_M_InOut vendorReturn)
 	{
-		if (!returnsServiceFacade.isVendorReturn(returnInOut))
+		if (!returnsServiceFacade.isVendorReturn(vendorReturn))
+		{
+			return;
+		}
+
+		if (returnsServiceFacade.isReversal(vendorReturn))
+		{
+			return;
+		}
+
+		if (returnsServiceFacade.isEmptiesReturn(vendorReturn))
+		{
+			return;
+		}
+
+		// Only handle vendor returns created from receipts (by M_InOut_GenerateVendorReturn)
+		if (vendorReturn.getReturn_Origin_InOut_ID() <= 0)
+		{
+			return;
+		}
+
+		// Skip if HUs are already assigned (e.g., from the existing HU-based vendor return flow)
+		final List<I_M_HU> existingHUs = huInOutBL.retrieveHandlingUnits(vendorReturn);
+		if (!existingHUs.isEmpty())
+		{
+			return;
+		}
+
+		VendorReturnFromReceiptHUHandler.builder()
+				.vendorReturn(vendorReturn)
+				.build()
+				.execute();
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnedInOut)
+	{
+		if (!returnsServiceFacade.isVendorReturn(returnedInOut))
 		{
 			return; // nothing to do
 		}
 
-		final String snapshotId = returnInOut.getSnapshot_UUID();
-		if (Check.isEmpty(snapshotId, true))
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(returnedInOut.getReversal_ID());
+		if (inOutId == null)
 		{
-			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
-		}
-
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
-
-		if (hus.isEmpty())
-		{
-			// nothing to do.
 			return;
 		}
+		final I_M_InOut returnReversalInOut = inOutBL.getById(inOutId);
 
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
-		snapshotDAO.restoreHUs()
-				.setContext(context)
-				.setSnapshotId(snapshotId)
-				.setDateTrx(returnInOut.getMovementDate())
-				.setReferencedModel(returnInOut)
-				.addModels(hus)
-				.restoreFromSnapshot();
+		huShipmentAssignmentBL.moveAssignments(returnedInOut, returnReversalInOut);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

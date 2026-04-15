@@ -124,6 +124,27 @@
             <artifactId>de-metas-common-ordercandidates</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
+
+        <!-- SFTP support -->
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-ftp-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <!-- Embedded SFTP server for tests -->
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-sftp</artifactId>
+            <version>2.14.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-common</artifactId>
+            <version>2.14.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

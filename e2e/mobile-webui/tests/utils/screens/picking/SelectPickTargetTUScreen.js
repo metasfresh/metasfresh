@@ -7,7 +7,7 @@ const containerElement = () => page.locator('#SelectPickTargetScreen');
 
 export const SelectPickTargetTUScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 

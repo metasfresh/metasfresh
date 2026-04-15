@@ -127,6 +127,31 @@ export const PAYMENT_TERM_WINDOW_ID = 141;
 export const PAYMENT_WINDOW_ID = 195;
 
 // ============================================================================
+// PLANNING WINDOWS
+// ============================================================================
+
+/**
+ * Forecast window (Prognose)
+ * Table: M_Forecast (AD_Table_ID=720)
+ * Window ID: 328
+ * Description: Forecast management with forecast line generation
+ */
+export const FORECAST_WINDOW_ID = 328;
+
+// ============================================================================
+// STATISTICS / READ-ONLY VIEW WINDOWS
+// ============================================================================
+
+/**
+ * Purchase & Sales Overview window (Ein- und Verkaufsübersicht)
+ * Table: C_Order_M_InOut_C_Invoice_Overview_V (AD_Table_ID=542578)
+ * Window ID: 542070
+ * Description: Read-only grid view combining order, shipment, and invoice lines
+ * with current stock on hand. Used for sales & purchase statistics.
+ */
+export const PURCHASE_SALES_OVERVIEW_WINDOW_ID = 542070;
+
+// ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
 

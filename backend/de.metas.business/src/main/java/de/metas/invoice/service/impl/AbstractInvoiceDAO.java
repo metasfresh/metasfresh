@@ -170,6 +170,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, adOrgID)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
@@ -554,6 +555,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.setLimit(query.getQueryLimit());
 

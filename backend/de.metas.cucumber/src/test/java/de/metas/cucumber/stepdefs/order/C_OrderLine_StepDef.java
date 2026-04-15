@@ -84,6 +84,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
@@ -142,6 +143,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -248,6 +250,12 @@ public class C_OrderLine_StepDef
 				.map(projectTable::extractIdFromRecord)
 				.map(ProjectId::getRepoId)
 				.ifPresent(orderLine::setC_Project_ID);
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.ifPresent(compGroupIdentifier -> {
+					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+					orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
+				});
 
 		saveRecord(orderLine);
 
@@ -429,6 +437,13 @@ public class C_OrderLine_StepDef
 						.orElseGet(() -> Integer.parseInt(asiIdentifier));
 
 				orderLine.setM_AttributeSetInstance_ID(asiId);
+			}
+
+			final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				orderLine.setC_Project_ID(project.getC_Project_ID());
 			}
 
 			saveRecord(orderLine);
@@ -655,6 +670,12 @@ public class C_OrderLine_StepDef
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
 			softly.assertThat(huPiItemProduct.getM_HU_PI_Item_Product_ID()).isEqualTo(orderLineHU.getM_HU_PI_Item_Product_ID());
 		}
+
+		row.getAsOptionalBigDecimal(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU)
+				.ifPresent(qtyEnteredTU -> {
+					final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+					softly.assertThat(orderLineHU.getQtyEnteredTU()).as("QtyEnteredTU").isEqualByComparingTo(qtyEnteredTU);
+				});
 
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
 		if (qtyReserved != null)

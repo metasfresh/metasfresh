@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-02
+**Last Updated**: 2026-03-04
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -918,7 +918,29 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 34. PO Reactivation — Receipt Schedule Close/Reopen (`po-reactivation-receipt-schedule.spec.js`)
+### 35. One-time Address (Einmaladresse)
+**File**: `tests/spec/one-time-address.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~60 seconds
+
+**Features Tested**:
+- F02300: Sales Order — One-time address quick input from location fields
+
+**Epic**: E0030: Sales
+
+**Workflow**:
+1. Create test customer via Backend API
+2. Navigate to Sales Order, create new order, select customer
+3. **Test 1 (DropShip)**: Enable IsDropShip, skip DropShip_BPartner_ID, click "New" on DropShip_Location_ID, fill address, check IsOneTime, submit — verify no HTTP 500 and DropShip_BPartner_ID auto-filled
+4. **Test 2 (Main)**: Click "New" on C_BPartner_Location_ID, fill address, check IsOneTime, submit — verify location is created
+
+**Components Tested**:
+- Quick input modal for BPartner location
+- BooleanWidget (IsDropShip checkbox)
+- WidgetCommon (field containers, save detection)
+- BPartnerLocationQuickInputConfiguration fallback logic
+
+### 36. PO Reactivation — Receipt Schedule Close/Reopen (`po-reactivation-receipt-schedule.spec.js`)
 
 **Features Tested**:
 - F00600: Purchase Order
@@ -938,6 +960,35 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 **Precondition**: `PO_AllowReactivationIfReceiptsCreated=Y` must be set as JVM property on webapi service.
 
 **Components Tested**: PurchaseOrderPage (reactivate), ReceiptCandidatesPage (createReceipt), WebAPI field validation (getFieldData)
+
+---
+
+### 37. Promotion Code (`promotion-code.spec.js`)
+
+**Features Tested**:
+- F00100: Sales Order
+- F00250: Promotion Code (Aktionskennzeichen)
+
+**Epic**: E0100: Sales
+
+**Workflow**:
+1. Create promotion code via UI (window 542105) with Value, Name, Description
+2. Create sales order with customer and product
+3. Open Advanced Edit (Alt+E), set C_PromotionCode_ID via typeahead
+4. Verify promo code value in Advanced Edit, close modal
+5. Add order line, complete order
+6. Reopen Advanced Edit — verify promo code persisted after completion
+7. Navigate to Invoice Candidates (Alt+6)
+8. Open first IC row, open Advanced Edit — verify promo code propagated
+
+**Key Validations**:
+- Promotion code creation via direct window navigation
+- Advanced Edit modal (Alt+E) for setting and reading advanced fields
+- Promotion code lookup typeahead inside modal
+- Promotion code persistence after order completion
+- Promotion code propagation from SO to Invoice Candidate
+
+**Components Tested**: SalesOrderPage, InvoiceCandidatePage, AdvancedEdit utility
 
 ---
 
@@ -964,6 +1015,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - **WebAPIValidation.js** - Record state validation via WebAPI
 - **PaymentValidation.js** - Payment allocation and IsPaid/IsAllocated flag validation
 - **DocumentReferences.js** - Alt+6 reference panel operations, reference constants, SSE resilience
+- **AdvancedEdit.js** - Advanced Edit modal (Alt+E) interactions: open, close, set/get lookup and text fields
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 

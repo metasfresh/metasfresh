@@ -117,7 +117,6 @@ public class EDIDesadvPackService
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
 

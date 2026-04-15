@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { page } from "../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../common";
 import { expect } from '@playwright/test';
 
 const NAME = 'YesNoDialog';
@@ -8,7 +8,7 @@ const containerElement = () => page.locator('.yes-no-dialog');
 
 export const YesNoDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect dialog to be displayed`, async () => {

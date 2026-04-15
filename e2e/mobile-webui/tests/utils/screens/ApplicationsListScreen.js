@@ -1,4 +1,4 @@
-import { page } from "../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../common";
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { LoginScreen } from "./LoginScreen";
@@ -12,12 +12,19 @@ const containerElement = () => page.locator('#ApplicationsListScreen');
 
 export const ApplicationsListScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
-        await page.locator('.loading').waitFor({ state: 'detached' });
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    expectLogoutButtonReachable: async () => await test.step(`${NAME} - Expect logout button reachable by scrolling`, async () => {
+        const logoutButton = page.locator('#logout-button');
+        await expect(logoutButton).toBeVisible();
+        await logoutButton.scrollIntoViewIfNeeded();
+        await expect(logoutButton).toBeInViewport();
     }),
 
     startApplication: async (applicationId) => await test.step(`${NAME} - Start application ${applicationId}`, async () => {
@@ -42,5 +49,9 @@ export const ApplicationsListScreen = {
 
     scanBarcode: async (barcode) => await test.step(`${NAME} - Scan barcode`, async () => {
         await BarcodeScannerComponent.type(barcode);
+    }),
+
+    scanBarcodeViaIME: async (barcode) => await test.step(`${NAME} - Scan barcode via IME`, async () => {
+        await BarcodeScannerComponent.typeViaIME(barcode);
     }),
 }

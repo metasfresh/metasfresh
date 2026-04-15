@@ -31,9 +31,11 @@ import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_StepDef;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -74,6 +76,7 @@ public class C_PurchaseCandidate_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 
 	public C_PurchaseCandidate_StepDef(
 			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
@@ -82,7 +85,8 @@ public class C_PurchaseCandidate_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
 	{
 		this.identifierIdsTable = identifierIdsTable;
 		this.purchaseCandidateTable = purchaseCandidateTable;
@@ -91,6 +95,7 @@ public class C_PurchaseCandidate_StepDef
 		this.orderTable = orderTable;
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.huPiItemProductTable = huPiItemProductTable;
 	}
 
 	/**
@@ -304,6 +309,17 @@ public class C_PurchaseCandidate_StepDef
 				.ifPresent(locationId -> assertThat(purchaseCandidateRecord.getDropShip_Location_ID())
 						.as("DropShip_Location_ID")
 						.isEqualTo(locationId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.map(huPiItemProductTable::get)
+				.ifPresent(huPiItemProduct -> assertThat(purchaseCandidateRecord.getM_HU_PI_Item_Product_ID())
+						.as("M_HU_PI_Item_Product_ID")
+						.isEqualTo(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
+
+		row.getAsOptionalBigDecimal(I_C_PurchaseCandidate.COLUMNNAME_QtyEnteredTU)
+				.ifPresent(qtyEnteredTU -> assertThat(purchaseCandidateRecord.getQtyEnteredTU())
+						.as("QtyEnteredTU")
+						.isEqualByComparingTo(qtyEnteredTU));
 	}
 
 	private void findPurchaseCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

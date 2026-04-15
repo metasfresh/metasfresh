@@ -16,10 +16,10 @@
 # protection and will NOT trigger the cicd workflow on the merge branch.
 # Without cicd, the Merge Gate check never appears, and Mergify cannot
 # auto-merge the PR. To work around this, after pushing the merge branch
-# we explicitly dispatch the cicd workflow via `gh workflow run` using the
-# CICD_TRIGGER_DISPATCH PAT. We cannot use the PAT for the push itself
-# because it lacks the `workflows` permission needed to push workflow file
-# changes (common in *_release → new_dawn_uat merges).
+# (with GITHUB_TOKEN, which has push access), we explicitly dispatch the
+# cicd workflow via `gh workflow run` using the CICD_TRIGGER_DISPATCH PAT.
+# The PAT cannot be used for the push itself — it belongs to a service
+# account without push access to this repo.
 # ===========================================================================
 
 name: Auto-port to new_dawn_uat chain
@@ -50,27 +50,14 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
        endsWith(github.event.workflow_run.head_branch, '_release'))
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # CRITICAL: Use a PAT instead of GITHUB_TOKEN for checkout.
-          # This makes `git push` authenticate with the PAT, which allows
-          # the push to trigger the cicd workflow on the merge branch.
-          # GITHUB_TOKEN pushes are blocked by GitHub's anti-recursion
-          # protection and will NOT trigger downstream workflows.
-          # Falls back to GITHUB_TOKEN if PAT is not configured (but cicd
-          # won't trigger, so Merge Gate won't appear and auto-merge won't work).
-          token: ${{ secrets.CICD_TRIGGER_DISPATCH || github.token }}
-
-      - name: Check push token
-        run: |
-          if [[ -z "${{ secrets.CICD_TRIGGER_DISPATCH }}" ]]; then
-            echo "::warning::CICD_TRIGGER_DISPATCH secret not configured — push will NOT trigger cicd workflow. Auto-merge will not work."
-          else
-            echo "PAT configured — push will trigger cicd workflow"
-          fi
+          # Use default GITHUB_TOKEN for checkout/push. It has push access
+          # to the repo but won't trigger downstream workflows (anti-recursion).
+          # The separate "Dispatch cicd" step handles triggering cicd via PAT.
 
       - name: Determine target branch
         id: target
@@ -172,6 +159,7 @@ jobs:
           fi
 
       - name: Create or update merge branch and PR
+        id: merge
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -184,17 +172,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # -----------------------------------------------------------
-          # Helper: detect DDL/migration script changes in the merge diff.
-          # Sets HAS_DDL=true and DDL_FILES if SQL migration or DDL
-          # reference files are part of the diff vs the target branch.
+          # Helper: detect DDL reference file changes in the merge diff.
+          # Sets HAS_DDL=true and DDL_FILES if files under */ddl/*
+          # (CREATE/ALTER TABLE/VIEW definitions) are part of the diff.
           # When DDL changes are present, auto-merge labels are omitted
-          # because a human must verify that migration scripts are correct
-          # for the target branch's DB schema.
+          # because a human must verify schema changes are correct for
+          # the target branch. Regular migration scripts (under system/)
+          # are safe to auto-merge.
           # -----------------------------------------------------------
           detect_ddl_changes() {
             DDL_FILES=$(git diff --name-only "origin/$TARGET"..HEAD -- \
-              '*/sql/postgresql/system/' \
-              '*/sql/postgresql/ddl/' \
+              ':(glob)**/sql/postgresql/ddl/**' \
             | head -50)
             if [[ -n "$DDL_FILES" ]]; then
               HAS_DDL=true
@@ -243,6 +231,13 @@ jobs:
                 LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
               fi
 
+              # Outputs for traceability step
+              {
+                echo "result=updated"
+                echo "merge_pr_url=https://github.com/${{ github.repository }}/pull/$EXISTING_PR"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
               # Step summary
               {
                 echo "## Auto-port: Updated existing PR"
@@ -261,6 +256,7 @@ jobs:
             else
               git merge --abort
               echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
               {
                 echo "## Auto-port: Merge conflict"
                 echo ""
@@ -322,6 +318,13 @@ jobs:
 
               echo "Created merge PR: $MERGE_BRANCH → $TARGET"
 
+              # Outputs for traceability step
+              {
+                echo "result=created"
+                echo "merge_pr_url=$PR_URL"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
               # Step summary
               {
                 echo "## Auto-port: Created merge PR"
@@ -340,6 +343,7 @@ jobs:
             else
               git merge --abort
               echo "::error::Merge conflict: $SOURCE → $TARGET. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
               {
                 echo "## Auto-port: Merge conflict"
                 echo ""
@@ -375,3 +379,54 @@ jobs:
           echo "Dispatching cicd workflow for: $MERGE_BRANCH"
           GH_TOKEN="$DISPATCH_TOKEN" gh workflow run cicd.yaml --ref "$MERGE_BRANCH"
           echo "cicd dispatched for $MERGE_BRANCH"
+
+      # ---------------------------------------------------------------
+      # Post a traceability comment on the source PR(s) that triggered
+      # this auto-port. This lets the developer see the result directly
+      # on their merged PR without hunting through workflow runs.
+      # Runs even on merge conflict (always()) so failures are visible.
+      # ---------------------------------------------------------------
+      - name: Post traceability on source PRs
+        if: always() && steps.target.outputs.skip != 'true' && steps.merge.outputs.result != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          RESULT: ${{ steps.merge.outputs.result }}
+          MERGE_PR_URL: ${{ steps.merge.outputs.merge_pr_url }}
+          HAS_DDL: ${{ steps.merge.outputs.has_ddl }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Build comment body based on result
+          case "$RESULT" in
+            created|updated)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: $RESULT $MERGE_PR_URL"
+              if [[ "$HAS_DDL" == "true" ]]; then
+                COMMENT="$COMMENT"$'\n'"⚠️ DDL/migration changes detected — auto-merge disabled, human review required"
+              fi
+              ;;
+            conflict)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: merge conflict — manual resolution needed ([workflow run]($RUN_URL))"
+              ;;
+            *)
+              echo "Unknown result: $RESULT, skipping traceability"
+              exit 0
+              ;;
+          esac
+
+          # Find source PRs associated with the triggering cicd commit
+          SOURCE_PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null)] | .[].number' 2>/dev/null || true)
+
+          if [[ -z "$SOURCE_PRS" ]]; then
+            echo "No source PRs found for commit $HEAD_SHA, skipping traceability"
+            exit 0
+          fi
+
+          # Post comment on each source PR
+          for PR_NUM in $SOURCE_PRS; do
+            echo "Posting traceability comment on PR #$PR_NUM"
+            gh pr comment "$PR_NUM" --body "$COMMENT" || true
+          done
