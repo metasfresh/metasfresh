@@ -389,6 +389,7 @@ public class HUAttributesBL implements IHUAttributesBL
 				final Set<BigDecimal> distinctValues = huAttributes.stream()
 						.map(I_M_HU_Attribute::getValueNumber)
 						.filter(Objects::nonNull)
+						.map(BigDecimal::stripTrailingZeros)
 						.collect(Collectors.toSet());
 				return distinctValues.size() == 1 ? Optional.of(distinctValues.iterator().next()) : Optional.empty();
 			}

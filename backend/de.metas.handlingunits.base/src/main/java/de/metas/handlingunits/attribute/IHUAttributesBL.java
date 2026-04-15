@@ -108,7 +108,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	/**
 	 * For each storage-relevant attribute (i.e. {@code M_Attribute.isStorageRelevant=true}) that all given HUs share a common value for,
-	 * returns an {@link ImmutableAttributeSet} containing those common values.
+	 * returns an {@link ImmutableAttributeSet} containing those common values. Missing attributes are treated as "common".
 	 * Attributes where the HUs have different values, or which are not storage-relevant, are excluded.
 	 */
 	ImmutableAttributeSet extractCommonStorageRelevantAttributeSet(ImmutableSet<HuId> huIds);

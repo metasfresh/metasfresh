@@ -562,6 +562,7 @@ public class HUOrderBL implements IHUOrderBL
 		final AttributeSetInstanceId asiId;
 		if (sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
 		{
+			// ASIs are considered immutable, so always create a new one
 			final ImmutableAttributeSet commonStorageRelevantAttributes = huAttributesBL.extractCommonStorageRelevantAttributeSet(huIds);
 			asiId = commonStorageRelevantAttributes.isEmpty()
 					? AttributeSetInstanceId.NONE
