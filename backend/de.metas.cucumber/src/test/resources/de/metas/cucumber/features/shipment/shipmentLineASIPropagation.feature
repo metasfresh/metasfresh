@@ -86,6 +86,7 @@ Feature: Shipment line ASI propagation
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_AttributeSetInstance_ID |
       | orderLine  | order      | product      | 10         | asi_order                 |
     And the order identified by order is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Wait for shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:

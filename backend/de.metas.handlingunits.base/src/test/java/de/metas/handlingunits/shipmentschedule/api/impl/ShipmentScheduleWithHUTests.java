@@ -491,6 +491,26 @@ public class ShipmentScheduleWithHUTests
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
 		}
 
+		@Test
+		void schedASI_adds_attribute_not_present_in_HU()
+		{
+			// HU has attribute A, schedule ASI has attribute B (no overlap) -> both in result
+			final IAttributeValue huAttrA = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue schedAttrB = stubAttributeValue(2, "K1", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttrA),
+					Arrays.asList(schedAttrB));
+
+			assertThat(result).hasSize(2);
+			final IAttributeValue resultA = result.stream().filter(av -> av.getM_Attribute().getM_Attribute_ID() == 1).findFirst().orElse(null);
+			final IAttributeValue resultB = result.stream().filter(av -> av.getM_Attribute().getM_Attribute_ID() == 2).findFirst().orElse(null);
+			assertThat(resultA).isNotNull();
+			assertThat(resultB).isNotNull();
+			assertThat(resultA.getValue()).isEqualTo("P17");
+			assertThat(resultB.getValue()).isEqualTo("K1");
+		}
+
 		/**
 		 * Creates a stub {@link IAttributeValue} with the given attribute ID, value, empty value, and useInASI flag.
 		 * Uses POJOWrapper-backed {@link I_M_Attribute} instances from the test environment.
