@@ -62,9 +62,9 @@ Feature: Shipment line ASI propagation
 
   @from:cucumber
   @Id:S0290_10
-  Scenario: Dropship — schedule ASI propagates to shipment line without HU picking
+  Scenario: Schedule ASI propagates to shipment line when no HUs are picked
   ## When a sales order line has an ASI with a custom attribute (e.g. Herkunft=DE),
-  ## and the shipment is generated in dropship mode (no HU picking),
+  ## and the shipment is generated without HU picking (e.g. dropship, no stock, etc.),
   ## then the shipment line's ASI must contain that attribute — even if it's not in
   ## M_ShipmentSchedule_AttributeConfig.
 
