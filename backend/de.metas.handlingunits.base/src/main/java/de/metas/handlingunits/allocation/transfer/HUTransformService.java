@@ -167,6 +167,13 @@ public class HUTransformService
 
 	@NonNull private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
+	/**
+	 * VHU IDs that are exempt from the reservation guard.
+	 * The caller sets this when it <em>owns</em> the reservation and is explicitly allowed to
+	 * transform those HUs (e.g. shipment picking for the sales order that reserved them).
+	 * Obtain the IDs via {@link de.metas.handlingunits.reservation.HUReservationService#getVHUIdsByDocumentRef}.
+	 */
+	@NonNull private final ImmutableSet<HuId> allowedReservedVhuIds;
 
 	private static final AdMessageKey MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND = AdMessageKey.of("HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND");
 	private static final AdMessageKey MSG_CANNOT_TRANSFORM_RESERVED_HU = AdMessageKey.of("de.metas.handlingunits.CannotTransformReservedHU");
@@ -186,12 +193,14 @@ public class HUTransformService
 			@Nullable final Properties ctx,
 			@Nullable final String trxName,
 			@Nullable final EmptyHUListener emptyHUListener,
-			@Nullable final List<TableRecordReference> referencedObjects)
+			@Nullable final List<TableRecordReference> referencedObjects,
+			@Nullable final Collection<HuId> allowedReservedVhuIds)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class, huQRCodesService);
 		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
+		this.allowedReservedVhuIds = allowedReservedVhuIds != null ? ImmutableSet.copyOf(allowedReservedVhuIds) : ImmutableSet.of();
 
 		final IMutableHUContext mutableHUContext = createHUContext(ctx, trxName);
 		if (emptyHUListener != null)
@@ -225,12 +234,14 @@ public class HUTransformService
 	 */
 	@Builder(builderClassName = "BuilderForHUcontext", builderMethodName = "builderForHUcontext")
 	private HUTransformService(@NonNull final IHUContext huContext,
-							   @Nullable final List<TableRecordReference> referencedObjects)
+							   @Nullable final List<TableRecordReference> referencedObjects,
+							   @Nullable final Collection<HuId> allowedReservedVhuIds)
 	{
 		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class);
 		this.qrCodeConfigurationService = SpringContextHolder.lazyBean(QRCodeConfigurationService.class, null);
 
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
+		this.allowedReservedVhuIds = allowedReservedVhuIds != null ? ImmutableSet.copyOf(allowedReservedVhuIds) : ImmutableSet.of();
 		this.huContext = huContext;
 	}
 
@@ -246,27 +257,34 @@ public class HUTransformService
 	// =========================================================
 
 	/**
-	 * Throws {@link AdempiereException} if the given HU itself has {@code IsReserved=Y}.
+	 * Throws {@link AdempiereException} if the given HU itself has {@code IsReserved=Y},
+	 * unless its {@link HuId} is in {@link #allowedReservedVhuIds} (i.e. the caller owns the reservation).
 	 * <p>
 	 * Used for CU-level operations (where the source is the exact VHU being transformed)
 	 * and for TU/LU-level operations that merely re-parent an HU without touching its content
 	 * (e.g. packing a TU onto an LU).  In the latter case checking only the HU's own flag is
 	 * intentional: a TU whose VHU children are reserved can still be moved as a container.
 	 */
-	private static void assertNotReserved(@NonNull final I_M_HU hu)
+	private void assertNotReserved(@NonNull final I_M_HU hu)
 	{
-		if (hu.isReserved())
+		if (!hu.isReserved())
 		{
-			throw new AdempiereException(MSG_CANNOT_TRANSFORM_RESERVED_HU)
-					.appendParametersToMessage()
-					.setParameter("M_HU_ID", hu.getM_HU_ID());
+			return;
 		}
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (allowedReservedVhuIds.contains(huId))
+		{
+			return;
+		}
+		throw new AdempiereException(MSG_CANNOT_TRANSFORM_RESERVED_HU)
+				.appendParametersToMessage()
+				.setParameter("M_HU_ID", hu.getM_HU_ID());
 	}
 
 	/** Convenience overload for a collection of HUs. */
-	private static void assertNoneReserved(@NonNull final Collection<I_M_HU> hus)
+	private void assertNoneReserved(@NonNull final Collection<I_M_HU> hus)
 	{
-		hus.forEach(HUTransformService::assertNotReserved);
+		hus.forEach(this::assertNotReserved);
 	}
 
 	/**

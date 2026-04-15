@@ -501,4 +501,40 @@ public class HUTransformServiceReservationTests
 		assertThatThrownBy(() -> huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, sourceTU))
 				.isInstanceOf(AdempiereException.class);
 	}
+
+	/**
+	 * When the caller <em>owns</em> the reservation it passes the reserved VHU IDs via
+	 * {@code allowedReservedVhuIds}. The guard must be bypassed for those specific VHUs,
+	 * so the transformation succeeds (or fails for reasons unrelated to the reservation guard).
+	 * <p>
+	 * Scenario: sales-order picks its own reserved CU (e.g. splits it before creating the shipment).
+	 */
+	@Test
+	public void cuToNewCU_allowedReservedVhuIds_bypassesGuard()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+
+		// mark the VHU as reserved
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		// Build a service instance that declares this VHU as "allowed" (reservation owner)
+		final de.metas.handlingunits.HuId reservedVhuId = de.metas.handlingunits.HuId.ofRepoId(cuHU.getM_HU_ID());
+		final HUTransformService ownerService = HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext())
+				.allowedReservedVhuIds(java.util.Collections.singleton(reservedVhuId))
+				.build();
+
+		// Must NOT throw an AdempiereException about a reserved HU
+		// (it may throw for other infrastructure reasons — we only care the guard is silent)
+		try
+		{
+			ownerService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg));
+		}
+		catch (final AdempiereException ex)
+		{
+			assertThat(ex.getMessage()).doesNotContain("CannotTransformReservedHU");
+		}
+	}
 }
