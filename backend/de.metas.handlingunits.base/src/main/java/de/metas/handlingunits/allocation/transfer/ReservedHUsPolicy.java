@@ -68,4 +68,14 @@ public final class ReservedHUsPolicy
 	{
 		return vhuReservedStatus.isUnknown() || vhuReservedStatus.isTrue() == vhu.isReserved();
 	}
+
+	/**
+	 * @return true if this policy would potentially process reserved VHUs
+	 *         (i.e., it does NOT explicitly exclude reserved VHUs).
+	 *         Used by {@link HUTransformService} to decide whether a recursive reservation-guard check is needed.
+	 */
+	public boolean wouldProcessReservedVHU()
+	{
+		return vhuReservedStatus.isUnknown() || vhuReservedStatus.isTrue();
+	}
 }
