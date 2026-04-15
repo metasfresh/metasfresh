@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -80,7 +81,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -279,8 +282,9 @@ public class ShipmentScheduleWithHU
 
 	private List<IAttributeValue> computeAttributeValues()
 	{
-		final TreeSet<IAttributeValue> allAttributeValues = //
-				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+		//
+		// 1. Collect HU attributes (filtered by handler whitelist)
+		final TreeSet<IAttributeValue> huAttributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		streamHUHierarchyBottomUp().forEach(hu -> {
@@ -289,29 +293,85 @@ public class ShipmentScheduleWithHU
 					.stream()
 					.filter(attributeValue -> !attributeValue.isEmpty())
 					.collect(ImmutableList.toImmutableList());
-			allAttributeValues.addAll(nonEmptyAttributeValues);
+			huAttributeValues.addAll(nonEmptyAttributeValues);
 		});
-
-		if (getM_AttributeSetInstance_ID() > 0)
-		{
-			/// add all values from the ASI
-			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
-			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
-			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
-
-			// additionally add whatever the attributeStorageFactory's storage implementation has to offer.
-			final IAttributeStorage huAsiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
-			allAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
-		}
 
 		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
 
-		final ImmutableList<IAttributeValue> result = allAttributeValues.stream()
+		final ImmutableList<IAttributeValue> filteredHUAttributes = huAttributeValues.stream()
 				.filter(IAttributeValue::isUseInASI)
-				.filter(attributeValue -> !Objects.equals(attributeValue.getValue(), attributeValue.getEmptyValue())) // when comparing different shipmentScheduleWithHU instances, we want no attributes to be equal to attributes with null values
+				.filter(attributeValue -> !Objects.equals(attributeValue.getValue(), attributeValue.getEmptyValue()))
 				.filter(attributeValue -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeValue.getM_Attribute()))
 				.collect(ImmutableList.toImmutableList());
-		return result;
+
+		//
+		// 2. Collect schedule ASI attributes (NO handler whitelist filter — always pass through)
+		final TreeSet<IAttributeValue> schedAsiAttributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+
+		if (getM_AttributeSetInstance_ID() > 0)
+		{
+			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
+			schedAsiAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
+
+			final IAttributeStorage huAsiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
+			schedAsiAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
+		}
+
+		final ImmutableList<IAttributeValue> filteredSchedAsiAttributes = schedAsiAttributeValues.stream()
+				.filter(IAttributeValue::isUseInASI)
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// 3. Merge: schedule ASI values take precedence over HU values (when non-empty)
+		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes);
+	}
+
+	/**
+	 * Merges HU attribute values with schedule ASI attribute values.
+	 * <p>
+	 * Schedule ASI attributes take precedence over HU attributes for the same {@code M_Attribute_ID},
+	 * but only when the schedule ASI value is non-empty (i.e., not equal to its {@link IAttributeValue#getEmptyValue()}).
+	 * If the schedule ASI value IS empty/null, the HU value is kept.
+	 * <p>
+	 * Schedule ASI attributes with {@link IAttributeValue#isUseInASI()} == false are excluded.
+	 *
+	 * @param filteredHUAttributes  HU attributes already filtered by handler whitelist and non-empty check
+	 * @param schedAsiAttributes    schedule ASI attributes filtered only by {@link IAttributeValue#isUseInASI()}
+	 * @return merged list of attribute values
+	 */
+	@VisibleForTesting
+	static ImmutableList<IAttributeValue> mergeAttributeValues(
+			@NonNull final List<IAttributeValue> filteredHUAttributes,
+			@NonNull final List<IAttributeValue> schedAsiAttributes)
+	{
+		// Start with HU attributes keyed by M_Attribute_ID
+		final Map<Integer, IAttributeValue> merged = new LinkedHashMap<>();
+		for (final IAttributeValue huAttr : filteredHUAttributes)
+		{
+			merged.put(huAttr.getM_Attribute().getM_Attribute_ID(), huAttr);
+		}
+
+		// Overlay schedule ASI attributes — but only if non-empty
+		for (final IAttributeValue schedAttr : schedAsiAttributes)
+		{
+			if (!schedAttr.isUseInASI())
+			{
+				continue;
+			}
+
+			final int attributeId = schedAttr.getM_Attribute().getM_Attribute_ID();
+			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
+
+			if (!schedValueIsEmpty)
+			{
+				// Schedule ASI has a real value -> it wins (overwrite HU or add new)
+				merged.put(attributeId, schedAttr);
+			}
+			// else: schedule value is empty -> keep the existing HU value if any (don't overwrite, don't add)
+		}
+
+		return ImmutableList.copyOf(merged.values());
 	}
 
 	@Nullable
