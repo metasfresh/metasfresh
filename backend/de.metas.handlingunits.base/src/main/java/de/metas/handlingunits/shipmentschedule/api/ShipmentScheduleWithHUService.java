@@ -587,19 +587,30 @@ public class ShipmentScheduleWithHUService
 			final @NonNull I_M_ShipmentSchedule scheduleRecord,
 			final @NonNull I_M_HU sourceHURecord, final @NonNull Quantity quantityToSplit, final boolean pickAccordingToPackingInstruction)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		// Determine which reserved VHUs belong to us (our order line) so the reservation guard lets them through
+		final ImmutableSet<HuId> allowedReservedVhuIds;
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (orderLineId != null)
+		{
+			allowedReservedVhuIds = huReservationService.getVHUIdsByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+		}
+		else
+		{
+			allowedReservedVhuIds = ImmutableSet.of();
+		}
+
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build();
 
 		// split a part out of the current HU
 		final HUsToNewCUsRequest cuRequest = HUsToNewCUsRequest
 				.builder()
 				.keepNewCUsUnderSameParent(false)
 
-				// new, from PR https://github.com/metasfresh/metasfresh/pull/12146
-				// FIXME: we shall consider not reserved or reserved ones too if they are reserved for us
-				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
-
-				// OLD
-				// .onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
+				.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+						? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+						: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)

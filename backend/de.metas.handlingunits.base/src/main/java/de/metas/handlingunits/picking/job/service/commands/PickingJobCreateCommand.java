@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -342,9 +343,11 @@ public class PickingJobCreateCommand
 
 		final PickFromHU pickFromHU = Objects.requireNonNull(planLine.getPickFromHU());
 
+		final ImmutableSet<HuId> allowedReservedVhuIds = huService.getVHUIdsByDocumentRef(
+				HUReservationDocRef.ofSalesOrderLineId(Objects.requireNonNull(planLine.getSourceDocumentInfo().getSalesOrderLineId())));
 		final PickingJobCreateRepoRequest.StepPickFrom mainPickFrom = PickingJobCreateRepoRequest.StepPickFrom.builder()
 				.pickFromLocatorId(pickFromHU.getLocatorId())
-				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick))
+				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick, allowedReservedVhuIds))
 				.build();
 
 		final ImmutableSet<PickingJobCreateRepoRequest.StepPickFrom> pickFromAlternatives = pickFromHU.getAlternatives()
@@ -383,5 +386,14 @@ public class PickingJobCreateCommand
 			@NonNull final Quantity qtyToPick)
 	{
 		return huService.extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick);
+	}
+
+	private HuId extractTopLevelCUIfNeeded(
+			@NonNull final HuId pickFromHUId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
+		return huService.extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, allowedReservedVhuIds);
 	}
 }

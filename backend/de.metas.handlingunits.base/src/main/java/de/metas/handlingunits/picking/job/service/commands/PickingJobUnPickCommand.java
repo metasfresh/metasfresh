@@ -27,6 +27,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -230,7 +231,16 @@ public class PickingJobUnPickCommand
 	{
 		return HUTransformService.builder()
 				.huQRCodesService(huService.getHuQRCodesService())
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
 				.build();
+	}
+
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return unpickInstructionsMap.keySet().stream()
+				.map(HUReservationDocRef::ofPickingJobStepId)
+				.flatMap(docRef -> huService.getVHUIdsByDocumentRef(docRef).stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
