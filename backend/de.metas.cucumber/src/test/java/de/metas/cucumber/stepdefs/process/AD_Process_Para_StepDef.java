@@ -22,6 +22,7 @@ import org.compiere.model.I_AD_Process_Para;
  *
  * <p>Optional columns:
  * <ul>
+ *   <li>{@code SeqNo} — sequence number (default: auto-incrementing from 10)</li>
  *   <li>{@code DefaultValue} — default value string; supports {@code @SQL=} expressions</li>
  *   <li>{@code AD_Reference_ID} — reference type (e.g. 20 for Yes-No)</li>
  *   <li>{@code Description} — parameter description</li>
@@ -41,6 +42,8 @@ public class AD_Process_Para_StepDef
 	@NonNull private final AD_Process_StepDefData processTable;
 	@NonNull private final AD_Process_Para_StepDefData processParaTable;
 
+	private int nextSeqNo = 10;
+
 	/**
 	 * Creates one or more {@link I_AD_Process_Para} records from the given data table.
 	 * The parent process must have been created first via {@link AD_Process_Create_StepDef}.
@@ -57,6 +60,8 @@ public class AD_Process_Para_StepDef
 
 		final I_AD_Process_Para para = InterfaceWrapperHelper.newInstance(I_AD_Process_Para.class);
 		para.setAD_Process_ID(process.getAD_Process_ID());
+		para.setSeqNo(row.getAsOptionalInt(I_AD_Process_Para.COLUMNNAME_SeqNo).orElse(nextSeqNo));
+		nextSeqNo += 10;
 		para.setColumnName(row.getAsString(I_AD_Process_Para.COLUMNNAME_ColumnName));
 		para.setName(row.getAsString(I_AD_Process_Para.COLUMNNAME_Name));
 		row.getAsOptionalString(I_AD_Process_Para.COLUMNNAME_DefaultValue).ifPresent(para::setDefaultValue);
