@@ -114,15 +114,13 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
 
     And metasfresh contains C_Invoice:
       | Identifier    | C_BPartner_ID | C_DocTypeTarget_ID.Name         | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | rcCreditMemo  | vendor        | Lieferanten-Gutschrift          | 2024-01-15   | false   | EUR           |
+      | rcCreditMemo  | vendor        | Gutschrift (Lieferant)          | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | rcCmLine      | rcCreditMemo | product      | 1 PCE       | rcTax19  |
     And the invoice identified by rcCreditMemo is completed
 
-    # Credit memo posting: expense CR, liability DR, RC lines on CR side
-    # Note: APC posts Expense on CR side and Liability on DR side.
-    # RC lines: T_Credit CR +190, T_Due CR -190 (net zero).
+    # APC posting: Liability DR (reduces payable), Expense CR, RC lines on CR side
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
       | V_Liability_Acct      | 1000 EUR    |             | -        | rcCreditMemo |
@@ -181,13 +179,13 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
 
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name         | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | rcCmToReverse  | vendor        | Lieferanten-Gutschrift          | 2024-01-15   | false   | EUR           |
+      | rcCmToReverse  | vendor        | Gutschrift (Lieferant)          | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier       | C_Invoice_ID  | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | rcCmToReverseLn  | rcCmToReverse | product      | 1 PCE       | rcTax19  |
     And the invoice identified by rcCmToReverse is completed
 
-    # Verify original APC posting has all lines including RC
+    # Verify original APC posting (Liability DR, Expense CR, RC on CR side)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
       | V_Liability_Acct      | 1000 EUR    |             | -        | rcCmToReverse |
@@ -198,13 +196,13 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And the invoice identified by rcCmToReverse is reversed
     And the reversal of invoice rcCmToReverse is identified by rcCmReversal
 
-    # Reversal posting: mirror of original with opposite signs
+    # Reversal of APC: mirror with opposite signs (Liability CR, Expense DR, RC on DR side)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
       | V_Liability_Acct      |             | 1000 EUR    | -        | rcCmReversal |
       | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcCmReversal |
-      | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
-      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcCmReversal |
+      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcCmReversal |
+      | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
 
     And Fact_Acct records balances for documents are matching
       | AccountConceptualName | SourceBalance | Record_ID                     |
