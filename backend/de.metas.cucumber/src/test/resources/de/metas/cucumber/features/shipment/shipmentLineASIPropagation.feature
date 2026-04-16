@@ -38,16 +38,16 @@ Feature: Shipment line ASI propagation
       | huPIP_10PCE             | huPackItem_MI    | product      | 10  | PCE      |
 
     # Pricing
-    And metasfresh contains M_PricingSystems:
+    And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
-    And metasfresh contains M_PriceLists:
+    And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
       | pl         | ps                 | DE           | EUR           | true  |
-    And metasfresh contains M_PriceList_Versions:
+    And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv        | pl             |
-    And metasfresh contains M_ProductPrices:
+    And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | pp         | plv                    | product      | 10.0     | PCE      | Normal            |
 
