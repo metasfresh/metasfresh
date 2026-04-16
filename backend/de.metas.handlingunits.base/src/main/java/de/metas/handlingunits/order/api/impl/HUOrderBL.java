@@ -558,6 +558,7 @@ public class HUOrderBL implements IHUOrderBL
 				// otherwise we will be allowed to pick HUs with any project ID
 				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
 				attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
 			}
 			else
 			{
@@ -571,22 +572,17 @@ public class HUOrderBL implements IHUOrderBL
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);
 
-		final AttributeSetInstanceId asiId;
 		if (sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
 		{
 			// ASIs are considered immutable, so always create a new one
 			final ImmutableAttributeSet commonStorageRelevantAttributes = huAttributesBL.extractCommonStorageRelevantAttributeSet(huIds);
-			asiId = commonStorageRelevantAttributes.isEmpty()
+			final AttributeSetInstanceId asiId = commonStorageRelevantAttributes.isEmpty()
 					? AttributeSetInstanceId.NONE
 					: AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(commonStorageRelevantAttributes).getM_AttributeSetInstance_ID());
-		}
-		else
-		{
-			asiId = AttributeSetInstanceId.NONE;
+			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
 		}
 
 		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
-		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
 		orderDAO.save(orderLine);
 	}
 
