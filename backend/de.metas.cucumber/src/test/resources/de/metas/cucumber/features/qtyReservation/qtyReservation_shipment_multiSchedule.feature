@@ -150,10 +150,13 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine_2            | 1000001       | FREE  |
 
+    # Verify the right HU was picked to the right schedule:
+    # schedule_1 (reserved) must have picked hu_reserved as its TU
+    # schedule_2 (unreserved) must have picked hu_unreserved as its TU
     And validate M_ShipmentSchedule_QtyPicked:
-      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
-      | shipmentSchedule_1    | 10        | true                        |
-      | shipmentSchedule_2    | 10        | true                        |
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly | M_TU_HU_ID   |
+      | shipmentSchedule_1    | 10        | true                        | hu_reserved   |
+      | shipmentSchedule_2    | 10        | true                        | hu_unreserved |
 
 
   @from:cucumber
