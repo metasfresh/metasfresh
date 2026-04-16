@@ -74,7 +74,6 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.CalculateTaxResult;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
