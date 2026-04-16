@@ -27,6 +27,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
@@ -615,7 +617,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			// Skip HU attribute transfer for attributes where IsHUAttributeOverridesASI=N.
+			// For those attributes, the schedule ASI value (set by computeAttributeValues) takes precedence.
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule firstSched = candidates.stream()
+					.findFirst()
+					.map(c -> create(c.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
+					.orElse(null);
+			final ShipmentScheduleHandler handler = firstSched != null
+					? Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(firstSched)
+					: null;
+
+			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
+					.filter(attr -> handler == null || firstSched == null || handler.isHUAttributeOverridesASI(firstSched, attr))
+					.collect(ImmutableList.toImmutableList());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(

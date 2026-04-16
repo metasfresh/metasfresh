@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import org.compiere.model.I_M_Attribute;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -323,49 +324,81 @@ public class ShipmentScheduleWithHU
 				.collect(ImmutableList.toImmutableList());
 
 		//
-		// 3. Merge: schedule ASI values take precedence over HU values (when non-empty)
-		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes);
+		// 3. Merge: HU attributes first, then overlay schedule ASI attributes.
+		// For each attribute, the handler's IsHUAttributeOverridesASI flag decides precedence:
+		// - Y (default): HU value wins (existing behavior for LotNumber, BestBefore, etc.)
+		// - N: schedule ASI value wins (for customer-intent attributes like Herkunft)
+		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes,
+				attribute -> handler.isHUAttributeOverridesASI(shipmentSchedule, attribute));
 	}
 
 	/**
 	 * Merges HU attribute values with schedule ASI attribute values.
 	 * <p>
-	 * Schedule ASI attributes take precedence over HU attributes for the same {@code M_Attribute_ID},
-	 * but only when the schedule ASI value is non-empty (i.e., not equal to its {@link IAttributeValue#getEmptyValue()}).
-	 * If the schedule ASI value IS empty/null, the HU value is kept.
-	 * <p>
-	 * @param filteredHUAttributes  HU attributes already filtered by handler whitelist, non-empty check, and isUseInASI
-	 * @param schedAsiAttributes    schedule ASI attributes already filtered by {@link IAttributeValue#isUseInASI()}
-	 * @return merged list of attribute values
+	 * For each attribute that exists in both sources, the {@code isHUOverridesASI} predicate decides:
+	 * <ul>
+	 *   <li>{@code true} (default) — HU value wins. Schedule ASI fills gaps only where HU has no value.</li>
+	 *   <li>{@code false} — Schedule ASI value wins when non-empty. HU fills gaps for empty schedule values.</li>
+	 * </ul>
+	 * Schedule ASI attributes not in the HU set are always added (if non-empty).
+	 * HU attributes not in the schedule ASI are always kept.
+	 *
+	 * @param filteredHUAttributes HU attributes already filtered by handler whitelist
+	 * @param schedAsiAttributes   schedule ASI attributes already filtered by isUseInASI
+	 * @param isHUOverridesASI     per-attribute predicate: true = HU wins, false = schedule ASI wins
+	 */
+	@VisibleForTesting
+	public static ImmutableList<IAttributeValue> mergeAttributeValues(
+			@NonNull final List<IAttributeValue> filteredHUAttributes,
+			@NonNull final List<IAttributeValue> schedAsiAttributes,
+			@NonNull final java.util.function.Predicate<I_M_Attribute> isHUOverridesASI)
+	{
+		final Map<Integer, IAttributeValue> merged = new LinkedHashMap<>();
+
+		// Start with HU attributes
+		for (final IAttributeValue huAttr : filteredHUAttributes)
+		{
+			merged.put(huAttr.getM_Attribute().getM_Attribute_ID(), huAttr);
+		}
+
+		// Overlay schedule ASI attributes
+		for (final IAttributeValue schedAttr : schedAsiAttributes)
+		{
+			final int attributeId = schedAttr.getM_Attribute().getM_Attribute_ID();
+			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
+
+			if (schedValueIsEmpty)
+			{
+				// Schedule value is empty → keep the HU value if any, don't add empty
+				continue;
+			}
+
+			final boolean huHasValue = merged.containsKey(attributeId);
+			if (!huHasValue)
+			{
+				// No HU value → add schedule ASI value unconditionally
+				merged.put(attributeId, schedAttr);
+			}
+			else if (!isHUOverridesASI.test(schedAttr.getM_Attribute()))
+			{
+				// HU has a value BUT config says schedule ASI wins → overwrite
+				merged.put(attributeId, schedAttr);
+			}
+			// else: HU has a value AND config says HU wins → keep HU value (do nothing)
+		}
+
+		return ImmutableList.copyOf(merged.values());
+	}
+
+	/**
+	 * Convenience overload for unit tests — defaults to "HU always wins" (backward-compatible).
 	 */
 	@VisibleForTesting
 	public static ImmutableList<IAttributeValue> mergeAttributeValues(
 			@NonNull final List<IAttributeValue> filteredHUAttributes,
 			@NonNull final List<IAttributeValue> schedAsiAttributes)
 	{
-		// Start with HU attributes keyed by M_Attribute_ID
-		final Map<Integer, IAttributeValue> merged = new LinkedHashMap<>();
-		for (final IAttributeValue huAttr : filteredHUAttributes)
-		{
-			merged.put(huAttr.getM_Attribute().getM_Attribute_ID(), huAttr);
-		}
-
-		// Overlay schedule ASI attributes — but only if non-empty.
-		// Empty schedule values don't overwrite HU values (the HU value fills the gap).
-		for (final IAttributeValue schedAttr : schedAsiAttributes)
-		{
-			final int attributeId = schedAttr.getM_Attribute().getM_Attribute_ID();
-			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
-
-			if (!schedValueIsEmpty)
-			{
-				// Schedule ASI has a real value -> it wins (overwrite HU or add new)
-				merged.put(attributeId, schedAttr);
-			}
-			// else: schedule value is empty -> keep the existing HU value if any (don't overwrite, don't add)
-		}
-
-		return ImmutableList.copyOf(merged.values());
+		return mergeAttributeValues(filteredHUAttributes, schedAsiAttributes, attribute -> true);
 	}
 
 	@Nullable

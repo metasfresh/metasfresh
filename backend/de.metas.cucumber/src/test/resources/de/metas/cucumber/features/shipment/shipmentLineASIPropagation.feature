@@ -114,7 +114,12 @@ Feature: Shipment line ASI propagation
   @Id:S0290_20
   Scenario: Normal flow — schedule ASI takes precedence over HU attribute
   ## When both the order line ASI and the picked HU have the same attribute with different values,
-  ## the schedule ASI value must win on the shipment line.
+  ## the schedule ASI value must win on the shipment line — IF IsHUAttributeOverridesASI=N.
+
+    # Configure: for Herkunft, the order line ASI value should take precedence over HU
+    And update M_ShipmentSchedule_AttributeConfig:
+      | M_Attribute.Value | IsHUAttributeOverridesASI |
+      | 1000001           | N                         |
 
     # ASI for order line: Herkunft=DE
     And metasfresh contains M_AttributeSetInstance with identifier "asi_order":

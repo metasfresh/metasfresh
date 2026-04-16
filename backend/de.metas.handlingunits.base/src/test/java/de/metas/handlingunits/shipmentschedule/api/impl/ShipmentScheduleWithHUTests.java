@@ -386,12 +386,30 @@ public class ShipmentScheduleWithHUTests
 			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
 			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", true);
 
+			// When IsHUAttributeOverridesASI=N (schedule wins)
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
-					Arrays.asList(schedAttr));
+					Arrays.asList(schedAttr),
+					attribute -> false /* schedule ASI wins */);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P13");
+		}
+
+		@Test
+		void huOverridesASI_when_configured()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", true);
+
+			// When IsHUAttributeOverridesASI=Y (HU wins — default/backward compatible)
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Arrays.asList(schedAttr),
+					attribute -> true /* HU wins */);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P17");
 		}
 
 		@Test
@@ -458,9 +476,11 @@ public class ShipmentScheduleWithHUTests
 			final IAttributeValue schedAttrA = stubAttributeValue(1, "P13", "", true);
 			final IAttributeValue schedAttrB = stubAttributeValue(2, "", "", true);
 
+			// With IsHUAttributeOverridesASI=N for both: schedule ASI wins for A (non-empty), HU wins for B (empty schedule)
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttrA, huAttrB),
-					Arrays.asList(schedAttrA, schedAttrB));
+					Arrays.asList(schedAttrA, schedAttrB),
+					attribute -> false /* schedule ASI wins */);
 
 			assertThat(result).hasSize(2);
 
@@ -472,8 +492,8 @@ public class ShipmentScheduleWithHUTests
 					.filter(av -> av.getM_Attribute().getM_Attribute_ID() == 2)
 					.findFirst().orElseThrow(() -> new AssertionError("Attribute B not found"));
 
-			assertThat(resultA.getValue()).isEqualTo("P13");
-			assertThat(resultB.getValue()).isEqualTo("K1");
+			assertThat(resultA.getValue()).isEqualTo("P13"); // schedule wins (non-empty)
+			assertThat(resultB.getValue()).isEqualTo("K1");  // HU wins (schedule is empty)
 		}
 
 		@Test
