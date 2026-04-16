@@ -46,11 +46,13 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -62,6 +64,8 @@ import java.util.Optional;
 
 public class HUItemStorage implements IHUItemStorage
 {
+	private static final Logger logger = LogManager.getLogger(HUItemStorage.class);
+
 	// services
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
@@ -84,9 +88,6 @@ public class HUItemStorage implements IHUItemStorage
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
-	 *
-	 * @param storageFactory
-	 * @param item
 	 */
 	public HUItemStorage(
 			@NonNull final IHUStorageFactory storageFactory,
@@ -143,8 +144,7 @@ public class HUItemStorage implements IHUItemStorage
 	public IHUStorage getParentStorage()
 	{
 		final I_M_HU hu = item.getM_HU();
-		final IHUStorage parentStorage = storageFactory.getStorage(hu);
-		return parentStorage;
+		return storageFactory.getStorage(hu);
 	}
 
 	@Override
@@ -174,8 +174,13 @@ public class HUItemStorage implements IHUItemStorage
 
 		if (qtyNew.signum() < 0 && !qtyOld.equals(qtyOnParent))
 		{
+			logger.error("M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
+									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
+									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
+							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
+							 item.getM_HU_ID(), qtyOnParent, qtyConv);
 			Loggables.addLog("Warning! M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
-									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}"
+									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
 									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
 							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
 							 item.getM_HU_ID(), qtyOnParent, qtyConv);
@@ -190,6 +195,11 @@ public class HUItemStorage implements IHUItemStorage
 		// when detaching a VHU whose parent item storage was never properly rolled up.
 		if (qtyNew.signum() < 0)
 		{
+			logger.error("Clamping negative qty to zero on storageLine. "
+									 + "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
+									 + "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
+							 storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
+							 storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
 			Loggables.addLog("Warning! Clamping negative qty to zero on storageLine. "
 									 + "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
 									 + "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
