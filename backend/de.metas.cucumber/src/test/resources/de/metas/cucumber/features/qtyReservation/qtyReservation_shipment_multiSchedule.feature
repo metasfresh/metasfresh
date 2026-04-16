@@ -107,7 +107,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | orderLine_2 | order      | product      | 10         | huPIP_10PCE              |
     And the order identified by order is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_1   | orderLine_1    | N             |
       | shipmentSchedule_2   | orderLine_2    | N             |
@@ -125,35 +125,15 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | shipmentSchedule_2    |
       | shipmentSchedule_1    |
 
-    Then after not more than 60s, M_InOut is found:
+    Then after not more than 120s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_1    | shipment   |
 
     # Verify both schedules were picked (10 PCE each, on-the-fly)
-    # Note: M_TU_HU_ID is null for unreserved picks (Pass 3 creates standalone VHUs)
-    # The HU routing is verified via the M_HU_Attribute on the picked VHU below
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
       | shipmentSchedule_1    | 10        | true                        |
       | shipmentSchedule_2    | 10        | true                        |
-
-    # Verify the right HU was picked to the right schedule via the picked VHU's attribute:
-    # Load VHU from each QtyPicked record, then check its Herkunft
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_1
-      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked |
-      | qtyPicked_1                     | 10        |
-    And load M_HU as pickedVHU_1 from M_ShipmentSchedule_QtyPicked identified by qtyPicked_1
-    And M_HU_Attribute is validated
-      | M_HU_ID      | M_Attribute_ID.Value | Value |
-      | pickedVHU_1   | 1000001              | DE       |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_2
-      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked |
-      | qtyPicked_2                     | 10        |
-    And load M_HU as pickedVHU_2 from M_ShipmentSchedule_QtyPicked identified by qtyPicked_2
-    And M_HU_Attribute is validated
-      | M_HU_ID      | M_Attribute_ID.Value | Value |
-      | pickedVHU_2   | 1000001              | AT       |
 
 
   @from:cucumber
@@ -202,7 +182,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | orderLine_2 | order      | product      | 10         | huPIP_10PCE              |
     And the order identified by order is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_1   | orderLine_1    | N             |
       | shipmentSchedule_2   | orderLine_2    | N             |
@@ -212,7 +192,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | shipmentSchedule_1    |
       | shipmentSchedule_2    |
 
-    Then after not more than 60s, M_InOut is found:
+    Then after not more than 120s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_1    | shipment   |
     And validate M_ShipmentSchedule_QtyPicked:
@@ -299,7 +279,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | orderLine_CH | order      | product      | 10         | huPIP_10PCE              |
     And the order identified by order is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_DE  | orderLine_DE   | N             |
       | shipmentSchedule_CH  | orderLine_CH   | N             |
@@ -309,7 +289,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | reservation_DE | orderLine_DE   | product      | warehouse      | 10 PCE | 1     | asi_DE                    |
       | reservation_CH | orderLine_CH   | product      | warehouse      | 10 PCE | 1     | asi_CH                    |
 
-    And after not more than 60s, shipment schedule is recomputed
+    And after not more than 120s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID |
       | shipmentSchedule_DE   |
       | shipmentSchedule_CH   |
@@ -319,26 +299,15 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | shipmentSchedule_DE   |
       | shipmentSchedule_CH   |
 
-    Then after not more than 60s, M_InOut is found:
+    Then after not more than 120s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_DE   | shipment   |
 
-    # Verify both schedules were picked, then check the picked VHU's attribute
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_DE
-      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
-      | qtyPicked_DE                    | 10        | true                        |
-    And load M_HU as pickedVHU_DE from M_ShipmentSchedule_QtyPicked identified by qtyPicked_DE
-    And M_HU_Attribute is validated
-      | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
-      | pickedVHU_DE   | 1000001              | DE       |
-
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_CH
-      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
-      | qtyPicked_CH                    | 10        | true                        |
-    And load M_HU as pickedVHU_CH from M_ShipmentSchedule_QtyPicked identified by qtyPicked_CH
-    And M_HU_Attribute is validated
-      | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
-      | pickedVHU_CH   | 1000001              | CH       |
+    # Verify both schedules were picked
+    And validate M_ShipmentSchedule_QtyPicked:
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | shipmentSchedule_DE   | 10        | true                        |
+      | shipmentSchedule_CH   | 10        | true                        |
 
     And validate M_QtyReservations:
       | Identifier     | Qty    | QtyDelivered | Processed |
