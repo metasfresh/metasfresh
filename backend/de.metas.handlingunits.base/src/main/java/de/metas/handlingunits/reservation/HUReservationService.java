@@ -22,6 +22,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderLineId;
+import de.metas.project.ProjectId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -524,6 +525,34 @@ public class HUReservationService
 	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
 	{
 		return getByDocumentRef(documentRef).map(HUReservation::getVhuIds).orElseGet(ImmutableSet::of);
+	}
+
+	/**
+	 * Collect all VHU IDs reserved for the given order line and/or its project.
+	 * Used by on-the-fly picking to whitelist "my" reserved VHUs while skipping those reserved for others.
+	 */
+	@NonNull
+	public ImmutableSet<HuId> getVHUIdsReservedForOrderLineOrProject(
+			@Nullable final OrderLineId orderLineId,
+			@Nullable final ProjectId projectId)
+	{
+		if (orderLineId == null && projectId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+
+		if (orderLineId != null)
+		{
+			result.addAll(getVHUIdsByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId)));
+		}
+		if (projectId != null)
+		{
+			result.addAll(getVHUIdsByDocumentRef(HUReservationDocRef.ofProjectId(projectId)));
+		}
+
+		return result.build();
 	}
 
 	public ImmutableList<HUReservationEntry> getEntriesByVHUIds(@NonNull final Collection<HuId> vhuIds)

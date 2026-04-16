@@ -82,6 +82,7 @@ import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
+import de.metas.project.ProjectId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -713,15 +714,11 @@ public class ShipmentScheduleWithHUService
 	private ReservedHUsPolicy computeReservedHUsPolicy(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
-		if (orderLineId == null)
-		{
-			return ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED;
-		}
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(scheduleRecord.getC_Project_ID());
 
-		final ImmutableSet<HuId> reservedForMyOrderVhuIds = huReservationService.getVHUIdsByDocumentRef(
-				HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+		final ImmutableSet<HuId> reservedForMe = huReservationService.getVHUIdsReservedForOrderLineOrProject(orderLineId, projectId);
 
-		return ReservedHUsPolicy.onlyNotReservedExceptVhuIds(reservedForMyOrderVhuIds);
+		return ReservedHUsPolicy.onlyNotReservedExceptVhuIds(reservedForMe);
 	}
 
 	private Quantity extractQtyOfHU(
