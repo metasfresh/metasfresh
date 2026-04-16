@@ -22,6 +22,7 @@ import org.compiere.model.X_AD_Process;
  * <p>Optional columns:
  * <ul>
  *   <li>{@code Type} — process type (default: {@code Java}). See {@link X_AD_Process} TYPE_* constants.</li>
+ *   <li>{@code AccessLevel} — access level (default: {@code 3} = Client+Organization). See {@link X_AD_Process} ACCESSLEVEL_* constants.</li>
  *   <li>{@code Classname} — Java class implementing the process</li>
  *   <li>{@code Identifier} — test-local reference for cross-step lookups</li>
  * </ul>
@@ -55,6 +56,7 @@ public class AD_Process_Create_StepDef
 		process.setValue(row.getAsString(I_AD_Process.COLUMNNAME_Value));
 		process.setName(row.getAsString(I_AD_Process.COLUMNNAME_Name));
 		process.setType(row.getAsOptionalString(I_AD_Process.COLUMNNAME_Type).orElse(X_AD_Process.TYPE_Java));
+		process.setAccessLevel(row.getAsOptionalString(I_AD_Process.COLUMNNAME_AccessLevel).orElse(X_AD_Process.ACCESSLEVEL_ClientPlusOrganization));
 		row.getAsOptionalString(I_AD_Process.COLUMNNAME_Classname).ifPresent(process::setClassname);
 		InterfaceWrapperHelper.saveRecord(process);
 
