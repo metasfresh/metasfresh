@@ -205,8 +205,10 @@ public class HUItemStorage implements IHUItemStorage
 		dao.save(storageLine);
 
 		//
-		// Roll-up: propagate only the actual delta that was applied, not the requested delta.
-		// If qtyNew was clamped (e.g. from -8 to 0), the actual delta is smaller than qtyConv.
+		// Roll-up: propagate the actual delta applied to this storage line, not the requested qtyConv.
+		// Normally actualDelta == qtyConv (no correction happened).
+		// But if the sync correction (qtyOnParent) or the negative-qty clamp changed qtyNew,
+		// actualDelta reflects what really happened — propagating qtyConv would make the parent out of sync.
 		final BigDecimal actualDelta = qtyNew.subtract(qtyOld);
 		rollupIncremental(productId, actualDelta, uomStorage);
 	}
