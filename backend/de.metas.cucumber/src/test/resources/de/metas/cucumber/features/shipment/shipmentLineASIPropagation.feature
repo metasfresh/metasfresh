@@ -23,7 +23,7 @@ Feature: Shipment line ASI propagation
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
-    And metasfresh contains C_UOM_Conversions:
+    And metasfresh contains C_UOM_Conversions
       | M_Product_ID | FROM_C_UOM_ID | TO_C_UOM_ID | MultiplyRate |
       | product      | PCE           | PCE          | 1            |
 
