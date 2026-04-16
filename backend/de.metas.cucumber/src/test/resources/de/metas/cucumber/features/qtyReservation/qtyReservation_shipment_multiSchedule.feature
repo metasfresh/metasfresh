@@ -3,8 +3,9 @@
 @allure.label.feature:F00200_Automatic_Picking
 @ghActions:run_on_executor5
 Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservations
-## Validates that when multiple shipment schedules for the same product are processed
-## in one workpackage, each schedule picks distinct HUs and reservations are respected.
+## Validates that when a single order with multiple lines for the same product
+## creates multiple shipment schedules processed in one workpackage,
+## each schedule picks the correct HU and reservations are respected.
 ## Covers https://github.com/metasfresh/me03/issues/29333
 
   Background:
@@ -31,12 +32,13 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
 
   @from:cucumber
   @Id:S_QtyRes_200
-  Scenario: Reserved HU respected — unreserved schedule processed first must skip reserved VHU
-  ## _Given 2 TUs of 10 PCE each
-  ## _And 2 sales orders for 10 PCE each
-  ## _And HU_A is reserved for order A
-  ## _When shipments are generated in one workpackage, with order B FIRST
-  ## _Then order B skips the reserved HU (reservation policy), order A gets it
+  Scenario: Reserved HU respected — unreserved line processed first must skip reserved VHU
+  ## _Given 1 order with 2 lines for the same product (10 PCE each)
+  ## _And 2 TUs of 10 PCE each
+  ## _And HU_A is reserved for order line 1
+  ## _When shipments are generated in one workpackage with line 2 FIRST
+  ## _Then line 2 skips the reserved HU (reservation policy), line 1 gets it
+  ## _And each schedule has correct QtyPicked
 
     Given metasfresh contains M_Products:
       | Identifier | IsStocked |
@@ -57,7 +59,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv                    | product      | 10.00    | PCE               |
 
-    # TU A: 10 PCE (will be reserved for order A)
+    # TU A: 10 PCE (will be reserved for line 1)
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory_A    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_A    |
@@ -67,62 +69,54 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | inventory_B    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_B    |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Order A: 10 PCE
+    # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_A    | true    | customer      | 2026-04-16  | warehouse      | F            |
+      | order      | true    | customer      | 2026-04-16  | warehouse      | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_A | order_A    | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_A is completed
-    # Order B: 10 PCE
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_B    | true    | customer      | 2026-04-16  | warehouse      | F            |
-    And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_B | order_B    | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_B is completed
+      | orderLine_1 | order      | product      | 10         | huPIP_10PCE              |
+      | orderLine_2 | order      | product      | 10         | huPIP_10PCE              |
+    And the order identified by order is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule_A   | orderLine_A    | N             |
-      | shipmentSchedule_B   | orderLine_B    | N             |
+      | shipmentSchedule_1   | orderLine_1    | N             |
+      | shipmentSchedule_2   | orderLine_2    | N             |
 
-    # Reserve hu_A for order A
+    # Reserve hu_A for order line 1
     And reserve HU to order
       | C_OrderLine_ID | M_HU_ID |
-      | orderLine_A    | hu_A    |
+      | orderLine_1    | hu_A    |
 
-    # Generate shipments in one workpackage — B (unreserved) FIRST, then A (reserved).
-    # This validates the reservation policy: B must skip the reserved VHU on its own merit,
-    # not because A consumed it earlier via alreadyUsedSourceHuIds.
+    # Generate shipments in one workpackage — line 2 (unreserved) FIRST.
+    # This validates the reservation policy: line 2 must skip the reserved VHU on its own merit,
+    # not because line 1 consumed it earlier via alreadyUsedSourceHuIds.
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | shipmentSchedule_B    |
-      | shipmentSchedule_A    |
+      | shipmentSchedule_2    |
+      | shipmentSchedule_1    |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
-      | shipmentSchedule_A    | shipment_A |
-    And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | shipmentSchedule_B    | shipment_B |
+      | shipmentSchedule_1    | shipment   |
     And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty |
-      | shipment_A | product      | 10          |
-    And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty |
-      | shipment_B | product      | 10          |
+      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
+      | shipment   | product      | 10          | shipLine_1     |
+      | shipment   | product      | 10          | shipLine_2     |
+    And validate M_ShipmentSchedule_QtyPicked:
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | shipmentSchedule_1    | 10        | true                        |
+      | shipmentSchedule_2    | 10        | true                        |
 
 
   @from:cucumber
   @Id:S_QtyRes_210
   Scenario: Both unreserved, same product — no double-pick in single workpackage
-  ## _Given 2 TUs of 10 PCE each (both unreserved)
-  ## _And 2 sales orders for 10 PCE each
+  ## _Given 1 order with 2 lines for the same product (10 PCE each)
+  ## _And 2 TUs of 10 PCE each (both unreserved)
   ## _When shipments are generated in one workpackage
-  ## _Then both shipments created, no crash, distinct HUs picked
+  ## _Then both lines get distinct HUs, no crash
   ## _Regression test for https://github.com/metasfresh/me03/issues/29333
 
     Given metasfresh contains M_Products:
@@ -144,39 +138,29 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv                    | product      | 10.00    | PCE               |
 
-    # TU 1: 10 PCE
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory_1    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_1    |
-    # TU 2: 10 PCE
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory_2    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_2    |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Order 1: 10 PCE
+    # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_1    | true    | customer      | 2026-04-16  | warehouse      | F            |
+      | order      | true    | customer      | 2026-04-16  | warehouse      | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_1 | order_1    | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_1 is completed
-    # Order 2: 10 PCE
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_2    | true    | customer      | 2026-04-16  | warehouse      | F            |
-    And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_2 | order_2    | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_2 is completed
+      | orderLine_1 | order      | product      | 10         | huPIP_10PCE              |
+      | orderLine_2 | order      | product      | 10         | huPIP_10PCE              |
+    And the order identified by order is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
       | shipmentSchedule_1   | orderLine_1    | N             |
       | shipmentSchedule_2   | orderLine_2    | N             |
 
-    # Generate shipments in one workpackage (both schedules together)
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | shipmentSchedule_1    |
@@ -184,26 +168,25 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
-      | shipmentSchedule_1    | shipment_1 |
-    And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | shipmentSchedule_2    | shipment_2 |
+      | shipmentSchedule_1    | shipment   |
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | movementqty |
-      | shipment_1 | product      | 10          |
-    And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty |
-      | shipment_2 | product      | 10          |
+      | shipment   | product      | 10          |
+      | shipment   | product      | 10          |
+    And validate M_ShipmentSchedule_QtyPicked:
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | shipmentSchedule_1    | 10        | true                        |
+      | shipmentSchedule_2    | 10        | true                        |
 
 
   @from:cucumber
   @Id:S_QtyRes_220
-  Scenario: Both unreserved, ASI-filtered — each schedule picks the correctly attributed HU
-  ## _Given 2 TUs: hu_DE (Herkunft=DE) and hu_CH (Herkunft=CH), each 10 PCE
-  ## _And 2 sales orders for 10 PCE each
-  ## _And M_QtyReservation with ASI for each order (DE→order 1, CH→order 2)
+  Scenario: Both unreserved, ASI-filtered — each line picks the correctly attributed HU
+  ## _Given 1 order with 2 lines for the same product (10 PCE each)
+  ## _And 2 TUs: hu_DE (Herkunft=DE) and hu_CH (Herkunft=CH)
+  ## _And M_QtyReservation with ASI for each line (DE→line 1, CH→line 2)
   ## _When shipments are generated in one workpackage
-  ## _Then shipment 1 has Herkunft=DE, shipment 2 has Herkunft=CH
+  ## _Then shipment line 1 has Herkunft=DE, shipment line 2 has Herkunft=CH
 
     Given metasfresh contains M_Attributes:
       | Identifier | Value   | IsStorageRelevant |
@@ -264,22 +247,15 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | hu_DE   | 1000001              | DE       |
       | hu_CH   | 1000001              | CH       |
 
-    # Order 1: 10 PCE (reservation picks DE)
+    # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_DE   | true    | customer      | 2026-04-16  | warehouse      | F            |
+      | order      | true    | customer      | 2026-04-16  | warehouse      | F            |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_DE | order_DE   | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_DE is completed
-    # Order 2: 10 PCE (reservation picks CH)
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
-      | order_CH   | true    | customer      | 2026-04-16  | warehouse      | F            |
-    And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | orderLine_CH | order_CH   | product      | 10         | huPIP_10PCE              |
-    And the order identified by order_CH is completed
+      | orderLine_DE | order      | product      | 10         | huPIP_10PCE              |
+      | orderLine_CH | order      | product      | 10         | huPIP_10PCE              |
+    And the order identified by order is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier           | C_OrderLine_ID | IsToRecompute |
@@ -296,40 +272,37 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | shipmentSchedule_DE   |
       | shipmentSchedule_CH   |
 
-    # Generate shipments in one workpackage (both schedules together)
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | shipmentSchedule_DE   |
       | shipmentSchedule_CH   |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID  |
-      | shipmentSchedule_DE   | shipment_DE |
-    And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID  |
-      | shipmentSchedule_CH   | shipment_CH |
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule_DE   | shipment   |
 
-    # Shipment DE must carry Herkunft=DE
+    # Verify each shipment line has the correct attribute
     And validate the created shipment lines
-      | M_InOut_ID  | M_Product_ID | movementqty | M_InOutLine_ID |
-      | shipment_DE | product      | 10          | shipLine_DE    |
+      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
+      | shipment   | product      | 10          | shipLine_DE    |
+      | shipment   | product      | 10          | shipLine_CH    |
     And validate the created shipment lines by id
       | Identifier  | M_AttributeSetInstance_ID |
       | shipLine_DE | asi_shipLine_DE           |
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine_DE           | 1000001       | DE    |
-
-    # Shipment CH must carry Herkunft=CH
-    And validate the created shipment lines
-      | M_InOut_ID  | M_Product_ID | movementqty | M_InOutLine_ID |
-      | shipment_CH | product      | 10          | shipLine_CH    |
     And validate the created shipment lines by id
       | Identifier  | M_AttributeSetInstance_ID |
       | shipLine_CH | asi_shipLine_CH           |
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine_CH           | 1000001       | CH    |
+
+    And validate M_ShipmentSchedule_QtyPicked:
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | shipmentSchedule_DE   | 10        | true                        |
+      | shipmentSchedule_CH   | 10        | true                        |
 
     And validate M_QtyReservations:
       | Identifier     | Qty    | QtyDelivered | Processed |
