@@ -489,8 +489,7 @@ public class ShipmentScheduleWithHUService
 					.stream()
 					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
 					.collect(Collectors.toList());
-				alreadyUsedSourceHuIds.addAll(husToPick.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(Collectors.toSet()));
-				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false);
+				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false, alreadyUsedSourceHuIds);
 				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
 				if (actuallyPicked.isPositive())
