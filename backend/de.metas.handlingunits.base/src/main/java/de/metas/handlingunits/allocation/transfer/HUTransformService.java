@@ -293,12 +293,12 @@ public class HUTransformService
 	 * Used by {@link #husToNewCUs} when the active {@link ReservedHUsPolicy} would include
 	 * reserved VHUs in the extraction (i.e. the policy does not already filter them out).
 	 */
-	private void assertNotReservedOrHasReservedDescendants(@NonNull final I_M_HU hu)
+	private void assertNotReservedRecursively(@NonNull final I_M_HU hu)
 	{
 		assertNotReserved(hu);
 		for (final I_M_HU child : handlingUnitsDAO.retrieveIncludedHUs(hu))
 		{
-			assertNotReservedOrHasReservedDescendants(child);
+			assertNotReservedRecursively(child);
 		}
 	}
 
@@ -1516,9 +1516,9 @@ public class HUTransformService
 		// so we fail fast before touching any reserved CU.
 		// If the policy already excludes reserved VHUs (e.g. CONSIDER_ONLY_NOT_RESERVED, as used by
 		// HUReservationService), we skip this check — the policy itself acts as the guard.
-		if (newCUsRequest.getReservedVHUsPolicy().wouldProcessReservedVHU())
+		if (newCUsRequest.getReservedVHUsPolicy().requiresRecursiveReservationGuard())
 		{
-			newCUsRequest.getSourceHUs().forEach(this::assertNotReservedOrHasReservedDescendants);
+			newCUsRequest.getSourceHUs().forEach(this::assertNotReservedRecursively);
 		}
 		@NonNull Quantity qtyCuLeft = newCUsRequest.getQtyCU();
 

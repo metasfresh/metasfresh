@@ -24,7 +24,7 @@ public final class ReservedHUsPolicy
 	 * Creates a policy that excludes reserved VHUs but makes an exception for the given IDs.
 	 * <p>
 	 * <b>Important:</b> Because this policy has {@code vhuReservedStatus=FALSE},
-	 * {@link #wouldProcessReservedVHU()} returns {@code false}, which skips the recursive
+	 * {@link #requiresRecursiveReservationGuard()} returns {@code false}, which skips the recursive
 	 * reservation guard in {@link HUTransformService#husToNewCUs}.
 	 * Callers must therefore also populate {@link HUTransformService#allowedReservedVhuIds}
 	 * with the same IDs to ensure the direct guard ({@code assertNotReserved}) is also bypassed.
@@ -83,7 +83,7 @@ public final class ReservedHUsPolicy
 	 *         (i.e., it does NOT explicitly exclude reserved VHUs).
 	 *         Used by {@link HUTransformService} to decide whether a recursive reservation-guard check is needed.
 	 */
-	public boolean wouldProcessReservedVHU()
+	public boolean requiresRecursiveReservationGuard()
 	{
 		return vhuReservedStatus.isUnknown() || vhuReservedStatus.isTrue();
 	}

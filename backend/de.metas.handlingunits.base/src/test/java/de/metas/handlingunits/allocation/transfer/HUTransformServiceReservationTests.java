@@ -473,12 +473,13 @@ public class HUTransformServiceReservationTests
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
 		final I_M_HU sourceTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+		final I_M_HU lu = data.createLU(1, 20);
 
 		// mark the TU itself as reserved
 		sourceTU.setIsReserved(true);
 		InterfaceWrapperHelper.save(sourceTU);
 
-		assertThatThrownBy(() -> huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, sourceTU))
+		assertThatThrownBy(() -> huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, lu))
 				.isInstanceOf(AdempiereException.class);
 	}
 
@@ -506,15 +507,6 @@ public class HUTransformServiceReservationTests
 				.allowedReservedVhuIds(java.util.Collections.singleton(reservedVhuId))
 				.build();
 
-		// Must NOT throw an AdempiereException about a reserved HU
-		// (it may throw for other infrastructure reasons — we only care the guard is silent)
-		try
-		{
-			ownerService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg));
-		}
-		catch (final AdempiereException ex)
-		{
-			assertThat(ex.getMessage()).doesNotContain("CannotTransformReservedHU");
-		}
+		ownerService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg));
 	}
 }
