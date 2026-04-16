@@ -200,7 +200,7 @@ class HUAttributesBLTest
 	@Test
 	void nullValuesInHUAttributes_treatedAsAbsent()
 	{
-		// HU_1 has value, HU_2 has null => no common value
+		// HU_1 has value, HU_2 has null => use HU_1 as the common value
 		final AttributeId attrId = AttributeId.ofRepoId(10);
 		final I_M_Attribute attr = newAttribute(attrId, "LotNo", "S", true);
 
@@ -215,6 +215,25 @@ class HUAttributesBLTest
 		final ImmutableAttributeSet result = huAttributesBL.extractCommonStorageRelevantAttributeSet(ImmutableSet.of(HU_1, HU_2));
 
 		assertThat(result.hasAttribute(attrId)).isTrue();
+	}
+
+	@Test
+	void allHUsHaveNullAttributeValue_attributeExcluded()
+	{
+		final AttributeId attrId = AttributeId.ofRepoId(10);
+		final I_M_Attribute attr = newAttribute(attrId, "LotNo", "S", true);
+
+		final I_M_HU_Attribute huAttr1 = newStringHUAttribute(HU_1, attrId, null);
+		final I_M_HU_Attribute huAttr2 = newStringHUAttribute(HU_2, attrId, null);
+
+		Mockito.when(huAttributesDAO.retrieveAllAttributesNoCache(ImmutableSet.of(HU_1, HU_2)))
+				.thenReturn(ImmutableList.of(huAttr1, huAttr2));
+		Mockito.when(attributeDAO.getAttributeRecordsByIds(Mockito.any()))
+				.thenReturn(ImmutableList.of(attr));
+
+		final ImmutableAttributeSet result = huAttributesBL.extractCommonStorageRelevantAttributeSet(ImmutableSet.of(HU_1, HU_2));
+
+		assertThat(result.hasAttribute(attrId)).isFalse();
 	}
 
 	@Test
