@@ -83,7 +83,7 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
       | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvoice |
-      | P_Expense_Acct        | 1000 EUR    |             | -        | rcInvoice |
+      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvoice |
       | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvoice |
       | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcInvoice |
 
@@ -121,10 +121,12 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And the invoice identified by rcCreditMemo is completed
 
     # Credit memo posting: expense CR, liability DR, RC lines on CR side
+    # Note: APC posts Expense on CR side and Liability on DR side.
+    # RC lines: T_Credit CR +190, T_Due CR -190 (net zero).
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
       | V_Liability_Acct      | 1000 EUR    |             | -        | rcCreditMemo |
-      | P_Expense_Acct        |             | 1000 EUR    | -        | rcCreditMemo |
+      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCreditMemo |
       | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCreditMemo |
       | T_Due_Acct            |             | -190 EUR    | rcTax19  | rcCreditMemo |
 
@@ -144,20 +146,22 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | rcInvToReverseLn  | rcInvToReverse | product      | 1 PCE       | rcTax19  |
     And the invoice identified by rcInvToReverse is completed
 
-    # Verify original posting has RC lines
+    # Verify original posting has all lines including RC
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID      |
+      | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvToReverse |
+      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvToReverse |
       | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvToReverse |
       | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcInvToReverse |
 
     And the invoice identified by rcInvToReverse is reversed
     And the reversal of invoice rcInvToReverse is identified by rcInvReversal
 
-    # Reversal posting: mirror with opposite signs
+    # Reversal posting: mirror of original with opposite signs
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
       | V_Liability_Acct      | 1000 EUR    |             | -        | rcInvReversal |
-      | P_Expense_Acct        |             | 1000 EUR    | -        | rcInvReversal |
+      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcInvReversal |
       | T_Credit_Acct         | -190 EUR    |             | rcTax19  | rcInvReversal |
       | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcInvReversal |
 
@@ -183,18 +187,22 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | rcCmToReverseLn  | rcCmToReverse | product      | 1 PCE       | rcTax19  |
     And the invoice identified by rcCmToReverse is completed
 
+    # Verify original APC posting has all lines including RC
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
+      | V_Liability_Acct      | 1000 EUR    |             | -        | rcCmToReverse |
+      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCmToReverse |
       | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCmToReverse |
       | T_Due_Acct            |             | -190 EUR    | rcTax19  | rcCmToReverse |
 
     And the invoice identified by rcCmToReverse is reversed
     And the reversal of invoice rcCmToReverse is identified by rcCmReversal
 
+    # Reversal posting: mirror of original with opposite signs
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
       | V_Liability_Acct      |             | 1000 EUR    | -        | rcCmReversal |
-      | P_Expense_Acct        | 1000 EUR    |             | -        | rcCmReversal |
+      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcCmReversal |
       | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
       | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcCmReversal |
 
