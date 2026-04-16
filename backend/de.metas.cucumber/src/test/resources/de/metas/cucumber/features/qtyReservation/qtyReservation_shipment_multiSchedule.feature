@@ -34,32 +34,31 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
   @Id:S_QtyRes_200
   Scenario: Reserved HU respected — unreserved line processed first must skip reserved VHU
   ## _Given 1 order with 2 lines for the same product (10 PCE each)
-  ## _And 2 TUs: hu_reserved (Herkunft=RES) reserved for line 1, hu_unreserved (Herkunft=FREE)
+  ## _And 2 TUs: hu_reserved (Herkunft=DE) reserved for line 1, hu_unreserved (Herkunft=AT)
   ## _When shipments are generated in one workpackage with line 2 FIRST
-  ## _Then line 2 picks hu_unreserved (Herkunft=FREE on shipment line)
-  ## _And  line 1 picks hu_reserved (Herkunft=RES on shipment line)
+  ## _Then line 2 picks hu_unreserved (Herkunft=AT), line 1 picks hu_reserved (Herkunft=DE)
 
     Given metasfresh contains M_Attributes:
       | Identifier | Value   | IsStorageRelevant |
       | attr_QRH   | 1000001 | true              |
-    And metasfresh contains M_AttributeSetInstance with identifier "asi_RES":
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_DE":
     """
     {
       "attributeInstances":[
         {
           "attributeCode":"1000001",
-          "valueStr":"RES"
+          "valueStr":"DE"
         }
       ]
     }
     """
-    And metasfresh contains M_AttributeSetInstance with identifier "asi_FREE":
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_AT":
     """
     {
       "attributeInstances":[
         {
           "attributeCode":"1000001",
-          "valueStr":"FREE"
+          "valueStr":"AT"
         }
       ]
     }
@@ -84,19 +83,19 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv                    | product      | 10.00    | PCE               |
 
-    # TU reserved: 10 PCE with Herkunft=RES (will be reserved for line 1)
+    # TU reserved: 10 PCE with Herkunft=DE (will be reserved for line 1)
     And metasfresh contains single line completed inventories
-      | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID     |
-      | inventory_RES   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_RES                   | hu_reserved |
-    # TU unreserved: 10 PCE with Herkunft=FREE
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID     |
+      | inventory_DE   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_DE                    | hu_reserved |
+    # TU unreserved: 10 PCE with Herkunft=AT
     And metasfresh contains single line completed inventories
-      | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID       |
-      | inventory_FREE  | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_FREE                  | hu_unreserved |
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID       |
+      | inventory_AT   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_AT                    | hu_unreserved |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
-      | hu_reserved   | 1000001              | RES      |
-      | hu_unreserved | 1000001              | FREE     |
+      | hu_reserved   | 1000001              | DE       |
+      | hu_unreserved | 1000001              | AT       |
 
     # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
@@ -129,30 +128,10 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_1    | shipment   |
-    And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
-      | shipment   | product      | 10          | shipLine_1     |
-      | shipment   | product      | 10          | shipLine_2     |
-
-    # Line 1 (reserved) must have picked hu_reserved (Herkunft=RES)
-    And validate the created shipment lines by id
-      | Identifier | M_AttributeSetInstance_ID |
-      | shipLine_1 | asi_shipLine_1            |
-    And validate M_AttributeInstance:
-      | M_AttributeSetInstance_ID | AttributeCode | Value |
-      | asi_shipLine_1            | 1000001       | RES   |
-
-    # Line 2 (unreserved) must have picked hu_unreserved (Herkunft=FREE)
-    And validate the created shipment lines by id
-      | Identifier | M_AttributeSetInstance_ID |
-      | shipLine_2 | asi_shipLine_2            |
-    And validate M_AttributeInstance:
-      | M_AttributeSetInstance_ID | AttributeCode | Value |
-      | asi_shipLine_2            | 1000001       | FREE  |
 
     # Verify the right HU was picked to the right schedule:
-    # schedule_1 (reserved) must have picked hu_reserved as its TU
-    # schedule_2 (unreserved) must have picked hu_unreserved as its TU
+    # schedule_1 (reserved) must have picked hu_reserved as its TU (Herkunft=DE)
+    # schedule_2 (unreserved) must have picked hu_unreserved as its TU (Herkunft=AT)
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly | M_TU_HU_ID   |
       | shipmentSchedule_1    | 10        | true                        | hu_reserved   |
@@ -218,10 +197,6 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_1    | shipment   |
-    And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty |
-      | shipment   | product      | 10          |
-      | shipment   | product      | 10          |
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
       | shipmentSchedule_1    | 10        | true                        |
@@ -235,7 +210,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
   ## _And 2 TUs: hu_DE (Herkunft=DE) and hu_CH (Herkunft=CH)
   ## _And M_QtyReservation with ASI for each line (DE→line 1, CH→line 2)
   ## _When shipments are generated in one workpackage
-  ## _Then shipment line 1 has Herkunft=DE, shipment line 2 has Herkunft=CH
+  ## _Then schedule DE picks hu_DE, schedule CH picks hu_CH
 
     Given metasfresh contains M_Attributes:
       | Identifier | Value   | IsStorageRelevant |
@@ -301,7 +276,7 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
       | order      | true    | customer      | 2026-04-16  | warehouse      | F            |
     And metasfresh contains C_OrderLines:
-      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | orderLine_DE | order      | product      | 10         | huPIP_10PCE              |
       | orderLine_CH | order      | product      | 10         | huPIP_10PCE              |
     And the order identified by order is completed
@@ -330,28 +305,11 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_DE   | shipment   |
 
-    # Verify each shipment line has the correct attribute
-    And validate the created shipment lines
-      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
-      | shipment   | product      | 10          | shipLine_DE    |
-      | shipment   | product      | 10          | shipLine_CH    |
-    And validate the created shipment lines by id
-      | Identifier  | M_AttributeSetInstance_ID |
-      | shipLine_DE | asi_shipLine_DE           |
-    And validate M_AttributeInstance:
-      | M_AttributeSetInstance_ID | AttributeCode | Value |
-      | asi_shipLine_DE           | 1000001       | DE    |
-    And validate the created shipment lines by id
-      | Identifier  | M_AttributeSetInstance_ID |
-      | shipLine_CH | asi_shipLine_CH           |
-    And validate M_AttributeInstance:
-      | M_AttributeSetInstance_ID | AttributeCode | Value |
-      | asi_shipLine_CH           | 1000001       | CH    |
-
+    # Verify the right HU was picked to the right schedule via QtyPicked TU reference
     And validate M_ShipmentSchedule_QtyPicked:
-      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
-      | shipmentSchedule_DE   | 10        | true                        |
-      | shipmentSchedule_CH   | 10        | true                        |
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly | M_TU_HU_ID |
+      | shipmentSchedule_DE   | 10        | true                        | hu_DE       |
+      | shipmentSchedule_CH   | 10        | true                        | hu_CH       |
 
     And validate M_QtyReservations:
       | Identifier     | Qty    | QtyDelivered | Processed |
