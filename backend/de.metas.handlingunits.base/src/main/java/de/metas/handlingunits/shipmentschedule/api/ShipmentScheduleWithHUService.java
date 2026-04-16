@@ -463,8 +463,7 @@ public class ShipmentScheduleWithHUService
 		final List<I_M_HU> reservedHUs = retrieveReservedHUs(scheduleRecord);
 		if (!reservedHUs.isEmpty())
 		{
-			reservedHUs.forEach(hu -> alreadyUsedSourceHuIds.add(HuId.ofRepoId(hu.getM_HU_ID())));
-			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true);
+			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true, alreadyUsedSourceHuIds);
 			anyHUProcessed = true;
 		}
 
@@ -522,23 +521,8 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ILoggable loggableWithLogger,
 			boolean firstHU,
 			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
-			final boolean useExistingHUStructure)
-	{
-		return processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, firstHU, result, useExistingHUStructure, null);
-	}
-
-	private Quantity processHU(
-			@NonNull final I_M_ShipmentSchedule scheduleRecord,
-			@NonNull final Quantity qtyToDeliver,
-			final boolean pickAccordingToPackingInstruction,
-			@NonNull final IHUContext huContext,
-			@NonNull final List<I_M_HU> husToPick,
-			@NonNull Quantity remainingQtyToAllocate,
-			@NonNull final ILoggable loggableWithLogger,
-			boolean firstHU,
-			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
 			final boolean useExistingHUStructure,
-			@Nullable final Set<HuId> alreadyUsedSourceHuIds)
+			@NonNull final Set<HuId> alreadyUsedSourceHuIds)
 	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -556,10 +540,7 @@ public class ShipmentScheduleWithHUService
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// Mark this source HU as consumed so other schedules in the same workpackage won't re-pick it
-			if (alreadyUsedSourceHuIds != null)
-			{
-				alreadyUsedSourceHuIds.add(HuId.ofRepoId(sourceHURecord.getM_HU_ID()));
-			}
+			alreadyUsedSourceHuIds.add(HuId.ofRepoId(sourceHURecord.getM_HU_ID()));
 
 			final HUType huUnitType = handlingUnitsBL.getHUUnitType(sourceHURecord);
 
