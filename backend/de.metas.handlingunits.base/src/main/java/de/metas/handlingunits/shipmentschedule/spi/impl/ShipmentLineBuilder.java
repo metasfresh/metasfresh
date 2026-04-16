@@ -272,7 +272,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate).isTrue(), "The given candidate can be added to shipment line builder; candidate={}", candidate);
-		attributeValues.addAll(candidate.getAttributeValues());
+		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
 
 		logger.trace("Adding candidate to {}: candidate={}", this, candidate);
 
@@ -615,16 +615,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			// Collect schedule ASI attribute IDs that have non-empty values.
-			// These must NOT be overwritten by HU attribute transfer — the schedule ASI
-			// represents the customer's order intent and takes precedence.
-			final java.util.Set<Integer> schedAsiAttributeIds = candidates.stream()
-					.flatMap(c -> c.getScheduleAsiAttributeIds().stream())
-					.collect(com.google.common.collect.ImmutableSet.toImmutableSet());
-
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
-					.filter(attr -> !schedAsiAttributeIds.contains(attr.getM_Attribute_ID()))
-					.collect(com.google.common.collect.ImmutableList.toImmutableList());
+			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
