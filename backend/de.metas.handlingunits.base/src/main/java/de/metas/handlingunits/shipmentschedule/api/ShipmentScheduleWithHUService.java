@@ -672,12 +672,9 @@ public class ShipmentScheduleWithHUService
 				.builder()
 				.keepNewCUsUnderSameParent(false)
 
-				// new, from PR https://github.com/metasfresh/metasfresh/pull/12146
-				// FIXME: we shall consider not reserved or reserved ones too if they are reserved for us
-				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
-
-				// OLD
-				// .onlyFromUnreservedHUs(false) // note: the HUs returned by the query do not contain HUs which are reserved to someone else
+				// Pick unreserved VHUs + VHUs reserved for the current schedule's order.
+				// Skip VHUs reserved for OTHER orders to avoid cross-order reservation violations.
+				.reservedVHUsPolicy(computeReservedHUsPolicy(scheduleRecord))
 
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)
@@ -711,6 +708,20 @@ public class ShipmentScheduleWithHUService
 			newHURecords = newCURecords;
 		}
 		return newHURecords;
+	}
+
+	private ReservedHUsPolicy computeReservedHUsPolicy(@NonNull final I_M_ShipmentSchedule scheduleRecord)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			return ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED;
+		}
+
+		final ImmutableSet<HuId> reservedForMyOrderVhuIds = huReservationService.getVHUIdsByDocumentRef(
+				HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+
+		return ReservedHUsPolicy.onlyNotReservedExceptVhuIds(reservedForMyOrderVhuIds);
 	}
 
 	private Quantity extractQtyOfHU(
