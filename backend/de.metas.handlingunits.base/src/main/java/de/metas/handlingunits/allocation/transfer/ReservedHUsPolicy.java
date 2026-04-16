@@ -20,6 +20,15 @@ public final class ReservedHUsPolicy
 	public static final ReservedHUsPolicy CONSIDER_ALL = builder().vhuReservedStatus(OptionalBoolean.UNKNOWN).build();
 	public static final ReservedHUsPolicy CONSIDER_ONLY_NOT_RESERVED = builder().vhuReservedStatus(OptionalBoolean.FALSE).build();
 
+	/**
+	 * Creates a policy that excludes reserved VHUs but makes an exception for the given IDs.
+	 * <p>
+	 * <b>Important:</b> Because this policy has {@code vhuReservedStatus=FALSE},
+	 * {@link #wouldProcessReservedVHU()} returns {@code false}, which skips the recursive
+	 * reservation guard in {@link HUTransformService#husToNewCUs}.
+	 * Callers must therefore also populate {@link HUTransformService#allowedReservedVhuIds}
+	 * with the same IDs to ensure the direct guard ({@code assertNotReserved}) is also bypassed.
+	 */
 	public static ReservedHUsPolicy onlyNotReservedExceptVhuIds(@NonNull final Collection<HuId> vhuIdsToConsiderEvenIfReserved)
 	{
 		return vhuIdsToConsiderEvenIfReserved.isEmpty()

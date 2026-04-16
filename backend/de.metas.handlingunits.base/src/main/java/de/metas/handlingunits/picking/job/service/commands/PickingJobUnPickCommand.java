@@ -235,6 +235,13 @@ public class PickingJobUnPickCommand
 				.build();
 	}
 
+	/**
+	 * Collects all reserved VHU IDs from all steps being un-picked into a single set.
+	 * This intentionally gives the {@link de.metas.handlingunits.allocation.transfer.HUTransformService}
+	 * wider permission than strictly necessary (i.e. all steps rather than just the current one),
+	 * because the same service instance is reused for the entire un-pick batch and all steps
+	 * are being reversed in the same transaction.
+	 */
 	private ImmutableSet<HuId> getAllowedReservedVhuIds()
 	{
 		return unpickInstructionsMap.keySet().stream()

@@ -455,33 +455,13 @@ public class HUTransformServiceReservationTests
 		// mark only the inner VHU as reserved — the TU container itself is NOT reserved
 		cuHU.setIsReserved(true);
 		InterfaceWrapperHelper.save(cuHU);
-
-		// Create a standalone LU to pack into (re-use the sourceTU's PI for simplicity: just extract it first)
-		// For this test we verify no exception is thrown; exact LU structure is not the focus.
-		// tuToExistingLU requires a proper LU; we can't easily build one in a unit test without more infra,
-		// so we assert that the guard itself does NOT fire (the exception would come from the guard,
-		// not from missing LU infra).
-		// We check that the TU's own isReserved flag is false and no guard exception fires.
 		assertThat(sourceTU.isReserved()).isFalse();
 
-		// The direct assertion: calling assertNotReserved on a non-reserved TU must not throw
-		// (we validate the guard logic, not the full pack result)
-		// This passes if no AdempiereException with MSG_CANNOT_TRANSFORM_RESERVED_HU is thrown
-		// from the guard. If the LU infrastructure is missing the call may fail for other reasons,
-		// but the guard itself must be silent.
-		try
-		{
-			huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, sourceTU);
-		}
-		catch (final AdempiereException ex)
-		{
-			// Any AdempiereException must NOT be the reservation guard
-			assertThat(ex.getMessage()).doesNotContain("CannotTransformReservedHU");
-		}
-		catch (final Exception ignored)
-		{
-			// Other exceptions (e.g. missing LU setup) are fine — we only care that the guard did not fire
-		}
+		// Create a proper LU by using mkAggregateHUWithTotalQtyCU (returns an aggregate VHU inside an LU)
+		final I_M_HU existingLU = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
+
+		// Must NOT throw any reservation-guard exception — the TU itself is not reserved.
+		huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, existingLU);
 	}
 
 	/**

@@ -1917,7 +1917,11 @@ public class HUTransformService
 					.setParameter("availableQtyTU", availableNrOfTUs.toInt());
 		}
 
-		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, qtyTU).getAllTURecords();
+		final List<I_M_HU> extractedTUs = HUTransformService.builderForHUcontext()
+				.huContext(huContext)
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
+				.tuToNewTUs(hu, qtyTU).getAllTURecords();
 		return extractedTUs.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
