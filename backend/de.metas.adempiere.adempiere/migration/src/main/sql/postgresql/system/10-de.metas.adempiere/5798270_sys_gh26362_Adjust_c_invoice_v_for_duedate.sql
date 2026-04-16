@@ -1,6 +1,7 @@
 -- View: c_invoice_v
-
--- DROP VIEW c_invoice_v;
+-- me03#26362 — DueDate port from adorable_badger
+-- Replace paymenttermduedate() call with direct i.duedate read.
+-- SQL matches the DDL file at backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/C_Invoice_v.sql
 
 CREATE OR REPLACE VIEW c_invoice_v AS
 SELECT i.c_invoice_id,
@@ -145,4 +146,3 @@ WHERE i.ispayschedulevalid = 'Y'::bpchar
   AND ips.isvalid = 'Y'::bpchar
   AND i.isFinancial = 'Y'::bpchar
 ;
-

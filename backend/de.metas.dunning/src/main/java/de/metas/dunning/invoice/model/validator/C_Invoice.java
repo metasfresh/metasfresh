@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,15 +34,19 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
+import de.metas.dunning.invoice.InvoiceDueDateProviderService;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -49,12 +54,27 @@ import de.metas.util.Services;
 public class C_Invoice
 {
 	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
+	private final InvoiceDueDateProviderService invoiceDueDateProviderService = SpringContextHolder.instance.getBean(InvoiceDueDateProviderService.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void setDunningGraceIfAutomatic(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceSourceBL.class).setDunningGraceIfManaged(invoice);
 		InterfaceWrapperHelper.save(invoice);
+	}
+
+	/**
+	 * This shall set the Due Date in invoice considering payment term or contracts, but only if due date was not set previously
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
+	public void setDueDate(final I_C_Invoice invoice)
+	{
+		if (invoice.getDueDate() == null)
+		{
+			final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+			invoice.setDueDate(TimeUtil.asTimestamp(dueDate));
+			InterfaceWrapperHelper.save(invoice);
+		}
 	}
 
 	/**

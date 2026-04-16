@@ -54,6 +54,7 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -124,6 +125,7 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -135,6 +137,7 @@ public final class AggregationEngine
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
+	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	private final boolean deliveryDateAsInvoiceDate;
@@ -152,6 +155,7 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
+			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
 			final boolean deliveryDateAsInvoiceDate)
@@ -165,6 +169,7 @@ public final class AggregationEngine
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
+		this.overrideDueDateParam = overrideDueDateParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -435,6 +440,10 @@ public final class AggregationEngine
 			logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
 			invoiceHeader.setDateAcct(dateAcct);
 
+			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", overrideDueDate);
+			invoiceHeader.setOverrideDueDate(overrideDueDate);
+
 			// #367 Invoice candidates invoicing Pricelist not found
 			// https://github.com/metasfresh/metasfresh/issues/367
 			// If we know the PLV, then just go with the PLV's M_PriceList_ID (new behavior).
@@ -589,6 +598,29 @@ public final class AggregationEngine
 					logger.debug("computeDateAcct - falling back to aggregator's computeDateInvoiced as dateAcct");
 					return computeDateInvoiced(ic);
 				});
+	}
+
+	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (overrideDueDateParam == null)
+		{
+			return null;
+		}
+		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+		if (paymentTermId != null && !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		{
+			return null;
+		}
+		logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
+		return overrideDueDateParam;
+	}
+
+	@Nullable
+	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
 	}
 
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)
