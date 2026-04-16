@@ -272,7 +272,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate).isTrue(), "The given candidate can be added to shipment line builder; candidate={}", candidate);
-		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
+		attributeValues.addAll(candidate.getAttributeValues());
 
 		logger.trace("Adding candidate to {}: candidate={}", this, candidate);
 
@@ -615,7 +615,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			// Only transfer HU attributes that are NOT already set on the shipment line ASI.
+			// The shipment line ASI was built from mergeAttributeValues() where schedule ASI
+			// values take precedence. We must not overwrite them with HU values here.
+			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
+					.filter(attr -> {
+						final Object existingValue = shipmentLineAttributeStorageTo.hasAttribute(attr)
+								? shipmentLineAttributeStorageTo.getValue(attr)
+								: null;
+						return existingValue == null;
+					})
+					.collect(com.google.common.collect.ImmutableList.toImmutableList());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
