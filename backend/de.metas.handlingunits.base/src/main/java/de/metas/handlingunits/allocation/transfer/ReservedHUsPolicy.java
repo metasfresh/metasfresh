@@ -82,6 +82,12 @@ public final class ReservedHUsPolicy
 	 * @return true if this policy would potentially process reserved VHUs
 	 *         (i.e., it does NOT explicitly exclude reserved VHUs).
 	 *         Used by {@link HUTransformService} to decide whether a recursive reservation-guard check is needed.
+	 *         <p>
+	 *         <b>Note:</b> This method only inspects {@code vhuReservedStatus} — it does NOT consider
+	 *         {@link #alwaysConsiderVhuIds}. A policy created via {@link #onlyNotReservedExceptVhuIds}
+	 *         returns {@code false} here even though it <em>can</em> process specific reserved VHUs.
+	 *         Those VHUs must also be listed in {@link HUTransformService}'s {@code allowedReservedVhuIds}
+	 *         so they pass the per-method guards.
 	 */
 	public boolean requiresRecursiveReservationGuard()
 	{

@@ -241,6 +241,10 @@ public class PickingJobUnPickCommand
 	 * wider permission than strictly necessary (i.e. all steps rather than just the current one),
 	 * because the same service instance is reused for the entire un-pick batch and all steps
 	 * are being reversed in the same transaction.
+	 * <p>
+	 * The resulting {@link HUTransformService} instance is single-use: it is created by
+	 * {@link #newHUTransformService()} for this un-pick batch only and must not be reused
+	 * for unrelated operations, as it would carry over the wider VHU exemption.
 	 */
 	private ImmutableSet<HuId> getAllowedReservedVhuIds()
 	{

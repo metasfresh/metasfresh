@@ -1592,6 +1592,12 @@ public class HUTransformService
 		}
 		else
 		{
+			// sourceHU is a VHU — check the policy before attempting the transform,
+			// so that CONSIDER_ONLY_NOT_RESERVED returns empty instead of throwing.
+			if (!singleSourceHuRequest.getReservedVHUsPolicy().isConsiderVHU(sourceHU))
+			{
+				return ImmutableList.of();
+			}
 			return cuToNewCU(sourceHU, singleSourceHuRequest.getQtyCU());
 		}
 	}
