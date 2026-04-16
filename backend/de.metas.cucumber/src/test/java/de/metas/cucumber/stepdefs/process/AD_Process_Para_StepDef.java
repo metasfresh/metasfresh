@@ -23,6 +23,7 @@ import org.compiere.model.I_AD_Process_Para;
  * <p>Optional columns:
  * <ul>
  *   <li>{@code SeqNo} — sequence number (default: auto-incrementing from 10)</li>
+ *   <li>{@code FieldLength} — field length (default: 0)</li>
  *   <li>{@code DefaultValue} — default value string; supports {@code @SQL=} expressions</li>
  *   <li>{@code AD_Reference_ID} — reference type (e.g. 20 for Yes-No)</li>
  *   <li>{@code Description} — parameter description</li>
@@ -64,6 +65,7 @@ public class AD_Process_Para_StepDef
 		nextSeqNo += 10;
 		para.setColumnName(row.getAsString(I_AD_Process_Para.COLUMNNAME_ColumnName));
 		para.setName(row.getAsString(I_AD_Process_Para.COLUMNNAME_Name));
+		para.setFieldLength(row.getAsOptionalInt(I_AD_Process_Para.COLUMNNAME_FieldLength).orElse(0));
 		row.getAsOptionalString(I_AD_Process_Para.COLUMNNAME_DefaultValue).ifPresent(para::setDefaultValue);
 		row.getAsOptionalString(I_AD_Process_Para.COLUMNNAME_Description).ifPresent(para::setDescription);
 		row.getAsOptionalInt(I_AD_Process_Para.COLUMNNAME_AD_Reference_ID).ifPresent(para::setAD_Reference_ID);
