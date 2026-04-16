@@ -98,11 +98,12 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | rcAlloc            | rcInvoice    | rcPayment    | 970 EUR  | 30 EUR      |
 
     # Allocation posting: payable clearing + payment + discount. NO RC tax correction.
+    # Note: allocation uses negated amounts on same side (not flipped DR/CR).
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | V_Liability_Acct       | 1000 EUR    |             | -        | rcAlloc   |
-      | B_UnallocatedCash_Acct |             | 970 EUR     | -        | rcAlloc   |
-      | PayDiscount_Rev_Acct   |             | 30 EUR      | -        | rcAlloc   |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | -1000 EUR   |             | -        | rcAlloc   |
+      | B_PaymentSelect_Acct  |             | -970 EUR    | -        | rcAlloc   |
+      | PayDiscount_Exp_Acct  |             | -30 EUR     | -        | rcAlloc   |
 
 
 # ############################################################################################################################################
@@ -155,11 +156,13 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And the invoice identified by rcInvToReverse is reversed
     And the reversal of invoice rcInvToReverse is identified by rcInvReversal
 
-    # Reversal posting: mirror of original with opposite signs
+    # Reversal posting: Reverse-Correct negates amounts on the SAME side (not flipped DR/CR).
+    # Original API: V_Liability CR 1000, P_Expense DR 1000, T_Credit DR 190, T_Due DR -190
+    # Reversal:     V_Liability CR -1000, P_Expense DR -1000, T_Credit DR -190, T_Due DR 190
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
-      | V_Liability_Acct      | 1000 EUR    |             | -        | rcInvReversal |
-      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcInvReversal |
+      | V_Liability_Acct      |             | -1000 EUR   | -        | rcInvReversal |
+      | P_Expense_Acct        | -1000 EUR   |             | rcTax19  | rcInvReversal |
       | T_Credit_Acct         | -190 EUR    |             | rcTax19  | rcInvReversal |
       | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcInvReversal |
 
@@ -196,13 +199,15 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And the invoice identified by rcCmToReverse is reversed
     And the reversal of invoice rcCmToReverse is identified by rcCmReversal
 
-    # Reversal of APC: mirror with opposite signs (Liability CR, Expense DR, RC on DR side)
+    # Reversal of APC: Reverse-Correct negates amounts on the SAME side.
+    # Original APC: V_Liability DR 1000, P_Expense CR 1000, T_Credit CR 190, T_Due CR -190
+    # Reversal:     V_Liability DR -1000, P_Expense CR -1000, T_Credit CR -190, T_Due CR 190
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
-      | V_Liability_Acct      |             | 1000 EUR    | -        | rcCmReversal |
-      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcCmReversal |
-      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcCmReversal |
-      | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
+      | V_Liability_Acct      | -1000 EUR   |             | -        | rcCmReversal |
+      | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal |
+      | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
+      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcCmReversal |
 
     And Fact_Acct records balances for documents are matching
       | AccountConceptualName | SourceBalance | Record_ID                     |
