@@ -507,8 +507,7 @@ public class ShipmentScheduleWithHUService
 					.stream()
 					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
 					.collect(Collectors.toList());
-			alreadyUsedSourceHuIds.addAll(husToPick.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(Collectors.toSet()));
-			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
+			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false, alreadyUsedSourceHuIds);
 		}
 
 		return result.build();
@@ -526,6 +525,22 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
 			final boolean useExistingHUStructure)
 	{
+		return processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, firstHU, result, useExistingHUStructure, null);
+	}
+
+	private Quantity processHU(
+			@NonNull final I_M_ShipmentSchedule scheduleRecord,
+			@NonNull final Quantity qtyToDeliver,
+			final boolean pickAccordingToPackingInstruction,
+			@NonNull final IHUContext huContext,
+			@NonNull final List<I_M_HU> husToPick,
+			@NonNull Quantity remainingQtyToAllocate,
+			@NonNull final ILoggable loggableWithLogger,
+			boolean firstHU,
+			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
+			final boolean useExistingHUStructure,
+			@Nullable final Set<HuId> alreadyUsedSourceHuIds)
+	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
@@ -540,6 +555,12 @@ public class ShipmentScheduleWithHUService
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+
+			// Mark this source HU as consumed so other schedules in the same workpackage won't re-pick it
+			if (alreadyUsedSourceHuIds != null)
+			{
+				alreadyUsedSourceHuIds.add(HuId.ofRepoId(sourceHURecord.getM_HU_ID()));
+			}
 
 			final HUType huUnitType = handlingUnitsBL.getHUUnitType(sourceHURecord);
 
