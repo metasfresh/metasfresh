@@ -7,15 +7,17 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
           "City": "Bonn",
           "CountryCode": "DE",
+          "Email": "noreply@metasfresh.com",
           "Kind": 2,
           "Name1": "metas GmbH",
           "Name2": "senderCompanyName2",
+          "Phone": "12345678",
           "PostCode": "53179",
           "Street1": "Am Noßbacher Weg 2",
           "Street2": ""
         },
         {
-          "Attention": "metas.ro SRL receiverDepartmentName Test Contact Name",
+          "Attention": "metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
@@ -166,7 +168,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
       ],
       "OrderNo": "1",
       "PickupDt": "2025-10-02",
-      "ProdConceptID": 2758,
+      "ProdConceptID": 10305,
       "References": [
         {
           "Kind": 108,
@@ -186,7 +188,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
         }
       ],
       "Services": [
-        337011
+        972053
       ]
     },
     "options": {

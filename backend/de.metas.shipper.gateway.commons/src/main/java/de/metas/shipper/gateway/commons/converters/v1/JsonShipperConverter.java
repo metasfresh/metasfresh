@@ -51,6 +51,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Contract;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -71,6 +72,7 @@ public class JsonShipperConverter
 		return JsonDeliveryRequest.builder()
 				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
+				.pickupContact(toJsonContactOrNull(order.getPickupContact()))
 				.pickupDate(pickupDate.getDate().toString())
 				.timeFrom(pickupDate.getTimeFrom().toString())
 				.timeTo(pickupDate.getTimeTo().toString())
@@ -104,7 +106,8 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @Nullable JsonGoodsType toJsonGoodsType(final @Nullable CarrierGoodsType goodsType)
+	@Nullable
+	private JsonGoodsType toJsonGoodsType(@Nullable final CarrierGoodsType goodsType)
 	{
 		if (goodsType == null)
 		{
@@ -116,7 +119,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @NonNull Set<JsonCarrierService> toCarrierServices(final @NonNull Set<CarrierService> services)
+	private @NonNull Set<JsonCarrierService> toCarrierServices(@NonNull final  Set<CarrierService> services)
 	{
 		if (services.isEmpty())
 		{
@@ -128,7 +131,8 @@ public class JsonShipperConverter
 				.collect(Collectors.toSet());
 	}
 
-	private JsonCarrierService toJsonCarrierService(final @NonNull CarrierService carrierService)
+	@NonNull
+	private JsonCarrierService toJsonCarrierService(@NonNull final CarrierService carrierService)
 	{
 		return JsonCarrierService.builder()
 				.id(carrierService.getExternalId())
@@ -136,7 +140,8 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	public @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
+	@NonNull
+	public JsonShipperConfig toJsonShipperConfig(@NonNull final ShipperConfig config)
 	{
 		return JsonShipperConfig.builder()
 				.url(config.getUrl())
@@ -149,6 +154,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
+	@NonNull
 	public static JsonAddress toJsonAddress(@NonNull final Address address)
 	{
 		final Integer bpartnerId = address.getBpartnerId() > 0 ? address.getBpartnerId() : null;
@@ -167,12 +173,14 @@ public class JsonShipperConverter
 	}
 
 	@Nullable
-	private JsonContact toJsonContactOrNull(final @Nullable ContactPerson contact)
+	@Contract("!null -> !null")
+	public static JsonContact toJsonContactOrNull(@Nullable final ContactPerson contact)
 	{
 		if (contact == null) {return null;}
 
 		return JsonContact.builder()
 				.name(contact.getName())
+				.department(contact.getDepartment())
 				.phone(contact.getPhoneAsStringOrNull())
 				.emailAddress(contact.getEmailAddress())
 				.language(contact.getLanguageCode())

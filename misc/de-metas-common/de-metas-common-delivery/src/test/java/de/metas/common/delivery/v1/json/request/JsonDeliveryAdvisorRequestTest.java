@@ -92,6 +92,7 @@ class JsonDeliveryAdvisorRequestTest {
         final JsonDeliveryAdvisorRequest req = JsonDeliveryAdvisorRequest.builder()
                 .id("ADV-1")
                 .pickupAddress(aPickupAddress())
+				.pickupContact(JsonContact.builder().name("John").language("en").build())
                 .pickupDate("2025-10-01")
                 .pickupTimeFrom("10:00")
                 .pickupTimeTo("18:00")

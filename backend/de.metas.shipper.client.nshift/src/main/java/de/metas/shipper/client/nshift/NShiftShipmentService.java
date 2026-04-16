@@ -32,7 +32,6 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
-import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
@@ -119,15 +118,13 @@ public class NShiftShipmentService
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
 		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
+		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER)
 				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION, deliveryRequest::getValue))
 				.build());
 
-		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
-				deliveryRequest.getDeliveryAddress(),
-				deliveryRequest.getDeliveryContact());
-		receiverAddressBuilder.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION, deliveryRequest::getValue));
-		dataBuilder.address(receiverAddressBuilder.build());
+		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER)
+				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION, deliveryRequest::getValue))
+				.build());
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 

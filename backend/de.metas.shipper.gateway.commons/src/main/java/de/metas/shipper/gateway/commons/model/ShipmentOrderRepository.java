@@ -301,20 +301,14 @@ public class ShipmentOrderRepository
 		if (goodsType != null)
 		{
 			final CarrierGoodsType actualGoodsType = goodsTypeRepository.getOrCreateGoodsType(shipperId, goodsType.getExternalId(), goodsType.getName());
-			if (actualGoodsType != null)
-			{
-				po.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(actualGoodsType.getId()));
-			}
+			po.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(actualGoodsType.getId()));
 		}
 
 		final ShipperProduct shipperProduct = request.getShipperProduct();
 		if (shipperProduct != null)
 		{
 			final CarrierProduct carrierProduct = productRepository.getOrCreateCarrierProduct(request.getShipperId(), shipperProduct.getCode(), shipperProduct.getName());
-			if (carrierProduct != null)
-			{
-				po.setCarrier_Product_ID(CarrierProductId.toRepoId(carrierProduct.getId()));
-			}
+			po.setCarrier_Product_ID(CarrierProductId.toRepoId(carrierProduct.getId()));
 		}
 
 		InterfaceWrapperHelper.saveRecord(po);

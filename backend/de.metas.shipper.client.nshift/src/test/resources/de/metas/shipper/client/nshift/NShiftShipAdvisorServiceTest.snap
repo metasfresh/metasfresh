@@ -6,15 +6,17 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "Attention": "metas GmbH",
           "City": "Bonn",
           "CountryCode": "DE",
+          "Email": "noreply@metasfresh.com",
           "Kind": 2,
           "Name1": "metas GmbH",
           "Name2": "",
+          "Phone": "12345678",
           "PostCode": "53179",
           "Street1": "Am Noßbacher Weg 2",
           "Street2": ""
         },
         {
-          "Attention": "Test Contact Name",
+          "Attention": "Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
