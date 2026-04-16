@@ -616,17 +616,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			// Collect attribute IDs that were explicitly set from the schedule ASI.
-			// These must NOT be overwritten by HU attribute transfer — the schedule ASI
-			// represents the customer's order intent and takes precedence.
+			// Collect attribute IDs with non-empty values explicitly set in the schedule ASI
+			// (from M_AttributeInstance records). These must NOT be overwritten by HU attribute
+			// transfer — the schedule ASI represents the customer's order intent.
+			// We query M_AttributeInstance directly (not via IAttributeStorage) because the
+			// storage factory adds all product attributes with default/empty values, which
+			// would incorrectly block HU attribute transfers (e.g., LotNumber from LU→TU).
 			final java.util.Set<Integer> schedAsiAttributeIds = candidates.stream()
-					.filter(c -> c.getM_AttributeSetInstance_ID() > 0)
-					.flatMap(c -> {
-						final I_M_AttributeSetInstance schedAsi = load(c.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
-						final IAttributeStorage schedStorage = attributeStorageFactory.getAttributeStorage(schedAsi);
-						return schedStorage.getAttributeValues().stream()
-								.filter(av -> !Objects.equals(av.getValue(), av.getEmptyValue()))
-								.map(av -> av.getM_Attribute().getM_Attribute_ID());
+					.map(ShipmentScheduleWithHU::getM_AttributeSetInstance_ID)
+					.filter(asiId -> asiId > 0)
+					.flatMap(asiId -> {
+						final ImmutableAttributeSet schedAttrSet = Services.get(IAttributeSetInstanceBL.class)
+								.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiId));
+						return schedAttrSet.getAttributes().stream()
+								.filter(attr -> {
+									final Object val = schedAttrSet.getValue(attr);
+									return val != null && !"".equals(val.toString().trim());
+								})
+								.map(org.compiere.model.I_M_Attribute::getM_Attribute_ID);
 					})
 					.collect(com.google.common.collect.ImmutableSet.toImmutableSet());
 
