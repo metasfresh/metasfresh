@@ -52,6 +52,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+import ch.qos.logback.classic.Level;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -174,16 +175,12 @@ public class HUItemStorage implements IHUItemStorage
 
 		if (qtyNew.signum() < 0 && !qtyOld.equals(qtyOnParent))
 		{
-			logger.error("M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
-									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
-									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
-							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
-							 item.getM_HU_ID(), qtyOnParent, qtyConv);
-			Loggables.addLog("Warning! M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
-									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
-									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
-							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
-							 item.getM_HU_ID(), qtyOnParent, qtyConv);
+			Loggables.withLogger(logger, Level.ERROR)
+					.addLog("M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
+									+ "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}, "
+									+ "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
+							storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
+							item.getM_HU_ID(), qtyOnParent, qtyConv);
 
 			qtyNew = qtyOnParent.add(qtyConv);
 		}
@@ -195,16 +192,12 @@ public class HUItemStorage implements IHUItemStorage
 		// when detaching a VHU whose parent item storage was never properly rolled up.
 		if (qtyNew.signum() < 0)
 		{
-			logger.error("Clamping negative qty to zero on storageLine. "
-									 + "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
-									 + "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
-							 storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
-							 storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
-			Loggables.addLog("Warning! Clamping negative qty to zero on storageLine. "
-									 + "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
-									 + "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
-							 storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
-							 storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
+			Loggables.withLogger(logger, Level.ERROR)
+					.addLog("Clamping negative qty to zero on storageLine. "
+									+ "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
+									+ "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
+							storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
+							storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
 			qtyNew = BigDecimal.ZERO;
 		}
 

@@ -250,7 +250,7 @@ public class ShipmentScheduleWithHUService
 
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
-		// Shared across all schedules to prevent the same HU being picked by multiple schedules.
+		// Shared across all PrepareForSingleShipmentScheduleRequest-instances to prevent the same HU being picked by multiple schedules.
 		// The on-the-fly picking storage query reads out-of-transaction, so without this,
 		// a later schedule would re-discover HUs already consumed by a prior schedule in the same workpackage.
 		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
