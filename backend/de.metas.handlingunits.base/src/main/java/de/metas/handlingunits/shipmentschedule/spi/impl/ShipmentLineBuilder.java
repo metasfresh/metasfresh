@@ -84,7 +84,6 @@ import java.util.TreeSet;
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
@@ -616,25 +615,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			// Collect attribute IDs with non-empty values explicitly set in the schedule ASI
-			// (from M_AttributeInstance records). These must NOT be overwritten by HU attribute
-			// transfer — the schedule ASI represents the customer's order intent.
-			// We query M_AttributeInstance directly (not via IAttributeStorage) because the
-			// storage factory adds all product attributes with default/empty values, which
-			// would incorrectly block HU attribute transfers (e.g., LotNumber from LU→TU).
+			// Collect schedule ASI attribute IDs that have non-empty values.
+			// These must NOT be overwritten by HU attribute transfer — the schedule ASI
+			// represents the customer's order intent and takes precedence.
 			final java.util.Set<Integer> schedAsiAttributeIds = candidates.stream()
-					.map(ShipmentScheduleWithHU::getM_AttributeSetInstance_ID)
-					.filter(asiId -> asiId > 0)
-					.flatMap(asiId -> {
-						final ImmutableAttributeSet schedAttrSet = Services.get(IAttributeSetInstanceBL.class)
-								.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiId));
-						return schedAttrSet.getAttributes().stream()
-								.filter(attr -> {
-									final Object val = schedAttrSet.getValue(attr);
-									return val != null && !"".equals(val.toString().trim());
-								})
-								.map(org.compiere.model.I_M_Attribute::getM_Attribute_ID);
-					})
+					.flatMap(c -> c.getScheduleAsiAttributeIds().stream())
 					.collect(com.google.common.collect.ImmutableSet.toImmutableSet());
 
 			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()

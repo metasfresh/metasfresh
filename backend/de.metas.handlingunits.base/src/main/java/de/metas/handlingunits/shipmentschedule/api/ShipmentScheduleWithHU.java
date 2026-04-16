@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -161,6 +162,14 @@ public class ShipmentScheduleWithHU
 
 	@Getter(lazy = true)
 	private final List<IAttributeValue> attributeValues = computeAttributeValues();
+
+	/**
+	 * Attribute IDs from the schedule ASI that have non-empty values and were used in the merge
+	 * (i.e., they take precedence over HU attributes). Used by {@link de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineBuilder}
+	 * to prevent the HU attribute transfer from overwriting these values.
+	 */
+	@Getter(lazy = true)
+	private final ImmutableSet<Integer> scheduleAsiAttributeIds = computeScheduleAsiAttributeIds();
 
 	private I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked;
 
@@ -325,6 +334,23 @@ public class ShipmentScheduleWithHU
 		//
 		// 3. Merge: schedule ASI values take precedence over HU values (when non-empty)
 		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes);
+	}
+
+	private ImmutableSet<Integer> computeScheduleAsiAttributeIds()
+	{
+		if (getM_AttributeSetInstance_ID() <= 0)
+		{
+			return ImmutableSet.of();
+		}
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+		final IAttributeStorage asiStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
+
+		return asiStorage.getAttributeValues().stream()
+				.filter(av -> !Objects.equals(av.getValue(), av.getEmptyValue()))
+				.map(av -> av.getM_Attribute().getM_Attribute_ID())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
