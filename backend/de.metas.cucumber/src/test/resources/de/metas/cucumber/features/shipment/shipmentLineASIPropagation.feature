@@ -23,10 +23,6 @@ Feature: Shipment line ASI propagation
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
-    And metasfresh contains C_UOM_Conversions
-      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
-      | product                 | PCE                     | PCE                   | 1            |
-
     # TU packing instructions (10 PCE per TU)
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
