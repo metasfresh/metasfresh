@@ -552,13 +552,17 @@ public class HUOrderBL implements IHUOrderBL
 		if (huIds.isEmpty())
 		{
 			final ProjectId orderLineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-				if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
-				{
-					// if there's project assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line
-					final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
-					attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
-				}
-			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
+			if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+			{
+				// if there's a project ID assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line regardless of what the sysconfig says
+				// otherwise we will be allowed to pick HUs with any project ID
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
+				attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+			}
+			else
+			{
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
+			}
 			orderDAO.save(orderLine);
 			return;
 		}

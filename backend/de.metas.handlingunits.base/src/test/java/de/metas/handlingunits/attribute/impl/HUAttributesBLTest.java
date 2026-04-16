@@ -215,6 +215,7 @@ class HUAttributesBLTest
 		final ImmutableAttributeSet result = huAttributesBL.extractCommonStorageRelevantAttributeSet(ImmutableSet.of(HU_1, HU_2));
 
 		assertThat(result.hasAttribute(attrId)).isTrue();
+		assertThat(result.getValue(attrId)).isEqualTo("LOT-A");
 	}
 
 	@Test
