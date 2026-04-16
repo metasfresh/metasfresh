@@ -34,13 +34,38 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
   @Id:S_QtyRes_200
   Scenario: Reserved HU respected — unreserved line processed first must skip reserved VHU
   ## _Given 1 order with 2 lines for the same product (10 PCE each)
-  ## _And 2 TUs of 10 PCE each
-  ## _And HU_A is reserved for order line 1
+  ## _And 2 TUs: hu_reserved (Herkunft=RES) reserved for line 1, hu_unreserved (Herkunft=FREE)
   ## _When shipments are generated in one workpackage with line 2 FIRST
-  ## _Then line 2 skips the reserved HU (reservation policy), line 1 gets it
-  ## _And each schedule has correct QtyPicked
+  ## _Then line 2 picks hu_unreserved (Herkunft=FREE on shipment line)
+  ## _And  line 1 picks hu_reserved (Herkunft=RES on shipment line)
 
-    Given metasfresh contains M_Products:
+    Given metasfresh contains M_Attributes:
+      | Identifier | Value   | IsStorageRelevant |
+      | attr_QRH   | 1000001 | true              |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_RES":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"1000001",
+          "valueStr":"RES"
+        }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_FREE":
+    """
+    {
+      "attributeInstances":[
+        {
+          "attributeCode":"1000001",
+          "valueStr":"FREE"
+        }
+      ]
+    }
+    """
+
+    And metasfresh contains M_Products:
       | Identifier | IsStocked |
       | product    | true      |
     And metasfresh contains M_HU_PI:
@@ -59,15 +84,19 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv                    | product      | 10.00    | PCE               |
 
-    # TU A: 10 PCE (will be reserved for line 1)
+    # TU reserved: 10 PCE with Herkunft=RES (will be reserved for line 1)
     And metasfresh contains single line completed inventories
-      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
-      | inventory_A    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_A    |
-    # TU B: 10 PCE (unreserved)
+      | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID     |
+      | inventory_RES   | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_RES                   | hu_reserved |
+    # TU unreserved: 10 PCE with Herkunft=FREE
     And metasfresh contains single line completed inventories
-      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
-      | inventory_B    | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | hu_B    |
+      | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID       |
+      | inventory_FREE  | warehouse      | 2026-04-16   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE              | asi_FREE                  | hu_unreserved |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And M_HU_Attribute is changed
+      | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
+      | hu_reserved   | 1000001              | RES      |
+      | hu_unreserved | 1000001              | FREE     |
 
     # Single order with 2 lines for the same product
     And metasfresh contains C_Orders:
@@ -84,13 +113,13 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | shipmentSchedule_1   | orderLine_1    | N             |
       | shipmentSchedule_2   | orderLine_2    | N             |
 
-    # Reserve hu_A for order line 1
+    # Reserve hu_reserved for order line 1
     And reserve HU to order
-      | C_OrderLine_ID | M_HU_ID |
-      | orderLine_1    | hu_A    |
+      | C_OrderLine_ID | M_HU_ID     |
+      | orderLine_1    | hu_reserved |
 
     # Generate shipments in one workpackage — line 2 (unreserved) FIRST.
-    # This validates the reservation policy: line 2 must skip the reserved VHU on its own merit,
+    # This validates the reservation policy: line 2 must skip hu_reserved on its own merit,
     # not because line 1 consumed it earlier via alreadyUsedSourceHuIds.
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -104,6 +133,23 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID |
       | shipment   | product      | 10          | shipLine_1     |
       | shipment   | product      | 10          | shipLine_2     |
+
+    # Line 1 (reserved) must have picked hu_reserved (Herkunft=RES)
+    And validate the created shipment lines by id
+      | Identifier | M_AttributeSetInstance_ID |
+      | shipLine_1 | asi_shipLine_1            |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode | Value |
+      | asi_shipLine_1            | 1000001       | RES   |
+
+    # Line 2 (unreserved) must have picked hu_unreserved (Herkunft=FREE)
+    And validate the created shipment lines by id
+      | Identifier | M_AttributeSetInstance_ID |
+      | shipLine_2 | asi_shipLine_2            |
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode | Value |
+      | asi_shipLine_2            | 1000001       | FREE  |
+
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
       | shipmentSchedule_1    | 10        | true                        |
