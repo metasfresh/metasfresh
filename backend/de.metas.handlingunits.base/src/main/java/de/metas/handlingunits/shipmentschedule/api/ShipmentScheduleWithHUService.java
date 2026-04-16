@@ -197,6 +197,13 @@ public class ShipmentScheduleWithHUService
 		@Nullable Set<HuId> onlyLUIds;
 
 		/**
+		 * Shared across all schedules in the same workpackage to prevent double-picking.
+		 * The storage query in retrievePickOnTheFlySourceHUs reads out-of-transaction,
+		 * so without this, a second schedule would re-discover HUs already consumed by a prior schedule.
+		 */
+		@NonNull @Builder.Default Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
+
+		/**
 		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
 		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
 		 */
@@ -242,6 +249,11 @@ public class ShipmentScheduleWithHUService
 
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
+		// Shared across all schedules to prevent the same HU being picked by multiple schedules.
+		// The on-the-fly picking storage query reads out-of-transaction, so without this,
+		// a later schedule would re-discover HUs already consumed by a prior schedule in the same workpackage.
+		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
+
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
@@ -257,6 +269,7 @@ public class ShipmentScheduleWithHUService
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
 						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request)
 								.huContext(huContext)
+								.alreadyUsedSourceHuIds(alreadyUsedSourceHuIds)
 								.build()
 				);
 
@@ -334,7 +347,7 @@ public class ShipmentScheduleWithHUService
 		{
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext));
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, request.getAlreadyUsedSourceHuIds()));
 			}
 			else
 			{
@@ -419,7 +432,8 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final Quantity qtyToDeliver,
 			final boolean pickAccordingToPackingInstruction,
-			@NonNull final IHUContext huContext)
+			@NonNull final IHUContext huContext,
+			@NonNull final Set<HuId> alreadyUsedSourceHuIds)
 	{
 		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -442,11 +456,6 @@ public class ShipmentScheduleWithHUService
 		{
 			return result.build();
 		}
-
-		// Track source HU IDs already consumed in this run to avoid double-picking.
-		// The storage query in retrievePickOnTheFlySourceHUs uses an out-of-transaction read,
-		// so it does not see in-transaction changes made by earlier passes in the same WP.
-		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
 
 		// Pass 1: M_HU_Reservation HUs (physically reserved VHUs)
 		boolean anyHUProcessed = false;
