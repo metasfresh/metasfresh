@@ -528,30 +528,17 @@ public class HUReservationService
 	}
 
 	/**
-	 * Collect all VHU IDs reserved for the given order line and/or its project.
+	 * Collect all VHU IDs reserved by any of the given document references.
 	 * Used by on-the-fly picking to whitelist "my" reserved VHUs while skipping those reserved for others.
 	 */
 	@NonNull
-	public ImmutableSet<HuId> getVHUIdsReservedForOrderLineOrProject(
-			@Nullable final OrderLineId orderLineId,
-			@Nullable final ProjectId projectId)
+	public ImmutableSet<HuId> getVHUIdsReservedByAnyOf(@NonNull final HUReservationDocRef... documentRefs)
 	{
-		if (orderLineId == null && projectId == null)
-		{
-			return ImmutableSet.of();
-		}
-
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
-
-		if (orderLineId != null)
+		for (final HUReservationDocRef ref : documentRefs)
 		{
-			result.addAll(getVHUIdsByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId)));
+			result.addAll(getVHUIdsByDocumentRef(ref));
 		}
-		if (projectId != null)
-		{
-			result.addAll(getVHUIdsByDocumentRef(HUReservationDocRef.ofProjectId(projectId)));
-		}
-
 		return result.build();
 	}
 

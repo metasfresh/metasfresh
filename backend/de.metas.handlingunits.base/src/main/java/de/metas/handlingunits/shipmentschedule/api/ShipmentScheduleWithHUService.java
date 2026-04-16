@@ -713,10 +713,21 @@ public class ShipmentScheduleWithHUService
 
 	private ReservedHUsPolicy computeReservedHUsPolicy(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(scheduleRecord.getC_Project_ID());
+		final ArrayList<HUReservationDocRef> docRefs = new ArrayList<>();
 
-		final ImmutableSet<HuId> reservedForMe = huReservationService.getVHUIdsReservedForOrderLineOrProject(orderLineId, projectId);
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (orderLineId != null)
+		{
+			docRefs.add(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+		}
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(scheduleRecord.getC_Project_ID());
+		if (projectId != null)
+		{
+			docRefs.add(HUReservationDocRef.ofProjectId(projectId));
+		}
+
+		final ImmutableSet<HuId> reservedForMe = huReservationService.getVHUIdsReservedByAnyOf(
+				docRefs.toArray(new HUReservationDocRef[0]));
 
 		return ReservedHUsPolicy.onlyNotReservedExceptVhuIds(reservedForMe);
 	}
