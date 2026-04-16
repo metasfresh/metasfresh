@@ -70,6 +70,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -550,12 +551,19 @@ public class HUOrderBL implements IHUOrderBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 		if (huIds.isEmpty())
 		{
-			orderLine.setC_Project_ID(0);
-			orderLine.setM_AttributeSetInstance_ID(0);
+			final ProjectId orderLineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+				if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+				{
+					// if there's project assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line
+					final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
+					attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+				}
+			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
 			orderDAO.save(orderLine);
 			return;
 		}
-		final ProjectId projectId = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project)
+		final Optional<String> projectAttrValue = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project);
+		final ProjectId projectId = projectAttrValue
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);
 
