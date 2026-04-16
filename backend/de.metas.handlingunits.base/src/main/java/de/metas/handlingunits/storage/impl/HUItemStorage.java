@@ -183,14 +183,29 @@ public class HUItemStorage implements IHUItemStorage
 			qtyNew = qtyOnParent.add(qtyConv);
 		}
 
-		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);
+		// Clamp to zero if still negative after sync correction.
+		// This handles the case where the parent HU storage hierarchy is inconsistent
+		// (e.g. VHU has qty but all parent-level storages are zero).
+		// Without this, rollupRevert during HU reparenting would fail
+		// when detaching a VHU whose parent item storage was never properly rolled up.
+		if (qtyNew.signum() < 0)
+		{
+			Loggables.addLog("Warning! Clamping negative qty to zero on storageLine. "
+									 + "M_HU_Item_Id: {}, qtyOld: {}, qtyToAdd: {}, qtyNew (before clamp): {}, qtyOnParent: {}, "
+									 + "M_HU_Item_Storage_ID: {}, M_Product_ID: {}",
+							 storageLine.getM_HU_Item_ID(), qtyOld, qtyConv, qtyNew, qtyOnParent,
+							 storageLine.getM_HU_Item_Storage_ID(), storageLine.getM_Product_ID());
+			qtyNew = BigDecimal.ZERO;
+		}
 
 		storageLine.setQty(qtyNew);
 		dao.save(storageLine);
 
 		//
-		// Roll-up
-		rollupIncremental(productId, qtyConv, uomStorage);
+		// Roll-up: propagate only the actual delta that was applied, not the requested delta.
+		// If qtyNew was clamped (e.g. from -8 to 0), the actual delta is smaller than qtyConv.
+		final BigDecimal actualDelta = qtyNew.subtract(qtyOld);
+		rollupIncremental(productId, actualDelta, uomStorage);
 	}
 
 	private void rollupIncremental(final ProductId productId, final BigDecimal qtyDelta, final I_C_UOM uom)
