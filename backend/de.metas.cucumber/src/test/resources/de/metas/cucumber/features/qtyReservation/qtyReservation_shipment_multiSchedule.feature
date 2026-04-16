@@ -129,13 +129,31 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_1    | shipment   |
 
-    # Verify the right HU was picked to the right schedule:
-    # schedule_1 (reserved) must have picked hu_reserved as its TU (Herkunft=DE)
-    # schedule_2 (unreserved) must have picked hu_unreserved as its TU (Herkunft=AT)
+    # Verify both schedules were picked (10 PCE each, on-the-fly)
+    # Note: M_TU_HU_ID is null for unreserved picks (Pass 3 creates standalone VHUs)
+    # The HU routing is verified via the M_HU_Attribute on the picked VHU below
     And validate M_ShipmentSchedule_QtyPicked:
-      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly | M_TU_HU_ID   |
-      | shipmentSchedule_1    | 10        | true                        | hu_reserved   |
-      | shipmentSchedule_2    | 10        | true                        | hu_unreserved |
+      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | shipmentSchedule_1    | 10        | true                        |
+      | shipmentSchedule_2    | 10        | true                        |
+
+    # Verify the right HU was picked to the right schedule via the picked VHU's attribute:
+    # Load VHU from each QtyPicked record, then check its Herkunft
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_1
+      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked |
+      | qtyPicked_1                     | 10        |
+    And load M_HU as pickedVHU_1 from M_ShipmentSchedule_QtyPicked identified by qtyPicked_1
+    And M_HU_Attribute is validated
+      | M_HU_ID      | M_Attribute_ID.Value | Value |
+      | pickedVHU_1   | 1000001              | DE       |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_2
+      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked |
+      | qtyPicked_2                     | 10        |
+    And load M_HU as pickedVHU_2 from M_ShipmentSchedule_QtyPicked identified by qtyPicked_2
+    And M_HU_Attribute is validated
+      | M_HU_ID      | M_Attribute_ID.Value | Value |
+      | pickedVHU_2   | 1000001              | AT       |
 
 
   @from:cucumber
@@ -305,11 +323,22 @@ Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservati
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | shipmentSchedule_DE   | shipment   |
 
-    # Verify the right HU was picked to the right schedule via QtyPicked TU reference
-    And validate M_ShipmentSchedule_QtyPicked:
-      | M_ShipmentSchedule_ID | QtyPicked | IsAnonymousHuPickedOnTheFly | M_TU_HU_ID |
-      | shipmentSchedule_DE   | 10        | true                        | hu_DE       |
-      | shipmentSchedule_CH   | 10        | true                        | hu_CH       |
+    # Verify both schedules were picked, then check the picked VHU's attribute
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_DE
+      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | qtyPicked_DE                    | 10        | true                        |
+    And load M_HU as pickedVHU_DE from M_ShipmentSchedule_QtyPicked identified by qtyPicked_DE
+    And M_HU_Attribute is validated
+      | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
+      | pickedVHU_DE   | 1000001              | DE       |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule_CH
+      | M_ShipmentSchedule_QtyPicked_ID | QtyPicked | IsAnonymousHuPickedOnTheFly |
+      | qtyPicked_CH                    | 10        | true                        |
+    And load M_HU as pickedVHU_CH from M_ShipmentSchedule_QtyPicked identified by qtyPicked_CH
+    And M_HU_Attribute is validated
+      | M_HU_ID       | M_Attribute_ID.Value | ValueStr |
+      | pickedVHU_CH   | 1000001              | CH       |
 
     And validate M_QtyReservations:
       | Identifier     | Qty    | QtyDelivered | Processed |
