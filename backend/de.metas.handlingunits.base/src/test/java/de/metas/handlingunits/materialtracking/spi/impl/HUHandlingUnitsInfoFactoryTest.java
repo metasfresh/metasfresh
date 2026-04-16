@@ -49,7 +49,7 @@ public class HUHandlingUnitsInfoFactoryTest
 	public void createFromModel_InOutLine_resolvesFromHUAssignment()
 	{
 		// given
-		final I_M_HU_PI_Version tuPIV = createHU_PI("IFCO");
+		final I_M_HU_PI_Version tuPIV = createHU_PIVersion("IFCO");
 		final I_M_HU tuHU = createHU(tuPIV);
 
 		final I_M_InOutLine inoutLine = createInOutLine(3);
@@ -68,10 +68,10 @@ public class HUHandlingUnitsInfoFactoryTest
 	public void createFromModel_InOutLine_resolvesFromHUAssignment_LUWithTU()
 	{
 		// given: LU as top-level HU, TU referenced via M_TU_HU_ID
-		final I_M_HU_PI_Version luPIV = createHU_PI("Euro Pallet");
+		final I_M_HU_PI_Version luPIV = createHU_PIVersion("Euro Pallet");
 		final I_M_HU luHU = createHU(luPIV);
 
-		final I_M_HU_PI_Version tuPIV = createHU_PI("IFCO");
+		final I_M_HU_PI_Version tuPIV = createHU_PIVersion("IFCO");
 		final I_M_HU tuHU = createHU(tuPIV);
 
 		final I_M_InOutLine inoutLine = createInOutLine(5);
@@ -91,7 +91,7 @@ public class HUHandlingUnitsInfoFactoryTest
 	{
 		// given: one virtual HU assignment and one real TU assignment
 		final I_M_HU virtualHU = createVirtualHU();
-		final I_M_HU_PI_Version tuPIV = createHU_PI("Karton");
+		final I_M_HU_PI_Version tuPIV = createHU_PIVersion("Karton");
 		final I_M_HU tuHU = createHU(tuPIV);
 
 		final I_M_InOutLine inoutLine = createInOutLine(2);
@@ -137,10 +137,10 @@ public class HUHandlingUnitsInfoFactoryTest
 	public void createFromModel_InOutLine_multipleDistinctPIs_usesFirst()
 	{
 		// given: two HU assignments with different TU PIs
-		final I_M_HU_PI_Version pivA = createHU_PI("IFCO");
+		final I_M_HU_PI_Version pivA = createHU_PIVersion("IFCO");
 		final I_M_HU tuA = createHU(pivA);
 
-		final I_M_HU_PI_Version pivB = createHU_PI("Karton");
+		final I_M_HU_PI_Version pivB = createHU_PIVersion("Karton");
 		final I_M_HU tuB = createHU(pivB);
 
 		final I_M_InOutLine inoutLine = createInOutLine(4);
@@ -153,6 +153,31 @@ public class HUHandlingUnitsInfoFactoryTest
 		// then: should succeed (with warning logged), using the first PI
 		assertThat(result).isNotNull();
 		assertThat(result.getQtyTU()).isEqualTo(4);
+	}
+
+	@Test
+	public void createFromModel_InOutLine_topLevelOnlyAssignment_fallsBackToMHU()
+	{
+		// given: only a top-level assignment (no derived assignment with M_TU_HU_ID)
+		// This exercises Pass 2 (fallback to M_HU) since Pass 1 finds nothing.
+		final I_M_HU_PI_Version tuPIV = createHU_PIVersion("Paloxe");
+		final I_M_HU tuHU = createHU(tuPIV);
+
+		final I_M_InOutLine inoutLine = createInOutLine(1);
+
+		// create ONLY a top-level assignment (M_TU_HU left null)
+		final I_M_HU_Assignment topLevelAssignment = newInstance(I_M_HU_Assignment.class);
+		topLevelAssignment.setAD_Table_ID(getTableId(org.compiere.model.I_M_InOutLine.class));
+		topLevelAssignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
+		topLevelAssignment.setM_HU(tuHU);
+		saveRecord(topLevelAssignment);
+
+		// when
+		final IHandlingUnitsInfo result = factory.createFromModel(inoutLine);
+
+		// then: Pass 1 finds nothing (no M_TU_HU_ID), Pass 2 picks up top-level M_HU
+		assertThat(result).isNotNull();
+		assertThat(result.getTUName()).isEqualTo("Paloxe");
 	}
 
 	// --- helpers ---
@@ -176,7 +201,7 @@ public class HUHandlingUnitsInfoFactoryTest
 		return line;
 	}
 
-	private I_M_HU_PI_Version createHU_PI(final String name)
+	private I_M_HU_PI_Version createHU_PIVersion(final String name)
 	{
 		final I_M_HU_PI pi = newInstance(I_M_HU_PI.class);
 		pi.setName(name);

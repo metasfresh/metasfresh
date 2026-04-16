@@ -47,15 +47,16 @@ import de.metas.inout.IInOutBL;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {
 	private static final Logger logger = LogManager.getLogger(HUHandlingUnitsInfoFactory.class);
+
 	@Override
 	public IHandlingUnitsInfo createFromModel(@NonNull final Object model)
 	{
@@ -96,6 +97,8 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	 * <p>
 	 * Primary: look at the actual HU assignments (M_TU_HU_ID on M_HU_Assignment).
 	 * Fallback: use M_HU_PI_Item_Product from the InOutLine or its linked OrderLine.
+	 *
+	 * @throws AdempiereException if no TU PI could be determined from any source
 	 */
 	@NonNull
 	private I_M_HU_PI resolveTU_HU_PI(final I_M_InOutLine inoutLine)
@@ -192,7 +195,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		throw new AdempiereException("Receipt " + inout.getDocumentNo() + ", Line " + inoutLine.getLine()
 				+ ": TU Packing Instructions could not be determined."
 				+ " The receipt line has no HU assignments with a TU,"
-				+ " and neither the receipt line nor its linked order line has a Packvorschrift-TU.")
+				+ " and neither the receipt line nor its linked order line has a TU Packing Instruction (Packvorschrift-TU).")
 				.setParameter("M_InOut_ID", inout.getM_InOut_ID())
 				.setParameter("DocumentNo", inout.getDocumentNo())
 				.setParameter("M_InOutLine_ID", inoutLine.getM_InOutLine_ID())
