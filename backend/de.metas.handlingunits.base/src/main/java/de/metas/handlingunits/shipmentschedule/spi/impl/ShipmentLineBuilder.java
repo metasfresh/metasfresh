@@ -617,19 +617,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			// Skip HU attribute transfer for attributes where IsHUAttributeOverridesASI=N.
-			// For those attributes, the schedule ASI value (set by computeAttributeValues) takes precedence.
-			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule firstSched = candidates.stream()
-					.findFirst()
-					.map(c -> create(c.getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
-					.orElse(null);
-			final ShipmentScheduleHandler handler = firstSched != null
-					? Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(firstSched)
-					: null;
-
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
-					.filter(attr -> handler == null || firstSched == null || handler.isHUAttributeOverridesASI(firstSched, attr))
-					.collect(ImmutableList.toImmutableList());
+			final Collection<I_M_Attribute> attributes = filterAttributesForHUTransfer(shipmentLineAttributeStorageTo.getAttributes());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
@@ -644,6 +632,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
+	}
+
+	/**
+	 * Filters out attributes where {@code IsHUAttributeOverridesASI=N} in {@link I_M_ShipmentSchedule_AttributeConfig}.
+	 * For those attributes, the schedule ASI value (already set on the shipment line by
+	 * {@link ShipmentScheduleWithHU#computeAttributeValues()}) must not be overwritten by HU attribute transfer.
+	 */
+	private Collection<I_M_Attribute> filterAttributesForHUTransfer(@NonNull final Collection<I_M_Attribute> allAttributes)
+	{
+		if (candidates.isEmpty())
+		{
+			return allAttributes;
+		}
+
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule scheduleRecord =
+				create(candidates.get(0).getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(scheduleRecord);
+
+		return allAttributes.stream()
+				.filter(attr -> handler.isHUAttributeOverridesASI(scheduleRecord, attr))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableAttributeSet extractAttributeValuesToTransfer(final Collection<I_M_Attribute> attributes, final IAttributeStorageFactory attributeStorageFactory)

@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.compiere.model.I_M_Attribute;
+import java.util.function.Predicate;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -351,7 +352,7 @@ public class ShipmentScheduleWithHU
 	public static ImmutableList<IAttributeValue> mergeAttributeValues(
 			@NonNull final List<IAttributeValue> filteredHUAttributes,
 			@NonNull final List<IAttributeValue> schedAsiAttributes,
-			@NonNull final java.util.function.Predicate<I_M_Attribute> isHUOverridesASI)
+			@NonNull final Predicate<I_M_Attribute> isHUOverridesASI)
 	{
 		final Map<Integer, IAttributeValue> merged = new LinkedHashMap<>();
 
@@ -390,16 +391,11 @@ public class ShipmentScheduleWithHU
 		return ImmutableList.copyOf(merged.values());
 	}
 
-	/**
-	 * Convenience overload for unit tests — defaults to "HU always wins" (backward-compatible).
-	 */
-	@VisibleForTesting
-	public static ImmutableList<IAttributeValue> mergeAttributeValues(
-			@NonNull final List<IAttributeValue> filteredHUAttributes,
-			@NonNull final List<IAttributeValue> schedAsiAttributes)
-	{
-		return mergeAttributeValues(filteredHUAttributes, schedAsiAttributes, attribute -> true);
-	}
+	/** Predicate constant: HU attribute always wins over schedule ASI (backward-compatible default). */
+	public static final Predicate<I_M_Attribute> HU_ALWAYS_WINS = attribute -> true;
+
+	/** Predicate constant: Schedule ASI always wins over HU attribute. */
+	public static final Predicate<I_M_Attribute> SCHEDULE_ASI_ALWAYS_WINS = attribute -> false;
 
 	@Nullable
 	public OrderId getOrderId()

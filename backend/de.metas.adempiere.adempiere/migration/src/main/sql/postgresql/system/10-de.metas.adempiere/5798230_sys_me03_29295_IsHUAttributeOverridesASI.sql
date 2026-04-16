@@ -1,4 +1,5 @@
 -- me03#29295: Add IsHUAttributeOverridesASI to M_ShipmentSchedule_AttributeConfig
+-- Part 1: AD metadata only (no DDL on the target table — see 5798290 for DDL)
 --
 -- Controls whether the HU attribute value overwrites the order line's ASI value
 -- on the shipment line. Default Y = backward compatible (HU wins, as before).
@@ -12,11 +13,11 @@ INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
                         ColumnName, Name, PrintName, Description, Help)
 VALUES (584759 /*From ID Server*/, 0, 0, 'Y', '2026-04-16 18:00', 0, '2026-04-16 18:00', 0,
         'IsHUAttributeOverridesASI',
-        'ME-Merkmal überschreibt Merkmalsatz',
-        'ME-Merkmal überschreibt Merkmalsatz',
-        'Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
+        'HU-Merkmal überschreibt Merkmalsatz',
+        'HU-Merkmal überschreibt Merkmalsatz',
+        'Wenn Ja, überschreibt der HU-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
         'Steuert, ob der physische Merkmalwert der Handling Unit (z.B. Lot-Nummer, MHD) den Wert aus dem Merkmalsatz der Auftragsposition überschreibt.'
-        || ' Bei "Ja" (Standard) gewinnt der ME-Wert — das ist das bisherige Verhalten.'
+        || ' Bei "Ja" (Standard) gewinnt der HU-Wert — das ist das bisherige Verhalten.'
         || ' Bei "Nein" hat der Merkmalsatz der Auftragsposition Vorrang — z.B. für kundenspezifische Merkmale wie "Herkunft" oder "Positions Nr.".');
 
 -- Skeleton Trl rows
@@ -43,11 +44,11 @@ WHERE AD_Element_ID = 584759 AND AD_Language = 'en_US';
 
 -- German translation (base language)
 UPDATE AD_Element_Trl
-SET Name        = 'ME-Merkmal überschreibt Merkmalsatz',
-    PrintName   = 'ME-Merkmal überschreibt Merkmalsatz',
-    Description = 'Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
+SET Name        = 'HU-Merkmal überschreibt Merkmalsatz',
+    PrintName   = 'HU-Merkmal überschreibt Merkmalsatz',
+    Description = 'Wenn Ja, überschreibt der HU-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
     Help        = 'Steuert, ob der physische Merkmalwert der Handling Unit (z.B. Lot-Nummer, MHD) den Wert aus dem Merkmalsatz der Auftragsposition überschreibt.'
-                  || ' Bei "Ja" (Standard) gewinnt der ME-Wert — das ist das bisherige Verhalten.'
+                  || ' Bei "Ja" (Standard) gewinnt der HU-Wert — das ist das bisherige Verhalten.'
                   || ' Bei "Nein" hat der Merkmalsatz der Auftragsposition Vorrang — z.B. für kundenspezifische Merkmale wie "Herkunft" oder "Positions Nr.".',
     IsTranslated = 'N',
     Updated     = '2026-04-16 18:00',
@@ -56,11 +57,11 @@ WHERE AD_Element_ID = 584759 AND AD_Language = 'de_DE';
 
 -- de_CH = same as de_DE
 UPDATE AD_Element_Trl
-SET Name        = 'ME-Merkmal überschreibt Merkmalsatz',
-    PrintName   = 'ME-Merkmal überschreibt Merkmalsatz',
-    Description = 'Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
+SET Name        = 'HU-Merkmal überschreibt Merkmalsatz',
+    PrintName   = 'HU-Merkmal überschreibt Merkmalsatz',
+    Description = 'Wenn Ja, überschreibt der HU-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
     Help        = 'Steuert, ob der physische Merkmalwert der Handling Unit (z.B. Lot-Nummer, MHD) den Wert aus dem Merkmalsatz der Auftragsposition überschreibt.'
-                  || ' Bei "Ja" (Standard) gewinnt der ME-Wert — das ist das bisherige Verhalten.'
+                  || ' Bei "Ja" (Standard) gewinnt der HU-Wert — das ist das bisherige Verhalten.'
                   || ' Bei "Nein" hat der Merkmalsatz der Auftragsposition Vorrang — z.B. für kundenspezifische Merkmale wie "Herkunft" oder "Positions Nr.".',
     IsTranslated = 'N',
     Updated     = '2026-04-16 18:00',
@@ -80,8 +81,8 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
 VALUES (592363 /*From ID Server*/, 0, 0, 'Y', '2026-04-16 18:00', 0, '2026-04-16 18:00', 0,
         0, 540951, 584759, 20,
         'IsHUAttributeOverridesASI',
-        'ME-Merkmal überschreibt Merkmalsatz',
-        'Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
+        'HU-Merkmal überschreibt Merkmalsatz',
+        'Wenn Ja, überschreibt der HU-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
         NULL,
         1, 'Y', 'Y', 'N',
         'Y', 'D', 'N', 'N', 'N',
@@ -96,14 +97,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 592363
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- =============================================================================
--- 3. Physical column (new column, use ALTER TABLE ADD COLUMN)
--- =============================================================================
-ALTER TABLE M_ShipmentSchedule_AttributeConfig ADD COLUMN IF NOT EXISTS IsHUAttributeOverridesASI CHAR(1) DEFAULT 'Y';
-UPDATE M_ShipmentSchedule_AttributeConfig SET IsHUAttributeOverridesASI = 'Y' WHERE IsHUAttributeOverridesASI IS NULL;
-ALTER TABLE M_ShipmentSchedule_AttributeConfig ALTER COLUMN IsHUAttributeOverridesASI SET NOT NULL;
-
--- =============================================================================
--- 4. AD_Field on tab 541052 (Shipment Line Attribute Config)
+-- 3. AD_Field on tab 541052 (Shipment Line Attribute Config)
 -- =============================================================================
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID, AD_Name_ID,
@@ -112,8 +106,8 @@ INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, C
                       SeqNo, SeqNoGrid, SortNo, EntityType)
 VALUES (777075 /*From ID Server*/, 0, 0, 'Y', '2026-04-16 18:00', 0, '2026-04-16 18:00', 0,
         541052, 592363, NULL,
-        'ME-Merkmal überschreibt Merkmalsatz',
-        'Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
+        'HU-Merkmal überschreibt Merkmalsatz',
+        'Wenn Ja, überschreibt der HU-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.',
         'Y', 'Y', 'N', 'N',
         60, 60, 0, 'D');
 
@@ -125,6 +119,6 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Field_ID = 777075
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
 
 -- =============================================================================
--- 5. Propagate translations from AD_Element to all dependent records
+-- 4. Propagate translations from AD_Element to all dependent records
 -- =============================================================================
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584759);

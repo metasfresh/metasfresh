@@ -390,7 +390,7 @@ public class ShipmentScheduleWithHUTests
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
 					Arrays.asList(schedAttr),
-					attribute -> false /* schedule ASI wins */);
+					ShipmentScheduleWithHU.SCHEDULE_ASI_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P13");
@@ -406,7 +406,7 @@ public class ShipmentScheduleWithHUTests
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
 					Arrays.asList(schedAttr),
-					attribute -> true /* HU wins */);
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
@@ -419,7 +419,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Collections.emptyList(),
-					Arrays.asList(schedAttr));
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P13");
@@ -434,7 +435,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
-					Arrays.asList(schedAttr));
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
@@ -448,7 +450,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Collections.emptyList(),
-					Arrays.asList(schedAttr));
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).isEmpty();
 		}
@@ -460,7 +463,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
-					Collections.emptyList());
+					Collections.emptyList(),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
@@ -480,7 +484,7 @@ public class ShipmentScheduleWithHUTests
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttrA, huAttrB),
 					Arrays.asList(schedAttrA, schedAttrB),
-					attribute -> false /* schedule ASI wins */);
+					ShipmentScheduleWithHU.SCHEDULE_ASI_ALWAYS_WINS);
 
 			assertThat(result).hasSize(2);
 
@@ -505,7 +509,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttr),
-					Arrays.asList(schedAttr));
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(1);
 			assertThat(result.get(0).getValue()).isEqualTo("P17");
@@ -520,7 +525,8 @@ public class ShipmentScheduleWithHUTests
 
 			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
 					Arrays.asList(huAttrA),
-					Arrays.asList(schedAttrB));
+					Arrays.asList(schedAttrB),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
 
 			assertThat(result).hasSize(2);
 			final IAttributeValue resultA = result.stream().filter(av -> av.getM_Attribute().getM_Attribute_ID() == 1).findFirst().orElse(null);
