@@ -143,13 +143,13 @@ Feature: Shipment line ASI propagation
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Register the HU's Herkunft attribute
-    And metasfresh contains M_HU_PI_Attributes:
-      | M_HU_PI_Version_ID | M_Attribute_ID |
-      | huPackVersion_TU   | attr_test      |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | huPackVersion_TU   | 1000001           |
 
-    And update M_HU_Attributes:
-      | M_HU_ID | M_Attribute_ID | Value |
-      | hu       | attr_test      | IT    |
+    And update M_HU_Attribute:
+      | M_HU_ID.Identifier | M_Attribute_ID | Value | AttributeValueType |
+      | hu                 | 1000001        | IT    | S                  |
 
     # Sales order with ASI containing Herkunft=DE
     And metasfresh contains C_Orders:
