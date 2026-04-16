@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100_Sales
+@allure.label.epic:E0105_Picking
 @allure.label.feature:F00200_Automatic_Picking
 @ghActions:run_on_executor5
 Feature: Multi-schedule on-the-fly picking — no double-pick, respect reservations
