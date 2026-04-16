@@ -84,6 +84,7 @@ import java.util.TreeSet;
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /**
@@ -615,16 +616,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			// Only transfer HU attributes that are NOT already set on the shipment line ASI.
-			// The shipment line ASI was built from mergeAttributeValues() where schedule ASI
-			// values take precedence. We must not overwrite them with HU values here.
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
-					.filter(attr -> {
-						final Object existingValue = shipmentLineAttributeStorageTo.hasAttribute(attr)
-								? shipmentLineAttributeStorageTo.getValue(attr)
-								: null;
-						return existingValue == null;
+			// Collect attribute IDs that were explicitly set from the schedule ASI.
+			// These must NOT be overwritten by HU attribute transfer — the schedule ASI
+			// represents the customer's order intent and takes precedence.
+			final java.util.Set<Integer> schedAsiAttributeIds = candidates.stream()
+					.filter(c -> c.getM_AttributeSetInstance_ID() > 0)
+					.flatMap(c -> {
+						final I_M_AttributeSetInstance schedAsi = load(c.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+						final IAttributeStorage schedStorage = attributeStorageFactory.getAttributeStorage(schedAsi);
+						return schedStorage.getAttributeValues().stream()
+								.filter(av -> !Objects.equals(av.getValue(), av.getEmptyValue()))
+								.map(av -> av.getM_Attribute().getM_Attribute_ID());
 					})
+					.collect(com.google.common.collect.ImmutableSet.toImmutableSet());
+
+			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes().stream()
+					.filter(attr -> !schedAsiAttributeIds.contains(attr.getM_Attribute_ID()))
 					.collect(com.google.common.collect.ImmutableList.toImmutableList());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
