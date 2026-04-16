@@ -91,13 +91,13 @@ Feature: Shipment line ASI propagation
 
     # Generate shipment (no HU picking — manual packing / dropship path)
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule      | D            | true                | false               |
 
     # Validate shipment was created
     And after not more than 60s, M_InOut is found:
-      | Identifier | C_BPartner_ID | DocStatus |
-      | shipment   | customer      | CO        |
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
 
     # Validate shipment line exists
     And validate the created shipment lines
@@ -167,12 +167,12 @@ Feature: Shipment line ASI propagation
 
     # Generate shipment — HU with Herkunft=IT will be picked on-the-fly
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule      | D            | true                | false               |
 
     And after not more than 60s, M_InOut is found:
-      | Identifier | C_BPartner_ID | DocStatus |
-      | shipment   | customer      | CO        |
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
 
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID | M_AttributeSetInstance_ID |
