@@ -103,32 +103,19 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	@NonNull
 	private I_M_HU_PI resolveTU_HU_PI(final I_M_InOutLine inoutLine)
 	{
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		//
-		// Primary: resolve from actual HU assignments.
-		// Use a plain query (not retrieveTopLevelHUAssignmentsForModel) because we want ALL assignments,
-		// including derived ones that have M_TU_HU_ID set — those let us resolve the TU PI directly.
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(inoutLine);
-		final int recordId = InterfaceWrapperHelper.getId(inoutLine);
-		final List<I_M_HU_Assignment> huAssignments = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Assignment.class, inoutLine)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
 		I_M_HU_PI firstTuPI = null;
 		boolean hasMultipleDistinctPIs = false;
 
+		//
 		// First pass: derived assignments with M_TU_HU_ID explicitly set — most reliable TU PI source.
-		for (final I_M_HU_Assignment huAssignment : huAssignments)
+		final List<I_M_HU_Assignment> tuAssignments = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(inoutLine)
+				.create()
+				.list();
+		for (final I_M_HU_Assignment huAssignment : tuAssignments)
 		{
-			if (huAssignment.getM_TU_HU_ID() <= 0)
-			{
-				continue;
-			}
-
 			final I_M_HU tuHU = huAssignment.getM_TU_HU();
 			if (tuHU == null || handlingUnitsBL.isVirtual(tuHU))
 			{
@@ -146,11 +133,13 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			}
 		}
 
-		// Second pass: if no derived assignment had a usable TU, fall back to top-level M_HU.
+		//
+		// Second pass: if no derived assignment had a usable TU, fall back to top-level assignments.
 		// This works when the top-level HU itself is a TU (no LU involved).
 		if (firstTuPI == null)
 		{
-			for (final I_M_HU_Assignment huAssignment : huAssignments)
+			final List<I_M_HU_Assignment> topLevelAssignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(inoutLine);
+			for (final I_M_HU_Assignment huAssignment : topLevelAssignments)
 			{
 				final I_M_HU hu = huAssignment.getM_HU();
 				if (hu == null || handlingUnitsBL.isVirtual(hu))
