@@ -701,15 +701,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			if (docTax.isReverseCharge())
 			{
+				// VSt (Vorsteuer / input tax) — debit the tax receivable
 				fact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.setC_Tax_ID(docTax.getTaxId())
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				// USt (Umsatzsteuer / output tax) — credit the tax payable
 				fact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
 						.setC_Tax_ID(docTax.getTaxId())
 						.alsoAddZeroLine()
 						.buildAndAdd();
@@ -871,15 +873,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		{
 			if (docTax.isReverseCharge())
 			{
+				// VSt (Vorsteuer / input tax) — credit to reverse the original VSt debit
 				fact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
 						.setC_Tax_ID(docTax.getTaxId())
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				// USt (Umsatzsteuer / output tax) — debit to reverse the original USt credit
 				fact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.setC_Tax_ID(docTax.getTaxId())
 						.alsoAddZeroLine()
 						.buildAndAdd();
