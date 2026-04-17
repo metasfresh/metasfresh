@@ -53,6 +53,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {
 	private static final Logger logger = LogManager.getLogger(HUHandlingUnitsInfoFactory.class);
@@ -95,13 +97,60 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	/**
 	 * Resolve the TU Packing Instructions for an InOutLine.
 	 * <p>
-	 * Primary: look at the actual HU assignments (M_TU_HU_ID on M_HU_Assignment).
-	 * Fallback: use M_HU_PI_Item_Product from the InOutLine or its linked OrderLine.
+	 * Primary: use M_HU_PI_Item_Product from the InOutLine or its linked OrderLine
+	 * (the originally-planned TU PI — preserves prior behavior for all non-rogue lines).
+	 * Fallback: look at the actual HU assignments (M_TU_HU_ID / top-level M_HU),
+	 * used only when the planned TU PI is missing ("rogue" lines that would previously crash).
 	 *
 	 * @throws AdempiereException if no TU PI could be determined from any source
 	 */
 	@NonNull
 	private I_M_HU_PI resolveTU_HU_PI(final I_M_InOutLine inoutLine)
+	{
+		//
+		// Primary: resolve from M_HU_PI_Item_Product on the InOutLine or its linked OrderLine.
+		// This preserves the prior behavior for all lines that used to work.
+		final I_M_HU_PI plannedTuPI = Services.get(IHUInOutBL.class).getTU_HU_PI(inoutLine);
+		if (plannedTuPI != null)
+		{
+			return plannedTuPI;
+		}
+
+		//
+		// Fallback: resolve from actual HU assignments. Only reached when the planned TU PI
+		// is missing (previously caused "Assumption failure: tuPI not null").
+		final I_M_HU_PI actualTuPI = resolveTU_HU_PI_FromHUAssignments(inoutLine);
+		if (actualTuPI != null)
+		{
+			return actualTuPI;
+		}
+
+		//
+		// Neither approach found a TU PI
+		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+		throw new AdempiereException("Receipt " + inout.getDocumentNo() + ", Line " + inoutLine.getLine()
+				+ ": TU Packing Instructions could not be determined."
+				+ " Neither the receipt line nor its linked order line has a TU Packing Instruction (Packvorschrift-TU),"
+				+ " and no usable HU assignment was found either.")
+				.setParameter("M_InOut_ID", inout.getM_InOut_ID())
+				.setParameter("DocumentNo", inout.getDocumentNo())
+				.setParameter("M_InOutLine_ID", inoutLine.getM_InOutLine_ID())
+				.setParameter("Line", inoutLine.getLine())
+				.setParameter("M_Product_ID", inoutLine.getM_Product_ID())
+				.setParameter("M_HU_PI_Item_Product_ID", inoutLine.getM_HU_PI_Item_Product_ID())
+				.setParameter("C_OrderLine_ID", inoutLine.getC_OrderLine_ID());
+	}
+
+	/**
+	 * Two-pass resolution from actual HU assignments:
+	 * <ul>
+	 *   <li>Pass 1: derived assignments with M_TU_HU_ID explicitly set (most reliable).</li>
+	 *   <li>Pass 2: top-level M_HU, used when the top-level HU itself is a TU (no LU involved).</li>
+	 * </ul>
+	 * Returns {@code null} if no non-virtual HU could be found.
+	 */
+	@Nullable
+	private I_M_HU_PI resolveTU_HU_PI_FromHUAssignments(final I_M_InOutLine inoutLine)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -109,8 +158,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		I_M_HU_PI firstTuPI = null;
 		boolean hasMultipleDistinctPIs = false;
 
-		//
-		// First pass: derived assignments with M_TU_HU_ID explicitly set — most reliable TU PI source.
+		// Pass 1: derived assignments with M_TU_HU_ID set.
 		final List<I_M_HU_Assignment> tuAssignments = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(inoutLine)
 				.create()
 				.list();
@@ -133,9 +181,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			}
 		}
 
-		//
-		// Second pass: if no derived assignment had a usable TU, fall back to top-level assignments.
-		// This works when the top-level HU itself is a TU (no LU involved).
+		// Pass 2: fall back to top-level M_HU when no derived assignment had a usable TU.
 		if (firstTuPI == null)
 		{
 			final List<I_M_HU_Assignment> topLevelAssignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(inoutLine);
@@ -159,39 +205,13 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			}
 		}
 
-		if (hasMultipleDistinctPIs)
+		if (firstTuPI != null && hasMultipleDistinctPIs)
 		{
 			logger.warn("InOutLine {} (M_InOutLine_ID={}) has HU assignments with different TU Packing Instructions. Using the first one: {}",
 					inoutLine.getLine(), inoutLine.getM_InOutLine_ID(), firstTuPI.getName());
 		}
 
-		if (firstTuPI != null)
-		{
-			return firstTuPI;
-		}
-
-		//
-		// Fallback: resolve from M_HU_PI_Item_Product on the InOutLine or its linked OrderLine
-		final I_M_HU_PI tuPI = Services.get(IHUInOutBL.class).getTU_HU_PI(inoutLine);
-		if (tuPI != null)
-		{
-			return tuPI;
-		}
-
-		//
-		// Neither approach found a TU PI
-		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
-		throw new AdempiereException("Receipt " + inout.getDocumentNo() + ", Line " + inoutLine.getLine()
-				+ ": TU Packing Instructions could not be determined."
-				+ " The receipt line has no HU assignments with a TU,"
-				+ " and neither the receipt line nor its linked order line has a TU Packing Instruction (Packvorschrift-TU).")
-				.setParameter("M_InOut_ID", inout.getM_InOut_ID())
-				.setParameter("DocumentNo", inout.getDocumentNo())
-				.setParameter("M_InOutLine_ID", inoutLine.getM_InOutLine_ID())
-				.setParameter("Line", inoutLine.getLine())
-				.setParameter("M_Product_ID", inoutLine.getM_Product_ID())
-				.setParameter("M_HU_PI_Item_Product_ID", inoutLine.getM_HU_PI_Item_Product_ID())
-				.setParameter("C_OrderLine_ID", inoutLine.getC_OrderLine_ID());
+		return firstTuPI;
 	}
 
 	private IHandlingUnitsInfo createFromPPOrder(final I_PP_Order ppOrder)

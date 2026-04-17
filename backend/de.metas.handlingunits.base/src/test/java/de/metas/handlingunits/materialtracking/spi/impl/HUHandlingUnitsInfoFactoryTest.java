@@ -21,9 +21,13 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUAssignmentDAO;
 import de.metas.handlingunits.impl.HandlingUnitsBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.impl.HUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -41,6 +45,7 @@ public class HUHandlingUnitsInfoFactoryTest
 
 		Services.registerService(IHUAssignmentDAO.class, new HUAssignmentDAO());
 		Services.registerService(IHandlingUnitsBL.class, new HandlingUnitsBL());
+		Services.registerService(IHUInOutBL.class, new HUInOutBL());
 
 		factory = new HUHandlingUnitsInfoFactory();
 	}
@@ -62,6 +67,31 @@ public class HUHandlingUnitsInfoFactoryTest
 		assertThat(result).isNotNull();
 		assertThat(result.getQtyTU()).isEqualTo(3);
 		assertThat(result.getTUName()).isEqualTo("IFCO");
+	}
+
+	@Test
+	public void createFromModel_InOutLine_plannedPI_winsOverHUAssignment()
+	{
+		// given: InOutLine has BOTH a planned TU PI (via M_HU_PI_Item_Product)
+		//        AND HU assignments referencing a different PI.
+		// The fix must prefer the planned PI to preserve prior behavior for non-rogue lines.
+		final I_M_HU_PI_Version plannedPIV = createHU_PIVersion("Paloxe");
+		final I_M_HU_PI_Item_Product plannedPIP = createPIItemProduct(plannedPIV);
+
+		final I_M_HU_PI_Version actualPIV = createHU_PIVersion("Grosspaloxe");
+		final I_M_HU actualTuHU = createHU(actualPIV);
+
+		final I_M_InOutLine inoutLine = createInOutLine(2);
+		inoutLine.setM_HU_PI_Item_Product_ID(plannedPIP.getM_HU_PI_Item_Product_ID());
+		saveRecord(inoutLine);
+		createHUAssignment(inoutLine, actualTuHU, actualTuHU);
+
+		// when
+		final IHandlingUnitsInfo result = factory.createFromModel(inoutLine);
+
+		// then: the planned PI wins — HU assignment is ignored when a planned PI exists
+		assertThat(result).isNotNull();
+		assertThat(result.getTUName()).isEqualTo("Paloxe");
 	}
 
 	@Test
@@ -231,6 +261,23 @@ public class HUHandlingUnitsInfoFactoryTest
 		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
 		saveRecord(hu);
 		return hu;
+	}
+
+	/**
+	 * Creates an M_HU_PI_Item_Product pointing to a "Material" item of the given PI version.
+	 * This is the metadata that IHUInOutBL.getTU_HU_PI() navigates.
+	 */
+	private I_M_HU_PI_Item_Product createPIItemProduct(final I_M_HU_PI_Version tuPIV)
+	{
+		final I_M_HU_PI_Item piItem = newInstance(I_M_HU_PI_Item.class);
+		piItem.setM_HU_PI_Version_ID(tuPIV.getM_HU_PI_Version_ID());
+		piItem.setItemType("MI");
+		saveRecord(piItem);
+
+		final I_M_HU_PI_Item_Product pip = newInstance(I_M_HU_PI_Item_Product.class);
+		pip.setM_HU_PI_Item_ID(piItem.getM_HU_PI_Item_ID());
+		saveRecord(pip);
+		return pip;
 	}
 
 	/**
