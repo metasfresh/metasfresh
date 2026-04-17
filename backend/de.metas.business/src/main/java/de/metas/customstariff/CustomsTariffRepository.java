@@ -1,6 +1,7 @@
 package de.metas.customstariff;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -43,9 +44,11 @@ public class CustomsTariffRepository
 		return SpringContextHolder.getBeanOrSupply(CustomsTariffRepository.class, CustomsTariffRepository::new);
 	}
 
+	@NonNull
 	public CustomsTariff getById(@NonNull final CustomsTariffId id)
 	{
 		final I_M_CustomsTariff record = loadOutOfTrx(id.getRepoId(), I_M_CustomsTariff.class);
+		Check.assumeNotNull(record, "M_CustomsTariff record not found for id={}", id);
 		return ofRecord(record);
 	}
 
@@ -55,7 +58,7 @@ public class CustomsTariffRepository
 		return CustomsTariff.builder()
 				.id(CustomsTariffId.ofRepoId(record.getM_CustomsTariff_ID()))
 				.value(record.getValue())
-				.Description(record.getDescription())
+				.description(record.getDescription())
 				.build();
 	}
 }

@@ -376,7 +376,7 @@ public class ShipmentOrderRepository
 		if (item.getId() != null)
 		{
 			po = InterfaceWrapperHelper.load(item.getId(), I_Carrier_ShipmentOrder_Item.class);
-			Check.assumeEquals(po.getCarrier_ShipmentOrder_Parcel_ID(), item.getId().getRepoId());
+			Check.assumeEquals(po.getCarrier_ShipmentOrder_Parcel_ID(), deliveryOrderParcelId.getRepoId());
 		}
 		else
 		{

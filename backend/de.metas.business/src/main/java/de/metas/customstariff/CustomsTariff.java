@@ -34,5 +34,5 @@ public class CustomsTariff
 {
 	@NonNull CustomsTariffId id;
 	@NonNull String value;
-	@Nullable String Description;
+	@Nullable String description;
 }
