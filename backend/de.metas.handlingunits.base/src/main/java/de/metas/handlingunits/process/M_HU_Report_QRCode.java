@@ -1,7 +1,14 @@
 package de.metas.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
@@ -10,7 +17,18 @@ import de.metas.process.Param;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static de.metas.handlingunits.HuUnitType.LU;
+import static de.metas.handlingunits.HuUnitType.VHU;
 
 /*
  * #%L
@@ -42,6 +60,7 @@ import org.compiere.SpringContextHolder;
 public class M_HU_Report_QRCode extends JavaProcess
 {
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
 
@@ -51,6 +70,9 @@ public class M_HU_Report_QRCode extends JavaProcess
 	@Param(parameterName = "IsPrintPreview")
 	private boolean isPrintPreview;
 
+	@Param(mandatory = true, parameterName = IMassPrintingService.PARAM_PrintCopies)
+	private int p_PrintCopies;
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
@@ -58,22 +80,31 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final PInstanceId selectionId = getPinstanceId();
 		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
 
-		if (getProcessInfo().isPrintPreview())
+		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
+				.flatMap(hu -> {
+					if (hu.getHUUnitType() == LU)
+					{
+						return Stream.concat(Stream.of(hu), hu.getIncludedHUs().stream());
+					}
+					else
+					{
+						return Stream.of(hu);
+					}
+				})
+				.collect(ImmutableList.toImmutableList());
+
+		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+
+		DB.createT_Selection(selectionId, HuId.toRepoIds(huIdSet), ITrx.TRXNAME_None);
+
+		if (isPrintPreview)
 		{
 			final QRCodePDFResource pdf = huQRCodesService.createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 		}
 		else
 		{
-			final PrintCopies printCopies = getParameters().stream()
-					.filter(processInfoParameter -> IMassPrintingService.PARAM_PrintCopies.equals(processInfoParameter.getParameterName()))
-					.findFirst()
-					.map(ProcessInfoParameter::getParameterAsInt)
-					.filter(nrOfCopies -> nrOfCopies > 0)
-					.map(PrintCopies::ofInt)
-					.orElse(PrintCopies.ONE);
-
-			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, printCopies);
+			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, PrintCopies.ofIntOrOne(p_PrintCopies));
 		}
 
 		return MSG_OK;
