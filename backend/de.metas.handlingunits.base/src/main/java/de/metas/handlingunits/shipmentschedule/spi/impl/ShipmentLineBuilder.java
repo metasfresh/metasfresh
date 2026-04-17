@@ -27,6 +27,10 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.organization.OrgId;
+import org.adempiere.mm.attributes.AttributeId;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
@@ -615,7 +619,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			final Collection<I_M_Attribute> attributes = filterAttributesForHUTransfer(shipmentLineAttributeStorageTo.getAttributes());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
@@ -630,6 +634,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
+	}
+
+	/**
+	 * Filters out attributes where {@code IsHUAttributeOverridesASI=N} in {@link I_M_ShipmentSchedule_AttributeConfig}.
+	 * For those attributes, the schedule ASI value (already set on the shipment line by
+	 * {@link ShipmentScheduleWithHU#computeAttributeValues()}) must not be overwritten by HU attribute transfer.
+	 */
+	private Collection<I_M_Attribute> filterAttributesForHUTransfer(@NonNull final Collection<I_M_Attribute> allAttributes)
+	{
+		if (candidates.isEmpty())
+		{
+			return allAttributes;
+		}
+
+		final ShipmentScheduleWithHU firstCandidate = candidates.get(0);
+		final OrgId orgId = OrgId.ofRepoId(firstCandidate.getM_ShipmentSchedule().getAD_Org_ID());
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class)
+				.getHandlerFor(firstCandidate.getM_ShipmentSchedule());
+
+		return allAttributes.stream()
+				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, AttributeId.ofRepoId(attr.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableAttributeSet extractAttributeValuesToTransfer(final Collection<I_M_Attribute> attributes, final IAttributeStorageFactory attributeStorageFactory)
