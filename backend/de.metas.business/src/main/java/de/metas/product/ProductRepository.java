@@ -360,9 +360,8 @@ public class ProductRepository
 
 		return Product.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.productNo(productRecord.getValue())
-				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
 				.value(productRecord.getValue())
+				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
 				.customsTariffId(CustomsTariffId.ofRepoIdOrNull(productRecord.getM_CustomsTariff_ID()))
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
 				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
@@ -418,7 +417,7 @@ public class ProductRepository
 		}
 
 		record.setDiscontinued(isDiscontinued);
-		record.setValue(product.getProductNo());
+		record.setValue(product.getValue());
 		record.setName(product.getName().getDefaultValue());
 		record.setDescription(Strings.emptyToNull(product.getDescription().getDefaultValue()));
 		record.setC_UOM_ID(product.getUomId().getRepoId());

@@ -44,11 +44,10 @@ public class Product
 	@NonNull ProductId id;
 	@NonNull UomId uomId;
 	@Nullable UomId packingUomId;
-	@NonNull String productNo;
+	@NonNull String value;
 	@NonNull ProductCategoryId productCategoryId;
 	@Nullable String productCategoryName;
 	@NonNull ITranslatableString name;
-	@NonNull String value;
 	@Nullable CustomsTariffId customsTariffId;
 	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
 	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
