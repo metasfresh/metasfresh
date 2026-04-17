@@ -29,6 +29,8 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.organization.OrgId;
+import org.adempiere.mm.attributes.AttributeId;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
@@ -647,12 +649,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		final ShipmentScheduleWithHU firstCandidate = candidates.get(0);
-		final int orgId = firstCandidate.getM_ShipmentSchedule().getAD_Org_ID();
+		final OrgId orgId = OrgId.ofRepoId(firstCandidate.getM_ShipmentSchedule().getAD_Org_ID());
 		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class)
 				.getHandlerFor(firstCandidate.getM_ShipmentSchedule());
 
 		return allAttributes.stream()
-				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, attr))
+				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, AttributeId.ofRepoId(attr.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 	}
 

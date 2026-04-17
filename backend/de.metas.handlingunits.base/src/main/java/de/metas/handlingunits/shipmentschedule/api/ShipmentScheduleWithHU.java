@@ -24,7 +24,8 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import org.compiere.model.I_M_Attribute;
+import org.adempiere.mm.attributes.AttributeId;
+import de.metas.organization.OrgId;
 import java.util.function.Predicate;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -286,7 +287,7 @@ public class ShipmentScheduleWithHU
 	{
 		//
 		// 1. Collect HU attributes (filtered by handler whitelist)
-		final TreeSet<IAttributeValue> huAttributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+		final TreeSet<IAttributeValue> huAttributeValues = new TreeSet<>(Comparator.comparing(IAttributeValue::getAttributeId));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		streamHUHierarchyBottomUp().forEach(hu -> {
@@ -308,7 +309,7 @@ public class ShipmentScheduleWithHU
 
 		//
 		// 2. Collect schedule ASI attributes (NO handler whitelist filter — always pass through)
-		final TreeSet<IAttributeValue> schedAsiAttributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+		final TreeSet<IAttributeValue> schedAsiAttributeValues = new TreeSet<>(Comparator.comparing(IAttributeValue::getAttributeId));
 
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
@@ -339,8 +340,9 @@ public class ShipmentScheduleWithHU
 		// For each attribute, the handler's IsHUAttributeOverridesASI flag decides precedence:
 		// - Y (default): HU value wins (existing behavior for LotNumber, BestBefore, etc.)
 		// - N: schedule ASI value wins (for customer-intent attributes like Herkunft)
+		final OrgId orgId = OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID());
 		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes,
-				attribute -> handler.isHUAttributeOverridesASI(shipmentSchedule.getAD_Org_ID(), attribute));
+				attrId -> handler.isHUAttributeOverridesASI(orgId, attrId));
 	}
 
 	/**
@@ -356,56 +358,52 @@ public class ShipmentScheduleWithHU
 	 *
 	 * @param filteredHUAttributes HU attributes already filtered by handler whitelist
 	 * @param schedAsiAttributes   schedule ASI attributes already filtered by isUseInASI
-	 * @param isHUOverridesASI     per-attribute predicate: true = HU wins, false = schedule ASI wins
+	 * @param isHUOverridesASI     per-attribute predicate (by AttributeId): true = HU wins, false = schedule ASI wins
 	 */
 	@VisibleForTesting
 	public static ImmutableList<IAttributeValue> mergeAttributeValues(
 			@NonNull final List<IAttributeValue> filteredHUAttributes,
 			@NonNull final List<IAttributeValue> schedAsiAttributes,
-			@NonNull final Predicate<I_M_Attribute> isHUOverridesASI)
+			@NonNull final Predicate<AttributeId> isHUOverridesASI)
 	{
-		final Map<Integer, IAttributeValue> merged = new LinkedHashMap<>();
+		final Map<AttributeId, IAttributeValue> merged = new LinkedHashMap<>();
 
 		// Start with HU attributes
 		for (final IAttributeValue huAttr : filteredHUAttributes)
 		{
-			merged.put(huAttr.getM_Attribute().getM_Attribute_ID(), huAttr);
+			merged.put(huAttr.getAttributeId(), huAttr);
 		}
 
 		// Overlay schedule ASI attributes
 		for (final IAttributeValue schedAttr : schedAsiAttributes)
 		{
-			final int attributeId = schedAttr.getM_Attribute().getM_Attribute_ID();
+			final AttributeId attributeId = schedAttr.getAttributeId();
 			final boolean schedValueIsEmpty = Objects.equals(schedAttr.getValue(), schedAttr.getEmptyValue());
 
 			if (schedValueIsEmpty)
 			{
-				// Schedule value is empty → keep the HU value if any, don't add empty
 				continue;
 			}
 
 			final boolean huHasValue = merged.containsKey(attributeId);
 			if (!huHasValue)
 			{
-				// No HU value → add schedule ASI value unconditionally
 				merged.put(attributeId, schedAttr);
 			}
-			else if (!isHUOverridesASI.test(schedAttr.getM_Attribute()))
+			else if (!isHUOverridesASI.test(attributeId))
 			{
-				// HU has a value BUT config says schedule ASI wins → overwrite
 				merged.put(attributeId, schedAttr);
 			}
-			// else: HU has a value AND config says HU wins → keep HU value (do nothing)
 		}
 
 		return ImmutableList.copyOf(merged.values());
 	}
 
 	/** Predicate constant: HU attribute always wins over schedule ASI (backward-compatible default). */
-	public static final Predicate<I_M_Attribute> HU_ALWAYS_WINS = attribute -> true;
+	public static final Predicate<AttributeId> HU_ALWAYS_WINS = attrId -> true;
 
 	/** Predicate constant: Schedule ASI always wins over HU attribute. */
-	public static final Predicate<I_M_Attribute> SCHEDULE_ASI_ALWAYS_WINS = attribute -> false;
+	public static final Predicate<AttributeId> SCHEDULE_ASI_ALWAYS_WINS = attrId -> false;
 
 	@Nullable
 	public OrderId getOrderId()

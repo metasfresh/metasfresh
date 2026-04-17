@@ -17,6 +17,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -179,7 +180,7 @@ public abstract class ShipmentScheduleHandler
 	{
 		final Optional<AttributeConfig> attributeConfigIfPresent = findMatchingAttributeConfig(
 				shipmentSchedule.getAD_Org_ID(),
-				attribute);
+				AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (!attributeConfigIfPresent.isPresent())
 		{
 			return false;
@@ -223,10 +224,10 @@ public abstract class ShipmentScheduleHandler
 	 * if no config record is found.
 	 */
 	public final boolean isHUAttributeOverridesASI(
-			final int orgId,
-			@NonNull final I_M_Attribute attribute)
+			@NonNull final OrgId orgId,
+			@NonNull final AttributeId attributeId)
 	{
-		return findMatchingAttributeConfig(orgId, attribute)
+		return findMatchingAttributeConfig(orgId.getRepoId(), attributeId)
 				.map(AttributeConfig::isHuAttributeOverridesASI)
 				.orElse(true); // default: HU wins (backward compatible)
 	}
@@ -247,7 +248,7 @@ public abstract class ShipmentScheduleHandler
 	@VisibleForTesting
 	Optional<AttributeConfig> findMatchingAttributeConfig(
 			final int orgId,
-			final I_M_Attribute m_Attribute)
+			@NonNull final AttributeId attributeId)
 	{
 		final ImmutableList<AttributeConfig> attributeConfigs = getAttributeConfigs();
 
@@ -257,7 +258,7 @@ public abstract class ShipmentScheduleHandler
 
 		final Optional<AttributeConfig> matchingConfigIfPresent = attributeConfigs
 				.stream()
-				.filter(c -> AttributeId.toRepoId(c.getAttributeId()) == m_Attribute.getM_Attribute_ID())
+				.filter(c -> AttributeId.equals(c.getAttributeId(), attributeId))
 				.sorted(orgComparator)
 				.findFirst();
 
