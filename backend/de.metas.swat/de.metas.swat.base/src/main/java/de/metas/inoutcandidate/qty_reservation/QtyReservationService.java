@@ -51,6 +51,7 @@ public class QtyReservationService
 		if (request.getAttributesKey() != null && sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
 		{
 			// the attributesKey already contains only storage relevant attributes
+			// attributesKey may be NONE, in which case M_AttributeSetInstance_ID is reset to 0 (clearing existing ASI)
 			final AttributeSetInstanceId attributeSetInstanceFromAttributesKey = AttributesKeys.createAttributeSetInstanceFromAttributesKey(request.getAttributesKey());
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceFromAttributesKey.getRepoId());
 			orderLineChanged = true;
