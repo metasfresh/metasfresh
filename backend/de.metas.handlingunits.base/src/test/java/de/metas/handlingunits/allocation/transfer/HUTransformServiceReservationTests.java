@@ -27,6 +27,7 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -37,6 +38,8 @@ import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +52,7 @@ import java.util.List;
 
 import static de.metas.handlingunits.HUAssertions.assertThat;
 import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link HUTransformService} that are especially geared at the sort of use which {@link HUReservationService} makes of it.
@@ -343,5 +347,166 @@ public class HUTransformServiceReservationTests
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		assertThat(newCUs).isEmpty(); // nothing was extracted, because lu does not contain any salad.
+	}
+
+	// =========================================================
+	// Reservation guard tests
+	// =========================================================
+
+	/**
+	 * A VHU that is directly reserved must not be transformable via cuToNewCU.
+	 */
+	@Test
+	public void cuToNewCU_reservedVHU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+
+		// mark the VHU as reserved
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		assertThatThrownBy(() -> huTransformService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg)))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * A VHU that is directly reserved must not be moved to another TU.
+	 */
+	@Test
+	public void cuToExistingTU_reservedVHU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU targetTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		assertThatThrownBy(() -> huTransformService.cuToExistingTU(cuHU, Quantity.of(ONE, data.helper.uomKg), targetTU))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * husToNewCUs with CONSIDER_ALL policy must fail when a source HU contains a reserved VHU descendant.
+	 */
+	@Test
+	public void husToNewCUs_considerAll_withReservedVHUChild_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU tuHU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+
+		// mark the inner VHU as reserved (TU itself is NOT reserved)
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(tuHU)
+				.productId(data.helper.pTomatoProductId)
+				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
+				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
+				.build();
+
+		assertThatThrownBy(() -> huTransformService.husToNewCUs(request))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * husToNewCUs with CONSIDER_ONLY_NOT_RESERVED policy must NOT fail even when the source TU
+	 * contains a reserved VHU child — the policy already excludes those VHUs from processing.
+	 * This is the path used by {@link HUReservationService}.
+	 */
+	@Test
+	public void husToNewCUs_considerOnlyNotReserved_withReservedVHUChild_shouldSucceed()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU tuHU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+
+		// mark only the inner VHU as reserved (TU itself is NOT reserved)
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(tuHU)
+				.productId(data.helper.pTomatoProductId)
+				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
+				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+				.build();
+
+		// The reserved VHU is excluded by the policy, so there is nothing to extract → empty result, no exception
+		final List<I_M_HU> result = huTransformService.husToNewCUs(request).getNewCUs();
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * A TU whose VHU children are reserved (but the TU itself is NOT reserved) must be packable
+	 * onto an existing LU — i.e. tuToExistingLU must NOT throw.
+	 * This covers the use-case: "pack a reserved TU on an LU before creating the shipment."
+	 */
+	@Test
+	public void tuToExistingLU_tuWithReservedVHUChild_shouldSucceed()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU sourceTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+
+		// mark only the inner VHU as reserved — the TU container itself is NOT reserved
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+		assertThat(sourceTU.isReserved()).isFalse();
+
+		// Create a proper LU by using mkAggregateHUWithTotalQtyCU (returns an aggregate VHU inside an LU)
+		final I_M_HU existingLU = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
+
+		// Must NOT throw any reservation-guard exception — the TU itself is not reserved.
+		huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, existingLU);
+	}
+
+	/**
+	 * A TU that is itself reserved (whole-TU reservation) must NOT be packable onto an LU.
+	 */
+	@Test
+	public void tuToExistingLU_reservedTU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU sourceTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+		final I_M_HU lu = data.createLU(1, 20);
+
+		// mark the TU itself as reserved
+		sourceTU.setIsReserved(true);
+		InterfaceWrapperHelper.save(sourceTU);
+
+		assertThatThrownBy(() -> huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, lu))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * When the caller <em>owns</em> the reservation it passes the reserved VHU IDs via
+	 * {@code allowedReservedVhuIds}. The guard must be bypassed for those specific VHUs,
+	 * so the transformation succeeds (or fails for reasons unrelated to the reservation guard).
+	 * <p>
+	 * Scenario: sales-order picks its own reserved CU (e.g. splits it before creating the shipment).
+	 */
+	@Test
+	public void cuToNewCU_allowedReservedVhuIds_bypassesGuard()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+
+		// mark the VHU as reserved
+		cuHU.setIsReserved(true);
+		InterfaceWrapperHelper.save(cuHU);
+
+		// Build a service instance that declares this VHU as "allowed" (reservation owner)
+		final de.metas.handlingunits.HuId reservedVhuId = de.metas.handlingunits.HuId.ofRepoId(cuHU.getM_HU_ID());
+		final HUTransformService ownerService = HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext())
+				.allowedReservedVhuIds(java.util.Collections.singleton(reservedVhuId))
+				.build();
+
+		ownerService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg));
 	}
 }
