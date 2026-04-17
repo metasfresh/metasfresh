@@ -509,4 +509,109 @@ public class HUTransformServiceReservationTests
 
 		ownerService.cuToNewCU(cuHU, Quantity.of(ONE, data.helper.uomKg));
 	}
+
+	// =========================================================
+	// Target HU reservation guard tests
+	// =========================================================
+
+	/**
+	 * Moving a CU into a TU that is itself reserved must throw.
+	 */
+	@Test
+	public void cuToExistingTU_reservedTargetTU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU sourceCU = data.mkRealCUWithTUandQtyCU("10");
+
+		// create a separate TU that will serve as target, then mark it as reserved
+		final I_M_HU targetCU = data.mkRealCUWithTUandQtyCU("5");
+		final I_M_HU targetTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(targetCU);
+		targetTU.setIsReserved(true);
+		InterfaceWrapperHelper.save(targetTU);
+
+		assertThatThrownBy(() -> huTransformService.cuToExistingTU(sourceCU, Quantity.of(ONE, data.helper.uomKg), targetTU))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * Packing a TU onto an LU that is itself reserved must throw.
+	 */
+	@Test
+	public void tuToExistingLU_reservedTargetLU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU cuHU = data.mkRealCUWithTUandQtyCU("10");
+		final I_M_HU sourceTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(cuHU);
+
+		final I_M_HU existingLU = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
+
+		// mark the target LU as reserved
+		existingLU.setIsReserved(true);
+		InterfaceWrapperHelper.save(existingLU);
+
+		assertThatThrownBy(() -> huTransformService.tuToExistingLU(sourceTU, QtyTU.ONE, existingLU))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * Adding CUs to a TU that is itself reserved must throw.
+	 */
+	@Test
+	public void addCUsToTU_reservedTargetTU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU sourceCU = data.mkRealCUWithTUandQtyCU("10");
+
+		// create a separate target TU and mark it as reserved
+		final I_M_HU targetCU = data.mkRealCUWithTUandQtyCU("5");
+		final I_M_HU targetTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(targetCU);
+		targetTU.setIsReserved(true);
+		InterfaceWrapperHelper.save(targetTU);
+
+		assertThatThrownBy(() -> huTransformService.addCUsToTU(ImmutableList.of(sourceCU), targetTU))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * Merging CUs into an existing CU that is reserved must throw.
+	 */
+	@Test
+	public void cusToExistingCU_reservedTargetCU_shouldThrow()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU sourceCU = data.mkRealCUWithTUandQtyCU("10");
+
+		final I_M_HU targetCU = data.mkRealCUWithTUandQtyCU("5");
+		targetCU.setIsReserved(true);
+		InterfaceWrapperHelper.save(targetCU);
+
+		assertThatThrownBy(() -> huTransformService.cusToExistingCU(ImmutableList.of(sourceCU), targetCU))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * When the caller owns the reservation on the target TU (via {@code allowedReservedVhuIds}),
+	 * the guard for the reserved target must be bypassed.
+	 */
+	@Test
+	public void cuToExistingTU_allowedReservedTargetTU_bypassesGuard()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+		final I_M_HU sourceCU = data.mkRealCUWithTUandQtyCU("10");
+
+		final I_M_HU targetCU = data.mkRealCUWithTUandQtyCU("5");
+		final I_M_HU targetTU = Services.get(IHandlingUnitsDAO.class).retrieveParent(targetCU);
+		targetTU.setIsReserved(true);
+		InterfaceWrapperHelper.save(targetTU);
+
+		// Build a service that declares the target TU as allowed
+		final de.metas.handlingunits.HuId targetTUId = de.metas.handlingunits.HuId.ofRepoId(targetTU.getM_HU_ID());
+		final HUTransformService ownerService = HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext())
+				.allowedReservedVhuIds(java.util.Collections.singleton(targetTUId))
+				.build();
+
+		// Must NOT throw — the caller owns the reservation on the target TU
+		ownerService.cuToExistingTU(sourceCU, Quantity.of(ONE, data.helper.uomKg), targetTU);
+	}
 }
