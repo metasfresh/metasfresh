@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements I_M_Shipper_Mapping_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1970021698L;
+	private static final long serialVersionUID = 774154654L;
 
     /** Standard Constructor */
     public X_M_Shipper_Mapping_Config (final Properties ctx, final int M_Shipper_Mapping_Config_ID, @Nullable final String trxName)
@@ -151,6 +151,10 @@ public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements
 	public static final String MAPPINGATTRIBUTEVALUE_TotalValue = "TotalValue";
 	/** CurrencyCode = CurrencyCode */
 	public static final String MAPPINGATTRIBUTEVALUE_CurrencyCode = "CurrencyCode";
+	/** ProductValue = ProductValue */
+	public static final String MAPPINGATTRIBUTEVALUE_ProductValue = "ProductValue";
+	/** CustomsTariff = CustomsTariff */
+	public static final String MAPPINGATTRIBUTEVALUE_CustomsTariff = "CustomsTariff";
 	@Override
 	public void setMappingAttributeValue (final java.lang.String MappingAttributeValue)
 	{

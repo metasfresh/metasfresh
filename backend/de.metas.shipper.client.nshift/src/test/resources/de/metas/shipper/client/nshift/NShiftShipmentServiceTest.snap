@@ -126,6 +126,43 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 }
               ],
               "LineNo": 2
+            },
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "3"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product 3"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                }
+              ],
+              "LineNo": 2
             }
           ]
         }
@@ -144,6 +181,22 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 129,
               "Value": "1 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product"
+            },
+            {
+              "Kind": 130,
+              "Value": "10"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product"
             }
           ],
           "Width": 200
@@ -153,14 +206,34 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,
-          "LineWeight": 10000,
+          "LineWeight": 20000,
           "Number": 1,
-          "PkgWeight": 10000,
+          "PkgWeight": 20000,
           "Pkgs": [ ],
           "References": [
             {
               "Kind": 129,
               "Value": "2 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 130,
+              "Value": "20"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 133,
+              "Value": "Test Customs Tariff 2,Test Customs Tariff 3"
             }
           ],
           "Width": 200

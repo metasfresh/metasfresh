@@ -110,6 +110,8 @@ public class NShiftShipAdvisorServiceTest
 			.item(JsonDeliveryAdvisorRequestItem.builder()
 					.numberOfItems(1)
 					.grossWeightKg(BigDecimal.TEN)
+					.productName("Test Product")
+					.productValue("Test Product Value")
 					.packageDimensions(JsonPackageDimensions.builder()
 							.lengthInCM(100)
 							.widthInCM(20)

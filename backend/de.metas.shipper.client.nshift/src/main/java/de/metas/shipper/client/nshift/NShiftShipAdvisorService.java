@@ -151,7 +151,11 @@ public class NShiftShipAdvisorService
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
-				.lineWeight(weightGrams);
+				.lineWeight(weightGrams)
+				.reference(JsonReference.builder()
+						.kind(23) // eSrkContents https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+						.value(item.getProductName())
+						.build());
 		if (item.getPackageDimensions() != null)
 		{
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;

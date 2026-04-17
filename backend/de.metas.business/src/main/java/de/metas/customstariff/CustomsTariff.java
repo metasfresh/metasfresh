@@ -1,8 +1,16 @@
+package de.metas.customstariff;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +28,11 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.request;
-
-import de.metas.common.delivery.v1.json.JsonPackageDimensions;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
-@Builder(toBuilder = true)
-@Jacksonized
-public class JsonDeliveryAdvisorRequestItem
+@Builder
+public class CustomsTariff
 {
-	int numberOfItems;
-	@NonNull BigDecimal grossWeightKg;
-	@NonNull String productName;
-	@NonNull String productValue;
-	@Nullable JsonPackageDimensions packageDimensions;
+	@NonNull CustomsTariffId id;
+	@NonNull String value;
+	@Nullable String Description;
 }

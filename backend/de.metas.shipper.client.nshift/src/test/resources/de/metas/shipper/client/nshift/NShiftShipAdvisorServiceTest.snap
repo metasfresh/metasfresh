@@ -38,7 +38,12 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "LineWeight": 10000,
           "Number": 1,
           "Pkgs": [ ],
-          "References": [ ],
+          "References": [
+            {
+              "Kind": 23,
+              "Value": "Test Product"
+            }
+          ],
           "Width": 200
         }
       ],

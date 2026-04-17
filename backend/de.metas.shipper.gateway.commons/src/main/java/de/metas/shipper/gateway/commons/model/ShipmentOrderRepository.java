@@ -124,6 +124,7 @@ public class ShipmentOrderRepository
 				.id(DeliveryOrderItemId.ofRepoId(item.getCarrier_ShipmentOrder_Item_ID()))
 				.productName(item.getProductName())
 				.productValue(item.getArticleValue())
+				.customsTariff(item.getCustomsTariffNumber())
 				.totalWeightInKg(item.getTotalWeightInKg())
 				.unitPrice(Money.of(item.getPrice(), currencyId))
 				.totalValue(Money.of(item.getTotalPrice(), currencyId))
@@ -135,7 +136,7 @@ public class ShipmentOrderRepository
 	{
 		final ShipperId shipperId = ShipperId.ofRepoId(po.getM_Shipper_ID());
 		final DeliveryOrderId id = DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID());
-		return DeliveryOrder.builder()
+		final DeliveryOrder.DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.id(id)
 				.customerReference(po.getCustomerReference())
 				.shipperId(shipperId)
@@ -144,11 +145,6 @@ public class ShipmentOrderRepository
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
 						.timeFrom(TimeUtil.asLocalTime(po.getPickupTimeFrom()))
 						.timeTo(TimeUtil.asLocalTime(po.getPickupTimeTo()))
-						.build())
-				.deliveryContact(ContactPerson.builder()
-						.name(po.getReceiver_Name1())
-						.simplePhoneNumber(po.getReceiver_Phone())
-						.emailAddress(po.getReceiver_Email())
 						.build())
 				.pickupAddress(Address.builder()
 						.companyName1(po.getShipper_Name1())
@@ -176,8 +172,27 @@ public class ShipmentOrderRepository
 				.shipperProduct(productRepository.getCachedShipperProductById(CarrierProductId.ofRepoIdOrNull(po.getCarrier_Product_ID())))
 				.goodsType(goodsTypeRepository.getCachedGoodsTypeById(CarrierGoodsTypeId.ofRepoIdOrNull(po.getCarrier_Goods_Type_ID())))
 				.services(carrierServiceRepository.getAssignedServicesByDeliveryOrderId(id))
-				.deliveryOrderParcels(parcels)
-				.build();
+				.deliveryOrderParcels(parcels);
+		if (po.getReceiver_ContactName() != null)
+		{
+			builder.deliveryContact(ContactPerson.builder()
+					.name(po.getReceiver_ContactName())
+					.department(po.getReceiver_Department())
+					.simplePhoneNumber(po.getReceiver_Phone())
+					.emailAddress(po.getReceiver_Email())
+					.build());
+		}
+		if (po.getShipper_ContactName() != null)
+		{
+			builder.pickupContact(ContactPerson.builder()
+					.name(po.getShipper_ContactName())
+					.department(po.getShipper_Department())
+					.simplePhoneNumber(po.getShipper_Phone())
+					.emailAddress(po.getShipper_Email())
+					.build());
+		}
+
+		return builder.build();
 	}
 
 	private static DeliveryOrderParcel fromRecord(@NonNull final I_Carrier_ShipmentOrder_Parcel po, final ImmutableList<DeliveryOrderItem> deliveryOrderItems)
@@ -257,7 +272,6 @@ public class ShipmentOrderRepository
 	private DeliveryOrderId createShipmentOrder(final @NonNull DeliveryOrder request)
 	{
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
-		final ContactPerson deliveryContact = request.getDeliveryContact();
 		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
 		po.setCustomerReference(request.getCustomerReference());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
@@ -270,9 +284,23 @@ public class ShipmentOrderRepository
 		po.setShipper_EORI(request.getShipperEORI());
 		po.setReceiver_EORI(request.getReceiverEORI());
 
+		final ContactPerson deliveryContact = request.getDeliveryContact();
 		if (deliveryContact != null)
 		{
+			po.setReceiver_ContactName(deliveryContact.getName());
+			po.setReceiver_Department(deliveryContact.getDepartment());
+			po.setReceiver_Phone(deliveryContact.getSimplePhoneNumber());
 			po.setReceiver_Email(deliveryContact.getEmailAddress());
+
+		}
+
+		final ContactPerson pickupContact = request.getPickupContact();
+		if (pickupContact != null)
+		{
+			po.setShipper_ContactName(pickupContact.getName());
+			po.setShipper_Department(pickupContact.getDepartment());
+			po.setShipper_Phone(pickupContact.getSimplePhoneNumber());
+			po.setShipper_Email(pickupContact.getEmailAddress());
 		}
 
 		final Address shipperAddress = request.getPickupAddress();
@@ -357,6 +385,7 @@ public class ShipmentOrderRepository
 		}
 		po.setProductName(item.getProductName());
 		po.setArticleValue(item.getProductValue());
+		po.setCustomsTariffNumber(item.getCustomsTariff());
 		Check.assumeEquals(item.getTotalValue().getCurrencyId(), item.getUnitPrice().getCurrencyId());
 		po.setPrice(item.getUnitPrice().toBigDecimal());
 		po.setC_Currency_ID(item.getUnitPrice().getCurrencyId().getRepoId());

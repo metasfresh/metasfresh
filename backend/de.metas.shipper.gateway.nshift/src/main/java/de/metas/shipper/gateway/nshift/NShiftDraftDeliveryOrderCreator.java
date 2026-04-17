@@ -30,6 +30,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.customstariff.CustomsTariffId;
+import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -39,7 +41,9 @@ import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
@@ -67,7 +71,6 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_Product;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -88,6 +91,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
 	@NonNull private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 	@NonNull private final UserRepository userRepository;
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final CustomsTariffRepository customsTariffRepository;
 
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -204,7 +209,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
-		final I_M_Product product = productDAO.getById(productId);
+		final Product product = productRepository.getById(productId);
 		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
 
@@ -214,9 +219,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
 
+		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
+		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
+
 		return DeliveryOrderItem.builder()
-				.productName(product.getName())
+				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
+				.customsTariff(customsTariff)
 				.totalWeightInKg(weightInKg)
 				.shippedQuantity(packageItem.getQuantity())
 				.unitPrice(unitPrice)

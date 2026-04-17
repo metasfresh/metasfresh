@@ -23,7 +23,9 @@
 package de.metas.common.delivery.v1.json.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +35,9 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value
 @Builder(toBuilder = true)
@@ -53,10 +57,32 @@ public class JsonDeliveryOrderParcel
 	@JsonIgnore
 	public Optional<String> getValue(@NonNull final String attributeValue)
 	{
-		if (DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID.equals(attributeValue))
+		switch (attributeValue)
 		{
-			return Optional.of(getId());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID:
+				return Optional.of(getId());
+			//aggregated JsonDeliveryOrderLineContents
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME:
+				return Optional.of(contents.stream().map(JsonDeliveryOrderLineContents::getProductName).collect(Collectors.joining(",")));
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE:
+				return Optional.of(contents.stream().map(JsonDeliveryOrderLineContents::getProductValue).collect(Collectors.joining(",")));
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF:
+				//Empty Strings should be filtered out by gateway implementation
+				return Optional.of(contents.stream().map(JsonDeliveryOrderLineContents::getCustomsTariff).filter(Objects::nonNull).collect(Collectors.joining(",")));
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE:
+				return Optional.of(contents.stream()
+						.map(JsonDeliveryOrderLineContents::getTotalValue)
+				        .map(JsonMoney::getAmount)
+						.reduce(BigDecimal.ZERO, BigDecimal::add)
+						.toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE:
+				final ImmutableSet<String> currencies = contents.stream()
+						.map(JsonDeliveryOrderLineContents::getTotalValue)
+						.map(JsonMoney::getCurrencyCode)
+						.collect(ImmutableSet.toImmutableSet());
+				return currencies.size() == 1 ? Optional.of(currencies.iterator().next()) : Optional.empty();
+			default:
+				return Optional.empty();
 		}
-		return Optional.empty();
 	}
 }

@@ -47,6 +47,7 @@ class JsonDeliveryOrderParcelTest {
                 .totalValue(de.metas.common.delivery.v1.json.JsonMoney.builder().amount(new BigDecimal("2.46")).currencyCode("EUR").build())
                 .productName("Prod")
                 .productValue("P-1")
+				.customsTariff("CT-1")
                 .totalWeightInKg(new BigDecimal("0.5"))
                 .shippedQuantity(JsonQuantity.builder().value(new BigDecimal("2")).uomCode("PCE").build())
                 .build();

@@ -61,6 +61,8 @@ class JsonDeliveryAdvisorRequestTest {
     private static JsonDeliveryAdvisorRequestItem anItem() {
         return JsonDeliveryAdvisorRequestItem.builder()
                 .numberOfItems(2)
+				.productName("P-1")
+				.productValue("P-1")
                 .grossWeightKg(new BigDecimal("7.5"))
                 .packageDimensions(JsonPackageDimensions.builder().lengthInCM(40).widthInCM(20).heightInCM(15).build())
                 .build();

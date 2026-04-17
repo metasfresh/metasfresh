@@ -71,6 +71,11 @@ public class NShiftShipmentServiceTest
 	private static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
 
 	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_2 = "130";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_3 = "131";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_4 = "132";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_5 = "133";
+	private static final String LINE_REFERENCE_KIND_CONTENTS = "23";
 
 	// see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields DetailGroupKind
 	private static final String DETAIL_GROUP_KEY_CUSTOMS_ARTICLE = "1";
@@ -171,7 +176,7 @@ public class NShiftShipmentServiceTest
 					.build())
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("2")
-					.grossWeightKg(BigDecimal.TEN)
+					.grossWeightKg(BigDecimal.valueOf(20))
 					.packageDimensions(JsonPackageDimensions.builder()
 							.lengthInCM(100)
 							.widthInCM(20)
@@ -190,12 +195,32 @@ public class NShiftShipmentServiceTest
 									.build())
 							.productName("Test Product 2")
 							.productValue("Test Product 2")
+							.customsTariff("Test Customs Tariff 2")
 							.totalWeightInKg(BigDecimal.TEN)
 							.shippedQuantity(JsonQuantity.builder()
 									.value(BigDecimal.TEN)
 									.uomCode("PCE")
 									.build())
-							.build()))
+							.build(),
+							JsonDeliveryOrderLineContents.builder()
+									.shipmentOrderItemId("3")
+									.unitPrice(JsonMoney.builder()
+											.amount(BigDecimal.TEN)
+											.currencyCode("EUR")
+											.build())
+									.totalValue(JsonMoney.builder()
+											.amount(BigDecimal.TEN)
+											.currencyCode("EUR")
+											.build())
+									.productName("Test Product 3")
+									.productValue("Test Product 3")
+									.customsTariff("Test Customs Tariff 3")
+									.totalWeightInKg(BigDecimal.TEN)
+									.shippedQuantity(JsonQuantity.builder()
+											.value(BigDecimal.TEN)
+											.uomCode("PCE")
+											.build())
+									.build()))
 					.build())
 			.shipperEORI("Shipper EORI")
 			.receiverEORI("Receiver EORI")
@@ -389,6 +414,36 @@ public class NShiftShipmentServiceTest
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
 							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
 							.mappingRuleValue("RO")
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(280)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CONTENTS)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(290)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_2)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(300)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_3)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(310)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_4)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(320)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_5)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF)
 							.build()
 			)))
 

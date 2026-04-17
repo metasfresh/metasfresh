@@ -255,6 +255,8 @@ public class CarrierAdviseCommand
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
+				.productName(product.getName().getDefaultValue())
+				.productValue(product.getValue())
 				.packageDimensions(JsonPackageDimensions.builder()
 						.heightInCM(dimensions.getHeightInCM())
 						.widthInCM(dimensions.getWidthInCM())

@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.customstariff.CustomsTariffId;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
@@ -362,6 +363,7 @@ public class ProductRepository
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
 				.value(productRecord.getValue())
+				.customsTariffId(CustomsTariffId.ofRepoIdOrNull(productRecord.getM_CustomsTariff_ID()))
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
 				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
 				.productCategoryId(productCategoryId)

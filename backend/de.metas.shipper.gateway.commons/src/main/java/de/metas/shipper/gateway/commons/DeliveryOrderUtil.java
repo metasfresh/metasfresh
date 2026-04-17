@@ -71,7 +71,7 @@ public final class DeliveryOrderUtil
 		}
 
 		return addressBuilder
-				.street2(location.getAddress2())
+				.street2(StringUtils.trimBlankToNull(location.getAddress2()))
 				.zipCode(location.getPostal())
 				.city(location.getCity())
 				.country(createShipperCountryCode(CountryId.ofRepoId(location.getC_Country_ID())));
@@ -98,7 +98,7 @@ public final class DeliveryOrderUtil
 	{
 		return packageInfos.stream()
 				.map(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
-				.map(de.metas.util.StringUtils::trimBlankToNull)
+				.map(StringUtils::trimBlankToNull)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.joining(", "));
