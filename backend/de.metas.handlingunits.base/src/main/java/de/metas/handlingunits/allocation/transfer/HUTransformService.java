@@ -260,10 +260,13 @@ public class HUTransformService
 	 * Throws {@link AdempiereException} if the given HU itself has {@code IsReserved=Y},
 	 * unless its {@link HuId} is in {@link #allowedReservedVhuIds} (i.e. the caller owns the reservation).
 	 * <p>
-	 * Used for CU-level operations (where the source is the exact VHU being transformed)
-	 * and for TU/LU-level operations that merely re-parent an HU without touching its content
-	 * (e.g. packing a TU onto an LU).  In the latter case checking only the HU's own flag is
-	 * intentional: a TU whose VHU children are reserved can still be moved as a container.
+	 * Used for <b>source</b> HUs (CU-level operations where the source is the exact VHU being transformed,
+	 * and TU/LU-level operations that merely re-parent an HU without touching its content)
+	 * as well as <b>target</b> HUs (e.g. existing TU/LU/CU that content is being moved into).
+	 * <p>
+	 * Checking only the HU's own flag is intentional: a TU whose VHU children are reserved
+	 * can still be moved as a container, and content can still be added to a TU/LU whose
+	 * children happen to be reserved — only the target container itself must not be reserved.
 	 */
 	private void assertNotReserved(@NonNull final I_M_HU hu)
 	{
@@ -466,6 +469,7 @@ public class HUTransformService
 			@NonNull final I_M_HU targetTuHU)
 	{
 		assertNotReserved(sourceCuHU);
+		assertNotReserved(targetTuHU);
 		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
 		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> cuToExistingTU_InTrx(sourceCuHU, qtyCU, targetTuHU));
 	}
@@ -631,6 +635,7 @@ public class HUTransformService
 			@NonNull final I_M_HU luHU)
 	{
 		assertNotReserved(sourceTuHU);
+		assertNotReserved(luHU);
 		LUTUResult result = LUTUResult.EMPTY;
 		final List<I_M_HU> tuHUsToAttachToLU;
 
@@ -1763,6 +1768,7 @@ public class HUTransformService
 			@NonNull final I_M_HU targetTU)
 	{
 		assertNoneReserved(childCUs);
+		assertNotReserved(targetTU);
 		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
@@ -1946,6 +1952,10 @@ public class HUTransformService
 			@Nullable final I_M_HU existingLU)
 	{
 		assertNoneReserved(tusOrVhus);
+		if (existingLU != null)
+		{
+			assertNotReserved(existingLU);
+		}
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -1955,6 +1965,7 @@ public class HUTransformService
 	{
 		assertNoneReserved(tusOrVhus);
 		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
+		assertNotReserved(existingLU);
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -1965,6 +1976,7 @@ public class HUTransformService
 		final List<I_M_HU> tusOrVhus = handlingUnitsBL.getByIds(tusOrVhuIds);
 		assertNoneReserved(tusOrVhus);
 		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
+		assertNotReserved(existingLU);
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 
@@ -2010,6 +2022,7 @@ public class HUTransformService
 			@NonNull final I_M_HU targetTuHU)
 	{
 		assertNoneReserved(sourceCuHUs);
+		assertNotReserved(targetTuHU);
 		final ImmutableList.Builder<I_M_HU> resultCollector = ImmutableList.builder();
 		sourceCuHUs.forEach(sourceCU -> {
 			final Quantity quantity = getSingleProductStorage(sourceCU).getQtyInStockingUOM();
@@ -2022,6 +2035,7 @@ public class HUTransformService
 	public void cusToExistingCU(@NonNull final List<I_M_HU> sourceCuHUs, @NonNull final I_M_HU targetCU)
 	{
 		assertNoneReserved(sourceCuHUs);
+		assertNotReserved(targetCU);
 		sourceCuHUs.forEach(sourceCU -> cuToExistingCU(sourceCU, targetCU));
 	}
 
