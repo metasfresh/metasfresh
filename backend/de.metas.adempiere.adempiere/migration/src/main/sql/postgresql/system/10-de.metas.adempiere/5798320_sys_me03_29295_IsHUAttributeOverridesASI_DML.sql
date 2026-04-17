@@ -1,4 +1,3 @@
--- me03#29295: Populate IsHUAttributeOverridesASI and set NOT NULL (DML, separate from DDL)
+-- me03#29295: Populate IsHUAttributeOverridesASI for existing records (DML only)
 
 UPDATE M_ShipmentSchedule_AttributeConfig SET IsHUAttributeOverridesASI = 'Y' WHERE IsHUAttributeOverridesASI IS NULL;
-ALTER TABLE M_ShipmentSchedule_AttributeConfig ALTER COLUMN IsHUAttributeOverridesASI SET NOT NULL;

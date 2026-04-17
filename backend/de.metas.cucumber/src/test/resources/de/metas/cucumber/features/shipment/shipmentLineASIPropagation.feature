@@ -1,9 +1,9 @@
 @from:cucumber
 @ghActions:run_on_executor3
 Feature: Shipment line ASI propagation
-  The shipment schedule's ASI (from the order line) must always propagate to the shipment line.
-  The M_ShipmentSchedule_AttributeConfig whitelist only filters HU attributes — not the schedule's own ASI.
-  When HU attributes and schedule ASI overlap, the schedule ASI value takes precedence unless it is empty.
+  The shipment schedule's ASI (from the order line) must propagate to the shipment line.
+  M_ShipmentSchedule_AttributeConfig controls which HU attributes participate, and per attribute,
+  IsHUAttributeOverridesASI (Y/N) decides whether the HU value or the schedule ASI value wins.
 
   Background:
     Given infrastructure and metasfresh are running

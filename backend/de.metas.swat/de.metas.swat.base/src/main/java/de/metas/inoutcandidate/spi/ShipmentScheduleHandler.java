@@ -223,10 +223,10 @@ public abstract class ShipmentScheduleHandler
 	 * if no config record is found.
 	 */
 	public final boolean isHUAttributeOverridesASI(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			final int orgId,
 			@NonNull final I_M_Attribute attribute)
 	{
-		return findMatchingAttributeConfig(shipmentSchedule.getAD_Org_ID(), attribute)
+		return findMatchingAttributeConfig(orgId, attribute)
 				.map(AttributeConfig::isHuAttributeOverridesASI)
 				.orElse(true); // default: HU wins (backward compatible)
 	}

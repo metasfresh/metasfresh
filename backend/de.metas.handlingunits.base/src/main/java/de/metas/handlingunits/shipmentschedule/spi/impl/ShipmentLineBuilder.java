@@ -646,12 +646,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			return allAttributes;
 		}
 
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule scheduleRecord =
-				create(candidates.get(0).getM_ShipmentSchedule(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(scheduleRecord);
+		final ShipmentScheduleWithHU firstCandidate = candidates.get(0);
+		final int orgId = firstCandidate.getM_ShipmentSchedule().getAD_Org_ID();
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class)
+				.getHandlerFor(firstCandidate.getM_ShipmentSchedule());
 
 		return allAttributes.stream()
-				.filter(attr -> handler.isHUAttributeOverridesASI(scheduleRecord, attr))
+				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, attr))
 				.collect(ImmutableList.toImmutableList());
 	}
 

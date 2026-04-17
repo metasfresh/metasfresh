@@ -340,7 +340,7 @@ public class ShipmentScheduleWithHU
 		// - Y (default): HU value wins (existing behavior for LotNumber, BestBefore, etc.)
 		// - N: schedule ASI value wins (for customer-intent attributes like Herkunft)
 		return mergeAttributeValues(filteredHUAttributes, filteredSchedAsiAttributes,
-				attribute -> handler.isHUAttributeOverridesASI(shipmentSchedule, attribute));
+				attribute -> handler.isHUAttributeOverridesASI(shipmentSchedule.getAD_Org_ID(), attribute));
 	}
 
 	/**
