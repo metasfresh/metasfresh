@@ -320,6 +320,11 @@ public class ShipmentScheduleWithHU
 			schedAsiAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
 		}
 
+		// NOTE: intentionally NOT filtering empty values here — the merge method
+		// evaluates emptiness per attribute to decide whether to fall back to the HU value.
+		// This is asymmetric with filteredHUAttributes (which pre-filters empties) because
+		// HU empties are never useful, but schedule ASI empties signal "no customer preference,
+		// let the HU value through".
 		final ImmutableList<IAttributeValue> filteredSchedAsiAttributes = schedAsiAttributeValues.stream()
 				.filter(IAttributeValue::isUseInASI)
 				.collect(ImmutableList.toImmutableList());
