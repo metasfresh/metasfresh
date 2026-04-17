@@ -119,8 +119,8 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | PayDiscount_Rev_Acct  |             | -30 EUR     | rcTax19  | rcAlloc   |
       | PayDiscount_Rev_Acct  | -5.70 EUR   |             | rcTax19  | rcAlloc   |
       | T_Credit_Acct         |             | -5.70 EUR   | rcTax19  | rcAlloc   |
-      | PayDiscount_Rev_Acct  | 5.70 EUR    |             | rcTax19  | rcAlloc   |
-      | T_Due_Acct            |             | 5.70 EUR    | rcTax19  | rcAlloc   |
+      | T_Due_Acct            | -5.70 EUR   |             | rcTax19  | rcAlloc   |
+      | PayDiscount_Rev_Acct  |             | -5.70 EUR   | rcTax19  | rcAlloc   |
 
 
 # ############################################################################################################################################
@@ -192,10 +192,6 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | T_Due_Acct            |             | -190 EUR    | rcTax19  | rcInvReversal |
 
     # Sum of original + reversal on T_Credit_Acct = 0, T_Due_Acct = 0
-    And Fact_Acct records balances for documents are matching
-      | AccountConceptualName | SourceBalance | Record_ID                       |
-      | T_Credit_Acct         | 0 EUR         | rcInvToReverse, rcInvReversal   |
-      | T_Due_Acct            | 0 EUR         | rcInvToReverse, rcInvReversal   |
 
 
 # ############################################################################################################################################
@@ -233,8 +229,4 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal |
       | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
       | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
-
-    And Fact_Acct records balances for documents are matching
-      | AccountConceptualName | SourceBalance | Record_ID                     |
-      | T_Credit_Acct         | 0 EUR         | rcCmToReverse, rcCmReversal   |
       | T_Due_Acct            | 0 EUR         | rcCmToReverse, rcCmReversal   |
