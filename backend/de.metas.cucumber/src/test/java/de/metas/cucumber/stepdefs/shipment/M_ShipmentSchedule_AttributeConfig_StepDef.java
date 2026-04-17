@@ -50,7 +50,7 @@ public class M_ShipmentSchedule_AttributeConfig_StepDef
 		final String attributeCode = row.getAsString("M_Attribute.Value");
 		final boolean isHUOverridesASI = row.getAsBoolean("IsHUAttributeOverridesASI");
 
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValue(AttributeCode.ofString(attributeCode));
+		final AttributeId attributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeCode));
 
 		final List<I_M_ShipmentSchedule_AttributeConfig> configs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
 				.addOnlyActiveRecordsFilter()

@@ -313,6 +313,11 @@ public class ShipmentScheduleWithHU
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+
+			// Load attributes through TWO storage implementations:
+			// 1. ASIAttributeStorage reads M_AttributeInstance records directly (the raw ASI values)
+			// 2. HU factory's storage may add template-derived attributes from the product's attribute set
+			// The TreeSet deduplicates by M_Attribute_ID, keeping the first-inserted value.
 			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
 			schedAsiAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
 

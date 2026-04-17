@@ -187,3 +187,80 @@ Feature: Shipment line ASI propagation
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode | Value |
       | asi_shipLine              | 1000001       | DE    |
+
+
+  @from:cucumber
+  @Id:S0290_30
+  Scenario: HU attribute wins when IsHUAttributeOverridesASI=Y (default, backward compatible)
+  ## When IsHUAttributeOverridesASI=Y (the default), the HU attribute value overwrites
+  ## the order line's ASI value on the shipment line. This is the existing behavior for
+  ## attributes like LotNumber and BestBefore.
+
+    # Ensure default: IsHUAttributeOverridesASI=Y for Herkunft (it's Y by default, but be explicit)
+    And update M_ShipmentSchedule_AttributeConfig:
+      | M_Attribute.Value | IsHUAttributeOverridesASI |
+      | 1000001           | Y                         |
+
+    # ASI for order line: Herkunft=DE
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_order":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"1000001", "valueStr":"DE" }
+      ]
+    }
+    """
+
+    # ASI for HU: Herkunft=IT (different value)
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_HU":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"1000001", "valueStr":"IT" }
+      ]
+    }
+    """
+
+    # Create HU with Herkunft=IT via inventory
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
+      | inventory      | warehouse      | 2022-05-17   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | asi_HU                    | hu      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | huPackVersion_TU   | 1000001           |
+
+    And update M_HU_Attribute:
+      | M_HU_ID.Identifier | M_Attribute_ID | Value | AttributeValueType |
+      | hu                 | 1000001        | IT    | S                  |
+
+    # Sales order with ASI containing Herkunft=DE
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order      | true    | customer      | 2022-05-17  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_AttributeSetInstance_ID |
+      | orderLine  | order      | product      | 10         | asi_order                 |
+    And the order identified by order is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule      | D            | true                | false               |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
+
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | movementqty | M_InOutLine_ID | M_AttributeSetInstance_ID |
+      | shipment   | product      | 10          | shipLine       | asi_shipLine              |
+
+    # Assert: HU wins — Herkunft=IT (not DE from order line)
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode | Value |
+      | asi_shipLine              | 1000001       | IT    |
