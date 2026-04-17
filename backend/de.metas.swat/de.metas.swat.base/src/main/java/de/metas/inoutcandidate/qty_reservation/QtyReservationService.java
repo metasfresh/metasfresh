@@ -10,6 +10,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +22,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class QtyReservationService
 {
+	private static final String SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI = "de.metas.handlingunits.order.CopyStorageRelevantAttributesToOrderLineASI";
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	@NonNull private final QtyReservationRepository repository;
 
@@ -42,10 +47,22 @@ public class QtyReservationService
 
 		final QtyReservationId qtyReservationId = repository.createReservation(request);
 
+		boolean orderLineChanged = false;
+		if (request.getAttributesKey() != null && sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
+		{
+			// the attributesKey already contains only storage relevant attributes
+			final AttributeSetInstanceId attributeSetInstanceFromAttributesKey = AttributesKeys.createAttributeSetInstanceFromAttributesKey(request.getAttributesKey());
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceFromAttributesKey.getRepoId());
+			orderLineChanged = true;
+		}
 		if (request.getProjectId() != null)
 		{
-			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
 			// assume the ProjectValue attribute will be automatically set/updated in ASI
+			orderLine.setC_Project_ID(request.getProjectId().getRepoId());
+			orderLineChanged = true;
+		}
+		if (orderLineChanged)
+		{
 			orderLineBL.save(orderLine);
 		}
 
