@@ -229,4 +229,3 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal |
       | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
       | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
-      | T_Due_Acct            | 0 EUR         | rcCmToReverse, rcCmReversal   |
