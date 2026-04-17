@@ -20,6 +20,7 @@ UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2026-04-17 10:30:05.528
 ;
 
 -- 2026-04-17T11:56:00.663Z
+-- Remove legacy M_HU_Process binding that is superseded by the AD_Table_Process entry above
 DELETE FROM M_HU_Process WHERE M_HU_Process_ID=540019
 ;
 

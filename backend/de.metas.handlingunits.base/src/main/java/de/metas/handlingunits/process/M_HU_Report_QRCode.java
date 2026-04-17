@@ -1,6 +1,5 @@
 package de.metas.handlingunits.process;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -17,12 +16,10 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
-
-import java.util.Set;
 
 import static de.metas.handlingunits.HuUnitType.VHU;
 
@@ -55,9 +52,7 @@ import static de.metas.handlingunits.HuUnitType.VHU;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
-	@NonNull
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	@NonNull
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
@@ -78,11 +73,14 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final PInstanceId selectionId = getPinstanceId();
 		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
 
-		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
+		final ImmutableSet<HuId> huIdSet = handlingUnitsDAO.streamByQuery(
+						retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
 				.filter(hu -> hu.getHUUnitType() != VHU)
-				.collect(ImmutableList.toImmutableList());
+				.map(HUToReport::getHUId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
+		if (huIdSet.isEmpty())
+			throw new AdempiereException("No HUs");
 
 		DB.createT_Selection(selectionId, HuId.toRepoIds(huIdSet), ITrx.TRXNAME_None);
 
