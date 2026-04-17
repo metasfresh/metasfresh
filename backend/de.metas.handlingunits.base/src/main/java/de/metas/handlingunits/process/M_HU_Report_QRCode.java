@@ -17,14 +17,13 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
 import java.util.Set;
-import java.util.stream.Stream;
 
-import static de.metas.handlingunits.HuUnitType.LU;
 import static de.metas.handlingunits.HuUnitType.VHU;
 
 /*
@@ -56,7 +55,9 @@ import static de.metas.handlingunits.HuUnitType.VHU;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
+	@NonNull
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
@@ -78,16 +79,6 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
 
 		final ImmutableList<HUToReport> hus = handlingUnitsDAO.streamByQuery(retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
-				.flatMap(hu -> {
-					if (hu.getHUUnitType() == LU)
-					{
-						return Stream.concat(Stream.of(hu), hu.getIncludedHUs().stream());
-					}
-					else
-					{
-						return Stream.of(hu);
-					}
-				})
 				.filter(hu -> hu.getHUUnitType() != VHU)
 				.collect(ImmutableList.toImmutableList());
 

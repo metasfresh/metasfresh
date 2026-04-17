@@ -15,12 +15,6 @@ UPDATE AD_Process SET AllowProcessReRun='Y',Updated=TO_TIMESTAMP('2026-04-17 09:
 
 -- Value: M_HU_Report_QRCode
 -- Classname: de.metas.handlingunits.process.M_HU_Report_QRCode
--- 2026-04-17T09:39:55.623Z
-UPDATE AD_Process SET IsFormatExcelFile='Y',Updated=TO_TIMESTAMP('2026-04-17 09:39:55.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=584980
-;
-
--- Value: M_HU_Report_QRCode
--- Classname: de.metas.handlingunits.process.M_HU_Report_QRCode
 -- 2026-04-17T10:30:05.530Z
 UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2026-04-17 10:30:05.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=584980
 ;
