@@ -14,7 +14,6 @@ import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
@@ -22,8 +21,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -70,7 +67,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 	@Param(parameterName = "IsPrintPreview")
 	private boolean isPrintPreview;
 
-	@Param(mandatory = true, parameterName = IMassPrintingService.PARAM_PrintCopies)
+	@Param(parameterName = IMassPrintingService.PARAM_PrintCopies)
 	private int p_PrintCopies;
 
 	@Override
@@ -91,6 +88,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 						return Stream.of(hu);
 					}
 				})
+				.filter(hu -> hu.getHUUnitType() != VHU)
 				.collect(ImmutableList.toImmutableList());
 
 		final Set<HuId> huIdSet = hus.stream().map(HUToReport::getHUId).collect(ImmutableSet.toImmutableSet());
