@@ -1,7 +1,10 @@
-DROP VIEW IF EXISTS C_Dunning_Candidate_Invoice_v1;
+-- 2026-04-16 /*From ID Server*/
+-- Switch C_Dunning_Candidate_Invoice_v1 to read the persisted C_Invoice.DueDate
+-- (via C_Invoice_v.DueDate) instead of recomputing via paymentTermDueDate().
 
-CREATE OR REPLACE VIEW C_Dunning_Candidate_Invoice_v1 AS 
-SELECT   
+SELECT public.db_alter_view('C_Dunning_Candidate_Invoice_v1',
+$$
+SELECT
 	i.C_Invoice_ID
 	, i.C_InvoicePaySchedule_ID
 	, i.AD_Client_ID
@@ -20,8 +23,8 @@ SELECT
 	, i.IsInDispute
 	, COALESCE(bp.C_Dunning_ID, bpg.C_Dunning_ID, dunnOrg.C_Dunning_ID) as C_Dunning_ID
 	, i.IsActive
-FROM C_Invoice_v i 
-	LEFT OUTER JOIN C_InvoicePaySchedule ips ON (i.C_InvoicePaySchedule_ID=ips.C_InvoicePaySchedule_ID) 
+FROM C_Invoice_v i
+	LEFT OUTER JOIN C_InvoicePaySchedule ips ON (i.C_InvoicePaySchedule_ID=ips.C_InvoicePaySchedule_ID)
 	LEFT OUTER JOIN C_Doctype dt ON (i.C_Doctype_ID = dt.C_Doctype_ID)
 	INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=i.C_BPartner_ID)
 	INNER JOIN C_BP_Group bpg ON (bpg.C_BP_Group_ID=bp.C_BP_Group_ID)
@@ -37,5 +40,4 @@ WHERE
 	AND i.Processed='Y'
 	-- Only Completed/Closed
 	AND i.DocStatus IN ('CO', 'CL')
-;
-
+$$);

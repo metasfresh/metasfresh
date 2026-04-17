@@ -1,3 +1,10 @@
+-- 2026-04-16 /*From ID Server*/
+-- Switch report.Docs_Sales_Dunning_Report_details to read C_Invoice.DueDate
+-- directly for invoice-based dunning candidates, falling back to
+-- paymentTermDueDate() only for order-based candidates (orders have no
+-- persisted due date column). This makes the dunning report respect any
+-- overridden invoice due date.
+
 DROP FUNCTION IF EXISTS report.Docs_Sales_Dunning_Report_details (IN p_Record_ID   numeric,
                                                                   IN p_AD_Language Character Varying(6))
 ;

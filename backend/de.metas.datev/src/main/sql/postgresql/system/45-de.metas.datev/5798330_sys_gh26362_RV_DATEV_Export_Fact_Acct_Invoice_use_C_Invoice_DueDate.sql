@@ -1,3 +1,8 @@
+-- 2026-04-16 /*From ID Server*/
+-- Switch RV_DATEV_Export_Fact_Acct_Invoice to read C_Invoice.DueDate directly
+-- instead of recomputing it via paymentTermDueDate(). This makes the report
+-- respect any persisted override due date.
+
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice;
 
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
@@ -254,5 +259,4 @@ CREATE OR REPLACE VIEW RV_DATEV_Export_Fact_Acct_Invoice AS
 SELECT *
 FROM RV_DATEV_Export_Fact_Acct_Invoice()
 ;
-
 

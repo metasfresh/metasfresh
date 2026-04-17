@@ -1,3 +1,9 @@
+-- 2026-04-16 /*From ID Server*/
+-- Switch de_metas_endcustomer_fresh_reports.docs_sales_invoice_description to
+-- read C_Invoice.DueDate directly instead of recomputing it via
+-- paymentTermDueDate(). This makes the invoice description sub-report respect
+-- any persisted override due date.
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN p_record_id numeric,
                                                                                           IN p_language  Character Varying(6))
 ;

@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -51,8 +50,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	@Override
 	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
+		return TimeUtil.asTimestamp(invoice.getDueDate());
 	}
 
 	@Override
