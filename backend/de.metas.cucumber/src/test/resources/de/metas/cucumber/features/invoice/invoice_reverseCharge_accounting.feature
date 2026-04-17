@@ -81,8 +81,8 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
 
     # GrandTotal = TotalLines = 1000 (RC tax is not payable, doesn't increase the total)
     Then validate created invoices
-      | C_Invoice_ID | GrandTotal | TotalLines |
-      | rcInvoice    | 1000 EUR   | 1000 EUR   |
+      | C_Invoice_ID | GrandTotal | TotalLines  |
+      | rcInvoice    | 1000 EUR   | 1000        |
 
     # C_InvoiceTax: TaxAmt=0 (not payable), ReverseChargeTaxAmt=190 (for declaration)
     And C_InvoiceTax records for invoice "rcInvoice" are matching
@@ -139,8 +139,8 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And the invoice identified by rcCreditMemo is completed
 
     Then validate created invoices
-      | C_Invoice_ID | GrandTotal | TotalLines |
-      | rcCreditMemo | 1000 EUR   | 1000 EUR   |
+      | C_Invoice_ID | GrandTotal | TotalLines  |
+      | rcCreditMemo | 1000 EUR   | 1000        |
 
     And C_InvoiceTax records for invoice "rcCreditMemo" are matching
       | C_Tax_ID | TaxAmt | TaxBaseAmt | ReverseChargeTaxAmt | IsReverseCharge |
