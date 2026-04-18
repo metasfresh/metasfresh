@@ -668,16 +668,22 @@ public class ShipmentScheduleWithHUService
 			final @NonNull I_M_ShipmentSchedule scheduleRecord,
 			final @NonNull I_M_HU sourceHURecord, final @NonNull Quantity quantityToSplit, final boolean pickAccordingToPackingInstruction)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		// Determine which reserved VHUs belong to us (order line + project) so the reservation guard lets them through.
+		final ImmutableSet<HuId> allowedReservedVhuIds = computeAllowedReservedVhuIds(scheduleRecord);
+
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build();
 
 		// split a part out of the current HU
 		final HUsToNewCUsRequest cuRequest = HUsToNewCUsRequest
 				.builder()
 				.keepNewCUsUnderSameParent(false)
 
-				// Pick unreserved VHUs + VHUs reserved for the current schedule's order.
-				// Skip VHUs reserved for OTHER orders to avoid cross-order reservation violations.
-				.reservedVHUsPolicy(computeReservedHUsPolicy(scheduleRecord))
+				// Pick unreserved VHUs + VHUs reserved for the current schedule's order/project.
+				// Skip VHUs reserved for OTHER orders/projects to avoid cross-order reservation violations.
+				// onlyNotReservedExceptVhuIds returns CONSIDER_ONLY_NOT_RESERVED when the set is empty.
+				.reservedVHUsPolicy(ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)
@@ -713,7 +719,12 @@ public class ShipmentScheduleWithHUService
 		return newHURecords;
 	}
 
-	private ReservedHUsPolicy computeReservedHUsPolicy(@NonNull final I_M_ShipmentSchedule scheduleRecord)
+	/**
+	 * Collect VHU IDs reserved for this schedule via its order line and/or project.
+	 * These VHUs are allowed to be picked by the on-the-fly picking even if they are reserved.
+	 */
+	@NonNull
+	private ImmutableSet<HuId> computeAllowedReservedVhuIds(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
 		final ArrayList<HUReservationDocRef> docRefs = new ArrayList<>();
 
@@ -728,10 +739,7 @@ public class ShipmentScheduleWithHUService
 			docRefs.add(HUReservationDocRef.ofProjectId(projectId));
 		}
 
-		final ImmutableSet<HuId> reservedForMe = huReservationService.getVHUIdsReservedByAnyOf(
-				docRefs.toArray(new HUReservationDocRef[0]));
-
-		return ReservedHUsPolicy.onlyNotReservedExceptVhuIds(reservedForMe);
+		return huReservationService.getVHUIdsReservedByAnyOf(docRefs.toArray(new HUReservationDocRef[0]));
 	}
 
 	private Quantity extractQtyOfHU(
