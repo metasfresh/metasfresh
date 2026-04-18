@@ -28,6 +28,7 @@ import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateComman
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
+import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
@@ -37,9 +38,21 @@ import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPl
 import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
+import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
+import de.metas.frontend_testing.masterdata.purchase_order.PurchaseOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
+import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
+import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
+import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
@@ -49,6 +62,7 @@ import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
+import de.metas.order.OrderId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,6 +71,11 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+/**
+ * @implNote This class is intentionally kept as a thin orchestrator — it routes to dedicated command classes
+ * and must NOT contain business logic. All domain logic (validation, resolution, defaulting) belongs in the
+ * respective command classes (e.g., {@link ApplyUOMStdPrecisionsCommand}, {@link CreateProductCommand}).
+ */
 @Builder
 public class CreateMasterdataCommand
 {
@@ -86,6 +105,12 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
+		registerOrderIdsInContext(salesOrders);
+		final ImmutableMap<String, JsonPurchaseOrderCreateResponse> purchaseOrders = createPurchaseOrders();
+		registerOrderIdsInContext(purchaseOrders);
+		final ImmutableMap<String, JsonShipmentCreateResponse> shipments = createShipments();
+		final ImmutableMap<String, JsonReceiptCreateResponse> receipts = createReceipts();
+		final ImmutableMap<String, JsonInvoiceCreateResponse> invoices = createInvoices();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
@@ -107,6 +132,10 @@ public class CreateMasterdataCommand
 				.handlingUnits(hus)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
+				.purchaseOrders(purchaseOrders)
+				.shipments(shipments)
+				.receipts(receipts)
+				.invoices(invoices)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
 				.inventories(inventories)
@@ -159,6 +188,7 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
 	{
+		ApplyUOMStdPrecisionsCommand.of(request.getUoms(), request.getProducts()).execute();
 		return process(request.getProducts(), this::createProduct);
 	}
 
@@ -323,6 +353,82 @@ public class CreateMasterdataCommand
 				.pickingJobScheduleService(services.pickingJobScheduleService)
 				.context(context)
 				.identifier(Identifier.ofString(identifier))
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPurchaseOrderCreateResponse> createPurchaseOrders()
+	{
+		return process(request.getPurchaseOrders(), this::createPurchaseOrder);
+	}
+
+	private JsonPurchaseOrderCreateResponse createPurchaseOrder(final String identifier, final JsonPurchaseOrderCreateRequest request)
+	{
+		return PurchaseOrderCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	private <T> void registerOrderIdsInContext(@NonNull final ImmutableMap<String, T> orderResponses)
+	{
+		orderResponses.forEach((key, response) -> {
+			final String id;
+			if (response instanceof JsonSalesOrderCreateResponse)
+			{
+				id = ((JsonSalesOrderCreateResponse)response).getId();
+			}
+			else if (response instanceof JsonPurchaseOrderCreateResponse)
+			{
+				id = ((JsonPurchaseOrderCreateResponse)response).getId();
+			}
+			else
+			{
+				return;
+			}
+			context.putIdentifier(Identifier.ofString(key), OrderId.ofRepoId(Integer.parseInt(id)));
+		});
+	}
+
+	private ImmutableMap<String, JsonShipmentCreateResponse> createShipments()
+	{
+		return process(request.getShipments(), this::createShipment);
+	}
+
+	private JsonShipmentCreateResponse createShipment(final String identifier, final JsonShipmentCreateRequest request)
+	{
+		return ShipmentCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonReceiptCreateResponse> createReceipts()
+	{
+		return process(request.getReceipts(), this::createReceipt);
+	}
+
+	private JsonReceiptCreateResponse createReceipt(final String identifier, final JsonReceiptCreateRequest request)
+	{
+		return ReceiptCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonInvoiceCreateResponse> createInvoices()
+	{
+		return process(request.getInvoices(), this::createInvoice);
+	}
+
+	private JsonInvoiceCreateResponse createInvoice(final String identifier, final JsonInvoiceCreateRequest request)
+	{
+		return InvoiceCreateCommand.builder()
+				.context(context)
 				.request(request)
 				.build()
 				.execute();

@@ -94,6 +94,13 @@ public class ExternalSystem_Endpoint
 			endpoint.setOutboundHttpEP(null);
 			endpoint.setOutboundHttpMethod(null);
 			endpoint.setContentType(null);
+			endpoint.setAuthType(null);
+			endpoint.setAuthToken(null);
+			endpoint.setLoginUsername(null);
+			endpoint.setPassword(null);
+			endpoint.setClientId(null);
+			endpoint.setClientSecret(null);
+			endpoint.setSasSignature(null);
 		}
 	}
 

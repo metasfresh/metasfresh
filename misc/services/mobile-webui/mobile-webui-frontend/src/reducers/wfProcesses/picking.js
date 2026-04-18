@@ -168,7 +168,20 @@ const normalizePickingLines = (lines) => {
 
 const normalizePickingSteps = (steps) => {
   return steps.reduce((accum, step) => {
-    accum[step.pickingStepId] = step;
+    accum[step.pickingStepId] = {
+      ...step,
+      pickFromAlternatives: normalizePickFromAlternatives(step.pickFromAlternatives),
+    };
+    return accum;
+  }, {});
+};
+
+const normalizePickFromAlternatives = (pickFromAlternatives) => {
+  if (!pickFromAlternatives || !Array.isArray(pickFromAlternatives)) {
+    return {};
+  }
+  return pickFromAlternatives.reduce((accum, alt) => {
+    accum[alt.alternativeId] = alt;
     return accum;
   }, {});
 };

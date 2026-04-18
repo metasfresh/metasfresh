@@ -565,7 +565,12 @@ test('Unpick wrong HU, repick correct one', async ({ page }) => {
 // Scan a non-existent HU QR code → error toast → verify screen still functional → pick real HU → complete.
 //
 // noinspection JSUnusedLocalSymbols
-test('Scan invalid HU QR code and recover', async ({ page }) => {
+test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
+    // Extended timeout: this test does error toast recovery + full pick cycle.
+    // Since GRAI validation was added to picking (gh#23119), the total time
+    // occasionally exceeds the default 120s on slower CI runners.
+    testInfo.setTimeout(180_000);
+
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');

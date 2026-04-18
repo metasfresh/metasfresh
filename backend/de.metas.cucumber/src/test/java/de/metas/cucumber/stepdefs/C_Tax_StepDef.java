@@ -99,7 +99,8 @@ public class C_Tax_StepDef
 				.ifPresent(taxRecord::setSeqNo);
 		tableRow.getAsOptionalString(I_C_Tax.COLUMNNAME_TypeOfDestCountry)
 				.ifPresent(taxRecord::setTypeOfDestCountry);
-
+		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsReverseCharge)
+				.ifPresent(taxRecord::setIsReverseCharge);
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
