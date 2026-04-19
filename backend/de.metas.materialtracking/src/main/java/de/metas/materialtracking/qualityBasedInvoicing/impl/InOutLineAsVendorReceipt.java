@@ -214,7 +214,7 @@ import lombok.NonNull;
 			final IHandlingUnitsInfo handlingUnitsInfo = handlingUnitsInfoFactory.createFromModel(inoutLine);
 			if (handlingUnitsInfo == null)
 			{
-				// do nothing
+				continue;
 			}
 			if (handlingUnitsInfoTotal == null)
 			{
