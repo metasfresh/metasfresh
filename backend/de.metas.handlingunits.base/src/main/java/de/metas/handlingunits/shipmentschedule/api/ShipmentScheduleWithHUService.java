@@ -82,6 +82,7 @@ import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
+import de.metas.project.ProjectId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -200,6 +201,13 @@ public class ShipmentScheduleWithHUService
 		@Nullable Set<HuId> onlyLUIds;
 
 		/**
+		 * Shared across all schedules in the same workpackage to prevent double-picking.
+		 * The storage query in retrievePickOnTheFlySourceHUs reads out-of-transaction,
+		 * so without this, a second schedule would re-discover HUs already consumed by a prior schedule.
+		 */
+		@NonNull @Builder.Default Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
+
+		/**
 		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
 		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
 		 */
@@ -259,6 +267,11 @@ public class ShipmentScheduleWithHUService
 
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
+		// Shared across all PrepareForSingleShipmentScheduleRequest-instances to prevent the same HU being picked by multiple schedules.
+		// The on-the-fly picking storage query reads out-of-transaction, so without this,
+		// a later schedule would re-discover HUs already consumed by a prior schedule in the same workpackage.
+		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
+
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		// Compute batch mode once at the beginning based on unprocessed count.
@@ -281,6 +294,7 @@ public class ShipmentScheduleWithHUService
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
 						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request, isBatchProcessing)
 								.huContext(huContext)
+								.alreadyUsedSourceHuIds(alreadyUsedSourceHuIds)
 								.build()
 				);
 
@@ -358,7 +372,7 @@ public class ShipmentScheduleWithHUService
 		{
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext));
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, request.getAlreadyUsedSourceHuIds()));
 			}
 			else
 			{
@@ -443,7 +457,8 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final Quantity qtyToDeliver,
 			final boolean pickAccordingToPackingInstruction,
-			@NonNull final IHUContext huContext)
+			@NonNull final IHUContext huContext,
+			@NonNull final Set<HuId> alreadyUsedSourceHuIds)
 	{
 		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -467,18 +482,12 @@ public class ShipmentScheduleWithHUService
 			return result.build();
 		}
 
-		// Track source HU IDs already consumed in this run to avoid double-picking.
-		// The storage query in retrievePickOnTheFlySourceHUs uses an out-of-transaction read,
-		// so it does not see in-transaction changes made by earlier passes in the same WP.
-		final Set<HuId> alreadyUsedSourceHuIds = new HashSet<>();
-
 		// Pass 1: M_HU_Reservation HUs (physically reserved VHUs)
 		boolean anyHUProcessed = false;
 		final List<I_M_HU> reservedHUs = retrieveReservedHUs(scheduleRecord);
 		if (!reservedHUs.isEmpty())
 		{
-			reservedHUs.forEach(hu -> alreadyUsedSourceHuIds.add(HuId.ofRepoId(hu.getM_HU_ID())));
-			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true);
+			remainingQtyToAllocate = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, /*firstHU=*/true, result, true, alreadyUsedSourceHuIds);
 			anyHUProcessed = true;
 		}
 
@@ -503,8 +512,7 @@ public class ShipmentScheduleWithHUService
 					.stream()
 					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
 					.collect(Collectors.toList());
-				alreadyUsedSourceHuIds.addAll(husToPick.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(Collectors.toSet()));
-				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false);
+				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false, alreadyUsedSourceHuIds);
 				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
 				if (actuallyPicked.isPositive())
@@ -521,7 +529,7 @@ public class ShipmentScheduleWithHUService
 					.stream()
 					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
 					.collect(Collectors.toList());
-			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false);
+			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocate, loggableWithLogger, !anyHUProcessed, result, false, alreadyUsedSourceHuIds);
 		}
 
 		return result.build();
@@ -537,7 +545,8 @@ public class ShipmentScheduleWithHUService
 			@NonNull final ILoggable loggableWithLogger,
 			boolean firstHU,
 			@NonNull final ImmutableList.Builder<ShipmentScheduleWithHU> result,
-			final boolean useExistingHUStructure)
+			final boolean useExistingHUStructure,
+			@NonNull final Set<HuId> alreadyUsedSourceHuIds)
 	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -553,6 +562,9 @@ public class ShipmentScheduleWithHUService
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+
+			// Mark this source HU as consumed so other schedules in the same workpackage won't re-pick it
+			alreadyUsedSourceHuIds.add(HuId.ofRepoId(sourceHURecord.getM_HU_ID()));
 
 			final HUType huUnitType = handlingUnitsBL.getHUUnitType(sourceHURecord);
 
@@ -680,17 +692,8 @@ public class ShipmentScheduleWithHUService
 			final @NonNull I_M_ShipmentSchedule scheduleRecord,
 			final @NonNull I_M_HU sourceHURecord, final @NonNull Quantity quantityToSplit, final boolean pickAccordingToPackingInstruction)
 	{
-		// Determine which reserved VHUs belong to us (our order line) so the reservation guard lets them through
-		final ImmutableSet<HuId> allowedReservedVhuIds;
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
-		if (orderLineId != null)
-		{
-			allowedReservedVhuIds = huReservationService.getVHUIdsByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
-		}
-		else
-		{
-			allowedReservedVhuIds = ImmutableSet.of();
-		}
+		// Determine which reserved VHUs belong to us (order line + project) so the reservation guard lets them through.
+		final ImmutableSet<HuId> allowedReservedVhuIds = computeAllowedReservedVhuIds(scheduleRecord);
 
 		final HUTransformService huTransformService = HUTransformService.builder()
 				.allowedReservedVhuIds(allowedReservedVhuIds)
@@ -701,9 +704,10 @@ public class ShipmentScheduleWithHUService
 				.builder()
 				.keepNewCUsUnderSameParent(false)
 
-				.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
-						? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
-						: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
+				// Pick unreserved VHUs + VHUs reserved for the current schedule's order/project.
+				// Skip VHUs reserved for OTHER orders/projects to avoid cross-order reservation violations.
+				// onlyNotReservedExceptVhuIds returns CONSIDER_ONLY_NOT_RESERVED when the set is empty.
+				.reservedVHUsPolicy(ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 
 				.productId(ProductId.ofRepoId(scheduleRecord.getM_Product_ID()))
 				.qtyCU(quantityToSplit)
@@ -737,6 +741,29 @@ public class ShipmentScheduleWithHUService
 			newHURecords = newCURecords;
 		}
 		return newHURecords;
+	}
+
+	/**
+	 * Collect VHU IDs reserved for this schedule via its order line and/or project.
+	 * These VHUs are allowed to be picked by the on-the-fly picking even if they are reserved.
+	 */
+	@NonNull
+	private ImmutableSet<HuId> computeAllowedReservedVhuIds(@NonNull final I_M_ShipmentSchedule scheduleRecord)
+	{
+		final ArrayList<HUReservationDocRef> docRefs = new ArrayList<>();
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(scheduleRecord.getC_OrderLine_ID());
+		if (orderLineId != null)
+		{
+			docRefs.add(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+		}
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(scheduleRecord.getC_Project_ID());
+		if (projectId != null)
+		{
+			docRefs.add(HUReservationDocRef.ofProjectId(projectId));
+		}
+
+		return huReservationService.getVHUIdsReservedByAnyOf(docRefs.toArray(new HUReservationDocRef[0]));
 	}
 
 	private Quantity extractQtyOfHU(
