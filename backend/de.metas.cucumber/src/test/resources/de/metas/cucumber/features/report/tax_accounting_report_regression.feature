@@ -299,7 +299,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # which back-computes TaxBaseAmt from TaxAmt via the tax rate.
   @Id:S0467_TAR_070
   @from:cucumber
-  Scenario: sales invoice + payment allocation with discount produces a tax-correction row alongside the invoice row
+  Scenario: sales invoice + discount-only allocation produces a tax-correction row alongside the invoice row
 
     And metasfresh contains C_TaxCategory
       | Identifier      |
@@ -314,10 +314,6 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID  |
       | salesPLV               | allocProd    | 1000.00  | PCE      | allocTaxCategory  |
 
-    And metasfresh contains organization bank accounts
-      | Identifier      | C_Currency_ID |
-      | org_EUR_account | EUR           |
-
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | allocSalesInv  | customer      | 2024-01-15   | true    | EUR           |
@@ -326,18 +322,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocSalesInvL1 | allocSalesInv | allocProd    | 1 PCE       | allocTax19 |
     And the invoice identified by allocSalesInv is completed
 
-    # Payment amount = invoice gross (1190) minus 2% early-payment discount (23.80) = 1166.20 EUR.
-    # The discount's 19% tax portion is 3.80 EUR; the net portion is 20.00 EUR.
-    And metasfresh contains C_Payment
-      | Identifier    | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
-      | allocPayment  | customer      | 1166.20 EUR | true      | org_EUR_account     |
-    And the payment identified by allocPayment is completed
+    # The discount's 19% tax portion is 3.80 EUR; the net portion is 20.00 EUR. No payment is
+    # needed — Doc_AllocationHdr.createTaxCorrection only looks at DiscountAmt.
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
+      | ariAlloc           | allocSalesInv | 23.80 EUR   |
 
-    And allocate payments to invoices
-      | C_Invoice_ID  | C_Payment_ID | DiscountAmt |
-      | allocSalesInv | allocPayment | 23.80 EUR   |
-
-    And Wait until documents allocSalesInv is posted
+    And Wait until documents allocSalesInv, ariAlloc are posted
 
     # Two level-4 rows (invoice + allocation discount correction). Subtotals:
     #   sum(TaxAmt) = -190 + 3.80 = -186.20
@@ -348,7 +339,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | 2     | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
       | 3     | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
       | 4     | T_Due_Acct            |            |            | -1000  | -190   | customer      | allocSalesInv |
-      | 4     | T_Due_Acct            |            |            | 20     | 3.80   | customer      |               |
+      | 4     | T_Due_Acct            |            |            | 20     | 3.80   | customer      | ariAlloc      |
       | ReCap |                       | -980       | -186.20    |        |        | -             | -             |
 
 
@@ -408,14 +399,14 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
 
 # ############################################################################################################################################
-# TC-S9 — Sales credit memo (ARC) + outbound payment with discount
+# TC-S9 — Sales credit memo (ARC) + discount-only allocation
 # ############################################################################################################################################
 # Credit memo posts T_Due_Acct Dr=190 (reversing the liability). When we pay the customer less than
 # the full credit (keeping part as Skonto), Doc_AllocationHdr posts a correction with the opposite
 # sign vs ARI.
   @Id:S0467_TAR_090
   @from:cucumber
-  Scenario: sales credit memo + outbound payment with discount produces an inverted tax-correction row
+  Scenario: sales credit memo + discount-only allocation produces an inverted tax-correction row
 
     And metasfresh contains C_TaxCategory
       | Identifier        |
@@ -430,10 +421,6 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
       | salesPLV               | allocArcProd | 1000.00  | PCE      | allocArcTaxCategory  |
 
-    And metasfresh contains organization bank accounts
-      | Identifier          | C_Currency_ID |
-      | org_EUR_account_arc | EUR           |
-
     And metasfresh contains C_Invoice:
       | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
       | allocArcInv     | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
@@ -442,38 +429,32 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocArcInvL1    | allocArcInv  | allocArcProd | 1 PCE       | allocArcTax19 |
     And the invoice identified by allocArcInv is completed
 
-    And metasfresh contains C_Payment
-      | Identifier       | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
-      | allocArcPayment  | customer      | 1166.20 EUR | false     | org_EUR_account_arc |
-    And the payment identified by allocArcPayment is completed
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | arcAlloc           | allocArcInv  | 23.80 EUR   |
 
-    And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID    | DiscountAmt |
-      | allocArcInv  | allocArcPayment | 23.80 EUR   |
+    And Wait until documents allocArcInv, arcAlloc are posted
 
-    And Wait until documents allocArcInv is posted
-
-    # CURRENT BEHAVIOUR (likely a bug — flagged for the follow-up fix PR):
-    # for ARC + discount, Doc_AllocationHdr does NOT post a tax-correction Fact_Acct row,
-    # so only the invoice row (+190 / +1000) appears and the subtotals stay at +190/+1000.
-    # The symmetric TC-S10 (API + discount) does produce the expected correction row.
+    # Two level-4 rows: invoice (+190/+1000) and allocation discount correction (+3.80/+20).
+    # Subtotals: +190+3.80=193.80 and +1000+20=1020.
     Then report_taxaccounts for C_Tax "allocArcTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 1000       | 190        |        |        | -             | -           |
-      | 2     | T_Due_Acct            | 1000       | 190        |        |        | -             | -           |
-      | 3     | T_Due_Acct            | 1000       | 190        |        |        | -             | -           |
+      | 1     |                       | 1020       | 193.80     |        |        | -             | -           |
+      | 2     | T_Due_Acct            | 1020       | 193.80     |        |        | -             | -           |
+      | 3     | T_Due_Acct            | 1020       | 193.80     |        |        | -             | -           |
       | 4     | T_Due_Acct            |            |            | 1000   | 190    | customer      | allocArcInv |
-      | ReCap |                       | 1000       | 190        |        |        | -             | -           |
+      | 4     | T_Due_Acct            |            |            | 20     | 3.80   | customer      | arcAlloc    |
+      | ReCap |                       | 1020       | 193.80     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
-# TC-S10 — Purchase invoice (API) + outbound payment with discount
+# TC-S10 — Purchase invoice (API) + discount-only allocation
 # ############################################################################################################################################
 # Purchase invoice posts T_Credit_Acct Dr=190 (tax receivable). When we pay the vendor less than the
 # full amount (taking Skonto), the correction posts on T_Credit_Acct with opposite sign.
   @Id:S0467_TAR_100
   @from:cucumber
-  Scenario: purchase invoice + outbound payment with discount produces a tax-correction row on T_Credit
+  Scenario: purchase invoice + discount-only allocation produces a tax-correction row on T_Credit
 
     And metasfresh contains C_TaxCategory
       | Identifier        |
@@ -488,10 +469,6 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
       | purchasePLV            | allocApiProd | 1000.00  | PCE      | allocApiTaxCategory  |
 
-    And metasfresh contains organization bank accounts
-      | Identifier          | C_Currency_ID |
-      | org_EUR_account_api | EUR           |
-
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | allocApiInv    | vendor        | 2024-01-15   | false   | EUR           |
@@ -500,36 +477,31 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocApiInvL1   | allocApiInv  | allocApiProd | 1 PCE       | allocApiTax19 |
     And the invoice identified by allocApiInv is completed
 
-    And metasfresh contains C_Payment
-      | Identifier       | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
-      | allocApiPayment  | vendor        | 1166.20 EUR | false     | org_EUR_account_api |
-    And the payment identified by allocApiPayment is completed
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | apiAlloc           | allocApiInv  | 23.80 EUR   |
 
-    And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID    | DiscountAmt |
-      | allocApiInv  | allocApiPayment | 23.80 EUR   |
-
-    And Wait until documents allocApiInv is posted
+    And Wait until documents allocApiInv, apiAlloc are posted
 
     Then report_taxaccounts for C_Tax "allocApiTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 980        | 186.20     |        |        | -             | -           |
-      | 2     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 3     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 4     | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        |             |
+      | 1     |                       | 1020       | 193.80     |        |        | -             | -           |
+      | 2     | T_Credit_Acct         | 1020       | 193.80     |        |        | -             | -           |
+      | 3     | T_Credit_Acct         | 1020       | 193.80     |        |        | -             | -           |
+      | 4     | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apiAlloc    |
       | 4     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | allocApiInv |
-      | ReCap |                       | 980        | 186.20     |        |        | -             | -           |
+      | ReCap |                       | 1020       | 193.80     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
-# TC-S11 — Purchase credit memo (APC) + inbound payment with discount
+# TC-S11 — Purchase credit memo (APC) + discount-only allocation
 # ############################################################################################################################################
 # Purchase credit memo posts T_Credit_Acct Cr=190 (reversing the receivable). When the vendor refunds
 # us less than the full credit (keeping part), the correction posts on T_Credit_Acct with opposite
 # sign vs APC.
   @Id:S0467_TAR_110
   @from:cucumber
-  Scenario: purchase credit memo + inbound payment with discount produces an inverted tax-correction row
+  Scenario: purchase credit memo + discount-only allocation produces an inverted tax-correction row
 
     And metasfresh contains C_TaxCategory
       | Identifier        |
@@ -544,10 +516,6 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
       | purchasePLV            | allocApcProd | 1000.00  | PCE      | allocApcTaxCategory  |
 
-    And metasfresh contains organization bank accounts
-      | Identifier          | C_Currency_ID |
-      | org_EUR_account_apc | EUR           |
-
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
       | allocApcInv    | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
@@ -556,25 +524,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocApcInvL1   | allocApcInv  | allocApcProd | 1 PCE       | allocApcTax19 |
     And the invoice identified by allocApcInv is completed
 
-    And metasfresh contains C_Payment
-      | Identifier       | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
-      | allocApcPayment  | vendor        | 1166.20 EUR | true      | org_EUR_account_apc |
-    And the payment identified by allocApcPayment is completed
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | apcAlloc           | allocApcInv  | 23.80 EUR   |
 
-    And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID    | DiscountAmt |
-      | allocApcInv  | allocApcPayment | 23.80 EUR   |
+    And Wait until documents allocApcInv, apcAlloc are posted
 
-    And Wait until documents allocApcInv is posted
-
-    # CURRENT BEHAVIOUR (likely a bug — flagged for the follow-up fix PR):
-    # for APC + discount, Doc_AllocationHdr does NOT post a tax-correction Fact_Acct row,
-    # so only the invoice row (-190 / -1000) appears and the subtotals stay at -190/-1000.
-    # The symmetric TC-S7 (ARI + discount) does produce the expected correction row.
+    # Two level-4 rows: invoice (-190/-1000) and allocation discount correction (+3.80/+20).
+    # Subtotals: -190+3.80=-186.20 and -1000+20=-980.
     Then report_taxaccounts for C_Tax "allocApcTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | -1000      | -190       |        |        | -             | -           |
-      | 2     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -           |
-      | 3     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -           |
+      | 1     |                       | -980       | -186.20    |        |        | -             | -           |
+      | 2     | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
+      | 3     | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
       | 4     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | allocApcInv |
-      | ReCap |                       | -1000      | -190       |        |        | -             | -           |
+      | 4     | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apcAlloc    |
+      | ReCap |                       | -980       | -186.20    |        |        | -             | -           |
