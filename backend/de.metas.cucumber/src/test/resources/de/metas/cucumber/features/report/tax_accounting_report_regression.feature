@@ -6,14 +6,15 @@
 Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ## me03#29361: Support Reverse Charge with explicit fact acct - Tax Accounting Report fixes
 ##
-## Regression tests for the Tax Accounting Report used as AD_Process 585325
-## ("Mehrwertsteuer-Verprobung(Excel) 3"). Exercises both:
-##   - view de_metas_acct.tax_accounts_details_v (raw per-Fact_Acct rows)
-##   - function de_metas_acct.report_taxaccounts(...) (aggregated report)
+## Regression tests for the Tax Accounting Report — the user-facing DB function
+## de_metas_acct.report_taxaccounts(...) invoked by AD_Process 585325
+## ("Mehrwertsteuer-Verprobung(Excel) 3"). The underlying view
+## de_metas_acct.tax_accounts_details_v is an implementation detail and is not asserted
+## against directly.
 ##
-## These tests lock in the CURRENT behavior of the view + function for standard cases
-## (regular 19% tax and zero-tax), so that the upcoming Reverse Charge fix does not
-## silently change non-RC output.
+## These tests lock in the CURRENT behaviour for standard cases (regular 19% tax and
+## zero-tax) so that the upcoming Reverse Charge fix does not silently change non-RC
+## output.
 ##
 ## Each scenario creates its own dedicated C_Tax so that p_c_tax_id filters the report
 ## to scenario-scoped rows — no cross-scenario pollution.
@@ -76,13 +77,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by ariInv is completed
     And Wait until documents ariInv is posted
 
-    # Regression baseline: capture the current output of the view and the report function.
-    # For sales invoices (ARI), T_Due_Acct has AmtSourceCr=190 → view's TaxAmt = 0 - 190 = -190.
-    # View's outer TaxBaseAmt: DocBaseType=ARI → -TaxBaseAmt = -1000.
-    Then the tax_accounts_details_v for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Due_Acct            | -190   | -1000      |
-
+    # Regression baseline: for sales invoices (ARI), T_Due_Acct posts AmtAcctCr=190,
+    # so the function's TaxAmt = -190 and NetAmt = -1000 (sign flipped for ARI).
     Then report_taxaccounts level 4 for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | -190   | -1000  |
@@ -117,12 +113,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by arcInv is completed
     And Wait until documents arcInv is posted
 
-    # For ARC: T_Due_Acct has AmtSourceDr=190 → view's TaxAmt = 190 - 0 = +190.
-    # View's outer TaxBaseAmt: DocBaseType=ARC → +TaxBaseAmt = +1000.
-    Then the tax_accounts_details_v for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Due_Acct            | 190    | 1000       |
-
+    # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts level 4 for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 190    | 1000   |
@@ -157,12 +148,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by apiInv is completed
     And Wait until documents apiInv is posted
 
-    # For API: T_Credit_Acct has AmtSourceDr=190 → view's TaxAmt = 190 - 0 = +190.
-    # View's outer TaxBaseAmt: DocBaseType=API → +TaxBaseAmt = +1000.
-    Then the tax_accounts_details_v for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Credit_Acct         | 190    | 1000       |
-
+    # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts level 4 for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 190    | 1000   |
@@ -197,12 +183,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by apcInv is completed
     And Wait until documents apcInv is posted
 
-    # For APC: T_Credit_Acct has AmtSourceCr=190 → view's TaxAmt = 0 - 190 = -190.
-    # View's outer TaxBaseAmt: DocBaseType=APC → -TaxBaseAmt = -1000.
-    Then the tax_accounts_details_v for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Credit_Acct         | -190   | -1000      |
-
+    # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
     Then report_taxaccounts level 4 for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | -190   | -1000  |
@@ -237,12 +218,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by exemptAriInv is completed
     And Wait until documents exemptAriInv is posted
 
-    # Zero-tax ARI: T_Due_Acct line has DR=0, CR=0. View's TaxAmt = 0 - 0 = 0.
-    # View's outer TaxBaseAmt: DocBaseType=ARI → -500.
-    Then the tax_accounts_details_v for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Due_Acct            | 0      | -500       |
-
+    # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
     Then report_taxaccounts level 4 for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 0      | -500   |
@@ -277,12 +253,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by exemptApiInv is completed
     And Wait until documents exemptApiInv is posted
 
-    # Zero-tax API: T_Credit_Acct line has DR=0, CR=0. View's TaxAmt = 0 - 0 = 0.
-    # View's outer TaxBaseAmt: DocBaseType=API → +500.
-    Then the tax_accounts_details_v for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
-      | AccountConceptualName | TaxAmt | TaxBaseAmt |
-      | T_Credit_Acct         | 0      | 500        |
-
+    # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
     Then report_taxaccounts level 4 for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 0      | 500    |

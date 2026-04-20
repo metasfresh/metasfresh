@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.report;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.AccountConceptualName;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -52,42 +51,31 @@ import java.util.Objects;
 /**
  * Step definitions for testing the Tax Accounting Report ("Mehrwertsteuer-Verprobung 3").
  * <p>
- * Exercises two backends:
- * <ul>
- *     <li>The user-facing function {@code de_metas_acct.report_taxaccounts(...)} — called by AD_Process 585325</li>
- *     <li>The underlying view {@code de_metas_acct.tax_accounts_details_v} — raw per-Fact_Acct rows</li>
- * </ul>
+ * Targets the user-facing DB function {@code de_metas_acct.report_taxaccounts(...)} — the same function
+ * invoked by AD_Process 585325. The underlying view {@code de_metas_acct.tax_accounts_details_v} is
+ * an implementation detail and is not asserted against directly.
  * <p>
- * For reliable, scenario-isolated tests, both the function and the view are filtered by {@code C_Tax_ID}.
- * The function's {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
+ * For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID}. The
+ * {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
  *
- * <p><b>Usage — view query</b>:
+ * <p><b>Usage — function output at level 4 (per-document detail rows)</b>:
  * <pre>{@code
- * Then the tax_accounts_details_v for C_Tax "rcTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | AccountConceptualName | TaxAmt | TaxBaseAmt | DocumentNo  |
- *   | T_Credit_Acct         | 190    | 1000       | <any>       |
- *   | T_Due_Acct            | -190   | 1000       | <any>       |
+ * Then report_taxaccounts level 4 for C_Tax "rcTax19" between "2024-01-01" and "2024-01-31" returns:
+ *   | AccountName   | TaxAmt | NetAmt |
+ *   | T_Credit_Acct | 190    | 1000   |
+ *   | T_Due_Acct    | -190   | 1000   |
  * }</pre>
  *
- * <p><b>Required columns for view assertions</b>:
+ * <p><b>Required columns</b>:
  * <ul>
- *     <li>{@code AccountConceptualName} — one of {@code T_Credit_Acct}, {@code T_Due_Acct}</li>
- *     <li>{@code TaxAmt} — expected tax amount (signed BigDecimal, compared numerically)</li>
+ *     <li>{@code TaxAmt} — expected tax amount in the accounting schema's currency (signed, compared numerically)</li>
  * </ul>
  * <p><b>Optional columns</b>:
  * <ul>
- *     <li>{@code TaxBaseAmt} — expected base amount (signed BigDecimal)</li>
- *     <li>{@code DocumentNo} — invoice DocumentNo. Use {@code <any>} to skip this column for matching</li>
- *     <li>{@code TaxName}, {@code AccountNo}, {@code AccountName}</li>
+ *     <li>{@code NetAmt} — expected base amount in the invoice's source currency (signed)</li>
+ *     <li>{@code AccountName}, {@code TaxName}, {@code VatCode}, {@code DocumentNo}, {@code BPartnerName}</li>
+ *     <li>{@code <any>} — use this literal on any column to skip it for matching</li>
  * </ul>
- *
- * <p><b>Usage — function output (Level 4 detail rows)</b>:
- * <pre>{@code
- * Then report_taxaccounts level 4 for C_Tax "rcTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | AccountName | TaxAmt | NetAmt |
- *   | T_Credit... | 190    | 1000   |
- *   | T_Due...    | -190   | 1000   |
- * }</pre>
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  */
@@ -97,32 +85,8 @@ public class TaxAccountingReport_StepDef
 	@NonNull private final C_Tax_StepDefData taxTable;
 
 	/**
-	 * Queries {@code de_metas_acct.tax_accounts_details_v} filtered by C_Tax_ID and date range.
-	 * Asserts that the returned rows match the expected data table.
-	 *
-	 * @see #expect_report_taxaccounts_level_4(String, String, String, DataTable) for the function-level assertion
-	 */
-	@Then("the tax_accounts_details_v for C_Tax {string} between {string} and {string} returns:")
-	public void expect_tax_accounts_details_v(
-			@NonNull final String taxIdentifier,
-			@NonNull final String dateFromStr,
-			@NonNull final String dateToStr,
-			@NonNull final DataTable dataTable)
-	{
-		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
-		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
-		final LocalDate dateTo = LocalDate.parse(dateToStr);
-
-		final ImmutableList<TaxReportRow> actualRows = queryViewRows(taxId, dateFrom, dateTo);
-
-		assertRowsMatch(dataTable, actualRows, "tax_accounts_details_v (C_Tax=" + taxIdentifier + ")");
-	}
-
-	/**
-	 * Calls {@code de_metas_acct.report_taxaccounts(...)} filtered by C_Tax_ID and date range, at level='4'
-	 * (per-document detail rows). Asserts that the returned rows match the expected data table.
-	 *
-	 * @see #expect_tax_accounts_details_v(String, String, String, DataTable) for the raw view assertion
+	 * Calls {@code de_metas_acct.report_taxaccounts(...)} filtered by C_Tax_ID and date range, at
+	 * {@code p_level='4'} (per-document detail rows). Asserts that the returned rows match the expected data table.
 	 */
 	@Then("report_taxaccounts level 4 for C_Tax {string} between {string} and {string} returns:")
 	public void expect_report_taxaccounts_level_4(
@@ -140,47 +104,13 @@ public class TaxAccountingReport_StepDef
 		assertRowsMatch(dataTable, actualRows, "report_taxaccounts level 4 (C_Tax=" + taxIdentifier + ")");
 	}
 
-	private ImmutableList<TaxReportRow> queryViewRows(
-			@NonNull final TaxId taxId,
-			@NonNull final LocalDate dateFrom,
-			@NonNull final LocalDate dateTo)
-	{
-		final String sql = "SELECT v.accountconceptualname,"
-				+ "        v.taxamt,"
-				+ "        v.taxbaseamt,"
-				+ "        v.documentno,"
-				+ "        v.taxname,"
-				+ "        v.currency,"
-				+ "        ev.value         AS accountno,"
-				+ "        ev.name          AS accountname"
-				+ " FROM de_metas_acct.tax_accounts_details_v v"
-				+ " LEFT JOIN C_ElementValue ev ON ev.C_ElementValue_ID = v.account_id"
-				+ " WHERE v.C_Tax_ID = ?"
-				+ "   AND v.DateAcct >= ? AND v.DateAcct <= ?"
-				+ "   AND v.postingtype = 'A'"
-				+ " ORDER BY v.accountconceptualname, v.documentno, v.taxamt";
-
-		return DB.retrieveRowsOutOfTrx(sql, Arrays.asList(taxId.getRepoId(), dateFrom, dateTo), rs -> {
-			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
-			return TaxReportRow.builder()
-					.accountConceptualName(AccountConceptualName.ofNullableString(rs.getString("accountconceptualname")))
-					.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), currencyCode))
-					.netAmt(amountOrNull(rs.getBigDecimal("taxbaseamt"), currencyCode))
-					.documentNo(rs.getString("documentno"))
-					.taxName(rs.getString("taxname"))
-					.accountNo(rs.getString("accountno"))
-					.accountName(rs.getString("accountname"))
-					.build();
-		});
-	}
-
 	private ImmutableList<TaxReportRow> queryReportLevel4Rows(
 			@NonNull final OrgId orgId,
 			@NonNull final TaxId taxId,
 			@NonNull final LocalDate dateFrom,
 			@NonNull final LocalDate dateTo)
 	{
-		final String sql = "SELECT level, vatcode, accountname, taxname, netamt, taxamt, currency, documentno, bpartnername"
+		final String sql = "SELECT vatcode, accountname, taxname, netamt, taxamt, currency, source_currency, documentno, bpartnername"
 				+ " FROM de_metas_acct.report_taxaccounts("
 				+ "      p_ad_org_id      => ?,"
 				+ "      p_account_id     => NULL,"
@@ -198,14 +128,14 @@ public class TaxAccountingReport_StepDef
 				sql,
 				Arrays.asList(orgId.getRepoId(), dateFrom, dateTo, taxId.getRepoId()),
 				rs -> {
-					final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
+					final CurrencyCode acctCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
+					final CurrencyCode sourceCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("source_currency"));
 					return TaxReportRow.builder()
-							.level(rs.getString("level"))
 							.vatCode(rs.getString("vatcode"))
 							.accountName(rs.getString("accountname"))
 							.taxName(rs.getString("taxname"))
-							.netAmt(amountOrNull(rs.getBigDecimal("netamt"), currencyCode))
-							.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), currencyCode))
+							.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), acctCurrency))
+							.netAmt(amountOrNull(rs.getBigDecimal("netamt"), sourceCurrency))
 							.documentNo(rs.getString("documentno"))
 							.bpartnerName(rs.getString("bpartnername"))
 							.build();
@@ -295,7 +225,6 @@ public class TaxAccountingReport_StepDef
 	private static boolean isNumericColumn(@NonNull final String column)
 	{
 		return "TaxAmt".equals(column)
-				|| "TaxBaseAmt".equals(column)
 				|| "NetAmt".equals(column);
 	}
 
@@ -324,10 +253,7 @@ public class TaxAccountingReport_StepDef
 	@Builder
 	public static class TaxReportRow
 	{
-		@Nullable String level;
 		@Nullable String vatCode;
-		@Nullable AccountConceptualName accountConceptualName;
-		@Nullable String accountNo;
 		@Nullable String accountName;
 		@Nullable String taxName;
 		@Nullable Amount taxAmt;
@@ -340,21 +266,14 @@ public class TaxAccountingReport_StepDef
 		{
 			switch (column)
 			{
-				case "Level":
-					return level;
 				case "VatCode":
 					return vatCode;
-				case "AccountConceptualName":
-					return accountConceptualName != null ? accountConceptualName.getAsString() : null;
-				case "AccountNo":
-					return accountNo;
 				case "AccountName":
 					return accountName;
 				case "TaxName":
 					return taxName;
 				case "TaxAmt":
 					return taxAmt != null ? taxAmt.toBigDecimal().stripTrailingZeros().toPlainString() : null;
-				case "TaxBaseAmt":
 				case "NetAmt":
 					return netAmt != null ? netAmt.toBigDecimal().stripTrailingZeros().toPlainString() : null;
 				case "DocumentNo":
