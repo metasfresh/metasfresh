@@ -16,6 +16,7 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -52,16 +53,18 @@ import static de.metas.handlingunits.HuUnitType.VHU;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
+	@NonNull
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
 
 	@Param(parameterName = PARAM_AD_Process_ID)
-	private int processId;
+	private int p_ProcessId;
 
 	@Param(parameterName = "IsPrintPreview")
-	private boolean isPrintPreview;
+	private boolean p_isPrintPreview;
 
 	@Param(parameterName = IMassPrintingService.PARAM_PrintCopies)
 	private int p_PrintCopies;
@@ -71,7 +74,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 	protected String doIt()
 	{
 		final PInstanceId selectionId = getPinstanceId();
-		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(processId);
+		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(p_ProcessId);
 
 		final ImmutableSet<HuId> huIdSet = handlingUnitsDAO.streamByQuery(
 						retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
@@ -84,7 +87,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 		DB.createT_Selection(selectionId, HuId.toRepoIds(huIdSet), ITrx.TRXNAME_None);
 
-		if (isPrintPreview)
+		if (p_isPrintPreview)
 		{
 			final QRCodePDFResource pdf = huQRCodesService.createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
