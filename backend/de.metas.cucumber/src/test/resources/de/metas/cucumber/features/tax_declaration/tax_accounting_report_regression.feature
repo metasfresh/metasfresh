@@ -13,11 +13,56 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ## against directly.
 ##
 ## These tests lock in the CURRENT behaviour for standard cases (regular 19% tax and
-## zero-tax) so that the upcoming Reverse Charge fix does not silently change non-RC
-## output.
+## zero-tax) so that the upcoming Reverse Charge / bug-fix PR does not silently change
+## non-RC output. Customer-validated scenarios (TC-S1..TC-S8) are treated as correct.
 ##
 ## Each scenario creates its own dedicated C_Tax so that p_c_tax_id filters the report
-## to scenario-scoped rows — no cross-scenario pollution.
+## to scenario-scoped rows — no cross-scenario pollution. Every scenario uses 2 invoice
+## lines with an unequal split (7 PCE + 3 PCE or 2 PCE + 3 PCE) at PriceStd=100, so
+## per-line-to-per-tax aggregation (§14(4) Nr. 7/8 UStG) is also validated.
+##
+## ============================================================================================
+## KNOWN ISSUES — expected values that are (or might be) buggy
+## ============================================================================================
+## Documented so the fix PR (sub-PR 2) has an explicit baseline. See ai-work/29361/REQUIREMENTS.md
+## for the full analysis and legal reasoning.
+##
+## [BUG A.1] TaxAmt sign on T_Due for Reverse Charge (REQUIREMENTS.md §2.1)
+##   The view computes taxamt = AmtAcctDr - AmtAcctCr, which gives -190 on T_Due for
+##   sales invoices. For RC §13b UStG that's wrong (must be +190 positive output tax).
+##   For non-RC (our scope here) the minus is the conventional credit-balance rendering;
+##   treated as CORRECT by customers and locked in as-is in TC-S1..TC-S8.
+##
+## [BUG A.2] TaxBaseAmt double-counted across T_Due + T_Credit (REQUIREMENTS.md §2.1)
+##   Both Fact_Acct rows for a tax join the same C_InvoiceTax, so per-account subtotals
+##   each report the full base. This matters for RC (both accounts have rows) — for our
+##   non-RC scope only one account has a row per tax, so the bug is latent and untested.
+##   The fix PR must ensure this test still passes when the double-count is corrected.
+##
+## [BUG A.4] Excel "Total Amount" = TaxBaseAmt + TaxAmt per row (REQUIREMENTS.md §2.1)
+##   Produces 1190 / 810, neither of which equals the invoice total. This column is in the
+##   Excel template, not in the DB function output, so it is NOT tested here. Flagged so
+##   the fix PR addresses it.
+##
+## [BUG §2.3] Doc_AllocationHdr tax-correction path inconsistency (REQUIREMENTS.md §2.3)
+##   TC-S7  (ARI + Skonto): T_Due +3.80 — same output in both payment-based and
+##                          discount-only paths. Customer-validated.
+##   TC-S9  (ARC + Skonto): T_Due +3.80 — discount-only path produces a correction row,
+##                          payment-based path does NOT (see R8a). Sign assumed correct.
+##   TC-S10 (API + Skonto): T_Credit +3.80 — discount-only. The payment-based path produces
+##                          T_Credit -3.80 (opposite sign). Which sign is legally correct
+##                          per §17 UStG is TBD; R8b in REQUIREMENTS asks the fix author
+##                          to decide. This test locks in the discount-only output as-is.
+##   TC-S11 (APC + Skonto): T_Credit +3.80 — same "correction row missing in payment-based
+##                          path" situation as TC-S9. Sign assumed correct.
+##
+## [VAT code] "Keine MwSt." appears as vatcode on every row
+##   Because the test-created C_Tax has no C_VAT_Code_ID linked. The function falls back
+##   to the getmessage('notax') label. This is out of scope — tracked separately via
+##   https://github.com/metasfresh/me03/issues/29363.
+##
+## Scenarios not flagged above are believed fully correct and customer-validated.
+## ============================================================================================
 
   Background:
     Given infrastructure and metasfresh are running
