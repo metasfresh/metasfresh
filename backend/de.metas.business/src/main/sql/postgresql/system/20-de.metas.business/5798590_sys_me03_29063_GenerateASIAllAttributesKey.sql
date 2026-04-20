@@ -15,10 +15,10 @@ $BODY$
 SELECT COALESCE(STRING_AGG(sub.keyPart, '§&§'), p_NullString)
 FROM (SELECT GenerateASIStorageAttributesKeyPart(
                      p_M_Attribute_ID => ai.M_Attribute_ID,
-                     p_AttributeValueType => a.AttributeValueType,
-                     p_Value => ai.Value,
+                     p_AttributeValueType => a.AttributeValueType::text,
+                     p_Value => ai.Value::text,
                      p_ValueNumber => ai.ValueNumber,
-                     p_ValueDate => ai.ValueDate,
+                     p_ValueDate => ai.ValueDate::timestamp with time zone,
                      p_M_AttributeValue_ID => ai.M_AttributeValue_ID
              ) AS keyPart
       FROM M_AttributeInstance ai
