@@ -5,6 +5,12 @@ set -o pipefail  # don't hide errors within pipes
 
 echo ""
 echo "==================="
+echo " preparing periods & opening period controls in the cucumber DB ..."
+echo "==================="
+PGPASSWORD=metasfresh psql -h db -U metasfresh -d metasfresh -v ON_ERROR_STOP=1 -f /setup_periods.sql
+
+echo ""
+echo "==================="
 echo " running cucumber tests ..."
 echo "==================="
 

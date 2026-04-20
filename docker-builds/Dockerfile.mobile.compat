@@ -4,7 +4,7 @@ RUN npm install -g webpack webpack-cli
 
 WORKDIR /app 
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
-# COPY yarn.lock .
+COPY misc/services/mobile-webui/mobile-webui-frontend/yarn.lock* .
 
 RUN yarn install
 

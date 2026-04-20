@@ -3,7 +3,7 @@ FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
 FROM maven:3.8.4-jdk-8
 
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+RUN apt-get update && apt-get install -y locales postgresql-client && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
@@ -17,6 +17,7 @@ RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean tes
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
+COPY docker-builds/cucumber/setup_periods.sql /setup_periods.sql
 COPY --chmod=700 docker-builds/cucumber/entrypoint.sh .
 
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
