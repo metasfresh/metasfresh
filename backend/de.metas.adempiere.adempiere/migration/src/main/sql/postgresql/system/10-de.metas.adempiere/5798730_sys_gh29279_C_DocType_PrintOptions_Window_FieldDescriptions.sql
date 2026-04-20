@@ -127,49 +127,5 @@ SET Description = 'Ob der Summenblock auf dem generierten Dokument angezeigt wir
 WHERE AD_UI_Element_ID = 575099;
 
 
--- =============================================================================
--- 4) AD_UI_Element_Trl (en_US) — create if missing, then fill with EN text
--- =============================================================================
-
-INSERT INTO AD_UI_Element_Trl (AD_Language, AD_UI_Element_ID, Description, Help, Name, IsTranslated,
-                               AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT 'en_US', ue.AD_UI_Element_ID, ue.Description, ue.Help, ue.Name, 'N',
-       ue.AD_Client_ID, ue.AD_Org_ID,
-       TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), 0,
-       TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), 0
-FROM AD_UI_Element ue
-WHERE ue.AD_UI_Element_ID IN (575095, 575346, 575098, 575099)
-  AND NOT EXISTS (SELECT 1 FROM AD_UI_Element_Trl tt
-                  WHERE tt.AD_UI_Element_ID = ue.AD_UI_Element_ID AND tt.AD_Language = 'en_US');
-
--- C_DocType_ID (EN)
-UPDATE AD_UI_Element_Trl
-SET Description  = 'The document type this configuration applies to (e.g., Lieferung, Rechnung, Auftrag).',
-    Help         = 'Determines which document types these print options apply to. Each document type can have up to three configurations: one for Flavor "Print", one for "EMail", and a universal default (no flavor).',
-    IsTranslated = 'Y',
-    Updated      = TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_UI_Element_ID = 575095 AND AD_Language = 'en_US';
-
--- DocumentFlavor (EN)
-UPDATE AD_UI_Element_Trl
-SET Description  = 'Output channel for this configuration: EMail, Print, or empty (universal default).',
-    Help         = 'Controls whether these settings apply when printing (Print), emailing (EMail), or as the universal default (empty). A specific flavor takes precedence over the universal default.',
-    IsTranslated = 'Y',
-    Updated      = TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_UI_Element_ID = 575346 AND AD_Language = 'en_US';
-
--- PRINTER_OPTS_IsPrintLogo (EN)
-UPDATE AD_UI_Element_Trl
-SET Description  = 'Whether the company logo is included in the generated document.',
-    Help         = 'If enabled, the configured letterhead/logo image is rendered into the PDF output. On manual prints this value pre-fills the print dialog checkbox and can be overridden by the user.',
-    IsTranslated = 'Y',
-    Updated      = TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_UI_Element_ID = 575098 AND AD_Language = 'en_US';
-
--- PRINTER_OPTS_IsPrintTotals (EN)
-UPDATE AD_UI_Element_Trl
-SET Description  = 'Whether the totals section is included in the generated document.',
-    Help         = 'If enabled, the totals/summary section is rendered in the printed or emailed document. Useful e.g. to omit totals from email output when they are already in the email body.',
-    IsTranslated = 'Y',
-    Updated      = TO_TIMESTAMP('2026-04-20 18:30','YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_UI_Element_ID = 575099 AND AD_Language = 'en_US';
+-- Note: AD_UI_Element has no _Trl table in the schema. English text lives
+-- on AD_Field_Trl (section 2); the WebUI resolves en_US via that path.
