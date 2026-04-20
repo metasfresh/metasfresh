@@ -156,17 +156,16 @@ public class TaxAccountingReport_StepDef
 	 */
 	private static boolean matches(@NonNull final DataTableRow expected, @NonNull final TaxReportRow actual)
 	{
-		if (!stringMatches(expected, "Level", actual.getLevel())) { return false; }
-		if (!stringMatches(expected, "VatCode", actual.getVatCode())) { return false; }
-		if (!stringMatches(expected, "AccountName", actual.getAccountName())) { return false; }
-		if (!stringMatches(expected, "TaxName", actual.getTaxName())) { return false; }
-		if (!stringMatches(expected, "DocumentNo", actual.getDocumentNo())) { return false; }
-		if (!stringMatches(expected, "BPartnerName", actual.getBpartnerName())) { return false; }
-		if (!amountMatches(expected, "TaxAmt", actual.getTaxAmt())) { return false; }
-		if (!amountMatches(expected, "NetAmt", actual.getNetAmt())) { return false; }
-		if (!amountMatches(expected, "TaxAmt_SUM", actual.getTaxAmtSum())) { return false; }
-		if (!amountMatches(expected, "NetAmt_SUM", actual.getNetAmtSum())) { return false; }
-		return true;
+		return stringMatches(expected, "Level", actual.getLevel())
+				&& stringMatches(expected, "VatCode", actual.getVatCode())
+				&& stringMatches(expected, "AccountName", actual.getAccountName())
+				&& stringMatches(expected, "TaxName", actual.getTaxName())
+				&& stringMatches(expected, "DocumentNo", actual.getDocumentNo())
+				&& stringMatches(expected, "BPartnerName", actual.getBpartnerName())
+				&& amountMatches(expected, "TaxAmt", actual.getTaxAmt())
+				&& amountMatches(expected, "NetAmt", actual.getNetAmt())
+				&& amountMatches(expected, "TaxAmt_SUM", actual.getTaxAmtSum())
+				&& amountMatches(expected, "NetAmt_SUM", actual.getNetAmtSum());
 	}
 
 	private static boolean stringMatches(@NonNull final DataTableRow expected, @NonNull final String column, @Nullable final String actual)
