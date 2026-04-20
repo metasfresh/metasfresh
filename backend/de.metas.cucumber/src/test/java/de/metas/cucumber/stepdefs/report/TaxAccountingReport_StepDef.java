@@ -44,6 +44,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 /**
  * Step definitions for testing the Tax Accounting Report ("Mehrwertsteuer-Verprobung 3").
@@ -129,25 +130,10 @@ public class TaxAccountingReport_StepDef
 	{
 		final String ctx = String.format("report_taxaccounts level %s (C_Tax=%s), row %d", level, taxIdentifier, rowIndex);
 
-		// per-document (level 4) amounts
-		expected.getAsOptionalString("TaxAmt").ifPresent(exp ->
-				softly.assertThat(toBigDecimal(actual.getTaxAmt()))
-						.as("%s: TaxAmt", ctx)
-						.isEqualByComparingTo(new BigDecimal(exp)));
-		expected.getAsOptionalString("NetAmt").ifPresent(exp ->
-				softly.assertThat(toBigDecimal(actual.getNetAmt()))
-						.as("%s: NetAmt", ctx)
-						.isEqualByComparingTo(new BigDecimal(exp)));
-
-		// summed amounts (levels 1, 2, 3, ReCap)
-		expected.getAsOptionalString("TaxAmt_SUM").ifPresent(exp ->
-				softly.assertThat(toBigDecimal(actual.getTaxAmtSum()))
-						.as("%s: TaxAmt_SUM", ctx)
-						.isEqualByComparingTo(new BigDecimal(exp)));
-		expected.getAsOptionalString("NetAmt_SUM").ifPresent(exp ->
-				softly.assertThat(toBigDecimal(actual.getNetAmtSum()))
-						.as("%s: NetAmt_SUM", ctx)
-						.isEqualByComparingTo(new BigDecimal(exp)));
+		assertAmount(softly, expected, "TaxAmt", actual.getTaxAmt(), ctx);
+		assertAmount(softly, expected, "NetAmt", actual.getNetAmt(), ctx);
+		assertAmount(softly, expected, "TaxAmt_SUM", actual.getTaxAmtSum(), ctx);
+		assertAmount(softly, expected, "NetAmt_SUM", actual.getNetAmtSum(), ctx);
 
 		expected.getAsOptionalString("AccountName").ifPresent(exp ->
 				softly.assertThat(actual.getAccountName()).as("%s: AccountName", ctx).isEqualTo(exp));
@@ -159,6 +145,23 @@ public class TaxAccountingReport_StepDef
 				softly.assertThat(actual.getDocumentNo()).as("%s: DocumentNo", ctx).isEqualTo(exp));
 		expected.getAsOptionalString("BPartnerName").ifPresent(exp ->
 				softly.assertThat(actual.getBpartnerName()).as("%s: BPartnerName", ctx).isEqualTo(exp));
+	}
+
+	/**
+	 * If the DataTable has a column named {@code columnName}, assert that the {@link Amount} on the
+	 * actual row equals it. A bare number in the feature file (e.g. {@code -190}) inherits the
+	 * actual's currency; {@code -190 CHF} asserts the currency too.
+	 */
+	private static void assertAmount(
+			@NonNull final SoftAssertions softly,
+			@NonNull final DataTableRow expected,
+			@NonNull final String columnName,
+			@Nullable final Amount actual,
+			@NonNull final String ctx)
+	{
+		final Supplier<CurrencyCode> defaultCurrency = actual != null ? actual::getCurrencyCode : () -> null;
+		expected.getAsOptionalAmount(columnName, defaultCurrency).ifPresent(exp ->
+				softly.assertThat(actual).as("%s: %s", ctx, columnName).isEqualTo(exp));
 	}
 
 	private ImmutableList<TaxReportRow> queryReportRows(
@@ -208,12 +211,6 @@ public class TaxAccountingReport_StepDef
 	private static Amount amountOrNull(@Nullable final BigDecimal value, @NonNull final CurrencyCode currencyCode)
 	{
 		return value != null ? Amount.of(value, currencyCode) : null;
-	}
-
-	@Nullable
-	private static BigDecimal toBigDecimal(@Nullable final Amount amount)
-	{
-		return amount != null ? amount.toBigDecimal() : null;
 	}
 
 	@Value
