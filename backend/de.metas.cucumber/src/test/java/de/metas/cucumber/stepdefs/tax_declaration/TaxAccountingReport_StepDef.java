@@ -115,6 +115,11 @@ public class TaxAccountingReport_StepDef
 {
 	@NonNull private final C_Tax_StepDefData taxTable;
 
+	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@NonNull private final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
+	@NonNull private final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+
 	private final Map<TaxId, TaxInfo> taxInfoCache = new ConcurrentHashMap<>();
 
 	/**
@@ -301,35 +306,32 @@ public class TaxAccountingReport_StepDef
 	 */
 	private TaxInfo getTaxInfo(@NonNull final TaxId taxId)
 	{
-		return taxInfoCache.computeIfAbsent(taxId, TaxAccountingReport_StepDef::loadTaxInfo);
+		return taxInfoCache.computeIfAbsent(taxId, this::loadTaxInfo);
 	}
 
-	private static TaxInfo loadTaxInfo(@NonNull final TaxId taxId)
+	private TaxInfo loadTaxInfo(@NonNull final TaxId taxId)
 	{
-		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-		final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
-		final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
-
 		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(Env.getClientId());
 		final TaxAccounts taxAccounts = taxAccountsRepo.getAccounts(taxId, acctSchema.getId());
 
 		return TaxInfo.builder()
 				.taxId(taxId)
-				.taxDueAccountName(resolveAccountName(taxAccounts.getT_Due_Acct(), accountDAO, elementValueRepo))
-				.taxCreditAccountName(resolveAccountName(taxAccounts.getT_Credit_Acct(), accountDAO, elementValueRepo))
+				.taxDueAccountName(resolveAccountName(taxAccounts.getT_Due_Acct()))
+				.taxCreditAccountName(resolveAccountName(taxAccounts.getT_Credit_Acct()))
 				.build();
 	}
 
 	/**
-	 * Resolves an {@link Account} to the {@code "<value> <name>"} string the DB function emits,
-	 * matching {@code (accountno || ' ' || accountname)::text AS AccountName} in
-	 * {@code report_taxaccounts.sql}.
+	 * Builds the {@code "<accountno> <accountname>"} string that {@code de_metas_acct.report_taxaccounts}
+	 * emits in its {@code AccountName} column. The DB function composes it the same way, in
+	 * {@code backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql}:
+	 * <pre>
+	 *   (accountno || ' ' || accountname)::text AS AccountName
+	 * </pre>
+	 * where {@code accountno} is {@link ElementValue#getValue()} and {@code accountname} is
+	 * {@link ElementValue#getName()}.
 	 */
-	private static String resolveAccountName(
-			@NonNull final Account account,
-			@NonNull final IAccountDAO accountDAO,
-			@NonNull final ElementValueRepository elementValueRepo)
+	private String resolveAccountName(@NonNull final Account account)
 	{
 		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(account.getAccountId());
 		final ElementValue elementValue = elementValueRepo.getById(elementValueId);
