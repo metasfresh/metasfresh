@@ -20,9 +20,16 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.report;
+package de.metas.cucumber.stepdefs.tax_declaration;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.TaxAccounts;
+import de.metas.acct.accounts.TaxAccountsRepository;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -30,14 +37,20 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueRepository;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -47,6 +60,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -74,20 +89,24 @@ import java.util.function.Supplier;
  * only columns present in the DataTable are asserted.
  * <pre>{@code
  * Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
- *   | 1     |             | -1000      | -190       |        |        |
- *   | 2     | T_Due_Acct  | -1000      | -190       |        |        |
- *   | 3     | T_Due_Acct  | -1000      | -190       |        |        |
- *   | 4     | T_Due_Acct  |            |            | -1000  | -190   |
- *   | ReCap |             | -1000      | -190       |        |        |
+ *   | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+ *   | 1     |                       | -1000      | -190       |        |        |
+ *   | 2     | T_Due_Acct            | -1000      | -190       |        |        |
+ *   | 3     | T_Due_Acct            | -1000      | -190       |        |        |
+ *   | 4     | T_Due_Acct            |            |            | -1000  | -190   |
+ *   | ReCap |                       | -1000      | -190       |        |        |
  * }</pre>
+ *
+ * <p>The {@code AccountConceptualName} column ({@code T_Due_Acct} / {@code T_Credit_Acct}) is
+ * resolved to the environment-specific "{@code <accountno> <name>}" string that the DB function
+ * emits in its {@code AccountName} column, via a lazily-cached {@link TaxInfo} per tax.
  *
  * <p>Numeric columns are parsed via {@link DataTableRow#getAsOptionalAmount(String, Supplier)} —
  * a bare number inherits the actual row's currency, {@code 190 CHF} forces a currency check too.
  *
- * <p><b>Supported columns</b>: {@code Level}, {@code VatCode}, {@code AccountName}, {@code TaxName},
- * {@code NetAmt_SUM}, {@code TaxAmt_SUM} (levels 1/2/3/ReCap), {@code NetAmt}, {@code TaxAmt}
- * (level 4), {@code DocumentNo}, {@code BPartnerName}.
+ * <p><b>Supported columns</b>: {@code Level}, {@code VatCode}, {@code AccountConceptualName},
+ * {@code TaxName}, {@code NetAmt_SUM}, {@code TaxAmt_SUM} (levels 1/2/3/ReCap), {@code NetAmt},
+ * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code BPartnerName}.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  */
@@ -95,6 +114,8 @@ import java.util.function.Supplier;
 public class TaxAccountingReport_StepDef
 {
 	@NonNull private final C_Tax_StepDefData taxTable;
+
+	private final Map<TaxId, TaxInfo> taxInfoCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Calls {@code de_metas_acct.report_taxaccounts(...)} for all levels (1/2/3/4 via
@@ -109,6 +130,7 @@ public class TaxAccountingReport_StepDef
 			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
+		final TaxInfo taxInfo = getTaxInfo(taxId);
 		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
 		final LocalDate dateTo = LocalDate.parse(dateToStr);
 		final ImmutableList<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
@@ -130,7 +152,7 @@ public class TaxAccountingReport_StepDef
 		// For each expected row, find and remove a matching actual row.
 		for (final DataTableRow expected : expectedRows)
 		{
-			final TaxReportRow match = findAndRemoveMatch(expected, actualRows);
+			final TaxReportRow match = findAndRemoveMatch(expected, actualRows, taxInfo);
 			softly.assertThat(match)
 					.as("%s: no actual row matches expected %s", ctx, expected.asMap())
 					.isNotNull();
@@ -145,11 +167,14 @@ public class TaxAccountingReport_StepDef
 	}
 
 	@Nullable
-	private static TaxReportRow findAndRemoveMatch(@NonNull final DataTableRow expected, @NonNull final List<TaxReportRow> candidates)
+	private static TaxReportRow findAndRemoveMatch(
+			@NonNull final DataTableRow expected,
+			@NonNull final List<TaxReportRow> candidates,
+			@NonNull final TaxInfo taxInfo)
 	{
 		for (int i = 0; i < candidates.size(); i++)
 		{
-			if (matches(expected, candidates.get(i)))
+			if (matches(expected, candidates.get(i), taxInfo))
 			{
 				return candidates.remove(i);
 			}
@@ -161,11 +186,14 @@ public class TaxAccountingReport_StepDef
 	 * Returns true iff every non-blank column in {@code expected} equals the corresponding field on {@code actual}.
 	 * Blank cells are "don't care".
 	 */
-	private static boolean matches(@NonNull final DataTableRow expected, @NonNull final TaxReportRow actual)
+	private static boolean matches(
+			@NonNull final DataTableRow expected,
+			@NonNull final TaxReportRow actual,
+			@NonNull final TaxInfo taxInfo)
 	{
 		return stringMatches(expected, "Level", actual.getLevel())
 				&& stringMatches(expected, "VatCode", actual.getVatCode())
-				&& stringMatches(expected, "AccountName", actual.getAccountName())
+				&& accountConceptualNameMatches(expected, actual, taxInfo)
 				&& stringMatches(expected, "TaxName", actual.getTaxName())
 				&& stringMatches(expected, "DocumentNo", actual.getDocumentNo())
 				&& stringMatches(expected, "BPartnerName", actual.getBpartnerName())
@@ -187,6 +215,31 @@ public class TaxAccountingReport_StepDef
 		final Supplier<CurrencyCode> defaultCurrency = actual != null ? actual::getCurrencyCode : () -> null;
 		return expected.getAsOptionalAmount(column, defaultCurrency)
 				.map(exp -> exp.equals(actual))
+				.orElse(true);
+	}
+
+	/**
+	 * Resolves the expected {@code AccountConceptualName} ({@code T_Due_Acct} / {@code T_Credit_Acct})
+	 * to the raw {@code "<value> <name>"} label the DB function emits in its {@code AccountName}
+	 * column, via {@link TaxInfo}, and compares to the actual row's account name.
+	 */
+	private static boolean accountConceptualNameMatches(
+			@NonNull final DataTableRow expected,
+			@NonNull final TaxReportRow actual,
+			@NonNull final TaxInfo taxInfo)
+	{
+		return expected.getAsOptionalString("AccountConceptualName")
+				.map(conceptualName -> {
+					switch (conceptualName)
+					{
+						case "T_Due_Acct":
+							return taxInfo.getTaxDueAccountName().equals(actual.getAccountName());
+						case "T_Credit_Acct":
+							return taxInfo.getTaxCreditAccountName().equals(actual.getAccountName());
+						default:
+							throw new AdempiereException("Unsupported AccountConceptualName in expected table: " + conceptualName);
+					}
+				})
 				.orElse(true);
 	}
 
@@ -240,5 +293,46 @@ public class TaxAccountingReport_StepDef
 	private static Amount amountOrNull(@Nullable final BigDecimal value, @NonNull final CurrencyCode currencyCode)
 	{
 		return value != null ? Amount.of(value, currencyCode) : null;
+	}
+
+	/**
+	 * Lazily loads (and caches per tax) the {@link TaxInfo} that maps T_Due / T_Credit conceptual
+	 * names to the {@code "<accountno> <accountname>"} string the DB function emits.
+	 */
+	private TaxInfo getTaxInfo(@NonNull final TaxId taxId)
+	{
+		return taxInfoCache.computeIfAbsent(taxId, TaxAccountingReport_StepDef::loadTaxInfo);
+	}
+
+	private static TaxInfo loadTaxInfo(@NonNull final TaxId taxId)
+	{
+		final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+		final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
+		final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+
+		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(Env.getClientId());
+		final TaxAccounts taxAccounts = taxAccountsRepo.getAccounts(taxId, acctSchema.getId());
+
+		return TaxInfo.builder()
+				.taxId(taxId)
+				.taxDueAccountName(resolveAccountName(taxAccounts.getT_Due_Acct(), accountDAO, elementValueRepo))
+				.taxCreditAccountName(resolveAccountName(taxAccounts.getT_Credit_Acct(), accountDAO, elementValueRepo))
+				.build();
+	}
+
+	/**
+	 * Resolves an {@link Account} to the {@code "<value> <name>"} string the DB function emits,
+	 * matching {@code (accountno || ' ' || accountname)::text AS AccountName} in
+	 * {@code report_taxaccounts.sql}.
+	 */
+	private static String resolveAccountName(
+			@NonNull final Account account,
+			@NonNull final IAccountDAO accountDAO,
+			@NonNull final ElementValueRepository elementValueRepo)
+	{
+		final ElementValueId elementValueId = accountDAO.getElementValueIdByAccountId(account.getAccountId());
+		final ElementValue elementValue = elementValueRepo.getById(elementValueId);
+		return elementValue.getValue() + " " + elementValue.getName();
 	}
 }

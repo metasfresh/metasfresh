@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.report;
+package de.metas.cucumber.stepdefs.tax_declaration;
 
 import de.metas.currency.Amount;
 import lombok.Builder;
