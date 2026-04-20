@@ -79,9 +79,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # Regression baseline: for sales invoices (ARI), T_Due_Acct posts AmtAcctCr=190,
     # so the function's TaxAmt = -190 and NetAmt = -1000 (sign flipped for ARI).
-    Then report_taxaccounts level 4 for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | -190   | -1000  |
+
+    # Aggregated levels lock in the subtotal path; with a single posting the
+    # sums equal the single detail row.
+    Then report_taxaccounts level "1" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+      | TaxAmt_SUM | NetAmt_SUM |
+      | -190       | -1000      |
+
+    Then report_taxaccounts level "ReCap" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+      | TaxAmt_SUM | NetAmt_SUM |
+      | -190       | -1000      |
 
 
 # ############################################################################################################################################
@@ -114,7 +124,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents arcInv is posted
 
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
-    Then report_taxaccounts level 4 for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 190    | 1000   |
 
@@ -149,7 +159,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apiInv is posted
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
-    Then report_taxaccounts level 4 for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 190    | 1000   |
 
@@ -184,7 +194,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apcInv is posted
 
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
-    Then report_taxaccounts level 4 for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | -190   | -1000  |
 
@@ -219,7 +229,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptAriInv is posted
 
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
-    Then report_taxaccounts level 4 for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 0      | -500   |
 
@@ -254,6 +264,6 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptApiInv is posted
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
-    Then report_taxaccounts level 4 for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
+    Then report_taxaccounts level "4" for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
       | TaxAmt | NetAmt |
       | 0      | 500    |
