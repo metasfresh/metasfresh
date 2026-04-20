@@ -30,6 +30,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -39,6 +41,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.elementvalue.ElementValue;
@@ -51,8 +56,11 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -121,10 +129,13 @@ public class TaxAccountingReport_StepDef
 {
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
 	@NonNull private final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
 
@@ -159,6 +170,11 @@ public class TaxAccountingReport_StepDef
 			actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, "ReCap"));
 			return actualRows.size() == expectedRows.size();
 		}, null);
+		// Snapshot the full candidate pool so every failure message can include all rows
+		// actually returned by the function — easier to troubleshoot than seeing only the
+		// shrinking "remaining" list.
+		final ImmutableList<TaxReportRow> allActualRows = ImmutableList.copyOf(actualRows);
+		final String actualRowsDump = renderActualRows(allActualRows);
 		final String ctx = "report_taxaccounts (C_Tax=" + taxIdentifier + ")";
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -167,16 +183,31 @@ public class TaxAccountingReport_StepDef
 		{
 			final TaxReportRow match = findAndRemoveMatch(expected, actualRows, taxInfo);
 			softly.assertThat(match)
-					.as("%s: no actual row matches expected %s", ctx, expected.asMap())
+					.as("%s: no actual row matches expected %s\n    all actual rows returned by the function:\n%s",
+							ctx, expected.asMap(), actualRowsDump)
 					.isNotNull();
 		}
 
 		// Any actual rows left over are unexpected.
 		softly.assertThat(actualRows)
-				.as("%s: unexpected extra rows returned", ctx)
+				.as("%s: unexpected extra rows returned (all actual rows were:\n%s)", ctx, actualRowsDump)
 				.isEmpty();
 
 		softly.assertAll();
+	}
+
+	private static String renderActualRows(@NonNull final List<TaxReportRow> rows)
+	{
+		if (rows.isEmpty())
+		{
+			return "      (none)";
+		}
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < rows.size(); i++)
+		{
+			sb.append("      [").append(i).append("] ").append(rows.get(i)).append('\n');
+		}
+		return sb.toString();
 	}
 
 	@Nullable
@@ -208,7 +239,7 @@ public class TaxAccountingReport_StepDef
 				&& stringMatches(expected, "VatCode", actual.getVatCode())
 				&& accountConceptualNameMatches(expected, actual, taxInfo)
 				&& stringMatches(expected, "TaxName", actual.getTaxName())
-				&& stringMatches(expected, "DocumentNo", actual.getDocumentNo())
+				&& documentNoMatches(expected, actual)
 				&& bpartnerMatches(expected, actual)
 				&& amountMatches(expected, "TaxAmt", actual.getTaxAmt())
 				&& amountMatches(expected, "NetAmt", actual.getNetAmt())
@@ -229,6 +260,46 @@ public class TaxAccountingReport_StepDef
 		return expected.getAsOptionalAmount(column, defaultCurrency)
 				.map(exp -> exp.equals(actual))
 				.orElse(true);
+	}
+
+	/**
+	 * Resolves the expected {@code DocumentNo} identifier (of a C_Invoice or C_AllocationHdr) to the
+	 * document's {@code DocumentNo} and compares to the actual row's value. If the column is absent,
+	 * matching is skipped; if the cell holds the null placeholder ({@code -} or {@code null}), the
+	 * actual DocumentNo must be null. The document is loaded only on demand.
+	 */
+	private boolean documentNoMatches(@NonNull final DataTableRow expected, @NonNull final TaxReportRow actual)
+	{
+		final StepDefDataIdentifier identifier = expected.getAsOptionalIdentifier("DocumentNo").orElse(null);
+		if (identifier == null)
+		{
+			return true;
+		}
+		if (identifier.isNullPlaceholder())
+		{
+			return actual.getDocumentNo() == null;
+		}
+		final String expectedDocumentNo = resolveExpectedDocumentNo(identifier);
+		return expectedDocumentNo.equals(actual.getDocumentNo());
+	}
+
+	/**
+	 * Resolves an Invoice or AllocationHdr identifier to its {@code DocumentNo} by loading the
+	 * record on demand. The function's {@code DocumentNo} column is populated from those two tables
+	 * only (see {@code de_metas_acct.tax_accounts_details_v}), so any other table is a test bug.
+	 */
+	private String resolveExpectedDocumentNo(@NonNull final StepDefDataIdentifier identifier)
+	{
+		final TableRecordReference ref = identifiersResolver.getTableRecordReference(identifier);
+		switch (ref.getTableName())
+		{
+			case I_C_Invoice.Table_Name:
+				return invoiceBL.getById(InvoiceId.ofRepoId(ref.getRecord_ID())).getDocumentNo();
+			case I_C_AllocationHdr.Table_Name:
+				return allocationDAO.getById(PaymentAllocationId.ofRepoId(ref.getRecord_ID())).getDocumentNo();
+			default:
+				throw new AdempiereException("DocumentNo in tax report expectations must reference C_Invoice or C_AllocationHdr, got: " + ref);
+		}
 	}
 
 	/**
