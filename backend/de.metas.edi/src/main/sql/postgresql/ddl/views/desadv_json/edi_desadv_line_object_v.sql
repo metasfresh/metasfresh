@@ -6,8 +6,8 @@ SELECT dl.edi_desadvline_id,
                    'SupplierProductNo', p.value,
                    'Name', p.name,
                    'Description', p.Description,
-                   'BuyerProductNo', COALESCE(dl.ProductNo,bpp.productno),
-                   'GTIN_CU', COALESCE(dl.GTIN_CU, bpp.gtin, p.gtin),
+                   'BuyerProductNo', COALESCE(dl.ProductNo, asi_data.productno),
+                   'GTIN_CU', COALESCE(dl.GTIN_CU, asi_data.gtin, p.gtin),
                    'GTIN_TU', COALESCE(dl.GTIN_TU, pip.gtin),
                    'NetWeight', p.weight,
                    'GrossWeight', p.grossweight,
@@ -44,12 +44,14 @@ FROM edi_desadvline dl
     ORDER BY c_bpartner_id NULLS LAST
     LIMIT 1 ) pip ON TRUE
 
-    -- Joins for the bpartner-product with the desadv's bpartner
+    -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
          LEFT JOIN LATERAL (
     SELECT gtin, productno
-    FROM c_bpartner_product
+    FROM m_product_asi_data
     WHERE isactive = 'Y'
       AND m_product_id = p.m_product_id
-      AND c_bpartner_id = d.c_bpartner_id
-    LIMIT 1 ) bpp ON TRUE
+      AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
+      AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
+    ORDER BY seqno
+    LIMIT 1 ) asi_data ON TRUE
 ;
