@@ -60,11 +60,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 {
 	private static final Logger logger = LogManager.getLogger(CreateMissingShipmentSchedulesWorkpackageProcessor.class);
 
-	private static final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private static final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private static final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private static final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
 		final AsyncBatchId asyncBatchId = null;
@@ -73,6 +68,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	public static IEnqueueResult scheduleIfNotPostponed(@NonNull final Object model)
 	{
+		final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 		final AsyncBatchId asyncBatchId = asyncBatchBL
 				.getAsyncBatchId(model)
 				.orElse(null);
@@ -93,6 +89,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		if (shipmentScheduleBL.allMissingSchedsWillBeCreatedLater())
 		{
 			loggable.addLog("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
@@ -100,12 +97,14 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		}
 
 		// don't try to enqueue it if is not active
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		if (!queueDAO.isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
 			loggable.addLog("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
 			return false;
 		}
 
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctxAware.getCtx(), CreateMissingShipmentSchedulesWorkpackageProcessor.class);
 		final int alreadyEnqueuedWPs = queueForEnqueuing.size();
 		if (alreadyEnqueuedWPs > 1)

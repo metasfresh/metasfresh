@@ -15,8 +15,9 @@ const makeGraiBarcodes = (count) => {
     });
 };
 
-/** Expected chip display text for a generated GRAI serial number (1-based). */
-const graiChipText = (n) => `...${String(n).padStart(11, '0')}`;
+/** Expected chip display text for a generated GRAI serial number (1-based).
+ *  Chips now show the full canonical GRAI: companyPrefix.assetType.serial */
+const graiChipText = (n) => `7613264.003095.${String(n).padStart(11, '0')}`;
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -115,17 +116,20 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     await GRAIScreen.expectVisible();
 
     // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipWithText({ text: '...00691412000' });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['...00691412000'] });
-    await syncDone;
+    await GRAIScreen.expectGraiChipWithText({ text: '7613264.003095.00691412000' });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
+
+    // Send to backend — chips should remain unchanged
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
 
     // Verify backend persistence: reload from backend, confirm GRAI survived the round-trip
     await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['...00691412000'] });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -168,6 +172,26 @@ test('Remove GRAI chip', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
+test('Non-GRAI barcode is silently ignored', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Invalid Barcode');
+    allure.severity('normal');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan a random EAN-13 barcode that is NOT a GRAI — should be ignored
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '4006381333931' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
+
+    // Scan a valid GRAI afterwards to confirm the scanner still works
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
@@ -198,20 +222,20 @@ test('RFID batch scan with overlapping reads completes all 40 GRAIs', async ({ p
     await GRAIScreen.expectGraiChipCount({ expectedCount: 35 });
 
     // Scan 3: GRAIs 19–40 (indices 18–39) — overlaps with previous scans on GRAIs 19–35
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.scanGraiBatch({ graiCodes: allGrais.slice(18, 40) });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
 
     // Verify exact chip texts for all 40 GRAIs
     const allExpectedTexts = Array.from({ length: 40 }, (_, i) => graiChipText(i + 1));
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
-    await syncDone;
 
-    // Verify backend persistence: go back, re-open, confirm all 40 GRAIs survived the round-trip
-    await GRAIScreen.goBack();
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.openGRAIScreen();
-    await GRAIScreen.expectVisible();
+    // Send to backend — chips should remain unchanged
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
+
+    // Verify backend persistence: reload from backend, confirm all 40 GRAIs survived the round-trip
+    await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 40 });
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: allExpectedTexts });
 });
@@ -228,7 +252,7 @@ test('Clear All GRAIs removes all chips after confirmation', async ({ page }) =>
     await GRAIScreen.expectVisible();
 
     // Clear All button should not be visible when no GRAIs scanned
-    await GRAIScreen.expectClearAllButtonNotVisible();
+    await GRAIScreen.expectClearAllButtonDisabled();
 
     // Scan 3 GRAIs
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000001' });
@@ -239,16 +263,18 @@ test('Clear All GRAIs removes all chips after confirmation', async ({ page }) =>
     await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
 
     // Clear All button should now be visible
-    await GRAIScreen.expectClearAllButtonVisible();
+    await GRAIScreen.expectClearAllButtonEnabled();
 
     // Clear all and confirm
-    const syncDone = GRAIScreen.pendingBackendSync();
     await GRAIScreen.clearAllGrais();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
 
     // Clear All button should be hidden again
-    await GRAIScreen.expectClearAllButtonNotVisible();
-    await syncDone;
+    await GRAIScreen.expectClearAllButtonDisabled();
+
+    // Send the cleared state to backend — should still be empty
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
 
     // Verify backend persistence: reload from backend, confirm empty state survived the round-trip
     await GRAIScreen.reloadFromBackend();
@@ -275,4 +301,202 @@ test('Clear All GRAIs cancelled keeps chips', async ({ page }) => {
     // Click Clear All but cancel — chips should remain
     await GRAIScreen.clearAllGraisAndCancel();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Over-scan shows extra chips in orange', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Over-Scan');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // LU has 20 TUs — scan 25 GRAIs via batch (5 extra)
+    const grais = makeGraiBarcodes(25);
+    await GRAIScreen.scanGraiBatch({ graiCodes: grais });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 5 });
+    await GRAIScreen.expectCountExtraVisible({ expectedExtra: 5 });
+
+    // Send button should be disabled while extras exist
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Remove all 5 extras
+    for (let i = 0; i < 5; i++) {
+        await GRAIScreen.removeExtraGraiChip({ index: 0 });
+    }
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectCountExtraNotVisible();
+
+    // Now Send should be enabled
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+
+    // Reload from backend — all 20 assigned survive
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Remove extra chip does not affect backend', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Remove Extra');
+    allure.severity('normal');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan 22 GRAIs (2 extra)
+    const grais = makeGraiBarcodes(22);
+    await GRAIScreen.scanGraiBatch({ graiCodes: grais });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 2 });
+
+    // Send is disabled while extras exist
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Remove one extra — still 1 extra left, Send still disabled
+    await GRAIScreen.removeExtraGraiChip({ index: 0 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Remove last extra — Send becomes enabled
+    await GRAIScreen.removeExtraGraiChip({ index: 0 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+
+    // Send and verify persistence
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+
+    // Reload — 20 survive from backend
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Remove assigned chip promotes extra', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Extra Promotion');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan 22 GRAIs (2 extra)
+    const grais = makeGraiBarcodes(22);
+    await GRAIScreen.scanGraiBatch({ graiCodes: grais });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 2 });
+
+    // Send is disabled while extras exist
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Remove an assigned chip — one extra promotes, still 1 extra left
+    await GRAIScreen.removeGraiChip({ index: 0 });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // Remove last extra — Send becomes enabled
+    await GRAIScreen.removeExtraGraiChip({ index: 0 });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+
+    // Send and verify — 20 assigned (including the promoted one)
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+
+    // Reload — 20 survive from backend
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Clear All removes both assigned and extra chips', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Clear All With Extras');
+    allure.severity('normal');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan 25 GRAIs (5 extra)
+    const grais = makeGraiBarcodes(25);
+    await GRAIScreen.scanGraiBatch({ graiCodes: grais });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 20 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 5 });
+
+    // Clear All should remove everything
+    await GRAIScreen.clearAllGrais();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 0 });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Send button starts disabled, enables after scan, disables after send', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Send Button State');
+    allure.severity('normal');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Initially disabled (no unsaved changes)
+    await GRAIScreen.expectSendButtonDisabled();
+
+    // After scan, should be enabled
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectSendButtonEnabled();
+
+    // After send, should return to disabled with chip still present
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.expectSendButtonDisabled();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Undo discards unsaved changes and reloads from backend', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Undo');
+    allure.severity('critical');
+
+    await createMasterdataAndScanLU({ page });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Scan 2 GRAIs and send them to backend
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000001' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000002' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+    await GRAIScreen.tapSendButton();
+
+    // Now scan a 3rd GRAI (unsaved)
+    await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100000000003' });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectSendButtonEnabled();
+
+    // Undo — should discard the 3rd GRAI and reload the 2 saved ones
+    await GRAIScreen.tapUndoButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+    await GRAIScreen.expectSendButtonDisabled();
 });

@@ -4,6 +4,7 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -39,6 +40,7 @@ public class FactAcctLineMatcher
 	@Nullable private final Optional<TaxId> taxId;
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
+	@Nullable private final Optional<InvoiceId> invoiceId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -183,6 +185,13 @@ public class FactAcctLineMatcher
 			softly.assertThat(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 					.as(description.newWithMessage("M_Product_ID"))
 					.isEqualTo(productId.orElse(null));
+		}
+		if (invoiceId != null)
+		{
+			final InvoiceId actualInvoiceId = FactAcctInvoiceResolver.resolveInvoiceIdOrNull(record);
+			softly.assertThat(actualInvoiceId)
+					.as(description.newWithMessage("C_Invoice_ID"))
+					.isEqualTo(invoiceId.orElse(null));
 		}
 	}
 }

@@ -826,7 +826,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)

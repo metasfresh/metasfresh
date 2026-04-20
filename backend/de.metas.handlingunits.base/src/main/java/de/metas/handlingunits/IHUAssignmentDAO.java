@@ -188,6 +188,11 @@ public interface IHUAssignmentDAO extends ISingletonService
 	boolean hasHUAssignmentsForModel(Object model);
 
 	/**
+	 * @return true if there are HUs assigned to any of the given models (all models must be of the same table type)
+	 */
+	boolean hasHUAssignmentsForAnyModel(@NonNull Collection<?> models);
+
+	/**
 	 * @return all HU assignments for the given HU and table
 	 */
 	IQueryBuilder<I_M_HU_Assignment> retrieveTableHUAssignmentsQuery(IContextAware contextProvider, int adTableId, I_M_HU hu);

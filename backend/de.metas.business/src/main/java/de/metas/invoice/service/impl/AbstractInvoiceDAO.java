@@ -303,8 +303,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.taxAmt(record.getTaxAmt())
 				.taxBaseAmt(record.getTaxBaseAmt())
 				.isTaxIncluded(record.isTaxIncluded())
-				.isReverseCharge(false)
-				.reverseChargeTaxAmt(BigDecimal.ZERO)
+				.isReverseCharge(record.isReverseCharge())
+				.reverseChargeTaxAmt(record.getReverseChargeTaxAmt())
 				.build();
 	}
 

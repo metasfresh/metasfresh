@@ -30,6 +30,8 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationId;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
@@ -101,6 +103,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class QtyDemand_QtySupply_V_StepDef
 {
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
@@ -161,6 +164,7 @@ public class QtyDemand_QtySupply_V_StepDef
 		final ProjectRepository projectRepository = SpringContextHolder.instance.getBeanOr(ProjectRepository.class, null);
 
 		final QtyReservationId reservationId = MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)
