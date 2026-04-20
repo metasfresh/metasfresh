@@ -35,6 +35,8 @@ services:
 
   cucumber:
     image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
+    environment:
+      - CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
     depends_on:
       db:
         condition: service_healthy
