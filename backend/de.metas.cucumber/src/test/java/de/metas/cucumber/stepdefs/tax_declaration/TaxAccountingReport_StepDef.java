@@ -30,10 +30,14 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -106,7 +110,9 @@ import java.util.function.Supplier;
  *
  * <p><b>Supported columns</b>: {@code Level}, {@code VatCode}, {@code AccountConceptualName},
  * {@code TaxName}, {@code NetAmt_SUM}, {@code TaxAmt_SUM} (levels 1/2/3/ReCap), {@code NetAmt},
- * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code BPartnerName}.
+ * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code C_BPartner_ID}. For {@code C_BPartner_ID}
+ * an identifier resolves to the BPartner's name (which the DB function emits as {@code BPartnerName});
+ * the null placeholder ({@code -} / {@code null}) asserts that the actual BPartnerName is null.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  */
@@ -114,9 +120,11 @@ import java.util.function.Supplier;
 public class TaxAccountingReport_StepDef
 {
 	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
 	@NonNull private final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
 
@@ -172,7 +180,7 @@ public class TaxAccountingReport_StepDef
 	}
 
 	@Nullable
-	private static TaxReportRow findAndRemoveMatch(
+	private TaxReportRow findAndRemoveMatch(
 			@NonNull final DataTableRow expected,
 			@NonNull final List<TaxReportRow> candidates,
 			@NonNull final TaxInfo taxInfo)
@@ -191,7 +199,7 @@ public class TaxAccountingReport_StepDef
 	 * Returns true iff every non-blank column in {@code expected} equals the corresponding field on {@code actual}.
 	 * Blank cells are "don't care".
 	 */
-	private static boolean matches(
+	private boolean matches(
 			@NonNull final DataTableRow expected,
 			@NonNull final TaxReportRow actual,
 			@NonNull final TaxInfo taxInfo)
@@ -201,7 +209,7 @@ public class TaxAccountingReport_StepDef
 				&& accountConceptualNameMatches(expected, actual, taxInfo)
 				&& stringMatches(expected, "TaxName", actual.getTaxName())
 				&& stringMatches(expected, "DocumentNo", actual.getDocumentNo())
-				&& stringMatches(expected, "BPartnerName", actual.getBpartnerName())
+				&& bpartnerMatches(expected, actual)
 				&& amountMatches(expected, "TaxAmt", actual.getTaxAmt())
 				&& amountMatches(expected, "NetAmt", actual.getNetAmt())
 				&& amountMatches(expected, "TaxAmt_SUM", actual.getTaxAmtSum())
@@ -221,6 +229,28 @@ public class TaxAccountingReport_StepDef
 		return expected.getAsOptionalAmount(column, defaultCurrency)
 				.map(exp -> exp.equals(actual))
 				.orElse(true);
+	}
+
+	/**
+	 * Resolves the expected {@code C_BPartner_ID} identifier to the BPartner's name (via
+	 * {@link IBPartnerDAO#getBPartnerNameById(BPartnerId)}) and compares to the actual row's
+	 * {@code bpartnerName}. If the column is absent, matching is skipped; if the cell holds the
+	 * null placeholder ({@code -} or {@code null}), the actual name must be null.
+	 */
+	private boolean bpartnerMatches(@NonNull final DataTableRow expected, @NonNull final TaxReportRow actual)
+	{
+		final StepDefDataIdentifier identifier = expected.getAsOptionalIdentifier("C_BPartner_ID").orElse(null);
+		if (identifier == null)
+		{
+			return true;
+		}
+		if (identifier.isNullPlaceholder())
+		{
+			return actual.getBpartnerName() == null;
+		}
+		final BPartnerId bpartnerId = bpartnerTable.getId(identifier);
+		final String expectedName = bpartnerDAO.getBPartnerNameById(bpartnerId);
+		return expectedName.equals(actual.getBpartnerName());
 	}
 
 	/**
