@@ -20,21 +20,6 @@ services:
       mode: replicated
       replicas: 1
       
-  db_open_periods:
-    # One-shot init: opens all C_PeriodControl rows in the ephemeral cucumber DB
-    # so that the legacy assert_period_open() — which only supports PeriodStatus='O' —
-    # accepts feature-file dates (2021/2022) even though time has moved on.
-    # NOT a migration: runs only in this compose stack, does not touch customer DBs.
-    image: postgres:15.4
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      - PGPASSWORD=metasfresh
-    command: >
-      psql -h db -U metasfresh -d metasfresh -v ON_ERROR_STOP=1
-      -c "UPDATE c_periodcontrol SET periodstatus='O', updated=now(), updatedby=99 WHERE periodstatus<>'O'"
-
   rabbitmq:
     image: rabbitmq:3.9.13-management
     ports:
@@ -73,8 +58,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      db_open_periods:
-        condition: service_completed_successfully
       search:
         condition: service_healthy
     volumes:
