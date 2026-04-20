@@ -45,9 +45,9 @@ Feature: EDI DESADV export via postgREST
       | Identifier        | Value                       | Name                       | Description                       | GTIN        |
       | product_S0468_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | productGTIN |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID      | GTIN          |
-      | bp_1_S0468_010        | customer1     | product_S0468_010 | 0575095404663 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier     | M_Product_ID      | C_BPartner_ID | SeqNo | GTIN          |
+      | asiData_010    | product_S0468_010 | customer1     | 10    | 0575095404663 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID      | Name                |
       | pm_1_S0468_010          | product_S0468_010 | packingMaterialTest |
@@ -293,11 +293,11 @@ Feature: EDI DESADV export via postgREST
       | subProduct1   | compGroupSubProduct1Value | Tofu geräuchert 200g     |
       | subProduct2   | compGroupSubProduct2Value | Tofu Natur 300g          |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID | OPT.GTIN         |
-      | bp_main               | customer1     | mainProduct  | mainProductGTIN   |
-      | bp_sub1               | customer1     | subProduct1  | subProduct1GTIN   |
-      | bp_sub2               | customer1     | subProduct2  | subProduct2GTIN   |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier    | M_Product_ID | C_BPartner_ID | SeqNo | GTIN              |
+      | asiData_main  | mainProduct  | customer1     | 10    | mainProductGTIN   |
+      | asiData_sub1  | subProduct1  | customer1     | 10    | subProduct1GTIN   |
+      | asiData_sub2  | subProduct2  | customer1     | 10    | subProduct2GTIN   |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID | Name            |
       | pm_main                 | mainProduct  | pmMainProduct   |
@@ -452,9 +452,9 @@ Feature: EDI DESADV export via postgREST
       | Identifier     |
       | prod_multiShip |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID   |
-      | bp_ms                 | customer1     | prod_multiShip |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier   | M_Product_ID   | C_BPartner_ID | SeqNo |
+      | asiData_ms   | prod_multiShip | customer1     | 10    |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID   | Name       |
       | pm_ms                   | prod_multiShip | pmMultiShip |
@@ -594,10 +594,10 @@ Feature: EDI DESADV export via postgREST
       | prod_shipped    |
       | prod_notShipped |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID    |
-      | bp_shipped            | customer1     | prod_shipped    |
-      | bp_notShipped         | customer1     | prod_notShipped |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier        | M_Product_ID    | C_BPartner_ID | SeqNo |
+      | asiData_shipped   | prod_shipped    | customer1     | 10    |
+      | asiData_notShip   | prod_notShipped | customer1     | 10    |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID | Name        |
       | pm_shipped              | prod_shipped | pmShipped   |
