@@ -13,10 +13,10 @@ DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
 ;
 
 CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom             timestamp with time zone,
-    p_DateTo               timestamp with time zone,
-    p_Country_id           numeric,
-    p_IsIncludeAllProducts varchar DEFAULT 'Y'
+    p_DateFrom                      timestamp with time zone,
+    p_DateTo                        timestamp with time zone,
+    p_Country_id                    numeric,
+    p_IsExcludeDomesticPurchases    varchar DEFAULT 'Y'
 )
     RETURNS TABLE
             (
@@ -125,9 +125,11 @@ BEGIN
     FROM UNNEST(C_REQUIRED_MATERIALS) WITH ORDINALITY t(material_name, idx);
 
     -- 4) Build the SQL statement to execute (separate function call argument)
+    -- The detail report is always called with IsIncludeAllProducts='Y' from the summary;
+    -- the summary's own filtering handles what to include.
     v_report_func_call := FORMAT(
-            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s, p_IsIncludeAllProducts := %L)',
-            p_DateFrom, p_DateTo, p_Country_id, p_IsIncludeAllProducts
+            'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s)',
+            p_DateFrom, p_DateTo, p_Country_id
                           );
 
     -- 5) REWRITTEN V_SQL CONTENT - Wrapped the entire query to exclude the sort_order column
@@ -170,8 +172,9 @@ BEGIN
                     ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.SmallPackagingMaterial = ANY(%5$s)
-                  -- Exclude domestic purchases and pre-licensed (exempt) vendors
-                  AND (r.VendorCountryCode IS NULL
+                  -- Exclude domestic purchases and pre-licensed (exempt) vendors (when toggle is 'Y')
+                  AND (%8$s = 'N'
+                       OR r.VendorCountryCode IS NULL
                        OR (r.VendorCountryCode != %7$s AND COALESCE(r.IsVendorPackageLicensingExempt, 'N') != 'Y'))
 
                 UNION ALL
@@ -186,8 +189,9 @@ BEGIN
                     ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.OuterPackagingWeight, 0) / NULLIF(COALESCE(r.PackagingInstructionFactor, 1), 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.OuterPackagingMaterial = ANY(%5$s)
-                  -- Exclude domestic purchases and pre-licensed (exempt) vendors
-                  AND (r.VendorCountryCode IS NULL
+                  -- Exclude domestic purchases and pre-licensed (exempt) vendors (when toggle is 'Y')
+                  AND (%8$s = 'N'
+                       OR r.VendorCountryCode IS NULL
                        OR (r.VendorCountryCode != %7$s AND COALESCE(r.IsVendorPackageLicensingExempt, 'N') != 'Y'))
             ) t
             GROUP BY t.ProductGroup, t.PackagingType
@@ -204,7 +208,8 @@ $f$,
                     v_report_func_call, -- %4$s
                     v_materials_sql_array, -- %5$s
                     v_q_prefixed_aliases_list, -- %6$s
-                    QUOTE_LITERAL(v_org_country_code) -- %7$s — org country code for domestic-purchase filter
+                    QUOTE_LITERAL(v_org_country_code), -- %7$s — org country code for domestic-purchase filter
+                    QUOTE_LITERAL(p_IsExcludeDomesticPurchases) -- %8$s — toggle for domestic-purchase filter
              );
 
     -- 6) Execute and return the result.
