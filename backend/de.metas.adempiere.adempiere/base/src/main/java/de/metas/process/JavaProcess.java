@@ -1108,6 +1108,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
 	{
+		return retrieveSelectedRecordsQueryBuilder(modelClass, true);
+	}
+
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass,
+			final boolean applyActiveRecordsFilter)
+	{
 		final ProcessInfo pi = getProcessInfo();
 		final String tableName = pi.getTableNameOrNull();
 		final int singleRecordId = pi.getRecord_ID();
@@ -1120,9 +1126,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
 		if (selectionQueryFilter != null)
 		{
-			queryBuilder.filter(selectionQueryFilter)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient();
+			queryBuilder.filter(selectionQueryFilter);
+			if (applyActiveRecordsFilter)
+			{
+				queryBuilder
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient();
+			}
 		}
 		//
 		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
