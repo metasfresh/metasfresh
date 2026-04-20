@@ -77,21 +77,16 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by ariInv is completed
     And Wait until documents ariInv is posted
 
-    # Regression baseline: for sales invoices (ARI), T_Due_Acct posts AmtAcctCr=190,
-    # so the function's TaxAmt = -190 and NetAmt = -1000 (sign flipped for ARI).
-    Then report_taxaccounts level "4" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | -190   | -1000  |
-
-    # Aggregated levels lock in the subtotal path; with a single posting the
-    # sums equal the single detail row.
-    Then report_taxaccounts level "1" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt_SUM | NetAmt_SUM |
-      | -190       | -1000      |
-
-    Then report_taxaccounts level "ReCap" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt_SUM | NetAmt_SUM |
-      | -190       | -1000      |
+    # Regression baseline across all aggregation levels. For sales invoices (ARI),
+    # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
+    # levels 1/2/3/ReCap sum up to the same single-row amounts.
+    Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |             |        |        | -190       | -1000      |
+      | 2     | T_Due_Acct  |        |        | -190       | -1000      |
+      | 3     | T_Due_Acct  |        |        | -190       | -1000      |
+      | 4     | T_Due_Acct  | -190   | -1000  |            |            |
+      | ReCap |             |        |        | -190       | -1000      |
 
 
 # ############################################################################################################################################
@@ -124,9 +119,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents arcInv is posted
 
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
-    Then report_taxaccounts level "4" for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | 190    | 1000   |
+    Then report_taxaccounts for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |             |        |        | 190        | 1000       |
+      | 2     | T_Due_Acct  |        |        | 190        | 1000       |
+      | 3     | T_Due_Acct  |        |        | 190        | 1000       |
+      | 4     | T_Due_Acct  | 190    | 1000   |            |            |
+      | ReCap |             |        |        | 190        | 1000       |
 
 
 # ############################################################################################################################################
@@ -159,9 +158,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apiInv is posted
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
-    Then report_taxaccounts level "4" for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | 190    | 1000   |
+    Then report_taxaccounts for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |               |        |        | 190        | 1000       |
+      | 2     | T_Credit_Acct |        |        | 190        | 1000       |
+      | 3     | T_Credit_Acct |        |        | 190        | 1000       |
+      | 4     | T_Credit_Acct | 190    | 1000   |            |            |
+      | ReCap |               |        |        | 190        | 1000       |
 
 
 # ############################################################################################################################################
@@ -194,9 +197,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apcInv is posted
 
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
-    Then report_taxaccounts level "4" for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | -190   | -1000  |
+    Then report_taxaccounts for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |               |        |        | -190       | -1000      |
+      | 2     | T_Credit_Acct |        |        | -190       | -1000      |
+      | 3     | T_Credit_Acct |        |        | -190       | -1000      |
+      | 4     | T_Credit_Acct | -190   | -1000  |            |            |
+      | ReCap |               |        |        | -190       | -1000      |
 
 
 # ############################################################################################################################################
@@ -210,8 +217,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier             |
       | exemptSalesTaxCategory |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID        | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | exemptSalesTax    | exemptSalesTaxCategory  | 0    | DE                       | DE                        |
+      | Identifier        | C_TaxCategory_ID        | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
+      | exemptSalesTax    | exemptSalesTaxCategory  | 0    | DE                       | DE                        | Y           |
     And metasfresh contains M_Products:
       | Identifier      |
       | exemptSalesProd |
@@ -229,9 +236,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptAriInv is posted
 
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
-    Then report_taxaccounts level "4" for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | 0      | -500   |
+    Then report_taxaccounts for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |             |        |        | 0          | -500       |
+      | 2     | T_Due_Acct  |        |        | 0          | -500       |
+      | 3     | T_Due_Acct  |        |        | 0          | -500       |
+      | 4     | T_Due_Acct  | 0      | -500   |            |            |
+      | ReCap |             |        |        | 0          | -500       |
 
 
 # ############################################################################################################################################
@@ -245,8 +256,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier                |
       | exemptPurchaseTaxCategory |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID           | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | exemptPurchaseTax | exemptPurchaseTaxCategory  | 0    | DE                       | DE                        |
+      | Identifier        | C_TaxCategory_ID           | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
+      | exemptPurchaseTax | exemptPurchaseTaxCategory  | 0    | DE                       | DE                        | Y           |
     And metasfresh contains M_Products:
       | Identifier          |
       | exemptPurchaseProd  |
@@ -264,6 +275,73 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptApiInv is posted
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
-    Then report_taxaccounts level "4" for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
-      | TaxAmt | NetAmt |
-      | 0      | 500    |
+    Then report_taxaccounts for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |               |        |        | 0          | 500        |
+      | 2     | T_Credit_Acct |        |        | 0          | 500        |
+      | 3     | T_Credit_Acct |        |        | 0          | 500        |
+      | 4     | T_Credit_Acct | 0      | 500    |            |            |
+      | ReCap |               |        |        | 0          | 500        |
+
+
+# ############################################################################################################################################
+# TC-S7 — Sales invoice (ARI) paid with early-payment discount (Skonto)
+# ############################################################################################################################################
+# The invoice posts the full tax (-190). When the payment is allocated with a discount, Doc_AllocationHdr
+# creates a tax-correction Fact_Acct entry on T_Due_Acct that reduces the tax liability by the discount's
+# tax portion. Exercises the view's C_AllocationHdr code path:
+#   ROUND((AmtAcctDr - AmtAcctCr) * 100 / tax.Rate, 2)
+# which back-computes TaxBaseAmt from TaxAmt via the tax rate.
+  @Id:S0467_TAR_070
+  @from:cucumber
+  Scenario: sales invoice + payment allocation with discount produces a tax-correction row alongside the invoice row
+
+    And metasfresh contains C_TaxCategory
+      | Identifier      |
+      | allocTaxCategory |
+    And metasfresh contains C_Tax
+      | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | allocTax19  | allocTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | allocProd  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID  |
+      | salesPLV               | allocProd    | 1000.00  | PCE      | allocTaxCategory  |
+
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_CHF_account | CHF           |
+
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | allocSalesInv  | customer      | 2024-01-15   | true    | CHF           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID  | M_Product_ID | QtyInvoiced | C_Tax_ID   |
+      | allocSalesInvL1 | allocSalesInv | allocProd    | 1 PCE       | allocTax19 |
+    And the invoice identified by allocSalesInv is completed
+
+    # Payment amount = invoice gross (1190) minus 2% early-payment discount (23.80) = 1166.20 CHF.
+    # The discount's 19% tax portion is 3.80 CHF; the net portion is 20.00 CHF.
+    And metasfresh contains C_Payment
+      | Identifier    | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
+      | allocPayment  | customer      | 1166.20 CHF | true      | org_CHF_account     |
+    And the payment identified by allocPayment is completed
+
+    And allocate payments to invoices
+      | C_Invoice_ID  | C_Payment_ID | DiscountAmt |
+      | allocSalesInv | allocPayment | 23.80 CHF   |
+
+    And Wait until documents allocSalesInv, alloc1 are posted
+
+    # Two level-4 rows (invoice + allocation discount correction). Subtotals:
+    #   sum(TaxAmt) = -190 + 3.80 = -186.20
+    #   sum(NetAmt) = -1000 + 20  = -980
+    Then report_taxaccounts for C_Tax "allocTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+      | 1     |             |        |        | -186.20    | -980       |
+      | 2     | T_Due_Acct  |        |        | -186.20    | -980       |
+      | 3     | T_Due_Acct  |        |        | -186.20    | -980       |
+      | 4     | T_Due_Acct  | -190   | -1000  |            |            |
+      | 4     | T_Due_Acct  | 3.80   | 20     |            |            |
+      | ReCap |             |        |        | -186.20    | -980       |

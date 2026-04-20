@@ -33,17 +33,18 @@ import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -56,28 +57,28 @@ import java.util.function.Supplier;
  * For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID}. The
  * {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
  *
- * <p><b>Usage</b> — level is one of {@code 1}, {@code 2}, {@code 3}, {@code 4}, {@code ReCap}:
- * <pre>{@code
- * Then report_taxaccounts level "4" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | TaxAmt | NetAmt |
- *   | -190   | -1000  |
+ * <p>The step calls the function twice — once with {@code p_level=NULL} (returns levels 1/2/3/4) and
+ * once with {@code p_level='ReCap'} — and concatenates the results. Rows are sorted by
+ * (level, accountname, taxname, taxamt, documentno) so feature files can assert them positionally.
  *
- * Then report_taxaccounts level "1" for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | TaxAmt_SUM | NetAmt_SUM |
- *   | -190       | -1000      |
+ * <p><b>Usage</b>: each expected row uses {@code Level} to say which aggregation level it addresses;
+ * only columns present in the DataTable are asserted.
+ * <pre>{@code
+ * Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+ *   | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
+ *   | 1     |             |        |        | -190       | -1000      |
+ *   | 2     | T_Due_Acct  |        |        | -190       | -1000      |
+ *   | 3     | T_Due_Acct  |        |        | -190       | -1000      |
+ *   | 4     | T_Due_Acct  | -190   | -1000  |            |            |
+ *   | ReCap |             |        |        | -190       | -1000      |
  * }</pre>
  *
- * <p>Expected rows are matched to actual rows <b>positionally</b> (ordered by AccountName, DocumentNo,
- * TaxAmt). Only columns present in the expected DataTable are asserted — other columns are ignored.
+ * <p>Numeric columns are parsed via {@link DataTableRow#getAsOptionalAmount(String, Supplier)} —
+ * a bare number inherits the actual row's currency, {@code 190 CHF} forces a currency check too.
  *
- * <p><b>Supported columns</b> (all optional; only the columns listed in the DataTable are checked):
- * <ul>
- *     <li>Numeric (compared with {@code isEqualByComparingTo}):
- *         {@code TaxAmt}, {@code NetAmt} (levels 4 only),
- *         {@code TaxAmt_SUM}, {@code NetAmt_SUM} (levels 1, 2, 3, ReCap)</li>
- *     <li>String: {@code AccountName}, {@code TaxName}, {@code VatCode},
- *         {@code DocumentNo}, {@code BPartnerName}</li>
- * </ul>
+ * <p><b>Supported columns</b>: {@code Level}, {@code VatCode}, {@code AccountName}, {@code TaxName},
+ * {@code TaxAmt}, {@code NetAmt} (level 4), {@code TaxAmt_SUM}, {@code NetAmt_SUM}
+ * (levels 1/2/3/ReCap), {@code DocumentNo}, {@code BPartnerName}.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  */
@@ -87,13 +88,12 @@ public class TaxAccountingReport_StepDef
 	@NonNull private final C_Tax_StepDefData taxTable;
 
 	/**
-	 * Calls {@code de_metas_acct.report_taxaccounts(...)} filtered by C_Tax_ID, date range and
-	 * {@code p_level}. Asserts the returned rows match the expected data table positionally,
-	 * field by field.
+	 * Calls {@code de_metas_acct.report_taxaccounts(...)} for all levels (1/2/3/4 via
+	 * {@code p_level=NULL}, plus ReCap) and asserts the returned rows against the expected
+	 * data table positionally, field by field.
 	 */
-	@Then("report_taxaccounts level {string} for C_Tax {string} between {string} and {string} returns:")
+	@Then("report_taxaccounts for C_Tax {string} between {string} and {string} returns:")
 	public void expect_report_taxaccounts(
-			@NonNull final String level,
 			@NonNull final String taxIdentifier,
 			@NonNull final String dateFromStr,
 			@NonNull final String dateToStr,
@@ -103,38 +103,51 @@ public class TaxAccountingReport_StepDef
 		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
 		final LocalDate dateTo = LocalDate.parse(dateToStr);
 
-		final ImmutableList<TaxReportRow> actualRows = queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, level);
+		final List<TaxReportRow> actualRows = new ArrayList<>();
+		actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, null));
+		actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, "ReCap"));
+		actualRows.sort(ROW_ORDER);
+
 		final ImmutableList<DataTableRow> expectedRows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
 
 		final SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(actualRows.size())
-				.as("report_taxaccounts level %s (C_Tax=%s): row count", level, taxIdentifier)
+				.as("report_taxaccounts (C_Tax=%s): row count", taxIdentifier)
 				.isEqualTo(expectedRows.size());
 
 		final int common = Math.min(actualRows.size(), expectedRows.size());
 		for (int i = 0; i < common; i++)
 		{
-			assertRowMatches(softly, expectedRows.get(i), actualRows.get(i), level, taxIdentifier, i);
+			assertRowMatches(softly, expectedRows.get(i), actualRows.get(i), taxIdentifier, i);
 		}
 
 		softly.assertAll();
 	}
 
+	private static final Comparator<TaxReportRow> ROW_ORDER = Comparator
+			.comparing(TaxReportRow::getLevel, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(TaxReportRow::getAccountName, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(TaxReportRow::getTaxName, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(r -> toBigDecimal(r.getTaxAmt()), Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(TaxReportRow::getDocumentNo, Comparator.nullsFirst(Comparator.naturalOrder()));
+
 	private static void assertRowMatches(
 			@NonNull final SoftAssertions softly,
 			@NonNull final DataTableRow expected,
 			@NonNull final TaxReportRow actual,
-			@NonNull final String level,
 			@NonNull final String taxIdentifier,
 			final int rowIndex)
 	{
-		final String ctx = String.format("report_taxaccounts level %s (C_Tax=%s), row %d", level, taxIdentifier, rowIndex);
+		final String ctx = String.format("report_taxaccounts (C_Tax=%s), row %d [Level=%s]",
+				taxIdentifier, rowIndex, actual.getLevel());
 
 		assertAmount(softly, expected, "TaxAmt", actual.getTaxAmt(), ctx);
 		assertAmount(softly, expected, "NetAmt", actual.getNetAmt(), ctx);
 		assertAmount(softly, expected, "TaxAmt_SUM", actual.getTaxAmtSum(), ctx);
 		assertAmount(softly, expected, "NetAmt_SUM", actual.getNetAmtSum(), ctx);
 
+		expected.getAsOptionalString("Level").ifPresent(exp ->
+				softly.assertThat(actual.getLevel()).as("%s: Level", ctx).isEqualTo(exp));
 		expected.getAsOptionalString("AccountName").ifPresent(exp ->
 				softly.assertThat(actual.getAccountName()).as("%s: AccountName", ctx).isEqualTo(exp));
 		expected.getAsOptionalString("TaxName").ifPresent(exp ->
@@ -169,9 +182,9 @@ public class TaxAccountingReport_StepDef
 			@NonNull final TaxId taxId,
 			@NonNull final LocalDate dateFrom,
 			@NonNull final LocalDate dateTo,
-			@NonNull final String level)
+			@Nullable final String level)
 	{
-		final String sql = "SELECT vatcode, accountname, taxname,"
+		final String sql = "SELECT level, vatcode, accountname, taxname,"
 				+ "        netamt, taxamt, netamt_sum, taxamt_sum,"
 				+ "        currency, source_currency, documentno, bpartnername"
 				+ " FROM de_metas_acct.report_taxaccounts("
@@ -184,16 +197,16 @@ public class TaxAccountingReport_StepDef
 				+ "      p_level          => ?,"
 				+ "      p_ad_language    => 'de_DE',"
 				+ "      p_c_tax_id       => ?"
-				+ " )"
-				+ " ORDER BY accountname NULLS FIRST, documentno NULLS FIRST, taxamt NULLS FIRST";
+				+ " )";
 
 		return DB.retrieveRowsOutOfTrx(
 				sql,
-				Arrays.asList(orgId.getRepoId(), dateFrom, dateTo, level, taxId.getRepoId()),
+				Arrays.asList(orgId, dateFrom, dateTo, level, taxId),
 				rs -> {
 					final CurrencyCode acctCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
 					final CurrencyCode sourceCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("source_currency"));
 					return TaxReportRow.builder()
+							.level(rs.getString("level"))
 							.vatCode(rs.getString("vatcode"))
 							.accountName(rs.getString("accountname"))
 							.taxName(rs.getString("taxname"))
@@ -213,18 +226,9 @@ public class TaxAccountingReport_StepDef
 		return value != null ? Amount.of(value, currencyCode) : null;
 	}
 
-	@Value
-	@Builder
-	public static class TaxReportRow
+	@Nullable
+	private static BigDecimal toBigDecimal(@Nullable final Amount amount)
 	{
-		@Nullable String vatCode;
-		@Nullable String accountName;
-		@Nullable String taxName;
-		@Nullable Amount taxAmt;
-		@Nullable Amount netAmt;
-		@Nullable Amount taxAmtSum;
-		@Nullable Amount netAmtSum;
-		@Nullable String documentNo;
-		@Nullable String bpartnerName;
+		return amount != null ? amount.toBigDecimal() : null;
 	}
 }
