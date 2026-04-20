@@ -22,27 +22,31 @@
 
 package de.metas.cucumber.stepdefs.report;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.AccountConceptualName;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.tax.api.Tax;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
+import lombok.Value;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -68,12 +72,13 @@ import java.util.Objects;
  * <p><b>Required columns for view assertions</b>:
  * <ul>
  *     <li>{@code AccountConceptualName} — one of {@code T_Credit_Acct}, {@code T_Due_Acct}</li>
- *     <li>{@code TaxAmt} — expected tax amount (signed BigDecimal)</li>
+ *     <li>{@code TaxAmt} — expected tax amount (signed BigDecimal, compared numerically)</li>
  * </ul>
  * <p><b>Optional columns</b>:
  * <ul>
  *     <li>{@code TaxBaseAmt} — expected base amount (signed BigDecimal)</li>
  *     <li>{@code DocumentNo} — invoice DocumentNo. Use {@code <any>} to skip this column for matching</li>
+ *     <li>{@code TaxName}, {@code AccountNo}, {@code AccountName}</li>
  * </ul>
  *
  * <p><b>Usage — function output (Level 4 detail rows)</b>:
@@ -102,13 +107,13 @@ public class TaxAccountingReport_StepDef
 			@NonNull final String taxIdentifier,
 			@NonNull final String dateFromStr,
 			@NonNull final String dateToStr,
-			@NonNull final DataTable dataTable) throws SQLException
+			@NonNull final DataTable dataTable)
 	{
-		final Tax tax = taxTable.get(taxIdentifier);
+		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
 		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
 		final LocalDate dateTo = LocalDate.parse(dateToStr);
 
-		final List<Map<String, String>> actualRows = queryViewRows(tax.getTaxId().getRepoId(), dateFrom, dateTo);
+		final ImmutableList<TaxReportRow> actualRows = queryViewRows(taxId, dateFrom, dateTo);
 
 		assertRowsMatch(dataTable, actualRows, "tax_accounts_details_v (C_Tax=" + taxIdentifier + ")");
 	}
@@ -124,24 +129,28 @@ public class TaxAccountingReport_StepDef
 			@NonNull final String taxIdentifier,
 			@NonNull final String dateFromStr,
 			@NonNull final String dateToStr,
-			@NonNull final DataTable dataTable) throws SQLException
+			@NonNull final DataTable dataTable)
 	{
-		final Tax tax = taxTable.get(taxIdentifier);
+		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
 		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
 		final LocalDate dateTo = LocalDate.parse(dateToStr);
 
-		final List<Map<String, String>> actualRows = queryReportLevel4Rows(tax.getTaxId().getRepoId(), dateFrom, dateTo);
+		final ImmutableList<TaxReportRow> actualRows = queryReportLevel4Rows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo);
 
 		assertRowsMatch(dataTable, actualRows, "report_taxaccounts level 4 (C_Tax=" + taxIdentifier + ")");
 	}
 
-	private List<Map<String, String>> queryViewRows(final int taxId, final LocalDate dateFrom, final LocalDate dateTo) throws SQLException
+	private ImmutableList<TaxReportRow> queryViewRows(
+			@NonNull final TaxId taxId,
+			@NonNull final LocalDate dateFrom,
+			@NonNull final LocalDate dateTo)
 	{
 		final String sql = "SELECT v.accountconceptualname,"
 				+ "        v.taxamt,"
 				+ "        v.taxbaseamt,"
 				+ "        v.documentno,"
 				+ "        v.taxname,"
+				+ "        v.currency,"
 				+ "        ev.value         AS accountno,"
 				+ "        ev.name          AS accountname"
 				+ " FROM de_metas_acct.tax_accounts_details_v v"
@@ -151,39 +160,29 @@ public class TaxAccountingReport_StepDef
 				+ "   AND v.postingtype = 'A'"
 				+ " ORDER BY v.accountconceptualname, v.documentno, v.taxamt";
 
-		final List<Map<String, String>> rows = new ArrayList<>();
-		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
-		{
-			pstmt.setInt(1, taxId);
-			pstmt.setObject(2, dateFrom);
-			pstmt.setObject(3, dateTo);
-			try (final ResultSet rs = pstmt.executeQuery())
-			{
-				while (rs.next())
-				{
-					final Map<String, String> row = new LinkedHashMap<>();
-					row.put("AccountConceptualName", rs.getString("accountconceptualname"));
-					row.put("TaxAmt", bdToString(rs.getBigDecimal("taxamt")));
-					row.put("TaxBaseAmt", bdToString(rs.getBigDecimal("taxbaseamt")));
-					row.put("DocumentNo", rs.getString("documentno"));
-					row.put("TaxName", rs.getString("taxname"));
-					row.put("AccountNo", rs.getString("accountno"));
-					row.put("AccountName", rs.getString("accountname"));
-					rows.add(row);
-				}
-			}
-		}
-		return rows;
+		return DB.retrieveRowsOutOfTrx(sql, Arrays.asList(taxId.getRepoId(), dateFrom, dateTo), rs -> {
+			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
+			return TaxReportRow.builder()
+					.accountConceptualName(AccountConceptualName.ofNullableString(rs.getString("accountconceptualname")))
+					.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), currencyCode))
+					.netAmt(amountOrNull(rs.getBigDecimal("taxbaseamt"), currencyCode))
+					.documentNo(rs.getString("documentno"))
+					.taxName(rs.getString("taxname"))
+					.accountNo(rs.getString("accountno"))
+					.accountName(rs.getString("accountname"))
+					.build();
+		});
 	}
 
-	private List<Map<String, String>> queryReportLevel4Rows(final int taxId, final LocalDate dateFrom, final LocalDate dateTo) throws SQLException
+	private ImmutableList<TaxReportRow> queryReportLevel4Rows(
+			@NonNull final OrgId orgId,
+			@NonNull final TaxId taxId,
+			@NonNull final LocalDate dateFrom,
+			@NonNull final LocalDate dateTo)
 	{
-		// p_ad_org_id=NULL means ALL orgs — the function still requires NOT NULL match, so use the view's org (1000000 is the default metasfresh org).
-		// Better: look up the org from the tax's client/org.
-		// For test isolation we rely on p_c_tax_id filtering — the org filter just needs to match the posting org.
-		final String sql = "SELECT level, vatcode, accountname, taxname, netamt, taxamt, documentno, bpartnername"
+		final String sql = "SELECT level, vatcode, accountname, taxname, netamt, taxamt, currency, documentno, bpartnername"
 				+ " FROM de_metas_acct.report_taxaccounts("
-				+ "      p_ad_org_id      => (SELECT fa.ad_org_id FROM fact_acct fa WHERE fa.c_tax_id = ? LIMIT 1),"
+				+ "      p_ad_org_id      => ?,"
 				+ "      p_account_id     => NULL,"
 				+ "      p_c_vat_code_id  => NULL,"
 				+ "      p_datefrom       => ?::date,"
@@ -195,36 +194,33 @@ public class TaxAccountingReport_StepDef
 				+ " )"
 				+ " ORDER BY accountname, documentno, taxamt";
 
-		final List<Map<String, String>> rows = new ArrayList<>();
-		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
-		{
-			pstmt.setInt(1, taxId);
-			pstmt.setObject(2, dateFrom);
-			pstmt.setObject(3, dateTo);
-			pstmt.setInt(4, taxId);
-			try (final ResultSet rs = pstmt.executeQuery())
-			{
-				while (rs.next())
-				{
-					final Map<String, String> row = new LinkedHashMap<>();
-					row.put("Level", rs.getString("level"));
-					row.put("VatCode", rs.getString("vatcode"));
-					row.put("AccountName", rs.getString("accountname"));
-					row.put("TaxName", rs.getString("taxname"));
-					row.put("NetAmt", bdToString(rs.getBigDecimal("netamt")));
-					row.put("TaxAmt", bdToString(rs.getBigDecimal("taxamt")));
-					row.put("DocumentNo", rs.getString("documentno"));
-					row.put("BPartnerName", rs.getString("bpartnername"));
-					rows.add(row);
-				}
-			}
-		}
-		return rows;
+		return DB.retrieveRowsOutOfTrx(
+				sql,
+				Arrays.asList(orgId.getRepoId(), dateFrom, dateTo, taxId.getRepoId()),
+				rs -> {
+					final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
+					return TaxReportRow.builder()
+							.level(rs.getString("level"))
+							.vatCode(rs.getString("vatcode"))
+							.accountName(rs.getString("accountname"))
+							.taxName(rs.getString("taxname"))
+							.netAmt(amountOrNull(rs.getBigDecimal("netamt"), currencyCode))
+							.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), currencyCode))
+							.documentNo(rs.getString("documentno"))
+							.bpartnerName(rs.getString("bpartnername"))
+							.build();
+				});
+	}
+
+	@Nullable
+	private static Amount amountOrNull(@Nullable final BigDecimal value, @NonNull final CurrencyCode currencyCode)
+	{
+		return value != null ? Amount.of(value, currencyCode) : null;
 	}
 
 	private void assertRowsMatch(
 			@NonNull final DataTable expected,
-			@NonNull final List<Map<String, String>> actualRows,
+			@NonNull final List<TaxReportRow> actualRows,
 			@NonNull final String contextMessage)
 	{
 		final DataTableRows expectedRows = DataTableRows.of(expected);
@@ -234,10 +230,10 @@ public class TaxAccountingReport_StepDef
 				.as(contextMessage + ": number of rows returned")
 				.isEqualTo(expectedRows.size());
 
-		final List<Map<String, String>> remaining = new ArrayList<>(actualRows);
+		final List<TaxReportRow> remaining = new ArrayList<>(actualRows);
 
 		expectedRows.forEach(expectedRow -> {
-			final Map<String, String> match = findAndRemoveMatch(expectedRow, remaining);
+			final TaxReportRow match = findAndRemoveMatch(expectedRow, remaining);
 			softly.assertThat(match)
 					.as(contextMessage + ": no match for expected row " + renderExpected(expectedRow))
 					.isNotNull();
@@ -250,13 +246,14 @@ public class TaxAccountingReport_StepDef
 		softly.assertAll();
 	}
 
-	private Map<String, String> findAndRemoveMatch(
+	@Nullable
+	private TaxReportRow findAndRemoveMatch(
 			@NonNull final DataTableRow expectedRow,
-			@NonNull final List<Map<String, String>> candidates)
+			@NonNull final List<TaxReportRow> candidates)
 	{
 		for (int i = 0; i < candidates.size(); i++)
 		{
-			final Map<String, String> candidate = candidates.get(i);
+			final TaxReportRow candidate = candidates.get(i);
 			if (matches(expectedRow, candidate))
 			{
 				candidates.remove(i);
@@ -266,9 +263,9 @@ public class TaxAccountingReport_StepDef
 		return null;
 	}
 
-	private boolean matches(@NonNull final DataTableRow expectedRow, @NonNull final Map<String, String> actual)
+	private boolean matches(@NonNull final DataTableRow expectedRow, @NonNull final TaxReportRow actual)
 	{
-		for (final Map.Entry<String, String> expected : expectedRow.asMap().entrySet())
+		for (final java.util.Map.Entry<String, String> expected : expectedRow.asMap().entrySet())
 		{
 			final String column = expected.getKey();
 			final String expectedVal = expected.getValue();
@@ -276,7 +273,7 @@ public class TaxAccountingReport_StepDef
 			{
 				continue;
 			}
-			final String actualVal = actual.get(column);
+			final String actualVal = actual.getAsStringForColumn(column);
 			if (isNumericColumn(column))
 			{
 				if (!numericEquals(expectedVal, actualVal))
@@ -318,13 +315,55 @@ public class TaxAccountingReport_StepDef
 
 	private static String nullToBlank(final String s) { return s == null ? "" : s; }
 
-	private static String bdToString(final BigDecimal v)
-	{
-		return v == null ? null : v.stripTrailingZeros().toPlainString();
-	}
-
 	private static String renderExpected(@NonNull final DataTableRow row)
 	{
 		return row.asMap().toString();
+	}
+
+	@Value
+	@Builder
+	public static class TaxReportRow
+	{
+		@Nullable String level;
+		@Nullable String vatCode;
+		@Nullable AccountConceptualName accountConceptualName;
+		@Nullable String accountNo;
+		@Nullable String accountName;
+		@Nullable String taxName;
+		@Nullable Amount taxAmt;
+		@Nullable Amount netAmt;
+		@Nullable String documentNo;
+		@Nullable String bpartnerName;
+
+		@Nullable
+		public String getAsStringForColumn(@NonNull final String column)
+		{
+			switch (column)
+			{
+				case "Level":
+					return level;
+				case "VatCode":
+					return vatCode;
+				case "AccountConceptualName":
+					return accountConceptualName != null ? accountConceptualName.getAsString() : null;
+				case "AccountNo":
+					return accountNo;
+				case "AccountName":
+					return accountName;
+				case "TaxName":
+					return taxName;
+				case "TaxAmt":
+					return taxAmt != null ? taxAmt.toBigDecimal().stripTrailingZeros().toPlainString() : null;
+				case "TaxBaseAmt":
+				case "NetAmt":
+					return netAmt != null ? netAmt.toBigDecimal().stripTrailingZeros().toPlainString() : null;
+				case "DocumentNo":
+					return documentNo;
+				case "BPartnerName":
+					return bpartnerName;
+				default:
+					return null;
+			}
+		}
 	}
 }

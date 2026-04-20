@@ -213,7 +213,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # ############################################################################################################################################
   @Id:S0467_TAR_050
   @from:cucumber
-  Scenario: zero-tax sales invoice produces a T_Due row with zero amounts
+  Scenario: zero-tax sales invoice produces a T_Due row with zero tax amount
 
     And metasfresh contains C_TaxCategory
       | Identifier             |
@@ -243,13 +243,17 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | AccountConceptualName | TaxAmt | TaxBaseAmt |
       | T_Due_Acct            | 0      | -500       |
 
+    Then report_taxaccounts level 4 for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
+      | TaxAmt | NetAmt |
+      | 0      | -500   |
+
 
 # ############################################################################################################################################
 # TC-S6 — Zero-tax purchase invoice (tax-exempt)
 # ############################################################################################################################################
   @Id:S0467_TAR_060
   @from:cucumber
-  Scenario: zero-tax purchase invoice produces a T_Credit row with zero amounts
+  Scenario: zero-tax purchase invoice produces a T_Credit row with zero tax amount
 
     And metasfresh contains C_TaxCategory
       | Identifier                |
@@ -278,3 +282,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     Then the tax_accounts_details_v for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
       | AccountConceptualName | TaxAmt | TaxBaseAmt |
       | T_Credit_Acct         | 0      | 500        |
+
+    Then report_taxaccounts level 4 for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
+      | TaxAmt | NetAmt |
+      | 0      | 500    |

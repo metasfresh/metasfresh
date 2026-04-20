@@ -291,7 +291,7 @@ BEGIN
                NULL::text               AS BPartnerName,
                taxname::text            AS Taxname,
                NULL::numeric            AS TotalAmt,
-               NULL::numeric            AS TaxAmt,
+               NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
                SUM(taxbaseamt)          AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
