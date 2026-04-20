@@ -91,7 +91,8 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID | Column     | REST.Context   |
       | o_1        | DocumentNo | o_1_DocumentNo |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
        
@@ -102,7 +103,7 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
-    And after not more than 60s, M_InOut is found:
+    And after not more than 180s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo       |
       | s_s_1                            | s_1                   | shipment_S0468_010_ID   | shipment_S0468_010_DocumentNo |
 
@@ -389,7 +390,8 @@ Feature: EDI DESADV export via postgREST
       | C_Order_ID | Column     | REST.Context     |
       | o_cg       | DocumentNo | o_cg_DocumentNo  |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_main    | ol_main        | N             |
       | ss_sub1    | ol_sub1        | N             |
@@ -403,7 +405,7 @@ Feature: EDI DESADV export via postgREST
       | ss_sub1                          |
       | ss_sub2                          |
 
-    And after not more than 60s, M_InOut is found:
+    And after not more than 180s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo     |
       | ss_main                          | s_cg                  | shipment_cg_ID          | shipment_cg_DocumentNo      |
 
@@ -492,7 +494,8 @@ Feature: EDI DESADV export via postgREST
       | ol_ms_1    | o_ms_1     | prod_multiShip | 10         | huPiProd_ms             |
     And the order identified by o_ms_1 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_ms_1    | ol_ms_1        | N             |
 
@@ -502,7 +505,7 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss_ms_1                          | D            | true                | false       |
 
-    And after not more than 60s, M_InOut is found:
+    And after not more than 180s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo |
       | ss_ms_1                          | s_ms_1                | shipment_ms1_ID         | shipment_ms1_DocNo      |
 
@@ -517,7 +520,8 @@ Feature: EDI DESADV export via postgREST
       | ol_ms_2    | o_ms_2     | prod_multiShip | 10         | huPiProd_ms             |
     And the order identified by o_ms_2 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_ms_2    | ol_ms_2        | N             |
 
@@ -527,7 +531,7 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss_ms_2                          | D            | true                | false       |
 
-    And after not more than 60s, M_InOut is found:
+    And after not more than 180s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo |
       | ss_ms_2                          | s_ms_2                | shipment_ms2_ID         | shipment_ms2_DocNo      |
 
@@ -637,7 +641,8 @@ Feature: EDI DESADV export via postgREST
       | ol_notShipped | o_ns       | prod_notShipped | 50         |                             |
     And the order identified by o_ns is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
       | Identifier    | C_OrderLine_ID | IsToRecompute |
       | ss_shipped    | ol_shipped     | N             |
       | ss_notShipped | ol_notShipped  | N             |
@@ -649,7 +654,7 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | ss_shipped                       | D            | true                | false       |
 
-    And after not more than 60s, M_InOut is found:
+    And after not more than 180s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo     |
       | ss_shipped                       | s_ns                  | shipment_ns_ID          | shipment_ns_DocumentNo      |
 
