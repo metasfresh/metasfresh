@@ -40,6 +40,8 @@ import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -207,22 +209,25 @@ public class TaxAccountingReport_StepDef
 		return DB.retrieveRowsOutOfTrx(
 				sql,
 				Arrays.asList(orgId, dateFrom, dateTo, level, taxId),
-				rs -> {
-					final CurrencyCode acctCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
-					final CurrencyCode sourceCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("source_currency"));
-					return TaxReportRow.builder()
-							.level(rs.getString("level"))
-							.vatCode(rs.getString("vatcode"))
-							.accountName(rs.getString("accountname"))
-							.taxName(rs.getString("taxname"))
-							.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), acctCurrency))
-							.netAmt(amountOrNull(rs.getBigDecimal("netamt"), sourceCurrency))
-							.taxAmtSum(amountOrNull(rs.getBigDecimal("taxamt_sum"), acctCurrency))
-							.netAmtSum(amountOrNull(rs.getBigDecimal("netamt_sum"), sourceCurrency))
-							.documentNo(rs.getString("documentno"))
-							.bpartnerName(rs.getString("bpartnername"))
-							.build();
-				});
+				TaxAccountingReport_StepDef::toTaxReportRow);
+	}
+
+	private static TaxReportRow toTaxReportRow(@NonNull final ResultSet rs) throws SQLException
+	{
+		final CurrencyCode acctCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("currency"));
+		final CurrencyCode sourceCurrency = CurrencyCode.ofThreeLetterCode(rs.getString("source_currency"));
+		return TaxReportRow.builder()
+				.level(rs.getString("level"))
+				.vatCode(rs.getString("vatcode"))
+				.accountName(rs.getString("accountname"))
+				.taxName(rs.getString("taxname"))
+				.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), acctCurrency))
+				.netAmt(amountOrNull(rs.getBigDecimal("netamt"), sourceCurrency))
+				.taxAmtSum(amountOrNull(rs.getBigDecimal("taxamt_sum"), acctCurrency))
+				.netAmtSum(amountOrNull(rs.getBigDecimal("netamt_sum"), sourceCurrency))
+				.documentNo(rs.getString("documentno"))
+				.bpartnerName(rs.getString("bpartnername"))
+				.build();
 	}
 
 	@Nullable
