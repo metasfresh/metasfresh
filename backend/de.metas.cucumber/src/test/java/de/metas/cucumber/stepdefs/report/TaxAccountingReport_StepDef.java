@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.organization.OrgId;
@@ -105,18 +106,24 @@ public class TaxAccountingReport_StepDef
 			@NonNull final String taxIdentifier,
 			@NonNull final String dateFromStr,
 			@NonNull final String dateToStr,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
 		final LocalDate dateFrom = LocalDate.parse(dateFromStr);
 		final LocalDate dateTo = LocalDate.parse(dateToStr);
-
-		// p_level=NULL returns levels 1/2/3/4 but NOT ReCap, so we need a second call for that.
-		final List<TaxReportRow> actualRows = new ArrayList<>();
-		actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, null));
-		actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, "ReCap"));
-
 		final ImmutableList<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
+
+		// Poll until the function returns as many rows as we expect — covers any async
+		// posting lag (e.g. when payment allocations complete slightly after the invoice).
+		// Once the count stabilises, we run the find-and-remove matching once for real.
+		final List<TaxReportRow> actualRows = new ArrayList<>();
+		StepDefUtil.tryAndWait(10, 500, () -> {
+			actualRows.clear();
+			// p_level=NULL returns levels 1/2/3/4 but NOT ReCap, so we need a second call for that.
+			actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, null));
+			actualRows.addAll(queryReportRows(StepDefConstants.ORG_ID, taxId, dateFrom, dateTo, "ReCap"));
+			return actualRows.size() == expectedRows.size();
+		}, null);
 		final String ctx = "report_taxaccounts (C_Tax=" + taxIdentifier + ")";
 		final SoftAssertions softly = new SoftAssertions();
 
