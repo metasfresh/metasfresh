@@ -10,9 +10,12 @@ import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
@@ -51,7 +54,7 @@ import static de.metas.handlingunits.HuUnitType.VHU;
  * It takes M_HU_IDs from T_Selection, gets/generates QR-Codes for them
  * and then generate the PDF.
  */
-public class M_HU_Report_QRCode extends JavaProcess
+public class M_HU_Report_QRCode extends JavaProcess implements IProcessPrecondition
 {
 	@NonNull
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
@@ -68,6 +71,17 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 	@Param(parameterName = IMassPrintingService.PARAM_PrintCopies)
 	private int p_PrintCopies;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	@RunOutOfTrx
