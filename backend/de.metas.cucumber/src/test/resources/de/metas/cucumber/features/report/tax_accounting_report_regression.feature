@@ -81,12 +81,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
     # levels 1/2/3/ReCap sum up to the same single-row amounts.
     Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | -190       | -1000      |
-      | 2     | T_Due_Acct  |        |        | -190       | -1000      |
-      | 3     | T_Due_Acct  |        |        | -190       | -1000      |
-      | 4     | T_Due_Acct  | -190   | -1000  |            |            |
-      | ReCap |             |        |        | -190       | -1000      |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | -1000      | -190       |        |        |
+      | 2     | T_Due_Acct  | -1000      | -190       |        |        |
+      | 3     | T_Due_Acct  | -1000      | -190       |        |        |
+      | 4     | T_Due_Acct  |            |            | -1000  | -190   |
+      | ReCap |             | -1000      | -190       |        |        |
 
 
 # ############################################################################################################################################
@@ -120,12 +120,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | 190        | 1000       |
-      | 2     | T_Due_Acct  |        |        | 190        | 1000       |
-      | 3     | T_Due_Acct  |        |        | 190        | 1000       |
-      | 4     | T_Due_Acct  | 190    | 1000   |            |            |
-      | ReCap |             |        |        | 190        | 1000       |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | 1000       | 190        |        |        |
+      | 2     | T_Due_Acct  | 1000       | 190        |        |        |
+      | 3     | T_Due_Acct  | 1000       | 190        |        |        |
+      | 4     | T_Due_Acct  |            |            | 1000   | 190    |
+      | ReCap |             | 1000       | 190        |        |        |
 
 
 # ############################################################################################################################################
@@ -159,12 +159,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |               |        |        | 190        | 1000       |
-      | 2     | T_Credit_Acct |        |        | 190        | 1000       |
-      | 3     | T_Credit_Acct |        |        | 190        | 1000       |
-      | 4     | T_Credit_Acct | 190    | 1000   |            |            |
-      | ReCap |               |        |        | 190        | 1000       |
+      | Level | AccountName   | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |               | 1000       | 190        |        |        |
+      | 2     | T_Credit_Acct | 1000       | 190        |        |        |
+      | 3     | T_Credit_Acct | 1000       | 190        |        |        |
+      | 4     | T_Credit_Acct |            |            | 1000   | 190    |
+      | ReCap |               | 1000       | 190        |        |        |
 
 
 # ############################################################################################################################################
@@ -198,12 +198,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
     Then report_taxaccounts for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |               |        |        | -190       | -1000      |
-      | 2     | T_Credit_Acct |        |        | -190       | -1000      |
-      | 3     | T_Credit_Acct |        |        | -190       | -1000      |
-      | 4     | T_Credit_Acct | -190   | -1000  |            |            |
-      | ReCap |               |        |        | -190       | -1000      |
+      | Level | AccountName   | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |               | -1000      | -190       |        |        |
+      | 2     | T_Credit_Acct | -1000      | -190       |        |        |
+      | 3     | T_Credit_Acct | -1000      | -190       |        |        |
+      | 4     | T_Credit_Acct |            |            | -1000  | -190   |
+      | ReCap |               | -1000      | -190       |        |        |
 
 
 # ############################################################################################################################################
@@ -237,12 +237,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
     Then report_taxaccounts for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | 0          | -500       |
-      | 2     | T_Due_Acct  |        |        | 0          | -500       |
-      | 3     | T_Due_Acct  |        |        | 0          | -500       |
-      | 4     | T_Due_Acct  | 0      | -500   |            |            |
-      | ReCap |             |        |        | 0          | -500       |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | -500       | 0          |        |        |
+      | 2     | T_Due_Acct  | -500       | 0          |        |        |
+      | 3     | T_Due_Acct  | -500       | 0          |        |        |
+      | 4     | T_Due_Acct  |            |            | -500   | 0      |
+      | ReCap |             | -500       | 0          |        |        |
 
 
 # ############################################################################################################################################
@@ -276,12 +276,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
     Then report_taxaccounts for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |               |        |        | 0          | 500        |
-      | 2     | T_Credit_Acct |        |        | 0          | 500        |
-      | 3     | T_Credit_Acct |        |        | 0          | 500        |
-      | 4     | T_Credit_Acct | 0      | 500    |            |            |
-      | ReCap |               |        |        | 0          | 500        |
+      | Level | AccountName   | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |               | 500        | 0          |        |        |
+      | 2     | T_Credit_Acct | 500        | 0          |        |        |
+      | 3     | T_Credit_Acct | 500        | 0          |        |        |
+      | 4     | T_Credit_Acct |            |            | 500    | 0      |
+      | ReCap |               | 500        | 0          |        |        |
 
 
 # ############################################################################################################################################
@@ -338,13 +338,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     #   sum(TaxAmt) = -190 + 3.80 = -186.20
     #   sum(NetAmt) = -1000 + 20  = -980
     Then report_taxaccounts for C_Tax "allocTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | -186.20    | -980       |
-      | 2     | T_Due_Acct  |        |        | -186.20    | -980       |
-      | 3     | T_Due_Acct  |        |        | -186.20    | -980       |
-      | 4     | T_Due_Acct  | -190   | -1000  |            |            |
-      | 4     | T_Due_Acct  | 3.80   | 20     |            |            |
-      | ReCap |             |        |        | -186.20    | -980       |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | -980       | -186.20    |        |        |
+      | 2     | T_Due_Acct  | -980       | -186.20    |        |        |
+      | 3     | T_Due_Acct  | -980       | -186.20    |        |        |
+      | 4     | T_Due_Acct  |            |            | -1000  | -190   |
+      | 4     | T_Due_Acct  |            |            | 20     | 3.80   |
+      | ReCap |             | -980       | -186.20    |        |        |
 
 
 # ############################################################################################################################################
@@ -385,21 +385,21 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # 19% slice: 1000 base + 190 tax
     Then report_taxaccounts for C_Tax "mixTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | -190       | -1000      |
-      | 2     | T_Due_Acct  |        |        | -190       | -1000      |
-      | 3     | T_Due_Acct  |        |        | -190       | -1000      |
-      | 4     | T_Due_Acct  | -190   | -1000  |            |            |
-      | ReCap |             |        |        | -190       | -1000      |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | -1000      | -190       |        |        |
+      | 2     | T_Due_Acct  | -1000      | -190       |        |        |
+      | 3     | T_Due_Acct  | -1000      | -190       |        |        |
+      | 4     | T_Due_Acct  |            |            | -1000  | -190   |
+      | ReCap |             | -1000      | -190       |        |        |
 
     # 7% slice: 500 base + 35 tax
     Then report_taxaccounts for C_Tax "mixTax7" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | -35        | -500       |
-      | 2     | T_Due_Acct  |        |        | -35        | -500       |
-      | 3     | T_Due_Acct  |        |        | -35        | -500       |
-      | 4     | T_Due_Acct  | -35    | -500   |            |            |
-      | ReCap |             |        |        | -35        | -500       |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | -500       | -35        |        |        |
+      | 2     | T_Due_Acct  | -500       | -35        |        |        |
+      | 3     | T_Due_Acct  | -500       | -35        |        |        |
+      | 4     | T_Due_Acct  |            |            | -500   | -35    |
+      | ReCap |             | -500       | -35        |        |        |
 
 
 # ############################################################################################################################################
@@ -449,13 +449,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents allocArcInv, alloc1 are posted
 
     Then report_taxaccounts for C_Tax "allocArcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |             |        |        | 186.20     | 980        |
-      | 2     | T_Due_Acct  |        |        | 186.20     | 980        |
-      | 3     | T_Due_Acct  |        |        | 186.20     | 980        |
-      | 4     | T_Due_Acct  | -3.80  | -20    |            |            |
-      | 4     | T_Due_Acct  | 190    | 1000   |            |            |
-      | ReCap |             |        |        | 186.20     | 980        |
+      | Level | AccountName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |             | 980        | 186.20     |        |        |
+      | 2     | T_Due_Acct  | 980        | 186.20     |        |        |
+      | 3     | T_Due_Acct  | 980        | 186.20     |        |        |
+      | 4     | T_Due_Acct  |            |            | -20    | -3.80  |
+      | 4     | T_Due_Acct  |            |            | 1000   | 190    |
+      | ReCap |             | 980        | 186.20     |        |        |
 
 
 # ############################################################################################################################################
@@ -504,13 +504,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents allocApiInv, alloc1 are posted
 
     Then report_taxaccounts for C_Tax "allocApiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |               |        |        | 186.20     | 980        |
-      | 2     | T_Credit_Acct |        |        | 186.20     | 980        |
-      | 3     | T_Credit_Acct |        |        | 186.20     | 980        |
-      | 4     | T_Credit_Acct | -3.80  | -20    |            |            |
-      | 4     | T_Credit_Acct | 190    | 1000   |            |            |
-      | ReCap |               |        |        | 186.20     | 980        |
+      | Level | AccountName   | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |               | 980        | 186.20     |        |        |
+      | 2     | T_Credit_Acct | 980        | 186.20     |        |        |
+      | 3     | T_Credit_Acct | 980        | 186.20     |        |        |
+      | 4     | T_Credit_Acct |            |            | -20    | -3.80  |
+      | 4     | T_Credit_Acct |            |            | 1000   | 190    |
+      | ReCap |               | 980        | 186.20     |        |        |
 
 
 # ############################################################################################################################################
@@ -560,10 +560,10 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents allocApcInv, alloc1 are posted
 
     Then report_taxaccounts for C_Tax "allocApcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountName   | TaxAmt | NetAmt | TaxAmt_SUM | NetAmt_SUM |
-      | 1     |               |        |        | -186.20    | -980       |
-      | 2     | T_Credit_Acct |        |        | -186.20    | -980       |
-      | 3     | T_Credit_Acct |        |        | -186.20    | -980       |
-      | 4     | T_Credit_Acct | -190   | -1000  |            |            |
-      | 4     | T_Credit_Acct | 3.80   | 20     |            |            |
-      | ReCap |               |        |        | -186.20    | -980       |
+      | Level | AccountName   | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
+      | 1     |               | -980       | -186.20    |        |        |
+      | 2     | T_Credit_Acct | -980       | -186.20    |        |        |
+      | 3     | T_Credit_Acct | -980       | -186.20    |        |        |
+      | 4     | T_Credit_Acct |            |            | -1000  | -190   |
+      | 4     | T_Credit_Acct |            |            | 20     | 3.80   |
+      | ReCap |               | -980       | -186.20    |        |        |
