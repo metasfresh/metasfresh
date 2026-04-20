@@ -30,8 +30,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | pricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier        | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | salesPriceList    | pricingSystem      | DE           | EUR           | true  |
-      | purchasePriceList | pricingSystem      | DE           | EUR           | false |
+      | salesPriceList    | pricingSystem      | DE           | CHF           | true  |
+      | purchasePriceList | pricingSystem      | DE           | CHF           | false |
     And metasfresh contains M_PriceList_Versions
       | Identifier  | M_PriceList_ID    |
       | salesPLV    | salesPriceList    |
@@ -69,7 +69,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | ariInv     | customer      | 2024-01-15   | true    | EUR           |
+      | ariInv     | customer      | 2024-01-15   | true    | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
       | ariInvL1   | ariInv       | salesProd1   | 1 PCE       | salesTax19 |
@@ -110,7 +110,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | arcInv     | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
+      | arcInv     | customer      | Gutschrift              | 2024-01-15   | true    | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | arcInvL1   | arcInv       | arcProd1     | 1 PCE       | arcTax19 |
@@ -150,7 +150,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apiInv     | vendor        | 2024-01-15   | false   | EUR           |
+      | apiInv     | vendor        | 2024-01-15   | false   | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | apiInvL1   | apiInv       | apiProd1     | 1 PCE       | apiTax19 |
@@ -190,7 +190,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apcInv     | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+      | apcInv     | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | apcInvL1   | apcInv       | apcProd1     | 1 PCE       | apcTax19 |
@@ -230,7 +230,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier    | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | exemptAriInv  | customer      | 2024-01-15   | true    | EUR           |
+      | exemptAriInv  | customer      | 2024-01-15   | true    | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier     | C_Invoice_ID | M_Product_ID    | QtyInvoiced | C_Tax_ID       |
       | exemptAriInvL1 | exemptAriInv | exemptSalesProd | 1 PCE       | exemptSalesTax |
@@ -270,7 +270,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And metasfresh contains C_Invoice:
       | Identifier    | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | exemptApiInv  | vendor        | 2024-01-15   | false   | EUR           |
+      | exemptApiInv  | vendor        | 2024-01-15   | false   | CHF           |
     And metasfresh contains C_InvoiceLines
       | Identifier     | C_Invoice_ID | M_Product_ID       | QtyInvoiced | C_Tax_ID           |
       | exemptApiInvL1 | exemptApiInv | exemptPurchaseProd | 1 PCE       | exemptPurchaseTax  |
