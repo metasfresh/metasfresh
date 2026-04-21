@@ -18,7 +18,16 @@ const createMasterdata = async ({
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
                                     qtyCUsPerTU = 4,
+                                    shipperConfig = null,
                                 } = {}) => {
+    const shippers = shipperConfig ? {
+        "SHP": {
+            name: "DHL Mock",
+            gateway: "dhl",
+            dhlConfig: shipperConfig,
+        }
+    } : undefined;
+
     return await Backend.createMasterdata({
         language,
         request: {
@@ -34,6 +43,7 @@ const createMasterdata = async ({
                     allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
                 }
             },
+            shippers,
             bpartners: { "BP1": {} },
             warehouses: {
                 "wh": {},
@@ -54,6 +64,7 @@ const createMasterdata = async ({
                 "SO1": {
                     bpartner: 'BP1',
                     warehouse: 'wh',
+                    shipper: shipperConfig ? 'SHP' : undefined,
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                     lines: [{ product: 'P1', qty: salesOrdersQty, piItemProduct: 'TU' }]
                 }
@@ -664,5 +675,179 @@ test('Switch device mid-picking — logout and resume on new session', async ({ 
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.complete();
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Pick and ship with DHL label (via mock)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('DHL label generation during picking (QA scenario 11)');
+    allure.severity('critical');
+
+    // Setup with DHL shipper pointing to WireMock
+    // CI: http://wiremock:8080 (Docker internal), Local: http://localhost:18080
+    const wiremockUrl = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
+    const masterdata = await createMasterdata({
+        shipOnCloseLU: true,
+        shipperConfig: {
+            apiUrl: wiremockUrl,
+            applicationID: 'mock_app',
+            applicationToken: 'mock_token',
+            accountNumber: '22222222220104',
+            username: 'mock_user',
+            signature: 'mock_sig',
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // Pick all 3 TUs
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '3',
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    // Close LU — this triggers DHL label generation via WireMock
+    await PickingJobScreen.closeTargetLU();
+
+    // Complete the job
+    await PickingJobScreen.complete();
+
+    // Verify shipment was created and LU shipped
+    await Backend.expect({
+        title: 'DHL picking: shipment created, LU shipped',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+        }
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('DHL + catch weight picking (QA scenario 14)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('DHL label + catch weight combined picking (QA scenario 14)');
+    allure.severity('critical');
+
+    // Setup: catch weight product with DHL shipper
+    const wiremockUrl = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    allowPickingAnyHU: true,
+                    createShipmentPolicy: 'CL',
+                    shipOnCloseLU: true,
+                    pickTo: ['LU_TU'],
+                    allowCompletingPartialPickingJob: true,
+                }
+            },
+            shippers: {
+                SHP: {
+                    name: 'DHL CatchWeight',
+                    gateway: 'dhl',
+                    dhlConfig: {
+                        apiUrl: wiremockUrl,
+                        applicationID: 'mock_app',
+                        applicationToken: 'mock_token',
+                        accountNumber: '22222222220104',
+                        username: 'mock_user',
+                        signature: 'mock_sig',
+                    }
+                }
+            },
+            bpartners: { BP1: {} },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: {
+                    uom: 'PCE',
+                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
+                    prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }],
+                },
+            },
+            packingInstructions: {
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh', qty: 100, weightNet: 10, lotNo: 'lot1', bestBeforeDate: '2031-11-23' },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    shipper: 'SHP',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    // Pick with catch weight — manual input mode, pick 1 CU
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        switchToManualInput: true,
+        qtyEntered: '1',
+        catchWeight: '0.789',
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+    });
+
+    // Close LU — triggers DHL label via WireMock
+    await PickingJobScreen.closeTargetLU();
+
+    // Complete
+    await PickingJobScreen.complete();
+
+    // Verify shipment created with catch weight
+    await Backend.expect({
+        title: 'DHL + catch weight: shipment created',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1', catchWeight: '0.789 KGM' }]
+                    }
+                }
+            }
+        },
     });
 });
