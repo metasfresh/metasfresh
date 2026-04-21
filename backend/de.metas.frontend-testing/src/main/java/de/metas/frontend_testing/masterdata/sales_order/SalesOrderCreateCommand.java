@@ -18,6 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
+import de.metas.shipping.ShipperId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -91,6 +92,11 @@ public class SalesOrderCreateCommand
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised());
+
+		if (request.getShipper() != null)
+		{
+			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
+		}
 		request.getLines().forEach(this::createOrderLine);
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();

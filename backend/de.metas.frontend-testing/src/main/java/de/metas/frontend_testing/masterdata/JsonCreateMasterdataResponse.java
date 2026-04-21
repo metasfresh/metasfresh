@@ -18,6 +18,7 @@ import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
@@ -48,6 +49,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonWarehouseResponse> warehouses;
 	@NonNull Map<String, JsonWorkplaceResponse> workplaces;
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
+	@Nullable Map<String, JsonCreateShipperResponse> shippers;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
