@@ -56,6 +56,15 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final LocalDate dueDate = TimeUtil.asLocalDate(invoice.getDueDate(), timeZone);
+		if (dueDate == null)
+		{
+			// Can happen e.g. for legacy invoices whose DueDate column was never back-filled,
+			// or when this method is called from an ordering window where the dunning validator's
+			// setDueDate() has not run yet. Skip rather than NPE; the dunning grace date will be
+			// (re)computed the next time this runs with a populated DueDate.
+			logger.warn("setDunningGraceIfManaged: skipping because C_Invoice.DueDate is null (C_Invoice_ID={})", invoice.getC_Invoice_ID());
+			return false;
+		}
 		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
 
 		invoice.setDunningGrace(TimeUtil.asTimestamp(dunningGraceDate));
