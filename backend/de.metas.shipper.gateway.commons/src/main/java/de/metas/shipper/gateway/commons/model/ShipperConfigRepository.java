@@ -100,11 +100,20 @@ public class ShipperConfigRepository
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_Carrier_Config.Table_Name);
 		Check.assumeNotNull(poInfo, "POInfo for {} is not null", I_Carrier_Config.Table_Name);
-		return
-				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
-						.map(POInfoColumn::getColumnName)
-						.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
-						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName)));
+		return poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
+				.map(POInfoColumn::getColumnName)
+				.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> toPropertyString(InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName))));
+	}
+
+	private static String toPropertyString(@NotNull final Object value)
+	{
+		// PO layer stores YesNo columns as Boolean; convert to "Y"/"N" for consistent string-based lookup
+		if (value instanceof Boolean)
+		{
+			return (Boolean) value ? "Y" : "N";
+		}
+		return String.valueOf(value);
 	}
 
 }

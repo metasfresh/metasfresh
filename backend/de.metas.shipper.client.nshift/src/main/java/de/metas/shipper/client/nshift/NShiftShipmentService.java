@@ -68,6 +68,8 @@ public class NShiftShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
+	private static final String DRAFT_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/SaveShipment";
+	private static final String DRAFT_PLACEHOLDER = "DRAFT";
 	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
 
 	@NonNull private final NShiftRestClient restClient;
@@ -77,11 +79,13 @@ public class NShiftShipmentService
 		try
 		{
 			logger.debug("Creating shipment for request: {}", deliveryRequest);
+			final boolean isDraftShipmentOnly = "Y".equals(deliveryRequest.getShipperConfig().getAdditionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY));
+			final String endpoint = isDraftShipmentOnly ? DRAFT_SHIPMENT_ENDPOINT : CREATE_SHIPMENT_ENDPOINT;
 			final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
-			final JsonShipmentResponse response = restClient.post(CREATE_SHIPMENT_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
+			final JsonShipmentResponse response = restClient.post(endpoint, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
-			return buildJsonDeliveryResponse(response, deliveryRequest);
+			return buildJsonDeliveryResponse(response, deliveryRequest, isDraftShipmentOnly);
 		}
 		catch (final Throwable throwable)
 		{
@@ -264,7 +268,7 @@ public class NShiftShipmentService
 		};
 	}
 
-	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
+	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest, final boolean isDraftShipmentOnly)
 	{
 		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
 				? response.getLabels().stream()
@@ -292,12 +296,12 @@ public class NShiftShipmentService
 
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
-									.awb(pkg.getPkgNo())
+									.awb(pkg.getPkgNo() != null ? pkg.getPkgNo() : (isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null))
 									.trackingUrl(pkg.getReferences().stream()
 											.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
 											.map(JsonReference::getValue)
 											.findFirst()
-											.orElse(null))
+											.orElse(isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null))
 									.labelPdfBase64(labelPdf)
 									.build();
 						})

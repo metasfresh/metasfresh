@@ -229,6 +229,7 @@ public class NShiftShipmentServiceTest
 					.password(PASSWORD)
 					.username(USERNAME)
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
+					.additionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY, "N")
 					.build())
 			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
 					JsonMappingConfig.builder()

@@ -136,7 +136,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem)
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
-		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
+		final byte[] labelPdfBase64 = jsonDeliveryResponseItem.getLabelPdfBase64();
+		final byte[] labelData = labelPdfBase64 != null ? Base64.getDecoder().decode(labelPdfBase64) : null;
 		final String trackingUrl = jsonDeliveryResponseItem.getTrackingUrl();
 
 		return line.toBuilder()
