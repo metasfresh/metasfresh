@@ -262,6 +262,8 @@ const BarcodeScannerComponent = ({
           type="hidden" inputs cannot receive focus, so Android InputConnection is never established
           and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
           IME-compatible while remaining invisible to the user. (me03#28834) */}
+      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
+          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
       {!isProcessing && (
         <input
           id="input-text"
@@ -278,7 +280,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      <video key="video" ref={videoRef} width="100%" height="100%" />
     </div>
   );
 };

@@ -358,6 +358,27 @@ public interface I_C_Tax
 	String COLUMNNAME_IsFiscalRepresentation = "IsFiscalRepresentation";
 
 	/**
+	 * Set Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReverseCharge (boolean IsReverseCharge);
+
+	/**
+	 * Get Reverse Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReverseCharge();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_IsReverseCharge = new ModelColumn<>(I_C_Tax.class, "IsReverseCharge", null);
+	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
+
+	/**
 	 * Set VK Steuer.
 	 * Dies ist eine VK Steuer
 	 *

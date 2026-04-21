@@ -55,26 +55,36 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 public class HUOrderBL implements IHUOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(HUOrderBL.class);
+
+	private static final String SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI =
+			"de.metas.handlingunits.order.CopyStorageRelevantAttributesToOrderLineASI";
+
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 	private final ProjectRepository projectRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
@@ -541,18 +551,37 @@ public class HUOrderBL implements IHUOrderBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 		if (huIds.isEmpty())
 		{
-			setProjectIdAndSave(orderLine, null);
+			final ProjectId orderLineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+			if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+			{
+				// if there's a project ID assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line regardless of what the sysconfig says
+				// otherwise we will be allowed to pick HUs with any project ID
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
+				attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+			}
+			else
+			{
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
+			}
+			orderDAO.save(orderLine);
 			return;
 		}
-		final ProjectId projectId = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project)
+		final Optional<String> projectAttrValue = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project);
+		final ProjectId projectId = projectAttrValue
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);
 
-		setProjectIdAndSave(orderLine, projectId);
-	}
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
+		{
+			// ASIs are considered immutable, so always create a new one
+			final ImmutableAttributeSet commonStorageRelevantAttributes = huAttributesBL.extractCommonStorageRelevantAttributeSet(huIds);
+			final AttributeSetInstanceId asiId = commonStorageRelevantAttributes.isEmpty()
+					? AttributeSetInstanceId.NONE
+					: AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(commonStorageRelevantAttributes).getM_AttributeSetInstance_ID());
+			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+		}
 
-	private void setProjectIdAndSave(@NonNull final I_C_OrderLine orderLine, @Nullable final ProjectId projectId)
-	{
 		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		orderDAO.save(orderLine);
 	}

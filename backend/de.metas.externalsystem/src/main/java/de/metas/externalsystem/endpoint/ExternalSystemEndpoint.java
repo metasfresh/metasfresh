@@ -48,8 +48,8 @@ public class ExternalSystemEndpoint
 
 	@Nullable MediaType contentType;
 
-	// HTTP authentication fields
-	@NonNull EndpointAuthType authType;
+	// HTTP authentication fields (null when transportType == SFTP)
+	@Nullable EndpointAuthType authType;
 
 	@Nullable String clientId;
 
@@ -90,7 +90,7 @@ public class ExternalSystemEndpoint
 				.transportType(transportType.getCode())
 				.endpointUrl(endpointUrl)
 				.method(method != null ? method.getCode() : null)
-				.authType(authType.toJson())
+				.authType(authType != null ? authType.toJson() : null)
 				.clientId(clientId)
 				.clientSecret(clientSecret)
 				.token(token)
