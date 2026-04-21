@@ -3,6 +3,7 @@ package de.metas.acct.vatcode.impl;
 import com.google.common.base.Joiner;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.model.X_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
@@ -126,7 +127,7 @@ public class VATCodeDAO implements IVATCodeDAO
 		}
 		if (request.getIsSOTrx() != null)
 		{
-			record.setIsSOTrx(request.getIsSOTrx() ? "Y" : "N");
+			record.setIsSOTrx(request.getIsSOTrx() ? X_C_VAT_Code.ISSOTRX_Yes : X_C_VAT_Code.ISSOTRX_No);
 		}
 		if (request.getValidFrom() != null)
 		{

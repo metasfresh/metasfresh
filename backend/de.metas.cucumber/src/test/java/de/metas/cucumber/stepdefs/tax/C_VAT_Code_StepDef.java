@@ -40,33 +40,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 
 /**
- * Step definition for creating {@link de.metas.acct.model.I_C_VAT_Code} records tied to an existing {@code C_Tax}.
- *
- * <p><b>Required columns</b>:
- * <ul>
- *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
- *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
- *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: whether this VAT code applies to sales or purchase</li>
- * </ul>
- *
- * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of {@link StepDefConstants#CLIENT_ID}
- * (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The {@code VATCode} value is set to the
- * referenced {@code C_Tax.Name} — which is itself unique per test run thanks to
- * {@code suggestValueAndName} — so distinct scenarios cannot collide on the unique VATCode constraint.
- *
- * <p><b>Fails fast</b>: if a {@code C_VAT_Code} already exists for the given {@code C_AcctSchema_ID} +
- * {@code C_Tax_ID}, the step aborts with an {@link AdempiereException}. This guards against silent
- * duplication and forces the test to be aware of pre-existing state.
- *
- * <p><b>Gherkin usage example</b>:
- * <pre>{@code
- * And metasfresh contains C_Tax
- *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
- *   | salesTax19 | salesTaxCategory | 19   | DE                       | DE                        |
- * And metasfresh contains C_VAT_Codes:
- *   | Identifier   | C_Tax_ID   | IsSOTrx |
- *   | salesVat19   | salesTax19 | Y       |
- * }</pre>
+ * Step definitions for creating {@link de.metas.acct.model.I_C_VAT_Code} records tied to an existing {@code C_Tax}.
  *
  * @see C_VAT_Code_StepDefData
  * @see IVATCodeDAO#createVATCode
@@ -81,6 +55,35 @@ public class C_VAT_Code_StepDef
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	@NonNull private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 
+	/**
+	 * Create a {@link de.metas.acct.model.I_C_VAT_Code} per data-table row, tied to an existing {@code C_Tax}.
+	 *
+	 * <p><b>Required columns</b>:
+	 * <ul>
+	 *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
+	 *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
+	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: whether this VAT code applies to sales or purchase</li>
+	 * </ul>
+	 *
+	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of {@link StepDefConstants#CLIENT_ID}
+	 * (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The {@code VATCode} value is set to the
+	 * referenced {@code C_Tax.Name} — which is itself unique per test run thanks to
+	 * {@code suggestValueAndName} — so distinct scenarios cannot collide on the unique VATCode constraint.
+	 *
+	 * <p><b>Fails fast</b>: if a {@code C_VAT_Code} already exists for the given {@code C_AcctSchema_ID} +
+	 * {@code C_Tax_ID}, the step aborts with an {@link AdempiereException}. This guards against silent
+	 * duplication and forces the test to be aware of pre-existing state.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And metasfresh contains C_Tax
+	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+	 *   | salesTax19 | salesTaxCategory | 19   | DE                       | DE                        |
+	 * And metasfresh contains C_VAT_Codes:
+	 *   | Identifier   | C_Tax_ID   | IsSOTrx |
+	 *   | salesVat19   | salesTax19 | Y       |
+	 * }</pre>
+	 */
 	@And("metasfresh contains C_VAT_Codes:")
 	public void metasfresh_contains_c_vat_codes(@NonNull final DataTable dataTable)
 	{

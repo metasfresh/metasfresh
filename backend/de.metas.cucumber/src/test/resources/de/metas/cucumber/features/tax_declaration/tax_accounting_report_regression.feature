@@ -12,77 +12,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ## de_metas_acct.tax_accounts_details_v is an implementation detail and is not asserted
 ## against directly.
 ##
-## These tests lock in the CURRENT behaviour for standard cases (regular 19% tax and
-## zero-tax) so that the upcoming Reverse Charge / bug-fix PR does not silently change
-## non-RC output. Customer-validated scenarios (TC-S1..TC-S8) are treated as correct.
+## These tests lock in the CURRENT behaviour for standard non-RC cases so the upcoming
+## Reverse Charge / bug-fix PR (sub-PR 2) cannot silently change non-RC output. Each
+## scenario creates its own dedicated C_Tax + C_VAT_Code and the report is filtered by
+## p_c_tax_id — no cross-scenario pollution. Every scenario uses 2 invoice lines with
+## an unequal split (7+3 or 2+3 PCE) at PriceStd=100 so per-line-to-per-tax aggregation
+## (§14(4) Nr. 7/8 UStG) is also validated.
 ##
-## Each scenario creates its own dedicated C_Tax so that p_c_tax_id filters the report
-## to scenario-scoped rows — no cross-scenario pollution. Every scenario uses 2 invoice
-## lines with an unequal split (7 PCE + 3 PCE or 2 PCE + 3 PCE) at PriceStd=100, so
-## per-line-to-per-tax aggregation (§14(4) Nr. 7/8 UStG) is also validated.
-##
-## ============================================================================================
-## KNOWN ISSUES — expected values that are (or might be) buggy
-## ============================================================================================
-## Documented so the fix PR (sub-PR 2) has an explicit baseline. See ai-work/29361/REQUIREMENTS.md
-## for the full analysis and legal reasoning.
-##
-## DiscountAmt sign convention (C_AllocationLine)
-## ----------------------------------------------
-## C_AllocationLine has no IsSOTrx-like flag — the sign of DiscountAmt IS the direction:
-##   positive = we receive (customer pays us a Skonto-reduced amount, or vendor refunds less)
-##   negative = we pay    (we pay the supplier a Skonto-reduced amount, or we refund the customer)
-## Empirical production-data check on a different customer confirmed this:
-##   API: 1449 positive vs 6683 negative  → mostly negative (we pay)
-##   ARI: 84944 positive vs 863 negative  → overwhelmingly positive (we receive)
-##   ARC:   684 positive vs   517 negative → mixed (both refund-out and Skonto-on-existing-refund occur)
-##   APC:    30 positive vs    19 negative → mixed
-## Test doctype directions used in the Skonto scenarios:
-##   TC-S7  ARI = +23.80 (customer paid, we received)
-##   TC-S9  ARC = -23.80 (we refunded customer, they kept less)
-##   TC-S10 API = -23.80 (we paid supplier, they received less)
-##   TC-S11 APC = +23.80 (vendor refunded us, kept less for themselves)
-##
-## [BUG A.1] TaxAmt sign on T_Due for Reverse Charge (REQUIREMENTS.md §2.1)
-##   The view computes taxamt = AmtAcctDr - AmtAcctCr, which gives -190 on T_Due for
-##   sales invoices. For RC §13b UStG that's wrong (must be +190 positive output tax).
-##   For non-RC (our scope here) the minus is the conventional credit-balance rendering;
-##   treated as CORRECT by customers and locked in as-is in TC-S1..TC-S8.
-##
-## [BUG A.2] TaxBaseAmt double-counted across T_Due + T_Credit (REQUIREMENTS.md §2.1)
-##   Both Fact_Acct rows for a tax join the same C_InvoiceTax, so per-account subtotals
-##   each report the full base. This matters for RC (both accounts have rows) — for our
-##   non-RC scope only one account has a row per tax, so the bug is latent and untested.
-##   The fix PR must ensure this test still passes when the double-count is corrected.
-##
-## [BUG A.4] Excel "Total Amount" = TaxBaseAmt + TaxAmt per row (REQUIREMENTS.md §2.1)
-##   Produces 1190 / 810, neither of which equals the invoice total. This column is in the
-##   Excel template, not in the DB function output, so it is NOT tested here. Flagged so
-##   the fix PR addresses it.
-##
-## [§2.3] Doc_AllocationHdr tax-correction path — status after direction-signed DiscountAmt
-##   With DiscountAmt signed per direction, the Doc_AllocationHdr tax correction posts a
-##   row that — on paper — makes the four Skonto scenarios §17(1) UStG-compliant:
-##     TC-S7  ARI: T_Due    CR 190 (invoice) + DR 3.80 (alloc) → balance -186.20 ✓ USt reduced
-##     TC-S9  ARC: T_Due    DR 190 (invoice) + CR 3.80 (alloc) → balance +186.20 ✓ reversed-less-USt
-##     TC-S10 API: T_Credit DR 190 (invoice) + CR 3.80 (alloc) → balance +186.20 ✓ VSt reduced
-##     TC-S11 APC: T_Credit CR 190 (invoice) + DR 3.80 (alloc) → balance -186.20 ✓ reversed-less-VSt
-##   Whether this holds EMPIRICALLY against the current Java posting code is verified by the
-##   Fact_Acct assertions in each scenario. A failing assertion here = sub-PR 2 scope.
-##   Steuerberater sign-off still required per TRACKING.md #18.
-##
-## [BUG R8a] Payment-based allocation path (PaymentAllocationBuilder) silently skips the
-## tax-correction Fact_Acct row for ARC and APC + Skonto. Not covered by this feature;
-## sub-PR 2 must fix + add scenarios TC-S9b / TC-S11b exercising the payment-based path.
-##
-## [VAT code] Each test creates a per-tax C_VAT_Code (via `metasfresh contains C_VAT_Codes:`) so the
-##   report now emits the real vatcode string instead of the "Keine MwSt." getmessage('notax')
-##   fallback. The {@code C_VAT_Code_ID} column in every `report_taxaccounts ... returns:` block
-##   asserts the identifier's {@code VATCode} matches the DB row's vatcode. Customer VAT-code
-##   configuration remains tracked under https://github.com/metasfresh/me03/issues/29363.
-##
-## Scenarios not flagged above are believed fully correct and customer-validated.
-## ============================================================================================
+## Out-of-scope (sub-PR 2 must address): Reverse Charge view/function bugs, the
+## payment-based allocation gap R8a, and the NetAmt sign convention on the declaration
+## side. See the authoritative list on the me03 spotlight
+## https://github.com/metasfresh/me03/issues/29361#issuecomment-4286107583 and the
+## technical analysis in ai-work/29361/REQUIREMENTS.md. Per-scenario notes (§17 UStG
+## verdicts, DiscountAmt sign direction) live in each scenario's comment block below.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -443,6 +385,20 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # tax portion. Exercises the view's C_AllocationHdr code path:
 #   ROUND((AmtAcctDr - AmtAcctCr) * 100 / tax.Rate, 2)
 # which back-computes TaxBaseAmt from TaxAmt via the tax rate.
+#
+# DiscountAmt sign convention (C_AllocationLine) — applied to all four Skonto scenarios
+#   TC-S7/S9/S10/S11 below. C_AllocationLine has no IsSOTrx-like flag; the sign IS the direction:
+#     positive = we receive (customer pays us a Skonto-reduced amount, or vendor refunds less)
+#     negative = we pay    (we pay the supplier a Skonto-reduced amount, or we refund the customer)
+#   Production-data check on a different customer (large volume) confirmed this per doctype:
+#     ARI  84944+ /   863−  overwhelmingly positive (customer pays us)
+#     API   1449+ /  6683−  mostly negative (we pay the supplier)
+#     ARC    684+ /   517−  mixed
+#     APC     30+ /    19−  mixed
+#
+# Direction used in this scenario: TC-S7 ARI = +23.80 EUR (customer paid, we received).
+# §17(1)(1) UStG verdict: T_Due CR 190 (invoice) + DR 3.80 (alloc) → balance −186.20.
+# USt liability reduced → compliant. Customer-validated; no sub-PR 2 action needed.
   @Id:S0467_TAR_070
   @from:cucumber
   Scenario: sales invoice + discount-only allocation produces a tax-correction row alongside the invoice row
@@ -584,6 +540,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # Credit memo posts T_Due_Acct Dr=190 (reversing the liability). When we pay the customer less than
 # the full credit (keeping part as Skonto), Doc_AllocationHdr posts a correction with the opposite
 # sign vs ARI.
+#
+# Direction used in this scenario: TC-S9 ARC = −23.80 EUR (we refunded the customer, they kept less
+# — direction = "we pay"; see DiscountAmt sign convention in TC-S7's comment block).
+# §17(1)(1) UStG verdict: T_Due DR 190 (invoice) + CR 3.80 (alloc) → balance +186.20. The ARC's
+# initial USt reversal is partially rolled back → "reversed-less USt" → §17-compliant.
+# Steuerberater sign-off required per TRACKING.md #18.
   @Id:S0467_TAR_090
   @from:cucumber
   Scenario: sales credit memo + discount-only allocation produces an inverted tax-correction row
@@ -652,6 +614,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # ############################################################################################################################################
 # Purchase invoice posts T_Credit_Acct Dr=190 (tax receivable). When we pay the vendor less than the
 # full amount (taking Skonto), the correction posts on T_Credit_Acct with opposite sign.
+#
+# Direction used in this scenario: TC-S10 API = −23.80 EUR (we paid supplier, they received less
+# — direction = "we pay"; see DiscountAmt sign convention in TC-S7's comment block).
+# §17(1)(2) UStG + §15(1a) UStG verdict: T_Credit DR 190 (invoice) + CR 3.80 (alloc) → balance
+# +186.20. VSt claim reduced → §17-compliant. Earlier spotlight drafts flagged this as
+# "LIKELY WRONG" because they assumed a positive DiscountAmt — that was the wrong input.
   @Id:S0467_TAR_100
   @from:cucumber
   Scenario: purchase invoice + discount-only allocation produces a tax-correction row on T_Credit
@@ -720,6 +688,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 # Purchase credit memo posts T_Credit_Acct Cr=190 (reversing the receivable). When the vendor refunds
 # us less than the full credit (keeping part), the correction posts on T_Credit_Acct with opposite
 # sign vs APC.
+#
+# Direction used in this scenario: TC-S11 APC = +23.80 EUR (vendor refunded us, kept less for
+# themselves — direction = "we receive"; see DiscountAmt sign convention in TC-S7's comment block).
+# §17(1)(1) UStG verdict: T_Credit CR 190 (invoice) + DR 3.80 (alloc) → balance −186.20. The APC's
+# initial VSt reversal is partially rolled back → "reversed-less VSt" → §17-compliant.
+# Steuerberater sign-off required per TRACKING.md #18.
   @Id:S0467_TAR_110
   @from:cucumber
   Scenario: purchase credit memo + discount-only allocation produces an inverted tax-correction row
