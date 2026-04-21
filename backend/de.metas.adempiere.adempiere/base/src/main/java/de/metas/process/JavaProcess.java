@@ -1127,13 +1127,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (selectionQueryFilter != null)
 		{
 			queryBuilder.filter(selectionQueryFilter);
-			if (selectionQueryFilter != null)
-			{
-				queryBuilder.filter(selectionQueryFilter);
-				if (applyActiveRecordsFilter)
-					queryBuilder.addOnlyActiveRecordsFilter();
-				queryBuilder.addOnlyContextClient();
-			}
+			if (applyActiveRecordsFilter)
+				queryBuilder.addOnlyActiveRecordsFilter();
+			queryBuilder.addOnlyContextClient();
 		}
 		//
 		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
