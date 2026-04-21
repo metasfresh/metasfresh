@@ -48,17 +48,8 @@ import lombok.NonNull;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
-	/**
-	 * Computes the due date from the invoice's payment term and date invoiced.
-	 *
-	 * <p>NOTE: this intentionally does NOT read {@code C_Invoice.DueDate}. It is called by
-	 * {@code PaymentTermBasedDueDateProvider} during invoice completion to derive the value
-	 * that the {@code C_Invoice} model validator then writes into {@code C_Invoice.DueDate}.
-	 * Reading the column here would be circular (column is still null at that point) and
-	 * break dunning for invoices completed via {@code MInvoice.completeIt()}.
-	 */
 	@Override
-	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
+	public Timestamp computeDueDateFromPaymentTerm(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());

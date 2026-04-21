@@ -46,7 +46,7 @@ public class PaymentTermBasedDueDateProvider
 		final I_C_Invoice invoiceRecord = load(invoiceId, I_C_Invoice.class);
 
 		final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
-		final Timestamp dueDate = invoiceSourceDAO.retrieveDueDate(invoiceRecord);
+		final Timestamp dueDate = invoiceSourceDAO.computeDueDateFromPaymentTerm(invoiceRecord);
 
 		return TimeUtil.asLocalDate(dueDate);
 	}

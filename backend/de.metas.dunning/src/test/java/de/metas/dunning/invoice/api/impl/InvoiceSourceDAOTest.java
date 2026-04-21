@@ -35,7 +35,7 @@ import de.metas.dunning.DunningTestBase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Pins the contract of {@link InvoiceSourceDAO#retrieveDueDate(I_C_Invoice)}:
+ * Pins the contract of {@link InvoiceSourceDAO#computeDueDateFromPaymentTerm(I_C_Invoice)}:
  * the method must compute the due date from the invoice's payment term,
  * NOT simply return {@code invoice.getDueDate()}.
  *
@@ -52,7 +52,7 @@ public class InvoiceSourceDAOTest extends DunningTestBase
 	private final InvoiceSourceDAO invoiceSourceDAO = new InvoiceSourceDAO();
 
 	@Test
-	public void retrieveDueDate_mustNotReadInvoiceDueDateColumn()
+	public void computeDueDateFromPaymentTerm_mustNotReadInvoiceDueDateColumn()
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setDueDate(COLUMN_SENTINEL);
@@ -63,7 +63,7 @@ public class InvoiceSourceDAOTest extends DunningTestBase
 		final Timestamp result;
 		try
 		{
-			result = invoiceSourceDAO.retrieveDueDate(invoice);
+			result = invoiceSourceDAO.computeDueDateFromPaymentTerm(invoice);
 		}
 		catch (final Exception ex)
 		{
@@ -76,7 +76,7 @@ public class InvoiceSourceDAOTest extends DunningTestBase
 		// If the impl returned a value without throwing, it must NOT be the sentinel
 		// — returning the column value would silently re-introduce the regression.
 		assertThat(result)
-				.as("retrieveDueDate must not simply return invoice.getDueDate()")
+				.as("computeDueDateFromPaymentTerm must not simply return invoice.getDueDate()")
 				.isNotEqualTo(COLUMN_SENTINEL);
 	}
 }
