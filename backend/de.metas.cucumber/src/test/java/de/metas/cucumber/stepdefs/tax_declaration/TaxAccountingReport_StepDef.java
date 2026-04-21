@@ -46,53 +46,12 @@ import java.util.function.Supplier;
 
 /**
  * Step definitions for testing the Tax Accounting Report ("Mehrwertsteuer-Verprobung 3").
- * <p>
- * Targets the user-facing DB function {@code de_metas_acct.report_taxaccounts(...)} — the same function
- * invoked by AD_Process 585325. The underlying view {@code de_metas_acct.tax_accounts_details_v} is
- * an implementation detail and is not asserted against directly.
- * <p>
- * For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID}. The
- * {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
- *
- * <p><b>Why two calls</b>: {@code p_level=NULL} returns levels 1/2/3/4 (see the
- * {@code p_level IS NULL OR p_level = '<n>'} conditions in the function body), but <b>not</b> ReCap —
- * ReCap is only produced when {@code p_level='ReCap'}. So the step does one call with NULL and one
- * with ReCap and concatenates the results.
- *
- * <p><b>Matching</b>: for each expected row, the step finds the first actual row whose non-blank
- * columns all match (blank cells are "don't care"). The match is then removed from the candidate
- * pool so the same actual row can't be used twice. Any expected row with no match fails the step;
- * any actual row not matched by an expected row fails it too. This avoids coupling to the DB's row
- * order and lets feature authors list rows in whatever order reads best.
- *
- * <p><b>Usage</b>: each expected row uses {@code Level} to say which aggregation level it addresses;
- * only columns present in the DataTable are asserted.
- * <pre>{@code
- * Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
- *   | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt |
- *   | 1     |                       | -1000      | -190       |        |        |
- *   | 2     | T_Due_Acct            | -1000      | -190       |        |        |
- *   | 3     | T_Due_Acct            | -1000      | -190       |        |        |
- *   | 4     | T_Due_Acct            |            |            | -1000  | -190   |
- *   | ReCap |                       | -1000      | -190       |        |        |
- * }</pre>
- *
- * <p>The {@code AccountConceptualName} column ({@code T_Due_Acct} / {@code T_Credit_Acct}) is
- * resolved to the environment-specific "{@code <accountno> <name>}" string that the DB function
- * emits in its {@code AccountName} column, via a lazily-cached {@link TaxInfo} per tax.
- *
- * <p>Numeric columns are parsed via {@link DataTableRow#getAsOptionalAmount(String, Supplier)} —
- * a bare number inherits the actual row's currency, {@code 190 CHF} forces a currency check too.
- *
- * <p><b>Supported columns</b>: {@code Level}, {@code C_VAT_Code_ID}, {@code AccountConceptualName},
- * {@code TaxName}, {@code NetAmt_SUM}, {@code TaxAmt_SUM} (levels 1/2/3/ReCap), {@code NetAmt},
- * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code C_BPartner_ID}. Identifier-valued columns
- * ({@code C_VAT_Code_ID}, {@code DocumentNo}, {@code C_BPartner_ID}) resolve their identifier via the
- * corresponding {@code *_StepDefData}; the null placeholder ({@code -} / {@code null}) asserts that the
- * actual value is null. {@code C_VAT_Code_ID} resolves to {@link VATCode#getCode()} and is compared
- * against the {@code vatcode} column the DB function emits.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
+ * @see TaxReportRow
+ * @see TaxReportRowRepository
+ * @see TaxReportRowMatcher
+ * @see TaxInfoLoadingCache
  */
 @RequiredArgsConstructor
 public class TaxAccountingReport_StepDef
@@ -105,9 +64,52 @@ public class TaxAccountingReport_StepDef
 	@NonNull private final TaxInfoLoadingCache taxInfoCache;
 
 	/**
-	 * Calls {@code de_metas_acct.report_taxaccounts(...)} for all levels (1/2/3/4 via
-	 * {@code p_level=NULL}, plus ReCap) and asserts the returned rows against the expected
-	 * data table by find-and-remove matching.
+	 * Assert the output of {@code de_metas_acct.report_taxaccounts(...)} — the same DB function
+	 * invoked by AD_Process 585325 (Mehrwertsteuer-Verprobung(Excel) 3). The underlying view
+	 * {@code de_metas_acct.tax_accounts_details_v} is an implementation detail and is not asserted
+	 * against directly.
+	 *
+	 * <p>For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID}. The
+	 * {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
+	 *
+	 * <p><b>Supported DataTable columns</b>:
+	 * <ul>
+	 *     <li>{@code Level} — {@code 1} / {@code 2} / {@code 3} / {@code 4} / {@code ReCap} aggregation level</li>
+	 *     <li>{@code C_VAT_Code_ID} — identifier; resolves to {@link VATCode#getCode()} and is compared
+	 *         against the {@code vatcode} column the DB function emits (null placeholder {@code -} asserts NULL)</li>
+	 *     <li>{@code AccountConceptualName} — {@code T_Due_Acct} / {@code T_Credit_Acct}; resolved to the
+	 *         environment-specific {@code "<accountno> <name>"} string via {@link TaxInfo} (lazy per tax)</li>
+	 *     <li>{@code TaxName} — the C_Tax.Name</li>
+	 *     <li>{@code NetAmt_SUM} / {@code TaxAmt_SUM} — subtotal amounts on levels 1/2/3/ReCap</li>
+	 *     <li>{@code NetAmt} / {@code TaxAmt} — per-document amounts on level 4</li>
+	 *     <li>{@code DocumentNo} — identifier of a C_Invoice or C_AllocationHdr; null-placeholder asserts NULL</li>
+	 *     <li>{@code C_BPartner_ID} — identifier; resolved to the BPartner's name; null-placeholder asserts NULL</li>
+	 * </ul>
+	 *
+	 * <p>Numeric columns are parsed via {@link DataTableRow#getAsOptionalAmount(String, Supplier)} —
+	 * a bare number inherits the actual row's currency; {@code 190 CHF} forces a currency check too.
+	 *
+	 * <p><b>Matching philosophy</b> (find-and-remove): for each expected row, find the first actual
+	 * row whose non-blank columns all match (blank cells are "don't care"), then remove the match from
+	 * the candidate pool so the same actual row can't be used twice. Any unmatched expected row fails
+	 * the step; any actual row left unmatched also fails. Decoupled from DB row order.
+	 *
+	 * <p><b>Why two calls to the function</b>: {@code p_level=NULL} returns levels 1/2/3/4 (per the
+	 * {@code p_level IS NULL OR p_level = '<n>'} conditions in the function body), but NOT ReCap —
+	 * ReCap is only produced when {@code p_level='ReCap'}. So this step issues one call with NULL
+	 * and one with ReCap and concatenates the results (see
+	 * {@link TaxReportRowRepository#list}).
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
+	 *   | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+	 *   | 1     | salesVat19    |                       | -1000      | -190       |        |        | -             | -          |
+	 *   | 2     | salesVat19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+	 *   | 3     | salesVat19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+	 *   | 4     | salesVat19    | T_Due_Acct            |            |            | -1000  | -190   | customer      | ariInv     |
+	 *   | ReCap | salesVat19    |                       | -1000      | -190       |        |        | -             | -          |
+	 * }</pre>
 	 */
 	@Then("report_taxaccounts for C_Tax {string} between {string} and {string} returns:")
 	public void expect_report_taxaccounts(

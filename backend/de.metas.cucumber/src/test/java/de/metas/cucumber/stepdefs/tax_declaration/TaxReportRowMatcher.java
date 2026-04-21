@@ -29,9 +29,9 @@ import java.util.function.Supplier;
 @Builder
 class TaxReportRowMatcher
 {
-	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;

@@ -22,8 +22,10 @@
 
 package de.metas.cucumber.stepdefs.currency;
 
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
@@ -44,8 +46,9 @@ import java.time.LocalDate;
  */
 public class ConversionRate_StepDef
 {
-	private static final int C_CONVERSIONTYPE_ID_SPOT = 114;
 	private static final int SYSTEM_ORG_ID = 0;
+
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	@And("a 1:1 {string} <-> {string} conversion rate is in place between {string} and {string}")
 	public void insert_one_to_one_rate(
@@ -54,16 +57,18 @@ public class ConversionRate_StepDef
 			@NonNull final String validFromStr,
 			@NonNull final String validToStr)
 	{
-		final CurrencyId fromId = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.ofThreeLetterCode(fromIsoCode)).getId();
-		final CurrencyId toId = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.ofThreeLetterCode(toIsoCode)).getId();
+		final CurrencyConversionTypeId spotTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
+		final CurrencyId fromId = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(fromIsoCode)).getId();
+		final CurrencyId toId = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(toIsoCode)).getId();
 		final Timestamp validFrom = Timestamp.valueOf(LocalDate.parse(validFromStr).atStartOfDay());
 		final Timestamp validTo = Timestamp.valueOf(LocalDate.parse(validToStr).atStartOfDay());
 
-		createRate(fromId, toId, validFrom, validTo);
-		createRate(toId, fromId, validFrom, validTo);
+		createRate(spotTypeId, fromId, toId, validFrom, validTo);
+		createRate(spotTypeId, toId, fromId, validFrom, validTo);
 	}
 
 	private static void createRate(
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final CurrencyId fromId,
 			@NonNull final CurrencyId toId,
 			@NonNull final Timestamp validFrom,
@@ -71,7 +76,7 @@ public class ConversionRate_StepDef
 	{
 		final I_C_Conversion_Rate rate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
 		rate.setAD_Org_ID(SYSTEM_ORG_ID);
-		rate.setC_ConversionType_ID(C_CONVERSIONTYPE_ID_SPOT);
+		rate.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		rate.setC_Currency_ID(fromId.getRepoId());
 		rate.setC_Currency_ID_To(toId.getRepoId());
 		rate.setValidFrom(validFrom);

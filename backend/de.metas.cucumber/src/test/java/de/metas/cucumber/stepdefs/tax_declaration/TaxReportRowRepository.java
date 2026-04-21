@@ -15,7 +15,13 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-class TaxReportRowRepository
+/**
+ * Thin wrapper around {@code de_metas_acct.report_taxaccounts(...)} — a PostgreSQL
+ * {@code RETURNS TABLE} function. Raw SQL is unavoidable here (the function cannot be called via
+ * {@code IQueryBL} or any DAO), which is why this repository uses {@link DB#retrieveRowsOutOfTrx}.
+ * A narrow exception to the "avoid direct SQL in step defs" rule.
+ */
+public class TaxReportRowRepository
 {
 	public ImmutableList<TaxReportRow> list(
 			@NonNull final OrgId orgId,

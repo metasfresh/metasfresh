@@ -18,12 +18,12 @@ import org.compiere.util.Env;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class TaxInfoLoadingCache
+public class TaxInfoLoadingCache
 {
-	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-	@NonNull private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	@NonNull private final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
-	@NonNull private final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final TaxAccountsRepository taxAccountsRepo = SpringContextHolder.instance.getBean(TaxAccountsRepository.class);
+	private final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
 
 	private final Map<TaxId, TaxInfo> taxInfoCache = new ConcurrentHashMap<>();
 

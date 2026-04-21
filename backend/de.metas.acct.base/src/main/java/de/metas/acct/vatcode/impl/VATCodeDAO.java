@@ -187,7 +187,7 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	/**
-	 * Retries all active {@link I_C_VAT_Code}s for given C_AcctSchema_ID.
+	 * Retrieves all active {@link I_C_VAT_Code}s for given C_AcctSchema_ID.
 	 *
 	 * @param acctSchemaId C_AcctSchema_ID
 	 */

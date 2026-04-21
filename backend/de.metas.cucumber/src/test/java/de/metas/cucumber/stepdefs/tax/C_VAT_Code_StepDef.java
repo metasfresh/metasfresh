@@ -51,8 +51,8 @@ public class C_VAT_Code_StepDef
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 
-	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-	@NonNull private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 
 	/**
 	 * Create a {@link de.metas.acct.model.I_C_VAT_Code} per data-table row, tied to an existing {@code C_Tax}.
