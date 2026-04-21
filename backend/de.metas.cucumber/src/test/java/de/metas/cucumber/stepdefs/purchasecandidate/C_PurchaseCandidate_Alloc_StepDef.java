@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.purchasecandidate.PurchaseCandidateId;
