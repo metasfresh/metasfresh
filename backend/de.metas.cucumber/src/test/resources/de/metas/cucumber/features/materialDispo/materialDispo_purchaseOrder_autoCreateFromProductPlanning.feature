@@ -281,3 +281,93 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 5              | 5               |
+
+
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  @Id:S0265_25
+  Scenario: IsCreatePlan=Y and IsDocComplete=N — re-completing a reactivated sales order must NOT auto-complete the purchase order (me03#29155)
+    # Regression for https://github.com/metasfresh/me03/issues/29155 / https://github.com/metasfresh/mf15/issues/4039.
+    # Before the fix, the C_Order interceptor (scheduleCreatePurchaseOrderFromPurchaseCandidates) unconditionally
+    # enqueued candidates with isCompleteDoc=true on sales-order completion — including the re-completion that follows
+    # a reactivation. This caused purchase orders to be auto-completed even when the product planning was configured
+    # with IsDocComplete=N. The fix groups candidates by IsDocComplete and uses the 3-arg enqueue overload.
+    Given metasfresh contains M_Products:
+      | Identifier | Name                     | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
+      | p_1        | product_autoCreatePO_S25 | standard_category                    | Y          | Y               |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                            | Value                               | OPT.IsActive |
+      | ps_1       | pricing_system_autoCreatePO_S25 | pricing_system_val_autoCreatePO_S25 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                          | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_autoCreatePO_S25 | true  | false         | 2              |
+      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_autoCreatePO_S25 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                   | ValidFrom  |
+      | plv_1      | pl_1                      | s_PLV_autoCreatePO_S25 | 2021-04-01 |
+      | plv_2      | pl_2                      | p_PLV_autoCreatePO_S25 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | pp_2       | plv_2                             | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier | Name                             | DiscountType | ValidFrom  |
+      | ds_1       | discount_schema_autoCreatePO_S25 | F            | 2021-04-01 |
+    And metasfresh contains M_DiscountSchemaBreaks:
+      | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
+      | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsDocComplete | OPT.IsPurchased |
+      | ppln_1     | p_1                     |                                          | true         | false             | Y               |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
+      | endcustomer_1 | EndCustomer_autoCreatePO_S25 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_autoCreatePO_S25   | Y            | N              | ps_1                          | ds_1                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name                     | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | endvendor_location_1   | 2411250100010 | endvendor_1              | EndVendor_autoCreatePO_S25   | Y                   | Y                   |
+      | endcustomer_location_1 | 2411250100011 | endcustomer_1            | EndCustomer_autoCreatePO_S25 | Y                   | Y                   |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | endvendor_1              | p_1                     |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | 2021-04-16T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 5          |
+    When the order identified by o_1 is completed
+
+    # First completion produces a draft PO (IsDocComplete=N honored by the auto-creation path).
+    Then after not more than 60s, C_PurchaseCandidates are found
+      | Identifier | C_OrderSO_ID.Identifier | C_OrderLineSO_ID.Identifier | M_Product_ID.Identifier |
+      | pc_1       | o_1                     | ol_1                        | p_1                     |
+    And after not more than 60s, C_PurchaseCandidate_Alloc are found
+      | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pc_1                              | pca_1                                   |
+    And load C_OrderLines from C_PurchaseCandidate_Alloc
+      | C_OrderLinePO_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pol_1                       | pca_1                                   |
+    And load C_Order from C_OrderLine
+      | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
+      | po_1                  | pol_1                     |
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | DocBaseType | DocStatus |
+      | po_1                  | endvendor_1              | POO         | DR        |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Reactivate the sales order, change the quantity, and re-complete — this is the path that used to trigger the bug.
+    When the order identified by o_1 is reactivated
+    And update C_OrderLines:
+      | C_OrderLine_ID.Identifier | QtyEntered |
+      | ol_1                      | 7          |
+    And the order identified by o_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # After re-completion the interceptor must NOT have auto-completed a purchase order.
+    # The purchase-order DocStatus for this vendor must remain DR (regression assertion for 29155).
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | DocBaseType | DocStatus |
+      | po_1                  | endvendor_1              | POO         | DR        |
