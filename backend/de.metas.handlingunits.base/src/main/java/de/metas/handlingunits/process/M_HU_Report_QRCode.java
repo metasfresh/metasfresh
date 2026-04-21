@@ -92,7 +92,6 @@ public class M_HU_Report_QRCode extends JavaProcess implements IProcessPrecondit
 
 		final ImmutableSet<HuId> huIdSet = handlingUnitsDAO.streamByQuery(
 						retrieveSelectedRecordsQueryBuilder(I_M_HU.class, false), HUToReportWrapper::of)
-				.filter(hu -> hu.getHUUnitType() != VHU)
 				.map(HUToReport::getHUId)
 				.collect(ImmutableSet.toImmutableSet());
 
