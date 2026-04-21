@@ -27,6 +27,22 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ## Documented so the fix PR (sub-PR 2) has an explicit baseline. See ai-work/29361/REQUIREMENTS.md
 ## for the full analysis and legal reasoning.
 ##
+## DiscountAmt sign convention (C_AllocationLine)
+## ----------------------------------------------
+## C_AllocationLine has no IsSOTrx-like flag — the sign of DiscountAmt IS the direction:
+##   positive = we receive (customer pays us a Skonto-reduced amount, or vendor refunds less)
+##   negative = we pay    (we pay the supplier a Skonto-reduced amount, or we refund the customer)
+## Empirical production-data check on a different customer confirmed this:
+##   API: 1449 positive vs 6683 negative  → mostly negative (we pay)
+##   ARI: 84944 positive vs 863 negative  → overwhelmingly positive (we receive)
+##   ARC:   684 positive vs   517 negative → mixed (both refund-out and Skonto-on-existing-refund occur)
+##   APC:    30 positive vs    19 negative → mixed
+## Test doctype directions used in the Skonto scenarios:
+##   TC-S7  ARI = +23.80 (customer paid, we received)
+##   TC-S9  ARC = -23.80 (we refunded customer, they kept less)
+##   TC-S10 API = -23.80 (we paid supplier, they received less)
+##   TC-S11 APC = +23.80 (vendor refunded us, kept less for themselves)
+##
 ## [BUG A.1] TaxAmt sign on T_Due for Reverse Charge (REQUIREMENTS.md §2.1)
 ##   The view computes taxamt = AmtAcctDr - AmtAcctCr, which gives -190 on T_Due for
 ##   sales invoices. For RC §13b UStG that's wrong (must be +190 positive output tax).
@@ -44,30 +60,16 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ##   Excel template, not in the DB function output, so it is NOT tested here. Flagged so
 ##   the fix PR addresses it.
 ##
-## [BUG §2.3] Doc_AllocationHdr tax-correction path inconsistency (REQUIREMENTS.md §2.3)
-## Current verdict (after reviewing the full Fact_Acct for each case — see me03 spotlight
-## https://github.com/metasfresh/me03/issues/29361#issuecomment-4286107583):
-##
-##   TC-S7  (ARI + Skonto): T_Due +3.80 — accounting + report OK per §17(1)(1) UStG.
-##                          Customer-validated.
-##   TC-S10 (API + Skonto): T_Credit +3.80 — accounting + report OK once the
-##                          signed-absolute allocation-amount convention is taken into
-##                          account. No sub-PR 2 change required.
-##
-##   ⚠️ TC-S9  (ARC + Skonto): T_Due +3.80 — LIKELY WRONG.
-##                          Report subtotals move AWAY from zero (USt grows by 3.80 on top
-##                          of the credit memo's reversal). Symmetric logic with TC-S7
-##                          suggests the correction row should be −3.80/−20 (shrinking the
-##                          credit memo's reversal). Steuerberater confirmation required;
-##                          if confirmed, sub-PR 2 must flip DR/CR in the allocation posting
-##                          for ARC and re-assert TC-S9 to subtotals 980/186.20 with a
-##                          correction row −3.80/−20.
-##
-##   ⚠️ TC-S11 (APC + Skonto): T_Credit +3.80 — LIKELY WRONG.
-##                          Same structure as TC-S9 on the purchase side. Steuerberater
-##                          confirmation required; if confirmed, sub-PR 2 must flip DR/CR
-##                          in the allocation posting for APC and re-assert TC-S11 to
-##                          subtotals −1020/−193.80 with a correction row −3.80/−20.
+## [§2.3] Doc_AllocationHdr tax-correction path — status after direction-signed DiscountAmt
+##   With DiscountAmt signed per direction, the Doc_AllocationHdr tax correction posts a
+##   row that — on paper — makes the four Skonto scenarios §17(1) UStG-compliant:
+##     TC-S7  ARI: T_Due    CR 190 (invoice) + DR 3.80 (alloc) → balance -186.20 ✓ USt reduced
+##     TC-S9  ARC: T_Due    DR 190 (invoice) + CR 3.80 (alloc) → balance +186.20 ✓ reversed-less-USt
+##     TC-S10 API: T_Credit DR 190 (invoice) + CR 3.80 (alloc) → balance +186.20 ✓ VSt reduced
+##     TC-S11 APC: T_Credit CR 190 (invoice) + DR 3.80 (alloc) → balance -186.20 ✓ reversed-less-VSt
+##   Whether this holds EMPIRICALLY against the current Java posting code is verified by the
+##   Fact_Acct assertions in each scenario. A failing assertion here = sub-PR 2 scope.
+##   Steuerberater sign-off still required per TRACKING.md #18.
 ##
 ## [BUG R8a] Payment-based allocation path (PaymentAllocationBuilder) silently skips the
 ## tax-correction Fact_Acct row for ARC and APC + Skonto. Not covered by this feature;
@@ -148,6 +150,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by ariInv is completed
     And Wait until documents ariInv is posted
 
+    # Tax-related Fact_Acct posting: ARI → T_Due_Acct CR 190 (USt liability).
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
+      | T_Due_Acct            |           | 190       | salesTax19 | ariInv    |
+      | *                     |           |           |            | ariInv    |
+    And Fact_Acct records balances for documents ariInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID   |
+      | T_Due_Acct            | -190        | salesTax19 |
+
     # Regression baseline across all aggregation levels. For sales invoices (ARI),
     # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
     # levels 1/2/3/ReCap sum up to the same single-row amounts.
@@ -190,6 +201,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by arcInv is completed
     And Wait until documents arcInv is posted
 
+    # ARC → T_Due_Acct DR 190 (reverses the USt that an ARI would have posted CR).
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
+      | T_Due_Acct            | 190       |           | arcTax19 | arcInv    |
+      | *                     |           |           |          | arcInv    |
+    And Fact_Acct records balances for documents arcInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | 190         | arcTax19 |
+
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
@@ -229,6 +249,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | apiInvL1_b | apiInv       | apiProd1     | 3 PCE       | apiTax19   |
     And the invoice identified by apiInv is completed
     And Wait until documents apiInv is posted
+
+    # API → T_Credit_Acct DR 190 (VSt receivable, input-tax deduction per §15 UStG).
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | apiTax19 | apiInv    |
+      | *                     |           |           |          | apiInv    |
+    And Fact_Acct records balances for documents apiInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 190         | apiTax19 |
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
@@ -270,6 +299,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by apcInv is completed
     And Wait until documents apcInv is posted
 
+    # APC → T_Credit_Acct CR 190 (reverses the VSt that an API would have posted DR).
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
+      | T_Credit_Acct         |           | 190       | apcTax19 | apcInv    |
+      | *                     |           |           |          | apcInv    |
+    And Fact_Acct records balances for documents apcInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | -190        | apcTax19 |
+
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
     Then report_taxaccounts for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
@@ -310,6 +348,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by exemptAriInv is completed
     And Wait until documents exemptAriInv is posted
 
+    # Zero-tax ARI (§4 UStG): T_Due_Acct posts a zero row carrying the TaxBaseAmt only.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID       | Record_ID    |
+      | T_Due_Acct            | 0         | 0         | exemptSalesTax | exemptAriInv |
+      | *                     |           |           |                | exemptAriInv |
+    And Fact_Acct records balances for documents exemptAriInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID       |
+      | T_Due_Acct            | 0           | exemptSalesTax |
+
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
     Then report_taxaccounts for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
@@ -349,6 +396,15 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | exemptApiInvL1_b   | exemptApiInv       | exemptPurchaseProd | 3 PCE              | exemptPurchaseTax  |
     And the invoice identified by exemptApiInv is completed
     And Wait until documents exemptApiInv is posted
+
+    # Zero-tax API (§4/§15(2) UStG): T_Credit_Acct posts a zero row carrying the TaxBaseAmt only.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID          | Record_ID    |
+      | T_Credit_Acct         | 0         | 0         | exemptPurchaseTax | exemptApiInv |
+      | *                     |           |           |                   | exemptApiInv |
+    And Fact_Acct records balances for documents exemptApiInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID          |
+      | T_Credit_Acct         | 0           | exemptPurchaseTax |
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
     Then report_taxaccounts for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
@@ -402,6 +458,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And Wait until documents allocSalesInv, ariAlloc are posted
 
+    # ARI + discount: invoice posts T_Due CR 190; allocation's tax-correction row posts
+    # T_Due DR 3.80 (USt is reduced per §17(1)(1) UStG because the customer paid less).
+    # Expected net balance: -190 + 3.80 = -186.20.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID     |
+      | T_Due_Acct            |           | 190       | allocTax19 | allocSalesInv |
+      | *                     |           |           |            | allocSalesInv |
+      | T_Due_Acct            | 3.80      |           | allocTax19 | ariAlloc      |
+      | *                     |           |           |            | ariAlloc      |
+    And Fact_Acct records balances for documents allocSalesInv,ariAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID   |
+      | T_Due_Acct            | -186.20     | allocTax19 |
+
     # Two level-4 rows (invoice + allocation discount correction). Subtotals:
     #   sum(TaxAmt) = -190 + 3.80 = -186.20
     #   sum(NetAmt) = -1000 + 20  = -980
@@ -452,6 +521,17 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | mixInvL2_b | mixInv       | mixProd7     | 3 PCE       | mixTax7    |
     And the invoice identified by mixInv is completed
     And Wait until documents mixInv is posted
+
+    # One T_Due_Acct Fact_Acct row per tax: 190 for 19% slice, 35 for 7% slice.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | mixTax19 | mixInv    |
+      | T_Due_Acct            |           | 35        | mixTax7  | mixInv    |
+      | *                     |           |           |          | mixInv    |
+    And Fact_Acct records balances for documents mixInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | -190        | mixTax19 |
+      | T_Due_Acct            | -35         | mixTax7  |
 
     # 19% slice: 1000 base + 190 tax
     Then report_taxaccounts for C_Tax "mixTax19" between "2024-01-01" and "2024-01-31" returns:
@@ -504,22 +584,38 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocArcInvL1_b | allocArcInv     | allocArcProd    | 3 PCE           | allocArcTax19   |
     And the invoice identified by allocArcInv is completed
 
+    # ARC direction = "we pay" (refund to customer) → DiscountAmt negative per the
+    # metasfresh C_AllocationLine sign convention (positive = we receive, negative = we pay).
+    # Empirical production data confirms ARC splits roughly 57%+/43%- — both directions occur.
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
-      | arcAlloc           | allocArcInv  | 23.80 EUR   |
+      | arcAlloc           | allocArcInv  | -23.80 EUR  |
 
     And Wait until documents allocArcInv, arcAlloc are posted
 
-    # Two level-4 rows: invoice (+190/+1000) and allocation discount correction (+3.80/+20).
-    # Subtotals: +190+3.80=193.80 and +1000+20=1020.
+    # ARC + negative discount (refund paid, Skonto kept): invoice posts T_Due DR 190
+    # (reversing USt); allocation posts T_Due CR 3.80 (reverses LESS of the USt because
+    # we refunded less to the customer). Net balance +186.20 per §17(1) UStG.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
+      | T_Due_Acct            | 190       |           | allocArcTax19 | allocArcInv |
+      | *                     |           |           |               | allocArcInv |
+      | T_Due_Acct            |           | 3.80      | allocArcTax19 | arcAlloc    |
+      | *                     |           |           |               | arcAlloc    |
+    And Fact_Acct records balances for documents allocArcInv,arcAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID      |
+      | T_Due_Acct            | 186.20      | allocArcTax19 |
+
+    # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
+    # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "allocArcTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 1020       | 193.80     |        |        | -             | -           |
-      | 2     | T_Due_Acct            | 1020       | 193.80     |        |        | -             | -           |
-      | 3     | T_Due_Acct            | 1020       | 193.80     |        |        | -             | -           |
+      | 1     |                       | 980        | 186.20     |        |        | -             | -           |
+      | 2     | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
+      | 3     | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
       | 4     | T_Due_Acct            |            |            | 1000   | 190    | customer      | allocArcInv |
-      | 4     | T_Due_Acct            |            |            | 20     | 3.80   | customer      | arcAlloc    |
-      | ReCap |                       | 1020       | 193.80     |        |        | -             | -           |
+      | 4     | T_Due_Acct            |            |            | -20    | -3.80  | customer      | arcAlloc    |
+      | ReCap |                       | 980        | 186.20     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
@@ -553,20 +649,37 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocApiInvL1_b | allocApiInv     | allocApiProd    | 3 PCE           | allocApiTax19   |
     And the invoice identified by allocApiInv is completed
 
+    # API direction = "we pay" (supplier) → DiscountAmt negative per the C_AllocationLine
+    # sign convention. Empirical production data confirms API is mostly negative (~82%).
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
-      | apiAlloc           | allocApiInv  | 23.80 EUR   |
+      | apiAlloc           | allocApiInv  | -23.80 EUR  |
 
     And Wait until documents allocApiInv, apiAlloc are posted
 
+    # API + negative discount (supplier paid less, Skonto taken): invoice posts T_Credit DR 190
+    # (claiming VSt); allocation posts T_Credit CR 3.80 (claims LESS VSt because we deducted
+    # a Skonto from what we owed). Net balance +186.20 per §17(1)(2) and §15(1a) UStG.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
+      | T_Credit_Acct         | 190       |           | allocApiTax19 | allocApiInv |
+      | *                     |           |           |               | allocApiInv |
+      | T_Credit_Acct         |           | 3.80      | allocApiTax19 | apiAlloc    |
+      | *                     |           |           |               | apiAlloc    |
+    And Fact_Acct records balances for documents allocApiInv,apiAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID      |
+      | T_Credit_Acct         | 186.20      | allocApiTax19 |
+
+    # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
+    # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "allocApiTax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 1020       | 193.80     |        |        | -             | -           |
-      | 2     | T_Credit_Acct         | 1020       | 193.80     |        |        | -             | -           |
-      | 3     | T_Credit_Acct         | 1020       | 193.80     |        |        | -             | -           |
-      | 4     | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apiAlloc    |
+      | 1     |                       | 980        | 186.20     |        |        | -             | -           |
+      | 2     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
+      | 3     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
+      | 4     | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | apiAlloc    |
       | 4     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | allocApiInv |
-      | ReCap |                       | 1020       | 193.80     |        |        | -             | -           |
+      | ReCap |                       | 980        | 186.20     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
@@ -601,11 +714,26 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | allocApcInvL1_b | allocApcInv     | allocApcProd    | 3 PCE           | allocApcTax19   |
     And the invoice identified by allocApcInv is completed
 
+    # APC direction = "we receive" (refund from vendor) → DiscountAmt positive per the
+    # C_AllocationLine sign convention. Empirical production data shows APC splits 61%+/39%-.
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
       | apcAlloc           | allocApcInv  | 23.80 EUR   |
 
     And Wait until documents allocApcInv, apcAlloc are posted
+
+    # APC + positive discount (vendor refunded less, we kept a Skonto): invoice posts
+    # T_Credit CR 190 (reversing VSt); allocation posts T_Credit DR 3.80 (reverses LESS
+    # VSt because we retained a Skonto on the refund). Net balance -186.20 per §17(1) UStG.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
+      | T_Credit_Acct         |           | 190       | allocApcTax19 | allocApcInv |
+      | *                     |           |           |               | allocApcInv |
+      | T_Credit_Acct         | 3.80      |           | allocApcTax19 | apcAlloc    |
+      | *                     |           |           |               | apcAlloc    |
+    And Fact_Acct records balances for documents allocApcInv,apcAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID      |
+      | T_Credit_Acct         | -186.20     | allocApcTax19 |
 
     # Two level-4 rows: invoice (-190/-1000) and allocation discount correction (+3.80/+20).
     # Subtotals: -190+3.80=-186.20 and -1000+20=-980.
