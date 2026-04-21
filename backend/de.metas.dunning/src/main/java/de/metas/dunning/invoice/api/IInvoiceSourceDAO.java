@@ -41,6 +41,19 @@ import de.metas.util.ISingletonService;
  */
 public interface IInvoiceSourceDAO extends ISingletonService
 {
+	/**
+	 * Computes the invoice's due date from its payment term and {@code DateInvoiced}.
+	 *
+	 * <p>Contract: implementations MUST compute the value (typically via
+	 * {@code paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced)}); they MUST NOT
+	 * simply return {@code invoice.getDueDate()}.
+	 *
+	 * <p>Rationale: this method is called by {@code PaymentTermBasedDueDateProvider}
+	 * during invoice completion to derive the value that gets written into
+	 * {@code C_Invoice.DueDate}. Reading the column would be circular (it is still
+	 * {@code null} at that point) and silently break dunning for any invoice completed
+	 * via {@code MInvoice.completeIt()}.
+	 */
 	Timestamp retrieveDueDate(org.compiere.model.I_C_Invoice invoice);
 
 	int retrieveDueDays(PaymentTermId paymentTermId, Date dateInvoiced, Date date);
