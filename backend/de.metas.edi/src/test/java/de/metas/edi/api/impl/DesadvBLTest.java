@@ -12,11 +12,14 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
@@ -46,7 +49,10 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository(), new de.metas.product.asidata.ProductASIDataRepository(de.metas.util.Services.get(org.adempiere.ad.dao.IQueryBL.class)));
+		EDIDesadvPackService = new EDIDesadvPackService(
+				new HURepository(),
+				new EDIDesadvPackRepository(),
+				new ProductASIDataRepository(Services.get(IQueryBL.class)));
 		desadvBL = DesadvBL.newInstanceForUnitTesting();
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());

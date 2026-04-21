@@ -60,10 +60,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer              | p_1_S0316_010           |
-
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
       | o_1_S0316_010 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
@@ -151,10 +147,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer              | true                 | bPartnerDesadvRecipientGLN |
-
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer              | p_1_11212023_4          |
 
     And metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
@@ -246,10 +238,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer              | p_1_11212023_1          |
-
     And metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
       | o_1_11212023_1 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ |
@@ -339,10 +327,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0316_020                   | endcustomer              | p_2_S0316_020           | 1101899104400 |
-
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
       | asi_p_2_S0316_020_endcustomer | p_2_S0316_020 | endcustomer | 10 | 1101899104400 |
@@ -528,11 +512,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdLU_S0316_030 | 1000017        | luLotNumber | S                  |
       | createdLU_S0316_030 | 540020         | 2021-04-20  | D                  |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0316_030                   | endcustomer              | p_2_S0316_030           | 1101899104400 |
-      | bp_2_S0316_030                   | endcustomer              | p_3_S0316_030           | 4418546988533 |
-
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
       | asi_p_2_S0316_030_endcustomer | p_2_S0316_030 | endcustomer | 10 | 1101899104400 |
@@ -707,11 +686,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdLU_11212023_2 | 1000017        | luLotNumber | S                  |
       | createdLU_11212023_2 | 540020         | 2021-04-20  | D                  |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_11212023_2                  | endcustomer              | p_2_11212023_2          | 1101899104400 |
-      | bp_2_11212023_2                  | endcustomer              | p_3_11212023_2          | 4418546988533 |
-
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
       | asi_p_2_11212023_2_endcustomer | p_2_11212023_2 | endcustomer | 10 | 1101899104400 |
@@ -876,11 +850,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_ID.Identifier   | M_Attribute_ID | Value       | AttributeValueType |
       | createdLU_11212023_3 | 1000017        | luLotNumber | S                  |
       | createdLU_11212023_3 | 540020         | 2021-04-20  | D                  |
-
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_11212023_3                  | endcustomer              | p_2_11212023_3          | 1101899104400 |
-      | bp_2_11212023_3                  | endcustomer              | p_3_11212023_3          | 4418546988533 |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
@@ -1083,12 +1052,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdLU_S0316_040 | 1000017        | luLotNumber | S                  |
       | createdLU_S0316_040 | 540020         | 2021-04-20  | D                  |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0316_040                   | endcustomer              | p_2_S0316_040           | 1101899104400 |
-      | bp_2_S0316_040                   | endcustomer              | p_3_S0316_040           | 4418546988533 |
-      | bp_3_S0316_040                   | endcustomer              | p_4_S0316_040           | 0575095404663 |
-
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
       | asi_p_2_S0316_040_endcustomer | p_2_S0316_040 | endcustomer | 10 | 1101899104400 |
@@ -1261,11 +1224,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_ID.Identifier  | M_Attribute_ID | Value       | AttributeValueType |
       | createdLU_S0457_010 | 1000017        | luLotNumber | S                  |
       | createdLU_S0457_010 | 540020         | 2021-04-20  | D                  |
-
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier     | OPT.GTIN      |
-      | bp_1_S0457_010                   | endcustomer              | p_3_S0457_010_LU_packingMat | 1101899104400 |
-      | bp_3_S0457_010_LU_packingMat     | endcustomer              | p_4_S0457_010_TU_packingMat | 4418546988533 |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
@@ -1468,11 +1426,6 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | createdTU_1_2_S0457_020 | 540020         | 2021-04-30   | D                  |
       | createdTU_2_S0457_020   | 1000017        | tuLotNumber1 | S                  |
       | createdTU_2_S0457_020   | 540020         | 2021-04-20   | D                  |
-
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier     | OPT.GTIN      |
-      | bp_1_S0457_020                   | endcustomer              | p_3_S0457_020_LU_packingMat | 1101899104400 |
-      | bp_3_S0457_020_LU_packingMat     | endcustomer              | p_4_S0457_020_TU_packingMat | 4418546988533 |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |

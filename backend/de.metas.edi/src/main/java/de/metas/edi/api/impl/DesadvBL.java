@@ -299,6 +299,8 @@ public class DesadvBL
 
 		// When the shipment schedule is closed, the effective ordered qty is whatever was delivered
 		// (no more deliveries expected). This mirrors ShipmentScheduleEffectiveBL.computeQtyOrdered().
+		// Note: any QtyOrdered_Override on a closed schedule is intentionally ignored —
+		// "closed" means "we are done, use actual delivered as the final ordered qty".
 		if (schedule.isClosed())
 		{
 			return schedule.getQtyDelivered();

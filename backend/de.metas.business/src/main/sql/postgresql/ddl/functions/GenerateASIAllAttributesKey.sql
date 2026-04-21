@@ -79,6 +79,11 @@ SELECT GenerateASIAllAttributesKey(p_M_AttributeSetInstance_ID, p_NullString, NU
 $BODY$
 ;
 
+COMMENT ON FUNCTION GenerateASIAllAttributesKey(numeric, text) IS
+    'Convenience overload of GenerateASIAllAttributesKey that passes NULL for p_Only_Attribute_IDs.
+    See GenerateASIAllAttributesKey(numeric, text, numeric[]) for details.'
+;
+
 --
 --------------------------------------------------------------------------------------
 --
@@ -92,4 +97,9 @@ AS
 $BODY$
 SELECT GenerateASIAllAttributesKey(p_M_AttributeSetInstance_ID, '-1002'/*NONE*/);
 $BODY$
+;
+
+COMMENT ON FUNCTION GenerateASIAllAttributesKey(numeric) IS
+    'Convenience overload of GenerateASIAllAttributesKey that uses ''-1002'' (NONE sentinel)
+    when the ASI has no attributes. See GenerateASIAllAttributesKey(numeric, text, numeric[]) for details.'
 ;

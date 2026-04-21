@@ -13,7 +13,6 @@ import org.compiere.model.I_M_Product_ASI_Data;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -77,9 +76,10 @@ public class ProductASIDataRepository
 				? AttributesKeys.createAttributesKeyFromASIAllAttributes(lineAsiId).orElse(AttributesKey.NONE)
 				: AttributesKey.NONE;
 
+		// candidates are already ordered by SeqNo from the DB query → findFirst is the lowest SeqNo match
 		return candidates.stream()
 				.filter(candidate -> matchesASI(candidate, lineKey))
-				.min(Comparator.comparingInt(I_M_Product_ASI_Data::getSeqNo))
+				.findFirst()
 				.map(ProductASIDataRepository::toProductASIData)
 				.orElse(null);
 	}
@@ -103,7 +103,9 @@ public class ProductASIDataRepository
 
 		if (candidateKey.isNone())
 		{
-			return true; // candidate ASI has no attributes → wildcard
+			// Candidate references an ASI record, but that ASI has no (storage-relevant) attributes → treat as wildcard.
+			// Consistent with the SQL-side behaviour of IsASIAttributesKeySubset (UnnestAttributesKey('-1002') returns 0 rows → NOT EXISTS is vacuously true).
+			return true;
 		}
 
 		// Check if the line's ASI is a superset of (or equal to) the candidate's ASI

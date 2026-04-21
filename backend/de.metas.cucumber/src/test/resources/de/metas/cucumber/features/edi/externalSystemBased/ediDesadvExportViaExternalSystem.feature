@@ -43,9 +43,9 @@ Feature: EDI DESADV export via External System
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID | GTIN          |
-      | bp_1                  | customer1     | product      | 0575095404663 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_product_customer1 | product | customer1 | 10 | 0575095404663 |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
