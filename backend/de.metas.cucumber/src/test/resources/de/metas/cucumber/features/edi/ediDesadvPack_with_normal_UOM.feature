@@ -342,6 +342,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
       | bp_1_S0316_020                   | endcustomer              | p_2_S0316_020           | 1101899104400 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_S0316_020_endcustomer | p_2_S0316_020 | endcustomer | 10 | 1101899104400 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                |
       | pm_1_S0316_020                     | p_2_S0316_020               | packingMaterialTest |
@@ -528,6 +532,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
       | bp_1_S0316_030                   | endcustomer              | p_2_S0316_030           | 1101899104400 |
       | bp_2_S0316_030                   | endcustomer              | p_3_S0316_030           | 4418546988533 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_S0316_030_endcustomer | p_2_S0316_030 | endcustomer | 10 | 1101899104400 |
+      | asi_p_3_S0316_030_endcustomer | p_3_S0316_030 | endcustomer | 10 | 4418546988533 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                             |
       | pm_1_S0316_030                     | p_2_S0316_030               | packingMaterialTest_LU_S0316_030 |
@@ -702,6 +711,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
       | bp_1_11212023_2                  | endcustomer              | p_2_11212023_2          | 1101899104400 |
       | bp_2_11212023_2                  | endcustomer              | p_3_11212023_2          | 4418546988533 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_11212023_2_endcustomer | p_2_11212023_2 | endcustomer | 10 | 1101899104400 |
+      | asi_p_3_11212023_2_endcustomer | p_3_11212023_2 | endcustomer | 10 | 4418546988533 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
       | pm_1_11212023_2                    | p_2_11212023_2 |
@@ -867,6 +881,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
       | bp_1_11212023_3                  | endcustomer              | p_2_11212023_3          | 1101899104400 |
       | bp_2_11212023_3                  | endcustomer              | p_3_11212023_3          | 4418546988533 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_11212023_3_endcustomer | p_2_11212023_3 | endcustomer | 10 | 1101899104400 |
+      | asi_p_3_11212023_3_endcustomer | p_3_11212023_3 | endcustomer | 10 | 4418546988533 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
       | pm_1_11212023_3                    | p_2_11212023_3 |
@@ -1070,6 +1089,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | bp_2_S0316_040                   | endcustomer              | p_3_S0316_040           | 4418546988533 |
       | bp_3_S0316_040                   | endcustomer              | p_4_S0316_040           | 0575095404663 |
 
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_S0316_040_endcustomer | p_2_S0316_040 | endcustomer | 10 | 1101899104400 |
+      | asi_p_3_S0316_040_endcustomer | p_3_S0316_040 | endcustomer | 10 | 4418546988533 |
+      | asi_p_4_S0316_040_endcustomer | p_4_S0316_040 | endcustomer | 10 | 0575095404663 |
+
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier  | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
       | huItemLU_S0316_040      | createdLU_S0316_040 | huPiItemLU_S0316_040       | 10  | pm_1_S0316_040                     | PM           |
@@ -1241,6 +1266,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier     | OPT.GTIN      |
       | bp_1_S0457_010                   | endcustomer              | p_3_S0457_010_LU_packingMat | 1101899104400 |
       | bp_3_S0457_010_LU_packingMat     | endcustomer              | p_4_S0457_010_TU_packingMat | 4418546988533 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_3_S0457_010_LU_packingMat_endcustomer | p_3_S0457_010_LU_packingMat | endcustomer | 10 | 1101899104400 |
+      | asi_p_4_S0457_010_TU_packingMat_endcustomer | p_4_S0457_010_TU_packingMat | endcustomer | 10 | 4418546988533 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                             |
       | pm_1_S0457_010                     | p_3_S0457_010_LU_packingMat | packingMaterialTest_LU_S0457_010 |
@@ -1443,6 +1473,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier     | OPT.GTIN      |
       | bp_1_S0457_020                   | endcustomer              | p_3_S0457_020_LU_packingMat | 1101899104400 |
       | bp_3_S0457_020_LU_packingMat     | endcustomer              | p_4_S0457_020_TU_packingMat | 4418546988533 |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_3_S0457_020_LU_packingMat_endcustomer | p_3_S0457_020_LU_packingMat | endcustomer | 10 | 1101899104400 |
+      | asi_p_4_S0457_020_TU_packingMat_endcustomer | p_4_S0457_020_TU_packingMat | endcustomer | 10 | 4418546988533 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                             |
       | pm_1_S0457_020                     | p_3_S0457_020_LU_packingMat | packingMaterialTest_LU_S0457_020 |

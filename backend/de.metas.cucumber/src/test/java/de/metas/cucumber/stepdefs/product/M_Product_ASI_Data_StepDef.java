@@ -71,7 +71,11 @@ public class M_Product_ASI_Data_StepDef
 		record.setM_Product_ID(row.getAsIdentifier(I_M_Product_ASI_Data.COLUMNNAME_M_Product_ID).lookupIdIn(productTable).getRepoId());
 
 		row.getAsOptionalIdentifier(I_M_Product_ASI_Data.COLUMNNAME_C_BPartner_ID)
-				.ifPresent(id -> record.setC_BPartner_ID(bPartnerTable.getId(id).getRepoId()));
+				.ifPresent(id -> {
+					final de.metas.bpartner.BPartnerId bPartnerId = bPartnerTable.getIdOptional(id)
+							.orElseGet(() -> id.getAsId(de.metas.bpartner.BPartnerId.class));
+					record.setC_BPartner_ID(bPartnerId.getRepoId());
+				});
 
 		row.getAsOptionalIdentifier(I_M_Product_ASI_Data.COLUMNNAME_M_AttributeSetInstance_ID)
 				.ifPresent(id -> record.setM_AttributeSetInstance_ID(asiTable.get(id).getM_AttributeSetInstance_ID()));

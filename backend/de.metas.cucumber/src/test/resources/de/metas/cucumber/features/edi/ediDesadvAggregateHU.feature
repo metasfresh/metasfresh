@@ -289,6 +289,10 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | C_BPartner_ID | M_Product_ID | GTIN          |
       | bp_S0500_040  | p_S0500_040  | 0575095404663 |
 
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_S0500_040_bp_S0500_040 | p_S0500_040 | bp_S0500_040 | 10 | 0575095404663 |
+
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
       | hpc_LU_S0500_040      | ISO1          | LU          |
