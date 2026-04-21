@@ -94,7 +94,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class DesadvBL
 {
-	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
+	private final static Logger logger = LogManager.getLogger(DesadvBL.class);
 
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 	private static final String SYS_CONFIG_MATCH_USING_ORDER_ID = "de.metas.edi.desadv.MatchUsingC_Order_ID";
@@ -131,7 +131,7 @@ public class DesadvBL
 				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
 						EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
 						EDIBPartnerConfigService.newInstanceForUnitTesting(),
-						new ProductASIDataRepository())
+						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)))
 		);
 	}
 
@@ -236,7 +236,6 @@ public class DesadvBL
 		newDesadvLine.setProductDescription(orderLineRecord.getProductDescription());
 
 		final I_M_Product product = productDAO.getById(productId);
-		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		//
 		// set infos from M_Product_ASI_Data (ASI-aware, content-based subset matching)

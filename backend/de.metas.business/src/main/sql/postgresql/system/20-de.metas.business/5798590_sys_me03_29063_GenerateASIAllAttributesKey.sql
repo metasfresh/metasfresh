@@ -59,3 +59,17 @@ $BODY$
 SELECT GenerateASIAllAttributesKey(p_M_AttributeSetInstance_ID, '-1002'/*NONE*/);
 $BODY$
 ;
+
+COMMENT ON FUNCTION GenerateASIAllAttributesKey(numeric, text, numeric[]) IS
+    'Creates a string to represent ALL active attribute values of the given M_AttributeSetInstance_ID
+    (not just storage-relevant ones, unlike GenerateASIStorageAttributesKey).
+    Used for ASI subset matching in M_Product_ASI_Data lookups.
+
+    Parameters:
+    * p_M_AttributeSetInstance_ID: ASI to render
+    * p_NullString: string to return if no attributes found (usually ''-1002'' for NONE or '''' for empty)
+    * p_Only_Attribute_IDs: optional array to filter by specific attributes
+
+    Encoding is identical to GenerateASIStorageAttributesKey — uses GenerateASIStorageAttributesKeyPart for each attribute.
+    Java equivalent: AttributesKeys.createAttributesKeyFromASIAllAttributes()'
+;

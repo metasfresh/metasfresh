@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -14,8 +16,6 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 
-import de.metas.util.Services;
-
 /**
  * Repository for {@link ProductASIData}, backed by {@code M_Product_ASI_Data} table.
  * <p>
@@ -23,9 +23,10 @@ import de.metas.util.Services;
  * Among all matching records, the one with the lowest {@code SeqNo} wins.
  */
 @Service
+@RequiredArgsConstructor
 public class ProductASIDataRepository
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL;
 
 	/**
 	 * Find the best matching {@link ProductASIData} for the given product, BPartner, and line ASI.
@@ -49,10 +50,21 @@ public class ProductASIDataRepository
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final AttributeSetInstanceId lineAsiId)
 	{
+		final ICompositeQueryFilter<I_M_Product_ASI_Data> bpartnerFilter = queryBL
+				.createCompositeQueryFilter(I_M_Product_ASI_Data.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product_ASI_Data.COLUMNNAME_C_BPartner_ID, null);
+		if (bPartnerId != null)
+		{
+			bpartnerFilter.addEqualsFilter(I_M_Product_ASI_Data.COLUMNNAME_C_BPartner_ID, bPartnerId);
+		}
+
 		final List<I_M_Product_ASI_Data> candidates = queryBL
 				.createQueryBuilder(I_M_Product_ASI_Data.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product_ASI_Data.COLUMNNAME_M_Product_ID, productId)
+				.filter(bpartnerFilter)
+				.orderBy().addColumn(I_M_Product_ASI_Data.COLUMNNAME_SeqNo).endOrderBy()
 				.create()
 				.list();
 
@@ -66,21 +78,10 @@ public class ProductASIDataRepository
 				: AttributesKey.NONE;
 
 		return candidates.stream()
-				.filter(candidate -> matchesBPartner(candidate, bPartnerId))
 				.filter(candidate -> matchesASI(candidate, lineKey))
 				.min(Comparator.comparingInt(I_M_Product_ASI_Data::getSeqNo))
 				.map(ProductASIDataRepository::toProductASIData)
 				.orElse(null);
-	}
-
-	private static boolean matchesBPartner(@NonNull final I_M_Product_ASI_Data candidate, @Nullable final BPartnerId bPartnerId)
-	{
-		final int candidateBPartnerId = candidate.getC_BPartner_ID();
-		if (candidateBPartnerId <= 0)
-		{
-			return true; // wildcard — matches any BPartner
-		}
-		return bPartnerId != null && candidateBPartnerId == bPartnerId.getRepoId();
 	}
 
 	private static boolean matchesASI(@NonNull final I_M_Product_ASI_Data candidate, @NonNull final AttributesKey lineKey)
