@@ -102,7 +102,7 @@ public class HULabelService
 
 		final AdProcessId printFormatProcessId = request.getPrintFormatProcessId();
 		final HUReportExecutor printExecutor = HUReportExecutor.newInstance()
-				.printPreview(true)
+				.printPreview(false)
 				.numberOfCopies(CoalesceUtil.coalesceNotNull(request.getPrintCopies(), PrintCopies.ONE));
 
 		if (request.isOnlyOneHUPerPrint())
