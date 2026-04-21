@@ -720,7 +720,11 @@ class Modal extends Component {
             className="panel-modal-content js-panel-modal-content
                           container-fluid"
             ref={(c) => {
-              if (c) {
+              // Focus the modal wrapper only if nothing inside it is already
+              // focused. SectionGroup.requestElementGroupFocus normally places
+              // focus on the first editable input during mount; this ref
+              // callback runs afterwards and used to steal that focus.
+              if (c && !c.contains(document.activeElement)) {
                 c.focus();
               }
             }}
