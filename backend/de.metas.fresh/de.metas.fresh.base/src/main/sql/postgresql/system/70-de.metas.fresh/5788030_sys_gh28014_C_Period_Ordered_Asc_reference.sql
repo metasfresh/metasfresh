@@ -17,7 +17,7 @@
 INSERT INTO AD_Reference (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive,
                           Created, CreatedBy, Updated, UpdatedBy,
                           Name, Description, ValidationType, EntityType, IsOrderByValue)
-VALUES (542086, 0, 0, 'Y',
+VALUES (542058, 0, 0, 'Y',
         TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100, TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100,
         'C_Period Ordered (asc)', 'C_Period ordered by StartDate ascending — use when year is already filtered', 'T', 'de.metas.fresh', 'N');
 
@@ -32,7 +32,7 @@ FROM AD_Language l, AD_Reference t
 WHERE l.IsActive = 'Y'
   AND l.IsSystemLanguage = 'Y'
   AND l.IsBaseLanguage = 'N'
-  AND t.AD_Reference_ID = 542086
+  AND t.AD_Reference_ID = 542058
   AND NOT EXISTS (
       SELECT 1 FROM AD_Reference_Trl tt
       WHERE tt.AD_Language = l.AD_Language
@@ -44,15 +44,15 @@ INSERT INTO AD_Ref_Table (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive,
                           Created, CreatedBy, Updated, UpdatedBy,
                           AD_Table_ID, AD_Key, AD_Display, OrderByClause, WhereClause,
                           IsValueDisplayed, EntityType)
-VALUES (542086, 0, 0, 'Y',
+VALUES (542058, 0, 0, 'Y',
         TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100, TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100,
         145, 837, null, 'C_Period.StartDate', null,
         'N', 'de.metas.fresh');
 
 -- Step 3: Switch process parameters that have a sibling C_Year_ID parameter
--- from 540658 (desc) to 542086 (asc)
+-- from 540658 (desc) to 542058 (asc)
 UPDATE AD_Process_Para pp
-SET AD_Reference_Value_ID = 542086,
+SET AD_Reference_Value_ID = 542058,
     Updated               = TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'),
     UpdatedBy             = 100
 WHERE pp.AD_Reference_Value_ID = 540658
