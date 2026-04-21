@@ -153,6 +153,11 @@
         </dependency>
         <dependency>
             <groupId>de.metas.report.jasper</groupId>
+            <artifactId>liberation-sans</artifactId>
+            <version>1.05</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
             <artifactId>montserrat-fonts</artifactId>
             <version>8.000</version>
         </dependency>
