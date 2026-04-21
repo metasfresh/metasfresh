@@ -48,13 +48,25 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ##   TC-S7  (ARI + Skonto): T_Due +3.80 — same output in both payment-based and
 ##                          discount-only paths. Customer-validated.
 ##   TC-S9  (ARC + Skonto): T_Due +3.80 — discount-only path produces a correction row,
-##                          payment-based path does NOT (see R8a). Sign assumed correct.
-##   TC-S10 (API + Skonto): T_Credit +3.80 — discount-only. The payment-based path produces
-##                          T_Credit -3.80 (opposite sign). Which sign is legally correct
-##                          per §17 UStG is TBD; R8b in REQUIREMENTS asks the fix author
-##                          to decide. This test locks in the discount-only output as-is.
+##                          payment-based path does NOT (see R8a). Sign pending
+##                          Steuerberater confirmation before sub-PR 2 integration.
+##
+##   ⚠️ TC-S10 (API + Skonto): T_Credit +3.80 — MUST-FIX in sub-PR 2 (REQUIREMENTS.md §2.3.1).
+##                          The locked-in +3.80 VIOLATES §17(1)(1) UStG and EU VAT
+##                          Directive Art. 185(1): when a recipient takes a Skonto the
+##                          Vorsteuerabzug MUST be REDUCED, not increased. The ledger
+##                          convention (AmtAcctDr − AmtAcctCr) means the correct sign
+##                          is −3.80 (CR on T_Credit_Acct), which is what the
+##                          payment-based allocation path already produces. The fix
+##                          PR must: (a) make Doc_AllocationHdr.createTaxCorrection post
+##                          the discount-only path with the same sign as the
+##                          payment-based path, AND (b) re-assert TC-S10 to
+##                          −3.80 / −20 on the level-4 correction row, +186.20 / +980
+##                          on the level 1/2/3/ReCap subtotals.
+##
 ##   TC-S11 (APC + Skonto): T_Credit +3.80 — same "correction row missing in payment-based
-##                          path" situation as TC-S9. Sign assumed correct.
+##                          path" situation as TC-S9. Sign pending Steuerberater
+##                          confirmation before sub-PR 2 integration.
 ##
 ## [VAT code] "Keine MwSt." appears as vatcode on every row
 ##   Because the test-created C_Tax has no C_VAT_Code_ID linked. The function falls back
