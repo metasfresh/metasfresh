@@ -25,8 +25,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
-import static de.metas.handlingunits.HuUnitType.VHU;
-
 /*
  * #%L
  * metasfresh-webui-api

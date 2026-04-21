@@ -1097,20 +1097,31 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * Retrieves the records which where selected and attached to this process execution, i.e.
-	 * <ul>
-	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
-	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
-	 * <li>else an exception is thrown
-	 * </ul>
+	 * Convenience overload that applies active-records and context-client filters by default.
 	 *
-	 * @return query builder which will provide selected record(s)
+	 * @see #retrieveSelectedRecordsQueryBuilder(Class, boolean)
 	 */
 	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
 	{
 		return retrieveSelectedRecordsQueryBuilder(modelClass, true);
 	}
 
+	/**
+	 * Retrieves the records which were selected and attached to this process execution, i.e.
+	 * <ul>
+	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records,
+	 *     optionally filtered by active records (see {@code applyActiveRecordsFilter}) and restricted to the current client
+	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will be used as-is,
+	 *     without any active-records or client filter
+	 * <li>else an exception is thrown
+	 * </ul>
+	 *
+	 * @param modelClass             the model class to query
+	 * @param applyActiveRecordsFilter if {@code true}, {@link IQueryBuilder#addOnlyActiveRecordsFilter()} is applied
+	 *                               when a selection query filter is used. Pass {@code false} to also include inactive records
+	 *                               (e.g. for reactivation processes).
+	 * @return query builder which will provide the selected record(s)
+	 */
 	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass,
 			final boolean applyActiveRecordsFilter)
 	{
@@ -1128,7 +1139,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			queryBuilder.filter(selectionQueryFilter);
 			if (applyActiveRecordsFilter)
+			{
 				queryBuilder.addOnlyActiveRecordsFilter();
+			}
 			queryBuilder.addOnlyContextClient();
 		}
 		//
