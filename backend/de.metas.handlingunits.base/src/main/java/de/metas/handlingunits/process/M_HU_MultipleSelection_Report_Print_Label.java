@@ -6,12 +6,12 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.printing.IMassPrintingService;
-import de.metas.printing.MergePdfByteArrays;
 import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -20,10 +20,11 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
+import de.metas.report.ReportResultData;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -108,7 +109,13 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 
 		if (p_isPrintPreview)
 		{
-			printPreview(topLevelHus);
+			final HUReportExecutor printExecutor = HUReportExecutor.newInstance()
+					.printPreview(true)
+					.numberOfCopies(PrintCopies.ofInt(p_PrintCopies));
+
+			final ReportResultData result = printExecutor.executeNow(p_AD_Process_ID, topLevelHus).getReportData();
+			Check.assumeNotNull(result, "ReportResultData shall not be null");
+			getResult().setReportData(result.getReportData(), "labels.pdf", "application/pdf");
 		}
 		else
 		{
@@ -145,45 +152,5 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 													  .build());
 					}
 				});
-	}
-
-	private void printPreview(@NonNull final List<HUToReport> topLevelHus)
-	{
-		final MergePdfByteArrays merger = new MergePdfByteArrays();
-
-		topLevelHus.stream()
-				.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
-				.forEach(topLevelHu -> {
-					merger.add(labelService.printNowAndGetReportData(
-									HULabelDirectPrintRequest.builder()
-											.onlyOneHUPerPrint(true)
-											.printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
-											.printFormatProcessId(p_AD_Process_ID)
-											.hu(topLevelHu)
-											.build())
-									   .getReportDataByteArray());
-
-					if (topLevelHu.getHUUnitType() == LU && !topLevelHu.getIncludedHUs().isEmpty())
-					{
-						final List<HUToReport> sortedIncludedHUs = topLevelHu.getIncludedHUs()
-								.stream()
-								.sorted(Comparator.comparing(hu -> hu.getHUId().getRepoId()))
-								.collect(ImmutableList.toImmutableList());
-
-						merger.add(labelService.printNowAndGetReportData(
-										HULabelDirectPrintRequest.builder()
-												.onlyOneHUPerPrint(true)
-												.printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
-												.printFormatProcessId(p_AD_Process_ID)
-												.hus(sortedIncludedHUs)
-												.build())
-										   .getReportDataByteArray());
-					}
-				});
-
-		getResult().setReportData(
-				new ByteArrayResource(merger.getMergedPdfByteArray()),
-				"labels.pdf",
-				"application/pdf");
 	}
 }

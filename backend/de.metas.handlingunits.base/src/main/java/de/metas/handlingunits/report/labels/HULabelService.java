@@ -13,8 +13,6 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.report.PrintCopies;
-import de.metas.report.ReportResultData;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -92,31 +90,6 @@ public class HULabelService
 		else
 		{
 			printExecutor.executeNow(printFormatProcessId, request.getHus());
-		}
-	}
-
-	@NonNull
-	public ReportResultData printNowAndGetReportData(@NonNull final HULabelDirectPrintRequest request)
-	{
-		Check.assumeNotEmpty(request.getHus(), "HUs must not be empty");
-
-		final AdProcessId printFormatProcessId = request.getPrintFormatProcessId();
-		final HUReportExecutor printExecutor = HUReportExecutor.newInstance()
-				.printPreview(false)
-				.numberOfCopies(CoalesceUtil.coalesceNotNull(request.getPrintCopies(), PrintCopies.ONE));
-
-		if (request.isOnlyOneHUPerPrint())
-		{
-			ReportResultData result = null;
-			for (final HUToReport hu : request.getHus())
-			{
-				result = printExecutor.executeNow(printFormatProcessId, ImmutableList.of(hu)).getReportData();
-			}
-			return Check.assumeNotNull(result, "ReportResultData shall not be null");
-		}
-		else
-		{
-			return printExecutor.executeNow(printFormatProcessId, request.getHus()).getReportData();
 		}
 	}
 
