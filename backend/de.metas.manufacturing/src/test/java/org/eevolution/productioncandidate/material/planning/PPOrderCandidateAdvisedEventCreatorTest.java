@@ -40,6 +40,7 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -278,10 +279,13 @@ class PPOrderCandidateAdvisedEventCreatorTest
 			Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(MaterialRequest.class))).thenReturn(newDummyPPOrderCandidate());
 
 			final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+			final Quantity remainingQty = qty("10");
 
-			final List<PPOrderCandidateAdvisedEvent> events = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
-			assertThat(events).hasSize(1);
-			assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			final SupplyAdvice advice = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context, remainingQty);
+			assertThat(advice.getEvents()).hasSize(1);
+			assertThat(advice.getEvents().get(0)).isInstanceOf(PPOrderCandidateAdvisedEvent.class);
+			assertThat(((PPOrderCandidateAdvisedEvent)advice.getEvents().get(0)).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			assertThat(advice.getConsumedQty()).isEqualTo(remainingQty);
 		}
 	}
 }

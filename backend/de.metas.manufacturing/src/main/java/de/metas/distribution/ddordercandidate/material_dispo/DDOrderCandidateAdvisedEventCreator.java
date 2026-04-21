@@ -42,6 +42,7 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -71,16 +72,25 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		return PlanningUsage.DISTRIBUTION;
 	}
 
-	public List<DDOrderCandidateAdvisedEvent> createAdvisedEvents(
+	@NonNull
+	@Override
+	public SupplyAdvice createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity remainingQty)
 	{
 		final ProductPlanning productPlanningData = context.getProductPlanning();
 
-		return ddOrderCandidateDataFactory.create(supplyRequiredDescriptor, context)
+		// TODO(me03#28877 follow-up): clip by source-warehouse ATP so partial fulfillment
+		//  can spill over to manufacturing/purchasing for the remainder. For now distribution
+		//  claims the full remainder (the candidate gets sized to remainingQty), which mirrors
+		//  pre-existing DDOrderCandidateDataFactory behavior.
+		final ImmutableList<DDOrderCandidateAdvisedEvent> events = ddOrderCandidateDataFactory.create(supplyRequiredDescriptor, context, remainingQty)
 				.stream()
 				.map(ddOrderCandidate -> toDDOrderCandidateAdvisedEvent(ddOrderCandidate, supplyRequiredDescriptor, productPlanningData))
 				.collect(ImmutableList.toImmutableList());
+
+		return SupplyAdvice.of(events, remainingQty);
 	}
 
 	private static DDOrderCandidateAdvisedEvent toDDOrderCandidateAdvisedEvent(

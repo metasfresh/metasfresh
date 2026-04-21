@@ -31,13 +31,17 @@ import java.util.function.Predicate;
  *
  * A single {@link ProductPlanning} may match more than one usage (e.g. a row with
  * {@code isManufactured=Y} <i>and</i> {@code DD_NetworkDistribution_ID} set matches both
- * {@link #MANUFACTURING} and {@link #DISTRIBUTION}). That is intentional and mirrors
- * the pre-existing behavior where all matching advisors fire from the same row.
+ * {@link #DISTRIBUTION} and {@link #MANUFACTURING}).
+ *
+ * <p>Declaration order of the enum constants defines the priority used by
+ * {@code SupplyRequiredHandler} when dispatching a demand across advisors:
+ * distribution is cheapest (just move existing stock), manufacturing is next,
+ * purchasing is slowest to fulfill and comes last.
  */
 public enum PlanningUsage
 {
-	MANUFACTURING(pp -> pp.isManufactured() && !pp.isPickingOrder()),
 	DISTRIBUTION(pp -> pp.getDistributionNetworkId() != null),
+	MANUFACTURING(pp -> pp.isManufactured() && !pp.isPickingOrder()),
 	PURCHASING(ProductPlanning::isPurchased);
 
 	@NonNull private final Predicate<ProductPlanning> predicate;

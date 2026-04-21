@@ -39,6 +39,7 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.quantity.Quantity;
@@ -78,13 +79,16 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	}
 
 	@NonNull
-	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
+	@Override
+	public SupplyAdvice createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity remainingQty)
 	{
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
+		// Manufacturing claims the full remainder: given enough time, a PP_Order can always produce it.
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context, remainingQty);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(context, completeRequest, maxQtyPerOrder);
@@ -96,7 +100,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		{
 			final PPOrderCandidateId parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
 
-			// this is the PPOrderCandidate which we advise the system to create! 
+			// this is the PPOrderCandidate which we advise the system to create!
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
 					.withParentPPOrderCandidateId(parentPPOrderCandidateId);
 
@@ -120,7 +124,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			Loggables.addLog("Created PPOrderCandidateAdvisedEvent with quantity={}", request.getQtyToSupply());
 		}
 
-		return result.build();
+		return SupplyAdvice.of(result.build(), remainingQty);
 	}
 
 	@Nullable

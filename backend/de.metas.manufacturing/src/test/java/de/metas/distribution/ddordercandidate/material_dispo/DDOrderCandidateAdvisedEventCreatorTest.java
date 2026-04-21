@@ -39,12 +39,16 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -194,11 +198,13 @@ class DDOrderCandidateAdvisedEventCreatorTest
 						.build())
 				.build();
 
-		final List<DDOrderCandidateAdvisedEvent> events = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
+		final Quantity remainingQty = Quantitys.of(new BigDecimal("123"), productId);
+		final SupplyAdvice advice = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context, remainingQty);
 
-		assertThat(events).hasSize(1);
+		assertThat(advice.getEvents()).hasSize(1);
+		assertThat(advice.getConsumedQty()).isEqualTo(remainingQty);
 
-		final DDOrderCandidateAdvisedEvent event = events.get(0);
+		final DDOrderCandidateAdvisedEvent event = (DDOrderCandidateAdvisedEvent)advice.getEvents().get(0);
 
 		final EventDescriptor eventDescriptor = event.getEventDescriptor();
 		System.out.println(eventDescriptor);

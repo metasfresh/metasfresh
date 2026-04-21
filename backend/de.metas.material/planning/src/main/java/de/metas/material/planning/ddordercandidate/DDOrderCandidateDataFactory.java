@@ -55,22 +55,37 @@ public class DDOrderCandidateDataFactory
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
+		return create(supplyRequiredDescriptor, context, extractQtyToSupply(supplyRequiredDescriptor));
+	}
+
+	/**
+	 * Variant that accepts an explicit {@code qtyToSupply} — used by the leftover-quantity
+	 * dispatch in {@code SupplyRequiredHandler}, so that when a higher-priority advisor has
+	 * already claimed part of the demand, the distribution candidates only cover the remainder.
+	 */
+	public List<DDOrderCandidateData> create(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity qtyToSupply)
+	{
 		try
 		{
-			return create0(supplyRequiredDescriptor, context);
+			return create0(supplyRequiredDescriptor, context, qtyToSupply);
 		}
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
 					.setParameter("supplyRequiredDescriptor", supplyRequiredDescriptor)
-					.setParameter("context", context);
+					.setParameter("context", context)
+					.setParameter("qtyToSupply", qtyToSupply);
 		}
 	}
 
-	public List<DDOrderCandidateData> create0(
+	private List<DDOrderCandidateData> create0(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity qtyToSupplyTotal)
 	{
 		if (context.getProductId().getRepoId() != supplyRequiredDescriptor.getProductId())
 		{
@@ -105,7 +120,6 @@ public class DDOrderCandidateDataFactory
 			return ImmutableList.of();
 		}
 
-		final Quantity qtyToSupplyTotal = extractQtyToSupply(supplyRequiredDescriptor);
 		Quantity qtyToSupplyRemaining = qtyToSupplyTotal;
 		for (final DistributionNetworkLine networkLine : networkLines)
 		{

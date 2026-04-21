@@ -14,6 +14,7 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -73,9 +74,12 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		return PlanningUsage.PURCHASING;
 	}
 
-	public List<PurchaseCandidateAdvisedEvent> createAdvisedEvents(
+	@NonNull
+	@Override
+	public SupplyAdvice createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity remainingQty)
 	{
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
@@ -84,11 +88,13 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		if (!defaultVendorProductInfo.isPresent())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
-			return ImmutableList.of();
+			return SupplyAdvice.nothing(remainingQty);
 		}
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
+		// Purchasing claims the full remainder: the purchase candidate record stores qty via the
+		// descriptor carried on the event, so there is nothing to override here.
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
@@ -98,7 +104,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 				.build();
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return ImmutableList.of(event);
+		return SupplyAdvice.of(ImmutableList.of(event), remainingQty);
 	}
 
 	@Override
