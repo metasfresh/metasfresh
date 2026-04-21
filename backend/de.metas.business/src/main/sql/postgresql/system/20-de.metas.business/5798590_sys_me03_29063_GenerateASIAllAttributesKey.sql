@@ -14,12 +14,12 @@ AS
 $BODY$
 SELECT COALESCE(STRING_AGG(sub.keyPart, '§&§'), p_NullString)
 FROM (SELECT GenerateASIStorageAttributesKeyPart(
-                     p_M_Attribute_ID => ai.M_Attribute_ID,
-                     p_AttributeValueType => a.AttributeValueType::text,
-                     p_Value => ai.Value::text,
-                     p_ValueNumber => ai.ValueNumber,
-                     p_ValueDate => ai.ValueDate::timestamp with time zone,
-                     p_M_AttributeValue_ID => ai.M_AttributeValue_ID
+                     ai.M_Attribute_ID,
+                     a.AttributeValueType::text,
+                     ai.Value::text,
+                     ai.ValueNumber,
+                     ai.ValueDate::timestamp with time zone,
+                     ai.M_AttributeValue_ID
              ) AS keyPart
       FROM M_AttributeInstance ai
                INNER JOIN M_Attribute a ON a.M_Attribute_ID = ai.M_Attribute_ID
