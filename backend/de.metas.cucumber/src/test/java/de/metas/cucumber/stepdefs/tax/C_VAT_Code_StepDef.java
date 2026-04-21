@@ -36,14 +36,14 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
+
+import java.util.UUID;
 
 /**
  * Step definitions for creating {@link de.metas.acct.model.I_C_VAT_Code} records tied to an existing {@code C_Tax}.
  *
  * @see C_VAT_Code_StepDefData
  * @see IVATCodeDAO#createVATCode
- * @see IVATCodeDAO#existsForAcctSchemaAndTax
  */
 @RequiredArgsConstructor
 public class C_VAT_Code_StepDef
@@ -61,26 +61,28 @@ public class C_VAT_Code_StepDef
 	 * <ul>
 	 *     <li>{@code Identifier} — unique identifier used to look the VAT code up later (e.g., in the report step)</li>
 	 *     <li>{@code C_Tax_ID} — identifier of an existing {@code C_Tax} record (from {@link C_Tax_StepDefData})</li>
-	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: whether this VAT code applies to sales or purchase</li>
+	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code</li>
 	 * </ul>
 	 *
-	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of {@link StepDefConstants#CLIENT_ID}
-	 * (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The {@code VATCode} value is set to the
-	 * referenced {@code C_Tax.Name} — which is itself unique per test run thanks to
-	 * {@code suggestValueAndName} — so distinct scenarios cannot collide on the unique VATCode constraint.
+	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
+	 * {@link StepDefConstants#CLIENT_ID} (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The
+	 * {@code VATCode} value is a 10-char UUID prefix (the {@code C_VAT_Code.VATCode} column is
+	 * {@code VARCHAR(10)}) so that two codes created for the same {@code C_Tax} within the same
+	 * scenario (sales + purchase) have distinct values and the tax report can group by them.
 	 *
-	 * <p><b>Fails fast</b>: if a {@code C_VAT_Code} already exists for the given {@code C_AcctSchema_ID} +
-	 * {@code C_Tax_ID}, the step aborts with an {@link AdempiereException}. This guards against silent
-	 * duplication and forces the test to be aware of pre-existing state.
+	 * <p>Multiple {@code C_VAT_Code} rows per {@code (AcctSchema, C_Tax)} are allowed — one per
+	 * {@code IsSOTrx} side. The §13b reverse-charge posting routes T_Due_Acct (output, UStVA KZ 84/85)
+	 * to the {@code IsSOTrx=Y} code and T_Credit_Acct (input, KZ 67) to the {@code IsSOTrx=N} code.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
 	 * And metasfresh contains C_Tax
 	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-	 *   | salesTax19 | salesTaxCategory | 19   | DE                       | DE                        |
+	 *   | tax19      | taxCategory      | 19   | DE                       | DE                        |
 	 * And metasfresh contains C_VAT_Codes:
-	 *   | Identifier   | C_Tax_ID   | IsSOTrx |
-	 *   | salesVat19   | salesTax19 | Y       |
+	 *   | Identifier      | C_Tax_ID | IsSOTrx |
+	 *   | vatCode19_sales | tax19    | Y       |
+	 *   | vatCode19_buy   | tax19    | N       |
 	 * }</pre>
 	 */
 	@And("metasfresh contains C_VAT_Codes:")
@@ -96,23 +98,18 @@ public class C_VAT_Code_StepDef
 		final boolean isSOTrx = row.getAsBoolean("IsSOTrx");
 		final AcctSchema acctSchema = acctSchemaBL.getPrimaryAcctSchema(StepDefConstants.CLIENT_ID);
 
-		if (vatCodeDAO.existsForAcctSchemaAndTax(acctSchema.getId(), taxId))
-		{
-			throw new AdempiereException("C_VAT_Code already exists for this acct schema + tax, refusing to create a duplicate")
-					.appendParametersToMessage()
-					.setParameter("C_AcctSchema_ID", acctSchema.getId().getRepoId())
-					.setParameter("C_Tax_ID", taxId.getRepoId())
-					.setParameter("C_Tax.Name", tax.getName());
-		}
+		// C_VAT_Code.VATCode is VARCHAR(10) — any longer value is silently truncated by the PO
+		// setter, making two codes for the same C_Tax collide on the truncated prefix.
+		final String vatCodeValue = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
 		final VATCode vatCode = vatCodeDAO.createVATCode(CreateVATCodeRequest.builder()
 				.acctSchemaId(acctSchema.getId())
 				.taxId(taxId)
-				.vatCode(tax.getName())
+				.vatCode(vatCodeValue)
 				.isSOTrx(isSOTrx)
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> vatCodeTable.putOrReplace(identifier, vatCode));
+		vatCodeTable.putOrReplace(row.getAsIdentifier(), vatCode);
 	}
 }

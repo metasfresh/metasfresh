@@ -3,7 +3,7 @@
 @allure.label.feature:F00700_Invoicing
 @F00700
 @ghActions:run_on_executor5
-Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
+Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 ## me03#29361: Support Reverse Charge with explicit fact acct - Tax Accounting Report fixes
 ##
 ## Regression tests for the Tax Accounting Report — the user-facing DB function
@@ -77,8 +77,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | salesTax19 | salesTaxCategory  | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID   | IsSOTrx |
-      | salesVat19 | salesTax19 | Y       |
+      | Identifier     | C_Tax_ID   | IsSOTrx |
+      | salesVat19     | salesTax19 | Y       |
+      | salesVat19_buy | salesTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier  |
       | salesProd1  |
@@ -97,10 +98,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents ariInv is posted
 
     # Tax-related Fact_Acct posting: ARI → T_Due_Acct CR 190 (USt liability).
+    # C_VAT_Code_ID = salesVat19 (IsSOTrx=Y) because T_Due is the sales/output side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
-      | T_Due_Acct            |           | 190       | salesTax19 | ariInv    |
-      | *                     |           |           |            | ariInv    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | salesTax19 | salesVat19    | ariInv    |
+      | *                     |           |           |            |               | ariInv    |
     And Fact_Acct records balances for documents ariInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID   |
       | T_Due_Acct            | -190        | salesTax19 |
@@ -131,8 +133,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | arcTax19   | arcTaxCategory   | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | arcVat19   | arcTax19 | Y       |
+      | Identifier   | C_Tax_ID | IsSOTrx |
+      | arcVat19     | arcTax19 | Y       |
+      | arcVat19_buy | arcTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | arcProd1   |
@@ -151,10 +154,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents arcInv is posted
 
     # ARC → T_Due_Acct DR 190 (reverses the USt that an ARI would have posted CR).
+    # C_VAT_Code_ID = arcVat19 (IsSOTrx=Y) because T_Due is the sales/output side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
-      | T_Due_Acct            | 190       |           | arcTax19 | arcInv    |
-      | *                     |           |           |          | arcInv    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            | 190       |           | arcTax19 | arcVat19      | arcInv    |
+      | *                     |           |           |          |               | arcInv    |
     And Fact_Acct records balances for documents arcInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
       | T_Due_Acct            | 190         | arcTax19 |
@@ -183,8 +187,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | apiTax19   | apiTaxCategory   | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | apiVat19   | apiTax19 | N       |
+      | Identifier    | C_Tax_ID | IsSOTrx |
+      | apiVat19      | apiTax19 | N       |
+      | apiVat19_sell | apiTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | apiProd1   |
@@ -203,10 +208,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apiInv is posted
 
     # API → T_Credit_Acct DR 190 (VSt receivable, input-tax deduction per §15 UStG).
+    # C_VAT_Code_ID = apiVat19 (IsSOTrx=N) because T_Credit is the purchase/input side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
-      | T_Credit_Acct         | 190       |           | apiTax19 | apiInv    |
-      | *                     |           |           |          | apiInv    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | apiTax19 | apiVat19      | apiInv    |
+      | *                     |           |           |          |               | apiInv    |
     And Fact_Acct records balances for documents apiInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
       | T_Credit_Acct         | 190         | apiTax19 |
@@ -235,8 +241,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | apcTax19   | apcTaxCategory   | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | apcVat19   | apcTax19 | N       |
+      | Identifier    | C_Tax_ID | IsSOTrx |
+      | apcVat19      | apcTax19 | N       |
+      | apcVat19_sell | apcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | apcProd1   |
@@ -255,10 +262,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents apcInv is posted
 
     # APC → T_Credit_Acct CR 190 (reverses the VSt that an API would have posted DR).
+    # C_VAT_Code_ID = apcVat19 (IsSOTrx=N) because T_Credit is the purchase/input side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
-      | T_Credit_Acct         |           | 190       | apcTax19 | apcInv    |
-      | *                     |           |           |          | apcInv    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         |           | 190       | apcTax19 | apcVat19      | apcInv    |
+      | *                     |           |           |          |               | apcInv    |
     And Fact_Acct records balances for documents apcInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
       | T_Credit_Acct         | -190        | apcTax19 |
@@ -287,8 +295,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier        | C_TaxCategory_ID        | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | exemptSalesTax    | exemptSalesTaxCategory  | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID       | IsSOTrx |
-      | exemptSalesVat | exemptSalesTax | Y       |
+      | Identifier         | C_Tax_ID       | IsSOTrx |
+      | exemptSalesVat     | exemptSalesTax | Y       |
+      | exemptSalesVat_buy | exemptSalesTax | N       |
     And metasfresh contains M_Products:
       | Identifier      |
       | exemptSalesProd |
@@ -307,10 +316,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptAriInv is posted
 
     # Zero-tax ARI (§4 UStG): T_Due_Acct posts a zero row carrying the TaxBaseAmt only.
+    # C_VAT_Code_ID = exemptSalesVat (IsSOTrx=Y) — sales/output side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID       | Record_ID    |
-      | T_Due_Acct            | 0         | 0         | exemptSalesTax | exemptAriInv |
-      | *                     |           |           |                | exemptAriInv |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID       | C_VAT_Code_ID  | Record_ID    |
+      | T_Due_Acct            | 0         | 0         | exemptSalesTax | exemptSalesVat | exemptAriInv |
+      | *                     |           |           |                |                | exemptAriInv |
     And Fact_Acct records balances for documents exemptAriInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID       |
       | T_Due_Acct            | 0           | exemptSalesTax |
@@ -339,8 +349,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier        | C_TaxCategory_ID           | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | exemptPurchaseTax | exemptPurchaseTaxCategory  | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier        | C_Tax_ID          | IsSOTrx |
-      | exemptPurchaseVat | exemptPurchaseTax | N       |
+      | Identifier             | C_Tax_ID          | IsSOTrx |
+      | exemptPurchaseVat      | exemptPurchaseTax | N       |
+      | exemptPurchaseVat_sell | exemptPurchaseTax | Y       |
     And metasfresh contains M_Products:
       | Identifier          |
       | exemptPurchaseProd  |
@@ -359,10 +370,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents exemptApiInv is posted
 
     # Zero-tax API (§4/§15(2) UStG): T_Credit_Acct posts a zero row carrying the TaxBaseAmt only.
+    # C_VAT_Code_ID = exemptPurchaseVat (IsSOTrx=N) — purchase/input side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID          | Record_ID    |
-      | T_Credit_Acct         | 0         | 0         | exemptPurchaseTax | exemptApiInv |
-      | *                     |           |           |                   | exemptApiInv |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID          | C_VAT_Code_ID     | Record_ID    |
+      | T_Credit_Acct         | 0         | 0         | exemptPurchaseTax | exemptPurchaseVat | exemptApiInv |
+      | *                     |           |           |                   |                   | exemptApiInv |
     And Fact_Acct records balances for documents exemptApiInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID          |
       | T_Credit_Acct         | 0           | exemptPurchaseTax |
@@ -410,8 +422,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocTax19  | allocTaxCategory  | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID   | IsSOTrx |
-      | allocVat19 | allocTax19 | Y       |
+      | Identifier     | C_Tax_ID   | IsSOTrx |
+      | allocVat19     | allocTax19 | Y       |
+      | allocVat19_buy | allocTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | allocProd  |
@@ -438,13 +451,14 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # ARI + discount: invoice posts T_Due CR 190; allocation's tax-correction row posts
     # T_Due DR 3.80 (USt is reduced per §17(1)(1) UStG because the customer paid less).
-    # Expected net balance: -190 + 3.80 = -186.20.
+    # Expected net balance: -190 + 3.80 = -186.20. C_VAT_Code_ID = allocVat19 (IsSOTrx=Y)
+    # on both legs — the correction copies the VATCode from the invoice's source Fact_Acct row.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID     |
-      | T_Due_Acct            |           | 190       | allocTax19 | allocSalesInv |
-      | *                     |           |           |            | allocSalesInv |
-      | T_Due_Acct            | 3.80      |           | allocTax19 | ariAlloc      |
-      | *                     |           |           |            | ariAlloc      |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID | Record_ID     |
+      | T_Due_Acct            |           | 190       | allocTax19 | allocVat19    | allocSalesInv |
+      | *                     |           |           |            |               | allocSalesInv |
+      | T_Due_Acct            | 3.80      |           | allocTax19 | allocVat19    | ariAlloc      |
+      | *                     |           |           |            |               | ariAlloc      |
     And Fact_Acct records balances for documents allocSalesInv,ariAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID   |
       | T_Due_Acct            | -186.20     | allocTax19 |
@@ -480,9 +494,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | mixTax19    | mixTaxCategory19  | 19   | DE                       | DE                        |
       | mixTax7     | mixTaxCategory7   | 7    | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx |
-      | mixVat19   | mixTax19 | Y       |
-      | mixVat7    | mixTax7  | Y       |
+      | Identifier   | C_Tax_ID | IsSOTrx |
+      | mixVat19     | mixTax19 | Y       |
+      | mixVat19_buy | mixTax19 | N       |
+      | mixVat7      | mixTax7  | Y       |
+      | mixVat7_buy  | mixTax7  | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | mixProd19  |
@@ -505,11 +521,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And Wait until documents mixInv is posted
 
     # One T_Due_Acct Fact_Acct row per tax: 190 for 19% slice, 35 for 7% slice.
+    # Both legs sales-side → IsSOTrx=Y VATCodes (mixVat19 / mixVat7).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | Record_ID |
-      | T_Due_Acct            |           | 190       | mixTax19 | mixInv    |
-      | T_Due_Acct            |           | 35        | mixTax7  | mixInv    |
-      | *                     |           |           |          | mixInv    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | mixTax19 | mixVat19      | mixInv    |
+      | T_Due_Acct            |           | 35        | mixTax7  | mixVat7       | mixInv    |
+      | *                     |           |           |          |               | mixInv    |
     And Fact_Acct records balances for documents mixInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
       | T_Due_Acct            | -190        | mixTax19 |
@@ -557,8 +574,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocArcTax19  | allocArcTaxCategory  | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier    | C_Tax_ID      | IsSOTrx |
-      | allocArcVat19 | allocArcTax19 | Y       |
+      | Identifier        | C_Tax_ID      | IsSOTrx |
+      | allocArcVat19     | allocArcTax19 | Y       |
+      | allocArcVat19_buy | allocArcTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocArcProd |
@@ -587,12 +605,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # ARC + negative discount (refund paid, Skonto kept): invoice posts T_Due DR 190
     # (reversing USt); allocation posts T_Due CR 3.80 (reverses LESS of the USt because
     # we refunded less to the customer). Net balance +186.20 per §17(1) UStG.
+    # VATCode on both legs = allocArcVat19 (IsSOTrx=Y) — sales/output side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
-      | T_Due_Acct            | 190       |           | allocArcTax19 | allocArcInv |
-      | *                     |           |           |               | allocArcInv |
-      | T_Due_Acct            |           | 3.80      | allocArcTax19 | arcAlloc    |
-      | *                     |           |           |               | arcAlloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
+      | T_Due_Acct            | 190       |           | allocArcTax19 | allocArcVat19 | allocArcInv |
+      | *                     |           |           |               |               | allocArcInv |
+      | T_Due_Acct            |           | 3.80      | allocArcTax19 | allocArcVat19 | arcAlloc    |
+      | *                     |           |           |               |               | arcAlloc    |
     And Fact_Acct records balances for documents allocArcInv,arcAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID      |
       | T_Due_Acct            | 186.20      | allocArcTax19 |
@@ -631,8 +650,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocApiTax19  | allocApiTaxCategory  | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier    | C_Tax_ID      | IsSOTrx |
-      | allocApiVat19 | allocApiTax19 | N       |
+      | Identifier         | C_Tax_ID      | IsSOTrx |
+      | allocApiVat19      | allocApiTax19 | N       |
+      | allocApiVat19_sell | allocApiTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocApiProd |
@@ -660,12 +680,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # API + negative discount (supplier paid less, Skonto taken): invoice posts T_Credit DR 190
     # (claiming VSt); allocation posts T_Credit CR 3.80 (claims LESS VSt because we deducted
     # a Skonto from what we owed). Net balance +186.20 per §17(1)(2) and §15(1a) UStG.
+    # VATCode on both legs = allocApiVat19 (IsSOTrx=N) — purchase/input side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
-      | T_Credit_Acct         | 190       |           | allocApiTax19 | allocApiInv |
-      | *                     |           |           |               | allocApiInv |
-      | T_Credit_Acct         |           | 3.80      | allocApiTax19 | apiAlloc    |
-      | *                     |           |           |               | apiAlloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
+      | T_Credit_Acct         | 190       |           | allocApiTax19 | allocApiVat19 | allocApiInv |
+      | *                     |           |           |               |               | allocApiInv |
+      | T_Credit_Acct         |           | 3.80      | allocApiTax19 | allocApiVat19 | apiAlloc    |
+      | *                     |           |           |               |               | apiAlloc    |
     And Fact_Acct records balances for documents allocApiInv,apiAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID      |
       | T_Credit_Acct         | 186.20      | allocApiTax19 |
@@ -705,8 +726,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocApcTax19  | allocApcTaxCategory  | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier    | C_Tax_ID      | IsSOTrx |
-      | allocApcVat19 | allocApcTax19 | N       |
+      | Identifier         | C_Tax_ID      | IsSOTrx |
+      | allocApcVat19      | allocApcTax19 | N       |
+      | allocApcVat19_sell | allocApcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocApcProd |
@@ -734,12 +756,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # APC + positive discount (vendor refunded less, we kept a Skonto): invoice posts
     # T_Credit CR 190 (reversing VSt); allocation posts T_Credit DR 3.80 (reverses LESS
     # VSt because we retained a Skonto on the refund). Net balance -186.20 per §17(1) UStG.
+    # VATCode on both legs = allocApcVat19 (IsSOTrx=N) — purchase/input side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | Record_ID   |
-      | T_Credit_Acct         |           | 190       | allocApcTax19 | allocApcInv |
-      | *                     |           |           |               | allocApcInv |
-      | T_Credit_Acct         | 3.80      |           | allocApcTax19 | apcAlloc    |
-      | *                     |           |           |               | apcAlloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
+      | T_Credit_Acct         |           | 190       | allocApcTax19 | allocApcVat19 | allocApcInv |
+      | *                     |           |           |               |               | allocApcInv |
+      | T_Credit_Acct         | 3.80      |           | allocApcTax19 | allocApcVat19 | apcAlloc    |
+      | *                     |           |           |               |               | apcAlloc    |
     And Fact_Acct records balances for documents allocApcInv,apcAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID      |
       | T_Credit_Acct         | -186.20     | allocApcTax19 |
@@ -781,8 +804,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcApiTax19  | rcApiTaxCategory  | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier  | C_Tax_ID   | IsSOTrx |
-      | rcApiVat19  | rcApiTax19 | N       |
+      | Identifier     | C_Tax_ID   | IsSOTrx |
+      | rcApiVat19     | rcApiTax19 | N       |
+      | rcApiVat19_out | rcApiTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | rcApiProd  |
@@ -802,32 +826,38 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # RC posting: both tax legs fire. TaxAmt on the C_InvoiceTax is 0 (not payable);
     # ReverseChargeTaxAmt = 190 drives both Fact_Acct rows.
+    # Per-leg VATCode: T_Credit (§13b input, UStVA KZ 67)    → rcApiVat19     (IsSOTrx=N).
+    # Per-leg VATCode: T_Due    (§13b output, UStVA KZ 84/85) → rcApiVat19_out (IsSOTrx=Y).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
-      | T_Credit_Acct         | 190       |           | rcApiTax19 | rcApiInv  |
-      | T_Due_Acct            |           | 190       | rcApiTax19 | rcApiInv  |
-      | *                     |           |           |            | rcApiInv  |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
+      | T_Credit_Acct         | 190       |           | rcApiTax19 | rcApiVat19     | rcApiInv  |
+      | T_Due_Acct            |           | 190       | rcApiTax19 | rcApiVat19_out | rcApiInv  |
+      | *                     |           |           |            |                | rcApiInv  |
     And Fact_Acct records balances for documents rcApiInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID   |
       | T_Credit_Acct         | 190         | rcApiTax19 |
       | T_Due_Acct            | -190        | rcApiTax19 |
 
-    # Report: both accounts carry the same +1000 base (the view joins the single C_InvoiceTax
-    # for both rows). Level-4 emits two per-document rows. TaxAmt follows the ledger formula
-    # taxamt = AmtAcctDr − AmtAcctCr: +190 on T_Credit, −190 on T_Due.
-    # Level-1 / ReCap subtotals deduplicate the base (see Bug A.2 fix in sub-PR 2):
-    #   NetAmt_SUM = +1000 (counted once per invoice+tax, not +2000 across accounts)
-    #   TaxAmt_SUM = +190 + (−190) = 0 (algebraic — correct: RC has zero net cash VAT impact)
+    # Report: with per-leg VATCodes, level-1 / 2 / 3 / ReCap produce one row PER VATCode.
+    # The input-side row (rcApiVat19, KZ 67) and output-side row (rcApiVat19_out, KZ 84/85)
+    # are now separately reportable — matching SAP's two-tax-code RC convention and §13b
+    # UStG + UStVA KZ separation.
+    # TaxAmt follows the ledger formula taxamt = AmtAcctDr − AmtAcctCr:
+    #   T_Credit leg → +190 (rcApiVat19, input)
+    #   T_Due    leg → −190 (rcApiVat19_out, output)
+    # Each vatcode has one Fact_Acct row → Bug A.2 dedup is a no-op per VATCode.
     Then report_taxaccounts for C_Tax "rcApiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | rcApiVat19    |                       | 1000       | 0          |        |        | -             | -          |
-      | 2     | rcApiVat19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 2     | rcApiVat19    | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
-      | 3     | rcApiVat19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 3     | rcApiVat19    | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
-      | 4     | rcApiVat19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcApiInv   |
-      | 4     | rcApiVat19    | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcApiInv   |
-      | ReCap | rcApiVat19    |                       | 1000       | 0          |        |        | -             | -          |
+      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcApiVat19     |                       | 1000       | 190        |        |        | -             | -          |
+      | 1     | rcApiVat19_out |                       | 1000       | -190       |        |        | -             | -          |
+      | 2     | rcApiVat19     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 2     | rcApiVat19_out | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
+      | 3     | rcApiVat19     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 3     | rcApiVat19_out | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
+      | 4     | rcApiVat19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcApiInv   |
+      | 4     | rcApiVat19_out | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcApiInv   |
+      | ReCap | rcApiVat19     |                       | 1000       | 190        |        |        | -             | -          |
+      | ReCap | rcApiVat19_out |                       | 1000       | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -851,8 +881,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcApcTax19 | rcApcTaxCategory | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID   | IsSOTrx |
-      | rcApcVat19 | rcApcTax19 | N       |
+      | Identifier     | C_Tax_ID   | IsSOTrx |
+      | rcApcVat19     | rcApcTax19 | N       |
+      | rcApcVat19_out | rcApcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | rcApcProd  |
@@ -870,29 +901,32 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the invoice identified by rcApcInv is completed
     And Wait until documents rcApcInv is posted
 
+    # Per-leg VATCode: T_Credit → rcApcVat19 (IsSOTrx=N); T_Due → rcApcVat19_out (IsSOTrx=Y).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
-      | T_Credit_Acct         |           | 190       | rcApcTax19 | rcApcInv  |
-      | T_Due_Acct            | 190       |           | rcApcTax19 | rcApcInv  |
-      | *                     |           |           |            | rcApcInv  |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
+      | T_Credit_Acct         |           | 190       | rcApcTax19 | rcApcVat19     | rcApcInv  |
+      | T_Due_Acct            | 190       |           | rcApcTax19 | rcApcVat19_out | rcApcInv  |
+      | *                     |           |           |            |                | rcApcInv  |
     And Fact_Acct records balances for documents rcApcInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID   |
       | T_Credit_Acct         | -190        | rcApcTax19 |
       | T_Due_Acct            | 190         | rcApcTax19 |
 
     # Symmetric negative report (APC doctype → TaxBaseAmt flipped to −1000 for both rows).
-    # TaxAmt: −190 on T_Credit (CR), +190 on T_Due (DR). Level-1 / ReCap dedup (Bug A.2):
-    # NetAmt_SUM = −1000 (once per invoice+tax); TaxAmt_SUM = −190 + 190 = 0.
+    # TaxAmt: −190 on T_Credit (CR, rcApcVat19), +190 on T_Due (DR, rcApcVat19_out).
+    # With per-leg VATCodes, levels 1/2/3/ReCap produce one row per VATCode.
     Then report_taxaccounts for C_Tax "rcApcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | rcApcVat19    |                       | -1000      | 0          |        |        | -             | -          |
-      | 2     | rcApcVat19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 2     | rcApcVat19    | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
-      | 3     | rcApcVat19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 3     | rcApcVat19    | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
-      | 4     | rcApcVat19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcApcInv   |
-      | 4     | rcApcVat19    | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcApcInv   |
-      | ReCap | rcApcVat19    |                       | -1000      | 0          |        |        | -             | -          |
+      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcApcVat19     |                       | -1000      | -190       |        |        | -             | -          |
+      | 1     | rcApcVat19_out |                       | -1000      | 190        |        |        | -             | -          |
+      | 2     | rcApcVat19     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 2     | rcApcVat19_out | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
+      | 3     | rcApcVat19     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 3     | rcApcVat19_out | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
+      | 4     | rcApcVat19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcApcInv   |
+      | 4     | rcApcVat19_out | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcApcInv   |
+      | ReCap | rcApcVat19     |                       | -1000      | -190       |        |        | -             | -          |
+      | ReCap | rcApcVat19_out |                       | -1000      | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -916,8 +950,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcAllocApiTax19 | rcAllocApiTaxCategory  | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier      | C_Tax_ID        | IsSOTrx |
-      | rcAllocApiVat19 | rcAllocApiTax19 | N       |
+      | Identifier          | C_Tax_ID        | IsSOTrx |
+      | rcAllocApiVat19     | rcAllocApiTax19 | N       |
+      | rcAllocApiVat19_out | rcAllocApiTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier     |
       | rcAllocApiProd |
@@ -945,6 +980,16 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # Tax correction amount on RC + Skonto = DiscountAmt × TaxRate = 23.80 × 0.19 = 4.52 EUR
     # (not 3.80 as in non-RC — RC invoice has TaxAmt=0, so the correction base is the gross
     # DiscountAmt multiplied by the tax rate, not the tax portion of the gross).
+    # VATCodes per leg: T_Credit → rcAllocApiVat19 (N); T_Due → rcAllocApiVat19_out (Y).
+    # Allocation correction copies the per-leg VATCode from each source invoice Fact_Acct row.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID        | C_VAT_Code_ID       | Record_ID     |
+      | T_Credit_Acct         | 190       |           | rcAllocApiTax19 | rcAllocApiVat19     | rcAllocApiInv |
+      | T_Due_Acct            |           | 190       | rcAllocApiTax19 | rcAllocApiVat19_out | rcAllocApiInv |
+      | *                     |           |           |                 |                     | rcAllocApiInv |
+      | T_Credit_Acct         |           | 4.52      | rcAllocApiTax19 | rcAllocApiVat19     | rcApiAlloc    |
+      | T_Due_Acct            | 4.52      |           | rcAllocApiTax19 | rcAllocApiVat19_out | rcApiAlloc    |
+      | *                     |           |           |                 |                     | rcApiAlloc    |
     And Fact_Acct records balances for documents rcAllocApiInv,rcApiAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID        |
       | T_Credit_Acct         | 185.48      | rcAllocApiTax19 |
@@ -958,21 +1003,24 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     #     T_Due_Acct    DR=4.52, CR=0   → view TaxAmt = +4.52, NetAmt (allocation path) = +23.79
     # Note: 23.79 vs 23.80 is a 1-cent rounding difference in the view's NetAmt calculation
     # (the view back-computes from taxamt × 100 / rate = 4.52 × 100 / 19 = 23.7894...).
-    # Level-1 / ReCap dedup (Bug A.2): for each (vatcode, documentno, c_tax_id) only the first
-    # row's base contributes → invoice 1000 + allocation's -23.79 (T_Credit side ordered first
-    # by accountno) = 976.21. TaxAmt_SUM algebraic = 185.48 + (-185.48) = 0 (RC cash-neutral).
+    # With per-leg VATCodes, levels 1/2/3/ReCap produce one row per VATCode. Each (vatcode,
+    # documentno, c_tax_id) partition has only 1 Fact_Acct row now, so Bug A.2 dedup is a no-op.
+    # NetAmt_SUM per VATCode: invoice 1000 + allocation correction ±23.79 = 976.21 (input side)
+    # or 1023.79 (output side).
     Then report_taxaccounts for C_Tax "rcAllocApiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID   | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     | rcAllocApiVat19 |                       | 976.21     | 0          |        |        | -             | -             |
-      | 2     | rcAllocApiVat19 | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
-      | 2     | rcAllocApiVat19 | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
-      | 3     | rcAllocApiVat19 | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
-      | 3     | rcAllocApiVat19 | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
-      | 4     | rcAllocApiVat19 | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcAllocApiInv |
-      | 4     | rcAllocApiVat19 | T_Credit_Acct         |            |            | -23.79 | -4.52  | vendor        | rcApiAlloc    |
-      | 4     | rcAllocApiVat19 | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcAllocApiInv |
-      | 4     | rcAllocApiVat19 | T_Due_Acct            |            |            | 23.79  | 4.52   | vendor        | rcApiAlloc    |
-      | ReCap | rcAllocApiVat19 |                       | 976.21     | 0          |        |        | -             | -             |
+      | Level | C_VAT_Code_ID       | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
+      | 1     | rcAllocApiVat19     |                       | 976.21     | 185.48     |        |        | -             | -             |
+      | 1     | rcAllocApiVat19_out |                       | 1023.79    | -185.48    |        |        | -             | -             |
+      | 2     | rcAllocApiVat19     | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
+      | 2     | rcAllocApiVat19_out | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
+      | 3     | rcAllocApiVat19     | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
+      | 3     | rcAllocApiVat19_out | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
+      | 4     | rcAllocApiVat19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcAllocApiInv |
+      | 4     | rcAllocApiVat19     | T_Credit_Acct         |            |            | -23.79 | -4.52  | vendor        | rcApiAlloc    |
+      | 4     | rcAllocApiVat19_out | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcAllocApiInv |
+      | 4     | rcAllocApiVat19_out | T_Due_Acct            |            |            | 23.79  | 4.52   | vendor        | rcApiAlloc    |
+      | ReCap | rcAllocApiVat19     |                       | 976.21     | 185.48     |        |        | -             | -             |
+      | ReCap | rcAllocApiVat19_out |                       | 1023.79    | -185.48    |        |        | -             | -             |
 
 
 # ############################################################################################################################################
@@ -993,8 +1041,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcAllocApcTax19 | rcAllocApcTaxCategory  | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier      | C_Tax_ID        | IsSOTrx |
-      | rcAllocApcVat19 | rcAllocApcTax19 | N       |
+      | Identifier          | C_Tax_ID        | IsSOTrx |
+      | rcAllocApcVat19     | rcAllocApcTax19 | N       |
+      | rcAllocApcVat19_out | rcAllocApcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier     |
       | rcAllocApcProd |
@@ -1018,27 +1067,38 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     And Wait until documents rcAllocApcInv, rcApcAlloc are posted
 
+    # Symmetric to TC-S14 with APC sign-flip. Invoice: T_Credit CR 190, T_Due DR 190.
+    # Allocation (DiscountAmt=+23.80): T_Credit DR 4.52, T_Due CR 4.52. Correction copies the
+    # per-leg VATCode from each source invoice Fact_Acct row.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID        | C_VAT_Code_ID       | Record_ID     |
+      | T_Credit_Acct         |           | 190       | rcAllocApcTax19 | rcAllocApcVat19     | rcAllocApcInv |
+      | T_Due_Acct            | 190       |           | rcAllocApcTax19 | rcAllocApcVat19_out | rcAllocApcInv |
+      | *                     |           |           |                 |                     | rcAllocApcInv |
+      | T_Credit_Acct         | 4.52      |           | rcAllocApcTax19 | rcAllocApcVat19     | rcApcAlloc    |
+      | T_Due_Acct            |           | 4.52      | rcAllocApcTax19 | rcAllocApcVat19_out | rcApcAlloc    |
+      | *                     |           |           |                 |                     | rcApcAlloc    |
     And Fact_Acct records balances for documents rcAllocApcInv,rcApcAlloc are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID        |
       | T_Credit_Acct         | -185.48     | rcAllocApcTax19 |
       | T_Due_Acct            | 185.48      | rcAllocApcTax19 |
 
+    # With per-leg VATCodes, levels 1/2/3/ReCap produce one row per VATCode.
     # Symmetric to TC-S14 with APC sign-flip (outer CASE: APC → -TaxBaseAmt on invoice rows).
-    # Allocation correction (DiscountAmt=+23.80, "we receive"): T_Credit DR 4.52 + T_Due CR 4.52.
-    # Level-1 / ReCap after Bug A.2 dedup: invoice -1000 + alloc's T_Credit (first-row) +23.79
-    # = -976.21. TaxAmt_SUM algebraic = -185.48 + 185.48 = 0.
     Then report_taxaccounts for C_Tax "rcAllocApcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID   | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     | rcAllocApcVat19 |                       | -976.21    | 0          |        |        | -             | -             |
-      | 2     | rcAllocApcVat19 | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
-      | 2     | rcAllocApcVat19 | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
-      | 3     | rcAllocApcVat19 | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
-      | 3     | rcAllocApcVat19 | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
-      | 4     | rcAllocApcVat19 | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcAllocApcInv |
-      | 4     | rcAllocApcVat19 | T_Credit_Acct         |            |            | 23.79  | 4.52   | vendor        | rcApcAlloc    |
-      | 4     | rcAllocApcVat19 | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcAllocApcInv |
-      | 4     | rcAllocApcVat19 | T_Due_Acct            |            |            | -23.79 | -4.52  | vendor        | rcApcAlloc    |
-      | ReCap | rcAllocApcVat19 |                       | -976.21    | 0          |        |        | -             | -             |
+      | Level | C_VAT_Code_ID       | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
+      | 1     | rcAllocApcVat19     |                       | -976.21    | -185.48    |        |        | -             | -             |
+      | 1     | rcAllocApcVat19_out |                       | -1023.79   | 185.48     |        |        | -             | -             |
+      | 2     | rcAllocApcVat19     | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
+      | 2     | rcAllocApcVat19_out | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
+      | 3     | rcAllocApcVat19     | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
+      | 3     | rcAllocApcVat19_out | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
+      | 4     | rcAllocApcVat19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcAllocApcInv |
+      | 4     | rcAllocApcVat19     | T_Credit_Acct         |            |            | 23.79  | 4.52   | vendor        | rcApcAlloc    |
+      | 4     | rcAllocApcVat19_out | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcAllocApcInv |
+      | 4     | rcAllocApcVat19_out | T_Due_Acct            |            |            | -23.79 | -4.52  | vendor        | rcApcAlloc    |
+      | ReCap | rcAllocApcVat19     |                       | -976.21    | -185.48    |        |        | -             | -             |
+      | ReCap | rcAllocApcVat19_out |                       | -1023.79   | 185.48     |        |        | -             | -             |
 
 
 # ############################################################################################################################################
@@ -1060,8 +1120,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcRevTax19 | rcRevTaxCategory | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID   | IsSOTrx |
-      | rcRevVat19 | rcRevTax19 | N       |
+      | Identifier     | C_Tax_ID   | IsSOTrx |
+      | rcRevVat19     | rcRevTax19 | N       |
+      | rcRevVat19_out | rcRevTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | rcRevProd  |
@@ -1081,6 +1142,17 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And the reversal of invoice rcOrigInv is identified by rcRevInv
     And Wait until documents rcOrigInv, rcRevInv are posted
 
+    # Original invoice posts two legs with per-leg VATCodes (like TC-S12). Reversal negates
+    # both amounts on the SAME DR/CR sides (not swapped) and keeps the same per-leg VATCodes.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
+      | T_Credit_Acct         | 190       |           | rcRevTax19 | rcRevVat19     | rcOrigInv |
+      | T_Due_Acct            |           | 190       | rcRevTax19 | rcRevVat19_out | rcOrigInv |
+      | *                     |           |           |            |                | rcOrigInv |
+      | T_Credit_Acct         | -190      |           | rcRevTax19 | rcRevVat19     | rcRevInv  |
+      | T_Due_Acct            |           | -190      | rcRevTax19 | rcRevVat19_out | rcRevInv  |
+      | *                     |           |           |            |                | rcRevInv  |
+
     # Sum per (account, tax) must be zero after reversal (R7).
     And Fact_Acct records balances for documents rcOrigInv,rcRevInv are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID   |
@@ -1088,16 +1160,18 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | T_Due_Acct            | 0           | rcRevTax19 |
 
     # Original invoice + reversal: every level-4 row pair sums to zero per (account, tax) → R7.
-    # Level-2/3 per-account subtotals = 0. Level-1 / ReCap dedup = 0 as well.
+    # With per-leg VATCodes, level-1 / 2 / 3 / ReCap produce one row per VATCode, all summing to 0.
     Then report_taxaccounts for C_Tax "rcRevTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | rcRevVat19    |                       | 0          | 0          |        |        | -             | -          |
-      | 2     | rcRevVat19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
-      | 2     | rcRevVat19    | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
-      | 3     | rcRevVat19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
-      | 3     | rcRevVat19    | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
-      | 4     | rcRevVat19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcOrigInv  |
-      | 4     | rcRevVat19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcRevInv   |
-      | 4     | rcRevVat19    | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcOrigInv  |
-      | 4     | rcRevVat19    | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcRevInv   |
-      | ReCap | rcRevVat19    |                       | 0          | 0          |        |        | -             | -          |
+      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcRevVat19     |                       | 0          | 0          |        |        | -             | -          |
+      | 1     | rcRevVat19_out |                       | 0          | 0          |        |        | -             | -          |
+      | 2     | rcRevVat19     | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 2     | rcRevVat19_out | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 3     | rcRevVat19     | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 3     | rcRevVat19_out | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 4     | rcRevVat19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcOrigInv  |
+      | 4     | rcRevVat19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcRevInv   |
+      | 4     | rcRevVat19_out | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcOrigInv  |
+      | 4     | rcRevVat19_out | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcRevInv   |
+      | ReCap | rcRevVat19     |                       | 0          | 0          |        |        | -             | -          |
+      | ReCap | rcRevVat19_out |                       | 0          | 0          |        |        | -             | -          |
