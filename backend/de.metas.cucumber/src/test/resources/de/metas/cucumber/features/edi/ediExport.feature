@@ -44,8 +44,8 @@ Feature: EDI_cctop_invoic_v export format
       | 2155894                  | bPartnerVaTaxID |
 
     And metasfresh contains M_Product_ASI_Data:
-      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN          |
-      | asi_1      | convenienceSalate       | 2156425                  | 10    | 0575095404663 |
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN          | EAN_CU        |
+      | asi_1      | convenienceSalate       | 2156425                  | 10    | 0575095404663 | 0575095404663 |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN       |
