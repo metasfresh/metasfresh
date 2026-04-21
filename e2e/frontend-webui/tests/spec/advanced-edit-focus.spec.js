@@ -251,23 +251,26 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
     expect(focusEventsInModal).toBeGreaterThanOrEqual(1);
   });
 
-  test('Tab inside modal walks form fields, never escapes to <body>', async ({
+  test('Tab cycles 30 times without ever escaping the modal (focus trap)', async ({
     page,
   }) => {
+    // 30 Tab presses exceeds the number of tabbable elements in any metasfresh
+    // advanced-edit modal, so this test exercises the Modal.js focus trap
+    // that wraps Tab on the last tabbable back to the first, and catches any
+    // escape to background DIVs or `<body>` that would happen without the trap.
     await openSingleRecord(page, PRODUCT_WINDOW_ID);
     await page.keyboard.press('Alt+e');
     await waitForModalFocus(page);
 
     const stops = [];
-    for (let i = 0; i < 6; i += 1) {
+    for (let i = 0; i < 30; i += 1) {
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(150);
+      await page.waitForTimeout(80);
       const info = await page.evaluate(() => {
         const el = document.activeElement;
         return el
           ? {
               tag: el.tagName,
-              ti: el.tabIndex,
               inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
             }
           : null;
@@ -278,6 +281,33 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
     const bodyStops = stops.filter((s) => s?.tag === 'BODY').length;
     const outsideModalStops = stops.filter((s) => s && !s.inModal).length;
     expect(bodyStops).toBe(0);
+    expect(outsideModalStops).toBe(0);
+  });
+
+  test('Shift+Tab cycles backwards without escaping the modal', async ({
+    page,
+  }) => {
+    await openSingleRecord(page, PRODUCT_WINDOW_ID);
+    await page.keyboard.press('Alt+e');
+    await waitForModalFocus(page);
+
+    const stops = [];
+    for (let i = 0; i < 15; i += 1) {
+      await page.keyboard.press('Shift+Tab');
+      await page.waitForTimeout(80);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+            }
+          : null;
+      });
+      stops.push(info);
+    }
+
+    const outsideModalStops = stops.filter((s) => s && !s.inModal).length;
     expect(outsideModalStops).toBe(0);
   });
 
