@@ -115,23 +115,6 @@ export class PickingTerminalPage {
   }
 
   /**
-   * Get the total item count from the pagination footer.
-   * @returns {Promise<number>}
-   */
-  static async getTotalItemCount() {
-    return await test.step('PickingTerminalPage - Get total item count', async () => {
-      const page = getPage();
-      const totalText = await page.locator('[class*="pagination-info"], [class*="items-info"]')
-        .filter({ hasText: 'Total items' })
-        .innerText()
-        .catch(() => '');
-
-      const match = totalText.match(/Total items (\d+)/);
-      return match ? parseInt(match[1]) : 0;
-    });
-  }
-
-  /**
    * Get the text content of a cell in the currently selected row.
    * @param {string} columnTestId - Column data-testid (e.g., 'column-SalesOrder')
    * @returns {Promise<string>}

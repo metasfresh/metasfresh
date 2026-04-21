@@ -170,8 +170,14 @@ const findShipmentScheduleId = async (page, orderId, documentNo) => {
   return { shipmentScheduleId: rowId };
 };
 
-test.describe("Picking Terminal V2 — Desktop WebUI", () => {
-  test("Navigate to Picking Terminal and verify grid with data", async ({
+const languageCases = [
+  { language: "en_US", label: "English" },
+  { language: "de_DE", label: "German" },
+];
+
+languageCases.forEach(({ language, label }) => {
+  test.describe(`Picking Terminal V2 — Desktop WebUI (${label})`, () => {
+  test(`Navigate to Picking Terminal and verify grid with data (${label})`, async ({
     page,
   }) => {
     allure.epic("E0105: Picking");
@@ -181,7 +187,7 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
     );
     allure.severity("critical");
 
-    const masterdata = await createPickingTestData();
+    const masterdata = await createPickingTestData(language);
     await loginAndNavigate(page, masterdata);
 
     // Navigate to Picking Terminal V2
@@ -209,7 +215,7 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
     });
   });
 
-  test("Open Products to Pick modal and pick selected", async ({ page }) => {
+  test(`Open Products to Pick modal and pick selected (${label})`, async ({ page }) => {
     // This test needs PostgREST to reliably find the shipment schedule.
     // PostgREST is not available in CI — skip there, run locally.
     await skipIfNoPostgREST();
@@ -221,7 +227,7 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
     );
     allure.severity("critical");
 
-    const masterdata = await createPickingTestData();
+    const masterdata = await createPickingTestData(language);
     await loginAndNavigate(page, masterdata);
 
     const orderId = masterdata.salesOrders.SO1.id;
@@ -357,7 +363,7 @@ test.describe("Picking Terminal V2 — Desktop WebUI", () => {
  * Due to fragile row selection in the V1 terminal grid (click-to-edit instead of click-to-select),
  * the picking/processing actions are executed via REST API while UI state is verified visually.
  */
-test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
+test.describe(`Picking Terminal V1 — Process/Unprocess/Remove (${label})`, () => {
   /**
    * Create test data with HU qty matching the order (avoids overdelivery error).
    * PI: 5 TUs × 4 CU/TU = 20 CU total. Order qty = 20 CU.
@@ -426,9 +432,11 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
       .first()
       .waitFor({ state: "visible", timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-    // Select the row to trigger the included PickingSlotView
+    // Select the row to trigger the included PickingSlotView.
+    // Use title="Alt+A" instead of the localized "Select all on this page" text —
+    // see frontend/src/components/table/TablePagination.js where this attribute is set.
     await page.waitForTimeout(2000);
-    await page.locator("text=Select all on this page").first().click();
+    await page.locator('[title="Alt+A"]').first().click();
     await page.waitForTimeout(3000);
 
     // Verify 2 tables (main + included view)
@@ -551,8 +559,8 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
    * Helper: Common setup for V1 tests — create data, login, open terminal, get slot ID.
    * Uses the V2 view API to find the shipment schedule ID (no PostgREST dependency).
    */
-  const setupV1Test = async (page) => {
-    const masterdata = await createV1TestData();
+  const setupV1Test = async (page, language = "en_US") => {
+    const masterdata = await createV1TestData(language);
     await loginAndNavigate(page, masterdata);
 
     const orderId = masterdata.salesOrders.SO1.id;
@@ -574,7 +582,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     return { masterdata, psViewId, pickingSlotRowId };
   };
 
-  test("Scenario 7: Pick HU and process picking via V1 Picking Terminal", async ({
+  test(`Scenario 7: Pick HU and process picking via V1 Picking Terminal (${label})`, async ({
     page,
   }) => {
     await skipIfNoPostgREST();
@@ -583,7 +591,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     allure.story("V1 Picking Terminal — pick HU and process (QA scenario 7)");
     allure.severity("critical");
 
-    const { masterdata, psViewId, pickingSlotRowId } = await setupV1Test(page);
+    const { masterdata, psViewId, pickingSlotRowId } = await setupV1Test(page, language);
 
     // Verify order data visible in the UI
     const docNo = masterdata.salesOrders.SO1.documentNo;
@@ -633,7 +641,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     }
   });
 
-  test("Scenario 6: Pick HU — verify picking candidate and action availability", async ({
+  test(`Scenario 6: Pick HU — verify picking candidate and action availability (${label})`, async ({
     page,
   }) => {
     await skipIfNoPostgREST();
@@ -644,7 +652,7 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     );
     allure.severity("critical");
 
-    const { psViewId, pickingSlotRowId } = await setupV1Test(page);
+    const { psViewId, pickingSlotRowId } = await setupV1Test(page, language);
 
     // Pick HU via HU editor
     await pickHUViaEditor(page, psViewId, pickingSlotRowId);
@@ -666,5 +674,6 @@ test.describe("Picking Terminal V1 — Process/Unprocess/Remove", () => {
     expect(unpickAction, "Unpick HU action should exist").toBeTruthy();
     // Note: Unpick requires selecting the picked HU child row (not the slot row),
     // which needs tree expansion not available via simple REST API calls.
+  });
   });
 });
