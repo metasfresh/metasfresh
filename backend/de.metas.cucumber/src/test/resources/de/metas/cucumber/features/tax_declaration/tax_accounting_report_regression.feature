@@ -754,3 +754,350 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | 4     | allocApcVat19 | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | allocApcInv |
       | 4     | allocApcVat19 | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apcAlloc    |
       | ReCap | allocApcVat19 |                       | -980       | -186.20    |        |        | -             | -           |
+
+
+# ############################################################################################################################################
+# TC-S12 — Reverse-Charge purchase invoice (API) with §13b UStG
+# ############################################################################################################################################
+# Parent me03#28726 posts two symmetric Fact_Acct rows for an RC invoice:
+#   T_Credit_Acct DR 190 (VSt, §15 UStG input-tax receivable)
+#   T_Due_Acct    CR 190 (USt, §13b UStG notional output-tax payable)
+# Both rows join the same C_InvoiceTax record (C_InvoiceTax.ReverseChargeTaxAmt = 190,
+# TaxAmt = 0). Sign convention matches the Option-3 ledger-style baseline used in TC-S1..S11:
+# the T_Credit row emits +190 (consistent with non-RC API TC-S3); the T_Due row emits −190
+# (consistent with how a CR balance appears in the view for non-RC sales — see TC-S1).
+# §17 / Option-1 flip is deferred to TC-NSC.
+#
+# Legal basis: §13b UStG (https://www.gesetze-im-internet.de/ustg_1980/__13b.html) +
+# §15 UStG + EU VAT Directive 2006/112/EC Art. 196 (reverse charge for B2B).
+  @Id:S0467_TAR_120
+  @from:cucumber
+  Scenario: reverse-charge purchase invoice posts two symmetric Fact_Acct rows and appears on both T_Credit and T_Due
+
+    And metasfresh contains C_TaxCategory
+      | Identifier         |
+      | rcApiTaxCategory   |
+    And metasfresh contains C_Tax
+      | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | rcApiTax19  | rcApiTaxCategory  | 19   | DE                       | DE                        | true            |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier  | C_Tax_ID   | IsSOTrx |
+      | rcApiVat19  | rcApiTax19 | N       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | rcApiProd  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | rcApiProd    | 100.00   | PCE      | rcApiTaxCategory |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcApiInv   | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
+      | rcApiInvL1_a | rcApiInv     | rcApiProd    | 7 PCE       | rcApiTax19 |
+      | rcApiInvL1_b | rcApiInv     | rcApiProd    | 3 PCE       | rcApiTax19 |
+    And the invoice identified by rcApiInv is completed
+    And Wait until documents rcApiInv is posted
+
+    # RC posting: both tax legs fire. TaxAmt on the C_InvoiceTax is 0 (not payable);
+    # ReverseChargeTaxAmt = 190 drives both Fact_Acct rows.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
+      | T_Credit_Acct         | 190       |           | rcApiTax19 | rcApiInv  |
+      | T_Due_Acct            |           | 190       | rcApiTax19 | rcApiInv  |
+      | *                     |           |           |            | rcApiInv  |
+    And Fact_Acct records balances for documents rcApiInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID   |
+      | T_Credit_Acct         | 190         | rcApiTax19 |
+      | T_Due_Acct            | -190        | rcApiTax19 |
+
+    # Report: both accounts carry the same +1000 base (the view joins the single C_InvoiceTax
+    # for both rows). Level-4 emits two per-document rows. TaxAmt follows the ledger formula
+    # taxamt = AmtAcctDr − AmtAcctCr: +190 on T_Credit, −190 on T_Due.
+    # Level-1 / ReCap subtotals deduplicate the base (see Bug A.2 fix in sub-PR 2):
+    #   NetAmt_SUM = +1000 (counted once per invoice+tax, not +2000 across accounts)
+    #   TaxAmt_SUM = +190 + (−190) = 0 (algebraic — correct: RC has zero net cash VAT impact)
+    Then report_taxaccounts for C_Tax "rcApiTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcApiVat19    |                       | 1000       | 0          |        |        | -             | -          |
+      | 2     | rcApiVat19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 2     | rcApiVat19    | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
+      | 3     | rcApiVat19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 3     | rcApiVat19    | T_Due_Acct            | 1000       | -190       |        |        | -             | -          |
+      | 4     | rcApiVat19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcApiInv   |
+      | 4     | rcApiVat19    | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcApiInv   |
+      | ReCap | rcApiVat19    |                       | 1000       | 0          |        |        | -             | -          |
+
+
+# ############################################################################################################################################
+# TC-S13 — Reverse-Charge purchase credit memo (APC) with §13b UStG
+# ############################################################################################################################################
+# Symmetric to TC-S12 on the credit-memo side. The APC reverses an earlier RC API:
+#   T_Credit_Acct CR 190 (reverses the VSt receivable)
+#   T_Due_Acct    DR 190 (reverses the notional USt)
+# The view's DocBaseType outer CASE flips TaxBaseAmt to −1000 for APC (consistent with TC-S4
+# non-RC APC). TaxAmt follows the ledger formula: −190 on T_Credit, +190 on T_Due.
+#
+# Legal basis: §13b UStG + §17(1) UStG + EU VAT Directive Art. 185 (adjustment of deductions).
+  @Id:S0467_TAR_130
+  @from:cucumber
+  Scenario: reverse-charge purchase credit memo posts two symmetric reversal Fact_Acct rows
+
+    And metasfresh contains C_TaxCategory
+      | Identifier       |
+      | rcApcTaxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | rcApcTax19 | rcApcTaxCategory | 19   | DE                       | DE                        | true            |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID   | IsSOTrx |
+      | rcApcVat19 | rcApcTax19 | N       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | rcApcProd  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | rcApcProd    | 100.00   | PCE      | rcApcTaxCategory |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcApcInv   | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
+      | rcApcInvL1_a | rcApcInv     | rcApcProd    | 7 PCE       | rcApcTax19 |
+      | rcApcInvL1_b | rcApcInv     | rcApcProd    | 3 PCE       | rcApcTax19 |
+    And the invoice identified by rcApcInv is completed
+    And Wait until documents rcApcInv is posted
+
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | Record_ID |
+      | T_Credit_Acct         |           | 190       | rcApcTax19 | rcApcInv  |
+      | T_Due_Acct            | 190       |           | rcApcTax19 | rcApcInv  |
+      | *                     |           |           |            | rcApcInv  |
+    And Fact_Acct records balances for documents rcApcInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID   |
+      | T_Credit_Acct         | -190        | rcApcTax19 |
+      | T_Due_Acct            | 190         | rcApcTax19 |
+
+    # Symmetric negative report (APC doctype → TaxBaseAmt flipped to −1000 for both rows).
+    # TaxAmt: −190 on T_Credit (CR), +190 on T_Due (DR). Level-1 / ReCap dedup (Bug A.2):
+    # NetAmt_SUM = −1000 (once per invoice+tax); TaxAmt_SUM = −190 + 190 = 0.
+    Then report_taxaccounts for C_Tax "rcApcTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcApcVat19    |                       | -1000      | 0          |        |        | -             | -          |
+      | 2     | rcApcVat19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 2     | rcApcVat19    | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
+      | 3     | rcApcVat19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 3     | rcApcVat19    | T_Due_Acct            | -1000      | 190        |        |        | -             | -          |
+      | 4     | rcApcVat19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcApcInv   |
+      | 4     | rcApcVat19    | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcApcInv   |
+      | ReCap | rcApcVat19    |                       | -1000      | 0          |        |        | -             | -          |
+
+
+# ############################################################################################################################################
+# TC-S14 — Reverse-Charge purchase invoice (API) + Skonto (discount-only allocation, path D)
+# ############################################################################################################################################
+# Per parent me03#28726 Decision D1, an RC invoice followed by a Skonto allocation posts
+# symmetric tax-correction rows on BOTH T_Credit_Acct and T_Due_Acct — the §17 UStG adjustment
+# fires on the RC tax regardless of cash-neutrality.
+#
+# DiscountAmt direction (per TC-S10 convention): API = "we pay" → DiscountAmt = −23.80 EUR.
+#
+# Legal basis: §13b + §17(1) UStG + EU VAT Directive Art. 90 + Art. 185.
+  @Id:S0467_TAR_140
+  @from:cucumber
+  Scenario: reverse-charge purchase invoice + discount-only allocation produces symmetric correction rows
+
+    And metasfresh contains C_TaxCategory
+      | Identifier              |
+      | rcAllocApiTaxCategory   |
+    And metasfresh contains C_Tax
+      | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | rcAllocApiTax19 | rcAllocApiTaxCategory  | 19   | DE                       | DE                        | true            |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier      | C_Tax_ID        | IsSOTrx |
+      | rcAllocApiVat19 | rcAllocApiTax19 | N       |
+    And metasfresh contains M_Products:
+      | Identifier     |
+      | rcAllocApiProd |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID      |
+      | purchasePLV            | rcAllocApiProd | 100.00   | PCE      | rcAllocApiTaxCategory |
+
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcAllocApiInv   | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier         | C_Invoice_ID   | M_Product_ID    | QtyInvoiced | C_Tax_ID         |
+      | rcAllocApiInvL1_a  | rcAllocApiInv  | rcAllocApiProd  | 7 PCE       | rcAllocApiTax19  |
+      | rcAllocApiInvL1_b  | rcAllocApiInv  | rcAllocApiProd  | 3 PCE       | rcAllocApiTax19  |
+    And the invoice identified by rcAllocApiInv is completed
+
+    # API direction = "we pay" → DiscountAmt negative (consistent with TC-S10).
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
+      | rcApiAlloc         | rcAllocApiInv | -23.80 EUR  |
+
+    And Wait until documents rcAllocApiInv, rcApiAlloc are posted
+
+    # Invoice posting (as TC-S12) + symmetric allocation correction per parent #28726 Decision D1.
+    # Tax correction amount on RC + Skonto = DiscountAmt × TaxRate = 23.80 × 0.19 = 4.52 EUR
+    # (not 3.80 as in non-RC — RC invoice has TaxAmt=0, so the correction base is the gross
+    # DiscountAmt multiplied by the tax rate, not the tax portion of the gross).
+    And Fact_Acct records balances for documents rcAllocApiInv,rcApiAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID        |
+      | T_Credit_Acct         | 185.48      | rcAllocApiTax19 |
+      | T_Due_Acct            | -185.48     | rcAllocApiTax19 |
+
+    # Invoice: T_Credit +1000/+190 + T_Due +1000/-190 (as TC-S12).
+    # Allocation (path D, DiscountAmt=-23.80, direction="we pay"):
+    #   Tax correction amount = DiscountAmt × TaxRate = 23.80 × 0.19 = 4.52 EUR (note: RC uses
+    #   gross × rate, unlike non-RC where Skonto is split into net+tax). Posted symmetrically:
+    #     T_Credit_Acct DR=0, CR=4.52   → view TaxAmt = -4.52, NetAmt (allocation path) = -23.79
+    #     T_Due_Acct    DR=4.52, CR=0   → view TaxAmt = +4.52, NetAmt (allocation path) = +23.79
+    # Note: 23.79 vs 23.80 is a 1-cent rounding difference in the view's NetAmt calculation
+    # (the view back-computes from taxamt × 100 / rate = 4.52 × 100 / 19 = 23.7894...).
+    # Level-1 / ReCap dedup (Bug A.2): for each (vatcode, documentno, c_tax_id) only the first
+    # row's base contributes → invoice 1000 + allocation's -23.79 (T_Credit side ordered first
+    # by accountno) = 976.21. TaxAmt_SUM algebraic = 185.48 + (-185.48) = 0 (RC cash-neutral).
+    Then report_taxaccounts for C_Tax "rcAllocApiTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID   | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
+      | 1     | rcAllocApiVat19 |                       | 976.21     | 0          |        |        | -             | -             |
+      | 2     | rcAllocApiVat19 | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
+      | 2     | rcAllocApiVat19 | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
+      | 3     | rcAllocApiVat19 | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
+      | 3     | rcAllocApiVat19 | T_Due_Acct            | 1023.79    | -185.48    |        |        | -             | -             |
+      | 4     | rcAllocApiVat19 | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcAllocApiInv |
+      | 4     | rcAllocApiVat19 | T_Credit_Acct         |            |            | -23.79 | -4.52  | vendor        | rcApiAlloc    |
+      | 4     | rcAllocApiVat19 | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcAllocApiInv |
+      | 4     | rcAllocApiVat19 | T_Due_Acct            |            |            | 23.79  | 4.52   | vendor        | rcApiAlloc    |
+      | ReCap | rcAllocApiVat19 |                       | 976.21     | 0          |        |        | -             | -             |
+
+
+# ############################################################################################################################################
+# TC-S15 — Reverse-Charge purchase credit memo (APC) + Skonto (discount-only allocation, path D)
+# ############################################################################################################################################
+# Symmetric to TC-S14 on the credit-memo side. APC direction = "we receive" (vendor refunds
+# us, we retain a Skonto) → DiscountAmt positive. Parent me03#28726 Decision D1 applies.
+#
+# Legal basis: §13b + §17(1) UStG + EU VAT Directive Art. 185.
+  @Id:S0467_TAR_150
+  @from:cucumber
+  Scenario: reverse-charge purchase credit memo + discount-only allocation produces symmetric correction rows
+
+    And metasfresh contains C_TaxCategory
+      | Identifier             |
+      | rcAllocApcTaxCategory  |
+    And metasfresh contains C_Tax
+      | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | rcAllocApcTax19 | rcAllocApcTaxCategory  | 19   | DE                       | DE                        | true            |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier      | C_Tax_ID        | IsSOTrx |
+      | rcAllocApcVat19 | rcAllocApcTax19 | N       |
+    And metasfresh contains M_Products:
+      | Identifier     |
+      | rcAllocApcProd |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID      |
+      | purchasePLV            | rcAllocApcProd | 100.00   | PCE      | rcAllocApcTaxCategory |
+
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcAllocApcInv  | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier        | C_Invoice_ID  | M_Product_ID   | QtyInvoiced | C_Tax_ID        |
+      | rcAllocApcInvL1_a | rcAllocApcInv | rcAllocApcProd | 7 PCE       | rcAllocApcTax19 |
+      | rcAllocApcInvL1_b | rcAllocApcInv | rcAllocApcProd | 3 PCE       | rcAllocApcTax19 |
+    And the invoice identified by rcAllocApcInv is completed
+
+    # APC direction = "we receive" → positive DiscountAmt (consistent with TC-S11).
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
+      | rcApcAlloc         | rcAllocApcInv | 23.80 EUR   |
+
+    And Wait until documents rcAllocApcInv, rcApcAlloc are posted
+
+    And Fact_Acct records balances for documents rcAllocApcInv,rcApcAlloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID        |
+      | T_Credit_Acct         | -185.48     | rcAllocApcTax19 |
+      | T_Due_Acct            | 185.48      | rcAllocApcTax19 |
+
+    # Symmetric to TC-S14 with APC sign-flip (outer CASE: APC → -TaxBaseAmt on invoice rows).
+    # Allocation correction (DiscountAmt=+23.80, "we receive"): T_Credit DR 4.52 + T_Due CR 4.52.
+    # Level-1 / ReCap after Bug A.2 dedup: invoice -1000 + alloc's T_Credit (first-row) +23.79
+    # = -976.21. TaxAmt_SUM algebraic = -185.48 + 185.48 = 0.
+    Then report_taxaccounts for C_Tax "rcAllocApcTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID   | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
+      | 1     | rcAllocApcVat19 |                       | -976.21    | 0          |        |        | -             | -             |
+      | 2     | rcAllocApcVat19 | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
+      | 2     | rcAllocApcVat19 | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
+      | 3     | rcAllocApcVat19 | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
+      | 3     | rcAllocApcVat19 | T_Due_Acct            | -1023.79   | 185.48     |        |        | -             | -             |
+      | 4     | rcAllocApcVat19 | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcAllocApcInv |
+      | 4     | rcAllocApcVat19 | T_Credit_Acct         |            |            | 23.79  | 4.52   | vendor        | rcApcAlloc    |
+      | 4     | rcAllocApcVat19 | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcAllocApcInv |
+      | 4     | rcAllocApcVat19 | T_Due_Acct            |            |            | -23.79 | -4.52  | vendor        | rcApcAlloc    |
+      | ReCap | rcAllocApcVat19 |                       | -976.21    | 0          |        |        | -             | -             |
+
+
+# ############################################################################################################################################
+# TC-S16 — Reversed Reverse-Charge purchase invoice (API → Reverse-Correct)
+# ############################################################################################################################################
+# Per R7 of the requirements catalogue: a reversed RC invoice must produce sign-negated rows
+# so that the per-(account, tax) sum is zero. The counter-invoice is also DocBaseType=API; its
+# C_InvoiceTax row carries negated TaxBaseAmt / TaxAmt / ReverseChargeTaxAmt.
+#
+# Legal basis: §13b + §14(4) UStG.
+  @Id:S0467_TAR_160
+  @from:cucumber
+  Scenario: reversed reverse-charge purchase invoice produces sign-negated rows summing to zero per account
+
+    And metasfresh contains C_TaxCategory
+      | Identifier       |
+      | rcRevTaxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | rcRevTax19 | rcRevTaxCategory | 19   | DE                       | DE                        | true            |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID   | IsSOTrx |
+      | rcRevVat19 | rcRevTax19 | N       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | rcRevProd  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | rcRevProd    | 100.00   | PCE      | rcRevTaxCategory |
+
+    And metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcOrigInv    | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier     | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
+      | rcOrigInvL1_a  | rcOrigInv    | rcRevProd    | 7 PCE       | rcRevTax19 |
+      | rcOrigInvL1_b  | rcOrigInv    | rcRevProd    | 3 PCE       | rcRevTax19 |
+    And the invoice identified by rcOrigInv is completed
+    And the invoice identified by rcOrigInv is reversed
+    And the reversal of invoice rcOrigInv is identified by rcRevInv
+    And Wait until documents rcOrigInv, rcRevInv are posted
+
+    # Sum per (account, tax) must be zero after reversal (R7).
+    And Fact_Acct records balances for documents rcOrigInv,rcRevInv are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID   |
+      | T_Credit_Acct         | 0           | rcRevTax19 |
+      | T_Due_Acct            | 0           | rcRevTax19 |
+
+    # Original invoice + reversal: every level-4 row pair sums to zero per (account, tax) → R7.
+    # Level-2/3 per-account subtotals = 0. Level-1 / ReCap dedup = 0 as well.
+    Then report_taxaccounts for C_Tax "rcRevTax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | rcRevVat19    |                       | 0          | 0          |        |        | -             | -          |
+      | 2     | rcRevVat19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 2     | rcRevVat19    | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 3     | rcRevVat19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 3     | rcRevVat19    | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 4     | rcRevVat19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | rcOrigInv  |
+      | 4     | rcRevVat19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | rcRevInv   |
+      | 4     | rcRevVat19    | T_Due_Acct            |            |            | 1000   | -190   | vendor        | rcOrigInv  |
+      | 4     | rcRevVat19    | T_Due_Acct            |            |            | -1000  | 190    | vendor        | rcRevInv   |
+      | ReCap | rcRevVat19    |                       | 0          | 0          |        |        | -             | -          |

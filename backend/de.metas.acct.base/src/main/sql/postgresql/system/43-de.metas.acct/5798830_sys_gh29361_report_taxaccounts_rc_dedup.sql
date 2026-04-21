@@ -1,3 +1,11 @@
+-- me03#29361 — Bug A.2 fix: dedup TaxBaseAmt at grand-total levels for Reverse-Charge invoices.
+-- RC posting produces two Fact_Acct rows per invoice+tax (T_Credit + T_Due) both joining the same
+-- C_InvoiceTax; summing taxbaseamt across them at levels 1 / ReCap double-counts the base.
+-- Fix: pre-compute ROW_NUMBER() OVER (PARTITION BY vatcode, documentno, c_tax_id), aggregate the
+-- base only from row_in_doc_tax=1. Non-RC has one row per (invoice, tax) so dedup is a no-op.
+--
+-- Apply full function body — keep DDL source and migration in sync.
+
 -- Drop previous signature (added p_c_tax_id parameter)
 DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
 ;
