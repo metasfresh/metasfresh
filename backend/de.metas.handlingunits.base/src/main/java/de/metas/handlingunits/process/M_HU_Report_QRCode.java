@@ -25,8 +25,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
-import static de.metas.handlingunits.HuUnitType.VHU;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -91,8 +89,7 @@ public class M_HU_Report_QRCode extends JavaProcess implements IProcessPrecondit
 		final AdProcessId qrCodeProcessId = AdProcessId.ofRepoIdOrNull(p_ProcessId);
 
 		final ImmutableSet<HuId> huIdSet = handlingUnitsDAO.streamByQuery(
-						retrieveSelectedRecordsQueryBuilder(I_M_HU.class), HUToReportWrapper::of)
-				.filter(hu -> hu.getHUUnitType() != VHU)
+						retrieveSelectedRecordsQueryBuilder(I_M_HU.class, false), HUToReportWrapper::of)
 				.map(HUToReport::getHUId)
 				.collect(ImmutableSet.toImmutableSet());
 
