@@ -422,17 +422,15 @@ class SectionGroup extends PureComponent {
     // Container has fields but none are editable (all readonly / locked
     // document). Fall back to focusing the modal's primary action button so
     // keyboard users can still close the modal via Enter/Space and Shift+Tab
-    // back into the form for reading.
+    // back into the form for reading. The first `tabIndex=0` button in
+    // `.panel-modal-header` is Cancel (for new docs) or Done (for existing);
+    // both accept Enter/Space.
     const modalWrapper = elementGroupComponent.closest(
       '.modal-content-wrapper'
     );
     const actionButton =
       modalWrapper &&
-      modalWrapper.querySelector(
-        'button[data-testid="process-modal-start-button"],' +
-          'button[data-testid="process-modal-cancel-button"],' +
-          '.panel-modal-header button[tabindex="0"]'
-      );
+      modalWrapper.querySelector('.panel-modal-header button[tabindex="0"]');
     if (actionButton) {
       actionButton.focus();
       this.didInitialFocus = true;

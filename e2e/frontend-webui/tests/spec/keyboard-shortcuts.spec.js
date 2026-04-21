@@ -58,6 +58,56 @@ async function loginAndNavigate(page) {
 }
 
 /**
+ * Navigate to the Product window (140) and open the first product record
+ * in single-document view. Used by me03#27080 tests because Product records
+ * are consistently editable for the default test user across DB seeds
+ * (unlike the first Organisation record, which can be read-only on some
+ * seeds and would cause unrelated test failures).
+ */
+async function navigateToProductDetail(page) {
+  await page.goto('/window/140', { waitUntil: 'load' });
+  await page
+    .locator('.document-list-wrapper')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  const firstRow = page.locator('.table-flex-wrapper tbody tr').first();
+  await firstRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await firstRow.dblclick();
+  await page.waitForURL(/\/window\/\d+\/\d+/, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await page
+    .locator('.window-wrapper, .row-selected .form-group')
+    .first()
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await page.waitForTimeout(1000);
+  await page.locator('.window-wrapper').first().click();
+}
+
+/**
+ * After ALT+E, wait for the modal to open and for the initial focus (placed
+ * by SectionGroup.requestElementGroupFocus) to land on an editable element
+ * inside the modal. Event-driven: polls document.activeElement rather than
+ * sleeping a fixed amount.
+ */
+async function waitForModalFocus(page) {
+  await page
+    .locator('.panel-modal')
+    .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+  await page.waitForFunction(
+    () => {
+      const el = document.activeElement;
+      return (
+        !!el &&
+        !!el.closest('.modal-content-wrapper, .panel-modal') &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) ||
+          el.classList.contains('input-dropdown-container'))
+      );
+    },
+    { timeout: FAST_ACTION_TIMEOUT }
+  );
+}
+
+/**
  * Navigate to a single document view by opening the first record.
  * Navigates directly via double-click then waits for URL to contain a record ID.
  */
@@ -340,79 +390,13 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
   // in the first element group of its advanced-edit modal.
   // =========================================================================
 
-  /**
-   * Navigate to the Product window (140) and open the first product record
-   * in single-document view. Product is used instead of Organisation because
-   * the first Product record is consistently editable across DB seeds.
-   */
-  async function navigateToProductDetail(page) {
-    await page.goto('/window/140', { waitUntil: 'load' });
-    await page
-      .locator('.document-list-wrapper')
-      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    const firstRow = page.locator('.table-flex-wrapper tbody tr').first();
-    await firstRow.waitFor({
-      state: 'visible',
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
-    await firstRow.dblclick();
-    await page.waitForURL(/\/window\/\d+\/\d+/, {
-      timeout: SLOW_ACTION_TIMEOUT,
-    });
-    await page
-      .locator('.window-wrapper, .row-selected .form-group')
-      .first()
-      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await page.waitForTimeout(1000);
-    await page.locator('.window-wrapper').first().click();
-  }
-
-  /**
-   * After ALT+E, wait for the modal and for at least one form-field to be
-   * rendered inside it (SectionGroup needs children in the DOM before it
-   * can place focus on an input).
-   */
-  async function waitForModalOpen(page) {
-    await page
-      .locator('.panel-modal')
-      .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
-    await page
-      .locator(
-        '.panel-modal input.js-input-field, ' +
-          '.panel-modal textarea.js-input-field, ' +
-          '.panel-modal .input-dropdown-container'
-      )
-      .first()
-      .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
-    await page.waitForTimeout(500);
-  }
-
-  /**
-   * Snapshot of document.activeElement expressed as plain JSON.
-   */
-  const activeElementInfo = () => {
-    const el = document.activeElement;
-    if (!el) return null;
-    return {
-      tag: el.tagName,
-      ti: el.tabIndex,
-      cls: (el.className || '').slice(0, 80),
-      inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
-      isEditable:
-        (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) &&
-          !el.disabled &&
-          el.tabIndex === 0) ||
-        (el.tabIndex === 0 &&
-          el.classList.contains('input-dropdown-container')),
-    };
-  };
-
   test('me03#27080: ALT+E moves focus to first editable modal input', async ({
     page,
   }) => {
     await navigateToProductDetail(page);
 
-    // Trace focus events during modal open
+    // Install a focusin tracer *before* pressing ALT+E so we capture the
+    // focus event fired by SectionGroup.requestElementGroupFocus.
     await page.evaluate(() => {
       window.__focusLog = [];
       document.addEventListener(
@@ -422,9 +406,7 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
           window.__focusLog.push({
             tag: t.tagName,
             ti: t.tabIndex,
-            inModal: !!t.closest?.(
-              '.modal-content-wrapper, .panel-modal'
-            ),
+            inModal: !!t.closest?.('.modal-content-wrapper, .panel-modal'),
           });
         },
         true
@@ -432,24 +414,34 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
     });
 
     await page.keyboard.press('Alt+e');
-    await waitForModalOpen(page);
+    await waitForModalFocus(page);
 
-    const { active, fixedFirstFocus } = await page.evaluate(
-      (fnSrc) => {
-        // eslint-disable-next-line no-new-func
-        const activeElementInfo = new Function('return (' + fnSrc + ')()');
-        return {
-          active: activeElementInfo(),
-          fixedFirstFocus: window.__focusLog.find(
-            (e) =>
-              e.inModal &&
-              e.ti === 0 &&
-              ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tag)
-          ),
-        };
-      },
-      activeElementInfo.toString()
-    );
+    const { active, fixedFirstFocus } = await page.evaluate(() => {
+      const el = document.activeElement;
+      const isEditableEl = (node) =>
+        !!node &&
+        ((['INPUT', 'TEXTAREA', 'SELECT'].includes(node.tagName) &&
+          !node.disabled &&
+          node.tabIndex === 0) ||
+          (node.tabIndex === 0 &&
+            node.classList.contains('input-dropdown-container')));
+      return {
+        active: el
+          ? {
+              tag: el.tagName,
+              ti: el.tabIndex,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+              isEditable: isEditableEl(el),
+            }
+          : null,
+        fixedFirstFocus: window.__focusLog.find(
+          (ev) =>
+            ev.inModal &&
+            ev.ti === 0 &&
+            ['INPUT', 'TEXTAREA', 'SELECT'].includes(ev.tag)
+        ),
+      };
+    });
 
     // The fix fires a focusin event on an editable element inside the modal.
     expect(fixedFirstFocus).toBeTruthy();
@@ -464,7 +456,7 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
   }) => {
     await navigateToProductDetail(page);
     await page.keyboard.press('Alt+e');
-    await waitForModalOpen(page);
+    await waitForModalFocus(page);
 
     // Walk 6 Tab presses and record where focus lands after each
     const stops = [];
@@ -477,9 +469,7 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
           ? {
               tag: el.tagName,
               ti: el.tabIndex,
-              inModal: !!el.closest(
-                '.modal-content-wrapper, .panel-modal'
-              ),
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
             }
           : null;
       });
@@ -498,7 +488,7 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
   }) => {
     await navigateToProductDetail(page);
     await page.keyboard.press('Alt+e');
-    await waitForModalOpen(page);
+    await waitForModalFocus(page);
 
     // Skip forward a few tab stops so we are NOT on the first field that
     // the fix targets. If focus were to be stolen on re-render, it would
@@ -557,16 +547,23 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
     // an editable element (input / textarea / select / lookup-dropdown).
     for (let cycle = 0; cycle < 2; cycle += 1) {
       await page.keyboard.press('Alt+e');
-      await waitForModalOpen(page);
+      await waitForModalFocus(page);
 
-      const info = await page.evaluate(
-        (fnSrc) => {
-          // eslint-disable-next-line no-new-func
-          const activeElementInfo = new Function('return (' + fnSrc + ')()');
-          return activeElementInfo();
-        },
-        activeElementInfo.toString()
-      );
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el) return null;
+        return {
+          tag: el.tagName,
+          ti: el.tabIndex,
+          inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+          isEditable:
+            (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) &&
+              !el.disabled &&
+              el.tabIndex === 0) ||
+            (el.tabIndex === 0 &&
+              el.classList.contains('input-dropdown-container')),
+        };
+      });
 
       expect(info).toBeTruthy();
       expect(info.inModal).toBe(true);
