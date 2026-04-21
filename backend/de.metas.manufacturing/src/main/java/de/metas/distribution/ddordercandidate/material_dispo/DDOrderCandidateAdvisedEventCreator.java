@@ -42,7 +42,6 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
-import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -60,7 +59,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	@NonNull private final DDOrderCandidateDemandMatcher demandMatcher;
 	@NonNull private final DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
@@ -77,11 +75,6 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
-		if (!demandMatcher.matches(context))
-		{
-			return ImmutableList.of();
-		}
-
 		final ProductPlanning productPlanningData = context.getProductPlanning();
 
 		return ddOrderCandidateDataFactory.create(supplyRequiredDescriptor, context)

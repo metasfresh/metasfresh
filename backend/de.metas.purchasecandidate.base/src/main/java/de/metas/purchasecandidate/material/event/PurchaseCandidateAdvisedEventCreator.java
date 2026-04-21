@@ -61,7 +61,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	@NonNull private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
 	@NonNull private final VendorProductInfoService vendorProductInfoService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
@@ -78,11 +77,6 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
-		if (!purchaseOrderDemandMatcher.matches(context))
-		{
-			return ImmutableList.of();
-		}
-
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 

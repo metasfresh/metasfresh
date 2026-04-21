@@ -106,7 +106,6 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.build();
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
-				new PurchaseOrderDemandMatcher(),
 				new VendorProductInfoService(new BPartnerBL(new UserRepository())),
 				Mockito.mock(CandidateRepositoryRetrieval.class),
 				Mockito.mock(CandidateRepositoryWriteService.class),

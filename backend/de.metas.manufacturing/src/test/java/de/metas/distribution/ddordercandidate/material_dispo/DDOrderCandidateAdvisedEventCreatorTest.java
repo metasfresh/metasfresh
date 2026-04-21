@@ -39,7 +39,6 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
-import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -76,7 +75,6 @@ class DDOrderCandidateAdvisedEventCreatorTest
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(25);
 
-	private DDOrderCandidateDemandMatcher demandMatcher;
 	private DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
 	private DDOrderCandidateService ddOrderCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
@@ -91,12 +89,11 @@ class DDOrderCandidateAdvisedEventCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		demandMatcher = Mockito.mock(DDOrderCandidateDemandMatcher.class);
 		ddOrderCandidateService = Mockito.mock(DDOrderCandidateService.class);
 		candidateRepositoryWriteService = Mockito.mock(CandidateRepositoryWriteService.class);
 		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ReplenishInfoRepository());
-		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory, ddOrderCandidateService, candidateRepositoryWriteService, candidateRepositoryRetrieval);
+		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(ddOrderCandidateDataFactory, ddOrderCandidateService, candidateRepositoryWriteService, candidateRepositoryRetrieval);
 
 		createMasterData();
 	}
@@ -197,7 +194,6 @@ class DDOrderCandidateAdvisedEventCreatorTest
 						.build())
 				.build();
 
-		Mockito.when(demandMatcher.matches(Mockito.any(MaterialPlanningContext.class))).thenReturn(true);
 		final List<DDOrderCandidateAdvisedEvent> events = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
 
 		assertThat(events).hasSize(1);

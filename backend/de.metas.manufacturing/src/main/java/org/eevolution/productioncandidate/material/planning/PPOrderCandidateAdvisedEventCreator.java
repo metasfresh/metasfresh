@@ -41,7 +41,6 @@ import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
-import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
@@ -66,7 +65,6 @@ import java.util.stream.Collectors;
 public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
@@ -84,11 +82,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
-		if (!ppOrderCandidateDemandMatcher.matches(context))
-		{
-			return ImmutableList.of();
-		}
-
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
