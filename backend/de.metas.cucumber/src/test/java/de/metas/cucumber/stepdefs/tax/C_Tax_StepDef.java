@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDef;
 import de.metas.location.ICountryDAO;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Services;

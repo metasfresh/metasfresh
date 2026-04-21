@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.tax_declaration;
+package de.metas.cucumber.stepdefs.currency;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;

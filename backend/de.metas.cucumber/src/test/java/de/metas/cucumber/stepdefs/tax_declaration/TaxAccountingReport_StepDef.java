@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.tax_declaration;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
