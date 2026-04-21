@@ -9,5 +9,6 @@
 --
 
 UPDATE AD_Reference SET AD_Reference_ID=542058 WHERE AD_Reference_ID=542051;
+UPDATE AD_Reference_Trl SET AD_Reference_ID=542058 WHERE AD_Reference_ID=542051;
 UPDATE AD_Ref_Table SET AD_Reference_ID=542058 WHERE AD_Reference_ID=542051;
 UPDATE AD_Process_Para SET AD_Reference_Value_ID=542058 WHERE AD_Reference_Value_ID=542051;
