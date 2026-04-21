@@ -150,7 +150,3 @@ UPDATE AD_Message SET MsgText='Folgende Rechnungen wurden bereits bezahlt: {}',U
 UPDATE AD_Message_Trl trl SET MsgText='Folgende Rechnungen wurden bereits bezahlt: {}' WHERE AD_Message_ID=545236 AND AD_Language='de_DE'
 ;
 
--- me03#29366 (review fix 2026-04-21): MsgType='E' error message must carry an ErrorCode
-UPDATE AD_Message SET ErrorCode='INVOICES_ALREADY_PAID' WHERE AD_Message_ID=545236 AND ErrorCode IS NULL
-;
-
