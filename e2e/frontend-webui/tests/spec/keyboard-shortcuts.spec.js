@@ -313,6 +313,271 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
     expect(finalPageText).toBe(initialPageText);
   });
 
+  // =========================================================================
+  // me03#27080 — Advanced Edit modal focus / Tab navigation
+  //
+  // Before the fix: ALT+E opened the modal but the two "focus-into-modal"
+  // mechanisms (Modal.js wrapper `.focus()` and
+  // SectionGroup.requestElementGroupFocus) were no-ops because both targeted
+  // <div>s without tabindex. Focus stayed on the background element (which
+  // the same render had just disabled with tabIndex=-1), so Tab wandered
+  // through background DIVs / <body> before reaching the modal — the
+  // "cursor lost / jumps erratically" the user reported.
+  //
+  // Fix: SectionGroup.requestElementGroupFocus now queries for and focuses
+  // the first editable <input>/<textarea>/<select> inside the first element
+  // group of the modal body. Modal.js's wrapper `.focus()` now skips if
+  // anything inside it already has focus (guard against the SectionGroup
+  // fix being stolen). A `didInitialFocus` instance flag on SectionGroup
+  // prevents re-renders mid-typing from re-focusing the first field.
+  //
+  // Test strategy: the me03#27080 tests use the **Product** window (140)
+  // instead of the Organisation window the other tests use, because the
+  // preloaded E2E DB can give the test user read-only access to the first
+  // Organisation record, which would make all four assertions fail for
+  // permission-related reasons that have nothing to do with the fix. The
+  // Product window is known to have plenty of editable master-data fields
+  // in the first element group of its advanced-edit modal.
+  // =========================================================================
+
+  /**
+   * Navigate to the Product window (140) and open the first product record
+   * in single-document view. Product is used instead of Organisation because
+   * the first Product record is consistently editable across DB seeds.
+   */
+  async function navigateToProductDetail(page) {
+    await page.goto('/window/140', { waitUntil: 'load' });
+    await page
+      .locator('.document-list-wrapper')
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const firstRow = page.locator('.table-flex-wrapper tbody tr').first();
+    await firstRow.waitFor({
+      state: 'visible',
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+    await firstRow.dblclick();
+    await page.waitForURL(/\/window\/\d+\/\d+/, {
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+    await page
+      .locator('.window-wrapper, .row-selected .form-group')
+      .first()
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await page.waitForTimeout(1000);
+    await page.locator('.window-wrapper').first().click();
+  }
+
+  /**
+   * After ALT+E, wait for the modal and for at least one form-field to be
+   * rendered inside it (SectionGroup needs children in the DOM before it
+   * can place focus on an input).
+   */
+  async function waitForModalOpen(page) {
+    await page
+      .locator('.panel-modal')
+      .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+    await page
+      .locator(
+        '.panel-modal input.js-input-field, ' +
+          '.panel-modal textarea.js-input-field, ' +
+          '.panel-modal .input-dropdown-container'
+      )
+      .first()
+      .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+    await page.waitForTimeout(500);
+  }
+
+  /**
+   * Snapshot of document.activeElement expressed as plain JSON.
+   */
+  const activeElementInfo = () => {
+    const el = document.activeElement;
+    if (!el) return null;
+    return {
+      tag: el.tagName,
+      ti: el.tabIndex,
+      cls: (el.className || '').slice(0, 80),
+      inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+      isEditable:
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) &&
+          !el.disabled &&
+          el.tabIndex === 0) ||
+        (el.tabIndex === 0 &&
+          el.classList.contains('input-dropdown-container')),
+    };
+  };
+
+  test('me03#27080: ALT+E moves focus to first editable modal input', async ({
+    page,
+  }) => {
+    await navigateToProductDetail(page);
+
+    // Trace focus events during modal open
+    await page.evaluate(() => {
+      window.__focusLog = [];
+      document.addEventListener(
+        'focusin',
+        (e) => {
+          const t = e.target;
+          window.__focusLog.push({
+            tag: t.tagName,
+            ti: t.tabIndex,
+            inModal: !!t.closest?.(
+              '.modal-content-wrapper, .panel-modal'
+            ),
+          });
+        },
+        true
+      );
+    });
+
+    await page.keyboard.press('Alt+e');
+    await waitForModalOpen(page);
+
+    const { active, fixedFirstFocus } = await page.evaluate(
+      (fnSrc) => {
+        // eslint-disable-next-line no-new-func
+        const activeElementInfo = new Function('return (' + fnSrc + ')()');
+        return {
+          active: activeElementInfo(),
+          fixedFirstFocus: window.__focusLog.find(
+            (e) =>
+              e.inModal &&
+              e.ti === 0 &&
+              ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tag)
+          ),
+        };
+      },
+      activeElementInfo.toString()
+    );
+
+    // The fix fires a focusin event on an editable element inside the modal.
+    expect(fixedFirstFocus).toBeTruthy();
+    // Post-open active element is inside the modal and is itself editable.
+    expect(active).toBeTruthy();
+    expect(active.inModal).toBe(true);
+    expect(active.isEditable).toBe(true);
+  });
+
+  test('me03#27080: Tab inside modal walks form fields, never escapes to <body>', async ({
+    page,
+  }) => {
+    await navigateToProductDetail(page);
+    await page.keyboard.press('Alt+e');
+    await waitForModalOpen(page);
+
+    // Walk 6 Tab presses and record where focus lands after each
+    const stops = [];
+    for (let i = 0; i < 6; i += 1) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(150);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              ti: el.tabIndex,
+              inModal: !!el.closest(
+                '.modal-content-wrapper, .panel-modal'
+              ),
+            }
+          : null;
+      });
+      stops.push(info);
+    }
+
+    // None of the stops should be on <body> or outside the modal
+    const bodyStops = stops.filter((s) => s?.tag === 'BODY').length;
+    const outsideModalStops = stops.filter((s) => s && !s.inModal).length;
+    expect(bodyStops).toBe(0);
+    expect(outsideModalStops).toBe(0);
+  });
+
+  test('me03#27080: typing does not steal focus back to the first field (re-render safety)', async ({
+    page,
+  }) => {
+    await navigateToProductDetail(page);
+    await page.keyboard.press('Alt+e');
+    await waitForModalOpen(page);
+
+    // Skip forward a few tab stops so we are NOT on the first field that
+    // the fix targets. If focus were to be stolen on re-render, it would
+    // land back on the first field.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(300);
+
+    const beforeTyping = await page.evaluate(() => {
+      const el = document.activeElement;
+      return el
+        ? {
+            tag: el.tagName,
+            ti: el.tabIndex,
+            cls: (el.className || '').slice(0, 60),
+          }
+        : null;
+    });
+
+    // Only meaningful if we landed on a text-typeable element. If not, skip
+    // the steal assertion (the Tab navigation test already covers the walk).
+    if (
+      beforeTyping &&
+      ['INPUT', 'TEXTAREA'].includes(beforeTyping.tag) &&
+      beforeTyping.ti === 0
+    ) {
+      await page.keyboard.type('X', { delay: 40 });
+      await page.waitForTimeout(1200); // wait for any PATCH + re-render
+
+      const afterTyping = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              ti: el.tabIndex,
+              cls: (el.className || '').slice(0, 60),
+            }
+          : null;
+      });
+
+      // Focus must remain on the same element (identity checked by tag +
+      // className, which is stable across re-renders when the element
+      // is not unmounted).
+      expect(afterTyping?.tag).toBe(beforeTyping.tag);
+      expect(afterTyping?.cls).toBe(beforeTyping.cls);
+    }
+  });
+
+  test('me03#27080: closing and reopening modal refocuses the first editable element', async ({
+    page,
+  }) => {
+    await navigateToProductDetail(page);
+    const modal = page.locator('.panel-modal');
+
+    // Open, close, reopen — each cycle must place focus inside the modal on
+    // an editable element (input / textarea / select / lookup-dropdown).
+    for (let cycle = 0; cycle < 2; cycle += 1) {
+      await page.keyboard.press('Alt+e');
+      await waitForModalOpen(page);
+
+      const info = await page.evaluate(
+        (fnSrc) => {
+          // eslint-disable-next-line no-new-func
+          const activeElementInfo = new Function('return (' + fnSrc + ')()');
+          return activeElementInfo();
+        },
+        activeElementInfo.toString()
+      );
+
+      expect(info).toBeTruthy();
+      expect(info.inModal).toBe(true);
+      expect(info.isEditable).toBe(true);
+
+      await page.keyboard.press('Escape');
+      await modal.waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+      await page.waitForTimeout(300);
+    }
+  });
+
   test('Escape closes each menu after opening', async ({ page }) => {
     // --- ALT+1 → Escape ---
     await page.keyboard.press('Alt+1');
