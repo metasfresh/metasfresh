@@ -14,6 +14,7 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
@@ -42,6 +43,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
+	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
