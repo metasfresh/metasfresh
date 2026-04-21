@@ -32,6 +32,7 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
@@ -79,7 +80,7 @@ public class NShiftShipmentService
 		try
 		{
 			logger.debug("Creating shipment for request: {}", deliveryRequest);
-			final boolean isDraftShipmentOnly = "Y".equals(deliveryRequest.getShipperConfig().getAdditionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY));
+			final boolean isDraftShipmentOnly = StringUtils.toBoolean(deliveryRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY));
 			final String endpoint = isDraftShipmentOnly ? DRAFT_SHIPMENT_ENDPOINT : CREATE_SHIPMENT_ENDPOINT;
 			final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
 			final JsonShipmentResponse response = restClient.post(endpoint, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);

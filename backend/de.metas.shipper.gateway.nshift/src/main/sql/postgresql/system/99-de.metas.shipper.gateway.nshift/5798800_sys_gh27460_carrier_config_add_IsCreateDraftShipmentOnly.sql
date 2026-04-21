@@ -59,7 +59,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- DDL: Add physical column to Carrier_Config table
 -- 2026-04-21T08:00:00Z
-/* DDL */ SELECT public.db_alter_table('Carrier_Config','ADD COLUMN IF NOT EXISTS IsCreateDraftShipmentOnly CHAR(1) DEFAULT ''N'' NOT NULL')
+/* DDL */ SELECT public.db_alter_table('Carrier_Config','ALTER TABLE public.Carrier_Config ADD COLUMN IsCreateDraftShipmentOnly CHAR(1) DEFAULT ''N'' NOT NULL')
 ;
 
 -- Field: Lieferweg(142,D) -> nShift Konfiguration(548455,D) -> Nur als Entwurf versenden

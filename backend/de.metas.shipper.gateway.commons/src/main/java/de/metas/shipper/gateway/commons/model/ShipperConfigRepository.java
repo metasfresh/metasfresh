@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.commons.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.StringUtils;
 import de.metas.i18n.AdMessageKey;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -111,7 +112,7 @@ public class ShipperConfigRepository
 		// PO layer stores YesNo columns as Boolean; convert to "Y"/"N" for consistent string-based lookup
 		if (value instanceof Boolean)
 		{
-			return (Boolean) value ? "Y" : "N";
+			return StringUtils.ofBooleanNonNull((Boolean) value);
 		}
 		return String.valueOf(value);
 	}
