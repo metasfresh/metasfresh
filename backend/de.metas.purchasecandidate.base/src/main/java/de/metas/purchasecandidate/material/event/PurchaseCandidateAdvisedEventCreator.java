@@ -11,6 +11,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
@@ -65,6 +66,13 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
+
+	@NonNull
+	@Override
+	public PlanningUsage getPlanningUsage()
+	{
+		return PlanningUsage.PURCHASING;
+	}
 
 	public List<PurchaseCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,

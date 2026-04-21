@@ -9,6 +9,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -66,10 +68,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	{
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
-		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
-		if (context != null)
+		final Map<PlanningUsage, MaterialPlanningContext> contextsByUsage = helper.createContextsByUsage(descriptor);
+		for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
 		{
-			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
+			final MaterialPlanningContext context = contextsByUsage.get(advisor.getPlanningUsage());
+			if (context != null)
 			{
 				events.addAll(advisor.createAdvisedEvents(descriptor, context));
 			}

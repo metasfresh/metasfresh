@@ -39,6 +39,7 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
@@ -64,6 +65,13 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	@NonNull
+	@Override
+	public PlanningUsage getPlanningUsage()
+	{
+		return PlanningUsage.DISTRIBUTION;
+	}
 
 	public List<DDOrderCandidateAdvisedEvent> createAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,

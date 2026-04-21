@@ -36,6 +36,7 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
@@ -70,6 +71,13 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
+
+	@NonNull
+	@Override
+	public PlanningUsage getPlanningUsage()
+	{
+		return PlanningUsage.MANUFACTURING;
+	}
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
