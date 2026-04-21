@@ -23,6 +23,7 @@
 package de.metas.material.planning.event;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
@@ -52,9 +53,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -83,7 +82,7 @@ public class SupplyRequiredHandlerHelper
 			return null;
 		}
 
-		return resolved.buildContext(productPlanning);
+		return resolved.buildContext(productPlanning, orgDAO);
 	}
 
 	/**
@@ -105,10 +104,10 @@ public class SupplyRequiredHandlerHelper
 			return ImmutableMap.of();
 		}
 
-		final List<ProductPlanning> all;
+		final ImmutableList<ProductPlanning> all;
 		try (final Stream<ProductPlanning> stream = productPlanningDAO.query(resolved.productPlanningQuery))
 		{
-			all = stream.collect(Collectors.toList()); // DAO-ordered
+			all = stream.collect(ImmutableList.toImmutableList()); // DAO-ordered
 		}
 		if (all.isEmpty())
 		{
@@ -122,7 +121,7 @@ public class SupplyRequiredHandlerHelper
 			all.stream()
 					.filter(usage::matches)
 					.findFirst() // DAO-ordered => first hit is the best match for this usage
-					.map(resolved::buildContext)
+					.map(pp -> resolved.buildContext(pp, orgDAO))
 					.ifPresent(ctx -> byUsage.put(usage, ctx));
 		}
 		return byUsage;
@@ -158,7 +157,7 @@ public class SupplyRequiredHandlerHelper
 	}
 
 	@RequiredArgsConstructor
-	private class ResolvedRequest
+	private static class ResolvedRequest
 	{
 		@NonNull final OrgId orgId;
 		@NonNull final WarehouseId warehouseId;
@@ -168,7 +167,9 @@ public class SupplyRequiredHandlerHelper
 		@NonNull final ProductPlanningQuery productPlanningQuery;
 
 		@NonNull
-		MaterialPlanningContext buildContext(@NonNull final ProductPlanning productPlanning)
+		MaterialPlanningContext buildContext(
+				@NonNull final ProductPlanning productPlanning,
+				@NonNull final IOrgDAO orgDAO)
 		{
 			final I_AD_Org org = orgDAO.getById(orgId);
 
