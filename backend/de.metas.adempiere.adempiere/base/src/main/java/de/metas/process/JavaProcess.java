@@ -1127,11 +1127,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		if (selectionQueryFilter != null)
 		{
 			queryBuilder.filter(selectionQueryFilter);
-			if (applyActiveRecordsFilter)
+			if (selectionQueryFilter != null)
 			{
-				queryBuilder
-						.addOnlyActiveRecordsFilter()
-						.addOnlyContextClient();
+				queryBuilder.filter(selectionQueryFilter);
+				if (applyActiveRecordsFilter)
+					queryBuilder.addOnlyActiveRecordsFilter();
+				queryBuilder.addOnlyContextClient();
 			}
 		}
 		//
