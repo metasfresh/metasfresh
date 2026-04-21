@@ -52,6 +52,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -284,33 +285,46 @@ public class NShiftShipmentService
 		final List<JsonLine> responseLines = response.getLines() != null ? response.getLines() : Collections.emptyList();
 		Check.assume(requestParcels.size() == responseLines.size(), "Request and response line counts do not match. Request: %s, Response: %s", requestParcels.size(), responseLines.size());
 
+		final String fallbackValue = isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null;
 		final List<JsonDeliveryResponseItem> items = Streams.zip(
 						requestParcels.stream(),
 						responseLines.stream(),
 						(requestParcel, responseLine) -> {
+							Check.assumeNotEmpty(responseLine.getPkgs(), "No packages found for line: {}", responseLine);
 							final JsonPackage pkg = responseLine.getPkgs().get(0);
 							final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
 
-							final byte[] labelPdf = (label != null && label.getContent() != null)
-									? label.getContent().getBytes()
-									: null;
-
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
-									.awb(pkg.getPkgNo() != null ? pkg.getPkgNo() : (isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null))
-									.trackingUrl(pkg.getReferences().stream()
-											.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
-											.map(JsonReference::getValue)
-											.findFirst()
-											.orElse(isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null))
-									.labelPdfBase64(labelPdf)
+									.awb(pkg.getPkgNo() != null ? pkg.getPkgNo() : fallbackValue)
+									.trackingUrl(extractTrackingUrl(pkg, fallbackValue))
+									.labelPdfBase64(extractLabel(label))
 									.build();
 						})
 				.collect(Collectors.toList());
+		Check.assume(items.size() == requestParcels.size(), "Request and response parcel counts do not match. Request: %s, Response: %s", requestParcels.size(), items.size());
 
 		return JsonDeliveryResponse.builder()
 				.requestId(deliveryRequest.getId())
 				.items(items)
 				.build();
+	}
+
+	@Nullable
+	private static byte[] extractLabel(@Nullable final JsonShipmentResponseLabel label) {
+		return (label == null || label.getContent() == null)
+				? null
+				: label.getContent().getBytes();
+	}
+
+	@Nullable
+	private static String extractTrackingUrl(@NonNull final JsonPackage pkg, @Nullable final String fallback) {
+		//if (pkg.getReferences() == null) return fallback;
+
+		return pkg.getReferences().stream()
+				.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
+				.map(JsonReference::getValue)
+				.findFirst()
+				.orElse(fallback);
 	}
 }

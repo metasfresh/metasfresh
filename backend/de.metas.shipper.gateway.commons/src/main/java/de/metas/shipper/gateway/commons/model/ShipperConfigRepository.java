@@ -73,6 +73,7 @@ public class ShipperConfigRepository
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
 		return queryBL.createQueryBuilder(I_Carrier_Config.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnlyOptional()
