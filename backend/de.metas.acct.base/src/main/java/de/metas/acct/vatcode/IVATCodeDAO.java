@@ -1,6 +1,8 @@
 package de.metas.acct.vatcode;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -45,4 +47,15 @@ public interface IVATCodeDAO extends ISingletonService
 
 	@NonNull
 	VatCodeId getIdByCodeAndOrgId(@NonNull String code, @NonNull OrgId orgId);
+
+	/**
+	 * @return true if there is any active {@link VATCode} record for the given accounting schema and tax.
+	 */
+	boolean existsForAcctSchemaAndTax(@NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
+
+	/**
+	 * Create a new {@link VATCode} record.
+	 */
+	@NonNull
+	VATCode createVATCode(@NonNull CreateVATCodeRequest request);
 }

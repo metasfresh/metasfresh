@@ -30,6 +30,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.vatcode.VATCode;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.bpartner.BPartnerId;
@@ -41,6 +42,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -116,11 +118,13 @@ import java.util.function.Supplier;
  * <p>Numeric columns are parsed via {@link DataTableRow#getAsOptionalAmount(String, Supplier)} —
  * a bare number inherits the actual row's currency, {@code 190 CHF} forces a currency check too.
  *
- * <p><b>Supported columns</b>: {@code Level}, {@code VatCode}, {@code AccountConceptualName},
+ * <p><b>Supported columns</b>: {@code Level}, {@code C_VAT_Code_ID}, {@code AccountConceptualName},
  * {@code TaxName}, {@code NetAmt_SUM}, {@code TaxAmt_SUM} (levels 1/2/3/ReCap), {@code NetAmt},
- * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code C_BPartner_ID}. For {@code C_BPartner_ID}
- * an identifier resolves to the BPartner's name (which the DB function emits as {@code BPartnerName});
- * the null placeholder ({@code -} / {@code null}) asserts that the actual BPartnerName is null.
+ * {@code TaxAmt} (level 4), {@code DocumentNo}, {@code C_BPartner_ID}. Identifier-valued columns
+ * ({@code C_VAT_Code_ID}, {@code DocumentNo}, {@code C_BPartner_ID}) resolve their identifier via the
+ * corresponding {@code *_StepDefData}; the null placeholder ({@code -} / {@code null}) asserts that the
+ * actual value is null. {@code C_VAT_Code_ID} resolves to {@link VATCode#getCode()} and is compared
+ * against the {@code vatcode} column the DB function emits.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  */
@@ -129,6 +133,7 @@ public class TaxAccountingReport_StepDef
 {
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
@@ -236,7 +241,7 @@ public class TaxAccountingReport_StepDef
 			@NonNull final TaxInfo taxInfo)
 	{
 		return stringMatches(expected, "Level", actual.getLevel())
-				&& stringMatches(expected, "VatCode", actual.getVatCode())
+				&& vatCodeMatches(expected, actual)
 				&& accountConceptualNameMatches(expected, actual, taxInfo)
 				&& stringMatches(expected, "TaxName", actual.getTaxName())
 				&& documentNoMatches(expected, actual)
@@ -300,6 +305,27 @@ public class TaxAccountingReport_StepDef
 			default:
 				throw new AdempiereException("DocumentNo in tax report expectations must reference C_Invoice or C_AllocationHdr, got: " + ref);
 		}
+	}
+
+	/**
+	 * Resolves the expected {@code C_VAT_Code_ID} identifier to its {@link VATCode#getCode()} via
+	 * {@link C_VAT_Code_StepDefData} and compares to the actual row's {@code vatCode}. If the column is
+	 * absent, matching is skipped; if the cell holds the null placeholder ({@code -} or {@code null}),
+	 * the actual {@code vatCode} must be null.
+	 */
+	private boolean vatCodeMatches(@NonNull final DataTableRow expected, @NonNull final TaxReportRow actual)
+	{
+		final StepDefDataIdentifier identifier = expected.getAsOptionalIdentifier("C_VAT_Code_ID").orElse(null);
+		if (identifier == null)
+		{
+			return true;
+		}
+		if (identifier.isNullPlaceholder())
+		{
+			return actual.getVatCode() == null;
+		}
+		final VATCode expectedVatCode = vatCodeTable.get(identifier);
+		return expectedVatCode.getCode().equals(actual.getVatCode());
 	}
 
 	/**

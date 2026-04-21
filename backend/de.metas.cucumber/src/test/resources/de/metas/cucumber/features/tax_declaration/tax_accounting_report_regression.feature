@@ -75,10 +75,11 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 ## tax-correction Fact_Acct row for ARC and APC + Skonto. Not covered by this feature;
 ## sub-PR 2 must fix + add scenarios TC-S9b / TC-S11b exercising the payment-based path.
 ##
-## [VAT code] "Keine MwSt." appears as vatcode on every row
-##   Because the test-created C_Tax has no C_VAT_Code_ID linked. The function falls back
-##   to the getmessage('notax') label. This is out of scope — tracked separately via
-##   https://github.com/metasfresh/me03/issues/29363.
+## [VAT code] Each test creates a per-tax C_VAT_Code (via `metasfresh contains C_VAT_Codes:`) so the
+##   report now emits the real vatcode string instead of the "Keine MwSt." getmessage('notax')
+##   fallback. The {@code C_VAT_Code_ID} column in every `report_taxaccounts ... returns:` block
+##   asserts the identifier's {@code VATCode} matches the DB row's vatcode. Customer VAT-code
+##   configuration remains tracked under https://github.com/metasfresh/me03/issues/29363.
 ##
 ## Scenarios not flagged above are believed fully correct and customer-validated.
 ## ============================================================================================
@@ -133,6 +134,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | salesTax19 | salesTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID   | IsSOTrx |
+      | salesVat19 | salesTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier  |
       | salesProd1  |
@@ -163,12 +167,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
     # levels 1/2/3/ReCap sum up to the same single-row amounts.
     Then report_taxaccounts for C_Tax "salesTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | T_Due_Acct            |            |            | -1000  | -190   | customer      | ariInv     |
-      | ReCap |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | salesVat19    |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | salesVat19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 3     | salesVat19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 4     | salesVat19    | T_Due_Acct            |            |            | -1000  | -190   | customer      | ariInv     |
+      | ReCap | salesVat19    |                       | -1000      | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -184,6 +188,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | arcTax19   | arcTaxCategory   | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | arcVat19   | arcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | arcProd1   |
@@ -212,12 +219,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "arcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 3     | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 4     | T_Due_Acct            |            |            | 1000   | 190    | customer      | arcInv     |
-      | ReCap |                       | 1000       | 190        |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | arcVat19      |                       | 1000       | 190        |        |        | -             | -          |
+      | 2     | arcVat19      | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 3     | arcVat19      | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 4     | arcVat19      | T_Due_Acct            |            |            | 1000   | 190    | customer      | arcInv     |
+      | ReCap | arcVat19      |                       | 1000       | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -233,6 +240,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | apiTax19   | apiTaxCategory   | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | apiVat19   | apiTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | apiProd1   |
@@ -261,12 +271,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "apiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 3     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 4     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | apiInv     |
-      | ReCap |                       | 1000       | 190        |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | apiVat19      |                       | 1000       | 190        |        |        | -             | -          |
+      | 2     | apiVat19      | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 3     | apiVat19      | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 4     | apiVat19      | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | apiInv     |
+      | ReCap | apiVat19      |                       | 1000       | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -282,6 +292,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | apcTax19   | apcTaxCategory   | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | apcVat19   | apcTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | apcProd1   |
@@ -310,12 +323,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
     Then report_taxaccounts for C_Tax "apcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 3     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 4     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | apcInv     |
-      | ReCap |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | apcVat19      |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | apcVat19      | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 3     | apcVat19      | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 4     | apcVat19      | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | apcInv     |
+      | ReCap | apcVat19      |                       | -1000      | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -331,6 +344,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier        | C_TaxCategory_ID        | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | exemptSalesTax    | exemptSalesTaxCategory  | 0    | DE                       | DE                        | Y           |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier     | C_Tax_ID       | IsSOTrx |
+      | exemptSalesVat | exemptSalesTax | Y       |
     And metasfresh contains M_Products:
       | Identifier      |
       | exemptSalesProd |
@@ -359,12 +375,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
     Then report_taxaccounts for C_Tax "exemptSalesTax" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
-      | 1     |                       | -500       | 0          |        |        | -             | -            |
-      | 2     | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
-      | 3     | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
-      | 4     | T_Due_Acct            |            |            | -500   | 0      | customer      | exemptAriInv |
-      | ReCap |                       | -500       | 0          |        |        | -             | -            |
+      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
+      | 1     | exemptSalesVat |                       | -500       | 0          |        |        | -             | -            |
+      | 2     | exemptSalesVat | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
+      | 3     | exemptSalesVat | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
+      | 4     | exemptSalesVat | T_Due_Acct            |            |            | -500   | 0      | customer      | exemptAriInv |
+      | ReCap | exemptSalesVat |                       | -500       | 0          |        |        | -             | -            |
 
 
 # ############################################################################################################################################
@@ -380,6 +396,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier        | C_TaxCategory_ID           | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
       | exemptPurchaseTax | exemptPurchaseTaxCategory  | 0    | DE                       | DE                        | Y           |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier        | C_Tax_ID          | IsSOTrx |
+      | exemptPurchaseVat | exemptPurchaseTax | N       |
     And metasfresh contains M_Products:
       | Identifier          |
       | exemptPurchaseProd  |
@@ -408,12 +427,12 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
     Then report_taxaccounts for C_Tax "exemptPurchaseTax" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
-      | 1     |                       | 500        | 0          |        |        | -             | -            |
-      | 2     | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
-      | 3     | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
-      | 4     | T_Credit_Acct         |            |            | 500    | 0      | vendor        | exemptApiInv |
-      | ReCap |                       | 500        | 0          |        |        | -             | -            |
+      | Level | C_VAT_Code_ID     | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
+      | 1     | exemptPurchaseVat |                       | 500        | 0          |        |        | -             | -            |
+      | 2     | exemptPurchaseVat | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
+      | 3     | exemptPurchaseVat | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
+      | 4     | exemptPurchaseVat | T_Credit_Acct         |            |            | 500    | 0      | vendor        | exemptApiInv |
+      | ReCap | exemptPurchaseVat |                       | 500        | 0          |        |        | -             | -            |
 
 
 # ############################################################################################################################################
@@ -434,6 +453,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocTax19  | allocTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID   | IsSOTrx |
+      | allocVat19 | allocTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | allocProd  |
@@ -475,13 +497,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     #   sum(TaxAmt) = -190 + 3.80 = -186.20
     #   sum(NetAmt) = -1000 + 20  = -980
     Then report_taxaccounts for C_Tax "allocTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     |                       | -980       | -186.20    |        |        | -             | -             |
-      | 2     | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
-      | 3     | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
-      | 4     | T_Due_Acct            |            |            | -1000  | -190   | customer      | allocSalesInv |
-      | 4     | T_Due_Acct            |            |            | 20     | 3.80   | customer      | ariAlloc      |
-      | ReCap |                       | -980       | -186.20    |        |        | -             | -             |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
+      | 1     | allocVat19    |                       | -980       | -186.20    |        |        | -             | -             |
+      | 2     | allocVat19    | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
+      | 3     | allocVat19    | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
+      | 4     | allocVat19    | T_Due_Acct            |            |            | -1000  | -190   | customer      | allocSalesInv |
+      | 4     | allocVat19    | T_Due_Acct            |            |            | 20     | 3.80   | customer      | ariAlloc      |
+      | ReCap | allocVat19    |                       | -980       | -186.20    |        |        | -             | -             |
 
 
 # ############################################################################################################################################
@@ -501,6 +523,10 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
       | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | mixTax19    | mixTaxCategory19  | 19   | DE                       | DE                        |
       | mixTax7     | mixTaxCategory7   | 7    | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | mixVat19   | mixTax19 | Y       |
+      | mixVat7    | mixTax7  | Y       |
     And metasfresh contains M_Products:
       | Identifier |
       | mixProd19  |
@@ -535,21 +561,21 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
 
     # 19% slice: 1000 base + 190 tax
     Then report_taxaccounts for C_Tax "mixTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | T_Due_Acct            |            |            | -1000  | -190   | customer      | mixInv     |
-      | ReCap |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | mixVat19      |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | mixVat19      | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 3     | mixVat19      | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 4     | mixVat19      | T_Due_Acct            |            |            | -1000  | -190   | customer      | mixInv     |
+      | ReCap | mixVat19      |                       | -1000      | -190       |        |        | -             | -          |
 
     # 7% slice: 500 base + 35 tax
     Then report_taxaccounts for C_Tax "mixTax7" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     |                       | -500       | -35        |        |        | -             | -          |
-      | 2     | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
-      | 3     | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
-      | 4     | T_Due_Acct            |            |            | -500   | -35    | customer      | mixInv     |
-      | ReCap |                       | -500       | -35        |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | mixVat7       |                       | -500       | -35        |        |        | -             | -          |
+      | 2     | mixVat7       | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
+      | 3     | mixVat7       | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
+      | 4     | mixVat7       | T_Due_Acct            |            |            | -500   | -35    | customer      | mixInv     |
+      | ReCap | mixVat7       |                       | -500       | -35        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -568,6 +594,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocArcTax19  | allocArcTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier    | C_Tax_ID      | IsSOTrx |
+      | allocArcVat19 | allocArcTax19 | Y       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocArcProd |
@@ -609,13 +638,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
     # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "allocArcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 980        | 186.20     |        |        | -             | -           |
-      | 2     | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
-      | 3     | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
-      | 4     | T_Due_Acct            |            |            | 1000   | 190    | customer      | allocArcInv |
-      | 4     | T_Due_Acct            |            |            | -20    | -3.80  | customer      | arcAlloc    |
-      | ReCap |                       | 980        | 186.20     |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
+      | 1     | allocArcVat19 |                       | 980        | 186.20     |        |        | -             | -           |
+      | 2     | allocArcVat19 | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
+      | 3     | allocArcVat19 | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
+      | 4     | allocArcVat19 | T_Due_Acct            |            |            | 1000   | 190    | customer      | allocArcInv |
+      | 4     | allocArcVat19 | T_Due_Acct            |            |            | -20    | -3.80  | customer      | arcAlloc    |
+      | ReCap | allocArcVat19 |                       | 980        | 186.20     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
@@ -633,6 +662,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocApiTax19  | allocApiTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier    | C_Tax_ID      | IsSOTrx |
+      | allocApiVat19 | allocApiTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocApiProd |
@@ -673,13 +705,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
     # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "allocApiTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | 980        | 186.20     |        |        | -             | -           |
-      | 2     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 3     | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 4     | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | apiAlloc    |
-      | 4     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | allocApiInv |
-      | ReCap |                       | 980        | 186.20     |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
+      | 1     | allocApiVat19 |                       | 980        | 186.20     |        |        | -             | -           |
+      | 2     | allocApiVat19 | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
+      | 3     | allocApiVat19 | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
+      | 4     | allocApiVat19 | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | apiAlloc    |
+      | 4     | allocApiVat19 | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | allocApiInv |
+      | ReCap | allocApiVat19 |                       | 980        | 186.20     |        |        | -             | -           |
 
 
 # ############################################################################################################################################
@@ -698,6 +730,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     And metasfresh contains C_Tax
       | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | allocApcTax19  | allocApcTaxCategory  | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier    | C_Tax_ID      | IsSOTrx |
+      | allocApcVat19 | allocApcTax19 | N       |
     And metasfresh contains M_Products:
       | Identifier   |
       | allocApcProd |
@@ -738,10 +773,10 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3") — regression
     # Two level-4 rows: invoice (-190/-1000) and allocation discount correction (+3.80/+20).
     # Subtotals: -190+3.80=-186.20 and -1000+20=-980.
     Then report_taxaccounts for C_Tax "allocApcTax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     |                       | -980       | -186.20    |        |        | -             | -           |
-      | 2     | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
-      | 3     | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
-      | 4     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | allocApcInv |
-      | 4     | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apcAlloc    |
-      | ReCap |                       | -980       | -186.20    |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
+      | 1     | allocApcVat19 |                       | -980       | -186.20    |        |        | -             | -           |
+      | 2     | allocApcVat19 | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
+      | 3     | allocApcVat19 | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
+      | 4     | allocApcVat19 | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | allocApcInv |
+      | 4     | allocApcVat19 | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | apcAlloc    |
+      | ReCap | allocApcVat19 |                       | -980       | -186.20    |        |        | -             | -           |
