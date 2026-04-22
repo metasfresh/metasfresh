@@ -49,10 +49,11 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final ProductASIDataRepository productASIDataRepository = new ProductASIDataRepository(Services.get(IQueryBL.class));
 		EDIDesadvPackService = new EDIDesadvPackService(
-				new HURepository(),
+				new HURepository(productASIDataRepository),
 				new EDIDesadvPackRepository(),
-				new ProductASIDataRepository(Services.get(IQueryBL.class)));
+				productASIDataRepository);
 		desadvBL = DesadvBL.newInstanceForUnitTesting();
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", 2, X12DE355.EACH).getC_UOM_ID());

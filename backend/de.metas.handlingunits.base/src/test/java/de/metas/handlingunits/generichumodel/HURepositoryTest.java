@@ -18,15 +18,17 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.quantity.Quantity;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product_ASI_Data;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
@@ -108,7 +110,7 @@ class HURepositoryTest
 
 		huPIItemProductRecord = huTestHelper.assignProduct(maItemIFCO, productId, new BigDecimal("5"), uomRecord);
 
-		huRepository = new HURepository();
+		huRepository = new HURepository(new ProductASIDataRepository(Services.get(IQueryBL.class)));
 	}
 
 	@Test
@@ -176,22 +178,22 @@ class HURepositoryTest
 
 	private void setupPackagingGTINs()
 	{
-		final I_C_BPartner_Product bPartnerProductLURecord1 = newInstance(I_C_BPartner_Product.class);
-		bPartnerProductLURecord1.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
-		bPartnerProductLURecord1.setC_BPartner_ID(10);
-		bPartnerProductLURecord1.setGTIN("LU-GTIN1");
-		saveRecord(bPartnerProductLURecord1);
+		final I_M_Product_ASI_Data asiDataLU1 = newInstance(I_M_Product_ASI_Data.class);
+		asiDataLU1.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		asiDataLU1.setC_BPartner_ID(10);
+		asiDataLU1.setGTIN("LU-GTIN1");
+		saveRecord(asiDataLU1);
 
-		final I_C_BPartner_Product bPartnerProductLURecord2 = newInstance(I_C_BPartner_Product.class);
-		bPartnerProductLURecord2.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
-		bPartnerProductLURecord2.setC_BPartner_ID(20);
-		bPartnerProductLURecord2.setGTIN("LU-GTIN2");
-		saveRecord(bPartnerProductLURecord2);
+		final I_M_Product_ASI_Data asiDataLU2 = newInstance(I_M_Product_ASI_Data.class);
+		asiDataLU2.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		asiDataLU2.setC_BPartner_ID(20);
+		asiDataLU2.setGTIN("LU-GTIN2");
+		saveRecord(asiDataLU2);
 
-		final I_C_BPartner_Product bPartnerProductTURecord1 = newInstance(I_C_BPartner_Product.class);
-		bPartnerProductTURecord1.setM_Product_ID(huTestHelper.pmIFCO.getM_Product_ID());
-		bPartnerProductTURecord1.setC_BPartner_ID(10);
-		bPartnerProductTURecord1.setGTIN("TU-GTIN1");
-		saveRecord(bPartnerProductTURecord1);
+		final I_M_Product_ASI_Data asiDataTU1 = newInstance(I_M_Product_ASI_Data.class);
+		asiDataTU1.setM_Product_ID(huTestHelper.pmIFCO.getM_Product_ID());
+		asiDataTU1.setC_BPartner_ID(10);
+		asiDataTU1.setGTIN("TU-GTIN1");
+		saveRecord(asiDataTU1);
 	}
 }

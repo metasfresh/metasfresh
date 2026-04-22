@@ -124,10 +124,11 @@ public class EDIDesadvPackService
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
+		final ProductASIDataRepository productASIDataRepository = new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class));
 		return SpringContextHolder.getBeanOrSupply(EDIDesadvPackService.class,
-				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(),
+				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(productASIDataRepository),
 						EDIDesadvPackRepository.newInstanceForUnitTesting(),
-						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)))
+						productASIDataRepository)
 		);
 	}
 

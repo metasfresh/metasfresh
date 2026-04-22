@@ -85,13 +85,19 @@ public class HURepository
 	private static final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final ProductASIDataRepository productASIDataRepository;
+
+	public HURepository(@NonNull final ProductASIDataRepository productASIDataRepository)
+	{
+		this.productASIDataRepository = productASIDataRepository;
+	}
 
 	@VisibleForTesting
-	public static HURepository newInstanceForUnitTesting()
+	public static HURepository newInstanceForUnitTesting(@NonNull final ProductASIDataRepository productASIDataRepository)
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(HURepository.class, HURepository::new);
+		return SpringContextHolder.getBeanOrSupply(HURepository.class, () -> new HURepository(productASIDataRepository));
 	}
 
 	public HU getById(@NonNull final HuId id)
@@ -102,7 +108,7 @@ public class HURepository
 
 	private HU ofRecord(@NonNull final I_M_HU huRecord)
 	{
-		final HUIteratorListener listener = new HUIteratorListener();
+		final HUIteratorListener listener = new HUIteratorListener(productASIDataRepository);
 
 		new HUIterator()
 				.setEnableStorageIteration(false)
@@ -119,11 +125,16 @@ public class HURepository
 		private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		private final transient ProductASIDataRepository productASIDataRepository = SpringContextHolder.instance.getBean(ProductASIDataRepository.class);
+		@NonNull private final transient ProductASIDataRepository productASIDataRepository;
 
 		private final transient HUStack huStack = new HUStack();
 
 		private IPair<HuId, HUBuilder> currentIdAndBuilder;
+
+		private HUIteratorListener(@NonNull final ProductASIDataRepository productASIDataRepository)
+		{
+			this.productASIDataRepository = productASIDataRepository;
+		}
 
 		@Override
 		public Result beforeHU(@NonNull final IMutable<I_M_HU> huMutable)
