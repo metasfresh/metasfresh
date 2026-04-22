@@ -294,6 +294,85 @@ public class ExternalIdentifierProductLookupServiceTest
 	}
 
 	@Test
+	void lookupProductByGTIN_skips_HU_PI_Item_Product_when_referenced_M_Product_is_inactive()
+	{
+		// given: an active HUPI pointing to a deactivated M_Product
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		hupiItemProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		hupiItemProduct.setGTIN("12345678");
+		hupiItemProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(hupiItemProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+
+		// then: HUPI is NOT matched because its M_Product is inactive — no other candidate either
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void lookupProductByGTIN_falls_through_when_HU_PI_Item_Product_refs_inactive_product_but_another_active_product_has_GTIN()
+	{
+		// given: one HUPI points to an inactive M_Product (= the stale PI row the consolidation
+		// process forgot to deactivate), and a *different*, active M_Product carries the GTIN.
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		hupiItemProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		hupiItemProduct.setGTIN("12345678");
+		hupiItemProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(hupiItemProduct);
+
+		final I_M_Product activeProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		activeProduct.setValue("active-product");
+		activeProduct.setGTIN("12345678");
+		activeProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(activeProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+
+		// then: the stale HUPI is skipped, BPartner_Product step finds nothing,
+		// and the direct M_Product lookup returns the active product (without a specific HUPI).
+		assertThat(result).isPresent();
+		assertThat(result.get().getProductId()).isEqualTo(ProductId.ofRepoId(activeProduct.getM_Product_ID()));
+		assertThat(result.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.VIRTUAL_HU);
+	}
+
+	@Test
+	void lookupProductByGTIN_skips_C_BPartner_Product_when_referenced_M_Product_is_inactive()
+	{
+		// given: an active BPartner_Product pointing to a deactivated M_Product
+		final I_M_Product inactiveProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		inactiveProduct.setValue("inactive-product");
+		inactiveProduct.setIsActive(false);
+		InterfaceWrapperHelper.save(inactiveProduct);
+
+		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setM_Product_ID(inactiveProduct.getM_Product_ID());
+		bpartnerProduct.setGTIN("11223344");
+		bpartnerProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(bpartnerProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-11223344");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+
+		// then: BPartner_Product is NOT matched because its M_Product is inactive
+		assertThat(result).isEmpty();
+	}
+
+	@Test
 	void lookupProductByGTIN_prioritizes_HU_PI_Item_Product_over_M_Product()
 	{
 		// given
