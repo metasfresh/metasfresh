@@ -39,7 +39,6 @@ import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
 import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
@@ -52,7 +51,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,7 +69,6 @@ public class NShiftShipmentService
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
 	private static final String DRAFT_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/SaveShipment";
-	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
 
 	@NonNull private final NShiftRestClient restClient;
 
@@ -295,8 +292,8 @@ public class NShiftShipmentService
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
 									.awb(pkg.getPkgNo())
-									.trackingUrl(extractTrackingUrl(pkg))
-									.labelPdfBase64(extractLabel(label))
+									.trackingUrl(JsonPackage.extractTrackingUrl(pkg))
+									.labelPdfBase64(JsonShipmentResponseLabel.extractLabel(label))
 									.build();
 						})
 				.collect(Collectors.toList());
@@ -306,23 +303,5 @@ public class NShiftShipmentService
 				.requestId(deliveryRequest.getId())
 				.items(items)
 				.build();
-	}
-
-	@Nullable
-	private static byte[] extractLabel(@Nullable final JsonShipmentResponseLabel label) {
-		return (label == null || label.getContent() == null)
-				? null
-				: label.getContent().getBytes();
-	}
-
-	@Nullable
-	private static String extractTrackingUrl(@NonNull final JsonPackage pkg) {
-		if (pkg.getReferences() == null) return null;
-
-		return pkg.getReferences().stream()
-				.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
-				.map(JsonReference::getValue)
-				.findFirst()
-				.orElse(null);
 	}
 }

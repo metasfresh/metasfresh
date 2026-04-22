@@ -41,7 +41,7 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "References": [
             {
               "Kind": 23,
-              "Value": "Test Product"
+              "Value": "Test Product Value"
             }
           ],
           "Width": 200

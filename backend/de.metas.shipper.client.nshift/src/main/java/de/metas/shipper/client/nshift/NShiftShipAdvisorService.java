@@ -154,7 +154,7 @@ public class NShiftShipAdvisorService
 				.lineWeight(weightGrams)
 				.reference(JsonReference.builder()
 						.kind(23) // eSrkContents https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-						.value(item.getProductName())
+						.value(item.getProductValue())
 						.build());
 		if (item.getPackageDimensions() != null)
 		{
