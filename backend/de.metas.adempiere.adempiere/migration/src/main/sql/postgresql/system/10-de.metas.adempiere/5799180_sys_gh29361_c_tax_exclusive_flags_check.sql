@@ -18,8 +18,14 @@ BEGIN
     END IF;
 END $$;
 
+-- Two-step: ADD ... NOT VALID acquires only a brief ACCESS EXCLUSIVE lock (no table scan),
+-- then VALIDATE CONSTRAINT uses SHARE UPDATE EXCLUSIVE which doesn't block concurrent writes.
+-- The preflight DO-block above guarantees there are no violating rows, so VALIDATE is safe.
 ALTER TABLE C_Tax
     ADD CONSTRAINT c_tax_exclusive_tax_flags
     CHECK ( ( (CASE WHEN IsTaxExempt     = 'Y' THEN 1 ELSE 0 END)
             + (CASE WHEN IsReverseCharge = 'Y' THEN 1 ELSE 0 END)
-            + (CASE WHEN IsWholeTax      = 'Y' THEN 1 ELSE 0 END) ) <= 1 );
+            + (CASE WHEN IsWholeTax      = 'Y' THEN 1 ELSE 0 END) ) <= 1 ) NOT VALID;
+
+ALTER TABLE C_Tax
+    VALIDATE CONSTRAINT c_tax_exclusive_tax_flags;

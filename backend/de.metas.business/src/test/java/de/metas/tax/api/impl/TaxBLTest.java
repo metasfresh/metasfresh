@@ -324,7 +324,7 @@ class TaxBLTest
 	private static I_C_Tax newTax()
 	{
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
-		tax.setName("tax-under-test");
+		tax.setName("tax-under-test-" + System.nanoTime());
 		return tax;
 	}
 

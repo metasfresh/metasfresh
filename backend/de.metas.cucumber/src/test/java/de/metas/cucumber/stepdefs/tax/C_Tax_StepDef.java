@@ -48,6 +48,9 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -234,7 +237,11 @@ public class C_Tax_StepDef
 	 *     <li>{@code Identifier} — identifier of a previously registered tax</li>
 	 * </ul>
 	 *
-	 * <p><b>Optional columns</b> — at least two must be {@code true} to actually violate the check:
+	 * <p><b>Optional flag columns</b> — only the columns present in the data table are included
+	 * in the {@code SET} clause; columns omitted are left untouched. At least one flag column
+	 * must be present, and the resulting combined state on the row must violate the invariant
+	 * for the CHECK to fire (e.g. tax already has {@code IsTaxExempt=Y}, then UPDATE sets only
+	 * {@code IsReverseCharge=Y} → both are {@code Y}, CHECK rejects).
 	 * <ul>
 	 *     <li>{@code IsTaxExempt}, {@code IsReverseCharge}, {@code IsWholeTax} — each {@code Y}/{@code N}</li>
 	 * </ul>
@@ -257,18 +264,29 @@ public class C_Tax_StepDef
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final TaxId taxId = taxTable.get(identifier).getTaxId();
 
-		final String taxExempt = row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsTaxExempt).orElseFalse() ? "Y" : "N";
-		final String reverseCharge = row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsReverseCharge).orElseFalse() ? "Y" : "N";
-		final String wholeTax = row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsWholeTax).orElseFalse() ? "Y" : "N";
+		final List<String> setClauses = new ArrayList<>(3);
+		final List<Object> sqlParams = new ArrayList<>(4);
+		row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsTaxExempt)
+				.ifPresent(v -> { setClauses.add("istaxexempt=?"); sqlParams.add(v ? "Y" : "N"); });
+		row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsReverseCharge)
+				.ifPresent(v -> { setClauses.add("isreversecharge=?"); sqlParams.add(v ? "Y" : "N"); });
+		row.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsWholeTax)
+				.ifPresent(v -> { setClauses.add("iswholetax=?"); sqlParams.add(v ? "Y" : "N"); });
 
-		final String sql = "UPDATE c_tax SET istaxexempt=?, isreversecharge=?, iswholetax=? WHERE c_tax_id=?";
+		if (setClauses.isEmpty())
+		{
+			throw new IllegalArgumentException("At least one of IsTaxExempt / IsReverseCharge / IsWholeTax must be present in the data table — otherwise the raw UPDATE has nothing to change.");
+		}
+
+		sqlParams.add(taxId.getRepoId());
+		final String sql = "UPDATE c_tax SET " + String.join(", ", setClauses) + " WHERE c_tax_id=?";
 
 		assertThatThrownBy(() -> DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
-				new Object[] { taxExempt, reverseCharge, wholeTax, taxId.getRepoId() },
+				sqlParams.toArray(),
 				null))
-				.as("raw SQL setting flags TE=%s, RC=%s, WT=%s on C_Tax_ID=%s should be rejected",
-						taxExempt, reverseCharge, wholeTax, taxId)
+				.as("raw SQL '%s' with params %s on C_Tax_ID=%s should be rejected by c_tax_exclusive_tax_flags",
+						sql, sqlParams, taxId)
 				.isInstanceOf(DBException.class)
 				.hasMessageContaining("c_tax_exclusive_tax_flags");
 

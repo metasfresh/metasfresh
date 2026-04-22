@@ -73,3 +73,21 @@ Feature: C_Tax exclusive flags — at most one of IsTaxExempt / IsReverseCharge 
     And reload C_Tax and assert:
       | Identifier | IsTaxExempt | IsReverseCharge | IsWholeTax |
       | tax19      | true        | false           | false      |
+
+  @Id:c_tax_flag_exclusivity_TC_S6
+  Scenario: TC-S6 Regression — plain tax with all three flags N saves and reloads untouched
+    Given metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate |
+      | tax19      | taxCategory      | 19   |
+    Then reload C_Tax and assert:
+      | Identifier | IsTaxExempt | IsReverseCharge | IsWholeTax | Rate |
+      | tax19      | false       | false           | false      | 19   |
+
+  @Id:c_tax_flag_exclusivity_TC_S7
+  Scenario: TC-S7 Regression — IsWholeTax=Y on a fresh tax applies the pre-existing cascade (Rate=100, IsDocumentLevel=Y)
+    Given metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | IsWholeTax | IsDocumentLevel |
+      | taxWhole   | taxCategory      | 0    | true       | false           |
+    Then reload C_Tax and assert:
+      | Identifier | IsTaxExempt | IsReverseCharge | IsWholeTax | Rate | IsDocumentLevel |
+      | taxWhole   | false       | false           | true       | 100  | true            |
