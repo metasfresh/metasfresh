@@ -1,10 +1,53 @@
 -- me03#29063: Variant of GenerateASIStorageAttributesKey that includes ALL active attributes,
 -- not just storage-relevant ones. Used for M_Product_ASI_Data ASI subset matching.
 --
--- Note: The KeyPart encoding logic is inlined (instead of calling GenerateASIStorageAttributesKeyPart)
--- to avoid parameter-type mismatches with older overloads that may be installed in preloaded DBs.
--- The encoding MUST stay in sync with GenerateASIStorageAttributesKeyPart.
+-- This migration first re-installs GenerateASIStorageAttributesKeyPart with the canonical signature
+-- (some preloaded DBs carry older overloads with incompatible parameter types, which would make
+-- GenerateASIAllAttributesKey fail to resolve the call below). That way GenerateASIAllAttributesKey
+-- and GenerateASIStorageAttributesKey share the same KeyPart encoding — single source of truth.
 
+-- Drop any stale overloads of GenerateASIStorageAttributesKeyPart so the CREATE below lands cleanly.
+SELECT db_drop_functions('*.GenerateASIStorageAttributesKeyPart');
+
+-- Canonical GenerateASIStorageAttributesKeyPart (copied verbatim from its DDL file).
+CREATE OR REPLACE FUNCTION GenerateASIStorageAttributesKeyPart(
+    IN p_M_Attribute_ID      numeric,
+    IN p_AttributeValueType  text,
+    IN p_Value               text,
+    IN p_ValueNumber         numeric,
+    IN p_ValueDate           timestamp with time zone,
+    IN p_M_AttributeValue_ID numeric
+)
+    RETURNS text
+    LANGUAGE 'sql'
+    IMMUTABLE
+AS
+$BODY$
+    -- Extracts one AttributesKeyPart from a single M_AttributeInstance
+    -- Matches logic in: org.adempiere.mm.attributes.keys.AttributesKeys#createAttributesKeyPart
+SELECT (CASE
+    -- String Attribute (S): 'M_Attribute_ID=Value'
+            WHEN p_AttributeValueType = 'S' AND COALESCE(p_Value, '') != ''
+                THEN p_M_Attribute_ID || '=' || COALESCE(p_Value, '')::varchar
+
+    -- Number Attribute (N): 'M_Attribute_ID=Value' (with stripped trailing zeros)
+            WHEN p_AttributeValueType = 'N' AND COALESCE(p_ValueNumber, 0) != 0
+                THEN p_M_Attribute_ID || '=' || TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM p_ValueNumber::text))
+
+    -- Date Attribute (D): 'M_Attribute_ID=YYYY-MM-DD'
+            WHEN p_AttributeValueType = 'D' AND p_ValueDate IS NOT NULL
+                THEN p_M_Attribute_ID || '=' || TO_CHAR(p_ValueDate, 'YYYY-MM-DD')
+
+    -- List Attribute (L): 'M_AttributeValue_ID'
+            WHEN p_AttributeValueType = 'L' AND p_M_AttributeValue_ID IS NOT NULL
+                THEN p_M_AttributeValue_ID::varchar
+
+                ELSE NULL
+        END);
+$BODY$
+;
+
+-- GenerateASIAllAttributesKey: like GenerateASIStorageAttributesKey but WITHOUT the IsStorageRelevant filter.
 CREATE OR REPLACE FUNCTION GenerateASIAllAttributesKey(
     IN p_M_AttributeSetInstance_ID numeric,
     IN p_NullString                text,
@@ -17,21 +60,14 @@ CREATE OR REPLACE FUNCTION GenerateASIAllAttributesKey(
 AS
 $BODY$
 SELECT COALESCE(STRING_AGG(sub.keyPart, '§&§'), p_NullString)
-FROM (SELECT CASE
-                 -- String Attribute (S): 'M_Attribute_ID=Value'
-                 WHEN a.AttributeValueType = 'S' AND COALESCE(ai.Value, '') != ''
-                     THEN ai.M_Attribute_ID || '=' || COALESCE(ai.Value, '')::varchar
-                 -- Number Attribute (N): 'M_Attribute_ID=Value' (with stripped trailing zeros)
-                 WHEN a.AttributeValueType = 'N' AND COALESCE(ai.ValueNumber, 0) != 0
-                     THEN ai.M_Attribute_ID || '=' || TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM ai.ValueNumber::text))
-                 -- Date Attribute (D): 'M_Attribute_ID=YYYY-MM-DD'
-                 WHEN a.AttributeValueType = 'D' AND ai.ValueDate IS NOT NULL
-                     THEN ai.M_Attribute_ID || '=' || TO_CHAR(ai.ValueDate, 'YYYY-MM-DD')
-                 -- List Attribute (L): 'M_AttributeValue_ID'
-                 WHEN a.AttributeValueType = 'L' AND ai.M_AttributeValue_ID IS NOT NULL
-                     THEN ai.M_AttributeValue_ID::varchar
-                 ELSE NULL
-                 END AS keyPart
+FROM (SELECT GenerateASIStorageAttributesKeyPart(
+                     p_M_Attribute_ID => ai.M_Attribute_ID,
+                     p_AttributeValueType => a.AttributeValueType,
+                     p_Value => ai.Value,
+                     p_ValueNumber => ai.ValueNumber,
+                     p_ValueDate => ai.ValueDate,
+                     p_M_AttributeValue_ID => ai.M_AttributeValue_ID
+             ) AS keyPart
       FROM M_AttributeInstance ai
                INNER JOIN M_Attribute a ON a.M_Attribute_ID = ai.M_Attribute_ID
                LEFT OUTER JOIN M_AttributeValue av ON av.M_AttributeValue_ID = ai.M_AttributeValue_ID
@@ -91,6 +127,5 @@ COMMENT ON FUNCTION GenerateASIAllAttributesKey(numeric, text, numeric[]) IS
     * p_NullString: string to return if no attributes found (usually ''-1002'' for NONE or '''' for empty)
     * p_Only_Attribute_IDs: optional array to filter by specific attributes
 
-    Encoding logic is inlined (must stay in sync with GenerateASIStorageAttributesKeyPart).
     Java equivalent: AttributesKeys.createAttributesKeyFromASIAllAttributes()'
 ;
