@@ -71,7 +71,6 @@ public class NShiftShipmentService
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
 	private static final String DRAFT_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/SaveShipment";
-	private static final String DRAFT_PLACEHOLDER = "DRAFT";
 	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
 
 	@NonNull private final NShiftRestClient restClient;
@@ -87,7 +86,7 @@ public class NShiftShipmentService
 			final JsonShipmentResponse response = restClient.post(endpoint, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
-			return buildJsonDeliveryResponse(response, deliveryRequest, isDraftShipmentOnly);
+			return buildJsonDeliveryResponse(response, deliveryRequest);
 		}
 		catch (final Throwable throwable)
 		{
@@ -104,7 +103,7 @@ public class NShiftShipmentService
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
-				//.requiredDeliveryDate()
+				.trackingURL(true)
 				.validatePostCode(true)
 				.build();
 
@@ -270,7 +269,7 @@ public class NShiftShipmentService
 		};
 	}
 
-	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest, final boolean isDraftShipmentOnly)
+	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
 				? response.getLabels().stream()
@@ -285,7 +284,6 @@ public class NShiftShipmentService
 		final List<JsonLine> responseLines = response.getLines() != null ? response.getLines() : Collections.emptyList();
 		Check.assume(requestParcels.size() == responseLines.size(), "Request and response line counts do not match. Request: %s, Response: %s", requestParcels.size(), responseLines.size());
 
-		final String fallbackValue = isDraftShipmentOnly ? DRAFT_PLACEHOLDER : null;
 		final List<JsonDeliveryResponseItem> items = Streams.zip(
 						requestParcels.stream(),
 						responseLines.stream(),
@@ -296,8 +294,8 @@ public class NShiftShipmentService
 
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
-									.awb(pkg.getPkgNo() != null ? pkg.getPkgNo() : fallbackValue)
-									.trackingUrl(extractTrackingUrl(pkg, fallbackValue))
+									.awb(pkg.getPkgNo())
+									.trackingUrl(extractTrackingUrl(pkg))
 									.labelPdfBase64(extractLabel(label))
 									.build();
 						})
@@ -318,13 +316,13 @@ public class NShiftShipmentService
 	}
 
 	@Nullable
-	private static String extractTrackingUrl(@NonNull final JsonPackage pkg, @Nullable final String fallback) {
-		//if (pkg.getReferences() == null) return fallback;
+	private static String extractTrackingUrl(@NonNull final JsonPackage pkg) {
+		if (pkg.getReferences() == null) return null;
 
 		return pkg.getReferences().stream()
 				.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
 				.map(JsonReference::getValue)
 				.findFirst()
-				.orElse(fallback);
+				.orElse(null);
 	}
 }
