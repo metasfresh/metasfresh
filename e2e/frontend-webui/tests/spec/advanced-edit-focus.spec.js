@@ -362,6 +362,150 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
     }
   });
 
+  test('Round-trip: main Tab → ALT+E → modal Tab → Escape → main Tab still works', async ({
+    page,
+  }) => {
+    // Guards against the class of bug where a document-level Tab-trap added on
+    // modal mount doesn't get cleaned up on modal unmount, breaking tabbing in
+    // the main window afterwards.
+    await openSingleRecord(page, PRODUCT_WINDOW_ID);
+
+    // --- Phase 1: Tab in main window (before modal) ---
+    await page.locator('input.js-input-field').first().click();
+    await page.waitForTimeout(200);
+    const before = [];
+    for (let i = 0; i < 5; i += 1) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+            }
+          : null;
+      });
+      before.push(info);
+    }
+    expect(before.filter((s) => s && !s.inModal).length).toBe(before.length);
+
+    // --- Phase 2: ALT+E → modal, Tab cycles inside ---
+    await page.keyboard.press('Alt+e');
+    await waitForModalFocus(page);
+    const modalStops = [];
+    for (let i = 0; i < 10; i += 1) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(80);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+            }
+          : null;
+      });
+      modalStops.push(info);
+    }
+    expect(modalStops.filter((s) => s && !s.inModal).length).toBe(0);
+
+    // --- Phase 3: Esc closes modal ---
+    await page.keyboard.press('Escape');
+    await page
+      .locator('.panel-modal')
+      .waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+    await page.waitForTimeout(300);
+
+    // --- Phase 4: Tab in main window (after modal close) ---
+    // After Escape, focus lands on `<body>`; the first Tab moves it into the
+    // main-window tab sequence. All subsequent Tab presses must stay in the
+    // main window (no residual trap active, no phantom modal).
+    const after = [];
+    for (let i = 0; i < 10; i += 1) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+            }
+          : null;
+      });
+      after.push(info);
+    }
+    // No stops should be "in modal" because no modal exists any more.
+    expect(after.filter((s) => s && s.inModal).length).toBe(0);
+    // At least the later Tab presses (post-wake-up from <body>) must be on
+    // real main-window tabbable elements, not stuck on <body>.
+    expect(after.slice(2).filter((s) => s?.tag === 'BODY').length).toBe(0);
+  });
+
+  test('Filters panel on a list view: Tab works natively (focus trap is a no-op without a modal)', async ({
+    page,
+  }) => {
+    // The filters panel on a document-list view is not a modal — no
+    // `.modal-content-wrapper` exists while it's open. The Tab-trap added on
+    // modal mount must therefore NOT activate here; native Tab must walk
+    // through the filter widgets unchanged.
+    await page.goto(`/window/${PRODUCT_WINDOW_ID}`, { waitUntil: 'load' });
+    await page
+      .locator('.document-list-wrapper')
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Open the (non-frequent) filter panel via the "Filter" toggle button.
+    const filterToggle = page
+      .locator('button.toggle-filters, .filter-wrapper button.btn-filter')
+      .first();
+    await filterToggle.waitFor({
+      state: 'visible',
+      timeout: FAST_ACTION_TIMEOUT,
+    });
+    await filterToggle.click();
+    await page
+      .locator('.filter-wrapper input.js-input-field, .filter-menu input.js-input-field')
+      .first()
+      .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+    await page.waitForTimeout(500);
+
+    // Sanity: no modal is open.
+    const modalCount = await page.locator('.modal-content-wrapper').count();
+    expect(modalCount).toBe(0);
+
+    // Focus into the filter panel by clicking the first input, then Tab a few
+    // times. All stops should stay inside the filter widgets — the trap is
+    // not active because its first check requires a `.modal-content-wrapper`.
+    await page.locator('.filter-wrapper input.js-input-field').first().click();
+    await page.waitForTimeout(200);
+
+    const stops = [];
+    for (let i = 0; i < 6; i += 1) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement;
+        return el
+          ? {
+              tag: el.tagName,
+              inModal: !!el.closest('.modal-content-wrapper, .panel-modal'),
+              inFilter: !!el.closest(
+                '.filter-wrapper, .filter-menu, .filter-widgets-container'
+              ),
+            }
+          : null;
+      });
+      stops.push(info);
+    }
+
+    // Not in a modal, and at least half of the stops land inside the filter
+    // panel (the exact count depends on how many tabbable fields the filter
+    // happens to have for this window).
+    expect(stops.filter((s) => s && s.inModal).length).toBe(0);
+    expect(stops.filter((s) => s && s.inFilter).length).toBeGreaterThanOrEqual(3);
+  });
+
   test('Closing and reopening the modal refocuses the first editable element', async ({
     page,
   }) => {
