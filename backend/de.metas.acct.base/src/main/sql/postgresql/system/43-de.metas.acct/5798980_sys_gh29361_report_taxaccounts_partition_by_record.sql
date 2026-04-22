@@ -1,4 +1,11 @@
--- Drop previous signature (added p_c_tax_id parameter)
+-- me03#29361 — Bug A.2 dedup partition key: replace `documentno` with `(ad_table_id, record_id)`.
+-- DocumentNo can collide across BPartners / orgs (two different invoices sharing the same DocumentNo
+-- would incorrectly land in the same partition and one would contribute 0). Using the unique Fact_Acct
+-- source key (ad_table_id, record_id) is the robust choice — both columns are already exposed by
+-- tax_accounts_details_v.
+--
+-- Apply full function body — keep DDL source and migration in sync.
+
 DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
 ;
 
