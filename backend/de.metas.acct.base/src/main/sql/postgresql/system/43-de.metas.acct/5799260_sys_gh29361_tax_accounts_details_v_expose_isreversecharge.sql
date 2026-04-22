@@ -1,29 +1,12 @@
-/*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
--- DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v
--- ;
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/views/tax_accounts_details_v.sql
+-- Expose `isreversecharge` in the outer SELECT of `tax_accounts_details_v`.
+-- Needed by report_taxaccounts(...) to implement the A.4 / TC-E1 RC-aware TotalAmt (Option D).
+-- The column was already projected by the inner subquery but not propagated to the view's
+-- output — downstream consumers (including the report function) cannot reference it.
 
-CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v
-AS
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;
+
+CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v$new AS
 
 WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
                       FROM C_Tax_Acct ta
@@ -138,3 +121,11 @@ FROM (SELECT fa.vatcode                    AS vatcode,
     WHERE (exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;
+SELECT db_alter_view(
+    'de_metas_acct.tax_accounts_details_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('tax_accounts_details_v$new')
+       AND lower(views.table_schema) = 'de_metas_acct'));
+
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;

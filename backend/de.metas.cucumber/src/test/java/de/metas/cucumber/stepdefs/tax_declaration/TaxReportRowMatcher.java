@@ -66,6 +66,7 @@ class TaxReportRowMatcher
 				&& bpartnerMatches(expected, actual)
 				&& amountMatches(expected, "TaxAmt", actual.getTaxAmt())
 				&& amountMatches(expected, "NetAmt", actual.getNetAmt())
+				&& amountMatches(expected, "TotalAmt", actual.getTotalAmt())
 				&& amountMatches(expected, "TaxAmt_SUM", actual.getTaxAmtSum())
 				&& amountMatches(expected, "NetAmt_SUM", actual.getNetAmtSum());
 	}

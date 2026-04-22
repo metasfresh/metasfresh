@@ -31,7 +31,7 @@ public class TaxReportRowRepository
 			@Nullable final String level)
 	{
 		final String sql = "SELECT level, vatcode, accountname, taxname,"
-				+ "        netamt, taxamt, netamt_sum, taxamt_sum,"
+				+ "        netamt, taxamt, totalamt, netamt_sum, taxamt_sum,"
 				+ "        currency, source_currency, documentno, bpartnername"
 				+ " FROM de_metas_acct.report_taxaccounts("
 				+ "      p_ad_org_id      => ?,"
@@ -62,6 +62,7 @@ public class TaxReportRowRepository
 				.taxName(rs.getString("taxname"))
 				.taxAmt(amountOrNull(rs.getBigDecimal("taxamt"), acctCurrency))
 				.netAmt(amountOrNull(rs.getBigDecimal("netamt"), sourceCurrency))
+				.totalAmt(amountOrNull(rs.getBigDecimal("totalamt"), sourceCurrency))
 				.taxAmtSum(amountOrNull(rs.getBigDecimal("taxamt_sum"), acctCurrency))
 				.netAmtSum(amountOrNull(rs.getBigDecimal("netamt_sum"), sourceCurrency))
 				.documentNo(rs.getString("documentno"))

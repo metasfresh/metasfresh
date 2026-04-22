@@ -101,13 +101,14 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Regression baseline across all aggregation levels. For sales invoices (ARI),
     # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
     # levels 1/2/3/ReCap sum up to the same single-row amounts.
+    # TC-E1 (non-RC path): TotalAmt at level 4 = NetAmt + TaxAmt = -1000 + -190 = -1190 (invoice gross). Aggregation levels 1/2/3/ReCap return NULL → blank-cell = don't care.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | sales19       |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice    |
-      | ReCap | sales19       |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | TotalAmt | C_BPartner_ID | DocumentNo |
+      | 1     | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1190    | customer      | invoice    |
+      | ReCap | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
 
 
 # ############################################################################################################################################
@@ -832,18 +833,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # (sales19 → KZ 84/85) now mirrors the input leg (purchase19 → KZ 67): both
     # show NetAmt_SUM = 1000 and TaxAmt_SUM = 190. Aligns with §13b UStG + §17(1) UStG
     # (equal base and tax on both KZ cells).
+    # TC-E1 (RC path): TotalAmt at level 4 = NetAmt (Option D drops the tax summand for RC rows) — both legs show 1000, matching the invoice net which IS the invoice total for §13b (no cash VAT).
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
-      | 1     | sales19       |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 2     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 3     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 3     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
-      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice    |
-      | ReCap | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
-      | ReCap | sales19       |                       | 1000       | 190        |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | TotalAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 1000       | 190        |        |        |          | -             | -          |
+      | 1     | sales19       |                       | 1000       | 190        |        |        |          | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        |          | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 1000       | 190        |        |        |          | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        |          | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 1000       | 190        |        |        |          | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | 1000     | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | 1000     | vendor        | invoice    |
+      | ReCap | purchase19    |                       | 1000       | 190        |        |        |          | -             | -          |
+      | ReCap | sales19       |                       | 1000       | 190        |        |        |          | -             | -          |
 
 
 # ############################################################################################################################################
@@ -902,18 +904,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # With the RC symmetric-reporting fix, the output leg mirrors the input leg:
     # T_Credit (purchase19 → KZ 67 reversal) and T_Due (sales19 → KZ 84/85 reversal)
     # both show NetAmt_SUM = −1000 and TaxAmt_SUM = −190.
+    # TC-E1 (RC credit-memo): TotalAmt at level 4 = NetAmt (−1000) on both legs per Option D — same rationale as TC-S12, sign-inverted for the APC doctype.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
-      | 1     | sales19       |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice    |
-      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | vendor        | invoice    |
-      | ReCap | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
-      | ReCap | sales19       |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | TotalAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | -1000      | -190       |        |        |          | -             | -          |
+      | 1     | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        |          | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        |          | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | -1000    | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1000    | vendor        | invoice    |
+      | ReCap | purchase19    |                       | -1000      | -190       |        |        |          | -             | -          |
+      | ReCap | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
 
 
 # ############################################################################################################################################

@@ -1,16 +1,14 @@
--- Drop previous signature (added p_c_tax_id parameter)
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql
+-- A.4 / TC-E1: RC-aware `TotalAmt` column. Previous formula `taxbaseamt + taxamt` produced
+-- misleading numbers (1190 / 810) for Reverse-Charge rows, where the VAT does not move cash
+-- and the invoice total is the net amount. Fix: keep the existing formula for non-RC rows
+-- (so `sum(TotalAmt) per invoice = invoice gross` still holds), drop only the tax summand
+-- when the row's tax is reverse-charge.
+--
+-- Apply full function body — keep DDL source and migration in sync.
+
 DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
 ;
-
-/**
-  p_level meaning:
-  * Level '1' : data summed per vatcode; only sum amount are filled up
-  * Level '2' : data summed per vatcode, accounto; only sum amount are filled up
-  * Level '3' : data summed per vatcode, accounto, taxname; only sum amount are filled up
-  * Level '4' : detailed data; only data per document are filled up
-  * Level 'ReCap' : data summed per vatcode and taxname; only sum amount are filled up
-  * null value implies level '4'
- */
 
 CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     numeric,
                                                             p_account_id    numeric,
