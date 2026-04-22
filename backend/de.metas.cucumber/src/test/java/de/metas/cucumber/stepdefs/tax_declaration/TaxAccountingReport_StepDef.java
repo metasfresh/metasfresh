@@ -47,7 +47,6 @@ import java.util.function.Supplier;
 /**
  * Step definitions for testing the Tax Accounting Report ("Mehrwertsteuer-Verprobung 3").
  *
- * @see <a href="https://github.com/metasfresh/me03/issues/29361">me03#29361</a>
  * @see TaxReportRow
  * @see TaxReportRowRepository
  * @see TaxReportRowMatcher
@@ -69,8 +68,8 @@ public class TaxAccountingReport_StepDef
 	 * {@code de_metas_acct.tax_accounts_details_v} is an implementation detail and is not asserted
 	 * against directly.
 	 *
-	 * <p>For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID}. The
-	 * {@code p_c_tax_id} parameter was added as part of me03#29361 for this purpose.
+	 * <p>For reliable, scenario-isolated tests, the function is filtered by {@code C_Tax_ID} via the
+	 * optional trailing {@code p_c_tax_id} parameter.
 	 *
 	 * <p><b>Supported DataTable columns</b>:
 	 * <ul>

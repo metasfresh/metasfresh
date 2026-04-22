@@ -50,6 +50,14 @@ public class ConversionRate_StepDef
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
+	/**
+	 * Forces a 1:1 spot conversion rate between two ISO currency codes for the given date range.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And a 1:1 "EUR" <-> "CHF" conversion rate is in place between "2024-01-01" and "2024-01-31"
+	 * }</pre>
+	 */
 	@And("a 1:1 {string} <-> {string} conversion rate is in place between {string} and {string}")
 	public void insert_one_to_one_rate(
 			@NonNull final String fromIsoCode,

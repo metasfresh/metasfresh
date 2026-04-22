@@ -675,7 +675,7 @@ public final class FactLineBuilder
 	 * legs: pass {@code true} on the T_Due_Acct leg (§13b output, KZ 84/85) and {@code false} on
 	 * the T_Credit_Acct leg (§13b input, KZ 67).
 	 */
-	public FactLineBuilder setTaxIdAndUpdateVATCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
+	public FactLineBuilder setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
 	{
 		assertNotBuild();
 		this.C_Tax_ID = taxId;

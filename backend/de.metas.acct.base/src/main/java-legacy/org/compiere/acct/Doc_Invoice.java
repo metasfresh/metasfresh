@@ -711,14 +711,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setTaxIdAndUpdateVATCode(docTax.getTaxId(), false)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				// USt (Umsatzsteuer / output tax) — credit the tax payable
 				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setTaxIdAndUpdateVATCode(docTax.getTaxId(), true)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				rcFact.forEach(fl -> {
@@ -893,14 +893,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setTaxIdAndUpdateVATCode(docTax.getTaxId(), false)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				// USt (Umsatzsteuer / output tax) — debit to reverse the original USt credit
 				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setTaxIdAndUpdateVATCode(docTax.getTaxId(), true)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				rcFact.forEach(fl -> {
