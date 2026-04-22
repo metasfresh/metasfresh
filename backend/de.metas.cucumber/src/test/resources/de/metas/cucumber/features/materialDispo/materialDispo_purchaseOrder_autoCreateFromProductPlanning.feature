@@ -360,9 +360,9 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
 
     # Reactivate the sales order, change the quantity, and re-complete — this is the path that used to trigger the bug.
     When the order identified by o_1 is reactivated
-    And update C_OrderLines:
-      | C_OrderLine_ID.Identifier | QtyEntered |
-      | ol_1                      | 7          |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1                      | 7              |
     And the order identified by o_1 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
