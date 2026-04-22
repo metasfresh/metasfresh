@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { postUserConfirmation } from '../../../api/confirmation';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
-import { toastError } from '../../../utils/toast';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { appLaunchersLocation } from '../../../routes/launchers';
 import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { usePositiveNumberSetting } from '../../../reducers/settings';
+import { trl } from '../../../utils/translations';
+import * as uiTrace from '../../../utils/ui_trace';
+
+const DEFAULT_TIMEOUT_MILLIS = 20000;
 
 const ConfirmActivity = ({
   applicationId,
@@ -22,19 +28,39 @@ const ConfirmActivity = ({
 }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
-  const onUserConfirmed = () => {
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  // Overridable via AD_SysConfig mobileui.frontend.api.completeConfirmation.timeoutMillis
+  const timeoutMillis = usePositiveNumberSetting('api.completeConfirmation.timeoutMillis', DEFAULT_TIMEOUT_MILLIS);
+
+  const sendConfirmation = () => {
+    setErrorMessage(null);
     dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
-    postUserConfirmation({ wfProcessId, activityId })
+    postUserConfirmation({ wfProcessId, activityId, timeoutMillis })
       .then((wfProcess) => {
+        uiTrace.trace({ eventName: 'confirmationPosted', wfProcessId, activityId });
         dispatch(updateWFProcess({ wfProcess }));
-      })
-      .then(() => {
         if (isLastActivity) {
           history.push(appLaunchersLocation({ applicationId }));
         }
       })
-      .catch((axiosError) => toastError({ axiosError }))
+      .catch((axiosError) => {
+        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
+        uiTrace.trace({
+          eventName: 'confirmationFailed',
+          wfProcessId,
+          activityId,
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          message,
+        });
+        setErrorMessage(message);
+      })
       .finally(() => dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false })));
+  };
+
+  const onCancelError = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -44,11 +70,33 @@ const ConfirmActivity = ({
         caption={caption}
         promptQuestion={promptQuestion}
         userInstructions={userInstructions}
-        isUserEditable={isUserEditable}
+        isUserEditable={isUserEditable && !errorMessage}
         isProcessing={isProcessing}
         completeStatus={completeStatus}
-        onUserConfirmed={onUserConfirmed}
+        onUserConfirmed={sendConfirmation}
       />
+      {errorMessage && (
+        <div className="notification is-danger mt-3" data-testid="confirm-activity-error-panel">
+          <p className="mb-3">
+            <strong>{trl('activities.confirmButton.error.title')}</strong>
+          </p>
+          <p className="mb-3">{errorMessage}</p>
+          <div className="buttons">
+            <ButtonWithIndicator
+              testId="confirm-activity-error-retry"
+              caption={trl('activities.confirmButton.error.retry')}
+              disabled={isProcessing}
+              onClick={sendConfirmation}
+            />
+            <ButtonWithIndicator
+              testId="confirm-activity-error-cancel"
+              caption={trl('activities.confirmButton.error.cancel')}
+              disabled={isProcessing}
+              onClick={onCancelError}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
