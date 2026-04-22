@@ -23,11 +23,14 @@ import de.metas.quantity.Quantity;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product_ASI_Data;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -195,5 +198,100 @@ class HURepositoryTest
 		asiDataTU1.setC_BPartner_ID(10);
 		asiDataTU1.setGTIN("TU-GTIN1");
 		saveRecord(asiDataTU1);
+	}
+
+	/**
+	 * Verifies the HU-attribute-aware GTIN lookup in {@code HURepository.extractPackagingGTINs}:
+	 * <ul>
+	 *   <li>A record whose ASI matches the HU's attributes is used (BPartner 10: {@code Country=DE} matches HU {@code Country=DE}).</li>
+	 *   <li>For the same BPartner, among matching records the lowest SeqNo wins.</li>
+	 *   <li>A wildcard record (no ASI) always matches (BPartner 30).</li>
+	 *   <li>A record whose ASI does NOT match is skipped (BPartner 20: {@code Country=IT} vs HU {@code Country=DE}).</li>
+	 * </ul>
+	 */
+	@Test
+	void getById_asiAwareGTINResolution()
+	{
+		// given
+		final Properties ctx = Env.getCtx();
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// Create a CountryOfOrigin string attribute and attach it to the LU's PI so the HU carries it.
+		final I_M_Attribute countryAttr = newInstance(I_M_Attribute.class);
+		countryAttr.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
+		countryAttr.setValue("CountryOfOrigin");
+		saveRecord(countryAttr);
+
+		final I_M_HU_PI_Attribute luCountryPIAttr = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(countryAttr)
+				.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+
+		// BPartner 10: matches HU's Country=DE (ASI subset match) — lowest SeqNo wins between this (10) and a wildcard record (20).
+		final I_M_Product_ASI_Data bp10_asiDE = newInstance(I_M_Product_ASI_Data.class);
+		bp10_asiDE.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bp10_asiDE.setC_BPartner_ID(10);
+		bp10_asiDE.setM_AttributeSetInstance_ID(createASI(countryAttr, "DE").getM_AttributeSetInstance_ID());
+		bp10_asiDE.setSeqNo(10);
+		bp10_asiDE.setGTIN("GTIN-BP10-DE");
+		saveRecord(bp10_asiDE);
+
+		final I_M_Product_ASI_Data bp10_wildcard = newInstance(I_M_Product_ASI_Data.class);
+		bp10_wildcard.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bp10_wildcard.setC_BPartner_ID(10);
+		bp10_wildcard.setSeqNo(20);
+		bp10_wildcard.setGTIN("GTIN-BP10-ANY");
+		saveRecord(bp10_wildcard);
+
+		// BPartner 20: ASI Country=IT does NOT match HU's Country=DE → skipped entirely.
+		final I_M_Product_ASI_Data bp20_asiIT = newInstance(I_M_Product_ASI_Data.class);
+		bp20_asiIT.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bp20_asiIT.setC_BPartner_ID(20);
+		bp20_asiIT.setM_AttributeSetInstance_ID(createASI(countryAttr, "IT").getM_AttributeSetInstance_ID());
+		bp20_asiIT.setSeqNo(10);
+		bp20_asiIT.setGTIN("GTIN-BP20-IT");
+		saveRecord(bp20_asiIT);
+
+		// BPartner 30: wildcard — always matches.
+		final I_M_Product_ASI_Data bp30_wildcard = newInstance(I_M_Product_ASI_Data.class);
+		bp30_wildcard.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bp30_wildcard.setC_BPartner_ID(30);
+		bp30_wildcard.setSeqNo(10);
+		bp30_wildcard.setGTIN("GTIN-BP30-ANY");
+		saveRecord(bp30_wildcard);
+
+		final I_M_HU lu = huTestHelper.createLU(
+				huContext,
+				huPIItemPallet,
+				huPIItemProductRecord,
+				new BigDecimal("10"));
+
+		final I_M_HU_Attribute countryHUAttr = newInstance(I_M_HU_Attribute.class);
+		countryHUAttr.setM_Attribute_ID(countryAttr.getM_Attribute_ID());
+		countryHUAttr.setM_HU_ID(lu.getM_HU_ID());
+		countryHUAttr.setValue("DE");
+		countryHUAttr.setM_HU_PI_Attribute_ID(luCountryPIAttr.getM_HU_PI_Attribute_ID());
+		saveRecord(countryHUAttr);
+
+		// when
+		final HU result = huRepository.getById(HuId.ofRepoId(lu.getM_HU_ID()));
+
+		// then
+		assertThat(result.getAllPackaginGTINs()).containsExactly(
+				entry(BPartnerId.ofRepoId(10), "GTIN-BP10-DE"),
+				entry(BPartnerId.ofRepoId(30), "GTIN-BP30-ANY"));
+	}
+
+	private I_M_AttributeSetInstance createASI(@NonNull final I_M_Attribute attribute, @NonNull final String value)
+	{
+		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
+		saveRecord(asi);
+
+		final I_M_AttributeInstance ai = newInstance(I_M_AttributeInstance.class);
+		ai.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+		ai.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		ai.setValue(value);
+		saveRecord(ai);
+
+		return asi;
 	}
 }
