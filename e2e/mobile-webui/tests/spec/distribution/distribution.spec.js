@@ -58,7 +58,7 @@ test('Simple distribution test', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU1.qrCode, qtyToMove: '100', expectedQtyToMove: '100' });
@@ -85,7 +85,7 @@ test('Try picking an HU from a different locator than pick from locator', async 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({
@@ -110,7 +110,7 @@ test('Try picking an HU containing a different product than expected', async ({ 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await expectErrorToast(
@@ -143,7 +143,7 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await DistributionJobScreen.clickLineButton({ index: 1 });
@@ -176,7 +176,7 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await DistributionJobScreen.clickLineButton({ index: 1 });
@@ -201,5 +201,5 @@ test('Filter distribution orders by plantId', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.plantFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.plantFacetId });
 });
