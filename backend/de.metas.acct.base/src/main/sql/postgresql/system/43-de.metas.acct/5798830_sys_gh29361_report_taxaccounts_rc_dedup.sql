@@ -1,4 +1,5 @@
--- me03#29361 — Bug A.2 fix: dedup TaxBaseAmt at grand-total levels for Reverse-Charge invoices.
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql
+-- Dedup TaxBaseAmt at grand-total levels for Reverse-Charge invoices.
 -- RC posting produces two Fact_Acct rows per invoice+tax (T_Credit + T_Due) both joining the same
 -- C_InvoiceTax; summing taxbaseamt across them at levels 1 / ReCap double-counts the base.
 -- Fix: pre-compute ROW_NUMBER() OVER (PARTITION BY vatcode, documentno, c_tax_id), aggregate the
@@ -158,8 +159,8 @@ BEGIN
            taxamt,
            currency,
            taxbaseamt,
-           -- Bug A.2 dedup key: for Reverse-Charge invoices, parent #28726 posts two Fact_Acct
-           -- rows per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
+           -- Dedup key: a §13b Reverse-Charge invoice posts two Fact_Acct rows
+           -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
            -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
            -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
            -- (vatcode, documentno, c_tax_id); subsequent rows contribute 0 to the base-amount

@@ -150,8 +150,8 @@ BEGIN
            taxamt,
            currency,
            taxbaseamt,
-           -- Bug A.2 dedup key: for Reverse-Charge invoices, parent #28726 posts two Fact_Acct
-           -- rows per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
+           -- Dedup key: a §13b Reverse-Charge invoice posts two Fact_Acct rows
+           -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
            -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
            -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
            -- (vatcode, ad_table_id, record_id, c_tax_id); subsequent rows contribute 0.

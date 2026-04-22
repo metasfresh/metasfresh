@@ -1,9 +1,9 @@
--- me03#29361 — Reverse-Charge symmetric reporting on tax_accounts_details_v.
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/views/tax_accounts_details_v.sql
+-- Reverse-Charge symmetric reporting on tax_accounts_details_v.
 --
 -- Under §13b UStG + §17(1) UStG, the recipient must declare a RC transaction as both output
 -- (UStVA KZ 84/85) and input deduction (KZ 67) with identical signed tax amounts — including
--- after any payment-discount (Skonto) adjustment. Mainstream ERPs (SAP S/4HANA, Oracle EBS /
--- NetSuite, MS Dynamics 365 BC / NAV, Sage) all produce a symmetric two-line RC entry.
+-- after any payment-discount (Skonto) adjustment.
 --
 -- The view used to back-compute the allocation row's base from signed `taxamt = AmtAcctDr -
 -- AmtAcctCr`. For RC the two legs (T_Credit DR + T_Due CR) have mirror signs, so the resulting
@@ -37,8 +37,7 @@ SELECT fa.vatcode,
        fa.bpName,
        -- RC symmetric reporting: on reverse-charge taxes, the output (T_Due_Acct) leg mirrors
        -- the input (T_Credit_Acct) leg. §13b UStG + §17(1) UStG require both KZ 84/85 and KZ 67
-       -- to show the same (signed) tax amount after any adjustment. Matches SAP (`T007A`/VAT
-       -- statement), Oracle, MS Dynamics NAV/BC and Sage conventions.
+       -- to show the same (signed) tax amount after any adjustment.
        (CASE
             WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
                 THEN -fa.taxamt

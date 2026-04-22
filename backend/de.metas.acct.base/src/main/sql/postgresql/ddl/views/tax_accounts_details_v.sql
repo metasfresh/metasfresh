@@ -45,8 +45,7 @@ SELECT fa.vatcode,
        fa.bpName,
        -- RC symmetric reporting: on reverse-charge taxes, the output (T_Due_Acct) leg mirrors
        -- the input (T_Credit_Acct) leg. §13b UStG + §17(1) UStG require both KZ 84/85 and KZ 67
-       -- to show the same (signed) tax amount after any adjustment. Matches SAP (`T007A`/VAT
-       -- statement), Oracle, MS Dynamics NAV/BC and Sage conventions.
+       -- to show the same (signed) tax amount after any adjustment.
        (CASE
             WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
                 THEN -fa.taxamt

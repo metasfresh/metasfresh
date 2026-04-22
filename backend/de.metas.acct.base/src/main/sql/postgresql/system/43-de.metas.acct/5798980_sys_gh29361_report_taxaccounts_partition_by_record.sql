@@ -1,4 +1,5 @@
--- me03#29361 — Bug A.2 dedup partition key: replace `documentno` with `(ad_table_id, record_id)`.
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql
+-- Dedup partition key: replace `documentno` with `(ad_table_id, record_id)`.
 -- DocumentNo can collide across BPartners / orgs (two different invoices sharing the same DocumentNo
 -- would incorrectly land in the same partition and one would contribute 0). Using the unique Fact_Acct
 -- source key (ad_table_id, record_id) is the robust choice — both columns are already exposed by
@@ -157,8 +158,8 @@ BEGIN
            taxamt,
            currency,
            taxbaseamt,
-           -- Bug A.2 dedup key: for Reverse-Charge invoices, parent #28726 posts two Fact_Acct
-           -- rows per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
+           -- Dedup key: a §13b Reverse-Charge invoice posts two Fact_Acct rows
+           -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
            -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
            -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
            -- (vatcode, ad_table_id, record_id, c_tax_id); subsequent rows contribute 0.

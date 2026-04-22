@@ -4,27 +4,18 @@
 @F00700
 @ghActions:run_on_executor5
 Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
-## me03#29361: Support Reverse Charge with explicit fact acct - Tax Accounting Report fixes
 ##
-## Regression tests for the Tax Accounting Report — the user-facing DB function
+## Coverage for the Tax Accounting Report — the user-facing DB function
 ## de_metas_acct.report_taxaccounts(...) invoked by AD_Process 585325
 ## ("Mehrwertsteuer-Verprobung(Excel) 3"). The underlying view
 ## de_metas_acct.tax_accounts_details_v is an implementation detail and is not asserted
 ## against directly.
 ##
-## These tests lock in the CURRENT behaviour for standard non-RC cases so the upcoming
-## Reverse Charge / bug-fix PR (sub-PR 2) cannot silently change non-RC output. Each
-## scenario creates its own dedicated C_Tax + C_VAT_Code and the report is filtered by
-## p_c_tax_id — no cross-scenario pollution. Every scenario uses 2 invoice lines with
+## Each scenario creates its own dedicated C_Tax + C_VAT_Codes and the report is filtered
+## by p_c_tax_id — no cross-scenario pollution. Every scenario uses 2 invoice lines with
 ## an unequal split (7+3 or 2+3 PCE) at PriceStd=100 so per-line-to-per-tax aggregation
-## (§14(4) Nr. 7/8 UStG) is also validated.
-##
-## Out-of-scope (sub-PR 2 must address): Reverse Charge view/function bugs, the
-## payment-based allocation gap R8a, and the NetAmt sign convention on the declaration
-## side. See the authoritative list on the me03 spotlight
-## https://github.com/metasfresh/me03/issues/29361#issuecomment-4286107583 and the
-## technical analysis in ai-work/29361/REQUIREMENTS.md. Per-scenario notes (§17 UStG
-## verdicts, DiscountAmt sign direction) live in each scenario's comment block below.
+## (§14(4) Nr. 7/8 UStG) is also validated. Per-scenario notes (§17 UStG verdicts,
+## DiscountAmt sign direction) live in each scenario's comment block below.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -410,7 +401,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 #
 # Direction used in this scenario: TC-S7 ARI = +23.80 EUR (customer paid, we received).
 # §17(1)(1) UStG verdict: T_Due CR 190 (invoice) + DR 3.80 (alloc) → balance −186.20.
-# USt liability reduced → compliant. Customer-validated; no sub-PR 2 action needed.
+# USt liability reduced → §17-compliant.
   @Id:S0467_TAR_070
   @from:cucumber
   Scenario: sales invoice + discount-only allocation produces a tax-correction row alongside the invoice row
@@ -637,8 +628,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 # Direction used in this scenario: TC-S10 API = −23.80 EUR (we paid supplier, they received less
 # — direction = "we pay"; see DiscountAmt sign convention in TC-S7's comment block).
 # §17(1)(2) UStG + §15(1a) UStG verdict: T_Credit DR 190 (invoice) + CR 3.80 (alloc) → balance
-# +186.20. VSt claim reduced → §17-compliant. Earlier spotlight drafts flagged this as
-# "LIKELY WRONG" because they assumed a positive DiscountAmt — that was the wrong input.
+# +186.20. VSt claim reduced → §17-compliant.
   @Id:S0467_TAR_100
   @from:cucumber
   Scenario: purchase invoice + discount-only allocation produces a tax-correction row on T_Credit
@@ -782,14 +772,13 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 # ############################################################################################################################################
 # TC-S12 — Reverse-Charge purchase invoice (API) with §13b UStG
 # ############################################################################################################################################
-# Parent me03#28726 posts two symmetric Fact_Acct rows for an RC invoice:
+# A §13b reverse-charge invoice posts two symmetric Fact_Acct rows:
 #   T_Credit_Acct DR 190 (VSt, §15 UStG input-tax receivable)
 #   T_Due_Acct    CR 190 (USt, §13b UStG notional output-tax payable)
 # Both rows join the same C_InvoiceTax record (C_InvoiceTax.ReverseChargeTaxAmt = 190,
-# TaxAmt = 0). Sign convention matches the Option-3 ledger-style baseline used in TC-S1..S11:
-# the T_Credit row emits +190 (consistent with non-RC API TC-S3); the T_Due row emits −190
-# (consistent with how a CR balance appears in the view for non-RC sales — see TC-S1).
-# §17 / Option-1 flip is deferred to TC-NSC.
+# TaxAmt = 0). With the RC symmetric-reporting fix in tax_accounts_details_v, both legs
+# emit the same signed base and tax amount so KZ 67 (input deduction) and KZ 84/85 (output)
+# are identically populated per §13b UStG Abs. 5 + §17(1) UStG.
 #
 # Legal basis: §13b UStG (https://www.gesetze-im-internet.de/ustg_1980/__13b.html) +
 # §15 UStG + EU VAT Directive 2006/112/EC Art. 196 (reverse charge for B2B).
@@ -842,7 +831,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # With the RC symmetric-reporting fix in tax_accounts_details_v, the output leg
     # (sales19 → KZ 84/85) now mirrors the input leg (purchase19 → KZ 67): both
     # show NetAmt_SUM = 1000 and TaxAmt_SUM = 190. Aligns with §13b UStG + §17(1) UStG
-    # and SAP / Oracle / NAV / Sage conventions (equal base and tax on both KZ cells).
+    # (equal base and tax on both KZ cells).
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
       | 1     | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
@@ -930,9 +919,9 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 # ############################################################################################################################################
 # TC-S14 — Reverse-Charge purchase invoice (API) + Skonto (discount-only allocation, path D)
 # ############################################################################################################################################
-# Per parent me03#28726 Decision D1, an RC invoice followed by a Skonto allocation posts
-# symmetric tax-correction rows on BOTH T_Credit_Acct and T_Due_Acct — the §17 UStG adjustment
-# fires on the RC tax regardless of cash-neutrality.
+# An RC invoice followed by a Skonto allocation posts symmetric tax-correction rows on
+# BOTH T_Credit_Acct and T_Due_Acct — the §17 UStG adjustment fires on the RC tax
+# regardless of cash-neutrality.
 #
 # DiscountAmt direction (per TC-S10 convention): API = "we pay" → DiscountAmt = −23.80 EUR.
 #
@@ -974,7 +963,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 
     And Wait until documents invoice, alloc are posted
 
-    # Invoice posting (as TC-S12) + symmetric allocation correction per parent #28726 Decision D1.
+    # Invoice posting (as TC-S12) + symmetric allocation correction on the RC tax.
     # Tax correction amount on RC + Skonto = DiscountAmt × TaxRate = 23.80 × 0.19 = 4.52 EUR
     # (not 3.80 as in non-RC — RC invoice has TaxAmt=0, so the correction base is the gross
     # DiscountAmt multiplied by the tax rate, not the tax portion of the gross).
@@ -1023,7 +1012,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 # TC-S15 — Reverse-Charge purchase credit memo (APC) + Skonto (discount-only allocation, path D)
 # ############################################################################################################################################
 # Symmetric to TC-S14 on the credit-memo side. APC direction = "we receive" (vendor refunds
-# us, we retain a Skonto) → DiscountAmt positive. Parent me03#28726 Decision D1 applies.
+# us, we retain a Skonto) → DiscountAmt positive. Symmetric tax-correction rows on both
+# T_Credit_Acct and T_Due_Acct per the RC allocation path.
 #
 # Legal basis: §13b + §17(1) UStG + EU VAT Directive Art. 185.
   @Id:S0467_TAR_150
