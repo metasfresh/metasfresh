@@ -48,7 +48,7 @@ END;
 $$
 ;
 
-ALTER FUNCTION c_order_processstatus_color_id_compute(c_order) OWNER TO metasfresh
+ALTER FUNCTION c_order_invoicestatus_compute(c_order) OWNER TO metasfresh
 ;
 
 DROP FUNCTION IF EXISTS c_order_processstatus_color_id_compute(p_order c_order) CASCADE;
