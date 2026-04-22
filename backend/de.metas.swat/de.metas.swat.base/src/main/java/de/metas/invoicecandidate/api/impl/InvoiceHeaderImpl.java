@@ -59,6 +59,8 @@ import java.util.Optional;
 
 	private LocalDate dateAcct;
 
+	@Getter
+	@Setter
 	private LocalDate overrideDueDate;
 
 	@Getter
@@ -192,12 +194,6 @@ import java.util.Optional;
 	}
 
 	@Override
-	public LocalDate getOverrideDueDate()
-	{
-		return overrideDueDate;
-	}
-
-	@Override
 	public int getC_Order_ID()
 	{
 		return C_Order_ID;
@@ -237,11 +233,6 @@ import java.util.Optional;
 	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
-	}
-
-	public void setOverrideDueDate(final LocalDate overrideDueDate)
-	{
-		this.overrideDueDate = overrideDueDate;
 	}
 
 	public void setC_Order_ID(final int c_Order_ID)
@@ -287,7 +278,6 @@ import java.util.Optional;
 		this.isSOTrx = isSOTrx;
 	}
 
-
 	@Override
 	public int getM_InOut_ID()
 	{
@@ -312,9 +302,6 @@ import java.util.Optional;
 		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
 
-
-
-
 	@Override
 	public boolean isTakeDocTypeFromPool()
 	{
@@ -325,7 +312,6 @@ import java.util.Optional;
 	{
 		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
 	}
-
 
 	@Override
 	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
@@ -451,8 +437,8 @@ import java.util.Optional;
 	}
 
 	@Override
-	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+	public InputDataSourceId getAD_InputDataSource_ID() {return inputDataSourceId;}
 
-	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId) {this.inputDataSourceId = inputDataSourceId;}
 
 }

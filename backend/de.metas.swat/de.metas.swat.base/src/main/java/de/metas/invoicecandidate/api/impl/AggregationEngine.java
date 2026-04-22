@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.api.impl;
+	package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
