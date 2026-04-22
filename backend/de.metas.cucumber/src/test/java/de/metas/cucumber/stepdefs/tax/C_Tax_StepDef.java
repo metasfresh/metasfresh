@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDef;
 import de.metas.location.ICountryDAO;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Services;
@@ -42,6 +43,13 @@ import org.jetbrains.annotations.Nullable;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 
+/**
+ * Step definitions for creating {@link I_C_Tax} records.
+ *
+ * @see C_Tax_StepDefData
+ * @see C_TaxCategory_StepDef
+ * @see de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDef
+ */
 @RequiredArgsConstructor
 public class C_Tax_StepDef
 {
@@ -51,6 +59,34 @@ public class C_Tax_StepDef
 	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
 	@NonNull private final AD_Org_StepDefData orgTable;
 
+	/**
+	 * Create / upsert a {@link I_C_Tax} per data-table row.
+	 *
+	 * <p><b>Required columns</b>:
+	 * <ul>
+	 *     <li>{@code Identifier} — unique per scenario; registers the tax in {@link C_Tax_StepDefData}</li>
+	 *     <li>{@code C_TaxCategory_ID} — identifier of an existing {@code C_TaxCategory}</li>
+	 * </ul>
+	 *
+	 * <p><b>Optional columns</b>:
+	 * <ul>
+	 *     <li>{@code Rate} — decimal, e.g. {@code 19}</li>
+	 *     <li>{@code C_Country_ID.CountryCode}, {@code To_Country_ID.CountryCode} — ISO country codes</li>
+	 *     <li>{@code AD_Org_ID} — identifier of an existing {@code AD_Org}</li>
+	 *     <li>{@code IsTaxExempt}, {@code IsReverseCharge} — {@code Y}/{@code N}/{@code true}/{@code false}</li>
+	 *     <li>{@code SeqNo} — integer; auto-assigned if missing</li>
+	 *     <li>{@code TypeOfDestCountry}, {@code ValidFrom} — as documented in {@link I_C_Tax}</li>
+	 * </ul>
+	 *
+	 * <p>Upserts by {@code Name} so repeated runs don't collide on the unique-name constraint.
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And metasfresh contains C_Tax
+	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+	 *   | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
+	 * }</pre>
+	 */
 	@And("metasfresh contains C_Tax")
 	public void createC_Taxes(@NonNull final DataTable dataTable)
 	{
