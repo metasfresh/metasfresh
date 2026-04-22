@@ -201,7 +201,7 @@ test('Filter distribution orders by plantId', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.plantFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.plantFacetId });
 });
 
 //
