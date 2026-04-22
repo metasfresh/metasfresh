@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -210,7 +211,7 @@ public class HURepository
 				final java.util.Set<BPartnerId> seenBPartners = new java.util.HashSet<>();
 				for (final ProductASIData asiData : productASIDataRepository.retrieveAllForProductMatchingASI(packagingProductId, huAttributesKey))
 				{
-					if (asiData.getBPartnerId() == null || !isNotBlank(asiData.getGtin()))
+					if (asiData.getBPartnerId() == null || isBlank(asiData.getGtin()))
 					{
 						continue;
 					}
