@@ -38,6 +38,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,14 @@ public class ExternalIdentifierProductLookupService
 			@NonNull final ExternalIdentifier productIdentifier)
 	{
 		final String gtin = productIdentifier.asGTIN();
+
+		// Only consider HUPI / BPartner_Product rows that point to an active M_Product.
+		// The consolidation process (F5001.1) can leave an M_Product inactive while keeping
+		// its HUPI/BPartner_Product rows active — those rows must NOT be matched by incoming OLCands.
+		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
@@ -101,7 +110,7 @@ public class ExternalIdentifierProductLookupService
 		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(hupiFilter)
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
+				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
 				.orderBy(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.create().first();
 		if (hupi != null)
@@ -121,7 +130,7 @@ public class ExternalIdentifierProductLookupService
 		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(bppFilter)
-				.addNotNull(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.addInSubQueryFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
 				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
 				.create().first();
 		if (bpp != null)
