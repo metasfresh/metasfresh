@@ -694,6 +694,96 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
 
 
 # ############################################################################################################################################
+# TC-S10b — Purchase invoice (API) + Skonto via payment-based path (PaymentAllocationBuilder)
+# ############################################################################################################################################
+# Mirror of TC-S10 but the allocation is built indirectly via `PaymentAllocationBuilder`
+# (path P — payment + auto-allocation) instead of the discount-only `C_AllocationHdr_Builder`
+# (path D). Both paths must produce the same Fact_Acct rows and the same report output per
+# §17(1)(2) UStG — the §17 obligation is on the underlying transaction, not the UI workflow
+# that created the allocation.
+#
+# An older observation (pre-direction-signed DiscountAmt) showed path P emitting TaxAmt = −3.80
+# on T_Credit_Acct while path D emitted +3.80 for the same API + Skonto scenario. The direction-
+# signed DiscountAmt shipped on this issue likely already resolved it; this scenario is the
+# empirical check (green = confirmed resolved; red = concrete finding).
+  @Id:S0467_TAR_100b
+  @from:cucumber
+  Scenario: purchase invoice + Skonto via payment-based allocation produces the same tax-correction row as the discount-only path
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
+
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | vendor        | 2024-01-15   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
+    And the invoice identified by invoice is completed
+
+    # AP payment (we pay vendor): invoice gross = 1190 EUR, we keep 23.80 as Skonto → PayAmt = 1166.20.
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | vendor        | 1166.20 EUR | false     | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    # Path P: PaymentAllocationBuilder produces an allocation that combines the payment with the discount.
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID | DiscountAmt |
+      | invoice      | payment      | 23.80 EUR   |
+
+    # Register the resulting allocationHdr so Fact_Acct assertions can reference it by identifier.
+    And register C_AllocationHdr from C_Payment:
+      | C_Payment_ID | C_AllocationHdr_ID |
+      | payment      | alloc              |
+
+    And Wait until documents invoice, alloc are posted
+
+    # Expected Fact_Acct rows: identical to TC-S10 (path D). Invoice posts T_Credit DR 190;
+    # allocation posts T_Credit CR 3.80. Net balance +186.20 per §17(1)(2) UStG.
+    # C_VAT_Code on both legs = purchase19 (IsSOTrx=N) — purchase/input side.
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         |           | 3.80      | tax19    | purchase19    | alloc     |
+      | *                     |           |           |          |               | alloc     |
+    And Fact_Acct records balances for documents invoice,alloc are matching
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 186.20      | tax19    |
+
+    # Expected report output: identical to TC-S10. If these assertions pass, R8b is confirmed
+    # resolved by the direction-signed DiscountAmt convention shipped in PR 23496.
+    Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 980        | 186.20     |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | alloc      |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | ReCap | purchase19    |                       | 980        | 186.20     |        |        | -             | -          |
+
+
+# ############################################################################################################################################
 # TC-S11 — Purchase credit memo (APC) + discount-only allocation
 # ############################################################################################################################################
 # Purchase credit memo posts T_Credit_Acct Cr=190 (reversing the receivable). When the vendor refunds
