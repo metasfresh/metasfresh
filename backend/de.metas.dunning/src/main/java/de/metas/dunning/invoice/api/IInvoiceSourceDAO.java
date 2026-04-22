@@ -22,16 +22,12 @@ package de.metas.dunning.invoice.api;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Iterator;
-
-import org.compiere.model.I_C_Invoice;
-
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Invoice;
+
+import java.util.Iterator;
 
 /**
  * DAO methods related to {@link I_C_Invoice}s
@@ -41,21 +37,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IInvoiceSourceDAO extends ISingletonService
 {
-	/**
-	 * Computes the invoice's due date from its payment term and {@code DateInvoiced}
-	 * (typically via {@code paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced)}).
-	 *
-	 * <p>This method is called by {@code PaymentTermBasedDueDateProvider} during invoice
-	 * completion to derive the value that gets written into {@code C_Invoice.DueDate}.
-	 * Implementations MUST compute from the payment term — they MUST NOT simply read
-	 * {@code invoice.getDueDate()} (it is still {@code null} at that point, which would
-	 * silently break dunning for invoices completed via {@code MInvoice.completeIt()}).
-	 * The method is named after the operation it performs so the contract is visible at
-	 * every call site.
-	 */
-	Timestamp computeDueDateFromPaymentTerm(org.compiere.model.I_C_Invoice invoice);
-
-	int retrieveDueDays(PaymentTermId paymentTermId, Date dateInvoiced, Date date);
 
 	Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(IDunningContext context);
 }

@@ -43,7 +43,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
-import de.metas.dunning.invoice.InvoiceDueDateProviderService;
+import de.metas.invoice.due_date.InvoiceDueDateProviderService;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.invoice.InvoiceId;

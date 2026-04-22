@@ -1,18 +1,17 @@
-package de.metas.dunning.invoice;
+package de.metas.invoice.due_date;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
-import de.metas.invoice.InvoiceId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,17 +36,20 @@ import lombok.NonNull;
  */
 
 @Component
-public class PaymentTermBasedDueDateProvider
-		implements InvoiceDueDateProvider
+@RequiredArgsConstructor
+public class PaymentTermBasedDueDateProvider implements InvoiceDueDateProvider
 {
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final PaymentTermService paymentTermService;
+
 	@Override
 	public LocalDate provideDueDateOrNull(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoiceRecord = load(invoiceId, I_C_Invoice.class);
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 
-		final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
-		final Timestamp dueDate = invoiceSourceDAO.computeDueDateFromPaymentTerm(invoiceRecord);
-
-		return TimeUtil.asLocalDate(dueDate);
+		return paymentTermService.computeDueDateFromPaymentTerm(
+				PaymentTermId.ofRepoId(invoiceRecord.getC_PaymentTerm_ID()),
+				TimeUtil.asLocalDate(invoiceRecord.getDateInvoiced())
+		);
 	}
 }

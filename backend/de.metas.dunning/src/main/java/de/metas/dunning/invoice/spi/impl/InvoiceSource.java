@@ -22,15 +22,6 @@ package de.metas.dunning.invoice.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Iterator;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
@@ -39,9 +30,19 @@ import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.dunning.spi.impl.AbstractDunnableSource;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_InvoicePaySchedule;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
 
 public class InvoiceSource extends AbstractDunnableSource
 {
@@ -116,9 +117,9 @@ public class InvoiceSource extends AbstractDunnableSource
 		}
 		else
 		{
-			final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
+			final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 
-			daysDue = invoiceSourceDAO.retrieveDueDays(
+			daysDue = paymentTermService.computeDueDays(
 					PaymentTermId.ofRepoId(paymentTermId),
 					dateInvoiced,
 					context.getDunningDate());
