@@ -1,3 +1,9 @@
+-- 2026-04-16 /*From ID Server*/
+-- Switch de_metas_endcustomer_fresh_reports.OpenItems_Report to read
+-- C_Invoice.DueDate (via C_Invoice_v.DueDate) directly instead of recomputing
+-- via paymentTermDueDate(). This makes the open items report respect any
+-- overridden invoice due date.
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
                                                                             character varying,
                                                                             numeric)

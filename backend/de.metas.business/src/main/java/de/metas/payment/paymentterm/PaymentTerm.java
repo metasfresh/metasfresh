@@ -60,6 +60,7 @@ public class PaymentTerm
 	boolean isDefault;
 	boolean isComplex;
 	boolean isActive;
+	boolean isAllowOverrideDueDate;
 
 	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
 	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
@@ -84,7 +85,8 @@ public class PaymentTerm
 			final int netDays,
 			final int graceDays,
 			final boolean isDefault,
-			final boolean isActive,
+			final boolean isActive, 
+			final boolean isAllowOverrideDueDate,
 			final @NonNull List<PaymentTermBreak> breaks,
 			final @NonNull List<PaySchedule> paySchedules)
 	{
@@ -103,6 +105,7 @@ public class PaymentTerm
 		this.netDays = netDays;
 		this.isDefault = isDefault;
 		this.isActive = isActive;
+		this.isAllowOverrideDueDate = isAllowOverrideDueDate;
 
 		if (!breaks.isEmpty())
 		{
