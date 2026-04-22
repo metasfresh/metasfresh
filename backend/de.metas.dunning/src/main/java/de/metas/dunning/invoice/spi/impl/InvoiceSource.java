@@ -125,7 +125,7 @@ public class InvoiceSource extends AbstractDunnableSource
 					context.getDunningDate());
 		}
 
-		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName,
+		return new DunnableDoc(tableName,
 				recordId,
 				documentNo, // FRESH-504 DocumentNo is also needed
 				adClientId,
@@ -140,8 +140,6 @@ public class InvoiceSource extends AbstractDunnableSource
 				dunningGrace,
 				daysDue,
 				isInDispute);
-
-		return dunnableDoc;
 	}
 
 	@Override
