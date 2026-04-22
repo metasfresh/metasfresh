@@ -7,8 +7,8 @@
 
 -- AD_Element (base / de_DE)
 UPDATE AD_Element
-   SET Name         = 'Ohne Grund',
-       PrintName    = 'Ohne Grund',
+   SET Name         = 'Unterkomm. ohne Grund erl.',
+       PrintName    = 'Unterkomm. ohne Grund erl.',
        Description  = 'Wenn aktiviert kann der Kommissionierer eine geringere Menge ohne Angabe eines Grundes erfassen (der Dropdown erhält eine zusätzliche Option «Ohne Grund»).',
        Updated      = now(),
        UpdatedBy    = 100
@@ -16,8 +16,8 @@ UPDATE AD_Element
 
 -- AD_Element_Trl: de_DE, de_CH — keep same German text, untranslated flag
 UPDATE AD_Element_Trl
-   SET Name         = 'Ohne Grund',
-       PrintName    = 'Ohne Grund',
+   SET Name         = 'Unterkomm. ohne Grund erl.',
+       PrintName    = 'Unterkomm. ohne Grund erl.',
        Description  = 'Wenn aktiviert kann der Kommissionierer eine geringere Menge ohne Angabe eines Grundes erfassen (der Dropdown erhält eine zusätzliche Option «Ohne Grund»).',
        IsTranslated = 'N',
        Updated      = now(),
@@ -27,8 +27,8 @@ UPDATE AD_Element_Trl
 
 -- AD_Element_Trl: en_US — proper English translation
 UPDATE AD_Element_Trl
-   SET Name         = 'Without reason',
-       PrintName    = 'Without reason',
+   SET Name         = 'Allow under-pick w/o reason',
+       PrintName    = 'Allow under-pick w/o reason',
        Description  = 'When enabled, the picker can record a lower quantity without specifying a reason (the dropdown gets an additional «Without reason» option).',
        IsTranslated = 'Y',
        Updated      = now(),
@@ -38,8 +38,8 @@ UPDATE AD_Element_Trl
 
 -- AD_Element_Trl: fr_CH — keep the placeholder consistent with the German base
 UPDATE AD_Element_Trl
-   SET Name         = 'Ohne Grund',
-       PrintName    = 'Ohne Grund',
+   SET Name         = 'Unterkomm. ohne Grund erl.',
+       PrintName    = 'Unterkomm. ohne Grund erl.',
        Description  = 'Wenn aktiviert kann der Kommissionierer eine geringere Menge ohne Angabe eines Grundes erfassen (der Dropdown erhält eine zusätzliche Option «Ohne Grund»).',
        IsTranslated = 'N',
        Updated      = now(),
@@ -50,7 +50,7 @@ UPDATE AD_Element_Trl
 -- AD_Column: MobileUI_UserProfile_Picking.IsAllowSkippingRejectedReason (id 588938)
 -- AD_Column: MobileUI_UserProfile_Picking_Job.IsAllowSkippingRejectedReason (id 589655)
 UPDATE AD_Column
-   SET Name        = 'Ohne Grund',
+   SET Name        = 'Unterkomm. ohne Grund erl.',
        Description = 'Wenn aktiviert kann der Kommissionierer eine geringere Menge ohne Angabe eines Grundes erfassen (der Dropdown erhält eine zusätzliche Option «Ohne Grund»).',
        Updated     = now(),
        UpdatedBy   = 100
