@@ -186,6 +186,16 @@ class Modal extends Component {
     if (modalContent) {
       modalContent.addEventListener('scroll', this.handleScroll);
     }
+
+    // Trap the Tab key inside the modal so the caret never escapes to the
+    // background window, the page `<body>`, or the browser's address bar.
+    // Captures at the document level because:
+    //   a) once focus has already escaped to a background element, a handler
+    //      bound to the modal itself will never see the Tab keydown;
+    //   b) some background elements in metasfresh (e.g. the document-list
+    //      table container) can receive focus programmatically even with
+    //      `tabindex=-1`, and we need to re-route back into the modal.
+    document.addEventListener('keydown', this.handleTabKeyTrap, true);
   };
 
   /**
@@ -197,6 +207,76 @@ class Modal extends Component {
 
     if (modalContent) {
       modalContent.removeEventListener('scroll', this.handleScroll);
+    }
+
+    document.removeEventListener('keydown', this.handleTabKeyTrap, true);
+  };
+
+  /**
+   * @method handleTabKeyTrap
+   * @summary Keyboard trap: when a Tab press would take focus out of this
+   * modal (or when focus has already escaped), we cycle back to the first /
+   * last tabbable element inside the modal instead of letting the browser
+   * advance into the background window or its own chrome.
+   *
+   * Attached as a capturing listener on `document` so we see the keydown
+   * regardless of which element currently has focus, including focus that
+   * has already leaked to the background.
+   *
+   * Only acts on plain Tab / Shift+Tab — other keys pass through untouched.
+   * No-op if the Tab would land on another tabbable inside the modal; in
+   * that case we let the browser do its natural thing.
+   */
+  handleTabKeyTrap = (e) => {
+    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
+
+    // Find the (potentially multiple) modals currently in the DOM. If this
+    // is not the topmost one, don't trap — the topmost modal's own handler
+    // will. (Nested modals: Advanced Search from inside Advanced Edit.)
+    const modalWrappers = document.querySelectorAll('.modal-content-wrapper');
+    if (modalWrappers.length === 0) return;
+    const modal = modalWrappers[modalWrappers.length - 1];
+
+    const FOCUSABLE =
+      'input:not([disabled]):not([tabindex="-1"]):not([type="hidden"]),' +
+      'textarea:not([disabled]):not([tabindex="-1"]),' +
+      'select:not([disabled]):not([tabindex="-1"]),' +
+      'button:not([disabled]):not([tabindex="-1"]),' +
+      'a[href]:not([tabindex="-1"]),' +
+      '[tabindex]:not([tabindex="-1"])';
+
+    const isVisible = (el) => {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+      const style = window.getComputedStyle(el);
+      return (
+        style.visibility !== 'hidden' &&
+        style.display !== 'none' &&
+        style.opacity !== '0'
+      );
+    };
+
+    const focusables = [...modal.querySelectorAll(FOCUSABLE)].filter(isVisible);
+    if (focusables.length === 0) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    const isInsideModal = active && modal.contains(active);
+
+    if (e.shiftKey) {
+      // Shift+Tab: if focus is on the first or outside the modal, wrap to last.
+      if (!isInsideModal || active === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      // Tab: if focus is on the last or outside the modal, wrap to first.
+      if (!isInsideModal || active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   };
 
@@ -720,7 +800,11 @@ class Modal extends Component {
             className="panel-modal-content js-panel-modal-content
                           container-fluid"
             ref={(c) => {
-              if (c) {
+              // Focus the modal wrapper only if nothing inside it is already
+              // focused. SectionGroup.requestElementGroupFocus normally places
+              // focus on the first editable input during mount; this ref
+              // callback runs afterwards and used to steal that focus.
+              if (c && !c.contains(document.activeElement)) {
                 c.focus();
               }
             }}
