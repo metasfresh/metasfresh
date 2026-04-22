@@ -84,13 +84,13 @@ const ConfirmActivity = ({
           <div className="buttons">
             <ButtonWithIndicator
               testId="confirm-activity-error-retry"
-              caption={trl('activities.confirmButton.error.retry')}
+              captionKey="activities.confirmButton.error.retry"
               disabled={isProcessing}
               onClick={sendConfirmation}
             />
             <ButtonWithIndicator
               testId="confirm-activity-error-cancel"
-              caption={trl('activities.confirmButton.error.cancel')}
+              captionKey="activities.confirmButton.error.cancel"
               disabled={isProcessing}
               onClick={onCancelError}
             />

@@ -10,7 +10,7 @@ const DEFAULT_TIMEOUT_MILLIS = 20000;
  *
  * The Zebra scanner on flaky wifi regularly drops the TCP connection mid-roam; without an explicit timeout,
  * axios hangs forever and the operator is left with no signal that their "Fertigstellen" press didn't reach
- * the backend (me03#29027). The timeout ensures the promise eventually rejects so the UI can surface the
+ * the backend. The timeout ensures the promise eventually rejects so the UI can surface the
  * failure and let the operator retry.
  */
 export function postUserConfirmation({ wfProcessId, activityId, timeoutMillis }) {
