@@ -5,7 +5,8 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.product.asidata.ProductASIData;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.HUItemType;
@@ -39,7 +40,6 @@ import lombok.ToString;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -119,7 +119,7 @@ public class HURepository
 		private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+		private final transient ProductASIDataRepository productASIDataRepository = SpringContextHolder.instance.getBean(ProductASIDataRepository.class);
 
 		private final transient HUStack huStack = new HUStack();
 
@@ -182,19 +182,24 @@ public class HURepository
 			final ImmutableMap.Builder<BPartnerId, String> packagingGTINs = ImmutableMap.builder();
 			if (packagingProductIds.size() == 1)
 			{
-				final List<I_C_BPartner_Product> bPartnerProductRecords = partnerProductDAO.retrieveForProductIds(packagingProductIds);
-				for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
+				final ProductId packagingProductId = packagingProductIds.iterator().next();
+				// First pass: collect the GTIN per BPartner from M_Product_ASI_Data.
+				// Only the first (lowest SeqNo) match per BPartner is kept.
+				final java.util.Set<BPartnerId> seenBPartners = new java.util.HashSet<>();
+				for (final ProductASIData asiData : productASIDataRepository.retrieveAllForProduct(packagingProductId))
 				{
-					final String partnerProductGTIN = bPartnerProductRecord.getGTIN();
-					if (isNotBlank(partnerProductGTIN))
+					if (asiData.getBPartnerId() == null || !isNotBlank(asiData.getGtin()))
 					{
-						packagingGTINs.put(
-								BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID()),
-								partnerProductGTIN);
+						continue;
+					}
+					if (seenBPartners.add(asiData.getBPartnerId()))
+					{
+						packagingGTINs.put(asiData.getBPartnerId(), asiData.getGtin());
 					}
 				}
 
-				final I_M_Product product = productDAO.getById(packagingProductIds.iterator().next());
+				// Fallback: the M_Product-level GTIN is used when the caller asks for BPartnerId.NONE
+				final I_M_Product product = productDAO.getById(packagingProductId);
 				final String productGTIN = product.getGTIN();
 				if (isNotBlank(productGTIN))
 				{

@@ -1,7 +1,7 @@
 package de.metas.product.asidata;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 @Builder
 public class ProductASIData
 {
+	@Nullable BPartnerId bPartnerId;
 	@Nullable String gtin;
 	@Nullable String eanCU;
 	@Nullable String upc;

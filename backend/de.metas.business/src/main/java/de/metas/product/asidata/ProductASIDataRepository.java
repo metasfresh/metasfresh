@@ -84,6 +84,44 @@ public class ProductASIDataRepository
 				.orElse(null);
 	}
 
+	/**
+	 * Retrieve all active {@code M_Product_ASI_Data} records for the given product, ordered by {@code SeqNo} ascending.
+	 * Useful when the caller needs to inspect multiple records (e.g., building a map of BPartner → GTIN for HU packaging).
+	 */
+	@NonNull
+	public List<ProductASIData> retrieveAllForProduct(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Product_ASI_Data.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product_ASI_Data.COLUMNNAME_M_Product_ID, productId)
+				.orderBy().addColumn(I_M_Product_ASI_Data.COLUMNNAME_SeqNo).endOrderBy()
+				.create()
+				.stream()
+				.map(ProductASIDataRepository::toProductASIDataWithBPartner)
+				.collect(java.util.stream.Collectors.toList());
+	}
+
+	/**
+	 * Like {@link #toProductASIData} but also carries the {@code C_BPartner_ID} from the record
+	 * so callers can partition results by BPartner.
+	 */
+	@NonNull
+	private static ProductASIData toProductASIDataWithBPartner(@NonNull final I_M_Product_ASI_Data record)
+	{
+		final int bpartnerId = record.getC_BPartner_ID();
+		return ProductASIData.builder()
+				.bPartnerId(bpartnerId > 0 ? BPartnerId.ofRepoId(bpartnerId) : null)
+				.gtin(record.getGTIN())
+				.eanCU(record.getEAN_CU())
+				.upc(record.getUPC())
+				.productNo(record.getProductNo())
+				.productName(record.getProductName())
+				.productDescription(record.getProductDescription())
+				.seqNo(record.getSeqNo())
+				.build();
+	}
+
 	private static boolean matchesASI(@NonNull final I_M_Product_ASI_Data candidate, @NonNull final AttributesKey lineKey)
 	{
 		final int candidateAsiId = candidate.getM_AttributeSetInstance_ID();
