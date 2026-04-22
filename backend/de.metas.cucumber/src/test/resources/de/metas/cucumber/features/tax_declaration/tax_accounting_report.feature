@@ -71,52 +71,52 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: sales invoice with regular 19% tax appears on T_Due with correct base and tax amounts
 
     And metasfresh contains C_TaxCategory
-      | Identifier        |
-      | taxCategory  |
-    And metasfresh contains C_Tax
-      | Identifier | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19 | taxCategory  | 19   | DE                       | DE                        |
-    And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID   | IsSOTrx |
-      | sales19     | tax19 | Y       |
-      | purchase19 | tax19 | N       |
-    And metasfresh contains M_Products:
       | Identifier  |
-      | product  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales19    | tax19    | Y       |
+      | purchase19 | tax19    | N       |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | salesPLV               | product   |   100.00   | PCE      | taxCategory |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | customer      | 2024-01-15   | true    | EUR           |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice       | product   | 7 PCE       | tax19 |
-      | invoiceL2 | invoice       | product   | 3 PCE       | tax19 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
     # Tax-related Fact_Acct posting: ARI → T_Due_Acct CR 190 (USt liability).
     # C_VAT_Code_ID = sales19 (IsSOTrx=Y) because T_Due is the sales/output side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID | Record_ID |
-      | T_Due_Acct            |           | 190       | tax19 | sales19    | invoice    |
-      | *                     |           |           |            |               | invoice    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID   |
-      | T_Due_Acct            | -190        | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | -190        | tax19    |
 
     # Regression baseline across all aggregation levels. For sales invoices (ARI),
     # T_Due_Acct posts AmtAcctCr=190 → level 4 has TaxAmt=-190/NetAmt=-1000 and
     # levels 1/2/3/ReCap sum up to the same single-row amounts.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | sales19    |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | sales19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | sales19    | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | sales19    | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice     |
-      | ReCap | sales19    |                       | -1000      | -190       |        |        | -             | -          |
+      | 1     | sales19       |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice    |
+      | ReCap | sales19       |                       | -1000      | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -127,29 +127,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: sales credit memo with regular 19% tax appears on T_Due with signs inverted from ARI
 
     And metasfresh contains C_TaxCategory
-      | Identifier         |
-      | taxCategory     |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19   | taxCategory   | 19   | DE                       | DE                        |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier   | C_Tax_ID | IsSOTrx |
-      | sales19     | tax19 | Y       |
-      | purchase19 | tax19 | N       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales19    | tax19    | Y       |
+      | purchase19 | tax19    | N       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product   |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | salesPLV               | product     |   100.00   | PCE      | taxCategory   |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
+      | invoice    | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice       | product     | 7 PCE       | tax19   |
-      | invoiceL2 | invoice       | product     | 3 PCE       | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
@@ -157,20 +157,20 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # C_VAT_Code_ID = sales19 (IsSOTrx=Y) because T_Due is the sales/output side.
     And Fact_Acct records are matching
       | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
-      | T_Due_Acct            | 190       |           | tax19 | sales19      | invoice    |
-      | *                     |           |           |          |               | invoice    |
+      | T_Due_Acct            | 190       |           | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
-      | T_Due_Acct            | 190         | tax19 |
+      | T_Due_Acct            | 190         | tax19    |
 
     # For ARC: signs are inverted vs ARI. T_Due_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | sales19      |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | sales19      | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 3     | sales19      | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 4     | sales19      | T_Due_Acct            |            |            | 1000   | 190    | customer      | invoice     |
-      | ReCap | sales19      |                       | 1000       | 190        |        |        | -             | -          |
+      | 1     | sales19       |                       | 1000       | 190        |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | customer      | invoice    |
+      | ReCap | sales19       |                       | 1000       | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -181,29 +181,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: purchase invoice with regular 19% tax appears on T_Credit
 
     And metasfresh contains C_TaxCategory
-      | Identifier       |
-      | taxCategory   |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19   | taxCategory   | 19   | DE                       | DE                        |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier    | C_Tax_ID | IsSOTrx |
-      | purchase19      | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product   |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | purchasePLV            | product     |   100.00   | PCE      | taxCategory   |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | vendor        | 2024-01-15   | false   | EUR           |
+      | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice       | product     | 7 PCE       | tax19   |
-      | invoiceL2 | invoice       | product     | 3 PCE       | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
@@ -211,20 +211,20 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # C_VAT_Code_ID = purchase19 (IsSOTrx=N) because T_Credit is the purchase/input side.
     And Fact_Acct records are matching
       | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
-      | T_Credit_Acct         | 190       |           | tax19 | purchase19      | invoice    |
-      | *                     |           |           |          |               | invoice    |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
-      | T_Credit_Acct         | 190         | tax19 |
+      | T_Credit_Acct         | 190         | tax19    |
 
     # For API: T_Credit_Acct posts AmtAcctDr=190, so TaxAmt=+190, NetAmt=+1000.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19      |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | purchase19      | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 3     | purchase19      | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 4     | purchase19      | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice     |
-      | ReCap | purchase19      |                       | 1000       | 190        |        |        | -             | -          |
+      | 1     | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | ReCap | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -235,29 +235,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: purchase credit memo with regular 19% tax appears on T_Credit with signs inverted from API
 
     And metasfresh contains C_TaxCategory
-      | Identifier       |
-      | taxCategory   |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19   | taxCategory   | 19   | DE                       | DE                        |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier    | C_Tax_ID | IsSOTrx |
-      | purchase19      | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product   |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | purchasePLV            | product     |   100.00   | PCE      | taxCategory   |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+      | invoice    | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice       | product     | 7 PCE       | tax19   |
-      | invoiceL2 | invoice       | product     | 3 PCE       | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
@@ -265,20 +265,20 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # C_VAT_Code_ID = purchase19 (IsSOTrx=N) because T_Credit is the purchase/input side.
     And Fact_Acct records are matching
       | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
-      | T_Credit_Acct         |           | 190       | tax19 | purchase19      | invoice    |
-      | *                     |           |           |          |               | invoice    |
+      | T_Credit_Acct         |           | 190       | tax19    | purchase19    | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
-      | T_Credit_Acct         | -190        | tax19 |
+      | T_Credit_Acct         | -190        | tax19    |
 
     # For APC: signs are inverted vs API. T_Credit_Acct posts AmtAcctCr=190, so TaxAmt=-190, NetAmt=-1000.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19      |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | purchase19      | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 3     | purchase19      | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 4     | purchase19      | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice     |
-      | ReCap | purchase19      |                       | -1000      | -190       |        |        | -             | -          |
+      | 1     | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice    |
+      | ReCap | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -289,50 +289,50 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: zero-tax sales invoice produces a T_Due row with zero tax amount
 
     And metasfresh contains C_TaxCategory
-      | Identifier             |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID        | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
-      | tax0    | taxCategory  | 0    | DE                       | DE                        | Y           |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
+      | tax0       | taxCategory      | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier         | C_Tax_ID       | IsSOTrx |
-      | sales0     | tax0 | Y       |
-      | purchase0 | tax0 | N       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales0     | tax0     | Y       |
+      | purchase0  | tax0     | N       |
     And metasfresh contains M_Products:
-      | Identifier      |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID | C_TaxCategory_ID        |
-      | salesPLV               | product |  100.00  | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier    | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice  | customer      | 2024-01-15   | true    | EUR           |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier       | C_Invoice_ID     | M_Product_ID     | QtyInvoiced      | C_Tax_ID         |
-      | invoiceL1 | invoice     | product  | 2 PCE            | tax0   |
-      | invoiceL2 | invoice     | product  | 3 PCE            | tax0   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 2 PCE       | tax0     |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax0     |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
     # Zero-tax ARI (§4 UStG): T_Due_Acct posts a zero row carrying the TaxBaseAmt only.
     # C_VAT_Code_ID = sales0 (IsSOTrx=Y) — sales/output side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID       | C_VAT_Code_ID  | Record_ID    |
-      | T_Due_Acct            | 0         | 0         | tax0 | sales0 | invoice |
-      | *                     |           |           |                |                | invoice |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            | 0         | 0         | tax0     | sales0        | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID       |
-      | T_Due_Acct            | 0           | tax0 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | 0           | tax0     |
 
     # Zero-tax ARI: T_Due_Acct posts zero. TaxAmt=0, NetAmt=-500 (ARI sign flip applied to the 500 base).
     Then report_taxaccounts for C_Tax "tax0" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
-      | 1     | sales0 |                       | -500       | 0          |        |        | -             | -            |
-      | 2     | sales0 | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
-      | 3     | sales0 | T_Due_Acct            | -500       | 0          |        |        | -             | -            |
-      | 4     | sales0 | T_Due_Acct            |            |            | -500   | 0      | customer      | invoice |
-      | ReCap | sales0 |                       | -500       | 0          |        |        | -             | -            |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | sales0        |                       | -500       | 0          |        |        | -             | -          |
+      | 2     | sales0        | T_Due_Acct            | -500       | 0          |        |        | -             | -          |
+      | 3     | sales0        | T_Due_Acct            | -500       | 0          |        |        | -             | -          |
+      | 4     | sales0        | T_Due_Acct            |            |            | -500   | 0      | customer      | invoice    |
+      | ReCap | sales0        |                       | -500       | 0          |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -343,50 +343,50 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: zero-tax purchase invoice produces a T_Credit row with zero tax amount
 
     And metasfresh contains C_TaxCategory
-      | Identifier                |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID           | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
-      | tax0 | taxCategory  | 0    | DE                       | DE                        | Y           |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsTaxExempt |
+      | tax0       | taxCategory      | 0    | DE                       | DE                        | Y           |
     And metasfresh contains C_VAT_Codes:
-      | Identifier             | C_Tax_ID          | IsSOTrx |
-      | purchase0      | tax0 | N       |
-      | sales0 | tax0 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase0  | tax0     | N       |
+      | sales0     | tax0     | Y       |
     And metasfresh contains M_Products:
-      | Identifier          |
-      | product  |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID | C_TaxCategory_ID           |
-      | purchasePLV            | product  |  100.00  | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier    | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice  | vendor        | 2024-01-15   | false   | EUR           |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier         | C_Invoice_ID       | M_Product_ID       | QtyInvoiced        | C_Tax_ID           |
-      | invoiceL1   | invoice       | product | 2 PCE              | tax0  |
-      | invoiceL2   | invoice       | product | 3 PCE              | tax0  |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 2 PCE       | tax0     |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax0     |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
     # Zero-tax API (§4/§15(2) UStG): T_Credit_Acct posts a zero row carrying the TaxBaseAmt only.
     # C_VAT_Code_ID = purchase0 (IsSOTrx=N) — purchase/input side.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID          | C_VAT_Code_ID     | Record_ID    |
-      | T_Credit_Acct         | 0         | 0         | tax0 | purchase0 | invoice |
-      | *                     |           |           |                   |                   | invoice |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 0         | 0         | tax0     | purchase0     | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID          |
-      | T_Credit_Acct         | 0           | tax0 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 0           | tax0     |
 
     # Zero-tax API: T_Credit_Acct posts zero. TaxAmt=0, NetAmt=+500.
     Then report_taxaccounts for C_Tax "tax0" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID     | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo   |
-      | 1     | purchase0 |                       | 500        | 0          |        |        | -             | -            |
-      | 2     | purchase0 | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
-      | 3     | purchase0 | T_Credit_Acct         | 500        | 0          |        |        | -             | -            |
-      | 4     | purchase0 | T_Credit_Acct         |            |            | 500    | 0      | vendor        | invoice |
-      | ReCap | purchase0 |                       | 500        | 0          |        |        | -             | -            |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase0     |                       | 500        | 0          |        |        | -             | -          |
+      | 2     | purchase0     | T_Credit_Acct         | 500        | 0          |        |        | -             | -          |
+      | 3     | purchase0     | T_Credit_Acct         | 500        | 0          |        |        | -             | -          |
+      | 4     | purchase0     | T_Credit_Acct         |            |            | 500    | 0      | vendor        | invoice    |
+      | ReCap | purchase0     |                       | 500        | 0          |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -416,36 +416,36 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: sales invoice + discount-only allocation produces a tax-correction row alongside the invoice row
 
     And metasfresh contains C_TaxCategory
-      | Identifier      |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19  | taxCategory  | 19   | DE                       | DE                        |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID   | IsSOTrx |
-      | sales19     | tax19 | Y       |
-      | purchase19 | tax19 | N       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales19    | tax19    | Y       |
+      | purchase19 | tax19    | N       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product  |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID  |
-      | salesPLV               | product    |   100.00   | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice  | customer      | 2024-01-15   | true    | EUR           |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier        | C_Invoice_ID      | M_Product_ID      | QtyInvoiced       | C_Tax_ID          |
-      | invoiceL1 | invoice     | product         | 7 PCE             | tax19        |
-      | invoiceL2 | invoice     | product         | 3 PCE             | tax19        |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # The discount's 19% tax portion is 3.80 EUR; the net portion is 20.00 EUR. No payment is
     # needed — Doc_AllocationHdr.createTaxCorrection only looks at DiscountAmt.
     And create and complete manual payment allocations
-      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
-      | alloc           | invoice | 23.80 EUR   |
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | alloc              | invoice      | 23.80 EUR   |
 
     And Wait until documents invoice, alloc are posted
 
@@ -454,26 +454,26 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Expected net balance: -190 + 3.80 = -186.20. C_VAT_Code_ID = sales19 (IsSOTrx=Y)
     # on both legs — the correction copies the VATCode from the invoice's source Fact_Acct row.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID | Record_ID     |
-      | T_Due_Acct            |           | 190       | tax19 | sales19    | invoice |
-      | *                     |           |           |            |               | invoice |
-      | T_Due_Acct            | 3.80      |           | tax19 | sales19    | alloc      |
-      | *                     |           |           |            |               | alloc      |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Due_Acct            | 3.80      |           | tax19    | sales19       | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID   |
-      | T_Due_Acct            | -186.20     | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | -186.20     | tax19    |
 
     # Two level-4 rows (invoice + allocation discount correction). Subtotals:
     #   sum(TaxAmt) = -190 + 3.80 = -186.20
     #   sum(NetAmt) = -1000 + 20  = -980
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     | sales19    |                       | -980       | -186.20    |        |        | -             | -             |
-      | 2     | sales19    | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
-      | 3     | sales19    | T_Due_Acct            | -980       | -186.20    |        |        | -             | -             |
-      | 4     | sales19    | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice |
-      | 4     | sales19    | T_Due_Acct            |            |            | 20     | 3.80   | customer      | alloc      |
-      | ReCap | sales19    |                       | -980       | -186.20    |        |        | -             | -             |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | sales19       |                       | -980       | -186.20    |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -980       | -186.20    |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -980       | -186.20    |        |        | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | 20     | 3.80   | customer      | alloc      |
+      | ReCap | sales19       |                       | -980       | -186.20    |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -486,37 +486,37 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: sales invoice with two tax rates produces one independent row per tax
 
     And metasfresh contains C_TaxCategory
-      | Identifier      |
+      | Identifier    |
       | taxCategory19 |
       | taxCategory7  |
     And metasfresh contains C_Tax
-      | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19    | taxCategory19  | 19   | DE                       | DE                        |
-      | tax7     | taxCategory7   | 7    | DE                       | DE                        |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory19    | 19   | DE                       | DE                        |
+      | tax7       | taxCategory7     | 7    | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier   | C_Tax_ID | IsSOTrx |
-      | sales19     | tax19 | Y       |
-      | purchase19 | tax19 | N       |
-      | sales7      | tax7  | Y       |
-      | purchase7  | tax7  | N       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales19    | tax19    | Y       |
+      | purchase19 | tax19    | N       |
+      | sales7     | tax7     | Y       |
+      | purchase7  | tax7     | N       |
     And metasfresh contains M_Products:
       | Identifier |
       | product19  |
       | product7   |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID  |
-      | salesPLV               | product19    |   100.00   | PCE      | taxCategory19  |
-      | salesPLV               | product7     |  100.00  | PCE      | taxCategory7   |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product19    | 100.00   | PCE      | taxCategory19    |
+      | salesPLV               | product7     | 100.00   | PCE      | taxCategory7     |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | customer      | 2024-01-15   | true    | EUR           |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice       | product19    | 7 PCE       | tax19   |
-      | invoiceL2 | invoice       | product19    | 3 PCE       | tax19   |
-      | invoiceL3 | invoice       | product7     | 2 PCE       | tax7    |
-      | invoiceL4 | invoice       | product7     | 3 PCE       | tax7    |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product19    | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product19    | 3 PCE       | tax19    |
+      | invoiceL3  | invoice      | product7     | 2 PCE       | tax7     |
+      | invoiceL4  | invoice      | product7     | 3 PCE       | tax7     |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
@@ -524,31 +524,31 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Both legs sales-side → IsSOTrx=Y VATCodes (sales19 / sales7).
     And Fact_Acct records are matching
       | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
-      | T_Due_Acct            |           | 190       | tax19 | sales19      | invoice    |
-      | T_Due_Acct            |           | 35        | tax7  | sales7       | invoice    |
-      | *                     |           |           |          |               | invoice    |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | T_Due_Acct            |           | 35        | tax7     | sales7        | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
       | AccountConceptualName | AcctBalance | C_Tax_ID |
-      | T_Due_Acct            | -190        | tax19 |
-      | T_Due_Acct            | -35         | tax7  |
+      | T_Due_Acct            | -190        | tax19    |
+      | T_Due_Acct            | -35         | tax7     |
 
     # 19% slice: 1000 base + 190 tax
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | sales19      |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | sales19      | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | sales19      | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | sales19      | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice     |
-      | ReCap | sales19      |                       | -1000      | -190       |        |        | -             | -          |
+      | 1     | sales19       |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | customer      | invoice    |
+      | ReCap | sales19       |                       | -1000      | -190       |        |        | -             | -          |
 
     # 7% slice: 500 base + 35 tax
     Then report_taxaccounts for C_Tax "tax7" between "2024-01-01" and "2024-01-31" returns:
       | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | sales7       |                       | -500       | -35        |        |        | -             | -          |
-      | 2     | sales7       | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
-      | 3     | sales7       | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
-      | 4     | sales7       | T_Due_Acct            |            |            | -500   | -35    | customer      | invoice     |
-      | ReCap | sales7       |                       | -500       | -35        |        |        | -             | -          |
+      | 1     | sales7        |                       | -500       | -35        |        |        | -             | -          |
+      | 2     | sales7        | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
+      | 3     | sales7        | T_Due_Acct            | -500       | -35        |        |        | -             | -          |
+      | 4     | sales7        | T_Due_Acct            |            |            | -500   | -35    | customer      | invoice    |
+      | ReCap | sales7        |                       | -500       | -35        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -568,29 +568,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: sales credit memo + discount-only allocation produces an inverted tax-correction row
 
     And metasfresh contains C_TaxCategory
-      | Identifier        |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19  | taxCategory  | 19   | DE                       | DE                        |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier        | C_Tax_ID      | IsSOTrx |
-      | sales19     | tax19 | Y       |
-      | purchase19 | tax19 | N       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | sales19    | tax19    | Y       |
+      | purchase19 | tax19    | N       |
     And metasfresh contains M_Products:
-      | Identifier   |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
-      | salesPLV               | product |   100.00   | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice     | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID    | M_Product_ID    | QtyInvoiced     | C_Tax_ID        |
-      | invoiceL1 | invoice     | product    | 7 PCE           | tax19   |
-      | invoiceL2 | invoice     | product    | 3 PCE           | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # ARC direction = "we pay" (refund to customer) → DiscountAmt negative per the
@@ -598,7 +598,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Empirical production data confirms ARC splits roughly 57%+/43%- — both directions occur.
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
-      | alloc           | invoice  | -23.80 EUR  |
+      | alloc              | invoice      | -23.80 EUR  |
 
     And Wait until documents invoice, alloc are posted
 
@@ -607,25 +607,25 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # we refunded less to the customer). Net balance +186.20 per §17(1) UStG.
     # VATCode on both legs = sales19 (IsSOTrx=Y) — sales/output side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
-      | T_Due_Acct            | 190       |           | tax19 | sales19 | invoice |
-      | *                     |           |           |               |               | invoice |
-      | T_Due_Acct            |           | 3.80      | tax19 | sales19 | alloc    |
-      | *                     |           |           |               |               | alloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            | 190       |           | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Due_Acct            |           | 3.80      | tax19    | sales19       | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID      |
-      | T_Due_Acct            | 186.20      | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Due_Acct            | 186.20      | tax19    |
 
     # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
     # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     | sales19 |                       | 980        | 186.20     |        |        | -             | -           |
-      | 2     | sales19 | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
-      | 3     | sales19 | T_Due_Acct            | 980        | 186.20     |        |        | -             | -           |
-      | 4     | sales19 | T_Due_Acct            |            |            | 1000   | 190    | customer      | invoice |
-      | 4     | sales19 | T_Due_Acct            |            |            | -20    | -3.80  | customer      | alloc    |
-      | ReCap | sales19 |                       | 980        | 186.20     |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | sales19       |                       | 980        | 186.20     |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 980        | 186.20     |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 980        | 186.20     |        |        | -             | -          |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | customer      | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -20    | -3.80  | customer      | alloc      |
+      | ReCap | sales19       |                       | 980        | 186.20     |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -644,36 +644,36 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: purchase invoice + discount-only allocation produces a tax-correction row on T_Credit
 
     And metasfresh contains C_TaxCategory
-      | Identifier        |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19  | taxCategory  | 19   | DE                       | DE                        |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier         | C_Tax_ID      | IsSOTrx |
-      | purchase19      | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
-      | Identifier   |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
-      | purchasePLV            | product |   100.00   | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID    | M_Product_ID    | QtyInvoiced     | C_Tax_ID        |
-      | invoiceL1 | invoice     | product    | 7 PCE           | tax19   |
-      | invoiceL2 | invoice     | product    | 3 PCE           | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # API direction = "we pay" (supplier) → DiscountAmt negative per the C_AllocationLine
     # sign convention. Empirical production data confirms API is mostly negative (~82%).
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
-      | alloc           | invoice  | -23.80 EUR  |
+      | alloc              | invoice      | -23.80 EUR  |
 
     And Wait until documents invoice, alloc are posted
 
@@ -682,25 +682,25 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # a Skonto from what we owed). Net balance +186.20 per §17(1)(2) and §15(1a) UStG.
     # VATCode on both legs = purchase19 (IsSOTrx=N) — purchase/input side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
-      | T_Credit_Acct         | 190       |           | tax19 | purchase19 | invoice |
-      | *                     |           |           |               |               | invoice |
-      | T_Credit_Acct         |           | 3.80      | tax19 | purchase19 | alloc    |
-      | *                     |           |           |               |               | alloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         |           | 3.80      | tax19    | purchase19    | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID      |
-      | T_Credit_Acct         | 186.20      | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 186.20      | tax19    |
 
     # Two level-4 rows. Invoice (+190/+1000) + allocation correction (-3.80/-20).
     # Subtotals: +190-3.80=186.20 and +1000-20=980.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     | purchase19 |                       | 980        | 186.20     |        |        | -             | -           |
-      | 2     | purchase19 | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 3     | purchase19 | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -           |
-      | 4     | purchase19 | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | alloc    |
-      | 4     | purchase19 | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice |
-      | ReCap | purchase19 |                       | 980        | 186.20     |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 980        | 186.20     |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 980        | 186.20     |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -20    | -3.80  | vendor        | alloc      |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | ReCap | purchase19    |                       | 980        | 186.20     |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -720,36 +720,36 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: purchase credit memo + discount-only allocation produces an inverted tax-correction row
 
     And metasfresh contains C_TaxCategory
-      | Identifier        |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier     | C_TaxCategory_ID     | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19  | taxCategory  | 19   | DE                       | DE                        |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier         | C_Tax_ID      | IsSOTrx |
-      | purchase19      | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
-      | Identifier   |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
-      | purchasePLV            | product |   100.00   | PCE      | taxCategory  |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
       | invoice    | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID    | M_Product_ID    | QtyInvoiced     | C_Tax_ID        |
-      | invoiceL1 | invoice     | product    | 7 PCE           | tax19   |
-      | invoiceL2 | invoice     | product    | 3 PCE           | tax19   |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # APC direction = "we receive" (refund from vendor) → DiscountAmt positive per the
     # C_AllocationLine sign convention. Empirical production data shows APC splits 61%+/39%-.
     And create and complete manual payment allocations
       | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
-      | alloc           | invoice  | 23.80 EUR   |
+      | alloc              | invoice      | 23.80 EUR   |
 
     And Wait until documents invoice, alloc are posted
 
@@ -758,25 +758,25 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # VSt because we retained a Skonto on the refund). Net balance -186.20 per §17(1) UStG.
     # VATCode on both legs = purchase19 (IsSOTrx=N) — purchase/input side; correction copies it.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID      | C_VAT_Code_ID | Record_ID   |
-      | T_Credit_Acct         |           | 190       | tax19 | purchase19 | invoice |
-      | *                     |           |           |               |               | invoice |
-      | T_Credit_Acct         | 3.80      |           | tax19 | purchase19 | alloc    |
-      | *                     |           |           |               |               | alloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         |           | 190       | tax19    | purchase19    | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         | 3.80      |           | tax19    | purchase19    | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID      |
-      | T_Credit_Acct         | -186.20     | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | -186.20     | tax19    |
 
     # Two level-4 rows: invoice (-190/-1000) and allocation discount correction (+3.80/+20).
     # Subtotals: -190+3.80=-186.20 and -1000+20=-980.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo  |
-      | 1     | purchase19 |                       | -980       | -186.20    |        |        | -             | -           |
-      | 2     | purchase19 | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
-      | 3     | purchase19 | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -           |
-      | 4     | purchase19 | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice |
-      | 4     | purchase19 | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | alloc    |
-      | ReCap | purchase19 |                       | -980       | -186.20    |        |        | -             | -           |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | -980       | -186.20    |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | -980       | -186.20    |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 20     | 3.80   | vendor        | alloc      |
+      | ReCap | purchase19    |                       | -980       | -186.20    |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -798,29 +798,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: reverse-charge purchase invoice posts two symmetric Fact_Acct rows and appears on both T_Credit and T_Due
 
     And metasfresh contains C_TaxCategory
-      | Identifier         |
-      | taxCategory   |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier  | C_TaxCategory_ID  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
-      | tax19  | taxCategory  | 19   | DE                       | DE                        | true            |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID   | IsSOTrx |
-      | purchase19     | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product  |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | purchasePLV            | product    | 100.00   | PCE      | taxCategory |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice   | vendor        | 2024-01-15   | false   | EUR           |
+      | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice     | product    | 7 PCE       | tax19 |
-      | invoiceL2 | invoice     | product    | 3 PCE       | tax19 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
@@ -829,14 +829,14 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Per-leg VATCode: T_Credit (§13b input, UStVA KZ 67)    → purchase19     (IsSOTrx=N).
     # Per-leg VATCode: T_Due    (§13b output, UStVA KZ 84/85) → sales19 (IsSOTrx=Y).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
-      | T_Credit_Acct         | 190       |           | tax19 | purchase19     | invoice  |
-      | T_Due_Acct            |           | 190       | tax19 | sales19 | invoice  |
-      | *                     |           |           |            |                | invoice  |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID   |
-      | T_Credit_Acct         | 190         | tax19 |
-      | T_Due_Acct            | -190        | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 190         | tax19    |
+      | T_Due_Acct            | -190        | tax19    |
 
     # Report: per-leg VATCodes produce one row per vatcode at levels 1/2/3/ReCap.
     # With the RC symmetric-reporting fix in tax_accounts_details_v, the output leg
@@ -844,17 +844,17 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # show NetAmt_SUM = 1000 and TaxAmt_SUM = 190. Aligns with §13b UStG + §17(1) UStG
     # and SAP / Oracle / NAV / Sage conventions (equal base and tax on both KZ cells).
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19     |                       | 1000       | 190        |        |        | -             | -          |
-      | 1     | sales19 |                       | 1000       | 190        |        |        | -             | -          |
-      | 2     | purchase19     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 2     | sales19 | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 3     | purchase19     | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
-      | 3     | sales19 | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice   |
-      | 4     | sales19 | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice   |
-      | ReCap | purchase19     |                       | 1000       | 190        |        |        | -             | -          |
-      | ReCap | sales19 |                       | 1000       | 190        |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
+      | 1     | sales19       |                       | 1000       | 190        |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 1000       | 190        |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice    |
+      | ReCap | purchase19    |                       | 1000       | 190        |        |        | -             | -          |
+      | ReCap | sales19       |                       | 1000       | 190        |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -872,59 +872,59 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: reverse-charge purchase credit memo posts two symmetric reversal Fact_Acct rows
 
     And metasfresh contains C_TaxCategory
-      | Identifier       |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
-      | tax19 | taxCategory | 19   | DE                       | DE                        | true            |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID   | IsSOTrx |
-      | purchase19     | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product  |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | purchasePLV            | product    | 100.00   | PCE      | taxCategory |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice   | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+      | invoice    | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1 | invoice     | product    | 7 PCE       | tax19 |
-      | invoiceL2 | invoice     | product    | 3 PCE       | tax19 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
     # Per-leg VATCode: T_Credit → purchase19 (IsSOTrx=N); T_Due → sales19 (IsSOTrx=Y).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
-      | T_Credit_Acct         |           | 190       | tax19 | purchase19     | invoice  |
-      | T_Due_Acct            | 190       |           | tax19 | sales19 | invoice  |
-      | *                     |           |           |            |                | invoice  |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         |           | 190       | tax19    | purchase19    | invoice   |
+      | T_Due_Acct            | 190       |           | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
     And Fact_Acct records balances for documents invoice are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID   |
-      | T_Credit_Acct         | -190        | tax19 |
-      | T_Due_Acct            | 190         | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | -190        | tax19    |
+      | T_Due_Acct            | 190         | tax19    |
 
     # Symmetric negative report (APC doctype → TaxBaseAmt flipped to −1000 on both legs).
     # With the RC symmetric-reporting fix, the output leg mirrors the input leg:
     # T_Credit (purchase19 → KZ 67 reversal) and T_Due (sales19 → KZ 84/85 reversal)
     # both show NetAmt_SUM = −1000 and TaxAmt_SUM = −190.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19     |                       | -1000      | -190       |        |        | -             | -          |
-      | 1     | sales19 |                       | -1000      | -190       |        |        | -             | -          |
-      | 2     | purchase19     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 2     | sales19 | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 3     | purchase19     | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
-      | 3     | sales19 | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice   |
-      | 4     | sales19 | T_Due_Acct            |            |            | -1000  | -190   | vendor        | invoice   |
-      | ReCap | purchase19     |                       | -1000      | -190       |        |        | -             | -          |
-      | ReCap | sales19 |                       | -1000      | -190       |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
+      | 1     | sales19       |                       | -1000      | -190       |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | vendor        | invoice    |
+      | ReCap | purchase19    |                       | -1000      | -190       |        |        | -             | -          |
+      | ReCap | sales19       |                       | -1000      | -190       |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -942,35 +942,35 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: reverse-charge purchase invoice + discount-only allocation produces symmetric correction rows
 
     And metasfresh contains C_TaxCategory
-      | Identifier              |
-      | taxCategory   |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
-      | tax19 | taxCategory  | 19   | DE                       | DE                        | true            |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier          | C_Tax_ID        | IsSOTrx |
-      | purchase19     | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
-      | Identifier     |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID      |
-      | purchasePLV            | product | 100.00   | PCE      | taxCategory |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice   | vendor        | 2024-01-15   | false   | EUR           |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier         | C_Invoice_ID   | M_Product_ID    | QtyInvoiced | C_Tax_ID         |
-      | invoiceL1  | invoice  | product  | 7 PCE       | tax19  |
-      | invoiceL2  | invoice  | product  | 3 PCE       | tax19  |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # API direction = "we pay" → DiscountAmt negative (consistent with TC-S10).
     And create and complete manual payment allocations
-      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
-      | alloc         | invoice | -23.80 EUR  |
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | alloc              | invoice      | -23.80 EUR  |
 
     And Wait until documents invoice, alloc are posted
 
@@ -981,17 +981,17 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # VATCodes per leg: T_Credit → purchase19 (N); T_Due → sales19 (Y).
     # Allocation correction copies the per-leg VATCode from each source invoice Fact_Acct row.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID        | C_VAT_Code_ID       | Record_ID     |
-      | T_Credit_Acct         | 190       |           | tax19 | purchase19     | invoice |
-      | T_Due_Acct            |           | 190       | tax19 | sales19 | invoice |
-      | *                     |           |           |                 |                     | invoice |
-      | T_Credit_Acct         |           | 4.52      | tax19 | purchase19     | alloc    |
-      | T_Due_Acct            | 4.52      |           | tax19 | sales19 | alloc    |
-      | *                     |           |           |                 |                     | alloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         |           | 4.52      | tax19    | purchase19    | alloc     |
+      | T_Due_Acct            | 4.52      |           | tax19    | sales19       | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID        |
-      | T_Credit_Acct         | 185.48      | tax19 |
-      | T_Due_Acct            | -185.48     | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 185.48      | tax19    |
+      | T_Due_Acct            | -185.48     | tax19    |
 
     # Invoice: T_Credit +1000/+190 + T_Due +1000/+190 (as TC-S12 — both sides symmetric
     # after the RC fix). Allocation (path D, DiscountAmt=-23.80, direction="we pay"):
@@ -1004,19 +1004,19 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Per §17(1) UStG + §13b UStG: both KZ 84/85 and KZ 67 reduce symmetrically → both
     # VATCodes end up at NetAmt_SUM 976.21 and TaxAmt_SUM 185.48.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID       | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     | purchase19     |                       | 976.21     | 185.48     |        |        | -             | -             |
-      | 1     | sales19 |                       | 976.21     | 185.48     |        |        | -             | -             |
-      | 2     | purchase19     | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
-      | 2     | sales19 | T_Due_Acct            | 976.21     | 185.48     |        |        | -             | -             |
-      | 3     | purchase19     | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -             |
-      | 3     | sales19 | T_Due_Acct            | 976.21     | 185.48     |        |        | -             | -             |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | -23.79 | -4.52  | vendor        | alloc    |
-      | 4     | sales19 | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice |
-      | 4     | sales19 | T_Due_Acct            |            |            | -23.79 | -4.52  | vendor        | alloc    |
-      | ReCap | purchase19     |                       | 976.21     | 185.48     |        |        | -             | -             |
-      | ReCap | sales19 |                       | 976.21     | 185.48     |        |        | -             | -             |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 976.21     | 185.48     |        |        | -             | -          |
+      | 1     | sales19       |                       | 976.21     | 185.48     |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 976.21     | 185.48     |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 976.21     | 185.48     |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 976.21     | 185.48     |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -23.79 | -4.52  | vendor        | alloc      |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -23.79 | -4.52  | vendor        | alloc      |
+      | ReCap | purchase19    |                       | 976.21     | 185.48     |        |        | -             | -          |
+      | ReCap | sales19       |                       | 976.21     | 185.48     |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -1031,35 +1031,35 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: reverse-charge purchase credit memo + discount-only allocation produces symmetric correction rows
 
     And metasfresh contains C_TaxCategory
-      | Identifier             |
-      | taxCategory  |
+      | Identifier  |
+      | taxCategory |
     And metasfresh contains C_Tax
-      | Identifier      | C_TaxCategory_ID       | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
-      | tax19 | taxCategory  | 19   | DE                       | DE                        | true            |
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier          | C_Tax_ID        | IsSOTrx |
-      | purchase19     | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
-      | Identifier     |
-      | product |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID      |
-      | purchasePLV            | product | 100.00   | PCE      | taxCategory |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice  | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | vendor        | Gutschrift (Lieferant)  | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier        | C_Invoice_ID  | M_Product_ID   | QtyInvoiced | C_Tax_ID        |
-      | invoiceL1 | invoice | product | 7 PCE       | tax19 |
-      | invoiceL2 | invoice | product | 3 PCE       | tax19 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
 
     # APC direction = "we receive" → positive DiscountAmt (consistent with TC-S11).
     And create and complete manual payment allocations
-      | C_AllocationHdr_ID | C_Invoice_ID  | DiscountAmt |
-      | alloc         | invoice | 23.80 EUR   |
+      | C_AllocationHdr_ID | C_Invoice_ID | DiscountAmt |
+      | alloc              | invoice      | 23.80 EUR   |
 
     And Wait until documents invoice, alloc are posted
 
@@ -1067,34 +1067,34 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Allocation (DiscountAmt=+23.80): T_Credit DR 4.52, T_Due CR 4.52. Correction copies the
     # per-leg VATCode from each source invoice Fact_Acct row.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID        | C_VAT_Code_ID       | Record_ID     |
-      | T_Credit_Acct         |           | 190       | tax19 | purchase19     | invoice |
-      | T_Due_Acct            | 190       |           | tax19 | sales19 | invoice |
-      | *                     |           |           |                 |                     | invoice |
-      | T_Credit_Acct         | 4.52      |           | tax19 | purchase19     | alloc    |
-      | T_Due_Acct            |           | 4.52      | tax19 | sales19 | alloc    |
-      | *                     |           |           |                 |                     | alloc    |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         |           | 190       | tax19    | purchase19    | invoice   |
+      | T_Due_Acct            | 190       |           | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         | 4.52      |           | tax19    | purchase19    | alloc     |
+      | T_Due_Acct            |           | 4.52      | tax19    | sales19       | alloc     |
+      | *                     |           |           |          |               | alloc     |
     And Fact_Acct records balances for documents invoice,alloc are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID        |
-      | T_Credit_Acct         | -185.48     | tax19 |
-      | T_Due_Acct            | 185.48      | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | -185.48     | tax19    |
+      | T_Due_Acct            | 185.48      | tax19    |
 
     # Symmetric to TC-S14 with APC sign-flip. Output leg mirrors input leg via the RC fix:
     # both NetAmt_SUM=-976.21 and TaxAmt_SUM=-185.48 (KZ 67 and KZ 84/85 both reduced).
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID       | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo    |
-      | 1     | purchase19     |                       | -976.21    | -185.48    |        |        | -             | -             |
-      | 1     | sales19 |                       | -976.21    | -185.48    |        |        | -             | -             |
-      | 2     | purchase19     | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
-      | 2     | sales19 | T_Due_Acct            | -976.21    | -185.48    |        |        | -             | -             |
-      | 3     | purchase19     | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -             |
-      | 3     | sales19 | T_Due_Acct            | -976.21    | -185.48    |        |        | -             | -             |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | 23.79  | 4.52   | vendor        | alloc    |
-      | 4     | sales19 | T_Due_Acct            |            |            | -1000  | -190   | vendor        | invoice |
-      | 4     | sales19 | T_Due_Acct            |            |            | 23.79  | 4.52   | vendor        | alloc    |
-      | ReCap | purchase19     |                       | -976.21    | -185.48    |        |        | -             | -             |
-      | ReCap | sales19 |                       | -976.21    | -185.48    |        |        | -             | -             |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | -976.21    | -185.48    |        |        | -             | -          |
+      | 1     | sales19       |                       | -976.21    | -185.48    |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | -976.21    | -185.48    |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | -976.21    | -185.48    |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | -976.21    | -185.48    |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 23.79  | 4.52   | vendor        | alloc      |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | 23.79  | 4.52   | vendor        | alloc      |
+      | ReCap | purchase19    |                       | -976.21    | -185.48    |        |        | -             | -          |
+      | ReCap | sales19       |                       | -976.21    | -185.48    |        |        | -             | -          |
 
 
 # ############################################################################################################################################
@@ -1110,29 +1110,29 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
   Scenario: reversed reverse-charge purchase invoice produces sign-negated rows summing to zero per account
 
     And metasfresh contains C_TaxCategory
-      | Identifier       |
+      | Identifier  |
       | taxCategory |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
-      | tax19 | taxCategory | 19   | DE                       | DE                        | true            |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        | true            |
     And metasfresh contains C_VAT_Codes:
-      | Identifier     | C_Tax_ID   | IsSOTrx |
-      | purchase19     | tax19 | N       |
-      | sales19 | tax19 | Y       |
+      | Identifier | C_Tax_ID | IsSOTrx |
+      | purchase19 | tax19    | N       |
+      | sales19    | tax19    | Y       |
     And metasfresh contains M_Products:
       | Identifier |
-      | product  |
+      | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | purchasePLV            | product    | 100.00   | PCE      | taxCategory |
+      | purchasePLV            | product      | 100.00   | PCE      | taxCategory      |
 
     And metasfresh contains C_Invoice:
-      | Identifier   | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
       | invoice    | vendor        | 2024-01-15   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier     | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID   |
-      | invoiceL1  | invoice    | product    | 7 PCE       | tax19 |
-      | invoiceL2  | invoice    | product    | 3 PCE       | tax19 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 7 PCE       | tax19    |
+      | invoiceL2  | invoice      | product      | 3 PCE       | tax19    |
     And the invoice identified by invoice is completed
     And the invoice identified by invoice is reversed
     And the reversal of invoice invoice is identified by reversal
@@ -1141,34 +1141,34 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
     # Original invoice posts two legs with per-leg VATCodes (like TC-S12). Reversal negates
     # both amounts on the SAME DR/CR sides (not swapped) and keeps the same per-leg VATCodes.
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID   | C_VAT_Code_ID  | Record_ID |
-      | T_Credit_Acct         | 190       |           | tax19 | purchase19     | invoice |
-      | T_Due_Acct            |           | 190       | tax19 | sales19 | invoice |
-      | *                     |           |           |            |                | invoice |
-      | T_Credit_Acct         | -190      |           | tax19 | purchase19     | reversal  |
-      | T_Due_Acct            |           | -190      | tax19 | sales19 | reversal  |
-      | *                     |           |           |            |                | reversal  |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Credit_Acct         | 190       |           | tax19    | purchase19    | invoice   |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
+      | T_Credit_Acct         | -190      |           | tax19    | purchase19    | reversal  |
+      | T_Due_Acct            |           | -190      | tax19    | sales19       | reversal  |
+      | *                     |           |           |          |               | reversal  |
 
     # Sum per (account, tax) must be zero after reversal (R7).
     And Fact_Acct records balances for documents invoice,reversal are matching
-      | AccountConceptualName | AcctBalance | C_Tax_ID   |
-      | T_Credit_Acct         | 0           | tax19 |
-      | T_Due_Acct            | 0           | tax19 |
+      | AccountConceptualName | AcctBalance | C_Tax_ID |
+      | T_Credit_Acct         | 0           | tax19    |
+      | T_Due_Acct            | 0           | tax19    |
 
     # Original invoice + reversal: level-4 row pair sums to zero per (account, tax) → R7.
     # With the RC fix, level-4 T_Due rows mirror T_Credit rows (same NetAmt + same TaxAmt).
     # Level-1 / 2 / 3 / ReCap all sum to 0 per VATCode.
     Then report_taxaccounts for C_Tax "tax19" between "2024-01-01" and "2024-01-31" returns:
-      | Level | C_VAT_Code_ID  | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
-      | 1     | purchase19     |                       | 0          | 0          |        |        | -             | -          |
-      | 1     | sales19 |                       | 0          | 0          |        |        | -             | -          |
-      | 2     | purchase19     | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
-      | 2     | sales19 | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
-      | 3     | purchase19     | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
-      | 3     | sales19 | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice  |
-      | 4     | purchase19     | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | reversal   |
-      | 4     | sales19 | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice  |
-      | 4     | sales19 | T_Due_Acct            |            |            | -1000  | -190   | vendor        | reversal   |
-      | ReCap | purchase19     |                       | 0          | 0          |        |        | -             | -          |
-      | ReCap | sales19 |                       | 0          | 0          |        |        | -             | -          |
+      | Level | C_VAT_Code_ID | AccountConceptualName | NetAmt_SUM | TaxAmt_SUM | NetAmt | TaxAmt | C_BPartner_ID | DocumentNo |
+      | 1     | purchase19    |                       | 0          | 0          |        |        | -             | -          |
+      | 1     | sales19       |                       | 0          | 0          |        |        | -             | -          |
+      | 2     | purchase19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 2     | sales19       | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 3     | purchase19    | T_Credit_Acct         | 0          | 0          |        |        | -             | -          |
+      | 3     | sales19       | T_Due_Acct            | 0          | 0          |        |        | -             | -          |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | vendor        | reversal   |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | vendor        | reversal   |
+      | ReCap | purchase19    |                       | 0          | 0          |        |        | -             | -          |
+      | ReCap | sales19       |                       | 0          | 0          |        |        | -             | -          |
