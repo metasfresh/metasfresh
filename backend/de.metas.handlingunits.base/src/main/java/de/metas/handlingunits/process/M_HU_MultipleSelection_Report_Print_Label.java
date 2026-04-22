@@ -21,6 +21,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.PrintCopies;
+import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -58,9 +59,9 @@ import static de.metas.handlingunits.HuUnitType.VHU;
  */
 public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess implements IProcessPrecondition
 {
-	private final HULabelService labelService = SpringContextHolder.instance.getBean(HULabelService.class);
-	private final HUQRCodesService huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final HULabelService labelService = SpringContextHolder.instance.getBean(HULabelService.class);
+	@NonNull private final HUQRCodesService huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Param(mandatory = true, parameterName = "AD_Process_ID")
 	private AdProcessId p_AD_Process_ID;
@@ -144,9 +145,14 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 				.printPreview(true) // suppress physical-printer routing — preview returns the PDF only
 				.numberOfCopies(PrintCopies.ofIntOrOne(p_PrintCopies));
 
-		flattenForRendering(topLevelHus).forEach(hu -> merger.add(
-				executor.executeNow(p_AD_Process_ID, ImmutableList.of(hu))
-						.getReportData().getReportDataByteArray()));
+		flattenForRendering(topLevelHus).forEach(hu -> {
+			final ReportResultData reportData = executor.executeNow(p_AD_Process_ID, ImmutableList.of(hu)).getReportData();
+			if (reportData == null)
+			{
+				return; // skip HUs for which the Jasper produced no report data
+			}
+			merger.add(reportData.getReportDataByteArray());
+		});
 
 		final byte[] merged = merger.getMergedPdfByteArray();
 		if (merged == null)

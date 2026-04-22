@@ -1,9 +1,15 @@
 -- Run mode: SWING_CLIENT
 
--- Extend AD_Val_Rule 540604 ("HU Label print format options") to cover ALL HU label
--- Jasper processes listed in me03#29310 (10 processes total).
--- Value-pattern matching is replaced with an explicit AD_Process_ID list so renames
--- do not silently drop entries. New label Jaspers must be added here explicitly.
+-- Extend AD_Val_Rule 540604 ("HU Label print format options") to cover:
+--   a) ALL HU label Jaspers listed in me03#29310 — explicit AD_Process_ID list (10 core IDs)
+--   b) Customer-specific extensions — any AD_Process whose Value starts with 'HU_Label_'
+--
+-- The explicit ID list guarantees the shipped label Jaspers are always selectable even if
+-- someone renames their Value. The ILIKE prefix gives customers a convention to add their
+-- own label Jaspers without a metasfresh update stepping on their changes: name any custom
+-- label AD_Process with Value like 'HU_Label_<Customer>_<Type>' and it appears in the
+-- launcher dropdown automatically. Naming convention is documented in
+-- metasfresh/mf15-documentation#100.
 --
 -- Included processes (from me03#29310):
 --   540370 Wareneingangsetikett LU
@@ -23,7 +29,7 @@
 --           already preview by default via M_HU_Report_Print_Template
 
 UPDATE AD_Val_Rule
-SET Code = 'AD_Process.AD_Process_ID IN (540370, 540412, 540413, 540414, 540415, 540416, 540933, 541195, 584694, 585387)',
+SET Code = 'AD_Process.AD_Process_ID IN (540370, 540412, 540413, 540414, 540415, 540416, 540933, 541195, 584694, 585387) OR AD_Process.Value ILIKE ''HU_Label_%''',
     Updated = TO_TIMESTAMP('2026-04-22 10:00','YYYY-MM-DD HH24:MI'),
     UpdatedBy = 0
 WHERE AD_Val_Rule_ID = 540604
