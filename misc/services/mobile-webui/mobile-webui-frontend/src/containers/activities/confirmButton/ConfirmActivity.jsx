@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { postUserConfirmation } from '../../../api/confirmation';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { appLaunchersLocation } from '../../../routes/launchers';
 import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
@@ -45,6 +45,10 @@ const ConfirmActivity = ({
         }
       })
       .catch((axiosError) => {
+        // A server response means the backend rejected the operation (e.g. "all steps must be completed");
+        // retrying the same payload won't help, and there is automation that asserts on the toast.
+        // Only surface the inline retry panel for network-layer failures (timeout / no response at all).
+        const isNetworkFailure = !axiosError?.response;
         const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
         uiTrace.trace({
           eventName: 'confirmationFailed',
@@ -52,9 +56,14 @@ const ConfirmActivity = ({
           activityId,
           httpStatus: axiosError?.response?.status ?? null,
           axiosCode: axiosError?.code ?? null,
+          isNetworkFailure,
           message,
         });
-        setErrorMessage(message);
+        if (isNetworkFailure) {
+          setErrorMessage(message);
+        } else {
+          toastError({ axiosError });
+        }
       })
       .finally(() => dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false })));
   };
