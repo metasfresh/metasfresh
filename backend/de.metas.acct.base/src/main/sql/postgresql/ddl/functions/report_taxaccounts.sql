@@ -246,9 +246,10 @@ BEGIN
                NULL::numeric            AS TotalAmt,
                NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               -- Bug A.2 dedup: count taxbaseamt once per (vatcode, ad_table_id, record_id, c_tax_id).
-               -- RC invoices contribute two rows with same taxbaseamt — only row_in_doc_tax=1
-               -- contributes to the grand-total base.
+               -- Reverse-Charge dedup: a §13b invoice posts two Fact_Acct rows (T_Credit + T_Due)
+               -- that both join the same C_InvoiceTax and carry the same taxbaseamt. Count the
+               -- base once per (vatcode, ad_table_id, record_id, c_tax_id) — only the first row
+               -- contributes to the grand-total; subsequent rows contribute 0. Non-RC is a no-op.
                SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
                SUM(taxamt)              AS TaxAmt_SUM,
@@ -357,7 +358,7 @@ BEGIN
                NULL::numeric            AS TotalAmt,
                NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               -- Bug A.2 dedup — see Level 1 above.
+               -- Reverse-Charge dedup — see Level 1 above.
                SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
                SUM(taxamt)              AS TaxAmt_SUM,
