@@ -17,18 +17,18 @@
 
 -- AD_Element (base / de_DE)
 UPDATE AD_Element
-   SET Name         = 'Überpicken mit Rückfrage erl.',
-       PrintName    = 'Überpicken mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überentnahme über eine Rückfrage bestätigen. Wenn deaktiviert, wird eine Überentnahme im Frontend hart geblockt («N über max»).',
+   SET Name         = 'Überkomm. mit Rückfrage erl.',
+       PrintName    = 'Überkomm. mit Rückfrage erl.',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
        Updated      = now(),
        UpdatedBy    = 100
  WHERE AD_Element_ID = 583289;
 
 -- AD_Element_Trl: de_DE, de_CH — same German text
 UPDATE AD_Element_Trl
-   SET Name         = 'Überpicken mit Rückfrage erl.',
-       PrintName    = 'Überpicken mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überentnahme über eine Rückfrage bestätigen. Wenn deaktiviert, wird eine Überentnahme im Frontend hart geblockt («N über max»).',
+   SET Name         = 'Überkomm. mit Rückfrage erl.',
+       PrintName    = 'Überkomm. mit Rückfrage erl.',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
        IsTranslated = 'N',
        Updated      = now(),
        UpdatedBy    = 100
@@ -48,9 +48,9 @@ UPDATE AD_Element_Trl
 
 -- AD_Element_Trl: fr_CH — keep placeholder consistent with the German base
 UPDATE AD_Element_Trl
-   SET Name         = 'Überpicken mit Rückfrage erl.',
-       PrintName    = 'Überpicken mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überentnahme über eine Rückfrage bestätigen. Wenn deaktiviert, wird eine Überentnahme im Frontend hart geblockt («N über max»).',
+   SET Name         = 'Überkomm. mit Rückfrage erl.',
+       PrintName    = 'Überkomm. mit Rückfrage erl.',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
        IsTranslated = 'N',
        Updated      = now(),
        UpdatedBy    = 100
@@ -60,8 +60,8 @@ UPDATE AD_Element_Trl
 -- AD_Column: MobileUI_UserProfile_Picking.IsShowConfirmationPromptWhenOverPick (id 589168)
 -- AD_Column: MobileUI_UserProfile_Picking_Job.IsShowConfirmationPromptWhenOverPick (id 589660)
 UPDATE AD_Column
-   SET Name        = 'Überpicken mit Rückfrage erl.',
-       Description = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überentnahme über eine Rückfrage bestätigen. Wenn deaktiviert, wird eine Überentnahme im Frontend hart geblockt («N über max»).',
+   SET Name        = 'Überkomm. mit Rückfrage erl.',
+       Description = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
        Updated     = now(),
        UpdatedBy   = 100
  WHERE AD_Column_ID IN (589168, 589660);
