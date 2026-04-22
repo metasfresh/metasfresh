@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.pricing;
+package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -41,7 +41,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_ProductPrice;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
@@ -97,6 +96,26 @@ public class C_TaxCategory_StepDef
 				.orElseThrow(() -> new AdempiereException("Missing default taxCategory for internalName=" + DEFAULT_TaxCategory_InternalName));
 	}
 
+	/**
+	 * Create a {@link I_C_TaxCategory} per data-table row.
+	 *
+	 * <p><b>Required columns</b>:
+	 * <ul>
+	 *     <li>{@code Identifier} — unique per scenario; registers the category in {@link C_TaxCategory_StepDefData}</li>
+	 * </ul>
+	 *
+	 * <p><b>Optional columns</b>:
+	 * <ul>
+	 *     <li>{@code Name}, {@code InternalName} — auto-generated via {@code suggestValueAndName} if absent</li>
+	 * </ul>
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And metasfresh contains C_TaxCategory
+	 *   | Identifier  |
+	 *   | taxCategory |
+	 * }</pre>
+	 */
 	@And("metasfresh contains C_TaxCategory")
 	public void createTaxCategories(@NonNull final DataTable dataTable)
 	{

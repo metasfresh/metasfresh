@@ -1,29 +1,21 @@
-/*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
--- DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v
--- ;
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/views/tax_accounts_details_v.sql
+-- Reverse-Charge symmetric reporting on tax_accounts_details_v.
+--
+-- Under §13b UStG + §17(1) UStG, the recipient must declare a RC transaction as both output
+-- (UStVA KZ 84/85) and input deduction (KZ 67) with identical signed tax amounts — including
+-- after any payment-discount (Skonto) adjustment.
+--
+-- The view used to back-compute the allocation row's base from signed `taxamt = AmtAcctDr -
+-- AmtAcctCr`. For RC the two legs (T_Credit DR + T_Due CR) have mirror signs, so the resulting
+-- NetAmt and TaxAmt diverged between input and output rows (976.21 vs 1023.79 on TC-S14).
+--
+-- Fix: on the T_Due_Acct leg of a RC tax, flip the TaxAmt sign and flip the CMA-row TaxBaseAmt
+-- formula to mirror the T_Credit leg. Adds tax.IsReverseCharge to the inner projection.
+-- Non-RC paths are byte-identical.
 
-CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v
-AS
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;
+
+CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v$new AS
 
 WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
                       FROM C_Tax_Acct ta
@@ -137,3 +129,12 @@ FROM (SELECT fa.vatcode                    AS vatcode,
     WHERE (exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;
+
+SELECT db_alter_view(
+    'de_metas_acct.tax_accounts_details_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('tax_accounts_details_v$new')
+       AND lower(views.table_schema) = 'de_metas_acct'));
+
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;

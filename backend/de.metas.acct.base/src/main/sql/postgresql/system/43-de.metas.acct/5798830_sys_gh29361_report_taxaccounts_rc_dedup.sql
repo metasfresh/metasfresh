@@ -1,3 +1,12 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql
+-- Dedup TaxBaseAmt at grand-total levels for Reverse-Charge invoices.
+-- RC posting produces two Fact_Acct rows per invoice+tax (T_Credit + T_Due) both joining the same
+-- C_InvoiceTax; summing taxbaseamt across them at levels 1 / ReCap double-counts the base.
+-- Fix: pre-compute ROW_NUMBER() OVER (PARTITION BY vatcode, documentno, c_tax_id), aggregate the
+-- base only from row_in_doc_tax=1. Non-RC has one row per (invoice, tax) so dedup is a no-op.
+--
+-- Apply full function body — keep DDL source and migration in sync.
+
 -- Drop previous signature (added p_c_tax_id parameter)
 DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
 ;
@@ -154,10 +163,9 @@ BEGIN
            -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
            -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
            -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
-           -- (vatcode, ad_table_id, record_id, c_tax_id); subsequent rows contribute 0.
-           -- Partitioning by (ad_table_id, record_id) rather than documentno avoids collisions
-           -- when two invoices from different BPartners share the same DocumentNo.
-           ROW_NUMBER() OVER (PARTITION BY COALESCE(t.vatcode, v_notax), t.ad_table_id, t.record_id, c_tax_id
+           -- (vatcode, documentno, c_tax_id); subsequent rows contribute 0 to the base-amount
+           -- subtotal. For non-RC (one row per invoice+tax) this is a no-op.
+           ROW_NUMBER() OVER (PARTITION BY COALESCE(t.vatcode, v_notax), documentno, c_tax_id
                               ORDER BY accountno, accountname) AS row_in_doc_tax,
            (CASE
                 WHEN c_currency_id = source_currency_id THEN (taxbaseamt + taxamt)
@@ -248,8 +256,8 @@ BEGIN
                NULL::numeric            AS TaxAmt,
                -- Reverse-Charge dedup: a §13b invoice posts two Fact_Acct rows (T_Credit + T_Due)
                -- that both join the same C_InvoiceTax and carry the same taxbaseamt. Count the
-               -- base once per (vatcode, ad_table_id, record_id, c_tax_id) — only the first row
-               -- contributes to the grand-total; subsequent rows contribute 0. Non-RC is a no-op.
+               -- base once per (vatcode, documentno, c_tax_id) — only the first row contributes
+               -- to the grand-total; subsequent rows contribute 0. Non-RC is a no-op.
                SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
                SUM(taxamt)              AS TaxAmt_SUM,

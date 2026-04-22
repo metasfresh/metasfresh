@@ -1,13 +1,17 @@
 package de.metas.acct.vatcode.impl;
 
 import com.google.common.base.Joiner;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.model.X_C_VAT_Code;
+import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -16,6 +20,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -97,6 +102,49 @@ public class VATCodeDAO implements IVATCodeDAO
 						.setParameter("code", code));
 	}
 
+	@Override
+	public boolean existsForAcctSchemaAndTax(@NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
+	{
+		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	@NonNull
+	public VATCode createVATCode(@NonNull final CreateVATCodeRequest request)
+	{
+		final I_C_VAT_Code record = InterfaceWrapperHelper.newInstance(I_C_VAT_Code.class);
+		record.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
+		record.setC_Tax_ID(request.getTaxId().getRepoId());
+		record.setVATCode(request.getVatCode());
+		if (request.getOrgId() != null)
+		{
+			record.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+		if (request.getIsSOTrx() != null)
+		{
+			record.setIsSOTrx(request.getIsSOTrx() ? X_C_VAT_Code.ISSOTRX_Yes : X_C_VAT_Code.ISSOTRX_No);
+		}
+		if (request.getValidFrom() != null)
+		{
+			record.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
+		}
+		if (request.getValidTo() != null)
+		{
+			record.setValidTo(TimeUtil.asTimestamp(request.getValidTo()));
+		}
+		if (request.getDescription() != null)
+		{
+			record.setDescription(request.getDescription());
+		}
+		InterfaceWrapperHelper.saveRecord(record);
+		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
+	}
+
 	/**
 	 * @return true if the given {@link I_C_VAT_Code} is matching our request.
 	 */
@@ -139,7 +187,7 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	/**
-	 * Retries all active {@link I_C_VAT_Code}s for given C_AcctSchema_ID.
+	 * Retrieves all active {@link I_C_VAT_Code}s for given C_AcctSchema_ID.
 	 *
 	 * @param acctSchemaId C_AcctSchema_ID
 	 */
