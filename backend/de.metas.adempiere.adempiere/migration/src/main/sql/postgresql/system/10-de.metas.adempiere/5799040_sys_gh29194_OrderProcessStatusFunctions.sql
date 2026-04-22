@@ -65,6 +65,8 @@ DECLARE
 BEGIN
 
     SELECT (CASE
+        WHEN p_order.docstatus != 'CO'
+        THEN NULL
         WHEN c_order_deliverystatus_compute(p_order) = 'CD'
             AND c_order_invoicestatus_compute(p_order) = 'CI'
         THEN v_Green
