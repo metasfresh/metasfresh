@@ -5,6 +5,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.asidata.ProductASIData;
 import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.common.util.pair.IPair;
@@ -37,6 +38,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -171,15 +173,20 @@ public class HURepository
 					.packagingCode(extractPackagingCodeId(huRecord))
 					.attributes(attributeStorage)
 					.weightNet(weightNet)
-					.packagingGTINs(extractPackagingGTINs(huRecord))
+					.packagingGTINs(extractPackagingGTINs(huRecord, attributeStorage))
 					.referencingModels(huAssignmentDAO.retrieveReferencingRecordsForHU(huRecord, false));
 		}
 
 		/**
 		 * This is a bad case of the n+1 problem; feel free to reimplement properly when needed.
+		 * <p>
+		 * The HU's own attributes narrow the lookup: only {@code M_Product_ASI_Data} records whose ASI is a
+		 * subset of (or equal to) the HU's attributes are considered. Records with no ASI act as wildcards.
 		 */
 		@NonNull
-		private ImmutableMap<BPartnerId, String> extractPackagingGTINs(@NonNull final I_M_HU huRecord)
+		private ImmutableMap<BPartnerId, String> extractPackagingGTINs(
+				@NonNull final I_M_HU huRecord,
+				@NonNull final IAttributeStorage huAttributeStorage)
 		{
 			final ImmutableSet<ProductId> packagingProductIds = handlingUnitsDAO.retrieveItems(huRecord, HUItemType.PackingMaterial)
 					.stream()
@@ -194,10 +201,14 @@ public class HURepository
 			if (packagingProductIds.size() == 1)
 			{
 				final ProductId packagingProductId = packagingProductIds.iterator().next();
-				// First pass: collect the GTIN per BPartner from M_Product_ASI_Data.
-				// Only the first (lowest SeqNo) match per BPartner is kept.
+				final AttributesKey huAttributesKey = AttributesKeys
+						.createAttributesKeyFromAttributeSet(huAttributeStorage)
+						.orElse(AttributesKey.NONE);
+
+				// First pass: collect the GTIN per BPartner from M_Product_ASI_Data records whose ASI matches
+				// the HU's attributes. Only the first (lowest SeqNo) match per BPartner is kept.
 				final java.util.Set<BPartnerId> seenBPartners = new java.util.HashSet<>();
-				for (final ProductASIData asiData : productASIDataRepository.retrieveAllForProduct(packagingProductId))
+				for (final ProductASIData asiData : productASIDataRepository.retrieveAllForProductMatchingASI(packagingProductId, huAttributesKey))
 				{
 					if (asiData.getBPartnerId() == null || !isNotBlank(asiData.getGtin()))
 					{

@@ -85,11 +85,16 @@ public class ProductASIDataRepository
 	}
 
 	/**
-	 * Retrieve all active {@code M_Product_ASI_Data} records for the given product, ordered by {@code SeqNo} ascending.
-	 * Useful when the caller needs to inspect multiple records (e.g., building a map of BPartner → GTIN for HU packaging).
+	 * Retrieve all active {@code M_Product_ASI_Data} records for the given product whose ASI is a subset
+	 * of (or equal to) {@code lineKey}. Records with no ASI are treated as wildcards and always match.
+	 * <p>
+	 * Ordered by {@code SeqNo} ascending, so callers can group by BPartner and take the first per group
+	 * to get the best (lowest SeqNo) per BPartner.
 	 */
 	@NonNull
-	public List<ProductASIData> retrieveAllForProduct(@NonNull final ProductId productId)
+	public List<ProductASIData> retrieveAllForProductMatchingASI(
+			@NonNull final ProductId productId,
+			@NonNull final AttributesKey lineKey)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_Product_ASI_Data.class)
@@ -98,6 +103,7 @@ public class ProductASIDataRepository
 				.orderBy().addColumn(I_M_Product_ASI_Data.COLUMNNAME_SeqNo).endOrderBy()
 				.create()
 				.stream()
+				.filter(candidate -> matchesASI(candidate, lineKey))
 				.map(ProductASIDataRepository::toProductASIDataWithBPartner)
 				.collect(java.util.stream.Collectors.toList());
 	}
