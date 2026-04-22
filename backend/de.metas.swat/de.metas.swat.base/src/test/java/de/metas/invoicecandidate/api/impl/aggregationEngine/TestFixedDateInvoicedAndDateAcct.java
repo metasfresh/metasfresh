@@ -278,7 +278,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
-				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
+				.overrideDueDateParam(LocalDate.parse("2023-02-01"))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -287,7 +287,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		assertThat(invoice.getOverrideDueDate()).isEqualTo(LocalDate.of(2023, Month.FEBRUARY, 1));
+		assertThat(invoice.getOverrideDueDate()).isEqualTo(LocalDate.parse("2023-02-01"));
 	}
 
 	/** Verifies that the "param" DueDateOverride is NOT used when the payment term does not allow override. */
@@ -307,7 +307,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
-				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
+				.overrideDueDateParam(LocalDate.parse("2023-02-01"))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
