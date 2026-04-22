@@ -19,7 +19,7 @@
 UPDATE AD_Element
    SET Name         = 'Überkomm. mit Rückfrage erl.',
        PrintName    = 'Überkomm. mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkommissionierung über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkommissionierung  blockiert («N über max»).',
        Updated      = now(),
        UpdatedBy    = 100
  WHERE AD_Element_ID = 583289;
@@ -28,7 +28,7 @@ UPDATE AD_Element
 UPDATE AD_Element_Trl
    SET Name         = 'Überkomm. mit Rückfrage erl.',
        PrintName    = 'Überkomm. mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkommissionierung über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkommissionierung  blockiert («N über max»).',
        IsTranslated = 'N',
        Updated      = now(),
        UpdatedBy    = 100
@@ -50,7 +50,7 @@ UPDATE AD_Element_Trl
 UPDATE AD_Element_Trl
    SET Name         = 'Überkomm. mit Rückfrage erl.',
        PrintName    = 'Überkomm. mit Rückfrage erl.',
-       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
+       Description  = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkommissionierung über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkommissionierung  blockiert («N über max»).',
        IsTranslated = 'N',
        Updated      = now(),
        UpdatedBy    = 100
@@ -61,7 +61,7 @@ UPDATE AD_Element_Trl
 -- AD_Column: MobileUI_UserProfile_Picking_Job.IsShowConfirmationPromptWhenOverPick (id 589660)
 UPDATE AD_Column
    SET Name        = 'Überkomm. mit Rückfrage erl.',
-       Description = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkomm. über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkomm. im Frontend hart geblockt («N über max»).',
+       Description = 'Wenn aktiviert, darf der Kommissionierer mehr als die Auftragsmenge erfassen und muss die Überkommissionierung über eine Rückfrage bestätigen. Wenn deaktiviert, wird die Überkommissionierung  blockiert («N über max»).',
        Updated     = now(),
        UpdatedBy   = 100
  WHERE AD_Column_ID IN (589168, 589660);
