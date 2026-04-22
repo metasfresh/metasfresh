@@ -266,6 +266,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 	public void test_using_dateDateDueOverrideParam()
 	{
 		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setValue("pt_allow_override");
+		paymentTerm.setName("pt_allow_override");
 		paymentTerm.setIsAllowOverrideDueDate(true);
 		InterfaceWrapperHelper.save(paymentTerm);
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
@@ -295,6 +297,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 	public void test_using_dateDateDueOverrideParam_disallowed()
 	{
 		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setValue("pt_disallow_override");
+		paymentTerm.setName("pt_disallow_override");
 		paymentTerm.setIsAllowOverrideDueDate(false);
 		InterfaceWrapperHelper.save(paymentTerm);
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
