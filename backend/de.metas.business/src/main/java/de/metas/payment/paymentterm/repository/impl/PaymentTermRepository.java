@@ -247,11 +247,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public boolean isAllowOverrideDueDate(@NonNull final PaymentTermId paymentTermId)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_PaymentTerm.class)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, true)
-				.create()
-				.anyMatch();
+		return getById(paymentTermId).isAllowOverrideDueDate();
 	}
 }
