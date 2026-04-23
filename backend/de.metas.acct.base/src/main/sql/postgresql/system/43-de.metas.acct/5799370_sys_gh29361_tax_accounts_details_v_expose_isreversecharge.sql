@@ -1,28 +1,16 @@
-/*
- * #%L
- * de.metas.acct.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
--- DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v
--- ;
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/views/tax_accounts_details_v.sql
+-- A.4 / TC-E1: expose C_Tax.IsReverseCharge on the outer SELECT of tax_accounts_details_v
+-- so downstream consumers (notably de_metas_acct.report_taxaccounts recreated in the
+-- companion migration 5799380_..._report_taxaccounts_rc_totalamt.sql) can branch on
+-- reverse-charge without having to re-join C_Tax.
+--
+-- Ordering: this script runs BEFORE 5799380 because the migration runner orders by
+-- numeric prefix. The function recreation in 5799380 references `t.isreversecharge`
+-- and therefore requires this view to be in place first.
 
-CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;
+
+CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v$new
 AS
 
 WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
@@ -140,3 +128,13 @@ FROM (SELECT fa.vatcode                    AS vatcode,
     WHERE (exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;
+
+SELECT db_alter_view(
+    'tax_accounts_details_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('tax_accounts_details_v$new')
+       AND lower(views.table_schema) = lower('de_metas_acct'))
+);
+
+DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;
