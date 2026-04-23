@@ -139,26 +139,40 @@ import java.util.Set;
 
 	public I_C_Order createAndComplete()
 	{
-		final I_C_Order order = orderFactory.createAndComplete();
+		return create(true);
+	}
 
-		purchaseItem2OrderLine
-				.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+	/**
+	 * Creates a purchase order from the accumulated candidates.
+	 *
+	 * @param complete if {@code true}, the C_Order is created and immediately completed (DocStatus=CO);
+	 *                 if {@code false}, only a draft order is created (DocStatus=DR).
+	 *                 Corresponds to {@code PP_Product_Planning.IsDocComplete}.
+	 */
+	public I_C_Order create(final boolean complete)
+	{
+		final I_C_Order order = complete
+				? orderFactory.createAndComplete()
+				: orderFactory.createDraft();
 
-		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
-		if (userIdsToNotify.isEmpty())
+		purchaseItem2OrderLine.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+
+		if (complete)
 		{
-			return order;
+			final Set<UserId> userIdsToNotify = getUserIdsToNotify();
+			if (!userIdsToNotify.isEmpty())
+			{
+				final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
+
+				final NotificationRequest request = NotificationRequest.builder()
+						.order(order)
+						.recipientUserIds(userIdsToNotify)
+						.adMessageAndParams(adMessageAndParams)
+						.build();
+
+				userNotifications.notifyOrderCompleted(request);
+			}
 		}
-
-		final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
-
-		final NotificationRequest request = NotificationRequest.builder()
-				.order(order)
-				.recipientUserIds(userIdsToNotify)
-				.adMessageAndParams(adMessageAndParams)
-				.build();
-
-		userNotifications.notifyOrderCompleted(request);
 
 		return order;
 	}

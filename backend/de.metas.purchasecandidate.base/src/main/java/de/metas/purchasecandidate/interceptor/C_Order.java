@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate.interceptor;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -42,6 +43,20 @@ public class C_Order
 	@Autowired
 	private PurchaseCandidateRepository purchaseCandidateRepo;
 
+	/**
+	 * On sales-order completion (including re-completion after reactivation), enqueue any manual
+	 * {@code C_PurchaseCandidate} records tied to this sales order for automatic purchase-order generation.
+	 * <p>
+	 * Candidates are grouped by their matching {@code PP_Product_Planning.IsDocComplete} flag so that each
+	 * resulting purchase order gets created either as draft ({@code IsDocComplete=N}) or completed
+	 * ({@code IsDocComplete=Y}) per the product-planning configuration — instead of being blanket-completed
+	 * regardless of setup.
+	 * <p>
+	 * Fixes <a href="https://github.com/metasfresh/me03/issues/29155">me03#29155</a> /
+	 * <a href="https://github.com/metasfresh/mf15/issues/4039">mf15#4039</a>: previously the 1-arg
+	 * {@code enqueue(ids)} overload was used, which hard-coded {@code isCompleteDoc=true} — on SO
+	 * reactivation this would auto-complete purchase orders that the planning said should stay as drafts.
+	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void scheduleCreatePurchaseOrderFromPurchaseCandidates(final I_C_Order order)
 	{
@@ -51,12 +66,18 @@ public class C_Order
 		}
 
 		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
-		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderId);
-		if (purchaseCandidateIds.isEmpty())
-		{
-			return;
-		}
+		final Map<Boolean, Set<PurchaseCandidateId>> candidatesByIsDocComplete =
+				purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdGroupedByIsDocComplete(salesOrderId);
 
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+		for (final Map.Entry<Boolean, Set<PurchaseCandidateId>> entry : candidatesByIsDocComplete.entrySet())
+		{
+			final Set<PurchaseCandidateId> ids = entry.getValue();
+			if (ids.isEmpty())
+			{
+				continue;
+			}
+			final boolean isCompleteDoc = entry.getKey();
+			C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(ids, /* docTypeId= */ null, isCompleteDoc);
+		}
 	}
 }
