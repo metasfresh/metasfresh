@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,5 +52,6 @@ public interface PurchaseOrderProjectListener
 	{
 		@NonNull ProjectId projectId;
 		@NonNull Set<OrderAndLineId> purchaseOrderLineIds;
+		@NonNull UserId byUserId;
 	}
 }

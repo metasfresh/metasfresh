@@ -134,20 +134,18 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "repoId": 40
         },
         "locationType": {
-          "billTo": false,
-          "billToDefault": false,
-          "shipTo": false,
-          "shipToDefault": false,
-          "visitorsAddress": false,
-          "visitorsAddressDefault": false
+          "billTo": true,
+          "billToDefault": true,
+          "shipTo": true,
+          "shipToDefault": true,
+          "visitorsAddress": true,
+          "visitorsAddressDefault": true
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10

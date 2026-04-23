@@ -127,7 +127,6 @@ public class FactAcctBalanceMacher
 		{
 			final ProductId actualProductId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
 			final ProductId expectedProductId = productId.orElse(null);
-			//noinspection RedundantIfStatement
 			if (!ProductId.equals(actualProductId, expectedProductId))
 			{
 				return false;

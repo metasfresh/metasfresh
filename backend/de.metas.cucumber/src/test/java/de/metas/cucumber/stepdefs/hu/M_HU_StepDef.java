@@ -954,11 +954,12 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void validateHUStorage(@NonNull final DataTableRow row)
+	private void validateHUStorage(final DataTableRow row)
 	{
-		final HuId huId = huTable.getId(row.getAsIdentifier(COLUMNNAME_M_HU_ID));
-		final I_M_Product productRecord = productTable.get(row.getAsIdentifier(COLUMNNAME_M_Product_ID));
-
+		final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+		assertThat(huId).isNotNull();
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
 		final Optional<I_M_HU_Storage> huStorageRecord = getSingleHUStorageRecord(huId);
 
 		final String qty = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Qty);

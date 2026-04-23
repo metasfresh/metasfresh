@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -41,6 +42,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
@@ -55,6 +57,8 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -123,7 +127,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull Class<T> type)
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull final Class<T> type)
 	{
 		return bpartnersRepo.getById(bpartnerId, type);
 	}
@@ -966,5 +970,75 @@ public class BPartnerBL implements IBPartnerBL
 	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> bpartnerLocationIds)
 	{
 		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
+	}
+
+	@Nullable
+	@Override
+	public I_AD_User retrieveContact(
+			final Properties ctx,
+			final int bpartnerId,
+			final boolean isSOTrx,
+			final String trxName)
+	{
+		return bpartnersRepo.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final IBPartnerDAO.BPartnerLocationQuery query)
+	{
+		return bpartnersRepo.retrieveBPartnerLocation(query);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
+	{
+		return bpartnersRepo.getContactLocationEmail(contactId);
+	}
+
+	@Nullable
+	@Override
+	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+	}
+
+	@Nullable
+	@Override
+	public ShipperId getEffectiveShipperId(@Nullable final BPartnerLocationId bPartnerDropShipLocationId,
+										   @NonNull final BPartnerLocationId bPartnerLocationId)
+	{
+		if (bPartnerDropShipLocationId != null)
+		{
+			return CoalesceUtil.coalesceSuppliers(
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerDropShipLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerDropShipLocationId.getBpartnerId()),
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
+			);
+		}
+		else
+		{
+			return CoalesceUtil.coalesceSuppliers(
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
+			);
+		}
+
 	}
 }

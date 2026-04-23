@@ -12,6 +12,7 @@ import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { test } from '../../../../playwright.config';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityErrorPanel';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -228,6 +229,13 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
+        await page.locator('#last-confirm-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await ConfirmActivityErrorPanel.waitForPanel();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

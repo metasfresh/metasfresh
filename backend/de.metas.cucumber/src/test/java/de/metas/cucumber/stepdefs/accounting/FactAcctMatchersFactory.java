@@ -3,9 +3,11 @@ package de.metas.cucumber.stepdefs.accounting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.vatcode.VATCode;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -39,6 +41,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
@@ -84,6 +87,7 @@ public class FactAcctMatchersFactory
 				.qty(row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
 				.documentRef(documentRef)
 				.taxId(extractTaxId(row))
+				.vatCode(extractVatCode(row))
 				.bpartnerId(extractBPartnerId(row))
 				.productId(extractProductId(row))
 				.invoiceId(extractInvoiceId(row))
@@ -147,13 +151,43 @@ public class FactAcctMatchersFactory
 			return Optional.empty();
 		}
 
-		final TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
+		TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
 		if (taxId != null)
 		{
 			return Optional.of(taxId);
 		}
 
-		return Optional.of(identifier.getAsId(TaxId.class));
+		taxId = taxDAO.getIdByName(identifier.getAsString(), StepDefConstants.CLIENT_ID).orElse(null);
+		if (taxId != null)
+		{
+			return Optional.of(taxId);
+		}
+
+		taxId = identifier.getAsId(TaxId.class);
+		return Optional.of(taxId);
+	}
+
+	/**
+	 * Resolves the expected {@code C_VAT_Code_ID} identifier to {@link VATCode#getCode()} via
+	 * {@link C_VAT_Code_StepDefData}, mirroring
+	 * {@code de.metas.cucumber.stepdefs.tax_declaration.TaxReportRowMatcher#vatCodeMatches}.
+	 * Returns {@code null} (skip matching) if the column is absent, {@code Optional.empty()} for the
+	 * null placeholder ({@code -} / {@code null}), or {@code Optional.of(code)} otherwise.
+	 */
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
+	private Optional<String> extractVatCode(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_VAT_Code_ID").orElse(null);
+		if (identifier == null)
+		{
+			return null;
+		}
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+		return Optional.of(vatCodeTable.get(identifier).getCode());
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")

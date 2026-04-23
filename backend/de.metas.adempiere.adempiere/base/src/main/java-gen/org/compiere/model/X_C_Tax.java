@@ -225,9 +225,21 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public java.lang.String getIsFiscalRepresentation() 
+	public java.lang.String getIsFiscalRepresentation()
 	{
 		return get_ValueAsString(COLUMNNAME_IsFiscalRepresentation);
+	}
+
+	@Override
+	public void setIsReverseCharge (final boolean IsReverseCharge)
+	{
+		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
+	}
+
+	@Override
+	public boolean isReverseCharge()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
 	}
 
 	@Override

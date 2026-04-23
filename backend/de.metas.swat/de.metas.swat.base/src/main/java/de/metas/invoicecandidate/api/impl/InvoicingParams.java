@@ -90,6 +90,12 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		return params.getParameterAsLocalDate(PARA_OverrideDueDate);
+	}
+
+	@Override
 	public BigDecimal getCheck_NetAmtToInvoice()
 	{
 		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);

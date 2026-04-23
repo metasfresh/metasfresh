@@ -153,8 +153,6 @@ public class BPartnerLocation
 	final private boolean remitTo;
 	final private boolean handOverLocation;
 	final private boolean replicationLookupDefault;
-	final private boolean visitorsAddress;
-	final private boolean visitorsAddressDefault;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -198,9 +196,7 @@ public class BPartnerLocation
 			@Nullable final VATIdentifier vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
-			@Nullable final Boolean replicationLookupDefault,
-			@Nullable final Boolean visitorsAddress,
-			@Nullable final Boolean visitorsAddressDefault)
+			@Nullable final Boolean replicationLookupDefault)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -247,9 +243,6 @@ public class BPartnerLocation
 		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
 
 		this.remitTo = remitTo != null ? remitTo : false;
-
-		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
-		this.visitorsAddressDefault = visitorsAddressDefault != null ? visitorsAddressDefault : false;
 	}
 
 	public BPartnerLocation deepCopy()
