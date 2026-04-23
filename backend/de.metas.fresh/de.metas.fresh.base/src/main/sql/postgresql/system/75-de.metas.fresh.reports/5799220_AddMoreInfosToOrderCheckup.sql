@@ -1,3 +1,92 @@
+drop view if exists report.RV_C_Order_MFGWarehouse_Report_Header;
+create or replace view report.RV_C_Order_MFGWarehouse_Report_Header
+AS
+SELECT
+	o.AD_Org_ID,
+	o.DocStatus,
+	dt.PrintName,
+	bpl.C_BPartner_Location_ID,
+	--
+	-- Filtering columns
+	report.C_Order_MFGWarehouse_Report_ID,
+	report.DocumentType as ReportDocumentType,
+	o.C_Order_ID,
+	report.M_Warehouse_ID,
+	report.PP_Plant_ID,
+	o.C_BPartner_ID,
+	o.DatePromised,
+	o.email
+FROM
+	C_Order_MFGWarehouse_Report report
+	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
+	--
+	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	-- Get BPartner Location
+	LEFT OUTER JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_ID =
+	(
+		SELECT First_Agg (C_BPartner_Location_ID::Text ORDER BY IsBillToDefault DESC, IsBillTo DESC)
+		FROM C_BPartner_Location sub_bpl WHERE sub_bpl.C_BPartner_ID = o.C_BPartner_ID AND sub_bpl.isActive = 'Y'
+	)::Numeric AND bpl.isActive = 'Y'
+WHERE true
+	AND report.IsActive='Y'
+;
+
+
+
+
+drop view if exists report.RV_C_Order_MFGWarehouse_Report_Description;
+create or replace view report.RV_C_Order_MFGWarehouse_Report_Description
+AS
+SELECT
+	o.POReference as POReference,
+	bp.value as bpValue,
+    COALESCE(srgr.name, '') ||
+    COALESCE(' ' || srep.title, '') ||
+    COALESCE(' ' || srep.firstName, '') ||
+    COALESCE(' ' || srep.lastName, '')    AS sr_name,
+	trim( Coalesce(cogr.name,  '') ||
+	Coalesce(' ' || cont.title, '') ||
+	Coalesce(' ' || cont.firstName, '') ||
+	Coalesce(' ' || cont.lastName, '') ) as cont_name,
+	cont.phone	as cont_phone,
+	cont.fax	as cont_fax,
+	bpl.address as HandOverLocation,
+	bpl.Name as HandOverLocationName,
+	o.PreparationDate,
+	o.DocumentNo as document_no,
+	wh.Name as WarehouseName,
+	plant.Name as PlantName,
+	(select rl.Name from AD_Ref_List rl where rl.AD_Reference_ID=540574 and rl.Value=report.DocumentType AND rl.isActive = 'Y') as ReportDocumentTypeName,
+	--
+	-- Filtering columns
+	report.C_Order_MFGWarehouse_Report_ID,
+	report.DocumentType as ReportDocumentType,
+	o.C_Order_ID,
+	report.M_Warehouse_ID,
+	report.PP_Plant_ID,
+	o.C_BPartner_ID,
+	o.DatePromised,
+    o.billtoaddress,
+    o.description
+FROM
+	C_Order_MFGWarehouse_Report report
+	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID)
+	--
+	LEFT OUTER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID
+	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID
+    LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
+	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID
+	-- HandOverLocation
+	LEFT OUTER JOIN C_BPartner_Location bpl	ON o.HandOver_Location_ID = bpl.C_BPartner_Location_ID
+	-- Translatables
+	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID
+	--
+	LEFT OUTER JOIN M_Warehouse wh on (wh.M_Warehouse_ID=report.M_Warehouse_ID)
+	LEFT OUTER JOIN S_Resource plant on (plant.S_Resource_ID=report.PP_Plant_ID)
+WHERE true
+;
+
+
 DROP VIEW IF EXISTS report.RV_C_Order_MFGWarehouse_Report_Details
 ;
 
