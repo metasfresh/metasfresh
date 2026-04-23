@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
@@ -189,18 +190,24 @@ public class AllocatePayments_StepDef
 			final StepDefDataIdentifier allocIdentifier = row.getAsIdentifier("C_AllocationHdr_ID");
 			final I_C_Payment payment = paymentTable.get(row.getAsIdentifier(COLUMNNAME_C_Payment_ID));
 
-			final I_C_AllocationLine allocLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+			final List<I_C_AllocationLine> allocLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
 					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
 					.addOnlyActiveRecordsFilter()
 					.orderBy(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID)
 					.create()
-					.first();
+					.list();
 
-			assertThat(allocLine)
-					.as("Expected exactly one active C_AllocationLine carrying payment C_Payment_ID=%s", payment.getC_Payment_ID())
-					.isNotNull();
+			final ImmutableSet<Integer> distinctHdrIds = allocLines.stream()
+					.map(I_C_AllocationLine::getC_AllocationHdr_ID)
+					.collect(ImmutableSet.toImmutableSet());
 
-			final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(allocLine.getC_AllocationHdr_ID(), I_C_AllocationHdr.class);
+			assertThat(distinctHdrIds)
+					.as("Expected exactly one C_AllocationHdr linked to payment C_Payment_ID=%s via its C_AllocationLine(s). "
+							+ "Found %s distinct hdr id(s) across %s allocation line(s): %s",
+							payment.getC_Payment_ID(), distinctHdrIds.size(), allocLines.size(), distinctHdrIds)
+					.hasSize(1);
+
+			final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(distinctHdrIds.iterator().next(), I_C_AllocationHdr.class);
 			allocationHdrTable.putOrReplace(allocIdentifier, hdr);
 		});
 	}
