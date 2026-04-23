@@ -107,7 +107,7 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | 1     | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
       | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
       | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
-      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1190    | customer      | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1190 EUR | customer     | invoice    |
       | ReCap | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
 
 
@@ -842,8 +842,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | 2     | sales19       | T_Due_Acct            | 1000       | 190        |        |        |          | -             | -          |
       | 3     | purchase19    | T_Credit_Acct         | 1000       | 190        |        |        |          | -             | -          |
       | 3     | sales19       | T_Due_Acct            | 1000       | 190        |        |        |          | -             | -          |
-      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | 1000     | vendor        | invoice    |
-      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | 1000     | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | 1000   | 190    | 1000 EUR | vendor        | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | 1000   | 190    | 1000 EUR | vendor        | invoice    |
       | ReCap | purchase19    |                       | 1000       | 190        |        |        |          | -             | -          |
       | ReCap | sales19       |                       | 1000       | 190        |        |        |          | -             | -          |
 
@@ -913,8 +913,8 @@ Feature: Tax Accounting Report ("Mehrwertsteuer-Verprobung 3")
       | 2     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
       | 3     | purchase19    | T_Credit_Acct         | -1000      | -190       |        |        |          | -             | -          |
       | 3     | sales19       | T_Due_Acct            | -1000      | -190       |        |        |          | -             | -          |
-      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | -1000    | vendor        | invoice    |
-      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1000    | vendor        | invoice    |
+      | 4     | purchase19    | T_Credit_Acct         |            |            | -1000  | -190   | -1000 EUR | vendor       | invoice    |
+      | 4     | sales19       | T_Due_Acct            |            |            | -1000  | -190   | -1000 EUR | vendor       | invoice    |
       | ReCap | purchase19    |                       | -1000      | -190       |        |        |          | -             | -          |
       | ReCap | sales19       |                       | -1000      | -190       |        |        |          | -             | -          |
 
