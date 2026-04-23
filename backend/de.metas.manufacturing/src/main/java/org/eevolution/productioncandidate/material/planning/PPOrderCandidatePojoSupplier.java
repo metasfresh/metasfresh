@@ -187,7 +187,8 @@ public class PPOrderCandidatePojoSupplier
 
 	// `now` is truncated to day precision: durationDays is whole-day-granular, and
 	// sub-day wall-clock jitter otherwise leaks into C_Aggregation keys that include
-	// DateStartSchedule, preventing same-day candidates from merging.
+	// DateStartSchedule (or DatePromised, which in the overdue branch is today+durationDays),
+	// preventing same-day candidates from merging.
 	@NonNull
 	static PlanningDates computePlanningDates(@NonNull final Instant demandDate, final int durationDays, @NonNull final Instant now)
 	{

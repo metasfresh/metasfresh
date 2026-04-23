@@ -73,4 +73,22 @@ class PPOrderCandidatePojoSupplierTest
 		assertThat(result.getDatePromised()).isEqualTo(demandDate);
 		assertThat(result.getDateStartSchedule()).isEqualTo(Instant.parse("2026-05-12T21:00:00Z"));
 	}
+
+	/**
+	 * Boundary: {@code demandDate.minus(durationDays, DAYS)} is exactly today (at UTC midnight).
+	 * The {@code isBefore} check is strictly {@code <}, so this case takes the forward-planned (else) branch
+	 * and the demand date is preserved unchanged.
+	 */
+	@Test
+	void boundary_demandDateMinusDurationEqualsToday_takesForwardPlannedBranch()
+	{
+		final Instant demandDate = Instant.parse("2026-04-23T00:00:00Z");
+		final int durationDays = 2;
+		final Instant now = Instant.parse("2026-04-21T14:30:00.123Z");
+
+		final PlanningDates result = computePlanningDates(demandDate, durationDays, now);
+
+		assertThat(result.getDatePromised()).isEqualTo(demandDate);
+		assertThat(result.getDateStartSchedule()).isEqualTo(Instant.parse("2026-04-21T00:00:00Z"));
+	}
 }
