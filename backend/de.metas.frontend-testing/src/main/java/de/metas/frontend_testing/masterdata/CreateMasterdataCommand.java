@@ -28,6 +28,7 @@ import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateComman
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
+import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
@@ -56,6 +57,11 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+/**
+ * @implNote This class is intentionally kept as a thin orchestrator — it routes to dedicated command classes
+ * and must NOT contain business logic. All domain logic (validation, resolution, defaulting) belongs in the
+ * respective command classes (e.g., {@link ApplyUOMStdPrecisionsCommand}, {@link CreateProductCommand}).
+ */
 @Builder
 public class CreateMasterdataCommand
 {
@@ -154,6 +160,7 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
 	{
+		ApplyUOMStdPrecisionsCommand.of(request.getUoms(), request.getProducts()).execute();
 		return process(request.getProducts(), this::createProduct);
 	}
 
