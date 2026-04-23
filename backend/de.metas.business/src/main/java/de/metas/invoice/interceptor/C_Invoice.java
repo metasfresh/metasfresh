@@ -12,6 +12,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.due_date.InvoiceDueDateProviderService;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
@@ -62,6 +63,7 @@ public class C_Invoice // 03771
 {
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -451,6 +453,20 @@ public class C_Invoice // 03771
 					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID())
 					.setParameter("C_Order_ID", invoiceLine.getC_Order_ID())
 					.setParameter("M_InOutLine_ID", invoiceLine.getM_InOutLine_ID());
+		}
+	}
+
+	/**
+	 * This shall set the Due Date in the invoice considering payment term or contracts, but only if the due date was not set previously
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
+	public void setDueDate(final I_C_Invoice invoice)
+	{
+		if (invoice.getDueDate() == null)
+		{
+			final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+			invoice.setDueDate(TimeUtil.asTimestamp(dueDate));
+			InterfaceWrapperHelper.save(invoice);
 		}
 	}
 }

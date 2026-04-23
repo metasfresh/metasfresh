@@ -56,4 +56,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermId getOrCreateDerivedPaymentTerm(
 			@Nullable PaymentTermId basePaymentTermId,
 			@Nullable Percent discount);
+
+	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
 }
