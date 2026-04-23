@@ -86,6 +86,19 @@ public class C_PurchaseCandidate_Alloc_StepDef
 	 * Asserts that no {@code C_PurchaseCandidate_Alloc} records exist for the given purchase candidates.
 	 * Use this after draining the async queue (e.g. "wait until de.metas.material rabbitMQ queue is empty")
 	 * to confirm that no C_Order was auto-generated (e.g. when {@code PP_Product_Planning.IsCreatePlan=N}).
+	 * <p>
+	 * Required DataTable columns:
+	 * <ul>
+	 * <li>{@code C_PurchaseCandidate_ID.Identifier} — the purchase candidate to assert on (resolved from
+	 *     {@link C_PurchaseCandidate_StepDefData})</li>
+	 * </ul>
+	 * Example usage:
+	 * <pre>{@code
+	 * And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+	 * And no C_PurchaseCandidate_Alloc are found for:
+	 *   | C_PurchaseCandidate_ID.Identifier |
+	 *   | pc_1                              |
+	 * }</pre>
 	 */
 	@And("no C_PurchaseCandidate_Alloc are found for:")
 	public void assertNoC_PurchaseCandidate_Alloc(@NonNull final DataTable dataTable)

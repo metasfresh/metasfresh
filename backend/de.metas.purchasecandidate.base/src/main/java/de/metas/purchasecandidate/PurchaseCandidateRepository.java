@@ -61,8 +61,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -111,6 +109,7 @@ public class PurchaseCandidateRepository
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
 			@Nullable final OrderLineId purchaseOrderLineId)
@@ -245,24 +244,25 @@ public class PurchaseCandidateRepository
 			return ImmutableMap.of();
 		}
 
-		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-		final Map<Boolean, Set<PurchaseCandidateId>> result = new HashMap<>();
-		for (final I_C_PurchaseCandidate candidate : candidateRecords)
-		{
-			final ProductPlanningQuery query = ProductPlanningQuery.builder()
-					.orgId(OrgId.ofRepoIdOrAny(candidate.getAD_Org_ID()))
-					.warehouseId(WarehouseId.ofRepoIdOrNull(candidate.getM_WarehousePO_ID()))
-					.productId(ProductId.ofRepoIdOrNull(candidate.getM_Product_ID()))
-					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(candidate.getM_AttributeSetInstance_ID()))
-					.build();
-			// If no planning matches, default to isDocComplete=true (matches the pre-fix behavior for defensiveness).
-			final boolean isDocComplete = productPlanningDAO.find(query)
-					.map(ProductPlanning::isDocComplete)
-					.orElse(true);
-			result.computeIfAbsent(isDocComplete, k -> new HashSet<>())
-					.add(PurchaseCandidateId.ofRepoId(candidate.getC_PurchaseCandidate_ID()));
-		}
-		return result;
+		return candidateRecords.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						this::resolveIsDocComplete,
+						candidate -> ImmutableSet.<PurchaseCandidateId>of(PurchaseCandidateId.ofRepoId(candidate.getC_PurchaseCandidate_ID())),
+						(a, b) -> ImmutableSet.<PurchaseCandidateId>builder().addAll(a).addAll(b).build()));
+	}
+
+	private boolean resolveIsDocComplete(@NonNull final I_C_PurchaseCandidate candidate)
+	{
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(OrgId.ofRepoIdOrAny(candidate.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(candidate.getM_WarehousePO_ID()))
+				.productId(ProductId.ofRepoIdOrNull(candidate.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(candidate.getM_AttributeSetInstance_ID()))
+				.build();
+		// If no planning matches, default to isDocComplete=true (matches the pre-fix behavior for defensiveness).
+		return productPlanningDAO.find(query)
+				.map(ProductPlanning::isDocComplete)
+				.orElse(true);
 	}
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
