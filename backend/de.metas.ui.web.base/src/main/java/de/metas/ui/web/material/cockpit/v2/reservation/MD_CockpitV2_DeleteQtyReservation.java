@@ -1,6 +1,7 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.qty_reservation.DeleteQtyReservationRequest;

@@ -69,6 +69,9 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # this is ignored to prevent pusing debug snapshots
  **/*.snap.debug
 
+# environment files (may contain secrets or local overrides)
+**/.env
+
 # github related
 .github/merge_to_master
 .github/integrate
@@ -79,9 +82,10 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/CLAUDE.md.backup
 .mcp.json
 **/claude-docs
+**/REVIEW.md
 /docs/
 
-.m2-local
+
 
 # dev-mode artifacts extracted from CI images
 .dev-artifacts/
@@ -92,4 +96,7 @@ nul
 
 /mcp-scripts/**/*
 
-/REVIEW.md
+**/allure-results/**/*
+**/playwright-report/**/*
+**/test-results/**/*
+docker-builds/e2e-tests/.env

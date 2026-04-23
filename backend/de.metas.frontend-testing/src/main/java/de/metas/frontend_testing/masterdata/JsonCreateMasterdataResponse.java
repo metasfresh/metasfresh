@@ -13,7 +13,11 @@ import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
+import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
+import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
@@ -32,7 +36,9 @@ import java.util.Map;
 public class JsonCreateMasterdataResponse
 {
 	@Nullable Map<String, Object> context;
-	
+
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> previousSysconfigs;
+
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
@@ -47,6 +53,10 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
+	@NonNull Map<String, JsonPurchaseOrderCreateResponse> purchaseOrders;
+	@Nullable Map<String, JsonShipmentCreateResponse> shipments;
+	@Nullable Map<String, JsonReceiptCreateResponse> receipts;
+	@Nullable Map<String, JsonInvoiceCreateResponse> invoices;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
 	@Nullable Map<String, JsonInventoryResponse> inventories;

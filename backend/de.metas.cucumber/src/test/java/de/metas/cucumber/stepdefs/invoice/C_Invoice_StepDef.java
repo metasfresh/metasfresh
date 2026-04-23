@@ -144,6 +144,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
@@ -196,6 +197,10 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 * </ul>
+	 * <p>
+	 * me03#29366: Added validation for {@code DueDate} — the persisted due date populated
+	 * on completion. Pin tests directly on this column so a regression surfaces at the
+	 * invoice step, not three steps later in dunning.
 	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -489,6 +494,15 @@ public class C_Invoice_StepDef
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
+				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DueDate)
+				.ifPresent(dueDate -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDueDate(), zoneId))
+							.as("DueDate for Identifier=%s", identifierStr)
+							.isEqualTo(dueDate);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)

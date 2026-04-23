@@ -109,6 +109,7 @@ public class M_InOut_Line_StepDef
 	private void loadAndValidateAInOutLine(final DataTableRow row)
 	{
 		final I_M_InOutLine inoutLine = loadInOutLine(row);
+		SharedTestContext.put("inoutLine", inoutLine);
 		validateInOutLine(inoutLine, row);
 	}
 
@@ -145,10 +146,22 @@ public class M_InOut_Line_StepDef
 				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
+		// When multiple lines exist for the same product (e.g. one shipment line per reservation with different attributes),
+		// movementqty can be used as an additional filter to uniquely identify a line.
+		row.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
+				.ifPresent(movementQty -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, movementQty));
 
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
 
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).ifPresent(inoutLineIdentifier -> inoutLineTable.putOrReplace(inoutLineIdentifier, inoutLine));
+
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID).ifPresent(asiIdentifier -> {
+			if (inoutLine.getM_AttributeSetInstance_ID() > 0)
+			{
+				final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.load(inoutLine.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+				asiTable.putOrReplace(asiIdentifier, asi);
+			}
+		});
 
 		return inoutLine;
 	}

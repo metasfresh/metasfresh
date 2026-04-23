@@ -61,6 +61,10 @@ public class C_Invoice_InOutCostsView_Launcher extends JavaProcess implements IP
 
 		final InvoiceId invoiceId = context.getSingleSelectedRecordId(InvoiceId.class);
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		if (!invoice.isFinancial())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only financial invoices");
+		}
 		if (!DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()).isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed invoices");

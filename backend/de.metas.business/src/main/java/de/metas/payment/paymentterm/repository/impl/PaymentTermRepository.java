@@ -243,4 +243,10 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
 	}
+
+	@Override
+	public boolean isAllowOverrideDueDate(@NonNull final PaymentTermId paymentTermId)
+	{
+		return getById(paymentTermId).isAllowOverrideDueDate();
+	}
 }

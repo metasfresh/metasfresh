@@ -14,7 +14,7 @@ SELECT
 	, i.GrandTotal*i.MultiplierAP AS GrandTotal
 	, invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID)*MultiplierAP AS OpenAmt
 	, i.DateInvoiced
-	, COALESCE(ips.DueDate, paymentTermDueDate(i.C_PaymentTerm_ID,i.DateInvoiced)) AS DueDate
+	, COALESCE(ips.DueDate, i.DueDate) AS DueDate
 	, i.C_PaymentTerm_ID
 	-- , COALESCE(daysBetween(?,ips.DueDate), paymentTermDueDays(i.C_PaymentTerm_ID,i.DateInvoiced,?)) AS DaysDue
 	, i.IsInDispute

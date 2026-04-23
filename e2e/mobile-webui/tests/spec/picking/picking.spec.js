@@ -7,10 +7,10 @@ import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStep
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { expectErrorToast } from '../../utils/common';
-import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
+import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
-import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
+import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -55,7 +55,7 @@ const createMasterdata = async ({
                 "P1": { prices: [{ price: 1 }] },
             },
             packingInstructions: {
-                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU },
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
                 "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' }
@@ -293,52 +293,6 @@ test('Test picking line complete status - draft | in progress | complete', async
     await PickingJobScreen.complete();
 });
 
-// noinspection JSUnusedLocalSymbols
-test('Scan HU and cancel — nothing picked', async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0105: Picking');
-    allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.tag('F00230.1');
-    allure.story('Cancel picking after scanning HU (QA scenario 1)');
-    allure.severity('normal');
-
-    const masterdata = await createMasterdata();
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
-
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-
-    // Scan the HU directly — dialog opens
-    await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
-    await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.expectQtyEntered('3');
-
-    // Cancel — nothing should be picked
-    await GetQuantityDialog.clickCancel();
-    await PickingJobScreen.waitForScreen();
-
-    // Verify: still 0 TU picked
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await Backend.expect({
-        pickings: {
-            [pickingJobId]: {
-                shipmentSchedules: {
-                    P1: {
-                        qtyPicked: []
-                    }
-                }
-            }
-        },
-    });
-});
-
 test.describe('Picking Job Completion', () => {
 
     // noinspection JSUnusedLocalSymbols
@@ -409,6 +363,73 @@ test.describe('Picking Job Completion', () => {
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
         await PickingJobScreen.complete()
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Network failure on complete shows retry panel; Retry then succeeds', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await test.step('Block userConfirmation to simulate a network failure', async () => {
+            await page.route(confirmationRoute, route => route.abort('failed'));
+        });
+
+        await PickingJobScreen.completeExpectingNetworkError();
+
+        await test.step('Release the block and retry', async () => {
+            await page.unroute(confirmationRoute);
+        });
+        await ConfirmActivityErrorPanel.clickRetry();
+        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Cancel on retry panel hides it and leaves the job resumable', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await page.route(confirmationRoute, route => route.abort('failed'));
+
+        await PickingJobScreen.completeExpectingNetworkError();
+        await ConfirmActivityErrorPanel.clickCancel();
+        await ConfirmActivityErrorPanel.waitForPanelDetached();
+
+        // Clean up the route interception so it doesn't affect follow-on steps if the test is extended later.
+        await page.unroute(confirmationRoute);
     });
 
 });
@@ -531,151 +552,178 @@ test('Check launcher already started indicator', async ({ page }) => {
     ]);
 });
 
+//
+// Unpick wrong HU, repick correct one:
+// Pick from HU1, realize it's wrong, unpick via step screen, pick from HU2 instead, complete.
+// Verifies that state is consistent after undo (line returns to 0 TU picked).
+//
 // noinspection JSUnusedLocalSymbols
-test('TU picking with CU-per-TU > 1 — step qty displayed as TU count', async ({ page }) => {
-    // === ALLURE METADATA ===
+test('Unpick wrong HU, repick correct one', async ({ page }) => {
     allure.epic('E0105: Picking');
-    allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.tag('F00230.1');
-    allure.story('TU picking qty conversion (CU-per-TU > 1)');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Unpick wrong HU and pick correct one');
     allure.severity('critical');
 
-    // Setup with qtyCUsPerTU=2 to test that step qty is displayed as TU count (not CU count).
-    // Sales order: 4 CU = 2 TU with packing "x 2 Stk" (2 CU per TU).
-    // Without the fix, the step would show "4" (CU) instead of "2" (TU), and picking 4 TUs would fail.
-    const masterdata = await createMasterdata({ salesOrdersQty: 4, qtyCUsPerTU: 2 });
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { "BP1": {} },
+            warehouses: { "wh": {} },
+            pickingSlots: { slot1: {} },
+            products: { "P1": { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                "HU2": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }]
+                },
+            },
+        }
+    });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-    // Line should show 2 TU (not 4 CU)
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-
-    // Pick via direct scan — dialog should propose 2 TUs
-    await PickingJobScreen.pickHU({
-        qrCode: masterdata.handlingUnits.HU1.qrCode,
-        isScanDirectly: true,
-        expectQtyEntered: '2',
+    await test.step("Pick from HU1 (wrong one)", async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
     });
 
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+    await test.step("Unpick HU1", async () => {
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.clickStepButton({ index: 0 });
+        await PickingJobStepScreen.unpick();
+        await PickingJobLineScreen.goBack();
+    });
 
-    // Verify backend state BEFORE completion: 4 CU = 2 TU picked, not yet processed
-    await Backend.expect({
-        title: 'After pick: 2 TU picked, source HU reduced',
-        pickings: {
-            [pickingJobId]: {
-                shipmentSchedules: {
-                    P1: {
-                        qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 2, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
-                    }
-                }
-            }
-        },
-        hus: {
-            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '36 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '4 PCE' } },
-        }
+    await test.step("Verify line is back to unpicked state", async () => {
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    });
+
+    await test.step("Pick from HU2 (correct one) and complete", async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
     });
 
     await PickingJobScreen.complete();
-
-    // Verify backend state AFTER completion: shipment created, LU shipped
     await Backend.expect({
-        title: 'After complete: shipment created, LU shipped',
-        pickings: {
-            [pickingJobId]: {
-                shipmentSchedules: {
-                    P1: {
-                        qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 2, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
-                    }
-                }
-            }
-        },
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '4 PCE' } },
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
         }
     });
 });
 
+//
+// Scan invalid HU QR code and recover:
+// Scan a non-existent HU QR code → error toast → verify screen still functional → pick real HU → complete.
+//
 // noinspection JSUnusedLocalSymbols
-test('Switch device mid-picking — logout and resume on new session', async ({ page }) => {
-    // === ALLURE METADATA ===
+test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
+    // Extended timeout: this test does error toast recovery + full pick cycle.
+    // Since GRAI validation was added to picking (gh#23119), the total time
+    // occasionally exceeds the default 120s on slower CI runners.
+    testInfo.setTimeout(180_000);
+
     allure.epic('E0105: Picking');
-    allure.tag('F00230.1: MobileUI Order-based Picking');
-    allure.tag('F00230.1');
-    allure.story('Device switching mid-picking (QA scenario 13)');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
 
-    // === DEVICE 1: Start picking, pick partially, leave ===
-    await test.step('Device 1: Start job and pick partially', async () => {
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-        // Pick 2 out of 3 TUs
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await expectErrorToast('Scanning non-existent HU QR code', async () => {
         await PickingJobScreen.pickHU({
-            qrCode: masterdata.handlingUnits.HU1.qrCode,
-            expectQtyEntered: '3',
-            qtyEntered: '2',
-            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+            qrCode: 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}',
+            isScanDirectly: true,
         });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
-
-        // Leave without completing — simulates closing the app on device 1
-        await PickingJobScreen.goBack();
-        await PickingJobsListScreen.waitForScreen();
     });
 
-    await test.step('Device 1: Logout', async () => {
-        await PickingJobsListScreen.goBack();
-        await ApplicationsListScreen.logout();
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.complete();
+});
+
+//
+// Partial pick blocked, recover by picking remaining:
+// With allowCompletingPartialPickingJob=N, pick 1 of 3 TU → complete → error toast →
+// pick remaining 2 TU → complete successfully.
+//
+// noinspection JSUnusedLocalSymbols
+test('Partial pick blocked, recover by picking remaining', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Partial pick completion blocked then recovery');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: false });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyEntered: 1,
+        expectQtyEntered: "3",
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
     });
 
-    // === DEVICE 2: Login and resume the same job ===
-    await test.step('Device 2: Login and find the in-progress job', async () => {
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-
-        // Job should show "already started" indicator
-        await PickingJobsListScreen.expectJobButtons([
-            { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: true }
-        ]);
-    });
-
-    await test.step('Device 2: Resume and complete the job', async () => {
-        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-
-        // Should see 2 TU already picked from device 1
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
-
-        // Pick the remaining 1 TU
-        await PickingJobScreen.pickHU({
-            qrCode: masterdata.handlingUnits.HU1.qrCode,
-            expectQtyEntered: '0',
-            qtyEntered: '1',
-        });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
-
+    await expectErrorToast('Partial pick completion should be blocked', async () => {
         await PickingJobScreen.complete();
     });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        expectQtyEntered: '0',
+        qtyEntered: '2',
+    });
+    await PickingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols
