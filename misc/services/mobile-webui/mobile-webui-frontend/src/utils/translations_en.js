@@ -152,11 +152,6 @@ const translations = {
       },
       abort: 'Abort',
       notFound: 'Not found',
-      error: {
-        title: 'Could not send confirmation',
-        retry: 'Retry',
-        cancel: 'Cancel',
-      },
     },
     mfg: {
       ProductName: 'Product Name',
