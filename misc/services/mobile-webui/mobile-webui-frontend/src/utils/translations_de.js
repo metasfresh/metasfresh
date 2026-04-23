@@ -155,11 +155,6 @@ const translations = {
       },
       abort: 'Rückgängig',
       notFound: 'Nicht gefunden',
-      error: {
-        title: 'Bestätigung konnte nicht gesendet werden',
-        retry: 'Erneut senden',
-        cancel: 'Abbrechen',
-      },
     },
     mfg: {
       ProductName: 'Produkt',
