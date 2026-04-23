@@ -53,6 +53,7 @@ class TaxReportRow
 	@Nullable String taxName;
 	@Nullable Amount taxAmt;
 	@Nullable Amount netAmt;
+	@Nullable Amount totalAmt;
 	@Nullable Amount taxAmtSum;
 	@Nullable Amount netAmtSum;
 	@Nullable String documentNo;
