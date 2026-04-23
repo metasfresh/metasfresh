@@ -130,11 +130,10 @@ FROM (SELECT fa.vatcode                    AS vatcode,
 ;
 
 SELECT db_alter_view(
-    'tax_accounts_details_v',
+    'de_metas_acct.tax_accounts_details_v',
     (SELECT view_definition
      FROM information_schema.views
      WHERE lower(views.table_name) = lower('tax_accounts_details_v$new')
-       AND lower(views.table_schema) = lower('de_metas_acct'))
-);
+       AND lower(views.table_schema) = 'de_metas_acct'));
 
 DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v$new;
