@@ -165,9 +165,16 @@ BEGIN
            -- invoice total IS the net (taxbaseamt). Including the tax summand would produce 1190 / 810 per leg,
            -- neither of which is meaningful for the §13b declaration. The branch below preserves the non-RC
            -- behaviour exactly and corrects only RC.
+           --
+           -- `IsReverseCharge` is resolved by a direct lookup on C_Tax rather than relying on a view column,
+           -- so this function carries no hidden dependency on the view's projection.
            (CASE
                 WHEN c_currency_id = source_currency_id
-                    THEN taxbaseamt + CASE WHEN t.isreversecharge = 'Y' THEN 0 ELSE taxamt END
+                    THEN taxbaseamt + CASE
+                                          WHEN EXISTS (SELECT 1 FROM C_Tax ct WHERE ct.C_Tax_ID = t.c_tax_id AND ct.IsReverseCharge = 'Y')
+                                              THEN 0
+                                          ELSE taxamt
+                                      END
                 ELSE NULL
             END)                                   AS TotalAmt,
            source_currency,

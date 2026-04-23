@@ -72,8 +72,7 @@ SELECT fa.vatcode,
        fa.source_currency_id,
        fa.ad_table_id,
        fa.record_id,
-       fa.ad_org_id,
-       fa.isreversecharge
+       fa.ad_org_id
 FROM (SELECT fa.vatcode                    AS vatcode,
              ev.value                      AS accountno,
              ev.name                       AS accountname,
