@@ -7,9 +7,10 @@ import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStep
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { expectErrorToast } from '../../utils/common';
+import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -362,6 +363,73 @@ test.describe('Picking Job Completion', () => {
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
         await PickingJobScreen.complete()
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Network failure on complete shows retry panel; Retry then succeeds', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await test.step('Block userConfirmation to simulate a network failure', async () => {
+            await page.route(confirmationRoute, route => route.abort('failed'));
+        });
+
+        await PickingJobScreen.completeExpectingNetworkError();
+
+        await test.step('Release the block and retry', async () => {
+            await page.unroute(confirmationRoute);
+        });
+        await ConfirmActivityErrorPanel.clickRetry();
+        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Cancel on retry panel hides it and leaves the job resumable', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await page.route(confirmationRoute, route => route.abort('failed'));
+
+        await PickingJobScreen.completeExpectingNetworkError();
+        await ConfirmActivityErrorPanel.clickCancel();
+        await ConfirmActivityErrorPanel.waitForPanelDetached();
+
+        // Clean up the route interception so it doesn't affect follow-on steps if the test is extended later.
+        await page.unroute(confirmationRoute);
     });
 
 });
