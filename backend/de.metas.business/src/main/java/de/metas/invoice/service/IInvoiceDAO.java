@@ -43,6 +43,7 @@ import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -198,4 +199,6 @@ public interface IInvoiceDAO extends ISingletonService
 	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
 	 */
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
+
+	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 }

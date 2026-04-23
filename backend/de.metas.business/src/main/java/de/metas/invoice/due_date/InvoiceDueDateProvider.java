@@ -1,4 +1,4 @@
-package de.metas.dunning.invoice;
+package de.metas.invoice.due_date;
 
 import java.time.LocalDate;
 
