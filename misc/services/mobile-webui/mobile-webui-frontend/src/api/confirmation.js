@@ -2,7 +2,7 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 
-const DEFAULT_TIMEOUT_MILLIS = 20000;
+export const DEFAULT_TIMEOUT_MILLIS = 20000;
 
 /**
  * @method userConfirmation

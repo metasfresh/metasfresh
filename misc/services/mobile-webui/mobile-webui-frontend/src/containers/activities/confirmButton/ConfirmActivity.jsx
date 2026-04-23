@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { postUserConfirmation } from '../../../api/confirmation';
+import { DEFAULT_TIMEOUT_MILLIS, postUserConfirmation } from '../../../api/confirmation';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
@@ -11,8 +11,6 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { usePositiveNumberSetting } from '../../../reducers/settings';
 import { trl } from '../../../utils/translations';
 import * as uiTrace from '../../../utils/ui_trace';
-
-const DEFAULT_TIMEOUT_MILLIS = 20000;
 
 const ConfirmActivity = ({
   applicationId,
@@ -29,17 +27,22 @@ const ConfirmActivity = ({
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const [errorMessage, setErrorMessage] = useState(null);
+  // Synchronous guard: isProcessing only re-flows via Redux on the next render,
+  // so a fast double-tap on Retry would otherwise send two requests.
+  const sendingRef = useRef(false);
 
   // Overridable via AD_SysConfig mobileui.frontend.api.completeConfirmation.timeoutMillis
   const timeoutMillis = usePositiveNumberSetting('api.completeConfirmation.timeoutMillis', DEFAULT_TIMEOUT_MILLIS);
 
   const sendConfirmation = () => {
+    if (sendingRef.current) return;
+    sendingRef.current = true;
     setErrorMessage(null);
     dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
     postUserConfirmation({ wfProcessId, activityId, timeoutMillis })
       .then((wfProcess) => {
-        uiTrace.trace({ eventName: 'confirmationPosted', wfProcessId, activityId });
         dispatch(updateWFProcess({ wfProcess }));
+        uiTrace.trace({ eventName: 'confirmationPosted', wfProcessId, activityId });
         if (isLastActivity) {
           history.push(appLaunchersLocation({ applicationId }));
         }
@@ -65,7 +68,10 @@ const ConfirmActivity = ({
           toastError({ axiosError });
         }
       })
-      .finally(() => dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false })));
+      .finally(() => {
+        sendingRef.current = false;
+        dispatch(setActivityProcessing({ wfProcessId, activityId, processing: false }));
+      });
   };
 
   const onCancelError = () => {
