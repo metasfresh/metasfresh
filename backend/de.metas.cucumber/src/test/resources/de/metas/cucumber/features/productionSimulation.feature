@@ -470,5 +470,5 @@ Feature: create production simulation
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-15T00:00:00Z | -5  | -5                     | olASI                     | true      |
-      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-14T00:00:00Z | 0   | 0                      | olASI                     | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-14T08:00:00Z | 0   | 0                      | olASI                     | true      |
       | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 10  | 10                     | olASI                     | false     |
