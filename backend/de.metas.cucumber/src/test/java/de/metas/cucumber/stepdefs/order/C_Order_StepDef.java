@@ -918,6 +918,24 @@ public class C_Order_StepDef
 			}
 		}
 
+		// LC_Date: "null" in the feature means assert NULL; a date string asserts equality.
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_LC_Date)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.NULL_STRING.equals(rawValue))
+					{
+						softly.assertThat(order.getLC_Date())
+								.as("LC_Date should be NULL for Identifier=%s", identifierStr)
+								.isNull();
+					}
+					else
+					{
+						final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date(), zoneId))
+								.as("LC_Date for Identifier=%s", identifierStr)
+								.isNotNull();
+					}
+				});
+
 		softly.assertAll();
 	}
 
