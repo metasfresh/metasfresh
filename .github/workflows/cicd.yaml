@@ -2669,4 +2669,10 @@ jobs:
           CICD_DISPATCH_REPO: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).repo }}
           CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
         run: |
-          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
+          # --ref "${SOURCE_BRANCH}" runs the downstream workflow ON the target
+          # branch, not on the private-extensions default branch. Without it,
+          # the workflow starts on new_dawn_uat, does an in-process
+          # `git checkout ${SOURCE_BRANCH}` and EndBug/add-and-commit sends the
+          # commit object to origin but the branch ref update is silently
+          # dropped — resulting in an orphan commit. See me03#29386.
+          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" --ref "${SOURCE_BRANCH}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
