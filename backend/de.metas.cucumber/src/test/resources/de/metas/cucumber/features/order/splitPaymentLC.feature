@@ -181,3 +181,55 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LetterOfCreditDate | 20596.32  | Awaiting_Pay | 20500.00      |
       | OrderDate          | 48058.08  | Pending      | null          |
+
+
+  @from:cucumber
+  @Order
+  @Proforma
+  @PaySelection
+  @Iteration2
+  @MF_29368
+  Scenario: TC3 - Deallocation before payment reverts LC line to Pending
+    # https://github.com/metasfresh/me03/issues/29368
+    # After allocating a proforma, the user deallocates it before any payment is made.
+    # The LC line must revert to Pending with DueAmt_Actual=null and LC_Date=null.
+
+    # ── Create and complete the purchase order ────────────────────────────────
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po_l1      | po         | product      | 1          |
+    And the order identified by po is completed
+
+    # ── Create and complete the proforma invoice ──────────────────────────────
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | apf_tc3_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | apf_tc3_invL1 | apf_tc3_inv  | product      | 1 PCE       | 20596.32 |
+    And the invoice identified by apf_tc3_inv is completed
+
+    # ── Allocate → LC becomes Awaiting_Pay, LC_Date set ──────────────────────
+    And I allocate proforma 'apf_tc3_inv' to order 'po'
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Awaiting_Pay | 20596.32      |
+      | OrderDate          | 48058.08  | Pending      | null          |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
+
+    # ── Deallocate → LC reverts to Pending, DueAmt_Actual=null, LC_Date=null ─
+    And I deallocate proforma 'apf_tc3_inv' from order 'po'
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Pending | null          |
+      | OrderDate          | 48058.08  | Pending | null          |
+    And validate the created orders
+      | Identifier | LC_Date |
+      | po         | null    |
