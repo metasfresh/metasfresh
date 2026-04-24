@@ -28,6 +28,9 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.proforma.ProformaOrderAlloc;
+import de.metas.invoice.proforma.ProformaOrderAllocRepository;
+import de.metas.order.OrderId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -68,6 +71,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ProformaOrderAllocRepository proformaAllocRepo = org.compiere.SpringContextHolder.instance.getBean(ProformaOrderAllocRepository.class);
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
@@ -259,6 +263,17 @@ public class PaySelectionBL implements IPaySelectionBL
 		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
 		final boolean isProformaInvoice = invoiceDocBaseType == InvoiceDocBaseType.PurchaseProFormaInvoice;
 
+		// For proforma payments, stamp C_Order_ID from the allocation. This:
+		// (a) surfaces the payment in the order's Related Documents panel, and
+		// (b) makes MPayment.beforeSave auto-derive IsPrepayment='Y'. Setting IsPrepayment
+		//     directly on the builder would be overridden on first save, since MPayment's
+		//     own logic recomputes the flag from (C_Charge_ID, C_Invoice_ID, C_Order_ID, C_Project_ID).
+		final OrderId proformaOrderId = isProformaInvoice
+				? proformaAllocRepo.findByProformaInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+						.map(ProformaOrderAlloc::getOrderId)
+						.orElse(null)
+				: null;
+
 		return paymentBL.newBuilderOfInvoice(invoice)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
@@ -270,7 +285,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				.discountAmt(line.getDiscountAmt())
 				//
 				.proformaInvoiceId(isProformaInvoice ? InvoiceId.ofRepoId(invoice.getC_Invoice_ID()) : null)
-				.prepayment(isProformaInvoice)
+				.orderId(proformaOrderId)
 				//
 				.createAndProcess();
 	}

@@ -37,19 +37,26 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 592416
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584784);
 
 -- =============================================================================
--- 2. AD_Field on tab 548449 (Bestellung_OLD — window 181)
+-- 2. AD_Field on tab 548449 (Zahlungsplan tab in Bestellung_OLD — window 181)
 -- =============================================================================
+-- Conditional insert: only if the target tab exists on this environment.
+-- Older CI seed DBs and fresh installs may not carry every optional tab yet —
+-- skipping a missing tab is safer than aborting the whole migration (ON_ERROR_STOP=1
+-- blocks every script after a failure).
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID, AD_Name_ID,
                       Name, Description,
                       IsDisplayed, IsDisplayedGrid, IsReadOnly, IsSameLine,
                       SeqNo, SeqNoGrid, SortNo, EntityType)
-VALUES (777249 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
-        548449 /*Zahlungsplan tab in Bestellung_OLD*/, 592416 /*From ID Server*/, NULL,
-        'Tatsächlich fälliger Betrag',
-        'Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde',
-        'Y', 'Y', 'Y', 'N',
-        10, 10, 0, 'D');
+SELECT 777249 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
+       t.AD_Tab_ID, 592416 /*From ID Server*/, NULL,
+       'Tatsächlich fälliger Betrag',
+       'Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde',
+       'Y', 'Y', 'Y', 'N',
+       10, 10, 0, 'D'
+FROM AD_Tab t
+WHERE t.AD_Tab_ID = 548449
+  AND NOT EXISTS (SELECT 1 FROM AD_Field f WHERE f.AD_Field_ID = 777249);
 
 -- Skeleton Trl rows for AD_Field on tab 548449
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -61,17 +68,21 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Field_ID = 777249
 -- =============================================================================
 -- 3. AD_Field on tab 548450 (Zahlungsplan tab in Bestellung — window 541889)
 -- =============================================================================
+-- Conditional insert: tab 548450 may be absent on older CI seeds.
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID, AD_Name_ID,
                       Name, Description,
                       IsDisplayed, IsDisplayedGrid, IsReadOnly, IsSameLine,
                       SeqNo, SeqNoGrid, SortNo, EntityType)
-VALUES (777250 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
-        548450 /*Zahlungsplan tab in Bestellung*/, 592416 /*From ID Server*/, NULL,
-        'Tatsächlich fälliger Betrag',
-        'Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde',
-        'Y', 'Y', 'Y', 'N',
-        10, 10, 0, 'D');
+SELECT 777250 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
+       t.AD_Tab_ID, 592416 /*From ID Server*/, NULL,
+       'Tatsächlich fälliger Betrag',
+       'Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde',
+       'Y', 'Y', 'Y', 'N',
+       10, 10, 0, 'D'
+FROM AD_Tab t
+WHERE t.AD_Tab_ID = 548450
+  AND NOT EXISTS (SELECT 1 FROM AD_Field f WHERE f.AD_Field_ID = 777250);
 
 -- Skeleton Trl rows for AD_Field on tab 548450
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
