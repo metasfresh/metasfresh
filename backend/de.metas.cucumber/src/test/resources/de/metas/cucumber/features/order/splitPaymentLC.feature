@@ -96,13 +96,13 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | LetterOfCreditDate | 20596.32  | Pending | null          |
       | OrderDate          | 48058.08  | Pending | null          |
 
-    # ── Create and complete the proforma invoice ──────────────────────────────
+    # ── Create and complete the proforma invoice (GrandTotal = 20596.32 = planned DueAmt) ─────
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
       | apf_inv    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | apf_invL1  | apf_inv      | product      | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
+      | apf_invL1  | apf_inv      | product      | 1 PCE       | 20596.32  |
     And the invoice identified by apf_inv is completed
 
     # ── Allocate proforma → LC line becomes Awaiting_Pay ─────────────────────
@@ -140,3 +140,44 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LetterOfCreditDate | 20596.32  | Paid    | 20596.32      |
       | OrderDate          | 48058.08  | Pending | null          |
+
+
+  @from:cucumber
+  @Order
+  @Proforma
+  @PaySelection
+  @Iteration2
+  @MF_29368
+  Scenario: TC2 - Proforma amount below planned DueAmt: DueAmt unchanged, DueAmt_Actual = proforma GrandTotal
+    # https://github.com/metasfresh/me03/issues/29368
+    # When the proforma invoice has a GrandTotal below the planned LC DueAmt (20596.32),
+    # the allocation sets DueAmt_Actual to the proforma GrandTotal (20500.00) while
+    # DueAmt remains at the planned amount (20596.32).
+    # The Delivery (OD) line must have DueAmt_Actual=null throughout.
+
+    # ── Create and complete the purchase order ────────────────────────────────
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po_l1      | po         | product      | 1          |
+    And the order identified by po is completed
+
+    # ── Create and complete the proforma invoice (GrandTotal = 20500.00, BELOW planned 20596.32) ─
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | apf_tc2_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
+      | apf_tc2_invL1 | apf_tc2_inv  | product      | 1 PCE       | 20500.00  |
+    And the invoice identified by apf_tc2_inv is completed
+
+    # ── Allocate proforma → LC line becomes Awaiting_Pay ─────────────────────
+    And I allocate proforma 'apf_tc2_inv' to order 'po'
+
+    # ── Assertions: DueAmt = plan (20596.32), DueAmt_Actual = proforma GrandTotal (20500.00) ─
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Awaiting_Pay | 20500.00      |
+      | OrderDate          | 48058.08  | Pending      | null          |
