@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,18 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm;
+package de.metas.invoice.proforma;
 
-import de.metas.util.lang.Percent;
-import de.metas.util.lang.SeqNo;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Builder
 @Value
-public class PaymentTermBreak
+@Builder
+public class ProformaOrderAllocateRequest
 {
-	@NonNull PaymentTermBreakId id;
-	@Nullable String description;
-	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Percent percent;
-	@NonNull SeqNo seqNo;
-
-	int offsetDays;
-
-	public boolean isLetterOfCredit() {return referenceDateType.isLetterOfCreditDate();}
+	@NonNull InvoiceId proformaInvoiceId;
+	@NonNull OrderId purchaseOrderId;
 }
-

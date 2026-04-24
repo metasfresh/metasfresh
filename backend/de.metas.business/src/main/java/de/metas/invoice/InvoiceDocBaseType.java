@@ -149,4 +149,6 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return docBaseType.isFinancial();
 	}
 
+	public boolean isPurchaseProformaInvoice() {return this == PurchaseProFormaInvoice;}
+
 }

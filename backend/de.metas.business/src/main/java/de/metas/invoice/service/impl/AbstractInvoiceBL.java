@@ -1622,6 +1622,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isPurchaseProforma(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return getInvoiceDocBaseType(invoice).isPurchaseProformaInvoice();
+	}
+
+	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);

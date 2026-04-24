@@ -390,6 +390,11 @@ public interface IInvoiceBL extends ISingletonService
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
 
 	/**
+	 * Decide if the given invoice is a Purchase Proforma Invoice (APF)
+	 */
+	boolean isPurchaseProforma(@NonNull I_C_Invoice invoice);
+
+	/**
 	 * Decide if the given invoice is an Adjustment Charge
 	 */
 	boolean isAdjustmentCharge(I_C_Invoice invoice);
