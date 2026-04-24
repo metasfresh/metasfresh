@@ -28,6 +28,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -58,6 +59,7 @@ class ProformaOrderAllocateCommand
 
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository;
+	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
 
 	@NonNull private final ProformaOrderAllocateRequest request;
 
@@ -95,8 +97,7 @@ class ProformaOrderAllocateCommand
 		order.setLC_Date(invoice.getDateInvoiced());
 		orderBL.save(order);
 
-		// TODO Task 35: Recompute LC step after proforma allocation via OrderPayScheduleLCService.recomputeLCStep(orderId)
-		// The authority function (Task 35) will be the only writer of LC-step amounts (DueAmt = GrandTotal × break%).
+		orderPayScheduleLCService.recomputeLCStep(purchaseOrderId);
 
 		return alloc;
 	}
