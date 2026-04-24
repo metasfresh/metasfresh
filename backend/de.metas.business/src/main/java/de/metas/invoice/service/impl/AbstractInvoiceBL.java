@@ -1692,6 +1692,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isCompletedOrClosed(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
+		return docStatus.isCompletedOrClosed();
+	}
+
+	@Override
 	public final CurrencyPrecision getPricePrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
