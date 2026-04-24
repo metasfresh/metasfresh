@@ -23,6 +23,8 @@
 package de.metas.invoice.proforma;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
 import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class ProformaOrderAllocService
 {
 	@NonNull private final ProformaOrderAllocRepository repository;
 	@NonNull private final PaymentTermService paymentTermService;
+	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
 
 	@NonNull
 	public ProformaOrderAlloc getById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)
@@ -46,6 +49,7 @@ public class ProformaOrderAllocService
 		ProformaOrderAllocateCommand.builder()
 				.proformaOrderAllocRepository(repository)
 				.paymentTermService(paymentTermService)
+				.orderPayScheduleLCService(orderPayScheduleLCService)
 				.request(request)
 				.build()
 				.execute();
@@ -60,10 +64,11 @@ public class ProformaOrderAllocService
 	{
 		// TODO: check additional steps needed (e.g. check and handling of payments)
 
+		// Capture orderId before deletion — the alloc row will be gone after deleteById.
+		final OrderId orderId = alloc.getOrderId();
+
 		repository.deleteById(alloc.getId());
 
-		// TODO Task 35: Recompute LC step after proforma deallocation via OrderPayScheduleLCService.recomputeLCStep(orderId)
-		// The authority function (Task 35) will be the only writer of LC-step amounts.
-		// Inline LC_Date / pay-schedule updates have been removed to preserve the DueAmt = GrandTotal × break% invariant.
+		orderPayScheduleLCService.recomputeLCStep(orderId);
 	}
 }
