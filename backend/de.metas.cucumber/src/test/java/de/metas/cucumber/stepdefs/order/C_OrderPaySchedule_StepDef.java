@@ -48,6 +48,7 @@ import org.compiere.model.I_C_PaymentTerm_Break;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -143,7 +144,7 @@ public class C_OrderPaySchedule_StepDef
 
 			final List<OrderPayScheduleLine> matchingLines = paySchedule.getLines().stream()
 					.filter(line -> line.getReferenceDateType() == referenceDateType)
-					.toList();
+					.collect(Collectors.toList());
 
 			if (matchingLines.isEmpty())
 			{
