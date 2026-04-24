@@ -25,7 +25,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -206,9 +205,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			payDate = paySelection.getPayDate();
 		}
 
-		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
-				+ "\nUNION\n"
-				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
+		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
@@ -387,115 +384,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			throw new AdempiereException("Unknown matchRequirement: " + matchRequirement);
 		}
-	}
-
-	private @NonNull String buildOrderSql(
-			@NonNull final List<Object> sqlParams,
-			@NonNull final CurrencyId C_CurrencyTo_ID,
-			@NonNull final Timestamp payDate,
-			@NonNull final I_C_PaySelection paySelection)
-	{
-		String sql = "SELECT "
-				+ " -1 as C_Invoice_ID," // 1
-				+ " o.C_Order_ID," // 2
-				+ " ops.C_OrderPaySchedule_ID," // 3
-				+ " ops.dueamt as OpenAmt," // 4
-				+ " null as DiscountAmt," // 5
-				+ " null as PaymentRule, "  // 6
-				+ " o.IsSOTrx, " // 7
-				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 8
-				// C_BP_BankAccount_ID
-				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = o.Bill_BPartner_ID AND bpb.IsActive='Y' "
-				+ " AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //9
-				//
-				+ " FROM C_Order o "
-				+ " INNER JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "
-				+ " INNER JOIN C_OrderPaySchedule ops on o.C_Order_ID = ops.C_Order_ID "
-				+ " WHERE true AND ops.Status = ? "  //
-				;
-		sqlParams.add(OrderPayScheduleStatus.Awaiting_Pay.getCode()); // #1
-
-		// Only COmpleted/CLosed payment
-		{
-			sql += " AND o.DocStatus IN (?,?)";
-			sqlParams.add(DocStatus.Completed);
-			sqlParams.add(DocStatus.Closed);
-		}
-
-		// Only those orders which are matching C_PaySelection's currency
-		{
-			sql += " AND o.C_Currency_ID=?";
-			sqlParams.add(C_CurrencyTo_ID);
-		}
-
-		// Only for Pay Selection's Organization (if set)
-		if (paySelection.getAD_Org_ID() > 0)
-		{
-			sql += " AND o.AD_Org_ID=? ";
-			sqlParams.add(paySelection.getAD_Org_ID());
-		}
-
-		// Only those payments from our tenant (guard, shall not happen)
-		{
-			sql += " AND o.AD_Client_ID=?";
-			sqlParams.add(paySelection.getAD_Client_ID());
-		}
-
-		//
-		// Exclude orders from existing pay selections if we were not explicitly asked to just update a couple of pay selection lines
-		// or, Include only the pay selection lines that we were advised to include.
-		if (paySelectionLineIdsToUpdate.isEmpty())
-		{
-			sql += " AND NOT EXISTS ("
-					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID AND psl.IsActive='Y' "
-					+ " )";
-		}
-		else
-		{
-			sql += " AND EXISTS ("
-					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID and psl.IsActive='Y' "
-					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
-					+ " )";
-		}
-
-		// Business Partner
-		if (getC_BPartner_ID() > 0)
-		{
-			sql += " AND o.Bill_BPartner_ID=?"; // ##
-			sqlParams.add(getC_BPartner_ID());
-		}
-		// Business Partner Group
-		else if (getC_BP_Group_ID() > 0)
-		{
-			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
-					+ "WHERE bp.C_BPartner_ID=o.Bill_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
-			sqlParams.add(getC_BP_Group_ID());
-		}
-
-		// DateTrx
-		if (isOnlyDue())
-		{
-			sql += " AND ops.DueDate <= ?";
-			sqlParams.add(payDate);
-		}
-
-		// Match Requirement
-		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
-		if (matchRequirement == null) // ALL
-		{
-			// no restriction
-		}
-		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
-		{
-			sql += " AND o.IsSOTrx='N'";
-		}
-		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
-		{
-			sql += " AND o.IsSOTrx='Y'";
-		}
-		return sql;
 	}
 
 	private void createOrUpdatePaySelectionLine(final ResultSet rs) throws SQLException
