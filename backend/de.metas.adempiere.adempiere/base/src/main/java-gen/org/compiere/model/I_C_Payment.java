@@ -1620,6 +1620,33 @@ public interface I_C_Payment
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Proforma Rechnung.
+	 * Proforma invoice that was paid with this payment (split-payment tagging)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProforma_Invoice_ID (int Proforma_Invoice_ID);
+
+	/**
+	 * Get Proforma Rechnung.
+	 * Proforma invoice that was paid with this payment (split-payment tagging)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getProforma_Invoice_ID();
+
+	@Nullable org.compiere.model.I_C_Invoice getProforma_Invoice();
+
+	void setProforma_Invoice(@Nullable org.compiere.model.I_C_Invoice Proforma_Invoice);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_C_Invoice> COLUMN_Proforma_Invoice_ID = new ModelColumn<>(I_C_Payment.class, "Proforma_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_Proforma_Invoice_ID = "Proforma_Invoice_ID";
+
+	/**
 	 * Set Authorization Code.
 	 * Authorization Code returned
 	 *
