@@ -41,7 +41,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm_Break;
@@ -134,15 +133,9 @@ public class C_OrderPaySchedule_StepDef
 	public void verifyOrderPaySchedulesByRefDateType(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
 		final OrderId orderId = orderTable.getId(orderIdentifier);
-		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
-
-		// Refresh lines from DB so that DueAmt_Actual and Status are up-to-date.
-		paySchedule.getLines().forEach(line -> {
-			final I_C_OrderPaySchedule record = InterfaceWrapperHelper.load(line.getId().getRepoId(), I_C_OrderPaySchedule.class);
-			InterfaceWrapperHelper.refresh(record);
-			line.setDueAmtActual(record.getDueAmt_Actual());
-			line.setStatus(OrderPayScheduleStatus.ofCode(record.getStatus()));
-		});
+		// Reload from the service each time to get the latest DB state (Status, DueAmt_Actual, etc.)
+		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId)
+				.orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
 
 		DataTableRows.of(dataTable).forEach(row -> {
 			final ReferenceDateType referenceDateType = row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.class)
