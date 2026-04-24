@@ -117,10 +117,23 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public BigDecimal getDueAmt() 
+	public BigDecimal getDueAmt()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DueAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setDueAmt_Actual (@javax.annotation.Nullable final BigDecimal DueAmt_Actual)
+	{
+		set_Value (COLUMNNAME_DueAmt_Actual, DueAmt_Actual);
+	}
+
+	@Override
+	@javax.annotation.Nullable
+	public BigDecimal getDueAmt_Actual()
+	{
+		return get_ValueAsBigDecimal(COLUMNNAME_DueAmt_Actual);
 	}
 
 	@Override
