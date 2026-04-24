@@ -23,6 +23,7 @@
 package de.metas.invoice.proforma;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
@@ -36,12 +37,21 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 class ProformaOrderAllocateCommand
 {
+	private static final AdMessageKey MSG_NoLCBreakInOrder            = AdMessageKey.of("de.metas.invoice.proforma.NoLCBreakInOrder");
+	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+	private static final AdMessageKey MSG_CurrencyMismatch            = AdMessageKey.of("de.metas.invoice.proforma.CurrencyMismatch");
+	private static final AdMessageKey MSG_VendorMismatch              = AdMessageKey.of("de.metas.invoice.proforma.VendorMismatch");
+
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -70,9 +80,10 @@ class ProformaOrderAllocateCommand
 
 		Check.assume(!proformaOrderAllocRepository.existsByInvoiceAndOrder(proformaInvoiceId, purchaseOrderId), "Allocation shouldn't already exists");
 		Check.assume(!proformaOrderAllocRepository.existsByOrder(purchaseOrderId), "Order can only be allocated to one Proforma invoice (1:1 allocation)");
-		Check.assume(BPartnerId.equals(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()), orderBL.getEffectiveBillPartnerId(order)), "Invoice and Order should have the same Bill Partner");
 
-		validatePaymentTermWithLetterOfCredit(order);
+		// Re-validate all eligibility conditions — this is the API/script gate that runs even when the
+		// Val Rule lookup filter is bypassed (e.g. direct REST call or Cucumber/script scenario).
+		validate(invoice, order);
 
 		final ProformaOrderAllocateRequest request = ProformaOrderAllocateRequest.builder()
 				.proformaInvoiceId(proformaInvoiceId)
@@ -90,17 +101,65 @@ class ProformaOrderAllocateCommand
 		return alloc;
 	}
 
-	private void validatePaymentTermWithLetterOfCredit(@NonNull final I_C_Order order)
+	/**
+	 * Validates all four eligibility conditions for allocating a proforma invoice to a purchase order.
+	 * This is the API/script gate — it runs even when the Val Rule lookup filter on the UI parameter is bypassed.
+	 * <p>
+	 * Checks (in order):
+	 * <ol>
+	 *   <li>Currency match: proforma and order must share the same currency.</li>
+	 *   <li>Vendor (BPartner) match: proforma and order must have the same bill-to partner.</li>
+	 *   <li>No LC break: order payment term must have at least one Letter-of-Credit break.</li>
+	 *   <li>Multiple LC breaks: order payment term must have exactly one LC break (iter 2 limitation).</li>
+	 * </ol>
+	 *
+	 * @throws AdempiereException with a translated user-facing message on any violation
+	 */
+	private void validate(@NonNull final I_C_Invoice invoice, @NonNull final I_C_Order order)
 	{
+		// Currency mismatch — {0}=proforma currency, {1}=order currency
+		if (invoice.getC_Currency_ID() != order.getC_Currency_ID())
+		{
+			throw new AdempiereException(MSG_CurrencyMismatch,
+					invoice.getC_Currency_ID(),
+					order.getC_Currency_ID())
+					.markAsUserValidationError();
+		}
+
+		// Vendor (BPartner) mismatch — {0}=proforma BPartner, {1}=order BPartner
+		final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final BPartnerId orderBPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		if (!BPartnerId.equals(invoiceBPartnerId, orderBPartnerId))
+		{
+			throw new AdempiereException(MSG_VendorMismatch,
+					invoiceBPartnerId.getRepoId(),
+					orderBPartnerId.getRepoId())
+					.markAsUserValidationError();
+		}
+
+		// LC-break count — 0 breaks → reject; >1 break → reject (iter 2 limitation)
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(order.getC_PaymentTerm_ID());
-		Check.assumeNotNull(paymentTermId, "Order should have a Payment Term");
+		if (paymentTermId == null)
+		{
+			throw new AdempiereException(MSG_NoLCBreakInOrder, order.getDocumentNo())
+					.markAsUserValidationError();
+		}
 
 		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-		Check.assume(paymentTerm.isComplex(), "Order Payment Term should be complex");
-
-		final boolean hasLetterOfCreditBreak = paymentTerm.getSortedBreaks()
+		final List<PaymentTermBreak> lcBreaks = paymentTerm.getSortedBreaks()
 				.stream()
-				.anyMatch(PaymentTermBreak::isLetterOfCredit);
-		Check.assume(hasLetterOfCreditBreak, "Order Payment Term should have a Letter of Credit break");
+				.filter(PaymentTermBreak::isLetterOfCredit)
+				.collect(Collectors.toList());
+
+		if (lcBreaks.isEmpty())
+		{
+			throw new AdempiereException(MSG_NoLCBreakInOrder, order.getDocumentNo())
+					.markAsUserValidationError();
+		}
+		if (lcBreaks.size() > 1)
+		{
+			throw new AdempiereException(MSG_MultipleLCBreaksUnsupported, order.getDocumentNo())
+					.markAsUserValidationError();
+		}
 	}
 }
