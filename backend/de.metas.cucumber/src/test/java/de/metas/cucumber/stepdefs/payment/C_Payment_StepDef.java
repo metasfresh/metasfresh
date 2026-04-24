@@ -223,6 +223,13 @@ public class C_Payment_StepDef
 		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.class)
 				.ifPresent(docStatus -> softly.assertThat(payment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
 
+		row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment)
+				.ifPresent(isPrepayment -> softly.assertThat(payment.isPrepayment()).as("IsPrepayment").isEqualTo(isPrepayment));
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
+
 		softly.assertAll();
 	}
 
