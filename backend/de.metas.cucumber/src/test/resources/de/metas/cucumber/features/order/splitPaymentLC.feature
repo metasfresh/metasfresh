@@ -233,3 +233,75 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     And validate the created orders
       | Identifier | LC_Date |
       | po         | null    |
+
+
+  @from:cucumber
+  @Order
+  @Proforma
+  @PaySelection
+  @Iteration2
+  @MF_29368
+  Scenario: TC4 - Payment reversal rolls LC back from Paid to Awaiting_Pay with DueAmt_Actual preserved
+    # https://github.com/metasfresh/me03/issues/29368
+    # After a payment is completed (LC → Paid) and then reversed, the LC line must roll
+    # back to Awaiting_Pay. DueAmt_Actual and LC_Date must be preserved (not cleared),
+    # because the allocation still exists — only the payment is gone.
+
+    # ── Create and complete the purchase order ────────────────────────────────
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po_l1      | po         | product      | 1          |
+    And the order identified by po is completed
+
+    # ── Create and complete the proforma invoice ──────────────────────────────
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | apf_tc4_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | apf_tc4_invL1 | apf_tc4_inv  | product      | 1 PCE       | 20596.32 |
+    And the invoice identified by apf_tc4_inv is completed
+
+    # ── Allocate → LC becomes Awaiting_Pay ───────────────────────────────────
+    And I allocate proforma 'apf_tc4_inv' to order 'po'
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Awaiting_Pay | 20596.32      |
+      | OrderDate          | 48058.08  | Pending      | null          |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
+
+    # ── Pay Selection → complete → generate payment → LC becomes Paid ─────────
+    And metasfresh contains Pay Selection
+      | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySel     | org_EUR_account     | CT                  | 2026-04-24 |
+    And "Create from..." is invoked for pay selection paySel, using following parameters:
+      | MatchRequirement | C_BPartner_ID | OnlyDue |
+      | OUT              | vendor        | N       |
+    And the pay selection identified by paySel is completed
+    Then "Create Payments" is invoked for pay selection paySel
+
+    And the Pay selection identified by paySel has exactly the following lines
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
+      | apf_tc4_inv  | 20596.32 | payment_tc4  |
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Paid    | 20596.32      |
+      | OrderDate          | 48058.08  | Pending | null          |
+
+    # ── Reverse the payment → LC rolls back to Awaiting_Pay ──────────────────
+    And the payment identified by payment_tc4 is reversed
+
+    Then the order identified by po has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
+      | LetterOfCreditDate | 20596.32  | Awaiting_Pay | 20596.32      |
+      | OrderDate          | 48058.08  | Pending      | null          |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | po         | 2026-04-24 |
