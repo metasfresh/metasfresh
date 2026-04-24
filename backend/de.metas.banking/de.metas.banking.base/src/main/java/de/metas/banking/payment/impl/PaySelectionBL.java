@@ -71,7 +71,21 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ProformaOrderAllocRepository proformaAllocRepo = org.compiere.SpringContextHolder.instance.getBean(ProformaOrderAllocRepository.class);
+
+	// Lazily resolved — unit tests that don't have a Spring context never call the proforma branch
+	// in createPaymentForInvoice, so they don't need this bean registered.
+	@Nullable
+	private volatile ProformaOrderAllocRepository proformaAllocRepo;
+
+	@NonNull
+	private ProformaOrderAllocRepository proformaAllocRepo()
+	{
+		if (proformaAllocRepo == null)
+		{
+			proformaAllocRepo = org.compiere.SpringContextHolder.instance.getBean(ProformaOrderAllocRepository.class);
+		}
+		return proformaAllocRepo;
+	}
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
@@ -269,7 +283,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		//     directly on the builder would be overridden on first save, since MPayment's
 		//     own logic recomputes the flag from (C_Charge_ID, C_Invoice_ID, C_Order_ID, C_Project_ID).
 		final OrderId proformaOrderId = isProformaInvoice
-				? proformaAllocRepo.findByProformaInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				? proformaAllocRepo().findByProformaInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 						.map(ProformaOrderAlloc::getOrderId)
 						.orElse(null)
 				: null;

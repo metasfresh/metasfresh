@@ -113,21 +113,22 @@ public class C_OrderPaySchedule_StepDef
 	 *
 	 * <p>Required DataTable columns:
 	 * <ul>
-	 *   <li>{@code ReferenceDateType} — enum name: {@code LetterOfCreditDate}, {@code OrderDate}, etc.</li>
+	 *   <li>{@code ReferenceDateType} — DB code ({@code LC} / {@code OD} / {@code IV} / {@code BL} / {@code ET}).
+	 *       Resolved via {@code ReferenceListAwareEnums.ofNullableCode} — use the code, not the enum name.</li>
 	 * </ul>
 	 * Optional DataTable columns:
 	 * <ul>
 	 *   <li>{@code DueAmt} — planned due amount</li>
-	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} enum name</li>
+	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code (e.g. {@code PE}, {@code WP}, {@code PA})</li>
 	 *   <li>{@code DueAmt_Actual} — actual due amount from the proforma invoice;
 	 *       use {@code null} to assert the column is NULL/zero.</li>
 	 * </ul>
 	 *
 	 * <pre>{@code
 	 * Then the order identified by po has following pay schedule lines by ReferenceDateType
-	 *   | ReferenceDateType    | DueAmt    | Status       | DueAmt_Actual |
-	 *   | LetterOfCreditDate   | 20596.32  | Awaiting_Pay | 20596.32      |
-	 *   | OrderDate            | 48058.08  | Pending      | null          |
+	 *   | ReferenceDateType | DueAmt    | Status       | DueAmt_Actual |
+	 *   | LC                | 20596.32  | Awaiting_Pay | 20596.32      |
+	 *   | OD                | 48058.08  | Pending      | null          |
 	 * }</pre>
 	 */
 	@And("^the order identified by (.*) has following pay schedule lines by ReferenceDateType$")
