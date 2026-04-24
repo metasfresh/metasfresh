@@ -324,6 +324,9 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
 
+		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+		final boolean isProformaInvoice = invoiceDocBaseType == InvoiceDocBaseType.PurchaseProFormaInvoice;
+
 		return paymentBL.newBuilderOfInvoice(invoice)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
@@ -333,6 +336,9 @@ public class PaySelectionBL implements IPaySelectionBL
 				.tenderType(TenderType.DirectDeposit)
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
+				//
+				.proformaInvoiceId(isProformaInvoice ? InvoiceId.ofRepoId(invoice.getC_Invoice_ID()) : null)
+				.prepayment(isProformaInvoice)
 				//
 				.createAndProcess();
 	}
