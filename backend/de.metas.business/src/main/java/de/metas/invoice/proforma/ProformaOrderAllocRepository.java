@@ -103,6 +103,21 @@ public class ProformaOrderAllocRepository
 	}
 
 	/**
+	 * Returns the single active proforma-order allocation for the given proforma invoice, or empty if none exists.
+	 * Used by the C_Payment interceptor to look up the order after a payment status change.
+	 */
+	@NonNull
+	public Optional<ProformaOrderAlloc> findByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Proforma_Order_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Invoice_ID, proformaInvoiceId)
+				.create()
+				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
+				.map(this::toProformaOrderAlloc);
+	}
+
+	/**
 	 * Returns the single active proforma-order allocation for the given order, or empty if none exists.
 	 * The unique partial index on {@code (C_Order_ID) WHERE IsActive='Y'} guarantees at most one active record.
 	 */

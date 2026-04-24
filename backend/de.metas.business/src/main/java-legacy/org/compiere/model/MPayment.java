@@ -1870,6 +1870,7 @@ public final class MPayment extends X_C_Payment
 		reversal.setClientOrg(this);
 		reversal.setC_Order_ID(0);
 		reversal.setC_Invoice_ID(0);
+		reversal.setProforma_Invoice_ID(0);  // iter-2 invariant: Proforma_Invoice_ID is NULL on the reversal, preserved on the original
 		reversal.setDateAcct(dateAcct);
 		//
 		reversal.setDocumentNo(getDocumentNo() + REVERSE_INDICATOR);    // indicate reversals

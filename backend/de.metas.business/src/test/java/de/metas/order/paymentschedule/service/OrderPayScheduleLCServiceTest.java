@@ -195,6 +195,71 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	// -----------------------------------------------------------------------
+	// Scenario 6 — reverse cycle: complete → paid → reverse → awaiting_pay (idempotent)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Exercises the full CO → RE reverse cycle at the service level.
+	 * <p>
+	 * After a completed payment is reversed ({@code DocStatus=RE}) the LC step must return to
+	 * {@code Awaiting_Pay}. Calling {@code recomputeLCStep} twice after the reversal must yield
+	 * the same result (idempotence check for the authority function).
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29368">me03 #29368 Split-Payment Iter 2</a>
+	 */
+	@Test
+	void reversedProformaPayment_runs_recompute_once_and_idempotent()
+	{
+		final OrderId orderId = createOrder();
+		final Timestamp invoiceDate = TimeUtil.asTimestamp(LocalDate.of(2026, 4, 24));
+		final int proformaInvoiceId = createProformaInvoice(invoiceDate);
+		createAlloc(orderId, proformaInvoiceId);
+
+		// Step 1: payment completed → status = Paid
+		createLCPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Completed);
+		service.recomputeLCStep(orderId);
+
+		final I_C_OrderPaySchedule lineAfterComplete = findLCLine(orderId);
+		assertThat(lineAfterComplete.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
+		assertThat(lineAfterComplete.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+
+		// Step 2: simulate payment reversal — remove the completed payment, add a reversed one.
+		// In production MPayment.reverseCorrectIt() flips DocStatus on the existing row;
+		// here we just remove the CO payment and add a RE payment (same observable result for the service).
+		de.metas.util.Services.get(org.adempiere.ad.dao.IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, proformaInvoiceId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, X_C_Payment.DOCSTATUS_Completed)
+				.create()
+				.delete();
+		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Reversed);
+
+		// First recompute after reversal
+		service.recomputeLCStep(orderId);
+
+		final I_C_OrderPaySchedule lineAfterReversal = findLCLine(orderId);
+		assertThat(lineAfterReversal.getStatus())
+				.as("Reversed payment → no completed payment → status must be Awaiting_Pay")
+				.isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(lineAfterReversal.getDueAmt_Actual())
+				.as("DueAmt_Actual preserved after reversal")
+				.isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+
+		// Idempotence: second call must produce the same result
+		service.recomputeLCStep(orderId);
+
+		final I_C_OrderPaySchedule lineAfterSecondCall = findLCLine(orderId);
+		assertThat(lineAfterSecondCall.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(lineAfterSecondCall.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+
+		final I_C_Order order = findOrder(orderId);
+		assertThat(order.getLC_Date())
+				.as("LC_Date preserved (proforma still allocated) after reversal")
+				.isEqualTo(invoiceDate);
+	}
+
+	// -----------------------------------------------------------------------
 	// Idempotence — calling recomputeLCStep twice yields the same result
 	// -----------------------------------------------------------------------
 
