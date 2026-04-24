@@ -217,8 +217,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " C_Invoice_ID,"
 				+ " -1 as C_Order_ID,"
 				+ " -1 as C_OrderPaySchedule_ID,"
-				// OpenAmt
-				+ " invoiceOpen(i.C_Invoice_ID, 0) as OpenAmt,"
+				// OpenAmt: invoiceOpen() returns NULL for proforma invoices (APF/ARF) because they are
+			// excluded from C_Invoice_v (IsFinancial='N'). proformaInvoiceOpen() handles those.
+				+ " COALESCE(invoiceOpen(i.C_Invoice_ID, 0), proformaInvoiceOpen(i.C_Invoice_ID)) as OpenAmt,"
 				// DiscountAmt
 				+ " paymentTermDiscount(i.GrandTotal,i.C_Currency_ID,i.C_PaymentTerm_ID,i.DateInvoiced, ?) as DiscountAmt," // #1 PayDate
 				+ " i.PaymentRule, " // 4
@@ -356,9 +357,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private String buildSelectSQL_InvoiceMatchRequirement()
 	{
-		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType !='ARC' AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
-		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+		// APF (purchase proforma) always goes through the vendor credit-transfer path regardless of PaymentRule.
+		// ARF (sales proforma) always goes through the customer credit-transfer path regardless of PaymentRule.
+		// Without these bypasses, proforma invoices with a non-standard PaymentRule would be silently dropped.
+		final String whereCreditTransferToVendor = " ((i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "'))"
+				+ " OR dt.DocBaseType='APF')";
+		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType NOT IN ('ARC','ARF') AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
+		final String whereCreditTransferToCustomer = " ((i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "'))"
+				+ " OR dt.DocBaseType='ARF')";
 
 		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
 		if (matchRequirement == null) // ALL
