@@ -108,6 +108,21 @@ public final class DocumentSaveStatus
 	@Override
 	public String toString()
 	{
+		// Bound reason to avoid exponential growth when an exception message is built
+		// from Document.toString() (which embeds this saveStatus). Without the cap, each
+		// successive error re-embeds the previous reason -> O(2^n) string size, easily
+		// reaching 100+ MB in the JSON response.
+		final String reasonStr;
+		if (reason == null)
+		{
+			reasonStr = null;
+		}
+		else
+		{
+			final String s = String.valueOf(reason);
+			final int max = 200;
+			reasonStr = s.length() <= max ? s : s.substring(0, max) + "...(+" + (s.length() - max) + " chars)";
+		}
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("saved", saved ? true : null)
@@ -115,7 +130,7 @@ public final class DocumentSaveStatus
 				.add("deleted", deleted ? true : null)
 				.add("hasChangesToBeSaved", hasChangesToBeSaved ? true : null)
 				.add("error", error ? true : null)
-				.add("reason", reason)
+				.add("reason", reasonStr)
 				.toString();
 	}
 
