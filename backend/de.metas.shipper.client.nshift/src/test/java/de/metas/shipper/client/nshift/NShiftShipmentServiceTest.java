@@ -86,6 +86,7 @@ public class NShiftShipmentServiceTest
 	private static final String DETAIL_KIND_UNIT_VALUE = "2";
 	private static final String DETAIL_KIND_COUNTRY_OF_ORIGIN = "4";
 	private static final String DETAIL_KIND_QUANTITY = "5";
+	private static final String DETAIL_KIND_UNIT_WEIGHT = "6";
 	private static final String DETAIL_KIND_DESCRIPTION_OF_GOODS = "7";
 	private static final String DETAIL_KIND_UNIT_OF_MEASURE = "8";
 	private static final String DETAIL_KIND_TOTAL_VALUE = "10";
@@ -96,6 +97,7 @@ public class NShiftShipmentServiceTest
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
 	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
+
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
 			.shipperProduct(JsonShipperProduct.builder().code("10305").name("DHL Freight API - EuroConnect International").build())
@@ -445,6 +447,13 @@ public class NShiftShipmentServiceTest
 							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
 							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_5)
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(330)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+							.attributeKey(DETAIL_KIND_UNIT_WEIGHT)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G)
 							.build()
 			)))
 

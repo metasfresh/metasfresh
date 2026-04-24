@@ -33,6 +33,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 @Value
@@ -72,8 +73,34 @@ public class JsonDeliveryOrderLineContents
 				return Optional.of(getTotalValue().getAmount().toPlainString());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE:
 				return Optional.of(getTotalValue().getCurrencyCode());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_KG:
+				return Optional.of(getUnitWeightKg().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G:
+				return Optional.of(kgToG(getUnitWeightKg()).toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_KG:
+				return Optional.of(getTotalWeightInKg().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_G:
+				return Optional.of(kgToG(getTotalWeightInKg()).toPlainString());
 			default:
 				return Optional.empty();
 		}
+	}
+
+	@JsonIgnore
+	@NonNull
+	public BigDecimal getUnitWeightKg()
+	{
+		final BigDecimal qty = getShippedQuantity().getValue();
+		if (qty.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		return getTotalWeightInKg().divide(qty, 6, RoundingMode.HALF_UP).stripTrailingZeros();
+	}
+
+	@NonNull
+	private static BigDecimal kgToG(@NonNull final BigDecimal kg)
+	{
+		return kg.multiply(BigDecimal.valueOf(1000)).stripTrailingZeros();
 	}
 }

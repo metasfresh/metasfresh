@@ -245,8 +245,16 @@ public class NShiftShipmentService
 
 				if (!details.isEmpty())
 				{
+					 // eDekGoodsLineNo
+					final JsonDetailRow.JsonDetailRowBuilder builder = JsonDetailRow.builder()
+							.lineNo(lineNo)
+							.details(details);
+					if(groupKey.equals("1"))
+					{
+						builder.detail(JsonDetail.builder().kindId(193).value(String.valueOf(lineNo)).build()); // lineNo
+					}
 					groupBuilders.computeIfAbsent(groupKey, k -> JsonDetailGroup.builder().groupID(k))
-							.row(JsonDetailRow.builder().lineNo(lineNo).details(details).build());
+							.row(builder.build());
 				}
 			}
 		}

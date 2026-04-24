@@ -71,6 +71,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
                   "KindID": 7,
                   "Value": "Test Product"
                 },
@@ -81,6 +85,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 {
                   "KindID": 10,
                   "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "1"
                 }
               ],
               "LineNo": 1
@@ -113,6 +121,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
                   "KindID": 7,
                   "Value": "Test Product 2"
                 },
@@ -123,6 +135,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 {
                   "KindID": 10,
                   "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
                 }
               ],
               "LineNo": 2
@@ -150,6 +166,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
                   "KindID": 7,
                   "Value": "Test Product 3"
                 },
@@ -160,6 +180,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 {
                   "KindID": 10,
                   "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
                 }
               ],
               "LineNo": 2

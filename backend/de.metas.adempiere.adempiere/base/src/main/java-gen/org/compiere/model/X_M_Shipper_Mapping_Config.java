@@ -155,6 +155,30 @@ public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements
 	public static final String MAPPINGATTRIBUTEVALUE_ProductValue = "ProductValue";
 	/** CustomsTariff = CustomsTariff */
 	public static final String MAPPINGATTRIBUTEVALUE_CustomsTariff = "CustomsTariff";
+	/** UnitWeightKg = UnitWeightKg */
+	public static final String MAPPINGATTRIBUTEVALUE_UnitWeightKg = "UnitWeightKg";
+	/** UnitWeightG = UnitWeightG */
+	public static final String MAPPINGATTRIBUTEVALUE_UnitWeightG = "UnitWeightG";
+	/** TotalWeightKg = TotalWeightKg */
+	public static final String MAPPINGATTRIBUTEVALUE_TotalWeightKg = "TotalWeightKg";
+	/** TotalWeightG = TotalWeightG */
+	public static final String MAPPINGATTRIBUTEVALUE_TotalWeightG = "TotalWeightG";
+	/** GrossWeightKg = GrossWeightKg */
+	public static final String MAPPINGATTRIBUTEVALUE_GrossWeightKg = "GrossWeightKg";
+	/** GrossWeightG = GrossWeightG */
+	public static final String MAPPINGATTRIBUTEVALUE_GrossWeightG = "GrossWeightG";
+	/** PackageLengthCm = PackageLengthCm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageLengthCm = "PackageLengthCm";
+	/** PackageLengthMm = PackageLengthMm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageLengthMm = "PackageLengthMm";
+	/** PackageWidthCm = PackageWidthCm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageWidthCm = "PackageWidthCm";
+	/** PackageWidthMm = PackageWidthMm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageWidthMm = "PackageWidthMm";
+	/** PackageHeightCm = PackageHeightCm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageHeightCm = "PackageHeightCm";
+	/** PackageHeightMm = PackageHeightMm */
+	public static final String MAPPINGATTRIBUTEVALUE_PackageHeightMm = "PackageHeightMm";
 	@Override
 	public void setMappingAttributeValue (final java.lang.String MappingAttributeValue)
 	{
