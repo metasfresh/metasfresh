@@ -31,6 +31,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Proforma_Order_Alloc;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -98,6 +100,21 @@ public class ProformaOrderAllocRepository
 				.stream()
 				.map(this::toProformaOrderAlloc)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Returns the single active proforma-order allocation for the given order, or empty if none exists.
+	 * The unique partial index on {@code (C_Order_ID) WHERE IsActive='Y'} guarantees at most one active record.
+	 */
+	@NonNull
+	public Optional<ProformaOrderAlloc> findActiveByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Proforma_Order_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
+				.map(this::toProformaOrderAlloc);
 	}
 
 	public void deleteById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)

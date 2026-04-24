@@ -139,6 +139,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.status(OrderPayScheduleStatus.ofCode(record.getStatus()))
+				.dueAmtActual(record.getDueAmt_Actual())
 				.build();
 	}
 
@@ -192,6 +193,7 @@ public class OrderPayScheduleLoaderAndSaver
 		record.setReferenceDateType(from.getReferenceDateType().getCode());
 		record.setSeqNo(from.getSeqNo().toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getStatus()));
+		record.setDueAmt_Actual(from.getDueAmtActual());
 	}
 
 	public void updateByIds(@NonNull final Set<OrderId> orderIds, @NonNull final Consumer<OrderPaySchedule> updater)

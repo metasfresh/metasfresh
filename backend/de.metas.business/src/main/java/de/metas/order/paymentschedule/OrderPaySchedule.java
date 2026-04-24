@@ -5,6 +5,7 @@ import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -83,5 +84,13 @@ public class OrderPaySchedule
 
 		final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
 		line.applyAndProcess(dueDateAndStatus);
+	}
+
+	/** Returns all lines whose reference-date type is {@link ReferenceDateType#LetterOfCreditDate}. */
+	public ImmutableList<OrderPayScheduleLine> getLCLines()
+	{
+		return lines.stream()
+				.filter(line -> line.getReferenceDateType().isLetterOfCreditDate())
+				.collect(ImmutableList.toImmutableList());
 	}
 }

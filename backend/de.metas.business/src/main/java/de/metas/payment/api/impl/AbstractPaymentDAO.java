@@ -5,6 +5,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -272,5 +273,17 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.iterate(I_C_Payment.class);
 
 		return paymentsForEmployees;
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_Payment> findCompletedByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, proformaInvoiceId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
+				.create()
+				.firstOnlyOptional(I_C_Payment.class);
 	}
 }

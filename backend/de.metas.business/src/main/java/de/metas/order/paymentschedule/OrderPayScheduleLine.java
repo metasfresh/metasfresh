@@ -36,6 +36,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @EqualsAndHashCode
@@ -56,6 +58,9 @@ public class OrderPayScheduleLine
 	@Setter @NonNull OrderPayScheduleStatus status;
 	@Setter @NonNull LocalDate dueDate;
 	final @NonNull Money dueAmount;
+
+	/** Actual amount due — written exclusively by {@code OrderPayScheduleLCService} for the LC step. NULL on all non-LC rows. */
+	@Setter @Nullable BigDecimal dueAmtActual;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 
