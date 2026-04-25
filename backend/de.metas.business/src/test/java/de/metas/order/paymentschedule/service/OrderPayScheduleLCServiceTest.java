@@ -172,6 +172,30 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	// -----------------------------------------------------------------------
+	// Scenario 4b — allocation present, closed payment → Paid
+	//
+	// Closed (DocStatus=CL) payments count as paid, same as Completed (CO).
+	// The authority function uses DocStatus IN completedOrClosedStatuses() ; reversed payments
+	// (DocStatus=RE) still don't count — see Scenario 5.
+	// -----------------------------------------------------------------------
+
+	@Test
+	void allocationPresent_closedPayment_yields_Paid()
+	{
+		final OrderId orderId = createOrder();
+		createLCPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		final int proformaInvoiceId = createProformaInvoice(TimeUtil.asTimestamp(LocalDate.of(2026, 4, 16)));
+		createAlloc(orderId, proformaInvoiceId);
+		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Closed);
+
+		service.recomputeLCStep(orderId);
+
+		final I_C_OrderPaySchedule lcLine = findLCLine(orderId);
+		assertThat(lcLine.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
+		assertThat(lcLine.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+	}
+
+	// -----------------------------------------------------------------------
 	// Scenario 5 — allocation present, reversed payment → Awaiting_Pay (actuals preserved)
 	// -----------------------------------------------------------------------
 
