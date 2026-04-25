@@ -78,18 +78,14 @@ public class C_Invoice_Proforma_Allocate_Order extends JavaProcess implements IP
 	protected String doIt() throws Exception
 	{
 		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoId(getRecord_ID());
-		final OrderId purchaseOrderId = OrderId.ofRepoIdOrNull(p_C_Order_ID);
-
-		Check.assumeNotNull(purchaseOrderId, "Purchase Order Para should be set");
+		final OrderId purchaseOrderId = Check.assumeNotNull(OrderId.ofRepoIdOrNull(p_C_Order_ID), "Purchase Order Para should be set");
 
 		// Validation (currency, vendor, LC-break count) is performed by the command's validate() method,
 		// which is the API/script gate — it runs even when the Val Rule lookup filter is bypassed.
-		final ProformaOrderAllocateRequest request = ProformaOrderAllocateRequest.builder()
+		proformaOrderAllocService.allocate(ProformaOrderAllocateRequest.builder()
 				.proformaInvoiceId(proformaInvoiceId)
 				.purchaseOrderId(purchaseOrderId)
-				.build();
-
-		proformaOrderAllocService.allocate(request);
+				.build());
 
 		return MSG_OK;
 	}

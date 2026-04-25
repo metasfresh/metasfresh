@@ -205,7 +205,7 @@ public class DataTableUtil
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
+		return isNullPlaceholder(value) ? null : value;
 	}
 
 	/**

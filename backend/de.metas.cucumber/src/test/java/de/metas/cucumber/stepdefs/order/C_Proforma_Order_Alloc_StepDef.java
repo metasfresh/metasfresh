@@ -77,12 +77,10 @@ public class C_Proforma_Order_Alloc_StepDef
 		final InvoiceId proformaInvoiceId = invoiceTable.getId(invoiceIdentifier);
 		final OrderId purchaseOrderId = orderTable.getId(orderIdentifier);
 
-		final ProformaOrderAllocateRequest request = ProformaOrderAllocateRequest.builder()
+		proformaOrderAllocService.allocate(ProformaOrderAllocateRequest.builder()
 				.proformaInvoiceId(proformaInvoiceId)
 				.purchaseOrderId(purchaseOrderId)
-				.build();
-
-		proformaOrderAllocService.allocate(request);
+				.build());
 	}
 
 	/**

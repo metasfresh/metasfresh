@@ -131,7 +131,7 @@ public class OrderPayScheduleLoaderAndSaver
 	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final BigDecimal dueAmtActualRaw = record.getDueAmt_Actual();
+		final BigDecimal dueAmtActualBD = record.getDueAmt_Actual();
 		return OrderPayScheduleLine.builder()
 				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
@@ -143,7 +143,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.status(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.dueAmtActual(dueAmtActualRaw != null ? Money.of(dueAmtActualRaw, currencyId) : null)
+				.dueAmtActual(dueAmtActualBD != null ? Money.of(dueAmtActualBD, currencyId) : null)
 				.build();
 	}
 

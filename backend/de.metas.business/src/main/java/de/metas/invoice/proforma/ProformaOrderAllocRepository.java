@@ -45,7 +45,7 @@ public class ProformaOrderAllocRepository
 	@NonNull
 	public ProformaOrderAlloc getById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)
 	{
-		return toProformaOrderAlloc(load(proformaOrderAllocId, I_C_Proforma_Order_Alloc.class));
+		return fromRecord(load(proformaOrderAllocId, I_C_Proforma_Order_Alloc.class));
 	}
 
 	public ProformaOrderAlloc create(@NonNull final ProformaOrderAllocateRequest request)
@@ -54,7 +54,7 @@ public class ProformaOrderAllocRepository
 		record.setC_Invoice_ID(request.getProformaInvoiceId().getRepoId());
 		record.setC_Order_ID(request.getPurchaseOrderId().getRepoId());
 		saveRecord(record);
-		return toProformaOrderAlloc(record);
+		return fromRecord(record);
 	}
 
 	public boolean existsByInvoiceAndOrder(
@@ -86,7 +86,7 @@ public class ProformaOrderAllocRepository
 				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.create()
 				.stream()
-				.map(ProformaOrderAllocRepository::toProformaOrderAlloc)
+				.map(ProformaOrderAllocRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -98,7 +98,7 @@ public class ProformaOrderAllocRepository
 				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.stream()
-				.map(ProformaOrderAllocRepository::toProformaOrderAlloc)
+				.map(ProformaOrderAllocRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -129,7 +129,7 @@ public class ProformaOrderAllocRepository
 				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Invoice_ID, proformaInvoiceId)
 				.create()
 				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
-				.map(ProformaOrderAllocRepository::toProformaOrderAlloc);
+				.map(ProformaOrderAllocRepository::fromRecord);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class ProformaOrderAllocRepository
 				.addEqualsFilter(I_C_Proforma_Order_Alloc.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.firstOnlyOptional(I_C_Proforma_Order_Alloc.class)
-				.map(ProformaOrderAllocRepository::toProformaOrderAlloc);
+				.map(ProformaOrderAllocRepository::fromRecord);
 	}
 
 	public void deleteById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)
@@ -155,7 +155,7 @@ public class ProformaOrderAllocRepository
 				.delete();
 	}
 
-	private static ProformaOrderAlloc toProformaOrderAlloc(@NonNull final I_C_Proforma_Order_Alloc record)
+	private static ProformaOrderAlloc fromRecord(@NonNull final I_C_Proforma_Order_Alloc record)
 	{
 		return ProformaOrderAlloc.builder()
 				.id(ProformaOrderAllocId.ofRepoId(record.getC_Proforma_Order_Alloc_ID()))

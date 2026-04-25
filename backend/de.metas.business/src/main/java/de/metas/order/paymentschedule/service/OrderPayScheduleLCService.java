@@ -160,11 +160,11 @@ public class OrderPayScheduleLCService
 
 	/**
 	 * Sentinel value written to {@code C_OrderPaySchedule.DueDate} when the LC step has no allocation
-	 * (and therefore no real LC_Date to derive its due date from). Mirrors what {@code OrderPayScheduleService}
-	 * uses on order completion. Comparing this date with a realistic PayDate keeps the LC line outside an
-	 * "OnlyDue" pay-selection result.
+	 * (and therefore no real LC_Date to derive its due date from). Comparing this date with a realistic
+	 * PayDate keeps the LC line outside an "OnlyDue" pay-selection result. The {@code 9999-12-31}
+	 * date matches {@link org.compiere.util.Env#MAX_DATE} (the codebase convention for "far future").
 	 */
-	private static final LocalDate SENTINEL_NO_LC_DATE = LocalDate.of(9999, 1, 1);
+	private static final LocalDate SENTINEL_NO_LC_DATE = LocalDate.of(9999, 12, 31);
 
 	private void clearLCDateOnOrder(@NonNull final OrderId orderId)
 	{

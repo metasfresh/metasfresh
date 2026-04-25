@@ -23,8 +23,8 @@
 package de.metas.order.paymentschedule.interceptor;
 
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.proforma.ProformaOrderAlloc;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
+import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,14 +74,14 @@ public class C_Payment_LCStep
 			return; // not a proforma prepayment — skip
 		}
 
-		final ProformaOrderAlloc alloc = proformaOrderAllocRepository
-				.findByProformaInvoiceId(proformaInvoiceId)
+		final OrderId orderId = proformaOrderAllocRepository
+				.findOrderIdByProformaInvoiceId(proformaInvoiceId)
 				.orElse(null);
-		if (alloc == null)
+		if (orderId == null)
 		{
 			return; // defensive: no alloc row found — nothing to recompute
 		}
 
-		lcService.recomputeLCStep(alloc.getOrderId());
+		lcService.recomputeLCStep(orderId);
 	}
 }

@@ -87,12 +87,10 @@ class ProformaOrderAllocateCommand
 		// Val Rule lookup filter is bypassed (e.g. direct REST call or Cucumber/script scenario).
 		validate(invoice, order);
 
-		final ProformaOrderAllocateRequest request = ProformaOrderAllocateRequest.builder()
+		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(ProformaOrderAllocateRequest.builder()
 				.proformaInvoiceId(proformaInvoiceId)
 				.purchaseOrderId(purchaseOrderId)
-				.build();
-
-		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(request);
+				.build());
 
 		// Delegate LC_Date stamping to the authority function — recomputeLCStep is the sole writer of LC_Date.
 		orderPayScheduleLCService.recomputeLCStep(purchaseOrderId);

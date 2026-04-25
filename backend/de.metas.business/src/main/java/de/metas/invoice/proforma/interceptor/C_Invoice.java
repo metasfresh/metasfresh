@@ -39,11 +39,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_Invoice
 {
-	// Dedicated AdMessageKey introduced by migration 5799610 — semantic match for "DocAction
-	// (reverse / void / reactivate) is blocked because the proforma invoice has an active
-	// C_Proforma_Order_Alloc and must be de-allocated first".
-	private static final AdMessageKey MSG_DocActionBlockedByActiveAllocation =
-			AdMessageKey.of("de.metas.invoice.proforma.DocActionBlockedByActiveAllocation");
+	private static final AdMessageKey MSG_DocActionBlockedByActiveAllocation = AdMessageKey.of("de.metas.invoice.proforma.DocActionBlockedByActiveAllocation");
 
 	@NonNull final ProformaOrderAllocService proformaOrderAllocService;
 
