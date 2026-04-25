@@ -23,8 +23,8 @@ Feature: Proforma invoice appears in Pay Selection alongside regular financial i
       | Identifier |
       | ps         |
     And metasfresh contains M_PriceLists
-      | Identifier  | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl_purchase | ps                 | DE           | EUR           | false |
+      | Identifier  | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
+      | pl_purchase | ps                 | DE           | EUR           | false | Y             |
     And metasfresh contains M_PriceList_Versions
       | Identifier   | M_PriceList_ID |
       | plv_purchase | pl_purchase    |
