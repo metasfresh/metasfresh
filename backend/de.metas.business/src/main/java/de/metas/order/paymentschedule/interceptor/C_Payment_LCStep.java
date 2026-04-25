@@ -28,32 +28,34 @@ import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
- * Fires {@link OrderPayScheduleLCService#recomputeLCStep} whenever a payment's {@code DocStatus}
- * changes (after-change) and the payment is linked to a proforma invoice.
+ * Drives {@link OrderPayScheduleLCService#recomputeLCStep} from the C_Payment doc-action lifecycle.
  *
- * <p><b>Why DocStatus, not DocValidate?</b>
- * The DocStatus column is updated for the original payment when it transitions CO → RE during
- * {@code MPayment.reverseCorrectIt()}. An AFTER_CHANGE listener on DocStatus fires for that
- * transition and lets the service re-evaluate the LC step (Paid → Awaiting_Pay).
+ * <p>Uses {@code @DocValidate} (not {@code @ModelChange} on DocStatus) so each interception
+ * fires once per genuine doc-action — not on every transient DocStatus column change inside
+ * {@code processIt(...)} or {@code reverseCorrectIt(...)}. See {@code architecture.md} §6
+ * for the rationale.
  *
- * <p><b>Guard on Proforma_Invoice_ID &lt;= 0:</b>
- * The reversal payment created inside {@code MPayment.reverseCorrectIt()} has
- * {@code Proforma_Invoice_ID = NULL} — explicitly cleared there. If the reversal carried the
- * same Proforma_Invoice_ID as the original, the dual-Completed window during reverseCorrectIt()
- * would make the authority query find two rows simultaneously and throw
- * {@link org.adempiere.exceptions.DBMoreThanOneRecordsFoundException}. The guard ensures
- * the interceptor only reacts to payments that are actually prepayments (the originals).
+ * <p>Two events are wired:
+ * <ul>
+ *   <li><b>AFTER_COMPLETE</b> — payment was completed via processIt(Complete). For a "real"
+ *       completion we recompute (LC step → Paid). The reversal payment that
+ *       {@link org.compiere.model.MPayment#reverseCorrectIt()} creates also goes through
+ *       processIt(Complete) transiently before being flipped to Reversed; we skip those by
+ *       checking {@code PayAmt.signum() < 0} (reversal payments carry a negated amount).
+ *   <li><b>AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL</b> — payment was reversed. Both the
+ *       original and the reversal are at DocStatus=Reversed at this point, so the authority
+ *       query finds zero CO/CL payments for the proforma → LC step rolls back to Awaiting_Pay.
+ * </ul>
  *
- * <p><b>Idempotence:</b>
- * {@link OrderPayScheduleLCService#recomputeLCStep} is idempotent — if fired twice
- * (e.g. because of an additional model-change cascade), the LC step state remains correct.
+ * <p>Idempotence: {@link OrderPayScheduleLCService#recomputeLCStep} is total and idempotent;
+ * a duplicate fire produces no additional change.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29368">me03 #29368 Split-Payment Iter 2</a>
  */
@@ -65,13 +67,35 @@ public class C_Payment_LCStep
 	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository;
 	@NonNull private final OrderPayScheduleLCService lcService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DocStatus })
-	public void onDocStatusChanged(@NonNull final I_C_Payment payment)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void onPaymentCompleted(@NonNull final I_C_Payment payment)
+	{
+		// Skip reversal payments: their AFTER_COMPLETE is transient (the reversal is flipped to
+		// Reversed immediately afterwards in MPayment.reverseCorrectIt). The authoritative
+		// recompute for the reversal flow happens via TIMING_AFTER_REVERSECORRECT below, where
+		// both the original and the reversal sit at DocStatus=Reversed.
+		if (payment.getPayAmt().signum() < 0)
+		{
+			return;
+		}
+		recomputeLCStepIfProforma(payment);
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_REVERSECORRECT,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL
+	})
+	public void onPaymentReversed(@NonNull final I_C_Payment payment)
+	{
+		recomputeLCStepIfProforma(payment);
+	}
+
+	private void recomputeLCStepIfProforma(@NonNull final I_C_Payment payment)
 	{
 		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
 		if (proformaInvoiceId == null)
 		{
-			return; // not a proforma prepayment — skip
+			return;
 		}
 
 		final OrderId orderId = proformaOrderAllocRepository
@@ -79,7 +103,7 @@ public class C_Payment_LCStep
 				.orElse(null);
 		if (orderId == null)
 		{
-			return; // defensive: no alloc row found — nothing to recompute
+			return;
 		}
 
 		lcService.recomputeLCStep(orderId);
