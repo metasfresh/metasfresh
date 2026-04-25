@@ -211,9 +211,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
-				// OpenAmt: invoiceOpen() returns NULL for proforma invoices (APF/ARF) because they are
-			// excluded from C_Invoice_v (IsFinancial='N'). proformaInvoiceOpen() handles those.
-				+ " COALESCE(invoiceOpen(i.C_Invoice_ID, 0), proformaInvoiceOpen(i.C_Invoice_ID)) as OpenAmt,"
+				// OpenAmt: invoiceOpen() handles proforma invoices internally via the
+				// IsFinancial branch (no allocation rows for proformas; paid-detection uses
+				// C_Payment.Proforma_Invoice_ID + DocStatus IN CO/CL).
+				+ " invoiceOpen(i.C_Invoice_ID, 0) as OpenAmt,"
 				// DiscountAmt
 				+ " paymentTermDiscount(i.GrandTotal,i.C_Currency_ID,i.C_PaymentTerm_ID,i.DateInvoiced, ?) as DiscountAmt," // #1 PayDate
 				+ " i.PaymentRule, " // 4

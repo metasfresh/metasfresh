@@ -1,22 +1,15 @@
-SELECT db_drop_functions('*.invoiceOpenToDate')
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/functions/invoiceopentodate.sql
+-- https://github.com/metasfresh/me03/issues/29368
+-- Unify invoiceOpenToDate so it handles proforma invoices (DocBaseType IN APF/ARF, IsFinancial='N')
+-- internally via C_Payment.Proforma_Invoice_ID + DocStatus IN (CO,CL). The separate function
+-- proformaInvoiceOpen() is dropped in this same PR (the COALESCE in PaySelectionUpdater.buildInvoiceSql
+-- collapses to a single invoiceOpen() call).
+--
+-- The 3-arg overload is unchanged and not re-created here.
+
+DROP FUNCTION IF EXISTS proformaInvoiceOpen(numeric)
 ;
 
-DROP TYPE IF EXISTS InvoiceOpenResult
-;
-
-CREATE TYPE InvoiceOpenResult AS
-(
-    GrandTotal         numeric,
-    OpenAmt            numeric,
-    PaidAmt            numeric,
-    C_Currency_ID      numeric,
-    HasAllocations     char(1),
-    InvoiceDocBaseType char(3)
-)
-;
-
-COMMENT ON TYPE InvoiceOpenResult IS 'The result of some invoiceOpen functions. It mainly contains the invoice grand total, open amount, paid amount and the currency of those amounts.'
-;
 
 
 CREATE OR REPLACE FUNCTION invoiceOpenToDate(
@@ -404,36 +397,6 @@ BEGIN
     v_result.PaidAmt := v_result.GrandTotal - v_result.OpenAmt;
 
     RETURN v_result;
-END;
-$BODY$
-;
-
-
-/* Legacy version: invoice open to DateTrx */
-CREATE OR REPLACE FUNCTION invoiceOpenToDate(p_c_invoice_id            numeric,
-                                             p_c_invoicepayschedule_id numeric,
-                                             p_DateTrx                 timestamp WITH TIME ZONE
-)
-    RETURNS numeric
-    LANGUAGE plpgsql
-    VOLATILE
-AS
-$BODY$
-DECLARE
-    v_result InvoiceOpenResult;
-BEGIN
-    v_result := invoiceOpenToDate(
-            p_C_Invoice_ID,
-            p_C_InvoicePaySchedule_ID,
-            'T', -- p_DateType
-            p_DateTrx
-                );
-
-    IF (v_result IS NULL) THEN
-        RETURN NULL;
-    END IF;
-
-    RETURN v_result.OpenAmt;
 END;
 $BODY$
 ;

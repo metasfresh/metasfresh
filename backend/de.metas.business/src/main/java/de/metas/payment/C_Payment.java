@@ -24,6 +24,9 @@ package de.metas.payment;
 
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
@@ -42,6 +45,8 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
@@ -57,8 +62,11 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 @RequiredArgsConstructor
 public class C_Payment
 {
+	private static final AdMessageKey MSG_ProformaPaymentMustBeFull = AdMessageKey.of("de.metas.invoice.proforma.PaymentMustBeFull");
+
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
@@ -115,6 +123,34 @@ public class C_Payment
 		record.setPayAmt(priceActual);
 		record.setDiscountAmt(discountAmount);
 		paymentBL.validateDocTypeIsInSync(record);
+	}
+
+	/**
+	 * Proforma payments must be full payments (AC #16, https://github.com/metasfresh/me03/issues/29368):
+	 * abs(PayAmt) must equal the proforma's GrandTotal. Partial payments are forbidden because there
+	 * are no C_AllocationLine rows for proforma payments (no accounting), so a residual balance
+	 * cannot be reconciled. Reversal symmetry is automatic — abs(-GrandTotal) == GrandTotal.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
+	public void assertProformaPaymentIsFull(@NonNull final I_C_Payment payment)
+	{
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
+		{
+			return; // not a proforma payment
+		}
+
+		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
+		final BigDecimal expected = proforma.getGrandTotal();
+		final BigDecimal actualAbs = payment.getPayAmt().abs();
+		if (actualAbs.compareTo(expected) != 0)
+		{
+			throw new AdempiereException(MSG_ProformaPaymentMustBeFull)
+					.appendParametersToMessage()
+					.setParameter("proformaInvoiceId", proformaInvoiceId)
+					.setParameter("expectedGrandTotal", expected)
+					.setParameter("actualPayAmtAbs", actualAbs);
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
