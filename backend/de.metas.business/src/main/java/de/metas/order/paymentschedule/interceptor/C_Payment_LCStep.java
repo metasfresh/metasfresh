@@ -34,6 +34,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 /**
  * Drives {@link OrderPayScheduleLCService#recomputeLCStep} from the C_Payment doc-action lifecycle.
  *
@@ -78,7 +80,12 @@ public class C_Payment_LCStep
 		{
 			return;
 		}
-		recomputeLCStepIfProforma(payment);
+		final OrderId orderId = findOrderIdForProformaPayment(payment);
+		if (orderId == null)
+		{
+			return;
+		}
+		lcService.recomputeLCStepAfterPaymentCompleted(orderId, payment);
 	}
 
 	@DocValidate(timings = {
@@ -87,25 +94,26 @@ public class C_Payment_LCStep
 	})
 	public void onPaymentReversed(@NonNull final I_C_Payment payment)
 	{
-		recomputeLCStepIfProforma(payment);
-	}
-
-	private void recomputeLCStepIfProforma(@NonNull final I_C_Payment payment)
-	{
-		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
-		if (proformaInvoiceId == null)
-		{
-			return;
-		}
-
-		final OrderId orderId = proformaOrderAllocRepository
-				.findOrderIdByProformaInvoiceId(proformaInvoiceId)
-				.orElse(null);
+		final OrderId orderId = findOrderIdForProformaPayment(payment);
 		if (orderId == null)
 		{
 			return;
 		}
-
+		// At AFTER_REVERSECORRECT both the original and the reversal sit at DocStatus="RE",
+		// so the DAO query correctly returns no CO/CL payment for the proforma.
 		lcService.recomputeLCStep(orderId);
+	}
+
+	@Nullable
+	private OrderId findOrderIdForProformaPayment(@NonNull final I_C_Payment payment)
+	{
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
+		{
+			return null;
+		}
+		return proformaOrderAllocRepository
+				.findOrderIdByProformaInvoiceId(proformaInvoiceId)
+				.orElse(null);
 	}
 }

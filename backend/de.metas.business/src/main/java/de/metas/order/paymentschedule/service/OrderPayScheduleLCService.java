@@ -95,6 +95,30 @@ public class OrderPayScheduleLCService
 	 */
 	public void recomputeLCStep(@NonNull final OrderId orderId)
 	{
+		recomputeLCStep(orderId, null);
+	}
+
+	/**
+	 * Variant for invocation from {@code @DocValidate(TIMING_AFTER_COMPLETE)} on the proforma
+	 * payment. The completing payment is not yet persisted with {@code DocStatus="CO"} at the
+	 * AFTER_COMPLETE timing (see {@code MPayment.completeIt()} — {@code setDocStatus("CO")} +
+	 * {@code saveEx} happen <i>after</i> the validator fires), so a fresh
+	 * {@link IPaymentDAO#findCompletedOrClosedByProformaInvoiceId} would return empty and the LC
+	 * step would incorrectly stay at {@code Awaiting_Pay}. Pass the in-flight payment so the
+	 * service can recognize it without depending on the not-yet-persisted DB state.
+	 *
+	 * <p>For payment reversal flows (AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL), call the
+	 * single-arg {@link #recomputeLCStep(OrderId)} — by that timing the reversed payment is
+	 * persisted with {@code DocStatus="RE"} and the DAO query correctly returns no completed
+	 * payment.
+	 */
+	public void recomputeLCStepAfterPaymentCompleted(@NonNull final OrderId orderId, @NonNull final I_C_Payment completingPayment)
+	{
+		recomputeLCStep(orderId, completingPayment);
+	}
+
+	private void recomputeLCStep(@NonNull final OrderId orderId, @Nullable final I_C_Payment trustedCompletingPayment)
+	{
 		final Optional<OrderPaySchedule> scheduleOpt = orderPayScheduleService.getByOrderId(orderId);
 		if (!scheduleOpt.isPresent())
 		{
@@ -131,7 +155,16 @@ public class OrderPayScheduleLCService
 		// Proforma allocation is present: determine payment state
 		final InvoiceId proformaInvoiceId = allocation.getInvoiceId();
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
-		final I_C_Payment completedPayment = paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).orElse(null);
+		I_C_Payment completedPayment = paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).orElse(null);
+		// If the DAO didn't see the in-flight trigger payment (because TIMING_AFTER_COMPLETE
+		// fires *before* the caller's setDocStatus("CO") + saveEx — see MPayment.completeIt),
+		// trust the trigger and treat it as the completed payment.
+		if (completedPayment == null
+				&& trustedCompletingPayment != null
+				&& trustedCompletingPayment.getProforma_Invoice_ID() == proformaInvoiceId.getRepoId())
+		{
+			completedPayment = trustedCompletingPayment;
+		}
 
 		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
 		final Money proformaActualAmount = Money.of(proforma.getGrandTotal(), proformaCurrencyId);
