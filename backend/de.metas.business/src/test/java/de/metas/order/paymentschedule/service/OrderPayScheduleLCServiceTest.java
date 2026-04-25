@@ -358,6 +358,7 @@ class OrderPayScheduleLCServiceTest
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setGrandTotal(PROFORMA_GRAND_TOTAL);
 		invoice.setDateInvoiced(dateInvoiced);
+		invoice.setC_Currency_ID(318); // EUR — same as the LC pay-schedule line, so Money.of(...) succeeds
 		saveRecord(invoice);
 		return invoice.getC_Invoice_ID();
 	}
