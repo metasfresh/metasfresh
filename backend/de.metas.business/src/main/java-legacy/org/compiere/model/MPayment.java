@@ -1864,22 +1864,10 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
-		// Create Reversal. copyValues() carries classification fields so downstream lookups
-		// recognise the reversal as related to the original document. The numeric effect
-		// (PayAmt, DiscountAmt, WriteOffAmt, OverUnderAmt) is negated below.
-		//
-		// The following fields are intentionally cleared on the reversal:
-		// - C_Order_ID / C_Invoice_ID — UI-convenience fields, not classification; the
-		//   authoritative payment↔invoice link is C_AllocationLine.
-		// - Proforma_Invoice_ID — documented exception to the reversal-symmetry rule. The
-		//   reversal is processed (Drafted → Completed) BEFORE the original transitions to
-		//   Reversed, so within reverseCorrectIt() there is a brief window where both rows
-		//   carry DocStatus=Completed simultaneously. The LC-step authority function
-		//   (findCompletedOrClosedByProformaInvoiceId.firstOnlyOptional) would find two
-		//   matching rows in that window and throw DBMoreThanOneRecordsFoundException.
-		//   Clearing Proforma_Invoice_ID on the reversal sidesteps the timing issue.
-		//   The proforma's "paid" semantic remains correct: when the original transitions to
-		//   Reversed it drops out of the CO/CL filter, and the LC step flips Paid → Awaiting_Pay.
+		// Create Reversal. copyValues() carries classification fields; numeric effect is negated below.
+		// Proforma_Invoice_ID is cleared because reverseCorrectIt() completes the reversal before
+		// transitioning the original to RE — both rows carry DocStatus=CO during that window, and
+		// findCompletedOrClosedByProformaInvoiceId.firstOnlyOptional would throw on the duplicate.
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
 		reversal.setClientOrg(this);

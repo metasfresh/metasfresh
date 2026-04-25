@@ -1,17 +1,13 @@
--- https://github.com/metasfresh/me03/issues/29368  Phase 5 / T42c-DDL
--- Reverts the order-side surface introduced by https://github.com/metasfresh/metasfresh/pull/21485
--- on C_PaySelectionLine. After Phase 5 every pay-selection line is invoice-only — the two
--- order-side columns + their AD metadata + the UI surface are unreferenced. The Java cleanup
--- already landed (commits f0f5a9cb932, 2d7a733331b, b07b0482774); this migration drops the
--- physical schema + AD metadata.
+-- https://github.com/metasfresh/me03/issues/29368
+-- Reverts the order-side surface from https://github.com/metasfresh/metasfresh/pull/21485 on
+-- C_PaySelectionLine: drops the two columns + their AD metadata + the UI field. The shared
+-- AD_Element rows (558, 584056) are used elsewhere and are not touched.
 --
--- The AD_Element rows themselves (558 = C_Order_ID, 584056 = C_OrderPaySchedule_ID) are
--- shared/core elements used elsewhere in the schema and are NOT touched.
---
--- For environments that may still hold PaySelectionLineType=Order test data, run the cleanup
--- SQL published at https://github.com/metasfresh/me03/issues/29368#issuecomment-4320178387
--- BEFORE applying this migration. Production was never affected (the feature was never
--- deployed there), so the DROP COLUMN below assumes zero rows reference these columns.
+-- Stray test data: see https://github.com/metasfresh/me03/issues/29368#issuecomment-4320178387.
+
+-- Defensive backup before any destructive change to a non-AD table.
+SELECT backup_table('c_payselectionline', '_29368_drop_order_columns')
+;
 
 -- =============================================================================
 -- 1. Delete the UI surface for C_PaySelectionLine.C_Order_ID

@@ -45,6 +45,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,8 +73,8 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	// Lazily resolved — unit tests that don't have a Spring context never call the proforma branch
 	// in createPaymentForInvoice, so they don't need this bean registered.
-	private final org.compiere.SpringContextHolder.Lazy<ProformaOrderAllocRepository> proformaAllocRepo
-			= org.compiere.SpringContextHolder.lazyBean(ProformaOrderAllocRepository.class);
+	private final SpringContextHolder.Lazy<ProformaOrderAllocRepository> proformaAllocRepo
+			= SpringContextHolder.lazyBean(ProformaOrderAllocRepository.class);
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
