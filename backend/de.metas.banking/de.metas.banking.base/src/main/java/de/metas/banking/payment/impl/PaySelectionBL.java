@@ -16,7 +16,6 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -31,9 +30,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
-import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -45,7 +42,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
@@ -69,7 +65,6 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -113,10 +108,8 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID());
-		final OrderId orderId = OrderId.ofRepoIdOrNull(psl.getC_Order_ID());
-
-		Check.assumeSingleNonNull("One if order or invoice shall not be null", orderId, invoiceId);
+		final InvoiceId invoiceId = Check.assumeNotNull(InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID()),
+				"C_Invoice_ID must be set on pay-selection line {}", psl);
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
@@ -124,80 +117,26 @@ public class PaySelectionBL implements IPaySelectionBL
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
 		final CurrencyId currencyId = bankAccount.getCurrencyId();
 
-		final PaySelectionLineType lineType = extractType(psl);
-		switch (lineType)
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+
+		psl.setC_BPartner_ID(invoice.getC_BPartner_ID());
+		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(psl, currencyId)));
+
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 		{
-			case Invoice:
-
-				Check.assumeNotNull(invoiceId, "invoiceId is not null for {}", psl);
-
-				final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-
-				final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-				psl.setC_BPartner_ID(invoiceBPartnerId.getRepoId());
-
-				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(psl, currencyId)));
-
-				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
-				{
-					psl.setReference(invoice.getPOReference());
-				}
-				break;
-
-			case Order:
-				Check.assumeNotNull(orderId, "orderId is not null for {}", psl);
-
-				final I_C_Order order = orderBL.getById(orderId);
-
-				final BPartnerId orderBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-				psl.setC_BPartner_ID(orderBPartnerId.getRepoId());
-
-				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(psl, currencyId)));
-
-				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
-				{
-					psl.setReference(order.getPOReference());
-				}
-				break;
-			default:
-				throw new AdempiereException("Not supported type for line " + psl);
+			psl.setReference(invoice.getPOReference());
 		}
-
 	}
 
 	@Nullable
 	private BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final I_C_PaySelectionLine psl, @NonNull final CurrencyId currencyId)
 	{
-		final BPartnerId partnerId;
-		final BPBankAcctUse acceptedBankAccountUsage;
-
-		final PaySelectionLineType lineType = extractType(psl);
-		switch (lineType)
-		{
-			case Invoice:
-
-				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(psl.getC_Invoice_ID()));
-				final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
-				// Proforma (APF/ARF) invoices intentionally have IsFinancial='N' but do reach
-				// pay selection via the gate fix in PaySelectionUpdater.buildSelectSQL_InvoiceMatchRequirement
-				// (https://github.com/metasfresh/me03/issues/29368). Treat them as financial-equivalent
-				// for the purposes of resolving the BPartner's bank account.
-				Check.assume(invoice.isFinancial() || invoiceDocBaseType.isProforma(),
-						"Expected invoice {} to be financial or a proforma", invoice.getDocumentNo());
-				partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-				acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
-
-				break;
-
-			case Order:
-				final I_C_Order order = orderBL.getById(OrderId.ofRepoId(psl.getC_Order_ID()));
-				partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-				acceptedBankAccountUsage = orderBL.isSalesOrder(order) ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
-
-				break;
-			default:
-				throw new AdempiereException("Not supported type for line " + psl);
-		}
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(psl.getC_Invoice_ID()));
+		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+		Check.assume(invoice.isFinancial() || invoiceDocBaseType.isProforma(),
+				"Expected invoice {} to be financial or a proforma", invoice.getDocumentNo());
+		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final BPBankAcctUse acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
 
 		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(partnerId, currencyId);
 
@@ -287,21 +226,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		try
 		{
-			final PaySelectionLineType lineType = extractType(line);
-			final I_C_Payment payment;
-			switch (lineType)
-			{
-				case Invoice:
-					payment = createPaymentForInvoice(line);
-					break;
-
-				case Order:
-					payment = createPaymentForOrder(line);
-					break;
-				default:
-					throw new AdempiereException("Not supported type for line " + line);
-			}
-
+			final I_C_Payment payment = createPaymentForInvoice(line);
 			line.setC_Payment_ID(payment.getC_Payment_ID());
 			paySelectionDAO.save(line);
 		}
@@ -362,32 +287,6 @@ public class PaySelectionBL implements IPaySelectionBL
 				//
 				.proformaInvoiceId(isProformaInvoice ? InvoiceId.ofRepoId(invoice.getC_Invoice_ID()) : null)
 				.orderId(proformaOrderId)
-				//
-				.createAndProcess();
-	}
-
-	private I_C_Payment createPaymentForOrder(@NonNull final I_C_PaySelectionLine line)
-	{
-
-		final I_C_PaySelection paySelection = line.getC_PaySelection();
-		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
-		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
-
-		Check.assume(line.getC_Order_ID() > 0, "Order is not null for {}", line);
-
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
-
-		return paymentBL.newBuilderOfOrder(order)
-				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.orgBankAccountId(orgBankAccountId)
-				.dateAcct(payDate)
-				.dateTrx(payDate)
-				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
-				.tenderType(TenderType.DirectDeposit)
-				.payAmt(line.getPayAmt())
-				.discountAmt(line.getDiscountAmt())
-				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(line.getC_OrderPaySchedule_ID()))
-				.isAutoAllocateAvailableAmt(true)
 				//
 				.createAndProcess();
 	}
@@ -578,29 +477,6 @@ public class PaySelectionBL implements IPaySelectionBL
 				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public PaySelectionLineType extractType(final I_C_PaySelectionLine line)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(line.getC_Order_ID());
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
-		if (orderId != null)
-		{
-			return PaySelectionLineType.Order;
-		}
-		else if (invoiceId != null)
-		{
-			return PaySelectionLineType.Invoice;
-		}
-		else
-		{
-			throw new AdempiereException("Unsupported pay selection type, for line: ")
-					.appendParametersToMessage()
-					.setParameter("line", line.getLine())
-					.setParameter("InvoiceId", invoiceId)
-					.setParameter("originalPaymentId", orderId);
-		}
 	}
 
 	@Override
