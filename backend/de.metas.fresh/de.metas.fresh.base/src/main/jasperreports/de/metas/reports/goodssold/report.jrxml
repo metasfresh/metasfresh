@@ -10,11 +10,11 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="C_BPartner_ID" class="java.math.BigDecimal" isForPrompting="false"/>
-	<parameter name="DateFrom" class="java.util.Date" isForPrompting="false"/>
-	<parameter name="DateTo" class="java.util.Date" isForPrompting="false"/>
-	<parameter name="M_Product_ID" class="java.math.BigDecimal" isForPrompting="false"/>
-	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT '';]]>
 	</queryString>
@@ -34,39 +34,24 @@
 				</graphicElement>
 			</line>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-2" x="141" y="0" width="501" height="60" uuid="1d86130b-1c00-4882-a46c-0750926057eb"/>
-				<subreportParameter name="EndDate">
-					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
+				<reportElement key="subreport-2" x="0" y="0" width="770" height="60" uuid="1d86130b-1c00-4882-a46c-0750926057eb"/>
+				<subreportParameter name="DateFrom">
+					<subreportParameterExpression><![CDATA[$P{DateFrom}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="Reference_Date">
-					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="StartDate">
-					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="PassForPayment">
-					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="InvoiceCollectionType">
-					<subreportParameterExpression><![CDATA[$P{InvoiceCollectionType}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="IsSOTrx">
-					<subreportParameterExpression><![CDATA[$P{IsSOTrx}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="AD_Org_ID">
-					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="switchDate">
-					<subreportParameterExpression><![CDATA[$P{switchDate}]]></subreportParameterExpression>
+				<subreportParameter name="DateTo">
+					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="DaysDue">
-					<subreportParameterExpression><![CDATA[$P{DaysDue}]]></subreportParameterExpression>
+				<subreportParameter name="C_BP_Group_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Product_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/openitems/report_title.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/goodssold/report_title.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -77,38 +62,23 @@
 		<band height="41" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-4" x="0" y="0" width="782" height="40" uuid="d54084b9-9852-47b3-9580-c5fc141703e5"/>
-				<subreportParameter name="EndDate">
-					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
+				<subreportParameter name="DateFrom">
+					<subreportParameterExpression><![CDATA[$P{DateFrom}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="Reference_Date">
-					<subreportParameterExpression><![CDATA[$P{Reference_Date}==null ? new Date() : $P{Reference_Date}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="StartDate">
-					<subreportParameterExpression><![CDATA[$P{StartDate}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="PassForPayment">
-					<subreportParameterExpression><![CDATA[$P{PassForPayment}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="InvoiceCollectionType">
-					<subreportParameterExpression><![CDATA[$P{InvoiceCollectionType}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="IsSOTrx">
-					<subreportParameterExpression><![CDATA[$P{IsSOTrx}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="AD_Org_ID">
-					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="switchDate">
-					<subreportParameterExpression><![CDATA[$P{switchDate}]]></subreportParameterExpression>
+				<subreportParameter name="DateTo">
+					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="DaysDue">
-					<subreportParameterExpression><![CDATA[$P{DaysDue}]]></subreportParameterExpression>
+				<subreportParameter name="C_BP_Group_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Product_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/openitems/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/goodssold/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

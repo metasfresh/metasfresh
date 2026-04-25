@@ -119,6 +119,10 @@ FROM report.goods_sales_report(
 		<property name="com.jaspersoft.studio.field.name" value="grandtotal_revenue"/>
 		<property name="com.jaspersoft.studio.field.label" value="grandtotal_revenue"/>
 	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
 	<variable name="total_qtytu" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Sum">
 		<variableExpression><![CDATA[$F{qtytu}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -139,109 +143,236 @@ FROM report.goods_sales_report(
 		<variableExpression><![CDATA[$F{revenue}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
+	<group name="currency">
+		<groupExpression><![CDATA[$F{currency}]]></groupExpression>
+		<groupFooter>
+			<band height="28">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-102" x="0" y="11" width="267" height="12" forecolor="#000000" uuid="2d104e2d-8aaf-4660-8447-52f32d66f66d">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph leftIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{totalsum}+ "  "+ $F{currency}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="textField-104" x="267" y="11" width="73" height="12" isRemoveLineWhenBlank="true" uuid="fda2a004-88f3-43d3-84f7-880ee0346624">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph leftIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grandtotal_qtytu}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="textField-105" x="340" y="11" width="85" height="12" uuid="563f0691-4007-4963-b1b9-c5367d166927">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grandtotal_weight}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="textField-106" x="425" y="11" width="145" height="12" uuid="2bd59b1e-711b-4991-ad75-2df03e27daf4">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grandtotal_netrevenue}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="textField-107" x="570" y="11" width="96" height="12" uuid="95e176fc-bcad-4529-b3ff-1254486aa10a">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grandtotal_discount}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement key="textField-107" x="666" y="10" width="116" height="12" uuid="c1780733-ce34-4f2e-9bb8-b34436010abf">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grandtotal_revenue}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
 	<group name="Product">
 		<groupExpression><![CDATA[$F{productno}]]></groupExpression>
 		<groupHeader>
-			<band height="40">
+			<band height="34">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<rectangle>
-					<reportElement key="rectangle-1" x="0" y="26" width="782" height="13" backcolor="#808080" uuid="99fb2d6c-9574-45e4-afe8-a229f7928c4a"/>
+					<reportElement key="rectangle-1" x="0" y="21" width="782" height="13" backcolor="#808080" uuid="99fb2d6c-9574-45e4-afe8-a229f7928c4a"/>
 					<graphicElement>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</graphicElement>
 				</rectangle>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-66" x="0" y="26" width="80" height="12" forecolor="#FFFFFF" uuid="cc003379-fff7-4e48-849e-6dceb681971a"/>
+					<reportElement key="textField-66" x="0" y="21" width="80" height="12" forecolor="#FFFFFF" uuid="cc003379-fff7-4e48-849e-6dceb681971a">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
 						<font fontName="Arial" size="8"/>
+						<paragraph leftIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Customer}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-67" x="267" y="26" width="73" height="12" forecolor="#FFFFFF" uuid="43f59b79-f756-44a8-8366-330988b38396"/>
+					<reportElement key="textField-67" x="267" y="21" width="73" height="12" forecolor="#FFFFFF" uuid="43f59b79-f756-44a8-8366-330988b38396">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
 						<font fontName="Arial" size="8"/>
+						<paragraph leftIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-68" x="340" y="26" width="85" height="12" forecolor="#FFFFFF" uuid="49e7124e-d28c-4a7e-901e-9a6cbc9cb0e3"/>
+					<reportElement key="textField-68" x="340" y="21" width="85" height="12" forecolor="#FFFFFF" uuid="49e7124e-d28c-4a7e-901e-9a6cbc9cb0e3">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Weight}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-69" x="426" y="26" width="144" height="12" forecolor="#FFFFFF" uuid="9ec614c7-0917-48e5-adeb-510b17447733"/>
+					<reportElement key="textField-69" x="425" y="21" width="145" height="12" forecolor="#FFFFFF" uuid="9ec614c7-0917-48e5-adeb-510b17447733">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{NetRevenue}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-70" x="570" y="26" width="96" height="12" forecolor="#FFFFFF" uuid="5524ccc7-a708-4d8d-a72e-6c32f0b6dd6c"/>
+					<reportElement key="textField-70" x="570" y="21" width="96" height="12" forecolor="#FFFFFF" uuid="5524ccc7-a708-4d8d-a72e-6c32f0b6dd6c">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-71" x="666" y="26" width="104" height="12" forecolor="#FFFFFF" uuid="1c579aae-9a89-455f-b94c-f85a969f547f"/>
+					<reportElement key="textField-71" x="666" y="21" width="116" height="12" forecolor="#FFFFFF" uuid="1c579aae-9a89-455f-b94c-f85a969f547f">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Revenue}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-66" x="80" y="26" width="187" height="12" forecolor="#FFFFFF" uuid="f20b7def-585b-43ad-b7a0-61b969746737"/>
+					<reportElement key="textField-66" x="80" y="21" width="187" height="12" forecolor="#FFFFFF" uuid="f20b7def-585b-43ad-b7a0-61b969746737"/>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
 						<font fontName="Arial" size="8"/>
@@ -264,88 +395,107 @@ FROM report.goods_sales_report(
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="13">
+			<band height="12">
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-102" x="0" y="0" width="267" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105"/>
+					<reportElement key="textField-102" x="0" y="0" width="267" height="12" forecolor="#000000" uuid="11228c39-3c67-4f11-8042-d113473ee105">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph leftIndent="2"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{sum} + $F{productno}+ "  " + $F{productname}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{sum} +"  " + $F{currency}+" "+ $F{productno}+ "  " + $F{productname}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-104" x="267" y="0" width="73" height="12" isRemoveLineWhenBlank="true" uuid="4f38121c-4e55-4d82-adc3-7c60f92dc49e"/>
+					<reportElement key="textField-104" x="267" y="0" width="73" height="12" isRemoveLineWhenBlank="true" uuid="4f38121c-4e55-4d82-adc3-7c60f92dc49e">
+						<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph leftIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{producttotal_qtytu}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-105" x="340" y="0" width="85" height="12" uuid="a5b60a22-4ad0-43db-9bfa-a15a60ff2d05"/>
+					<reportElement key="textField-105" x="340" y="0" width="85" height="12" uuid="a5b60a22-4ad0-43db-9bfa-a15a60ff2d05">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{producttotal_weight}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-106" x="426" y="0" width="144" height="12" uuid="51dd0390-e080-4fc6-99dd-2545fa3e3eb2"/>
+					<reportElement key="textField-106" x="425" y="0" width="145" height="12" uuid="51dd0390-e080-4fc6-99dd-2545fa3e3eb2">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{producttotal_netrevenue}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-107" x="570" y="0" width="96" height="12" uuid="83abbe32-8d83-46b6-b98c-a995d36e896a"/>
+					<reportElement key="textField-107" x="570" y="0" width="96" height="12" uuid="83abbe32-8d83-46b6-b98c-a995d36e896a">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{producttotal_discount}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-107" x="666" y="0" width="104" height="12" uuid="00084ed6-41f6-472b-a58b-69a09eab33ca"/>
+					<reportElement key="textField-107" x="666" y="0" width="116" height="12" uuid="00084ed6-41f6-472b-a58b-69a09eab33ca">
+						<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					</reportElement>
 					<box>
-						<pen lineColor="#000000"/>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+						<pen lineWidth="0.75" lineColor="#000000"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
+						<paragraph rightIndent="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{producttotal_revenue}]]></textFieldExpression>
 				</textField>
@@ -353,85 +503,95 @@ FROM report.goods_sales_report(
 		</groupFooter>
 	</group>
 	<detail>
-		<band height="13" splitType="Stretch">
+		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-103" x="0" y="0" width="80" height="12" uuid="c15719e2-b986-4199-b6f7-4118679e7c17">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph leftIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customer_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-104" x="267" y="0" width="73" height="12" isRemoveLineWhenBlank="true" uuid="7fb32cf6-4457-4232-992b-5073a68ea260">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph leftIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtytu}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-105" x="340" y="0" width="85" height="12" uuid="dcb44f86-c136-4486-a3e9-99c25410903b">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-106" x="426" y="0" width="144" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270">
+				<reportElement key="textField-106" x="425" y="0" width="145" height="12" uuid="a17367ea-7130-4aae-b426-84b30efab270">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{netrevenue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-107" x="570" y="0" width="96" height="12" uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
 			</textField>
@@ -440,11 +600,11 @@ FROM report.goods_sales_report(
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.75" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
@@ -452,197 +612,23 @@ FROM report.goods_sales_report(
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-107" x="666" y="0" width="104" height="12" uuid="01db5042-2bc4-4803-a56e-5af45f222883">
+				<reportElement key="textField-107" x="666" y="0" width="116" height="12" uuid="01db5042-2bc4-4803-a56e-5af45f222883">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 				</reportElement>
 				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					<pen lineWidth="0.75" lineColor="#000000"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{revenue}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
-	<pageFooter>
-		<band height="29">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-102" x="0" y="10" width="267" height="12" forecolor="#000000" uuid="b4c38eea-eae3-435b-97c4-68faad51affc"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-104" x="267" y="10" width="73" height="12" isRemoveLineWhenBlank="true" uuid="c293f420-a298-41a7-92b4-b518c3ad9876"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{total_qtytu}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-105" x="340" y="10" width="85" height="12" uuid="633977f2-e2ba-414f-a730-d458be650b7d"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{total_weight}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-106" x="426" y="10" width="144" height="12" uuid="e3f8d659-feff-4d90-92e5-05478e2da154"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{total_netrevenue}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-107" x="570" y="10" width="96" height="12" uuid="fc97f239-3c6e-44e3-acd4-af1ba205b909"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{total_discount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-107" x="666" y="10" width="104" height="12" uuid="ad278ef9-8c97-4000-be58-115021ce71ec"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{total_revenue}]]></textFieldExpression>
-			</textField>
-		</band>
-	</pageFooter>
-	<lastPageFooter>
-		<band height="28">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-102" x="0" y="11" width="267" height="12" forecolor="#000000" uuid="6474ce23-d482-4ecc-a70e-058755a9c827"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-104" x="267" y="11" width="73" height="12" isRemoveLineWhenBlank="true" uuid="8b8c4bca-4eec-40aa-8926-2298f78d2604"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal_qtytu}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-105" x="340" y="11" width="85" height="12" uuid="08363a6c-d322-484b-a6a8-0eb345fcb751"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal_weight}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-106" x="426" y="11" width="144" height="12" uuid="f4970ec3-d92a-4b41-a5d7-a1dded0e2873"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal_netrevenue}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-107" x="570" y="11" width="96" height="12" uuid="322ba109-eb04-4e3d-a218-ccad64adb6b4"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal_discount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-107" x="666" y="10" width="104" height="12" uuid="9f8d2e82-e091-43ef-aecb-1d0958fe0375"/>
-				<box>
-					<pen lineColor="#000000"/>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal_revenue}]]></textFieldExpression>
-			</textField>
-		</band>
-	</lastPageFooter>
 </jasperReport>
