@@ -1,24 +1,28 @@
 @from:cucumber
-@Order
-@Proforma
-@PaySelection
-@Iteration2
-@MF_29368
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00126_Prepayment_Order_Management
 @ghActions:run_on_executor4
-Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedule state
+Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-schedule step
   # https://github.com/metasfresh/me03/issues/29368
-  # TC1-TC4: end-to-end scenarios for the LC step of the split-payment (Iter 2) EPIC.
   #
-  # Business context:
-  #   A purchase order with a complex payment term that has two breaks:
-  #     - 30 % LC  (LetterOfCreditDate) — paid up-front via proforma invoice
-  #     - 70 % OD  (OrderDate)          — paid later against the delivery invoice
+  # Domain: a purchase order with a complex payment term that has two breaks:
+  #   - 30 % LC  (LetterOfCreditDate) — paid up-front via a proforma invoice
+  #   - 70 % OD  (OrderDate)          — paid later against the delivery invoice
   #
-  # The scenarios validate the truth table in REQUIREMENTS.md §3:
-  #   alloc=NONE                                → LC Status=Pending,      DueAmt_Actual=NULL
-  #   alloc=PRESENT, payment absent/drafted     → LC Status=Awaiting_Pay, DueAmt_Actual=proforma.GrandTotal
-  #   alloc=PRESENT, payment=COMPLETED          → LC Status=Paid,         DueAmt_Actual=proforma.GrandTotal
-  #   alloc=PRESENT, payment reversed           → LC Status=Awaiting_Pay, DueAmt_Actual preserved
+  # The procurement worker:
+  #   1. Issues a purchase order under those terms.
+  #   2. Receives a proforma invoice from the vendor for the LC portion.
+  #   3. Allocates the proforma to the order (vendor / currency / single LC break — guards
+  #      validate this) — the LC pay-schedule step transitions to Awaiting_Pay.
+  #   4. Pays the proforma via the standard pay-selection flow — the payment is auto-tagged
+  #      Proforma_Invoice_ID + IsPrepayment, and the LC step transitions to Paid.
+  #   5. May reverse the payment — the LC step rolls back to Awaiting_Pay (DueAmt_Actual and
+  #      LC_Date preserved); or deallocate the proforma — the LC step rolls back to Pending
+  #      (DueAmt_Actual and LC_Date cleared).
+  #
+  # Pay-selection lines reference invoices only (regular + proforma) — no order-side rows.
+  # Proforma payments are full payments only (abs(PayAmt) = proforma.GrandTotal); partial
+  # payments are blocked at C_Payment BEFORE_PREPARE.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -39,8 +43,8 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | Identifier |
       | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd  | C_UOM_ID |
-      | plv_purchase           | product      | 68654.40  | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_purchase           | product      | 68654.40 | PCE      |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
@@ -52,14 +56,18 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
       | org_EUR_account | EUR           |
-
     And metasfresh contains C_BP_BankAccount
       | Identifier          | C_BPartner_ID | C_Currency_ID |
       | vendor_bank_account | vendor        | EUR           |
 
+    # Two payment terms:
+    #   pt_lc        — order-level term: 30 % LC + 70 % OD (drives the LC pay-schedule rows)
+    #   pt_immediate — proforma-level term (NetDays=0) so the proforma's DueDate = DateInvoiced
+    #                  (the procurement worker pays on the proforma's due date, OnlyDue=Y picks it up)
     And metasfresh contains C_PaymentTerm
-      | Identifier |
-      | pt_lc      |
+      | Identifier   |
+      | pt_lc        |
+      | pt_immediate |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -73,253 +81,247 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | wh             |
 
 
-  @from:cucumber
-  @Order
-  @Proforma
-  @PaySelection
-  @Iteration2
-  @MF_29368
-  Scenario: TC1 - Happy path: PO → Proforma → Allocate → Pay Selection → Payment → LC Paid
-    # https://github.com/metasfresh/me03/issues/29368
-    # Full end-to-end: allocating a proforma to the LC break drives the LC schedule line to
-    # Awaiting_Pay; completing a pay-selection payment drives it to Paid.
-    # The Delivery (OD) line must remain Pending throughout.
+  Scenario: S1 - Happy path — PO → proforma → allocate → pay-selection → payment → LC=Paid (asserts LC step at every transition)
+    # The procurement worker pays the LC portion of a complex-payment-term PO via a proforma invoice.
+    # LC step state walk: Pending → Awaiting_Pay (allocate) → Paid (payment).
 
-    # ── Create and complete the purchase order ────────────────────────────────
+    # ── Order completed → LC step Pending; OD step Awaiting_Pay (its OffsetDays=0 from OrderDate) ──
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | po_l1      | po         | product      | 1          |
-    And the order identified by po is completed
+      | lcOrderL1  | lcOrder    | product      | 1          |
+    And the order identified by lcOrder is completed
 
-    # ── Before allocation: LC step is Pending (iter 1 default when LC_Date IS NULL).
-    #    Delivery (OD) step stays at Awaiting_Pay throughout iter 2 — Delivery-step splits are iter 3 scope.
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | PR      | null          |
-      | OD                 | 48058.08  | WP      | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | PR     | null          |
+      | OD                | 48058.08 | WP     | null          |
 
-    # ── Create and complete the proforma invoice (GrandTotal = 20596.32 = planned DueAmt) ─────
+    # ── Proforma created and completed (GrandTotal = LC plan = 20596.32) — no pay-schedule change ──
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apf_inv    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
-      | apf_invL1  | apf_inv      | product      | 1 PCE       | 20596.32  |
-    And the invoice identified by apf_inv is completed
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20596.32 |
+    And the invoice identified by lcInvoice is completed
 
-    # ── Allocate proforma → LC line becomes Awaiting_Pay ─────────────────────
-    And I allocate proforma 'apf_inv' to order 'po'
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | PR     | null          |
+      | OD                | 48058.08 | WP     | null          |
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
-      | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | WP           | null          |
+    # ── Allocate proforma → LC step Awaiting_Pay; LC_Date stamped ──
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | WP     | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
     And validate the created orders
       | Identifier | LC_Date    |
-      | po         | 2026-04-24 |
+      | lcOrder    | 2026-04-24 |
 
-    # ── Pay Selection: pick up the LC line and generate the payment ───────────
+    # ── Pay-selection on the proforma's DueDate (= DateInvoiced for pt_immediate) — invoice-only line ──
     And metasfresh contains Pay Selection
-      | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
-      | paySel     | org_EUR_account     | CT                  | 2026-04-24 |
-    And "Create from..." is invoked for pay selection paySel, using following parameters:
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | OnlyDue |
-      | OUT              | vendor        | N       |
+      | OUT              | vendor        | Y       |
 
-    # The order has two pay-schedule rows (LC + Delivery), buildOrderSql includes them
-    # in pay selection. The APF invoice is the third line (the proforma payment we'll complete).
-    And the Pay selection identified by paySel has exactly the following lines
+    Then the Pay selection identified by paySelection has exactly the following lines
+      | C_Invoice_ID | OpenAmt  |
+      | lcInvoice    | 20596.32 |
+
+    # ── Generate payment → full payment (abs(PayAmt) = proforma.GrandTotal — AC #16 guard);
+    #    payment carries Proforma_Invoice_ID + IsPrepayment=Y; LC step Paid ──
+    And the pay selection identified by paySelection is completed
+    Then "Create Payments" is invoked for pay selection paySelection
+
+    And the Pay selection identified by paySelection has exactly the following lines
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
-      | -            | 20596.32 | -            |
-      | -            | 48058.08 | -            |
-      | apf_inv      | 20596.32 | -            |
+      | lcInvoice    | 20596.32 | lcPayment    |
 
-    And the pay selection identified by paySel is completed
-    Then "Create Payments" is invoked for pay selection paySel
+    Then validate payments
+      | C_Payment_ID.Identifier | IsPrepayment | Proforma_Invoice_ID | PayAmt   |
+      | lcPayment               | Y            | lcInvoice           | 20596.32 |
 
-    # "Create Payments" creates a C_Payment for every pay-selection-line.
-    And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID    |
-      | -            | 20596.32 | payment_lc_step |
-      | -            | 48058.08 | payment_od_step |
-      | apf_inv      | 20596.32 | payment1        |
-
-    # ── After payment: LC Paid, Delivery still Pending ────────────────────────
-    # iter 1 semantics: every pay-selection-line that gets a payment also flips its
-    # source order-pay-schedule row to Paid. The proforma authority function flips LC
-    # too. So both rows end up Paid.
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | P       | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | P      | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
 
 
-  @from:cucumber
-  @Order
-  @Proforma
-  @PaySelection
-  @Iteration2
-  @MF_29368
-  Scenario: TC2 - Proforma amount below planned DueAmt: DueAmt unchanged, DueAmt_Actual = proforma GrandTotal
-    # https://github.com/metasfresh/me03/issues/29368
-    # When the proforma invoice has a GrandTotal below the planned LC DueAmt (20596.32),
-    # the allocation sets DueAmt_Actual to the proforma GrandTotal (20500.00) while
-    # DueAmt remains at the planned amount (20596.32).
-    # The Delivery (OD) line must have DueAmt_Actual=null throughout.
+  Scenario: S2 - Proforma GrandTotal below planned LC DueAmt — DueAmt_Actual captures the actual amount
+    # Procurement-worker variant: vendor sends a proforma for slightly less than the planned LC amount
+    # (rounding, FX, partial coverage). The plan invariant DueAmt = order.GrandTotal × break% must hold;
+    # only DueAmt_Actual reflects the actual proforma amount.
 
-    # ── Create and complete the purchase order ────────────────────────────────
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | po_l1      | po         | product      | 1          |
-    And the order identified by po is completed
+      | lcOrderL1  | lcOrder    | product      | 1          |
+    And the order identified by lcOrder is completed
 
-    # ── Create and complete the proforma invoice (GrandTotal = 20500.00, BELOW planned 20596.32) ─
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apf_tc2_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
-      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
-      | apf_tc2_invL1 | apf_tc2_inv  | product      | 1 PCE       | 20500.00  |
-    And the invoice identified by apf_tc2_inv is completed
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20500.00 |
+    And the invoice identified by lcInvoice is completed
 
-    # ── Allocate proforma → LC line becomes Awaiting_Pay ─────────────────────
-    And I allocate proforma 'apf_tc2_inv' to order 'po'
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
-    # ── Assertions: DueAmt = plan (20596.32), DueAmt_Actual = proforma GrandTotal (20500.00) ─
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
-      | LC                 | 20596.32  | WP           | 20500.00      |
-      | OD                 | 48058.08  | WP           | null          |
+    # DueAmt = plan (20596.32, unchanged); DueAmt_Actual = proforma.GrandTotal (20500.00).
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | WP     | 20500.00      |
+      | OD                | 48058.08 | WP     | null          |
 
 
-  @from:cucumber
-  @Order
-  @Proforma
-  @PaySelection
-  @Iteration2
-  @MF_29368
-  Scenario: TC3 - Deallocation before payment reverts LC line to Pending
-    # https://github.com/metasfresh/me03/issues/29368
-    # After allocating a proforma, the user deallocates it before any payment is made.
-    # The LC line must revert to Pending with DueAmt_Actual=null and LC_Date=null.
+  Scenario: S3 - Deallocation before payment rolls LC back to Pending (DueAmt_Actual + LC_Date cleared)
+    # The procurement worker realises the wrong proforma was allocated and removes it before paying.
+    # State walk: Pending → Awaiting_Pay (allocate) → Pending (deallocate).
 
-    # ── Create and complete the purchase order ────────────────────────────────
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | po_l1      | po         | product      | 1          |
-    And the order identified by po is completed
+      | lcOrderL1  | lcOrder    | product      | 1          |
+    And the order identified by lcOrder is completed
 
-    # ── Create and complete the proforma invoice ──────────────────────────────
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apf_tc3_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
-      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
-      | apf_tc3_invL1 | apf_tc3_inv  | product      | 1 PCE       | 20596.32 |
-    And the invoice identified by apf_tc3_inv is completed
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20596.32 |
+    And the invoice identified by lcInvoice is completed
 
-    # ── Allocate → LC becomes Awaiting_Pay, LC_Date set ──────────────────────
-    And I allocate proforma 'apf_tc3_inv' to order 'po'
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
-      | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | WP           | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | WP     | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
     And validate the created orders
       | Identifier | LC_Date    |
-      | po         | 2026-04-24 |
+      | lcOrder    | 2026-04-24 |
 
-    # ── Deallocate → LC reverts to Pending, DueAmt_Actual=null, LC_Date=null ─
-    And I deallocate proforma 'apf_tc3_inv' from order 'po'
+    And I deallocate proforma 'lcInvoice' from order 'lcOrder'
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | PR      | null          |
-      | OD                 | 48058.08  | WP      | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | PR     | null          |
+      | OD                | 48058.08 | WP     | null          |
     And validate the created orders
       | Identifier | LC_Date |
-      | po         | null    |
+      | lcOrder    | null    |
 
 
-  @from:cucumber
-  @Order
-  @Proforma
-  @PaySelection
-  @Iteration2
-  @MF_29368
-  Scenario: TC4 - Payment reversal rolls LC back from Paid to Awaiting_Pay with DueAmt_Actual preserved
-    # https://github.com/metasfresh/me03/issues/29368
-    # After a payment is completed (LC → Paid) and then reversed, the LC line must roll
-    # back to Awaiting_Pay. DueAmt_Actual and LC_Date must be preserved (not cleared),
-    # because the allocation still exists — only the payment is gone.
+  Scenario: S4 - Payment reversal rolls LC back from Paid to Awaiting_Pay (DueAmt_Actual + LC_Date preserved)
+    # The procurement worker reverses the proforma payment (e.g., wrong bank account). The LC step
+    # rolls back to Awaiting_Pay because the allocation is still active — only the payment is gone.
+    # State walk: Pending → Awaiting_Pay (allocate) → Paid (payment) → Awaiting_Pay (reversal).
 
-    # ── Create and complete the purchase order ────────────────────────────────
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | po_l1      | po         | product      | 1          |
-    And the order identified by po is completed
+      | lcOrderL1  | lcOrder    | product      | 1          |
+    And the order identified by lcOrder is completed
 
-    # ── Create and complete the proforma invoice ──────────────────────────────
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apf_tc4_inv | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
-      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
-      | apf_tc4_invL1 | apf_tc4_inv  | product      | 1 PCE       | 20596.32 |
-    And the invoice identified by apf_tc4_inv is completed
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20596.32 |
+    And the invoice identified by lcInvoice is completed
 
-    # ── Allocate → LC becomes Awaiting_Pay ───────────────────────────────────
-    And I allocate proforma 'apf_tc4_inv' to order 'po'
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
-      | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | WP           | null          |
-    And validate the created orders
-      | Identifier | LC_Date    |
-      | po         | 2026-04-24 |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | WP     | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
 
-    # ── Pay Selection → complete → generate payment → LC becomes Paid ─────────
     And metasfresh contains Pay Selection
-      | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
-      | paySel     | org_EUR_account     | CT                  | 2026-04-24 |
-    And "Create from..." is invoked for pay selection paySel, using following parameters:
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
       | MatchRequirement | C_BPartner_ID | OnlyDue |
-      | OUT              | vendor        | N       |
-    And the pay selection identified by paySel is completed
-    Then "Create Payments" is invoked for pay selection paySel
+      | OUT              | vendor        | Y       |
+    And the pay selection identified by paySelection is completed
+    Then "Create Payments" is invoked for pay selection paySelection
 
-    And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID        |
-      | -            | 20596.32 | payment_tc4_lc_step |
-      | -            | 48058.08 | payment_tc4_od_step |
-      | apf_tc4_inv  | 20596.32 | payment_tc4         |
+    And the Pay selection identified by paySelection has exactly the following lines
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
+      | lcInvoice    | 20596.32 | lcPayment    |
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | P       | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | P      | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
 
-    # ── Reverse the APF payment → LC rolls back to Awaiting_Pay (authority function),
-    #    OD stays Paid (its own payment was not reversed).
-    And the payment identified by payment_tc4 is reversed
+    # ── Reverse the proforma payment ──
+    # The reversal payment created inside MPayment.reverseCorrectIt() has Proforma_Invoice_ID
+    # cleared (dual-CO timing-window guard — see architecture §5 documented exception).
+    # The LC-step authority function sees no CO/CL payment for the proforma and rolls back to WP.
+    # DueAmt_Actual + LC_Date are preserved because the allocation is still active.
+    And the payment identified by lcPayment is reversed
 
-    Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
-      | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | P            | null          |
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
+      | LC                | 20596.32 | WP     | 20596.32      |
+      | OD                | 48058.08 | WP     | null          |
     And validate the created orders
       | Identifier | LC_Date    |
-      | po         | 2026-04-24 |
+      | lcOrder    | 2026-04-24 |
+
+
+  Scenario: S5 - Proforma + regular invoice for the same vendor — both visible in pay-selection (invoice-only rows)
+    # The vendor sends both a proforma (advance) and a regular invoice (against an earlier delivery).
+    # Pay-selection picks up both as invoice-type lines. No order-side rows appear.
+
+    # Use a pricing system whose PriceStd matches the planned LC portion so the proforma's
+    # GrandTotal is 20596.32 (matching what the procurement worker expects to pay for the LC step).
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_purchase           | product      | 20596.32 | PCE      |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       |
+    And the invoice identified by lcInvoice is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID | PaymentRule |
+      | regularInvoice | vendor        | 2026-04-24   | false   | EUR           | pt_immediate     | P           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID   | M_Product_ID | QtyInvoiced |
+      | regularInvoiceL1 | regularInvoice | product      | 1 PCE       |
+    And the invoice identified by regularInvoice is completed
+
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | OnlyDue |
+      | OUT              | vendor        | Y       |
+
+    Then the Pay selection identified by paySelection has exactly the following lines
+      | C_Invoice_ID   | OpenAmt  |
+      | lcInvoice      | 20596.32 |
+      | regularInvoice | 20596.32 |
