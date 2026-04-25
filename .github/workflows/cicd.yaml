@@ -2268,4 +2268,24 @@ jobs:
           CICD_DISPATCH_REPO: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).repo }}
           CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
         run: |
-          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
+          # Run the downstream workflow ON the target branch (via --ref) when
+          # that branch exists in private-extensions, otherwise fall back to
+          # running it on the PE default branch so its `check-branch` step can
+          # take the "branch doesn	 exist → dispatch directly to me03" path.
+          #
+          # Without --ref when the branch DOES exist, the workflow starts on
+          # new_dawn_uat, does an in-process `git checkout ${SOURCE_BRANCH}`,
+          # and `EndBug/add-and-commit` sends the commit object to origin but
+          # the branch ref update is silently dropped — resulting in an orphan
+          # commit. See me03#29386.
+          #
+          # With --ref when the branch DOES NOT exist, `gh workflow run` fails
+          # with "could not find a reference" and the workflow never runs,
+          # breaking the fallback-to-default dispatch path.
+          REF_ARGS=()
+          if gh api "repos/${CICD_DISPATCH_REPO}/branches/${SOURCE_BRANCH}" --jq .name >/dev/null 2>&1; then
+            REF_ARGS+=(--ref "${SOURCE_BRANCH}")
+          else
+            echo "Branch '${SOURCE_BRANCH}' not found in ${CICD_DISPATCH_REPO}; running workflow on default branch so its fallback path activates."
+          fi
+          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" "${REF_ARGS[@]}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
