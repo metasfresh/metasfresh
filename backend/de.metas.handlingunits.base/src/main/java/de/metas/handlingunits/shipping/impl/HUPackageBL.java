@@ -172,6 +172,7 @@ public class HUPackageBL implements IHUPackageBL
 	{
 		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mpackage.setPOReference(inOut.getPOReference());
+		mpackage.setAD_User_ID(inOut.getAD_User_ID());
 	}
 
 	@Override
