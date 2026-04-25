@@ -45,8 +45,11 @@ import org.springframework.stereotype.Component;
  *
  * <p><b>Guard on Proforma_Invoice_ID &lt;= 0:</b>
  * The reversal payment created inside {@code MPayment.reverseCorrectIt()} has
- * {@code Proforma_Invoice_ID = NULL} (cleared explicitly — see MPayment line 1873).
- * The guard ensures the interceptor only reacts to payments that are actually prepayments.
+ * {@code Proforma_Invoice_ID = NULL} — explicitly cleared there. If the reversal carried the
+ * same Proforma_Invoice_ID as the original, the dual-Completed window during reverseCorrectIt()
+ * would make the authority query find two rows simultaneously and throw
+ * {@link org.adempiere.exceptions.DBMoreThanOneRecordsFoundException}. The guard ensures
+ * the interceptor only reacts to payments that are actually prepayments (the originals).
  *
  * <p><b>Idempotence:</b>
  * {@link OrderPayScheduleLCService#recomputeLCStep} is idempotent — if fired twice
