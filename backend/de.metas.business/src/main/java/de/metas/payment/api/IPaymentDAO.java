@@ -117,9 +117,9 @@ public interface IPaymentDAO extends ISingletonService
 	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, BankAccountId bankAccountId, Instant startDate, Instant endDate);
 
 	/**
-	 * Returns the single completed (DocStatus=CO) payment whose {@code Proforma_Invoice_ID} matches the given proforma invoice,
-	 * or empty if no such payment exists (never completed, or already reversed).
+	 * Returns the single Completed-or-Closed (DocStatus IN CO/CL) payment whose {@code Proforma_Invoice_ID} matches the given proforma invoice,
+	 * or empty if no such payment exists (never completed, or already reversed). Reversed payments do NOT count as paid.
 	 */
 	@NonNull
-	Optional<I_C_Payment> findCompletedByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
+	Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull InvoiceId proformaInvoiceId);
 }

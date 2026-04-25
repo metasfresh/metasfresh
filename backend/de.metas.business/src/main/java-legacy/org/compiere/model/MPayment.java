@@ -1864,13 +1864,18 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
-		// Create Reversal
+		// Create Reversal — reversal must be symmetric to the original (architecture §5):
+		// every classification field is preserved (Proforma_Invoice_ID, IsPrepayment, etc.) so
+		// downstream accounting / allocation / reporting joins still recognise the cancellation.
+		// Only the numeric effect (PayAmt, DiscountAmt, WriteOffAmt, OverUnderAmt) flips sign.
+		// C_Order_ID / C_Invoice_ID are intentionally cleared per the legacy MPayment contract
+		// (these are UI-convenience fields, not classification — see C_AllocationLine for the
+		// authoritative payment↔invoice link).
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
 		reversal.setClientOrg(this);
 		reversal.setC_Order_ID(0);
 		reversal.setC_Invoice_ID(0);
-		reversal.setProforma_Invoice_ID(-1);  // iter-2 invariant: Proforma_Invoice_ID is NULL on the reversal, preserved on the original; -1 = SQL NULL for generated-model setters
 		reversal.setDateAcct(dateAcct);
 		//
 		reversal.setDocumentNo(getDocumentNo() + REVERSE_INDICATOR);    // indicate reversals

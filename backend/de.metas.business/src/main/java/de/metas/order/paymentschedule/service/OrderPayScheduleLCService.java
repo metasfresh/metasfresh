@@ -131,7 +131,7 @@ public class OrderPayScheduleLCService
 		// Proforma allocation is present: determine payment state
 		final InvoiceId proformaInvoiceId = allocation.getInvoiceId();
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
-		final I_C_Payment completedPayment = paymentDAO.findCompletedByProformaInvoiceId(proformaInvoiceId).orElse(null);
+		final I_C_Payment completedPayment = paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).orElse(null);
 
 		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
 		final Money proformaActualAmount = Money.of(proforma.getGrandTotal(), proformaCurrencyId);

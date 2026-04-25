@@ -277,12 +277,12 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@NonNull
-	public Optional<I_C_Payment> findCompletedByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	public Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, proformaInvoiceId)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.create()
 				.firstOnlyOptional(I_C_Payment.class);
 	}
