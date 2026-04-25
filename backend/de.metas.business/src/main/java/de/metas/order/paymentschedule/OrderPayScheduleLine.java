@@ -37,7 +37,6 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @EqualsAndHashCode
@@ -61,14 +60,8 @@ public class OrderPayScheduleLine
 
 	/**
 	 * Actual amount due — written exclusively by {@code OrderPayScheduleLCService} for the LC step. NULL on all non-LC rows.
-	 *
-	 * <p><b>TODO (follow-up)</b>: Convert to {@link de.metas.money.Money} so the currency is always co-located
-	 * with the amount. Requires adapting {@link de.metas.order.paymentschedule.repository.OrderPayScheduleLoaderAndSaver}
-	 * (load: read C_Currency_ID + BigDecimal → Money; save: Money.toBigDecimal()), the LC service setters, and the
-	 * step-def assertions.
-	 * See PR review comment https://github.com/metasfresh/metasfresh/pull/23682#discussion_r3141822083.
 	 */
-	@Setter @Nullable BigDecimal dueAmtActual;
+	@Setter @Nullable Money dueAmtActual;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 

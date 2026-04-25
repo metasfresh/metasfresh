@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.money.Money;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
@@ -203,20 +204,20 @@ public class C_OrderPaySchedule_StepDef
 		// DueAmt_Actual: "null" in the feature means assert NULL; a numeric value asserts equality.
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
 				.ifPresent(rawValue -> {
+					final Money actual = payScheduleLine.getDueAmtActual();
 					if (DataTableUtil.isNullPlaceholder(rawValue))
 					{
-						final BigDecimal actual = payScheduleLine.getDueAmtActual();
-						softly.assertThat(actual == null || actual.signum() == 0)
+						softly.assertThat(actual == null || actual.isZero())
 								.as("DueAmt_Actual should be null/zero but was: " + actual)
 								.isTrue();
 					}
 					else
 					{
 						final BigDecimal expected = new BigDecimal(rawValue);
-						softly.assertThat(payScheduleLine.getDueAmtActual()).as("DueAmt_Actual").isNotNull();
-						if (payScheduleLine.getDueAmtActual() != null)
+						softly.assertThat(actual).as("DueAmt_Actual").isNotNull();
+						if (actual != null)
 						{
-							softly.assertThat(payScheduleLine.getDueAmtActual()).as("DueAmt_Actual").isEqualByComparingTo(expected);
+							softly.assertThat(actual.toBigDecimal()).as("DueAmt_Actual").isEqualByComparingTo(expected);
 						}
 					}
 				});

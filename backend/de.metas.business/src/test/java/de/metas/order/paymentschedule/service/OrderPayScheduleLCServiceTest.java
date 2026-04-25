@@ -391,7 +391,7 @@ class OrderPayScheduleLCServiceTest
 
 	private static boolean isDueAmtUnset(final BigDecimal value)
 	{
-		return value == null || BigDecimal.ZERO.compareTo(value) == 0;
+		return value == null || value.signum() == 0;
 	}
 
 	private I_C_OrderPaySchedule findLCLine(final OrderId orderId)

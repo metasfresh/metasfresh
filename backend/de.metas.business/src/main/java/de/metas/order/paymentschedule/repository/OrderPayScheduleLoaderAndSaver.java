@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+
+import java.math.BigDecimal;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
@@ -128,18 +130,20 @@ public class OrderPayScheduleLoaderAndSaver
 	@NonNull
 	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
 	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+		final BigDecimal dueAmtActualRaw = record.getDueAmt_Actual();
 		return OrderPayScheduleLine.builder()
 				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.dueAmount(Money.of(record.getDueAmt(), currencyId))
 				.dueDate(TimeUtil.asLocalDate(record.getDueDate()))
 				.percent(Percent.of(record.getPercent()))
 				.offsetDays(record.getOffsetDays())
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.status(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.dueAmtActual(record.getDueAmt_Actual())
+				.dueAmtActual(dueAmtActualRaw != null ? Money.of(dueAmtActualRaw, currencyId) : null)
 				.build();
 	}
 
@@ -193,7 +197,7 @@ public class OrderPayScheduleLoaderAndSaver
 		record.setReferenceDateType(from.getReferenceDateType().getCode());
 		record.setSeqNo(from.getSeqNo().toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getStatus()));
-		record.setDueAmt_Actual(from.getDueAmtActual());
+		record.setDueAmt_Actual(from.getDueAmtActual() != null ? from.getDueAmtActual().toBigDecimal() : null);
 	}
 
 	public void updateByIds(@NonNull final Set<OrderId> orderIds, @NonNull final Consumer<OrderPaySchedule> updater)

@@ -39,11 +39,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_Invoice
 {
-	// TODO(G4): replace with a dedicated AdMessageKey once a follow-up migration adds the AD_Message row.
-	// For now reuse the closest existing key from migration 5799570 as a stopgap.
-	// Semantic: "this DocAction is not allowed while a proforma-order allocation is active".
-	private static final AdMessageKey MSG_DocActionNotAllowedWithAllocations =
-			AdMessageKey.of("de.metas.invoice.proforma.NoLCBreakInOrder");
+	// Dedicated AdMessageKey introduced by migration 5799610 — semantic match for "DocAction
+	// (reverse / void / reactivate) is blocked because the proforma invoice has an active
+	// C_Proforma_Order_Alloc and must be de-allocated first".
+	private static final AdMessageKey MSG_DocActionBlockedByActiveAllocation =
+			AdMessageKey.of("de.metas.invoice.proforma.DocActionBlockedByActiveAllocation");
 
 	@NonNull final ProformaOrderAllocService proformaOrderAllocService;
 
@@ -56,8 +56,7 @@ public class C_Invoice
 	{
 		if (proformaOrderAllocService.hasAllocations(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 		{
-			throw new AdempiereException(MSG_DocActionNotAllowedWithAllocations)
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_DocActionBlockedByActiveAllocation);
 		}
 	}
 }

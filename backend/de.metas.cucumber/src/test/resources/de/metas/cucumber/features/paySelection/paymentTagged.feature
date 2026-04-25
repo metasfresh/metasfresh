@@ -53,8 +53,9 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier |
-      | pt_lc      |
+      | Identifier   |
+      | pt_lc        |
+      | pt_immediate |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -97,8 +98,8 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
     And the order identified by po is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | lcInvoice    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
       | lcInvoiceL1  | lcInvoice      | product      | 1 PCE       | 20596.32  |
@@ -106,12 +107,15 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
 
     And I allocate proforma 'lcInvoice' to order 'po'
 
+    # PayDate is one day after the proforma's DateInvoiced (and therefore after the LC step's
+    # DueDate, which recomputeLCStep stamps as LC_Date + offsetDays = 2026-04-24). With OnlyDue=Y
+    # the SQL filter only picks up rows where DueDate <= PayDate — exactly the realistic flow.
     And metasfresh contains Pay Selection
       | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
-      | paySel     | org_EUR_account     | CT                  | 2026-04-24 |
+      | paySel     | org_EUR_account     | CT                  | 2026-04-25 |
     And "Create from..." is invoked for pay selection paySel, using following parameters:
       | MatchRequirement | C_BPartner_ID | OnlyDue |
-      | OUT              | vendor        | N       |
+      | OUT              | vendor        | Y       |
 
     And the pay selection identified by paySel is completed
     Then "Create Payments" is invoked for pay selection paySel

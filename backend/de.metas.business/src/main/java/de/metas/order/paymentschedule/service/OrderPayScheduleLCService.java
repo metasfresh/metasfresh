@@ -28,6 +28,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAlloc;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
@@ -45,6 +47,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -119,6 +122,7 @@ public class OrderPayScheduleLCService
 			// No proforma allocation — reset to Pending
 			lcStep.setStatus(OrderPayScheduleStatus.Pending);
 			lcStep.setDueAmtActual(null);
+			lcStep.setDueDate(SENTINEL_NO_LC_DATE);
 			orderPayScheduleService.save(schedule);
 			clearLCDateOnOrder(orderId);
 			return;
@@ -129,11 +133,17 @@ public class OrderPayScheduleLCService
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
 		final I_C_Payment completedPayment = paymentDAO.findCompletedByProformaInvoiceId(proformaInvoiceId).orElse(null);
 
+		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
+		final Money proformaActualAmount = Money.of(proforma.getGrandTotal(), proformaCurrencyId);
+		final LocalDate proformaDate = TimeUtil.asLocalDate(proforma.getDateInvoiced());
+		final LocalDate lcStepDueDate = proformaDate.plusDays(lcStep.getOffsetDays());
+
 		if (completedPayment != null)
 		{
 			// Payment completed → Paid
 			lcStep.setStatus(OrderPayScheduleStatus.Paid);
-			lcStep.setDueAmtActual(proforma.getGrandTotal());
+			lcStep.setDueAmtActual(proformaActualAmount);
+			lcStep.setDueDate(lcStepDueDate);
 			orderPayScheduleService.save(schedule);
 			stampLCDateOnOrder(orderId, proforma);
 		}
@@ -141,11 +151,20 @@ public class OrderPayScheduleLCService
 		{
 			// Payment absent, drafted, or reversed → Awaiting_Pay
 			lcStep.setStatus(OrderPayScheduleStatus.Awaiting_Pay);
-			lcStep.setDueAmtActual(proforma.getGrandTotal());
+			lcStep.setDueAmtActual(proformaActualAmount);
+			lcStep.setDueDate(lcStepDueDate);
 			orderPayScheduleService.save(schedule);
 			stampLCDateOnOrder(orderId, proforma);
 		}
 	}
+
+	/**
+	 * Sentinel value written to {@code C_OrderPaySchedule.DueDate} when the LC step has no allocation
+	 * (and therefore no real LC_Date to derive its due date from). Mirrors what {@code OrderPayScheduleService}
+	 * uses on order completion. Comparing this date with a realistic PayDate keeps the LC line outside an
+	 * "OnlyDue" pay-selection result.
+	 */
+	private static final LocalDate SENTINEL_NO_LC_DATE = LocalDate.of(9999, 1, 1);
 
 	private void clearLCDateOnOrder(@NonNull final OrderId orderId)
 	{
