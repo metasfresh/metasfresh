@@ -18,18 +18,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DocumentStatusReasonTruncationTest
 {
-	/** Max length applied inside the toString() methods. Must match the value used in the production code. */
-	private static final int EXPECTED_REASON_CAP = 200;
-
 	/** Slack for the other toString parts (flags, prefix/suffix, truncation marker). */
 	private static final int TOSTRING_OVERHEAD = 500;
 
 	private static String longMessage()
 	{
-		// 10 000 chars — well above the cap and large enough to detect any unbounded
-		// embedding in a single-iteration test.
-		final StringBuilder sb = new StringBuilder(10_000);
-		for (int i = 0; i < 10_000; i++)
+		// Well above the cap and large enough to detect any unbounded embedding in a
+		// single-iteration test. Sized relative to the production cap so a future bump
+		// to TOSTRING_REASON_MAX_CHARS keeps the test meaningful.
+		final int len = DocumentSaveStatus.TOSTRING_REASON_MAX_CHARS * 2;
+		final StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++)
 		{
 			sb.append('x');
 		}
@@ -49,7 +48,7 @@ class DocumentStatusReasonTruncationTest
 
 		assertThat(s.length())
 				.as("DocumentSaveStatus.toString() must cap reason to avoid recursive blow-up")
-				.isLessThan(EXPECTED_REASON_CAP + TOSTRING_OVERHEAD);
+				.isLessThan(DocumentSaveStatus.TOSTRING_REASON_MAX_CHARS + TOSTRING_OVERHEAD);
 
 		assertThat(s)
 				.as("truncation marker must be present when reason exceeds cap")
@@ -68,7 +67,7 @@ class DocumentStatusReasonTruncationTest
 
 		assertThat(s.length())
 				.as("DocumentValidStatus.toString() must cap reason to avoid recursive blow-up")
-				.isLessThan(EXPECTED_REASON_CAP + TOSTRING_OVERHEAD);
+				.isLessThan(DocumentSaveStatus.TOSTRING_REASON_MAX_CHARS + TOSTRING_OVERHEAD);
 
 		assertThat(s)
 				.as("truncation marker must be present when reason exceeds cap")
