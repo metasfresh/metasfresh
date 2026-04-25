@@ -43,8 +43,8 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | plv_purchase           | product      | 68654.40  | PCE      |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | vendor     | Y        | N          | ps                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
+      | vendor     | Y        | N          | ps                 | P             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | vendor_loc | vendor        | Y               | Y               |
@@ -52,6 +52,10 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
       | org_EUR_account | EUR           |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier          | C_BPartner_ID | C_Currency_ID |
+      | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
       | Identifier |
@@ -90,11 +94,11 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | po_l1      | po         | product      | 1          |
     And the order identified by po is completed
 
-    # ── Before allocation: default status Awaiting_Pay (iter 1 semantics).
-    #    Pending status is only set by recomputeLCStep after an active allocation is deleted (TC3).
+    # ── Before allocation: LC step is Pending (iter 1 default when LC_Date IS NULL).
+    #    Delivery (OD) step stays at Awaiting_Pay throughout iter 2 — Delivery-step splits are iter 3 scope.
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | WP      | null          |
+      | LC                 | 20596.32  | PR      | null          |
       | OD                 | 48058.08  | WP      | null          |
 
     # ── Create and complete the proforma invoice (GrandTotal = 20596.32 = planned DueAmt) ─────

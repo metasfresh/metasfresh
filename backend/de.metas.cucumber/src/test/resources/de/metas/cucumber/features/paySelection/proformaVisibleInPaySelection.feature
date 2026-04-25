@@ -69,8 +69,8 @@ Feature: Proforma invoice appears in Pay Selection alongside regular financial i
     And the invoice identified by apf_inv is completed
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | api_inv    | vendor        | 2026-04-24   | false   | EUR           |
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | PaymentRule |
+      | api_inv    | vendor        | 2026-04-24   | false   | EUR           | P           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | api_invL1  | api_inv      | product      | 1 PCE       |
