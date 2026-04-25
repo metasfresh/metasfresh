@@ -292,26 +292,22 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     # The vendor sends both a proforma (advance) and a regular invoice (against an earlier delivery).
     # Pay-selection picks up both as invoice-type lines. No order-side rows appear.
 
-    # Use a pricing system whose PriceStd matches the planned LC portion so the proforma's
-    # GrandTotal is 20596.32 (matching what the procurement worker expects to pay for the LC step).
-    And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 20596.32 | PCE      |
-
+    # Per-line prices override the price-list default (Background sets product to 68654.40); each
+    # invoice has GrandTotal = 20596.32 to keep the comparison simple.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
       | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
-      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       |
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20596.32 |
     And the invoice identified by lcInvoice is completed
 
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID | PaymentRule |
       | regularInvoice | vendor        | 2026-04-24   | false   | EUR           | pt_immediate     | P           |
     And metasfresh contains C_InvoiceLines
-      | Identifier       | C_Invoice_ID   | M_Product_ID | QtyInvoiced |
-      | regularInvoiceL1 | regularInvoice | product      | 1 PCE       |
+      | Identifier       | C_Invoice_ID   | M_Product_ID | QtyInvoiced | Price    |
+      | regularInvoiceL1 | regularInvoice | product      | 1 PCE       | 20596.32 |
     And the invoice identified by regularInvoice is completed
 
     And metasfresh contains Pay Selection

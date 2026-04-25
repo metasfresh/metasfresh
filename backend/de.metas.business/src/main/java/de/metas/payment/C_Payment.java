@@ -93,6 +93,15 @@ public class C_Payment
 			return;
 		}
 
+		// Proforma payments (https://github.com/metasfresh/me03/issues/29368) carry C_Order_ID
+		// from the proforma↔order allocation, but their PayAmt comes from the pay-selection line
+		// (= proforma's open amount), NOT from order.GrandTotal. Skipping the recompute keeps the
+		// builder-set PayAmt intact and lets the BEFORE_PREPARE full-payment guard verify it.
+		if (InvoiceId.ofRepoIdOrNull(record.getProforma_Invoice_ID()) != null)
+		{
+			return;
+		}
+
 		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(record.getC_OrderPaySchedule_ID());
 		if (orderPayScheduleId != null)
 		{
