@@ -1,4 +1,24 @@
--- Run mode: SWING_CLIENT
+-- Value: goods_sales_report
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/reports/goodssold/report.jasper
+-- 2026-04-25T07:01:25.962Z
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,Created,CreatedBy,CSVFieldQuote,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsIncludeCSVHeaderRow,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585612,'Y','de.metas.report.jasper.client.process.JasperReportStarter',TO_TIMESTAMP('2026-04-25 07:01:25.782000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'"','Sales by Product and Customer Report (Jasper)','D','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','Y','@PREFIX@de/metas/reports/goodssold/report.jasper','','Sales by Product and Customer Report (Jasper)','json','N','Y','JasperReportsSQL',TO_TIMESTAMP('2026-04-25 07:01:25.782000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'goods_sales_report')
+;
+
+-- 2026-04-25T07:01:25.983Z
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585612 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- Process: goods_sales_report(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-04-25T07:01:45.081Z
+UPDATE AD_Process_Trl SET Description='Umsatz nach Produkt und Kunde (Jasper)', IsTranslated='Y', Name='Umsatz nach Produkt und Kunde (Jasper)',Updated=TO_TIMESTAMP('2026-04-25 07:01:45.080000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language in ('de_CH', 'de_DE') AND AD_Process_ID=585612
+;
+
+-- 2026-04-25T07:01:45.083Z
+UPDATE AD_Process base SET Description=trl.Description, Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language in ('de_CH', 'de_DE') AND trl.AD_Language=getBaseLanguage()
+;
+
+
 
 -- Process: goods_sales_report(de.metas.report.jasper.client.process.JasperReportStarter)
 -- 2026-04-25T07:06:35.223Z
