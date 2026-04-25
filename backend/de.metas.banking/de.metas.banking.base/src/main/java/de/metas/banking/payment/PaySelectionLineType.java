@@ -24,5 +24,6 @@ package de.metas.banking.payment;
 
 public enum PaySelectionLineType
 {
+	Order,
 	Invoice
 }

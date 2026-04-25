@@ -16,6 +16,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -33,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.jetbrains.annotations.Nullable;
@@ -76,9 +79,11 @@ class CreateSEPAExportFromPaySelectionCommand
 	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_IBANNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_IBANNotSet");
 	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_SEPA_CreditorIdentifierNotSet");
 	@NonNull private static final AdMessageKey ERR_C_Bank_SwiftCodeNotSet = AdMessageKey.of("de.metas.payment.sepa.C_Bank_SwiftCodeNotSet");
+	@NonNull private static final AdMessageKey ERR_SEPA_Invoice_Nor_Order_Set = AdMessageKey.of("SEPA_Invoice_Nor_Order_Set");
 
 	@NonNull private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
@@ -102,6 +107,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		if (isGroupTransactions && PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
+			handleOrderPaySelectionLines(paySelectionLines, header);
 			handleInvoicePaySelectionLines(paySelectionLines, header);
 		}
 		else
@@ -114,9 +120,31 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
 	{
-		final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
-		final String description = sourceInvoice.getDescription();
-		final String structuredRemittanceInfo = line.getReference();
+		final PaySelectionLineType lineType = paySelectionBL.extractType(line);
+
+		final String description;
+		final String structuredRemittanceInfo;
+		switch (lineType)
+		{
+			case Invoice:
+			{
+				final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+				description = sourceInvoice.getDescription();
+				structuredRemittanceInfo = line.getReference();
+				break;
+
+			}
+			case Order:
+			{
+				final OrderId orderId = OrderId.ofRepoId(line.getC_Order_ID());
+				final I_C_Order order = orderBL.getById(orderId);
+				description = order.getDescription();
+				structuredRemittanceInfo = order.getPOReference();
+				break;
+			}
+			default:
+				throw new AdempiereException(ERR_SEPA_Invoice_Nor_Order_Set, line);
+		}
 
 		final BankAccount bpBankAccount = bankAccountDAO.getById(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()));
 
@@ -217,6 +245,17 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, header);
 		handleGroupedPaySelectionLines(keyToAggregatedPaySelectionLines, header);
+	}
+
+	private void handleOrderPaySelectionLines(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final I_SEPA_Export header)
+	{
+		final List<I_C_PaySelectionLine> orderPaySelectionLines = paySelectionLines.stream()
+				.filter(this::isOrderPaySelectionLine)
+				.collect(ImmutableList.toImmutableList());
+
+		handleUngroupedPaySelectionLines(orderPaySelectionLines, header);
 	}
 
 	private void handleUngroupedPaySelectionLines(
@@ -321,6 +360,11 @@ class CreateSEPAExportFromPaySelectionCommand
 	private boolean hasBusinessPartnerBankAccount(@NonNull final I_C_PaySelectionLine line)
 	{
 		return BankAccountId.ofRepoIdOrNull(line.getC_BP_BankAccount_ID()) != null;
+	}
+
+	private boolean isOrderPaySelectionLine(@NonNull final I_C_PaySelectionLine line)
+	{
+		return paySelectionBL.extractType(line) == PaySelectionLineType.Order;
 	}
 
 	private boolean isInvoicePaySelectionLine(@NonNull final I_C_PaySelectionLine line)
