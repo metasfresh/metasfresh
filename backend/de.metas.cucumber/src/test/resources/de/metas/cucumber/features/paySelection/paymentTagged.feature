@@ -37,8 +37,8 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | plv_purchase           | product      | 20596.32  | PCE      |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | vendor     | Y        | N          | ps                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
+      | vendor     | Y        | N          | ps                 | P             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | vendor_loc | vendor        | Y               | Y               |
@@ -46,6 +46,10 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
       | org_EUR_account | EUR           |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier          | C_BPartner_ID | C_Currency_ID |
+      | vendor_bank_account | vendor        | EUR           |
 
 
   @from:cucumber

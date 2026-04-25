@@ -90,11 +90,12 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | po_l1      | po         | product      | 1          |
     And the order identified by po is completed
 
-    # ── Before allocation: both lines Pending ─────────────────────────────────
+    # ── Before allocation: default status Awaiting_Pay (iter 1 semantics).
+    #    Pending status is only set by recomputeLCStep after an active allocation is deleted (TC3).
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
-      | LC                 | 20596.32  | PR      | null          |
-      | OD                 | 48058.08  | PR      | null          |
+      | LC                 | 20596.32  | WP      | null          |
+      | OD                 | 48058.08  | WP      | null          |
 
     # ── Create and complete the proforma invoice (GrandTotal = 20596.32 = planned DueAmt) ─────
     And metasfresh contains C_Invoice:
@@ -111,7 +112,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | PR           | null          |
+      | OD                 | 48058.08  | WP           | null          |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
@@ -139,7 +140,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | PR      | null          |
+      | OD                 | 48058.08  | WP      | null          |
 
 
   @from:cucumber
@@ -180,7 +181,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20500.00      |
-      | OD                 | 48058.08  | PR           | null          |
+      | OD                 | 48058.08  | WP           | null          |
 
 
   @from:cucumber
@@ -218,7 +219,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | PR           | null          |
+      | OD                 | 48058.08  | WP           | null          |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
@@ -229,7 +230,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LC                 | 20596.32  | PR      | null          |
-      | OD                 | 48058.08  | PR      | null          |
+      | OD                 | 48058.08  | WP      | null          |
     And validate the created orders
       | Identifier | LC_Date |
       | po         | null    |
@@ -271,7 +272,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | PR           | null          |
+      | OD                 | 48058.08  | WP           | null          |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
@@ -293,7 +294,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | PR      | null          |
+      | OD                 | 48058.08  | WP      | null          |
 
     # ── Reverse the payment → LC rolls back to Awaiting_Pay ──────────────────
     And the payment identified by payment_tc4 is reversed
@@ -301,7 +302,7 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | PR           | null          |
+      | OD                 | 48058.08  | WP           | null          |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |
