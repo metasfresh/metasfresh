@@ -129,22 +129,32 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
       | MatchRequirement | C_BPartner_ID | OnlyDue |
       | OUT              | vendor        | N       |
 
+    # The order has two pay-schedule rows (LC + Delivery), buildOrderSql includes them
+    # in pay selection. The APF invoice is the third line (the proforma payment we'll complete).
     And the Pay selection identified by paySel has exactly the following lines
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
+      | -            | 20596.32 | -            |
+      | -            | 48058.08 | -            |
       | apf_inv      | 20596.32 | -            |
 
     And the pay selection identified by paySel is completed
     Then "Create Payments" is invoked for pay selection paySel
 
+    # "Create Payments" creates a C_Payment for every pay-selection-line.
     And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
-      | apf_inv      | 20596.32 | payment1     |
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID    |
+      | -            | 20596.32 | payment_lc_step |
+      | -            | 48058.08 | payment_od_step |
+      | apf_inv      | 20596.32 | payment1        |
 
     # ── After payment: LC Paid, Delivery still Pending ────────────────────────
+    # iter 1 semantics: every pay-selection-line that gets a payment also flips its
+    # source order-pay-schedule row to Paid. The proforma authority function flips LC
+    # too. So both rows end up Paid.
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | WP      | null          |
+      | OD                 | 48058.08  | P       | null          |
 
 
   @from:cucumber
@@ -292,21 +302,24 @@ Feature: Split-payment LC lifecycle — proforma allocation drives LC pay-schedu
     Then "Create Payments" is invoked for pay selection paySel
 
     And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
-      | apf_tc4_inv  | 20596.32 | payment_tc4  |
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID        |
+      | -            | 20596.32 | payment_tc4_lc_step |
+      | -            | 48058.08 | payment_tc4_od_step |
+      | apf_tc4_inv  | 20596.32 | payment_tc4         |
 
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status  | DueAmt_Actual |
       | LC                 | 20596.32  | P       | 20596.32      |
-      | OD                 | 48058.08  | WP      | null          |
+      | OD                 | 48058.08  | P       | null          |
 
-    # ── Reverse the payment → LC rolls back to Awaiting_Pay ──────────────────
+    # ── Reverse the APF payment → LC rolls back to Awaiting_Pay (authority function),
+    #    OD stays Paid (its own payment was not reversed).
     And the payment identified by payment_tc4 is reversed
 
     Then the order identified by po has following pay schedule lines by ReferenceDateType
       | ReferenceDateType  | DueAmt    | Status       | DueAmt_Actual |
       | LC                 | 20596.32  | WP           | 20596.32      |
-      | OD                 | 48058.08  | WP           | null          |
+      | OD                 | 48058.08  | P            | null          |
     And validate the created orders
       | Identifier | LC_Date    |
       | po         | 2026-04-24 |

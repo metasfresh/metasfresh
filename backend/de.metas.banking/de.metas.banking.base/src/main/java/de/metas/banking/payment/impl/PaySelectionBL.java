@@ -188,9 +188,16 @@ public class PaySelectionBL implements IPaySelectionBL
 			case Invoice:
 
 				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(psl.getC_Invoice_ID()));
-				Check.assume(invoice.isFinancial(), "Expected invoice {} to be financial", invoice.getDocumentNo());
-				partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 				final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+				// Proforma (APF/ARF) invoices intentionally have IsFinancial='N' but do reach
+				// pay selection via the gate fix in PaySelectionUpdater.buildSelectSQL_InvoiceMatchRequirement
+				// (https://github.com/metasfresh/me03/issues/29368). Treat them as financial-equivalent
+				// for the purposes of resolving the BPartner's bank account.
+				final boolean isProforma = invoiceDocBaseType == InvoiceDocBaseType.PurchaseProFormaInvoice
+						|| invoiceDocBaseType == InvoiceDocBaseType.SalesProFormaInvoice;
+				Check.assume(invoice.isFinancial() || isProforma,
+						"Expected invoice {} to be financial or a proforma", invoice.getDocumentNo());
+				partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 				acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
 
 				break;

@@ -10,9 +10,10 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
   # TC6: Completing a pay-selection whose source is a purchase proforma creates a
   # payment tagged with Proforma_Invoice_ID and IsPrepayment=Y.
   #
-  # Current state (RED): no code sets Proforma_Invoice_ID on the C_Payment yet.
-  # The column exists physically (Task 13) but the auto-tag logic (Task 17) has not
-  # been wired.  This scenario is intentionally RED until Task 17+18 land.
+  # Note: IsPrepayment is auto-derived by MPayment.beforeSave from C_Order_ID != 0.
+  # Realistic proforma flow always has an order + allocation, which provides the
+  # C_Order_ID. The setup below mirrors TC1's core (PO + payment-term + proforma +
+  # allocation) but the assertions focus only on the payment-tagging contract.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -34,7 +35,7 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | product    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd  | C_UOM_ID |
-      | plv_purchase           | product      | 20596.32  | PCE      |
+      | plv_purchase           | product      | 68654.40  | PCE      |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
@@ -51,6 +52,18 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | Identifier          | C_BPartner_ID | C_Currency_ID |
       | vendor_bank_account | vendor        | EUR           |
 
+    And metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_lc      |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
+      | ptb_od     | pt_lc            | 70      | 0          | OD                | 20    |
+
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh             |
+
 
   @from:cucumber
   @PaySelection
@@ -60,15 +73,25 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
   @MF_29368
   Scenario: TC6 - Payment created from a proforma pay-selection line is tagged with Proforma_Invoice_ID and IsPrepayment=Y
     # https://github.com/metasfresh/me03/issues/29368
-    # Expected RED until Task 17 (auto-tag logic) is wired.
+
+    # PO + APF + allocate (provides the C_Order_ID linkage for MPayment.beforeSave).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po         | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po_l1      | po         | product      | 1          |
+    And the order identified by po is completed
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
       | apf_inv    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | apf_invL1  | apf_inv      | product      | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
+      | apf_invL1  | apf_inv      | product      | 1 PCE       | 20596.32  |
     And the invoice identified by apf_inv is completed
+
+    And I allocate proforma 'apf_inv' to order 'po'
 
     And metasfresh contains Pay Selection
       | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -77,16 +100,15 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | MatchRequirement | C_BPartner_ID | OnlyDue |
       | OUT              | vendor        | N       |
 
-    And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
-      | apf_inv      | 20596.32 | -            |
-
     And the pay selection identified by paySel is completed
     Then "Create Payments" is invoked for pay selection paySel
 
+    # "Create Payments" creates a C_Payment for every pay-selection-line.
     And the Pay selection identified by paySel has exactly the following lines
-      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
-      | apf_inv      | 20596.32 | payment      |
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID    |
+      | -            | 20596.32 | payment_lc_step |
+      | -            | 48058.08 | payment_od_step |
+      | apf_inv      | 20596.32 | payment         |
 
     Then validate payments
       | C_Payment_ID.Identifier | IsPrepayment | Proforma_Invoice_ID |
