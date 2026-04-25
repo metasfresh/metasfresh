@@ -127,9 +127,9 @@ public class OrderPayScheduleLCService
 		// Proforma allocation is present: determine payment state
 		final InvoiceId proformaInvoiceId = allocation.getInvoiceId();
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
-		final Optional<I_C_Payment> completedPayment = paymentDAO.findCompletedByProformaInvoiceId(proformaInvoiceId);
+		final I_C_Payment completedPayment = paymentDAO.findCompletedByProformaInvoiceId(proformaInvoiceId).orElse(null);
 
-		if (completedPayment.isPresent())
+		if (completedPayment != null)
 		{
 			// Payment completed → Paid
 			lcStep.setStatus(OrderPayScheduleStatus.Paid);

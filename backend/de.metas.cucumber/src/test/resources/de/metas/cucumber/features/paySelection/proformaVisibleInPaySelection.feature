@@ -9,9 +9,8 @@ Feature: Proforma invoice appears in Pay Selection alongside regular financial i
   # TC5: Purchase Proforma (APF) and regular purchase invoice (API) for the same vendor
   # must both appear as lines in Pay Selection.
   #
-  # Current state (RED): the C_Invoice_v view filters isfinancial='Y', which excludes APF invoices.
-  # PaySelectionUpdater therefore computes OpenAmt=NULL → coalesced to 0 → candidate dropped.
-  # This scenario is intentionally RED until the gate fix (Task 9) lands.
+  # Gate fix (Task 9) landed: APF invoices are now included via proformaInvoiceOpen() SQL function.
+  # PaySelectionUpdater computes correct OpenAmt and APF lines appear in the pay selection.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -58,7 +57,6 @@ Feature: Proforma invoice appears in Pay Selection alongside regular financial i
   @MF_29368
   Scenario: TC5 - Purchase Proforma and regular purchase invoice both become pay-selection lines for the same vendor
     # https://github.com/metasfresh/me03/issues/29368
-    # Expected RED until Task 9 (gate fix: include APF in C_Invoice_v / invoiceopen()).
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name              | DateInvoiced | IsSOTrx | C_Currency_ID |

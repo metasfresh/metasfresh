@@ -151,4 +151,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 
 	public boolean isPurchaseProformaInvoice() {return this == PurchaseProFormaInvoice;}
 
+	/** @return {@code true} if this is any proforma invoice (purchase or sales). */
+	public boolean isProforma() {return this == PurchaseProFormaInvoice || this == SalesProFormaInvoice;}
+
 }

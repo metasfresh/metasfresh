@@ -23,6 +23,7 @@
 package de.metas.invoice.proforma.interceptor;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAllocService;
 import lombok.NonNull;
@@ -38,6 +39,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_Invoice
 {
+	// TODO(G4): replace with a dedicated AdMessageKey once a follow-up migration adds the AD_Message row.
+	// For now reuse the closest existing key from migration 5799570 as a stopgap.
+	// Semantic: "this DocAction is not allowed while a proforma-order allocation is active".
+	private static final AdMessageKey MSG_DocActionNotAllowedWithAllocations =
+			AdMessageKey.of("de.metas.invoice.proforma.NoLCBreakInOrder");
+
 	@NonNull final ProformaOrderAllocService proformaOrderAllocService;
 
 	@DocValidate(timings = {
@@ -47,9 +54,10 @@ public class C_Invoice
 			ModelValidator.TIMING_BEFORE_REACTIVATE})
 	public void beforeReverse(@NonNull final I_C_Invoice invoice)
 	{
-		if(proformaOrderAllocService.hasAllocations(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
+		if (proformaOrderAllocService.hasAllocations(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 		{
-			throw new AdempiereException("DocAction not allowed with allocations"); //TODO adMsg or alternative auto deallocate if possible
+			throw new AdempiereException(MSG_DocActionNotAllowedWithAllocations)
+					.markAsUserValidationError();
 		}
 	}
 }

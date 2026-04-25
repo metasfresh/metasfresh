@@ -22,7 +22,6 @@
 
 package de.metas.invoice.proforma.process;
 
-import de.metas.invoice.proforma.ProformaOrderAlloc;
 import de.metas.invoice.proforma.ProformaOrderAllocId;
 import de.metas.invoice.proforma.ProformaOrderAllocService;
 import de.metas.process.IProcessPrecondition;
@@ -50,14 +49,16 @@ public class C_Proforma_Order_Alloc_DeAllocate extends JavaProcess implements IP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Process must be run from Proforma-Order Allocation tab");
 		}
 
-		final ProformaOrderAlloc alloc = proformaOrderAllocService.getById(ProformaOrderAllocId.ofRepoId(context.getSingleSelectedRecordId()));
-        // TODO define when this should be possible (e.g. status of shipments, pay schedule, payments etc )
+		if (context.getSingleSelectedRecordId() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No allocation record selected");
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		proformaOrderAllocService.deallocate(proformaOrderAllocService.getById(ProformaOrderAllocId.ofRepoId(getRecord_ID())));
 

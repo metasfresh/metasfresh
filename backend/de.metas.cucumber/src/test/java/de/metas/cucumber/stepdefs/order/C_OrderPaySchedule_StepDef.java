@@ -203,10 +203,10 @@ public class C_OrderPaySchedule_StepDef
 		// DueAmt_Actual: "null" in the feature means assert NULL; a numeric value asserts equality.
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
 				.ifPresent(rawValue -> {
-					if (DataTableUtil.NULL_STRING.equals(rawValue))
+					if (DataTableUtil.isNullPlaceholder(rawValue))
 					{
 						final BigDecimal actual = payScheduleLine.getDueAmtActual();
-						softly.assertThat(actual == null || BigDecimal.ZERO.compareTo(actual) == 0)
+						softly.assertThat(actual == null || actual.signum() == 0)
 								.as("DueAmt_Actual should be null/zero but was: " + actual)
 								.isTrue();
 					}

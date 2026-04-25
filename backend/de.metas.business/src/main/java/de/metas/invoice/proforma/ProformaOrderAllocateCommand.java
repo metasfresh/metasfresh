@@ -94,9 +94,7 @@ class ProformaOrderAllocateCommand
 
 		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(request);
 
-		order.setLC_Date(invoice.getDateInvoiced());
-		orderBL.save(order);
-
+		// Delegate LC_Date stamping to the authority function — recomputeLCStep is the sole writer of LC_Date.
 		orderPayScheduleLCService.recomputeLCStep(purchaseOrderId);
 
 		return alloc;

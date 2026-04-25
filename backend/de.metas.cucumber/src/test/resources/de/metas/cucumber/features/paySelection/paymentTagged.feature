@@ -65,6 +65,19 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
       | wh             |
 
 
+  # TC6: Proforma → Letter-of-Credit → Payment tagging flow
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Tests the full split-payment path for the LC step:
+  #   1. A purchase order with an LC-break payment term is created and completed.
+  #   2. A purchase proforma (APF) invoice is created and allocated to the order.
+  #      The allocation is the LC-break trigger: it stamps LC_Date on the order
+  #      and transitions the LC pay-schedule step to Awaiting_Pay.
+  #   3. The proforma appears in pay selection (gate fix, Task 9). Pay selection
+  #      is completed and "Create Payments" is run.
+  #   4. The generated payment must carry:
+  #        Proforma_Invoice_ID = <apf invoice>   (explicit tag for reversal guard)
+  #        IsPrepayment        = Y               (auto-derived from C_Order_ID ≠ 0)
+  # ─────────────────────────────────────────────────────────────────────────────
   @from:cucumber
   @PaySelection
   @Proforma
@@ -85,13 +98,13 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | apf_inv    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
+      | lcInvoice    | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price     |
-      | apf_invL1  | apf_inv      | product      | 1 PCE       | 20596.32  |
-    And the invoice identified by apf_inv is completed
+      | lcInvoiceL1  | lcInvoice      | product      | 1 PCE       | 20596.32  |
+    And the invoice identified by lcInvoice is completed
 
-    And I allocate proforma 'apf_inv' to order 'po'
+    And I allocate proforma 'lcInvoice' to order 'po'
 
     And metasfresh contains Pay Selection
       | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -104,12 +117,19 @@ Feature: Payment generated from a proforma pay-selection line is auto-tagged
     Then "Create Payments" is invoked for pay selection paySel
 
     # "Create Payments" creates a C_Payment for every pay-selection-line.
+    # The pay selection has 3 lines:
+    #   Row 1 (LC step)  — no invoice link, amount = 30% of 68654.40 = 20596.32
+    #                      auto-created by PaySelectionUpdater from the LC break.
+    #   Row 2 (OD step)  — no invoice link, amount = 70% of 68654.40 = 48058.08
+    #                      auto-created from the on-delivery break.
+    #   Row 3 (APF line) — the proforma invoice; the generated payment must carry
+    #                      Proforma_Invoice_ID + IsPrepayment=Y (assertion target).
     And the Pay selection identified by paySel has exactly the following lines
       | C_Invoice_ID | OpenAmt  | C_Payment_ID    |
       | -            | 20596.32 | payment_lc_step |
       | -            | 48058.08 | payment_od_step |
-      | apf_inv      | 20596.32 | payment         |
+      | lcInvoice    | 20596.32 | payment         |
 
     Then validate payments
       | C_Payment_ID.Identifier | IsPrepayment | Proforma_Invoice_ID |
-      | payment                 | Y            | apf_inv             |
+      | payment                 | Y            | lcInvoice             |

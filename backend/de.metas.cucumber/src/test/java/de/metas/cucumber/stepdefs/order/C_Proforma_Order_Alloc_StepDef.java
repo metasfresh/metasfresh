@@ -105,7 +105,7 @@ public class C_Proforma_Order_Alloc_StepDef
 
 		final ProformaOrderAlloc alloc = proformaOrderAllocRepository
 				.findActiveByOrderId(purchaseOrderId)
-				.filter(a -> a.getInvoiceId().equals(proformaInvoiceId))
+				.filter(a -> InvoiceId.equals(a.getInvoiceId(), proformaInvoiceId))
 				.orElseThrow(() -> new AdempiereException("No active proforma-order allocation found for invoiceId=" + proformaInvoiceId + " orderId=" + purchaseOrderId));
 
 		proformaOrderAllocService.deallocate(alloc);

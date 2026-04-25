@@ -65,14 +65,14 @@ public class C_Payment_LCStep
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DocStatus })
 	public void onDocStatusChanged(@NonNull final I_C_Payment payment)
 	{
-		final int pid = payment.getProforma_Invoice_ID();
-		if (pid <= 0)
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
 		{
 			return; // not a proforma prepayment — skip
 		}
 
 		final ProformaOrderAlloc alloc = proformaOrderAllocRepository
-				.findByProformaInvoiceId(InvoiceId.ofRepoId(pid))
+				.findByProformaInvoiceId(proformaInvoiceId)
 				.orElse(null);
 		if (alloc == null)
 		{
