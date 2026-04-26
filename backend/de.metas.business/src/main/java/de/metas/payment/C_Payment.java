@@ -150,14 +150,25 @@ public class C_Payment
 		}
 
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
-		final BigDecimal expected = proforma.getGrandTotal();
-		final BigDecimal actualAbs = payment.getPayAmt().abs();
-		if (actualAbs.compareTo(expected) != 0)
+		assertProformaPaymentIsFull(proformaInvoiceId, proforma.getGrandTotal(), payment.getPayAmt());
+	}
+
+	/**
+	 * Pure helper for the proforma full-payment guard — extracted so it can be unit-tested
+	 * without spinning up the full {@code IInvoiceBL} dependency chain.
+	 */
+	static void assertProformaPaymentIsFull(
+			@NonNull final InvoiceId proformaInvoiceId,
+			@NonNull final BigDecimal expectedGrandTotal,
+			@NonNull final BigDecimal actualPayAmt)
+	{
+		final BigDecimal actualAbs = actualPayAmt.abs();
+		if (actualAbs.compareTo(expectedGrandTotal) != 0)
 		{
 			throw new AdempiereException(MSG_ProformaPaymentMustBeFull)
 					.appendParametersToMessage()
 					.setParameter("proformaInvoiceId", proformaInvoiceId)
-					.setParameter("expectedGrandTotal", expected)
+					.setParameter("expectedGrandTotal", expectedGrandTotal)
 					.setParameter("actualPayAmtAbs", actualAbs);
 		}
 	}
