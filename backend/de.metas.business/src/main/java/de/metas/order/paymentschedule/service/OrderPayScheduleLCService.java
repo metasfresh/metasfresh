@@ -135,22 +135,18 @@ public class OrderPayScheduleLCService
 		final ProformaInvoice proforma = getProformaInvoiceById(proformaInvoiceId);
 		final Prepayment prepayment = getPrepayment(proformaInvoiceId, trustedCompletingPayment).orElse(null);
 
-		// final LocalDate lcStepDueDate = proforma.getDateInvoiced().plusDays(lcStep.getOffsetDays());
-
 		if (prepayment != null)
 		{
 			// Payment completed → Paid
 			schedule.applyAndProcess(lcStep.getId(), OrderPayScheduleLineContext.paid(proforma.getDueDate(), proforma.getGrandTotal()));
-			orderPayScheduleService.save(schedule);
-			stampLCDateOnOrder(orderId, proforma);
 		}
 		else
 		{
 			// Payment absent, drafted, or reversed → Awaiting_Pay
-			schedule.markAsAwaitingPayment(lcStep.getId(), proforma.getGrandTotal());
-			orderPayScheduleService.save(schedule);
-			stampLCDateOnOrder(orderId, proforma);
+			schedule.markAsAwaitingPayment(lcStep.getId(), proforma.getDueDate(), proforma.getGrandTotal());
 		}
+		orderPayScheduleService.save(schedule);
+		stampLCDateOnOrder(orderId, proforma);
 	}
 
 	@NonNull
