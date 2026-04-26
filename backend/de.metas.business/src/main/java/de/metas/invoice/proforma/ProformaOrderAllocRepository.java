@@ -48,11 +48,11 @@ public class ProformaOrderAllocRepository
 		return fromRecord(load(proformaOrderAllocId, I_C_Proforma_Order_Alloc.class));
 	}
 
-	public ProformaOrderAlloc create(@NonNull final ProformaOrderAllocateRequest request)
+	public ProformaOrderAlloc create(@NonNull final InvoiceId proformaInvoiceId, @NonNull final OrderId purchaseOrderId)
 	{
 		final I_C_Proforma_Order_Alloc record = newInstance(I_C_Proforma_Order_Alloc.class);
-		record.setC_Invoice_ID(request.getProformaInvoiceId().getRepoId());
-		record.setC_Order_ID(request.getPurchaseOrderId().getRepoId());
+		record.setC_Invoice_ID(proformaInvoiceId.getRepoId());
+		record.setC_Order_ID(purchaseOrderId.getRepoId());
 		saveRecord(record);
 		return fromRecord(record);
 	}

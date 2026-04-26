@@ -27,7 +27,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAlloc;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.proforma.ProformaOrderAllocService;
-import de.metas.invoice.proforma.ProformaOrderAllocateRequest;
 import de.metas.order.OrderId;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -77,10 +76,7 @@ public class C_Proforma_Order_Alloc_StepDef
 		final InvoiceId proformaInvoiceId = invoiceTable.getId(invoiceIdentifier);
 		final OrderId purchaseOrderId = orderTable.getId(orderIdentifier);
 
-		proformaOrderAllocService.allocate(ProformaOrderAllocateRequest.builder()
-				.proformaInvoiceId(proformaInvoiceId)
-				.purchaseOrderId(purchaseOrderId)
-				.build());
+		proformaOrderAllocService.allocate(proformaInvoiceId, purchaseOrderId);
 	}
 
 	/**

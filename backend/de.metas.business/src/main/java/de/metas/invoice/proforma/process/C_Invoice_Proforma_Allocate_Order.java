@@ -24,7 +24,6 @@ package de.metas.invoice.proforma.process;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAllocService;
-import de.metas.invoice.proforma.ProformaOrderAllocateRequest;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -45,7 +44,7 @@ public class C_Invoice_Proforma_Allocate_Order extends JavaProcess implements IP
 
 	private static final String PARAM_C_Order_ID = "C_Order_ID";
 	@Param(parameterName = PARAM_C_Order_ID, mandatory = true)
-	private int p_C_Order_ID;
+	private OrderId p_C_Order_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -77,15 +76,12 @@ public class C_Invoice_Proforma_Allocate_Order extends JavaProcess implements IP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoId(getRecord_ID());
-		final OrderId purchaseOrderId = Check.assumeNotNull(OrderId.ofRepoIdOrNull(p_C_Order_ID), "Purchase Order Para should be set");
+		final InvoiceId proformaInvoiceId = getRecordIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
+		final OrderId purchaseOrderId = Check.assumeNotNull(p_C_Order_ID, "Purchase Order Para should be set");
 
 		// Validation (currency, vendor, LC-break count) is performed by the command's validate() method,
 		// which is the API/script gate — it runs even when the Val Rule lookup filter is bypassed.
-		proformaOrderAllocService.allocate(ProformaOrderAllocateRequest.builder()
-				.proformaInvoiceId(proformaInvoiceId)
-				.purchaseOrderId(purchaseOrderId)
-				.build());
+		proformaOrderAllocService.allocate(proformaInvoiceId, purchaseOrderId);
 
 		return MSG_OK;
 	}

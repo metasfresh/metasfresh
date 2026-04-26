@@ -44,13 +44,14 @@ public class ProformaOrderAllocService
 		return repository.getById(proformaOrderAllocId);
 	}
 
-	public void allocate(@NonNull final ProformaOrderAllocateRequest request)
+	public void allocate(@NonNull final InvoiceId proformaInvoiceId, @NonNull final OrderId purchaseOrderId)
 	{
 		ProformaOrderAllocateCommand.builder()
 				.proformaOrderAllocRepository(repository)
 				.paymentTermService(paymentTermService)
 				.orderPayScheduleLCService(orderPayScheduleLCService)
-				.request(request)
+				.proformaInvoiceId(proformaInvoiceId)
+				.purchaseOrderId(purchaseOrderId)
 				.build()
 				.execute();
 	}

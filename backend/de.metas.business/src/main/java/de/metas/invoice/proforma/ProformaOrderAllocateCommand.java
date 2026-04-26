@@ -61,7 +61,8 @@ class ProformaOrderAllocateCommand
 	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository;
 	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
 
-	@NonNull private final ProformaOrderAllocateRequest request;
+	@NonNull private final InvoiceId proformaInvoiceId;
+	@NonNull private final OrderId purchaseOrderId;
 
 	public ProformaOrderAlloc execute()
 	{
@@ -70,10 +71,6 @@ class ProformaOrderAllocateCommand
 
 	private ProformaOrderAlloc execute0()
 	{
-		final InvoiceId proformaInvoiceId = request.getProformaInvoiceId();
-		final OrderId purchaseOrderId = request.getPurchaseOrderId();
-
-
 		final I_C_Invoice invoice = invoiceBL.getById(proformaInvoiceId);
 		Check.assume(invoiceBL.isPurchaseProforma(invoice), "Invoice should be a Purchase Proforma Invoice (APF)");
 
@@ -87,10 +84,7 @@ class ProformaOrderAllocateCommand
 		// Val Rule lookup filter is bypassed (e.g. direct REST call or Cucumber/script scenario).
 		validate(invoice, order);
 
-		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(ProformaOrderAllocateRequest.builder()
-				.proformaInvoiceId(proformaInvoiceId)
-				.purchaseOrderId(purchaseOrderId)
-				.build());
+		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(proformaInvoiceId, purchaseOrderId);
 
 		// Delegate LC_Date stamping to the authority function — recomputeLCStep is the sole writer of LC_Date.
 		orderPayScheduleLCService.recomputeLCStep(purchaseOrderId);
