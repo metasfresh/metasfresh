@@ -70,7 +70,7 @@ SELECT i.c_invoice_id,
                                                                                                        ELSE 1.0
        END                                                                              AS multiplierap,
        d.docbasetype,
-       paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp with time zone) AS duedate
+       i.duedate::timestamp with time zone AS duedate
 FROM c_invoice i
          JOIN c_doctype d ON i.c_doctype_id = d.c_doctype_id
 WHERE i.ispayschedulevalid <> 'Y'::bpchar

@@ -106,7 +106,7 @@ const translations = {
       switchToQrCodeInput: 'Scan',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
-      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qtyRejectedIgnoreReason: 'Without reason',
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -152,6 +152,11 @@ const translations = {
       },
       abort: 'Abort',
       notFound: 'Not found',
+      error: {
+        title: 'Could not send confirmation',
+        retry: 'Retry',
+        cancel: 'Cancel',
+      },
     },
     mfg: {
       ProductName: 'Product Name',

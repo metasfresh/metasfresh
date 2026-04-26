@@ -1552,7 +1552,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1561,7 +1561,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1574,7 +1574,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1583,7 +1583,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1612,7 +1612,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1622,7 +1622,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1635,7 +1635,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1645,7 +1645,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1675,7 +1675,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(taxAmtAdjustment, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 
@@ -1684,7 +1684,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(null, taxAmtAdjustment)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1707,7 +1707,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(amountCMAdjusted, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1717,7 +1717,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 					}
