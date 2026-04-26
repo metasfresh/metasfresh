@@ -1,12 +1,9 @@
--- https://github.com/metasfresh/me03/issues/29368
--- Reverts the order-side surface from https://github.com/metasfresh/metasfresh/pull/21485 on
--- C_PaySelectionLine: drops the two columns + their AD metadata + the UI field. The shared
--- AD_Element rows (558, 584056) are used elsewhere and are not touched.
---
--- Stray test data: see https://github.com/metasfresh/me03/issues/29368#issuecomment-4320178387.
+-- Drops the order-side surface on C_PaySelectionLine (C_Order_ID + C_OrderPaySchedule_ID +
+-- their AD metadata + the UI field). The shared AD_Element rows (558, 584056) are used
+-- elsewhere and are not touched.
 
 -- Defensive backup before any destructive change to a non-AD table.
-SELECT backup_table('c_payselectionline', '_29368_drop_order_columns')
+SELECT backup_table('c_payselectionline', '_drop_order_columns')
 ;
 
 -- =============================================================================

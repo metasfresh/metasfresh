@@ -75,14 +75,12 @@ BEGIN
     END IF;
 
     --
-    -- Proforma early-return (https://github.com/metasfresh/me03/issues/29368).
+    -- Proforma early-return.
     -- The financial branch below reads C_Invoice_v which filters out IsFinancial='N'
     -- (i.e., proforma invoices). Proformas have no C_AllocationLine rows by design (no
     -- accounting), so the allocation walk would always return GrandTotal regardless of
     -- payment state. We instead detect "paid" via C_Payment.Proforma_Invoice_ID +
-    -- DocStatus IN ('CO','CL'). Reversed payments (DocStatus='RE') don't count;
-    -- reversal-payment rows have Proforma_Invoice_ID cleared in MPayment.reverseCorrectIt()
-    -- (the dual-CO window guard), so they're excluded by the same filter naturally.
+    -- DocStatus IN ('CO','CL'). Reversed payments (DocStatus='RE') don't count.
     DECLARE
         v_inv_IsFinancial      char(1);
         v_inv_DocBaseType      char(3);
@@ -104,6 +102,9 @@ BEGIN
         SELECT i.IsFinancial, dt.DocBaseType, i.GrandTotal, i.C_Currency_ID,
                CASE WHEN p_DateType = 'A' THEN i.DateAcct ELSE i.DateInvoiced END,
                i.AD_Client_ID, i.AD_Org_ID, i.C_ConversionType_ID,
+               -- MultiplierAP: AP-side documents (DocBaseType char 2 = 'P' Purchase or 'E' Expense)
+               -- carry positive amounts that represent money owed BY us, so we negate the
+               -- multiplier to keep the open-amount sign consistent with the AR convention.
                CASE WHEN charat(dt.docbasetype::character varying, 2)::text = ANY (ARRAY['P'::text, 'E'::text]) THEN -1.0 ELSE 1.0 END
           INTO v_inv_IsFinancial, v_inv_DocBaseType, v_inv_GrandTotal, v_inv_Currency_ID,
                v_inv_Date, v_inv_Client_ID, v_inv_Org_ID, v_inv_ConvType_ID, v_inv_MultiplierAP
@@ -168,6 +169,7 @@ BEGIN
                 RAISE;
             END IF;
     END;
+    -- ── End Proforma block ──
 
     --
     -- Get Invoice total, multipliers and currency informations

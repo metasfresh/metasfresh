@@ -1864,10 +1864,7 @@ public final class MPayment extends X_C_Payment
 			throw new AdempiereException("@void.payment@");
 		}
 
-		// Create Reversal. copyValues() carries classification fields (including Proforma_Invoice_ID
-		// — full reversal symmetry per architecture §5); only the numeric effect is negated below.
-		// C_Order_ID / C_Invoice_ID are cleared per the legacy MPayment contract — they're
-		// UI-convenience fields, not classification (C_AllocationLine is the authoritative link).
+		// Create Reversal
 		final MPayment reversal = new MPayment(getCtx(), 0, get_TrxName());
 		copyValues(this, reversal);
 		reversal.setClientOrg(this);
