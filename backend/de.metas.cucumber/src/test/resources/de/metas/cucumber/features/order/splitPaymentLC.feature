@@ -273,11 +273,23 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | OD                | 48058.08 | WP     | null          |
 
     # ── Reverse the proforma payment ──
-    # The reversal payment created inside MPayment.reverseCorrectIt() has Proforma_Invoice_ID
-    # cleared (dual-CO timing-window guard — see architecture §5 documented exception).
-    # The LC-step authority function sees no CO/CL payment for the proforma and rolls back to WP.
-    # DueAmt_Actual + LC_Date are preserved because the allocation is still active.
-    And the payment identified by lcPayment is reversed
+    # MPayment.reverseCorrectIt() creates a counter-payment that mirrors the original — every
+    # classification field (Proforma_Invoice_ID, IsPrepayment) is preserved; only the numeric
+    # effect is negated (PayAmt = -GrandTotal). Both rows end at DocStatus='RE' linked by
+    # Reversal_ID. The LC-step authority's `findCompletedOrClosedByProformaInvoiceId` filters
+    # on DocStatus IN (CO,CL), so it sees no completed payment and rolls the LC step back to
+    # Awaiting_Pay. DueAmt_Actual + LC_Date are preserved because the proforma allocation is
+    # still active.
+    And the payment identified by lcPayment is reversed with a reversal identified by lcPaymentReversal
+
+    # Reversal symmetry — AC #14: Proforma_Invoice_ID is preserved on both rows; PayAmt
+    # is negated on the reversal row; both end at DocStatus='RE'. (IsPrepayment is NOT
+    # asserted here: MPayment.beforeSave currently recomputes IsPrepayment from
+    # C_Order_ID/C_Invoice_ID, which are cleared on reversal — see PLAN.md Phase 8 Task 68.)
+    Then validate payments
+      | C_Payment_ID.Identifier | DocStatus | Proforma_Invoice_ID | PayAmt    |
+      | lcPayment               | RE        | lcInvoice           |  20596.32 |
+      | lcPaymentReversal       | RE        | lcInvoice           | -20596.32 |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
