@@ -196,7 +196,9 @@ public class C_Payment
 	 * {@code C_Invoice_ID} are cleared). This interceptor reasserts the invariant: a proforma
 	 * payment is always a prepayment, regardless of which legacy fields are populated.
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, I_C_Payment.COLUMNNAME_IsPrepayment })
 	public void enforceIsPrepaymentOnProformaPayment(@NonNull final I_C_Payment payment)
 	{
 		if (InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID()) != null && !payment.isPrepayment())

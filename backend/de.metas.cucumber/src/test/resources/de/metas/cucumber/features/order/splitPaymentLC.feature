@@ -3,8 +3,6 @@
 @allure.label.feature:F00126_Prepayment_Order_Management
 @ghActions:run_on_executor4
 Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-schedule step
-  # https://github.com/metasfresh/me03/issues/29368
-  #
   # Domain: a purchase order with a complex payment term that has two breaks:
   #   - 30 % LC  (LetterOfCreditDate) — paid up-front via a proforma invoice
   #   - 70 % OD  (OrderDate)          — paid later against the delivery invoice

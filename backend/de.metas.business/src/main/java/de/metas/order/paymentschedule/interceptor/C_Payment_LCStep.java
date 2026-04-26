@@ -70,12 +70,10 @@ import javax.annotation.Nullable;
  *   <li><b>AFTER_VOID</b> — voiding a still-Drafted/InProgress proforma payment does not call
  *       {@code reverseCorrectIt()}. This path is currently unreachable for proforma payments
  *       because the LC step only reaches Awaiting_Pay after the proforma payment is completed
- *       (iter-1 invariant); a payment still at DR/IP cannot have driven the LC step out of
- *       Pending. If the iter-1 invariant ever changes, add an AFTER_VOID handler delegating to
+ *       invariant); a payment still at DR/IP cannot have driven the LC step out of Pending. If
+ *       that invariant ever changes, add an AFTER_VOID handler delegating to
  *       {@link OrderPayScheduleLCService#recomputeLCStep(OrderId)}.
  * </ul>
- *
- * @see <a href="https://github.com/metasfresh/me03/issues/29368">me03 #29368 Split-Payment Iter 2</a>
  */
 @Interceptor(I_C_Payment.class)
 @Component
