@@ -158,6 +158,12 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | LC                | 20596.32 | P      | 20596.32      |
       | OD                | 48058.08 | WP     | null          |
 
+    # AC #17 — invoiceOpenToDate proforma branch after payment completion:
+    # The CO payment lands in the SUM(abs(PayAmt)) so OpenAmt = GrandTotal - GrandTotal = 0,
+    # PaidAmt = GrandTotal. HasAllocations stays false (proforma never has C_AllocationLine rows).
+    Then for invoice the following invoiceOpenToDate result is expected:
+      | C_Invoice_ID.Identifier | OpenAmt | PaidAmt  | GrandTotal | HasAllocations |
+      | lcInvoice               | 0       | 20596.32 | 20596.32   | false          |
 
   Scenario: S2 - Proforma GrandTotal below planned LC DueAmt — DueAmt_Actual captures the actual amount
     # Procurement-worker variant: vendor sends a proforma for slightly less than the planned LC amount
@@ -297,6 +303,14 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
       | LC                | 20596.32 | WP     | 20596.32      |
       | OD                | 48058.08 | WP     | null          |
+
+    # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
+    # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
+    # so the proforma reverts to unpaid: OpenAmt = GrandTotal, PaidAmt = 0.
+    Then for invoice the following invoiceOpenToDate result is expected:
+      | C_Invoice_ID.Identifier | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+      | lcInvoice               | 20596.32 | 0       | 20596.32   | false          |
+
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |

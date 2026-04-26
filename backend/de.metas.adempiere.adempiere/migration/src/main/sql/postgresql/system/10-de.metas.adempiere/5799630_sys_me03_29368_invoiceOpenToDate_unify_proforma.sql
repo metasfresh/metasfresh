@@ -84,7 +84,6 @@ BEGIN
         v_inv_Client_ID        numeric;
         v_inv_Org_ID           numeric;
         v_inv_ConvType_ID      numeric;
-        v_inv_MultiplierAP     numeric;
         v_pf_ResultCurrency_ID numeric;
         v_pf_Precision         numeric;
         v_pf_Min               numeric;
@@ -95,10 +94,9 @@ BEGIN
     BEGIN
         SELECT i.IsFinancial, dt.DocBaseType, i.GrandTotal, i.C_Currency_ID,
                CASE WHEN p_DateType = 'A' THEN i.DateAcct ELSE i.DateInvoiced END,
-               i.AD_Client_ID, i.AD_Org_ID, i.C_ConversionType_ID,
-               CASE WHEN charat(dt.docbasetype::character varying, 2)::text = ANY (ARRAY['P'::text, 'E'::text]) THEN -1.0 ELSE 1.0 END
+               i.AD_Client_ID, i.AD_Org_ID, i.C_ConversionType_ID
           INTO v_inv_IsFinancial, v_inv_DocBaseType, v_inv_GrandTotal, v_inv_Currency_ID,
-               v_inv_Date, v_inv_Client_ID, v_inv_Org_ID, v_inv_ConvType_ID, v_inv_MultiplierAP
+               v_inv_Date, v_inv_Client_ID, v_inv_Org_ID, v_inv_ConvType_ID
           FROM C_Invoice i
                  INNER JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocType_ID
          WHERE i.C_Invoice_ID = p_C_Invoice_ID
@@ -121,13 +119,16 @@ BEGIN
               FROM C_Currency cy
              WHERE cy.C_Currency_ID = v_pf_ResultCurrency_ID;
 
-            -- SUM(PayAmt) over completed-or-closed payments tagged with this proforma.
+            -- SUM(abs(PayAmt)) over completed-or-closed payments tagged with this proforma.
             -- AC #16 (full-payment-only guard) ensures abs(PayAmt) = proforma.GrandTotal,
-            -- so the SUM lands on 0 (unpaid or post-reversal) or GrandTotal (paid).
+            -- so the SUM lands on 0 (unpaid or post-reversal) or GrandTotal (paid). Both sides
+            -- of the subtraction below are in relative-value (always positive) regardless of
+            -- AP/AR direction — that's why the AP multiplier is NOT applied here, contrary to
+            -- the financial branch which works in signed-value space.
             -- p_Exclude_Payment_IDs is honoured for parity with the financial branch.
             SELECT COALESCE(SUM(
-                CASE WHEN p.C_Currency_ID = v_pf_ResultCurrency_ID THEN p.PayAmt * v_inv_MultiplierAP
-                     ELSE currencyconvert(p.PayAmt * v_inv_MultiplierAP, p.C_Currency_ID, v_pf_ResultCurrency_ID, p.DateTrx, NULL, p.AD_Client_ID, p.AD_Org_ID)
+                CASE WHEN p.C_Currency_ID = v_pf_ResultCurrency_ID THEN ABS(p.PayAmt)
+                     ELSE currencyconvert(ABS(p.PayAmt), p.C_Currency_ID, v_pf_ResultCurrency_ID, p.DateTrx, NULL, p.AD_Client_ID, p.AD_Org_ID)
                 END), 0)
               INTO v_pf_PaidAmt
               FROM C_Payment p
