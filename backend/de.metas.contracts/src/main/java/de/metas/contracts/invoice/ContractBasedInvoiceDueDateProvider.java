@@ -1,4 +1,4 @@
-package de.metas.contracts.dunning;
+package de.metas.contracts.invoice;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.dunning.invoice.InvoiceDueDateProvider;
+import de.metas.invoice.due_date.InvoiceDueDateProvider;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;

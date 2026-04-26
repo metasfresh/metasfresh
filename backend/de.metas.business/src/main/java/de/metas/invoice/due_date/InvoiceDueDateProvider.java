@@ -1,8 +1,14 @@
+package de.metas.invoice.due_date;
+
+import java.time.LocalDate;
+
+import de.metas.invoice.InvoiceId;
+
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.dunning
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +26,11 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
-
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxId;
-
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_Tax_StepDefData extends StepDefData<Tax> implements StepDefDataGetIdAware<TaxId, Tax>
+public interface InvoiceDueDateProvider
 {
-	public C_Tax_StepDefData()
-	{
-		super(Tax.class);
-	}
-
-	@Override
-	public TaxId extractIdFromRecord(final Tax tax)
-	{
-		return tax.getTaxId();
-	}
+	/**
+	 * Get the due date the given invoice.
+	 * Note: together with the respective dunning's grace days, this date is used to compute the invoice's dunning grace date.
+	 */
+	LocalDate provideDueDateOrNull(InvoiceId invoiceId);
 }

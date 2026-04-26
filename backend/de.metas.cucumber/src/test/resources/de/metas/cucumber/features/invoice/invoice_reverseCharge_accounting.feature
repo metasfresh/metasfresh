@@ -3,18 +3,27 @@
 @allure.label.feature:F00700_Invoicing
 @F00700
 @ghActions:run_on_executor5
-Feature: Reverse Charge tax — accounting posting for purchase documents
+Feature: Reverse Charge tax — accounting posting for purchase and sales documents
 ## me03#28726: Support Reverse Charge with explicit Fact_Acct
+## me03#29361: zero C_InvoiceTax.ReverseChargeTaxAmt on sales invoices
 ##
-## When a C_Tax has IsReverseCharge='Y', the invoice posting engine creates
-## two offsetting Fact_Acct lines (T_Credit_Acct = VSt, T_Due_Acct = USt)
-## that net to zero. The invoice grand total is unchanged (RC tax is not payable).
+## Purchase side (API / APC): when a C_Tax has IsReverseCharge='Y', the invoice
+## posting engine creates two offsetting Fact_Acct lines (T_Credit_Acct = VSt,
+## T_Due_Acct = USt) that net to zero. The invoice grand total is unchanged
+## (RC tax is not payable). C_InvoiceTax records carry TaxAmt=0 and
+## ReverseChargeTaxAmt=base*rate — the latter is what the buyer declares on
+## KZ 84/85 and KZ 67.
 ##
-## These tests cover purchase invoice (API) and purchase credit memo (APC) only.
-## Sales-side RC posting (ARI, ARC) is not yet implemented — see out-of-scope in REQUIREMENTS.md.
+## Sales side (ARI / ARC): the RC declaration obligation attaches to the buyer,
+## not the supplier. A supplier's sales invoice with an RC-flagged tax therefore
+## must NOT carry a ReverseChargeTaxAmt — C_InvoiceTax.ReverseChargeTaxAmt is
+## zero (same as TaxAmt). The invoice is a net-only invoice from the supplier's
+## perspective; whether/how the Fact_Acct posting engine emits tax lines on
+## the sales branches is tracked as a separate follow-up.
 ##
-## Every RC scenario includes an allocation with discount (Skonto) to verify
-## that no tax correction is posted for the RC tax (Decision D1: BC-style skip).
+## Every purchase RC scenario (TC1/TC2) includes an allocation with discount
+## (Skonto) to verify that no tax correction is posted for the RC tax
+## (Decision D1: BC-style skip).
 ##
 ## Reversal tests cover only API and APC (not ARI/ARC). The posting engine
 ## is the same for all doc types — the forward-path sign differences are already
@@ -40,9 +49,11 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And metasfresh contains M_PriceLists
       | Identifier        | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
       | purchasePriceList | pricingSystem      | DE           | EUR           | false |
+      | salesPriceList    | pricingSystem      | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier  | M_PriceList_ID    |
       | purchasePLV | purchasePriceList |
+      | salesPLV    | salesPriceList    |
 
     And metasfresh contains M_Products:
       | Identifier |
@@ -50,13 +61,16 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd  | C_UOM_ID | C_TaxCategory_ID |
       | purchasePLV            | product      | 1000.00   | PCE      | rcTaxCategory    |
+      | salesPLV               | product      | 1000.00   | PCE      | rcTaxCategory    |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | PO_PricingSystem_ID |
-      | vendor     | N          | Y        | pricingSystem       |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | PO_PricingSystem_ID |
+      | vendor     | N          | Y        |                    | pricingSystem       |
+      | customer   | Y          | N        | pricingSystem      |                     |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier      | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | vendor_location | vendor        | Y               | Y               |
+      | Identifier        | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | vendor_location   | vendor        | Y               | Y               |
+      | customer_location | customer      | Y               | Y               |
 
     And metasfresh contains organization bank accounts
       | Identifier  | C_Currency_ID |
@@ -229,3 +243,58 @@ Feature: Reverse Charge tax — accounting posting for purchase documents
       | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal |
       | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
       | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
+
+
+# ############################################################################################################################################
+# TC5 — Sales invoice (ARI) with RC tax — supplier must not carry a ReverseChargeTaxAmt
+# me03#29361: the §13b declaration obligation is the buyer's; the supplier's C_InvoiceTax
+# record therefore carries TaxAmt=0 AND ReverseChargeTaxAmt=0. Before the fix,
+# MInvoiceTax.calculateTaxFromLines stored a non-zero ReverseChargeTaxAmt on SOTrx rows
+# (fell through to Tax.calculateTax(), which returns amount*rate regardless of SOTrx).
+# ############################################################################################################################################
+  @Id:S0466_RC_050
+  @from:cucumber
+  Scenario: sales invoice with reverse charge tax has ReverseChargeTaxAmt=0 on C_InvoiceTax
+
+    And metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcSalesInv   | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | rcSalesInvLn  | rcSalesInv   | product      | 1 PCE       | rcTax19  |
+    And the invoice identified by rcSalesInv is completed
+
+    # GrandTotal = TotalLines = 1000 (net only — RC tax is not payable, supplier issues net invoice)
+    Then validate created invoices
+      | C_Invoice_ID | GrandTotal | TotalLines |
+      | rcSalesInv   | 1000 EUR   | 1000       |
+
+    # Key invariant: on a sales invoice, C_InvoiceTax.ReverseChargeTaxAmt MUST be 0.
+    # The supplier does not declare the RC amount — the customer does (KZ 84/85 + KZ 67).
+    And C_InvoiceTax records for invoice "rcSalesInv" are matching
+      | C_Tax_ID | TaxAmt | TaxBaseAmt | ReverseChargeTaxAmt | IsReverseCharge |
+      | rcTax19  | 0      | 1000       | 0                   | true            |
+
+
+# ############################################################################################################################################
+# TC6 — Sales credit memo (ARC) with RC tax — same invariant as TC5
+# ############################################################################################################################################
+  @Id:S0466_RC_060
+  @from:cucumber
+  Scenario: sales credit memo with reverse charge tax has ReverseChargeTaxAmt=0 on C_InvoiceTax
+
+    And metasfresh contains C_Invoice:
+      | Identifier    | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | rcSalesCm     | customer      | Gutschrift              | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | rcSalesCmLn  | rcSalesCm    | product      | 1 PCE       | rcTax19  |
+    And the invoice identified by rcSalesCm is completed
+
+    Then validate created invoices
+      | C_Invoice_ID | GrandTotal | TotalLines |
+      | rcSalesCm    | 1000 EUR   | 1000       |
+
+    And C_InvoiceTax records for invoice "rcSalesCm" are matching
+      | C_Tax_ID | TaxAmt | TaxBaseAmt | ReverseChargeTaxAmt | IsReverseCharge |
+      | rcTax19  | 0      | 1000       | 0                   | true            |

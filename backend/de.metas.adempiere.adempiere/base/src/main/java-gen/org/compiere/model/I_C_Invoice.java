@@ -1135,6 +1135,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_DunningGrace = "DunningGrace";
 
 	/**
+	 * Set Due Date.
+	 * Date when the payment is due without deductions or discount
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+
+	/**
+	 * Get Due Date.
+	 * Date when the payment is due without deductions or discount
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDueDate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Invoice.class, "DueDate", null);
+	String COLUMNNAME_DueDate = "DueDate";
+
+	/**
 	 * Set eMail.
 	 *
 	 * <br>Type: String

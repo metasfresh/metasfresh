@@ -208,6 +208,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		//
 		final I_C_Tax tax = getTax();
 		final boolean documentLevel = tax.isDocumentLevel();
+		// me03#29361: SOTrx is uniform for all lines of an invoice. Capture once outside
+		// the loop so we can zero a document-level RC recomputation below too.
+		boolean invoiceIsSOTrx = false;
 		//
 		boolean havePackingMaterialLines = false;
 		boolean haveNonPackingMaterialLines = false;
@@ -241,6 +244,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				taxBaseAmtTotal = taxBaseAmtTotal.add(lineNetAmt);
 
 				final boolean isSOTrx = StringUtils.toBoolean(rs.getString(3));
+				invoiceIsSOTrx = isSOTrx;
 
 				//
 				// phib [ 1702807 ]: manual tax should never be amended on line level taxes
@@ -260,6 +264,15 @@ public class MInvoiceTax extends X_C_InvoiceTax
 					final CalculateTaxResult calculateTaxResult = taxBL.calculateTax(tax, lineNetAmt, isTaxIncluded(), getPrecision());
 					taxAmt = calculateTaxResult.getTaxAmount();
 					reverseChargeTaxAmt = calculateTaxResult.getReverseChargeAmt();
+				}
+
+				// me03#29361: RC declaration obligation belongs to the buyer, not the supplier.
+				// On a sales invoice (supplier's books) §13b does not produce a declarable
+				// reverse-charge amount — both KZ 84/85 and KZ 67 are the customer's boxes.
+				// Zero any RC amount that Tax.calculateTax() may have produced for SOTrx rows.
+				if (isSOTrx)
+				{
+					reverseChargeTaxAmt = BigDecimal.ZERO;
 				}
 				//
 				taxAmtTotal = taxAmtTotal.add(taxAmt);
@@ -291,6 +304,13 @@ public class MInvoiceTax extends X_C_InvoiceTax
 			final CalculateTaxResult calculateTaxResult = taxBL.calculateTax(tax, taxBaseAmtTotal, isTaxIncluded(), getPrecision());
 			taxAmtTotal = calculateTaxResult.getTaxAmount();
 			reverseChargeTaxAmtTotal = calculateTaxResult.getReverseChargeAmt();
+		}
+		// me03#29361: zero any RC amount on sales invoices (buyer declares, not supplier).
+		// Safety-net after the document-level recomputation above, which otherwise
+		// overwrites the per-line zeroing done inside the loop.
+		if (invoiceIsSOTrx)
+		{
+			reverseChargeTaxAmtTotal = BigDecimal.ZERO;
 		}
 		setTaxAmt(taxAmtTotal);
 		setReverseChargeTaxAmt(reverseChargeTaxAmtTotal);

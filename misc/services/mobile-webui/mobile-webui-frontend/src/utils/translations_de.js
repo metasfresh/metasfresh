@@ -109,7 +109,7 @@ const translations = {
       switchToQrCodeInput: 'Scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
-      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
+      qtyRejectedIgnoreReason: 'Ohne Grund',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -155,6 +155,11 @@ const translations = {
       },
       abort: 'Rückgängig',
       notFound: 'Nicht gefunden',
+      error: {
+        title: 'Bestätigung konnte nicht gesendet werden',
+        retry: 'Erneut senden',
+        cancel: 'Abbrechen',
+      },
     },
     mfg: {
       ProductName: 'Produkt',

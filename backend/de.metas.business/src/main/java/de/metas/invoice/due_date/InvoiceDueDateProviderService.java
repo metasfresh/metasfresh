@@ -1,4 +1,4 @@
-package de.metas.dunning.invoice;
+package de.metas.invoice.due_date;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,19 +37,19 @@ import lombok.NonNull;
 public class InvoiceDueDateProviderService
 {
 	private final List<InvoiceDueDateProvider> invoiceDueDateProviders;
-	private final PaymentTermBasedDueDateProvider defaultInvoicedueDateProvider;
+	private final PaymentTermBasedDueDateProvider defaultInvoiceDueDateProvider;
 
 	public InvoiceDueDateProviderService(
 			@NonNull final Optional<List<InvoiceDueDateProvider>> invoiceDueDateProviders,
-			@NonNull final PaymentTermBasedDueDateProvider defaultInvoicedueDateProvider)
+			@NonNull final PaymentTermBasedDueDateProvider defaultInvoiceDueDateProvider)
 	{
 		this.invoiceDueDateProviders = invoiceDueDateProviders
 				.orElse(ImmutableList.of())
 				.stream()
-				.filter(p -> !p.equals(defaultInvoicedueDateProvider))
+				.filter(p -> !p.equals(defaultInvoiceDueDateProvider))
 				.collect(ImmutableList.toImmutableList());
 
-		this.defaultInvoicedueDateProvider = defaultInvoicedueDateProvider;
+		this.defaultInvoiceDueDateProvider = defaultInvoiceDueDateProvider;
 	}
 
 	public LocalDate provideDueDateFor(@NonNull final InvoiceId invoiceId)
@@ -63,6 +63,6 @@ public class InvoiceDueDateProviderService
 			}
 		}
 
-		return defaultInvoicedueDateProvider.provideDueDateOrNull(invoiceId);
+		return defaultInvoiceDueDateProvider.provideDueDateOrNull(invoiceId);
 	}
 }

@@ -22,48 +22,25 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
+
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
-	@Override
-	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
-	}
-
-	@Override
-	public int retrieveDueDays(
-			@NonNull final PaymentTermId paymentTermId,
-			final Date dateInvoiced,
-			final Date date)
-	{
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
-	}
-
 	@Override
 	public Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(final IDunningContext context)
 	{
