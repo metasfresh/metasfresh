@@ -1,5 +1,4 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/functions/invoiceopentodate.sql
--- https://github.com/metasfresh/me03/issues/29368
 -- Unify invoiceOpenToDate so it handles proforma invoices (DocBaseType IN APF/ARF, IsFinancial='N')
 -- internally via C_Payment.Proforma_Invoice_ID + DocStatus IN (CO,CL). The separate function
 -- proformaInvoiceOpen() is dropped in this same PR (the COALESCE in PaySelectionUpdater.buildInvoiceSql
@@ -74,8 +73,8 @@ BEGIN
     -- accounting), so the allocation walk would always return GrandTotal regardless of
     -- payment state. We instead detect "paid" via C_Payment.Proforma_Invoice_ID +
     -- DocStatus IN ('CO','CL'). Reversed payments (DocStatus='RE') don't count;
-    -- reversal-payment rows have Proforma_Invoice_ID cleared in MPayment.reverseCorrectIt()
-    -- (the dual-CO window guard), so they're excluded by the same filter naturally.
+    -- Reversal payments end at DocStatus='RE' (set by reverseCorrectIt) and are excluded by
+    -- the same DocStatus filter naturally.
     DECLARE
         v_inv_IsFinancial      char(1);
         v_inv_DocBaseType      char(3);

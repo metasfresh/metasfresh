@@ -80,7 +80,8 @@ BEGIN
     -- (i.e., proforma invoices). Proformas have no C_AllocationLine rows by design (no
     -- accounting), so the allocation walk would always return GrandTotal regardless of
     -- payment state. We instead detect "paid" via C_Payment.Proforma_Invoice_ID +
-    -- DocStatus IN ('CO','CL'). Reversed payments (DocStatus='RE') don't count.
+    -- DocStatus IN ('CO','CL'). Reversal payments end at DocStatus='RE' (set by
+    -- reverseCorrectIt) and are excluded by the same DocStatus filter naturally.
     DECLARE
         v_inv_IsFinancial      char(1);
         v_inv_DocBaseType      char(3);

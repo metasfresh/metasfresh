@@ -92,7 +92,9 @@ public class C_Payment_LCStep
 		// Reversed immediately afterwards in MPayment.reverseCorrectIt). The authoritative
 		// recompute for the reversal flow happens via TIMING_AFTER_REVERSECORRECT below, where
 		// both the original and the reversal sit at DocStatus=Reversed.
-		if (payment.getPayAmt().signum() < 0)
+		// `Reversal_ID > 0` is the canonical "is this a reversal document" check
+		// (see architecture.md §5a) — set by reverseCorrectIt() on the reversal row.
+		if (payment.getReversal_ID() > 0)
 		{
 			return;
 		}

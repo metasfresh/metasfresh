@@ -1,4 +1,3 @@
--- 2026-04-24 https://github.com/metasfresh/me03/issues/29368
 -- AD_Message entries for proforma-order allocation precondition errors.
 -- {0} = order DocumentNo; {0}/{1} = proforma/order value for mismatch messages.
 
@@ -11,7 +10,7 @@ VALUES
    'E', 'D'),
   (545668 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
    'de.metas.invoice.proforma.MultipleLCBreaksUnsupported',
-   'Order {0} has multiple Letter-of-Credit breaks in its payment term; this is not supported in iteration 2 (see https://github.com/metasfresh/me03/issues/29369).',
+   'Order {0} has multiple Letter-of-Credit breaks in its payment term; only one LC break per payment term is supported.',
    'E', 'D'),
   (545669 /*From ID Server*/, 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0,
    'de.metas.invoice.proforma.CurrencyMismatch',
@@ -35,7 +34,7 @@ VALUES
    'Bestellung {0} hat keinen Letter-of-Credit-Meilenstein in den Zahlungsbedingungen; Proforma-Rechnung kann nicht zugeordnet werden.',
    'Y', 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0),
   (545668 /*From ID Server*/, 'de_DE',
-   'Bestellung {0} hat mehrere Letter-of-Credit-Meilensteine; dies wird in Iteration 2 nicht unterstützt (siehe https://github.com/metasfresh/me03/issues/29369).',
+   'Bestellung {0} hat mehrere Letter-of-Credit-Meilensteine in den Zahlungsbedingungen; nur ein LC-Meilenstein pro Zahlungsbedingung wird unterstützt.',
    'Y', 0, 0, 'Y', '2026-04-24 21:00', 0, '2026-04-24 21:00', 0),
   (545669 /*From ID Server*/, 'de_DE',
    'Proforma-Währung ({0}) passt nicht zur Bestellwährung ({1}).',

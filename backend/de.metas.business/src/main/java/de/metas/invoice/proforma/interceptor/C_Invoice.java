@@ -41,7 +41,7 @@ public class C_Invoice
 {
 	private static final AdMessageKey MSG_DocActionBlockedByActiveAllocation = AdMessageKey.of("de.metas.invoice.proforma.DocActionBlockedByActiveAllocation");
 
-	@NonNull final ProformaOrderAllocService proformaOrderAllocService;
+	@NonNull private final ProformaOrderAllocService proformaOrderAllocService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_VOID,

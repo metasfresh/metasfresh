@@ -8,13 +8,13 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.Month;
 
 @Value
 @Builder
 public class OrderPayScheduleLineContext
 {
-	private static final LocalDate INFINITE_FUTURE_DATE = LocalDate.of(9999, Month.JANUARY, 1);
+	// "No real date yet" sentinel — matches Env.MAX_DATE (9999-12-31), the codebase convention.
+	private static final LocalDate INFINITE_FUTURE_DATE = LocalDate.of(9999, 12, 31);
 	private static final OrderPayScheduleLineContext PENDING = OrderPayScheduleLineContext.builder()
 			.status(OrderPayScheduleStatus.Pending)
 			.dueDate(INFINITE_FUTURE_DATE)

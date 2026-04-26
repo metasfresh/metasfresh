@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100_Sales
+@allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00126_Prepayment_Order_Management
 @ghActions:run_on_executor4
 Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-schedule step

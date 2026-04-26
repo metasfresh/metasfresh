@@ -120,7 +120,7 @@ public class C_OrderPaySchedule_StepDef
 	 * Optional DataTable columns:
 	 * <ul>
 	 *   <li>{@code DueAmt} — planned due amount</li>
-	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code (e.g. {@code PE}, {@code WP}, {@code PA})</li>
+	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code: {@code PR} (Pending), {@code WP} (Awaiting_Pay), {@code P} (Paid)</li>
 	 *   <li>{@code DueAmt_Actual} — actual due amount from the proforma invoice;
 	 *       use {@code null} to assert the column is NULL/zero.</li>
 	 * </ul>
