@@ -59,6 +59,22 @@ import javax.annotation.Nullable;
  * <p>Idempotence: {@link OrderPayScheduleLCService#recomputeLCStep} is total and idempotent;
  * a duplicate fire produces no additional change.
  *
+ * <p>Other doc-action timings on {@code C_Payment} that this interceptor deliberately does not
+ * wire:
+ * <ul>
+ *   <li><b>AFTER_REACTIVATE</b> — {@code MPayment.reActivateIt()} internally calls
+ *       {@code reverseCorrectIt()}, so AFTER_REVERSECORRECT fires (and is handled here) before
+ *       AFTER_REACTIVATE. The reversal handler already rolls the LC step back to Awaiting_Pay,
+ *       which is the same state a reactivated proforma payment should imply; no separate
+ *       handler is needed.
+ *   <li><b>AFTER_VOID</b> — voiding a still-Drafted/InProgress proforma payment does not call
+ *       {@code reverseCorrectIt()}. This path is currently unreachable for proforma payments
+ *       because the LC step only reaches Awaiting_Pay after the proforma payment is completed
+ *       (iter-1 invariant); a payment still at DR/IP cannot have driven the LC step out of
+ *       Pending. If the iter-1 invariant ever changes, add an AFTER_VOID handler delegating to
+ *       {@link OrderPayScheduleLCService#recomputeLCStep(OrderId)}.
+ * </ul>
+ *
  * @see <a href="https://github.com/metasfresh/me03/issues/29368">me03 #29368 Split-Payment Iter 2</a>
  */
 @Interceptor(I_C_Payment.class)

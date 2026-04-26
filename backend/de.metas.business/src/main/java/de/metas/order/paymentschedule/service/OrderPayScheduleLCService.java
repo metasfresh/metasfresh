@@ -100,17 +100,22 @@ public class OrderPayScheduleLCService
 
 	/**
 	 * Variant for invocation from {@code @DocValidate(TIMING_AFTER_COMPLETE)} on the proforma
-	 * payment. The completing payment is not yet persisted with {@code DocStatus="CO"} at the
-	 * AFTER_COMPLETE timing (see {@code MPayment.completeIt()} — {@code setDocStatus("CO")} +
-	 * {@code saveEx} happen <i>after</i> the validator fires), so a fresh
-	 * {@link IPaymentDAO#findCompletedOrClosedByProformaInvoiceId} would return empty and the LC
-	 * step would incorrectly stay at {@code Awaiting_Pay}. Pass the in-flight payment so the
-	 * service can recognize it without depending on the not-yet-persisted DB state.
+	 * payment. The validator fires before the framework commits {@code DocStatus="CO"} on the
+	 * completing payment, so the in-memory model still reads {@code DocStatus="IP"} and a fresh
+	 * {@link IPaymentDAO#findCompletedOrClosedByProformaInvoiceId} cannot see it. Passing the
+	 * in-flight payment lets the service recognize it without depending on the not-yet-persisted
+	 * DB state.
 	 *
-	 * <p>For payment reversal flows (AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL), call the
-	 * single-arg {@link #recomputeLCStep(OrderId)} — by that timing the reversed payment is
-	 * persisted with {@code DocStatus="RE"} and the DAO query correctly returns no completed
-	 * payment.
+	 * <p>For payment reversal flows ({@code TIMING_AFTER_REVERSECORRECT} /
+	 * {@code TIMING_AFTER_REVERSEACCRUAL}), call the single-arg {@link #recomputeLCStep(OrderId)}
+	 * — by that timing the reversed payment is persisted with {@code DocStatus="RE"} and the DAO
+	 * query correctly returns no completed payment.
+	 *
+	 * @implNote This overload must only be called from {@code @DocValidate(TIMING_AFTER_COMPLETE)}.
+	 *           Calling it from any other context bypasses the DAO query that is the canonical
+	 *           authority for LC-step state and silently trusts the caller's payment as
+	 *           "completing". Use the single-arg {@link #recomputeLCStep(OrderId)} for every
+	 *           other trigger.
 	 */
 	public void recomputeLCStepAfterPaymentCompleted(@NonNull final OrderId orderId, @NonNull final I_C_Payment completingPayment)
 	{
