@@ -108,9 +108,20 @@ jobs:
           def dir_size(path):
               total = 0
               for entry in path.rglob("*"):
-                  if entry.is_file():
-                      total += entry.stat().st_size
+                  try:
+                      if entry.is_file():
+                          total += entry.stat().st_size
+                  except FileNotFoundError:
+                      # File vanished between rglob and stat — concurrent publish.
+                      pass
               return total
+
+          def _ignore_missing(func, path, exc):
+              # rmtree onexc handler — concurrent cicd publish jobs can unlink files
+              # while we walk the tree, racing shutil.rmtree's readdir+unlink window.
+              # Treat missing entries as already-cleaned; re-raise everything else.
+              if not isinstance(exc, FileNotFoundError):
+                  raise exc
 
           def fmt(size_bytes):
               for unit in ("B", "KB", "MB", "GB"):
@@ -167,9 +178,9 @@ jobs:
                       age_days = (now - newest_ts) / 86400
                       if age_days > MAX_BRANCH_AGE_DAYS:
                           size = dir_size(branch_dir)
-                          shutil.rmtree(branch_dir)
+                          shutil.rmtree(branch_dir, onexc=_ignore_missing)
                           if metadata_file.exists():
-                              metadata_file.unlink()
+                              metadata_file.unlink(missing_ok=True)
                           removed_branches.append(
                               f"{label} (stale: {int(age_days)}d, {fmt(size)})"
                           )
@@ -184,9 +195,9 @@ jobs:
                       age_days = (now - newest_ts) / 86400
                       if age_days > DELETED_BRANCH_GRACE_DAYS:
                           size = dir_size(branch_dir)
-                          shutil.rmtree(branch_dir)
+                          shutil.rmtree(branch_dir, onexc=_ignore_missing)
                           if metadata_file.exists():
-                              metadata_file.unlink()
+                              metadata_file.unlink(missing_ok=True)
                           removed_branches.append(
                               f"{label} (deleted from GitHub, {int(age_days)}d since last build, {fmt(size)})"
                           )
@@ -201,9 +212,9 @@ jobs:
                           dir_age = 999
                       if dir_age > MAX_ORPHAN_BUILD_AGE_DAYS:
                           size = dir_size(branch_dir)
-                          shutil.rmtree(branch_dir)
+                          shutil.rmtree(branch_dir, onexc=_ignore_missing)
                           if metadata_file.exists():
-                              metadata_file.unlink()
+                              metadata_file.unlink(missing_ok=True)
                           removed_branches.append(
                               f"{label} (no metadata, {int(dir_age)}d old, {fmt(size)})"
                           )
@@ -221,7 +232,7 @@ jobs:
                           ev_path = builds_dir / ev_ver
                           if ev_path.is_dir():
                               size = dir_size(ev_path)
-                              shutil.rmtree(ev_path)
+                              shutil.rmtree(ev_path, onexc=_ignore_missing)
                               removed_builds.append(
                                   f"{label}/{ev_ver} (over cap, {fmt(size)})"
                               )
@@ -241,7 +252,7 @@ jobs:
                                   build_age = 999
                               if build_age > MAX_ORPHAN_BUILD_AGE_DAYS:
                                   size = dir_size(build_dir)
-                                  shutil.rmtree(build_dir)
+                                  shutil.rmtree(build_dir, onexc=_ignore_missing)
                                   removed_builds.append(
                                       f"{label}/{version} ({int(build_age)}d, {fmt(size)})"
                                   )
@@ -249,9 +260,9 @@ jobs:
 
                   # --- Remove empty branch directory ---
                   if builds_dir.exists() and not any(builds_dir.iterdir()):
-                      shutil.rmtree(branch_dir)
+                      shutil.rmtree(branch_dir, onexc=_ignore_missing)
                       if metadata_file.exists():
-                          metadata_file.unlink()
+                          metadata_file.unlink(missing_ok=True)
                       removed_branches.append(f"{label} (empty after pruning)")
 
               # --- Orphaned metadata files ---
@@ -259,14 +270,20 @@ jobs:
                   for meta_file in sorted(metadata_dir.glob("*.json")):
                       branch = meta_file.stem
                       if not (branches_dir / branch).exists():
-                          meta_file.unlink()
+                          meta_file.unlink(missing_ok=True)
                           orphaned_meta.append(f"{label_prefix}{branch}" if label_prefix else branch)
 
+          tree_errors = []
+
+          def safe_cleanup(branches_dir, metadata_dir, label_prefix=""):
+              try:
+                  cleanup_report_tree(branches_dir, metadata_dir, label_prefix)
+              except Exception as e:
+                  tree_errors.append(f"{label_prefix or '<public>'}: {type(e).__name__}: {e}")
+                  print(f"WARN: cleanup_report_tree({label_prefix or '<public>'}) failed: {e}", flush=True)
+
           # === Clean public reports ===
-          cleanup_report_tree(
-              REPORTS_ROOT / "branches",
-              REPORTS_ROOT / "_metadata"
-          )
+          safe_cleanup(REPORTS_ROOT / "branches", REPORTS_ROOT / "_metadata")
 
           # === Clean private repo reports ===
           private_root = REPORTS_ROOT / "_private"
@@ -275,10 +292,10 @@ jobs:
                   if not repo_dir.is_dir():
                       continue
                   repo_name = repo_dir.name
-                  cleanup_report_tree(
+                  safe_cleanup(
                       repo_dir / "branches",
                       repo_dir / "_metadata",
-                      label_prefix=f"_private/{repo_name}/"
+                      label_prefix=f"_private/{repo_name}/",
                   )
 
           after = get_avail_bytes()
@@ -297,6 +314,11 @@ jobs:
               print(f"ORPHANED_METADATA={len(orphaned_meta)}")
               for m in orphaned_meta:
                   print(f"  META: {m}")
+          if tree_errors:
+              print(f"TREE_ERRORS={len(tree_errors)}")
+              for err in tree_errors:
+                  print(f"  TREE_ERROR: {err}")
+              sys.exit(1)
           PYEOF
 
       - name: Step summary
