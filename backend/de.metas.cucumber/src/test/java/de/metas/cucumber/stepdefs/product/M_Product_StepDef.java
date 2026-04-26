@@ -94,6 +94,7 @@ public class M_Product_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final de.metas.cucumber.stepdefs.customstariff.M_CustomsTariff_StepDefData customsTariffTable;
 	@NonNull private final TestContext restTestContext;
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -312,6 +313,10 @@ public class M_Product_StepDef
 		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_LengthInCm).ifPresent(productRecord::setLengthInCm);
 		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_WidthInCm).ifPresent(productRecord::setWidthInCm);
 		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_HeightInCm).ifPresent(productRecord::setHeightInCm);
+
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_M_CustomsTariff_ID)
+				.map(customsTariffTable::getId)
+				.ifPresent(id -> productRecord.setM_CustomsTariff_ID(id.getRepoId()));
 
 		final boolean isSold = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSold).orElseTrue();
 		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsPurchased).orElseTrue();
