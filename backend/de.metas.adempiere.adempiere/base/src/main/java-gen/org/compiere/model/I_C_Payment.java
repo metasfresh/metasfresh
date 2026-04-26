@@ -1,8 +1,12 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import javax.annotation.Nullable;
+
+import lombok.NonNull;
 import org.adempiere.model.ModelColumn;
+import org.jetbrains.annotations.NotNull;
 
 /** Generated Interface for C_Payment
  *  @author metasfresh (generated) 
@@ -2217,4 +2221,11 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_WriteOffAmt = new ModelColumn<>(I_C_Payment.class, "WriteOffAmt", null);
 	String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
+
+	@NonNull
+	@NotNull
+	@NonNull
+	@NotNull
+	@NonNull
+	@NotNull Optional<de.metas.order.paymentschedule.service.Prepayment> map();
 }

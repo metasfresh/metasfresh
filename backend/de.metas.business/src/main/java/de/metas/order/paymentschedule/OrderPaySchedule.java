@@ -1,11 +1,12 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
-import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,6 +22,8 @@ import java.util.stream.Collector;
 @ToString
 public class OrderPaySchedule
 {
+	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+
 	@NonNull @Getter OrderId orderId;
 	@NonNull @Getter private final ImmutableList<OrderPayScheduleLine> lines;
 
@@ -72,25 +75,51 @@ public class OrderPaySchedule
 			if (line.getStatus().isPending())
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
-				final DueDateAndStatus dueDateAndStatus = context.computeDueDate(termBreak);
+				final OrderPayScheduleLineContext dueDateAndStatus = context.computeDueDate(termBreak);
 				line.applyAndProcess(dueDateAndStatus);
 			}
 		}
 	}
 
-	public void markAsPaid(final OrderPayScheduleId orderPayScheduleId)
+	public void applyAndProcess(final OrderPayScheduleId lineId, final OrderPayScheduleLineContext context)
 	{
-		final OrderPayScheduleLine line = getLineById(orderPayScheduleId);
-
-		final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
-		line.applyAndProcess(dueDateAndStatus);
+		final OrderPayScheduleLine line = getLineById(lineId);
+		line.applyAndProcess(context);
 	}
 
-	/** Returns all lines whose reference-date type is {@link ReferenceDateType#LetterOfCreditDate}. */
-	public ImmutableList<OrderPayScheduleLine> getLCLines()
+	public void markAsPending(final OrderPayScheduleId lineId)
 	{
-		return lines.stream()
-				.filter(line -> line.getReferenceDateType().isLetterOfCreditDate())
+		applyAndProcess(lineId, OrderPayScheduleLineContext.pending());
+	}
+
+	public void markAsAwaitingPayment(final OrderPayScheduleId lineId, Money dueAmtActual)
+	{
+		final OrderPayScheduleLine line = getLineById(lineId);
+		applyAndProcess(lineId, OrderPayScheduleLineContext.awaitingPayment(line.getDueDate(), dueAmtActual));
+	}
+
+	public void markAsPaid(final OrderPayScheduleId lineId)
+	{
+		final OrderPayScheduleLine line = getLineById(lineId);
+		applyAndProcess(lineId, OrderPayScheduleLineContext.paid(line.getDueDate()));
+	}
+
+	public Optional<OrderPayScheduleLine> getSingleLCLine()
+	{
+		final ImmutableList<OrderPayScheduleLine> lcLines = lines.stream()
+				.filter(OrderPayScheduleLine::isLetterOfCreditDate)
 				.collect(ImmutableList.toImmutableList());
+		if (lcLines.isEmpty())
+		{
+			return Optional.empty();  // no LC break in payment term — no-op
+		}
+		else if (lcLines.size() > 1)
+		{
+			throw new AdempiereException(MSG_MultipleLCBreaksUnsupported, orderId);
+		}
+		else
+		{
+			return Optional.of(lcLines.get(0));
+		}
 	}
 }

@@ -22,10 +22,7 @@
 
 package de.metas.order.paymentschedule.service;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.proforma.ProformaOrderAlloc;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
@@ -34,20 +31,20 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleLine;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.OrderPayScheduleLineContext;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -58,25 +55,13 @@ import java.util.Optional;
  * calling it twice yields the same result; it handles every state of (allocation × payment)
  * without throwing (except for unsupported topologies, see below).
  * <p>
- * The function deliberately bypasses
- * {@link de.metas.order.paymentschedule.OrderPayScheduleLine#applyAndProcess applyAndProcess}
- * — that method enforces forward-only transitions {@code Pending → Awaiting_Pay → Paid}, but
- * this service must also write the reverse transitions {@code Paid → Awaiting_Pay} (on payment
- * reversal) and {@code Awaiting_Pay → Pending} (on proforma de-allocation). Therefore it uses
- * the raw {@link OrderPayScheduleLine#setStatus setStatus} setter directly.
- * <p>
  * LC step is identified by {@link de.metas.payment.paymentterm.ReferenceDateType#LetterOfCreditDate}.
  * Orders with 0 LC steps are a no-op (normally rejected upstream by the allocation preconditions).
- * Orders with multiple LC steps are iteration-3+ scope
- * (https://github.com/metasfresh/me03/issues/29369) and throw a translated exception.
  */
 @Service
 @RequiredArgsConstructor
 public class OrderPayScheduleLCService
 {
-	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported =
-			AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
-
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final ProformaOrderAllocRepository proformaAllocRepo;
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -112,10 +97,10 @@ public class OrderPayScheduleLCService
 	 * query correctly returns no completed payment.
 	 *
 	 * @implNote This overload must only be called from {@code @DocValidate(TIMING_AFTER_COMPLETE)}.
-	 *           Calling it from any other context bypasses the DAO query that is the canonical
-	 *           authority for LC-step state and silently trusts the caller's payment as
-	 *           "completing". Use the single-arg {@link #recomputeLCStep(OrderId)} for every
-	 *           other trigger.
+	 * Calling it from any other context bypasses the DAO query that is the canonical
+	 * authority for LC-step state and silently trusts the caller's payment as
+	 * "completing". Use the single-arg {@link #recomputeLCStep(OrderId)} for every
+	 * other trigger.
 	 */
 	public void recomputeLCStepAfterPaymentCompleted(@NonNull final OrderId orderId, @NonNull final I_C_Payment completingPayment)
 	{
@@ -124,43 +109,71 @@ public class OrderPayScheduleLCService
 
 	private void recomputeLCStep(@NonNull final OrderId orderId, @Nullable final I_C_Payment trustedCompletingPayment)
 	{
-		final Optional<OrderPaySchedule> scheduleOpt = orderPayScheduleService.getByOrderId(orderId);
-		if (!scheduleOpt.isPresent())
+		final OrderPaySchedule schedule = orderPayScheduleService.getByOrderId(orderId).orElse(null);
+		if (schedule == null)
 		{
 			return;  // no pay-schedule at all — no-op
 		}
-		final OrderPaySchedule schedule = scheduleOpt.get();
 
-		final ImmutableList<OrderPayScheduleLine> lcLines = schedule.getLCLines();
-
-		if (lcLines.isEmpty())
+		final OrderPayScheduleLine lcStep = schedule.getSingleLCLine().orElse(null);
+		if (lcStep == null)
 		{
 			return;  // no LC break in payment term — no-op
 		}
-		if (lcLines.size() > 1)
-		{
-			throw new AdempiereException(MSG_MultipleLCBreaksUnsupported, orderId);
-		}
 
-		final OrderPayScheduleLine lcStep = lcLines.get(0);
-
-		final ProformaOrderAlloc allocation = proformaAllocRepo.findActiveByOrderId(orderId).orElse(null);
-
-		if (allocation == null)
+		final InvoiceId proformaInvoiceId = proformaAllocRepo.findProformaInvoiceIdByOrderId(orderId).orElse(null);
+		if (proformaInvoiceId == null)
 		{
 			// No proforma allocation — reset to Pending
-			lcStep.setStatus(OrderPayScheduleStatus.Pending);
-			lcStep.setDueAmtActual(null);
-			lcStep.setDueDate(SENTINEL_NO_LC_DATE);
+			schedule.markAsPending(lcStep.getId());
 			orderPayScheduleService.save(schedule);
 			clearLCDateOnOrder(orderId);
 			return;
 		}
 
 		// Proforma allocation is present: determine payment state
-		final InvoiceId proformaInvoiceId = allocation.getInvoiceId();
+		final ProformaInvoice proforma = getProformaInvoiceById(proformaInvoiceId);
+		final Prepayment prepayment = getPrepayment(proformaInvoiceId, trustedCompletingPayment).orElse(null);
+
+		// final LocalDate lcStepDueDate = proforma.getDateInvoiced().plusDays(lcStep.getOffsetDays());
+
+		if (prepayment != null)
+		{
+			// Payment completed → Paid
+			schedule.applyAndProcess(lcStep.getId(), OrderPayScheduleLineContext.paid(proforma.getDueDate(), proforma.getGrandTotal()));
+			orderPayScheduleService.save(schedule);
+			stampLCDateOnOrder(orderId, proforma);
+		}
+		else
+		{
+			// Payment absent, drafted, or reversed → Awaiting_Pay
+			schedule.markAsAwaitingPayment(lcStep.getId(), proforma.getGrandTotal());
+			orderPayScheduleService.save(schedule);
+			stampLCDateOnOrder(orderId, proforma);
+		}
+	}
+
+	@NonNull
+	private ProformaInvoice getProformaInvoiceById(final InvoiceId proformaInvoiceId)
+	{
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
+		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
+
+		return ProformaInvoice.builder()
+				.id(InvoiceId.ofRepoId(proforma.getC_Invoice_ID()))
+				.grandTotal(Money.of(proforma.getGrandTotal(), proformaCurrencyId))
+				.dateInvoiced(TimeUtil.asLocalDate(proforma.getDateInvoiced()))
+				.dueDate(Objects.requireNonNull(TimeUtil.asLocalDate(proforma.getDueDate())))
+				.build();
+	}
+
+	@NonNull
+	private @NotNull Optional<Prepayment> getPrepayment(
+			@NonNull final InvoiceId proformaInvoiceId,
+			@Nullable final I_C_Payment trustedCompletingPayment)
+	{
 		I_C_Payment completedPayment = paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).orElse(null);
+
 		// If the DAO didn't see the in-flight trigger payment (because TIMING_AFTER_COMPLETE
 		// fires *before* the caller's setDocStatus("CO") + saveEx — see MPayment.completeIt),
 		// trust the trigger and treat it as the completed payment.
@@ -171,38 +184,13 @@ public class OrderPayScheduleLCService
 			completedPayment = trustedCompletingPayment;
 		}
 
-		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
-		final Money proformaActualAmount = Money.of(proforma.getGrandTotal(), proformaCurrencyId);
-		final LocalDate proformaDate = TimeUtil.asLocalDate(proforma.getDateInvoiced());
-		final LocalDate lcStepDueDate = proformaDate.plusDays(lcStep.getOffsetDays());
+		if (completedPayment == null) {return Optional.empty();}
 
-		if (completedPayment != null)
-		{
-			// Payment completed → Paid
-			lcStep.setStatus(OrderPayScheduleStatus.Paid);
-			lcStep.setDueAmtActual(proformaActualAmount);
-			lcStep.setDueDate(lcStepDueDate);
-			orderPayScheduleService.save(schedule);
-			stampLCDateOnOrder(orderId, proforma);
-		}
-		else
-		{
-			// Payment absent, drafted, or reversed → Awaiting_Pay
-			lcStep.setStatus(OrderPayScheduleStatus.Awaiting_Pay);
-			lcStep.setDueAmtActual(proformaActualAmount);
-			lcStep.setDueDate(lcStepDueDate);
-			orderPayScheduleService.save(schedule);
-			stampLCDateOnOrder(orderId, proforma);
-		}
+		return Optional.of(
+				Prepayment.builder()
+						.build()
+		);
 	}
-
-	/**
-	 * Sentinel value written to {@code C_OrderPaySchedule.DueDate} when the LC step has no allocation
-	 * (and therefore no real LC_Date to derive its due date from). Comparing this date with a realistic
-	 * PayDate keeps the LC line outside an "OnlyDue" pay-selection result. The {@code 9999-12-31}
-	 * date matches {@link org.compiere.util.Env#MAX_DATE} (the codebase convention for "far future").
-	 */
-	private static final LocalDate SENTINEL_NO_LC_DATE = LocalDate.of(9999, 12, 31);
 
 	private void clearLCDateOnOrder(@NonNull final OrderId orderId)
 	{
@@ -211,10 +199,10 @@ public class OrderPayScheduleLCService
 		orderDAO.save(order);
 	}
 
-	private void stampLCDateOnOrder(@NonNull final OrderId orderId, @NonNull final I_C_Invoice proformaInvoice)
+	private void stampLCDateOnOrder(@NonNull final OrderId orderId, @NonNull final ProformaInvoice proformaInvoice)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
-		order.setLC_Date(proformaInvoice.getDateInvoiced());
+		order.setLC_Date(TimeUtil.asTimestamp(proformaInvoice.getDateInvoiced()));
 		orderDAO.save(order);
 	}
 }
