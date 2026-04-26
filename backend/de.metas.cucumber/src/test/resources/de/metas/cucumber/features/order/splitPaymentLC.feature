@@ -111,6 +111,12 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | LC                | 20596.32 | PR     | null          |
       | OD                | 48058.08 | WP     | null          |
 
+    # AC #17 — invoiceOpenToDate proforma branch on an unpaid proforma:
+    # OpenAmt = GrandTotal, PaidAmt = 0, HasAllocations = false (proformas have no C_AllocationLine rows).
+    Then for invoice the following invoiceOpenToDate result is expected:
+      | C_Invoice_ID.Identifier | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+      | lcInvoice               | 20596.32 | 0       | 20596.32   | false          |
+
     # ── Allocate proforma → LC step Awaiting_Pay; LC_Date stamped ──
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
