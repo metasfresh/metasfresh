@@ -173,9 +173,14 @@ public class OrderPayScheduleLCService
 		// If the DAO didn't see the in-flight trigger payment (because TIMING_AFTER_COMPLETE
 		// fires *before* the caller's setDocStatus("CO") + saveEx — see MPayment.completeIt),
 		// trust the trigger and treat it as the completed payment.
+		//
+		// Guardrail: the trigger's Proforma_Invoice_ID must match the proforma this LC step is
+		// computing against. The interceptor's call site already screens for it once at fire-time;
+		// re-checking here protects against the order's C_Proforma_Order_Alloc being swapped to a
+		// different proforma between fire-time and recompute (concurrent flow, future caller).
 		if (completedPayment == null
 				&& trustedCompletingPayment != null
-				&& trustedCompletingPayment.getProforma_Invoice_ID() == proformaInvoiceId.getRepoId())
+				&& InvoiceId.equals(InvoiceId.ofRepoIdOrNull(trustedCompletingPayment.getProforma_Invoice_ID()), proformaInvoiceId))
 		{
 			completedPayment = trustedCompletingPayment;
 		}
