@@ -93,10 +93,10 @@ public class C_Payment
 			return;
 		}
 
-		// Proforma payments (https://github.com/metasfresh/me03/issues/29368) carry C_Order_ID
-		// from the proforma↔order allocation, but their PayAmt comes from the pay-selection line
-		// (= proforma's open amount), NOT from order.GrandTotal. Skipping the recompute keeps the
-		// builder-set PayAmt intact and lets the BEFORE_PREPARE full-payment guard verify it.
+		// Proforma payments carry C_Order_ID from the proforma↔order allocation, but their PayAmt
+		// comes from the pay-selection line (= proforma's open amount), NOT from order.GrandTotal.
+		// Skipping the recompute keeps the builder-set PayAmt intact and lets the BEFORE_PREPARE
+		// full-payment guard verify it.
 		if (InvoiceId.ofRepoIdOrNull(record.getProforma_Invoice_ID()) != null)
 		{
 			return;
@@ -135,10 +135,10 @@ public class C_Payment
 	}
 
 	/**
-	 * Proforma payments must be full payments (AC #16, https://github.com/metasfresh/me03/issues/29368):
-	 * abs(PayAmt) must equal the proforma's GrandTotal. Partial payments are forbidden because there
-	 * are no C_AllocationLine rows for proforma payments (no accounting), so a residual balance
-	 * cannot be reconciled. Reversal symmetry is automatic — abs(-GrandTotal) == GrandTotal.
+	 * Proforma payments must be full payments: {@code abs(PayAmt)} must equal the proforma's
+	 * {@code GrandTotal}. Partial payments are forbidden because there are no
+	 * {@code C_AllocationLine} rows for proforma payments (no accounting), so a residual balance
+	 * cannot be reconciled. Reversal symmetry is automatic — {@code abs(-GrandTotal) == GrandTotal}.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void assertProformaPaymentIsFull(@NonNull final I_C_Payment payment)
@@ -174,5 +174,23 @@ public class C_Payment
 		}
 
 		orderPayScheduleService.markAsPaid(orderId, orderPayScheduleId);
+	}
+
+	/**
+	 * Preserve {@code IsPrepayment=Y} on every save where {@code Proforma_Invoice_ID} is set.
+	 *
+	 * <p>The legacy {@link org.compiere.model.MPayment#beforeSave} recomputes {@code IsPrepayment}
+	 * from {@code C_Order_ID / C_Invoice_ID / C_Project_ID / C_Charge_ID}, which makes proforma
+	 * payments lose their prepayment classification on reversal (where {@code C_Order_ID} and
+	 * {@code C_Invoice_ID} are cleared). This interceptor reasserts the invariant: a proforma
+	 * payment is always a prepayment, regardless of which legacy fields are populated.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void enforceIsPrepaymentOnProformaPayment(@NonNull final I_C_Payment payment)
+	{
+		if (InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID()) != null && !payment.isPrepayment())
+		{
+			payment.setIsPrepayment(true);
+		}
 	}
 }

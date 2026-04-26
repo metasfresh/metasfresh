@@ -282,14 +282,12 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     # still active.
     And the payment identified by lcPayment is reversed with a reversal identified by lcPaymentReversal
 
-    # Reversal symmetry — AC #14: Proforma_Invoice_ID is preserved on both rows; PayAmt
-    # is negated on the reversal row; both end at DocStatus='RE'. (IsPrepayment is NOT
-    # asserted here: MPayment.beforeSave currently recomputes IsPrepayment from
-    # C_Order_ID/C_Invoice_ID, which are cleared on reversal — see PLAN.md Phase 8 Task 68.)
+    # Reversal symmetry — AC #14: every classification field of the original is preserved
+    # on the reversal row; only PayAmt is negated; both end at DocStatus='RE'.
     Then validate payments
-      | C_Payment_ID.Identifier | DocStatus | Proforma_Invoice_ID | PayAmt    |
-      | lcPayment               | RE        | lcInvoice           |  20596.32 |
-      | lcPaymentReversal       | RE        | lcInvoice           | -20596.32 |
+      | C_Payment_ID.Identifier | DocStatus | IsPrepayment | Proforma_Invoice_ID | PayAmt    |
+      | lcPayment               | RE        | Y            | lcInvoice           |  20596.32 |
+      | lcPaymentReversal       | RE        | Y            | lcInvoice           | -20596.32 |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
