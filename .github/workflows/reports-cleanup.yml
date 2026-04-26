@@ -58,6 +58,8 @@ jobs:
             User ci-reports
             IdentityFile ~/.ssh/reports_key
             StrictHostKeyChecking accept-new
+            ServerAliveInterval 30
+            ServerAliveCountMax 10
           EOF
 
       - name: Fetch existing GitHub branches
@@ -79,7 +81,8 @@ jobs:
         if: steps.check-secret.outputs.available == 'true'
         id: cleanup
         run: |
-          ssh reports-server "python3 -" <<'PYEOF' | tee /tmp/cleanup-output.txt
+          set -o pipefail
+          ssh reports-server "python3 -u -" <<'PYEOF' | tee /tmp/cleanup-output.txt
           import json, os, shutil, time, sys
           from pathlib import Path
           from datetime import datetime, timezone
@@ -300,6 +303,11 @@ jobs:
         if: steps.check-secret.outputs.available == 'true'
         run: |
           OUTPUT="/tmp/cleanup-output.txt"
+          if ! grep -q '^BEFORE_AVAIL=' "$OUTPUT"; then
+            echo "::error::Cleanup script produced no BEFORE_AVAIL marker — the SSH session was likely truncated before the script finished. Check the 'Run cleanup' step output."
+            cat "$OUTPUT" || true
+            exit 1
+          fi
           BEFORE=$(grep 'BEFORE_AVAIL=' "$OUTPUT" | cut -d= -f2)
           AFTER=$(grep 'AFTER_AVAIL=' "$OUTPUT" | cut -d= -f2)
           FREED=$(grep 'FREED=' "$OUTPUT" | cut -d= -f2)
