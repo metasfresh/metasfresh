@@ -22,18 +22,29 @@
 
 package de.metas.invoice.proforma;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ProformaOrderAllocService
 {
+	private static final AdMessageKey MSG_CannotDeallocateWhenPaid = AdMessageKey.of("de.metas.invoice.proforma.CannotDeallocateWhenPaid");
+
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@NonNull private final ProformaOrderAllocRepository repository;
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
@@ -63,13 +74,20 @@ public class ProformaOrderAllocService
 
 	public void deallocate(@NonNull final ProformaOrderAlloc alloc)
 	{
-		// TODO: check additional steps needed (e.g. check and handling of payments)
+		// Reject if a completed/closed proforma payment still points at this proforma. Removing
+		// the allocation would leave the payment with Proforma_Invoice_ID pointing at a now-
+		// unallocated proforma — an inconsistent state. The user must reverse the payment first.
+		final InvoiceId proformaInvoiceId = alloc.getInvoiceId();
+		if (paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).isPresent())
+		{
+			final I_C_Order order = orderBL.getById(alloc.getOrderId());
+			throw new AdempiereException(MSG_CannotDeallocateWhenPaid, proformaInvoiceId.getRepoId(), order.getDocumentNo())
+					.markAsUserValidationError();
+		}
 
 		// Capture orderId before deletion — the alloc row will be gone after deleteById.
 		final OrderId orderId = alloc.getOrderId();
-
 		repository.deleteById(alloc.getId());
-
 		orderPayScheduleLCService.recomputeLCStep(orderId);
 	}
 }
