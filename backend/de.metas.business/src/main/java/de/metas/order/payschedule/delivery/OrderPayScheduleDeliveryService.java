@@ -22,12 +22,19 @@
 
 package de.metas.order.payschedule.delivery;
 
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.payschedule.delivery.OrderPayScheduleDeliveryRepository.DesiredDeliveryRow;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_C_OrderPaySchedule;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,11 +84,114 @@ public class OrderPayScheduleDeliveryService
 	 * </ul>
 	 *
 	 * <p>{@code DueAmt = round(BaseAmt × deliveryPercent / 100, 2)} (HALF_UP).
-	 *
-	 * @throws UnsupportedOperationException TODO Task 21a — implement pure function
 	 */
 	public List<DesiredDeliveryRow> computeDesired(@NonNull final DeliveryStepInputs inputs)
 	{
-		throw new UnsupportedOperationException("TODO Task 21a");
+		final BigDecimal deliveryPercent = inputs.getDeliveryPercent();
+		final BigDecimal orderGrandTotal = inputs.getOrderGrandTotal().toBigDecimal();
+
+		final List<DesiredDeliveryRow> result = new ArrayList<>();
+		BigDecimal sumReceiptValues = BigDecimal.ZERO;
+
+		for (final DeliveryStepInputs.ReceiptInfo receipt : inputs.getCompletedReceipts())
+		{
+			final BigDecimal baseAmt = receipt.getWithTaxValue().toBigDecimal();
+			sumReceiptValues = sumReceiptValues.add(baseAmt);
+
+			final BigDecimal dueAmt = computeDueAmt(baseAmt, deliveryPercent);
+			final String status = deriveStatus(receipt.getInvoiceDocStatus(), receipt.getInvoiceOpenAmt());
+			final InvoiceId cInvoiceId = resolveInvoiceId(receipt.getMatchedInvoiceId(), receipt.getInvoiceDocStatus());
+
+			result.add(DesiredDeliveryRow.builder()
+					.baseAmt(baseAmt)
+					.dueAmt(dueAmt)
+					.status(status)
+					.mInOutId(receipt.getMInOutId())
+					.cInvoiceId(cInvoiceId)
+					.build());
+		}
+
+		// Remainder row: max(0, orderGrandTotal − Σ receipts); omit if ≤ 0
+		final BigDecimal remainderBase = orderGrandTotal.subtract(sumReceiptValues);
+		if (remainderBase.compareTo(BigDecimal.ZERO) > 0)
+		{
+			result.add(DesiredDeliveryRow.builder()
+					.baseAmt(remainderBase)
+					.dueAmt(computeDueAmt(remainderBase, deliveryPercent))
+					.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+					.mInOutId(null)
+					.cInvoiceId(null)
+					.build());
+		}
+
+		return result;
+	}
+
+	// -----------------------------------------------------------------------
+	// Private helpers
+	// -----------------------------------------------------------------------
+
+	private static BigDecimal computeDueAmt(
+			@NonNull final BigDecimal baseAmt,
+			@NonNull final BigDecimal deliveryPercent)
+	{
+		return baseAmt
+				.multiply(deliveryPercent)
+				.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * Derives the sub-row status from the invoice's DocStatus and open amount.
+	 *
+	 * <ul>
+	 *   <li>{@code null} / {@code "DR"} / {@code "RE"} → {@code Pending}
+	 *   <li>{@code "CO"} / {@code "CL"} + OpenAmt > 0 → {@code Awaiting_Pay}
+	 *   <li>{@code "CO"} / {@code "CL"} + OpenAmt = 0 → {@code Paid}
+	 * </ul>
+	 */
+	private static String deriveStatus(
+			@Nullable final String invoiceDocStatus,
+			@Nullable final Money invoiceOpenAmt)
+	{
+		if (invoiceDocStatus == null
+				|| "DR".equals(invoiceDocStatus)
+				|| "RE".equals(invoiceDocStatus))
+		{
+			return X_C_OrderPaySchedule.STATUS_Pending_Ref;
+		}
+
+		if ("CO".equals(invoiceDocStatus) || "CL".equals(invoiceDocStatus))
+		{
+			final boolean fullyPaid = invoiceOpenAmt != null
+					&& invoiceOpenAmt.toBigDecimal().compareTo(BigDecimal.ZERO) == 0;
+			return fullyPaid
+					? X_C_OrderPaySchedule.STATUS_Paid
+					: X_C_OrderPaySchedule.STATUS_Awaiting_Pay;
+		}
+
+		// Unknown doc status — treat as pending (conservative)
+		return X_C_OrderPaySchedule.STATUS_Pending_Ref;
+	}
+
+	/**
+	 * Returns the invoice ID to store on the sub-row, or {@code null} if the invoice
+	 * should not be reflected (DR or RE status — reversed or drafted invoices are not
+	 * populated on the sub-row).
+	 */
+	@Nullable
+	private static InvoiceId resolveInvoiceId(
+			@Nullable final InvoiceId matchedInvoiceId,
+			@Nullable final String invoiceDocStatus)
+	{
+		if (matchedInvoiceId == null)
+		{
+			return null;
+		}
+		// DR and RE: do not store invoice ID on the sub-row
+		if ("DR".equals(invoiceDocStatus) || "RE".equals(invoiceDocStatus))
+		{
+			return null;
+		}
+		return matchedInvoiceId;
 	}
 }
