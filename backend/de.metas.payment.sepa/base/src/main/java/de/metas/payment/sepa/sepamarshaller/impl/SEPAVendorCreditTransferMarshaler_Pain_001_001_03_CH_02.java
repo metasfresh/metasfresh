@@ -767,7 +767,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		// If the bank account carries any address data, treat it as authoritative
 		// and emit it verbatim — blank fields stay blank rather than being silently
-		// merged with the partner billing location.
+		// merged with the partner billing location. AccountCountry is expected to be
+		// a valid ISO-3166 alpha-2 code (enforced at C_BP_BankAccount validation
+		// time, see #20356); we therefore write it directly without DAO lookup.
 		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
 			final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
@@ -838,24 +840,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
 
 		// Bank account is authoritative when it carries any address data; emit each
-		// populated field as-is and skip the partner-location fallback.
+		// populated address line as-is and skip the partner-location fallback.
+		// pain.001 forbids mixing structured fields (StrtNm/BldgNb/PstCd/TwnNm) with
+		// the unstructured AdrLine — this branch stays AdrLine-only, mirroring the
+		// fallback path below.
+		// Note: AccountCountry is expected to be a valid ISO-3166 alpha-2 country
+		// code; this is enforced at C_BP_BankAccount validation time (#20356).
 		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
 			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
 			{
 				pstlAdr.setCtry(bpBankAccount.getAccountCountry());
-			}
-
-			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
-
-			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
-			{
-				pstlAdr.setPstCd(bpBankAccount.getAccountZip());
-			}
-
-			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
-			{
-				pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
 			}
 
 			final String streetLine = SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet());
@@ -864,7 +859,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				pstlAdr.getAdrLine().add(streetLine);
 			}
 
-			final String zipCityLine = joinNonBlank(bpBankAccount.getAccountZip(), bpBankAccount.getAccountCity());
+			final String zipCityLine = SepaUtils.joinNonBlank(bpBankAccount.getAccountZip(), bpBankAccount.getAccountCity());
 			if (Check.isNotBlank(zipCityLine))
 			{
 				pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(zipCityLine));
@@ -882,17 +877,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
 		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
 		return pstlAdr;
-	}
-
-	private static String joinNonBlank(@Nullable final String a, @Nullable final String b)
-	{
-		final boolean hasA = Check.isNotBlank(a);
-		final boolean hasB = Check.isNotBlank(b);
-		if (hasA && hasB)
-		{
-			return a + " " + b;
-		}
-		return hasA ? a : (hasB ? b : "");
 	}
 
 	/**

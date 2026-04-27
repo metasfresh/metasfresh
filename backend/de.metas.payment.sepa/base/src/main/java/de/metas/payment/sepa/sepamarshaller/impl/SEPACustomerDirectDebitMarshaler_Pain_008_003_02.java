@@ -54,7 +54,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -465,6 +464,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		// Bank account is authoritative: emit any populated field verbatim. When
 		// the bank-account address is fully empty we keep the previous behaviour
 		// of leaving the creditor without a postal address element.
+		// AccountCountry is expected to be a valid ISO-3166 alpha-2 code
+		// (enforced at C_BP_BankAccount validation time, see #20356).
 		if (bankAccount.isAddressEmpty())
 		{
 			return partyIdCopy;
@@ -483,7 +484,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			postalAddressSEPA.getAdrLine().add(streetLine);
 		}
 
-		final String zipCityLine = joinNonBlank(bankAccount.getAccountZip(), bankAccount.getAccountCity());
+		final String zipCityLine = SepaUtils.joinNonBlank(bankAccount.getAccountZip(), bankAccount.getAccountCity());
 		if (Check.isNotBlank(zipCityLine))
 		{
 			postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(zipCityLine));
@@ -492,17 +493,6 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		partyIdCopy.setPstlAdr(postalAddressSEPA);
 
 		return partyIdCopy;
-	}
-
-	private static String joinNonBlank(@Nullable final String a, @Nullable final String b)
-	{
-		final boolean hasA = Check.isNotBlank(a);
-		final boolean hasB = Check.isNotBlank(b);
-		if (hasA && hasB)
-		{
-			return a + " " + b;
-		}
-		return hasA ? a : (hasB ? b : "");
 	}
 
 	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(@NonNull final I_SEPA_Export sepaHeader)

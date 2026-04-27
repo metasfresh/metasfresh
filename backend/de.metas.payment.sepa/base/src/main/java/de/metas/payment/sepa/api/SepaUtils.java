@@ -22,6 +22,7 @@
 
 package de.metas.payment.sepa.api;
 
+import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,5 +91,21 @@ public class SepaUtils
 		}
 
 		return compliantText.toString();
+	}
+
+	/**
+	 * Joins {@code a} and {@code b} with a single space, skipping blank values. Returns {@code ""}
+	 * when both are blank. Used to assemble the "{zip} {city}" address line on a SEPA PostalAddress
+	 * without emitting "null null" / " " when one side is missing.
+	 */
+	public static String joinNonBlank(@Nullable final String a, @Nullable final String b)
+	{
+		final boolean hasA = Check.isNotBlank(a);
+		final boolean hasB = Check.isNotBlank(b);
+		if (hasA && hasB)
+		{
+			return a + " " + b;
+		}
+		return hasA ? a : (hasB ? b : "");
 	}
 }

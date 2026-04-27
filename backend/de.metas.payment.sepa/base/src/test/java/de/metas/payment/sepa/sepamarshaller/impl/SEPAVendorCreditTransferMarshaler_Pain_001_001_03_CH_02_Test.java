@@ -564,9 +564,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation);
 
 		// One AdrLine for the street, no zip/city line because both are blank.
+		// pain.001 forbids mixing structured fields with AdrLine, so the structured
+		// fields stay null in the bank-account branch.
 		assertThat(pstlAdr.getAdrLine()).containsExactly("Bankstrasse 1");
-		assertThat(pstlAdr.getStrtNm()).isEqualTo("Bankstrasse");
-		assertThat(pstlAdr.getBldgNb()).isEqualTo("1");
+		assertThat(pstlAdr.getStrtNm()).isNull();
+		assertThat(pstlAdr.getBldgNb()).isNull();
 		assertThat(pstlAdr.getPstCd()).isNull();
 		assertThat(pstlAdr.getTwnNm()).isNull();
 		assertThat(pstlAdr.getCtry()).isNull();
@@ -580,12 +582,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation);
 
-		// Only the zip+city line is emitted; no street line because the street is blank.
+		// Only the zip+city line is emitted; no street line because the street is
+		// blank. Structured fields stay null (no mixing).
 		assertThat(pstlAdr.getAdrLine()).containsExactly("8000 Zuerich");
 		assertThat(pstlAdr.getStrtNm()).isNull();
 		assertThat(pstlAdr.getBldgNb()).isNull();
-		assertThat(pstlAdr.getPstCd()).isEqualTo("8000");
-		assertThat(pstlAdr.getTwnNm()).isEqualTo("Zuerich");
+		assertThat(pstlAdr.getPstCd()).isNull();
+		assertThat(pstlAdr.getTwnNm()).isNull();
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_nullBankAccount_fallsBackToLocation()
+	{
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(null, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Partnerstrasse 5", "3000 Bern");
 	}
 
 }
