@@ -15,7 +15,7 @@ VALUES (0, 0, 'Y',
 
 -- Set ErrorCode (required for MsgType='E')
 UPDATE AD_Message
-SET ErrorCode = 'ISPARTIAL_INVOICE_READONLY_AFTER_COMPLETE'
+SET ErrorCode = 'IsPartialInvoiceReadOnlyAfterComplete'
 WHERE AD_Message_ID = 545674;
 
 -- AD_Message_Trl: de_DE
