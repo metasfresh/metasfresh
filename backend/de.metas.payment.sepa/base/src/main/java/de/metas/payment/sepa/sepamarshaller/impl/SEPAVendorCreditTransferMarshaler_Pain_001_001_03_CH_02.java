@@ -793,7 +793,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			return pstlAdr;
 		}
 
-		Check.assumeNotNull(location, "location must be set when bank account address is empty");
+		Objects.requireNonNull(location, "location must be set when bank account address is empty");
 		return createStructuredPstlAdr(location);
 	}
 
@@ -867,15 +867,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 
 		// fall back to the billing location
-		Check.assumeNotNull(location, "location must be set when bank account address is empty");
+		Objects.requireNonNull(location, "location must be set when bank account address is empty");
 		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
 		pstlAdr.setCtry(countryCode);
 
+		// SEPA XSDs require <AdrLine> to be non-empty when present, so guard both
+		// inserts. address1 / postal / city may all be blank on a thin location.
 		final String firstAdrLineFromLocation = SepaUtils.replaceForbiddenChars(location.getAddress1());
+		if (Check.isNotBlank(firstAdrLineFromLocation))
+		{
+			pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
+		}
 		final String secondAddressLineFromLocation = SepaUtils.replaceForbiddenChars(
 				SepaUtils.joinNonBlank(location.getPostal(), location.getCity()));
-		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
-		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
+		if (Check.isNotBlank(secondAddressLineFromLocation))
+		{
+			pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
+		}
 		return pstlAdr;
 	}
 

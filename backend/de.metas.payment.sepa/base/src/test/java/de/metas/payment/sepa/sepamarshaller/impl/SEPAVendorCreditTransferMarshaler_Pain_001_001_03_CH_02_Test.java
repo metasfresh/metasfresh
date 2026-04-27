@@ -661,7 +661,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void createUnstructuredPstlAdr_locationFallback_handlesNullPostalAndCity()
 	{
 		// Pre-existing latent bug: location.getPostal() + " " + location.getCity()
-		// produced "null null" when both were missing. Fixed by joinNonBlank.
+		// produced "null null" when both were missing. With joinNonBlank we get
+		// an empty string for the second line, which is then suppressed because
+		// SEPA XSDs require AdrLine to be non-empty when present.
 		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setCountryCode("CH");
 		country.setName("Switzerland");
@@ -676,10 +678,26 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(null, location);
 
 		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
-		// AdrLine[1] used to be "null null"; with joinNonBlank it's now an empty string.
-		assertThat(pstlAdr.getAdrLine()).hasSize(2);
-		assertThat(pstlAdr.getAdrLine().get(0)).isEqualTo("Partnerstrasse 5");
-		assertThat(pstlAdr.getAdrLine().get(1)).isEmpty();
+		// Only the street line is emitted; the (otherwise empty) zip+city line is suppressed.
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Partnerstrasse 5");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_countryOnly()
+	{
+		// Country alone is enough to make the bank account "non-empty" under
+		// isAddressEmpty(); the result is a PostalAddress with only Ctry set.
+		// Documents the contract for this corner case.
+		final BankAccount bankAccount = bankAccount(null, null, null, "CH");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getStrtNm()).isNull();
+		assertThat(pstlAdr.getBldgNb()).isNull();
+		assertThat(pstlAdr.getPstCd()).isNull();
+		assertThat(pstlAdr.getTwnNm()).isNull();
 	}
 
 }
