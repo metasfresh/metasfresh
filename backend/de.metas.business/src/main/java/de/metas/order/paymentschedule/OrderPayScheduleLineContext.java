@@ -13,7 +13,19 @@ import java.time.LocalDate;
 @Builder
 public class OrderPayScheduleLineContext
 {
-	// "No real date yet" sentinel — matches Env.MAX_DATE (9999-12-31), the codebase convention.
+	/**
+	 * "No real date yet" sentinel.
+	 *
+	 * <p>Chosen value: {@code 9999-12-31}, which matches {@code Env.MAX_DATE} — the codebase-wide
+	 * convention for "effectively infinite" dates stored in the DB.
+	 *
+	 * <p><b>Timezone note:</b> Using the last day of 9999 is safe here because this field is stored as
+	 * {@code LocalDate} (date-only, no timezone) and compared against real {@code LocalDate} values
+	 * that are always well below the year 9999.  If we ever need to convert this value to an
+	 * {@code Instant}/{@code ZonedDateTime} (e.g. for a timestamp column), use {@code 9999-12-01}
+	 * instead to avoid the theoretical overflow when adding a UTC offset, but for a pure date field
+	 * {@code 9999-12-31} causes no overflow.
+	 */
 	private static final LocalDate INFINITE_FUTURE_DATE = LocalDate.of(9999, 12, 31);
 	private static final OrderPayScheduleLineContext PENDING = OrderPayScheduleLineContext.builder()
 			.status(OrderPayScheduleStatus.Pending)
