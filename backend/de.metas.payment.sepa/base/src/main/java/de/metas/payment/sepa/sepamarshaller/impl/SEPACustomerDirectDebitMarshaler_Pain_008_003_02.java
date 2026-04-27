@@ -464,19 +464,17 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		// Bank account is authoritative: emit any populated field verbatim. When
 		// the bank-account address is fully empty we keep the previous behaviour
 		// of leaving the creditor without a postal address element.
-		// AccountCountry is expected to be a valid ISO-3166 alpha-2 code
-		// (enforced at C_BP_BankAccount validation time, see #20356).
+		// Country is mandatory in <Ctry> and is asserted to be a valid ISO-3166
+		// alpha-2 code so a data-quality issue surfaces as a clear SEPA error.
 		if (bankAccount.isAddressEmpty())
 		{
 			return partyIdCopy;
 		}
 
-		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
+		SepaUtils.assertValidAccountCountry(bankAccount);
 
-		if (Check.isNotBlank(bankAccount.getAccountCountry()))
-		{
-			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
-		}
+		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
+		postalAddressSEPA.setCtry(bankAccount.getAccountCountry());
 
 		final String streetLine = SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet());
 		if (Check.isNotBlank(streetLine))

@@ -767,18 +767,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		// If the bank account carries any address data, treat it as authoritative
 		// and emit it verbatim — blank fields stay blank rather than being silently
-		// merged with the partner billing location. AccountCountry is expected to be
-		// a valid ISO-3166 alpha-2 code (enforced at C_BP_BankAccount validation
-		// time, see #20356); we therefore write it directly without DAO lookup.
+		// merged with the partner billing location. The country is mandatory in the
+		// SEPA <Ctry> element and must be a valid ISO-3166 alpha-2 code: assert
+		// up-front so a data-quality issue surfaces as a clear SEPA error rather
+		// than schema-invalid XML downstream.
 		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
+			SepaUtils.assertValidAccountCountry(bpBankAccount);
+
 			final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
 
-			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
-			{
-				pstlAdr.setCtry(bpBankAccount.getAccountCountry());
-			}
-			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
+			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
+			splitStreetAndNumber(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet()), pstlAdr);
 
 			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
 			{
@@ -787,7 +787,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
 			{
-				pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
+				pstlAdr.setTwnNm(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountCity()));
 			}
 
 			return pstlAdr;
@@ -844,14 +844,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// pain.001 forbids mixing structured fields (StrtNm/BldgNb/PstCd/TwnNm) with
 		// the unstructured AdrLine — this branch stays AdrLine-only, mirroring the
 		// fallback path below.
-		// Note: AccountCountry is expected to be a valid ISO-3166 alpha-2 country
-		// code; this is enforced at C_BP_BankAccount validation time (#20356).
+		// Country is mandatory in <Ctry> and is asserted to be a valid ISO-3166
+		// alpha-2 code so a data-quality issue surfaces as a clear SEPA error.
 		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
-			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
-			{
-				pstlAdr.setCtry(bpBankAccount.getAccountCountry());
-			}
+			SepaUtils.assertValidAccountCountry(bpBankAccount);
+
+			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
 
 			final String streetLine = SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet());
 			if (Check.isNotBlank(streetLine))
@@ -873,7 +872,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		pstlAdr.setCtry(countryCode);
 
 		final String firstAdrLineFromLocation = SepaUtils.replaceForbiddenChars(location.getAddress1());
-		final String secondAddressLineFromLocation = SepaUtils.replaceForbiddenChars(location.getPostal() + " " + location.getCity());
+		final String secondAddressLineFromLocation = SepaUtils.replaceForbiddenChars(
+				SepaUtils.joinNonBlank(location.getPostal(), location.getCity()));
 		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
 		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
 		return pstlAdr;

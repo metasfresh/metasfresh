@@ -1,30 +1,32 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import java.math.BigDecimal;
-
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
-import de.metas.currency.CurrencyRepository;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -205,20 +207,20 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 	@Test
 	public void creditorAddress_bankAccountAuthoritative_partialAddress_streetOnly()
 	{
-		// Bank account has only the street populated. Under the new contract this
-		// is emitted as-is — previously the entire address element was dropped
+		// Bank account has the street and country populated. Under the new contract
+		// this is emitted as-is — previously the entire address element was dropped
 		// because isAddressComplete() returned false.
 		final I_SEPA_Export sepaExport = createSEPAExport("Creditor", "CRED1", "INGBNL2A");
 		createSEPAExportLine(sepaExport,
 				"001", "NL31INGB0000000044", "INGBNL2A",
 				new BigDecimal("100"), eur,
-				"Bankstrasse 1", null, null, null);
+				"Bankstrasse 1", null, null, "CH");
 
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		final var cdtr = xmlDocument.getCstmrDrctDbtInitn().getPmtInf().get(0).getCdtr();
 		assertThat(cdtr.getPstlAdr()).isNotNull();
-		assertThat(cdtr.getPstlAdr().getCtry()).isNull();
+		assertThat(cdtr.getPstlAdr().getCtry()).isEqualTo("CH");
 		assertThat(cdtr.getPstlAdr().getAdrLine()).containsExactly("Bankstrasse 1");
 	}
 
@@ -236,6 +238,22 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		final var cdtr = xmlDocument.getCstmrDrctDbtInitn().getPmtInf().get(0).getCdtr();
 		assertThat(cdtr.getNm()).isEqualTo("bankAccount.A_Name");
 		assertThat(cdtr.getPstlAdr()).isNull();
+	}
+
+	@Test
+	public void creditorAddress_bankAccountAuthoritative_addressWithoutCountry_throws()
+	{
+		// Country is mandatory in <Ctry>; emitting an address without a valid
+		// ISO-3166 alpha-2 country code would produce schema-invalid SEPA XML.
+		final I_SEPA_Export sepaExport = createSEPAExport("Creditor", "CRED1", "INGBNL2A");
+		createSEPAExportLine(sepaExport,
+				"001", "NL31INGB0000000044", "INGBNL2A",
+				new BigDecimal("100"), eur,
+				"Bankstrasse 1", "8000", "Zuerich", null);
+
+		assertThatThrownBy(() -> xmlGenerator.createDocument(sepaExport))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("A_Country is required");
 	}
 
 }
