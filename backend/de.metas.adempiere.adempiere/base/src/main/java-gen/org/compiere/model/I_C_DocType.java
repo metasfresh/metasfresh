@@ -770,6 +770,29 @@ public interface I_C_DocType
 	String COLUMNNAME_IsOverwriteSeqOnComplete = "IsOverwriteSeqOnComplete";
 
 	/**
+	 * Set Teilrechnung.
+	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartialInvoice (boolean IsPartialInvoice);
+
+	/**
+	 * Get Teilrechnung.
+	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartialInvoice();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_IsPartialInvoice = new ModelColumn<>(I_C_DocType.class, "IsPartialInvoice", null);
+	String COLUMNNAME_IsPartialInvoice = "IsPartialInvoice";
+
+	/**
 	 * Set Pick/QA Confirmation.
 	 * Require Pick or QA Confirmation before processing
 	 *
