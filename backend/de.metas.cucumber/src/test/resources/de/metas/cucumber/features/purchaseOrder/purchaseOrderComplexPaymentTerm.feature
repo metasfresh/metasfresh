@@ -77,7 +77,7 @@ Feature: Purchase order with complex payment term
     # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB1                   | 2025-10-10 | 25.58  | WP     |
-      | PTB2                   | 9999-12-31 | 76.72  | PR     |
+      | PTB2                   | 9999-12-01 | 76.72  | PR     |
 
 
   @from:cucumber
@@ -107,7 +107,7 @@ Feature: Purchase order with complex payment term
     # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB1                   | 2025-10-27 | 25.58  | WP     |
-      | PTB2                   | 9999-12-31 | 76.72  | PR     |
+      | PTB2                   | 9999-12-01 | 76.72  | PR     |
 
 
   @from:cucumber
@@ -137,9 +137,9 @@ Feature: Purchase order with complex payment term
     Then the order identified by po2 has following pay schedules
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB21                  | 2025-10-10 | 25.58  | WP     |
-      | PTB22                  | 9999-12-31 | 25.58  | PR     |
-      | PTB23                  | 9999-12-31 | 25.58  | PR     |
-      | PTB24                  | 9999-12-31 | 25.56  | PR     |
+      | PTB22                  | 9999-12-01 | 25.58  | PR     |
+      | PTB23                  | 9999-12-01 | 25.58  | PR     |
+      | PTB24                  | 9999-12-01 | 25.56  | PR     |
     And update order
       | Identifier | LC_Date    |
       | po2        | 2025-10-15 |
@@ -147,8 +147,8 @@ Feature: Purchase order with complex payment term
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB21                  | 2025-10-10 | 25.58  | WP     |
       | PTB22                  | 2025-10-15 | 25.58  | WP     |
-      | PTB23                  | 9999-12-31 | 25.58  | PR     |
-      | PTB24                  | 9999-12-31 | 25.56  | PR     |
+      | PTB23                  | 9999-12-01 | 25.58  | PR     |
+      | PTB24                  | 9999-12-01 | 25.56  | PR     |
     And metasfresh contains Transport Order
       | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
       | shipperTransp_1 | shipper_DHL  | shipper             | shipperLocation     |
@@ -213,7 +213,7 @@ Feature: Purchase order with complex payment term
     # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB31                  | 2025-10-10 | 25.58  | WP     |
-      | PTB32                  | 9999-12-31 | 76.72  | PR     |
+      | PTB32                  | 9999-12-01 | 76.72  | PR     |
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
       | receiptSchedule_2    | po3        | po3_l1         | vendor        | vendorLocation         | product      | 10         | wh             |

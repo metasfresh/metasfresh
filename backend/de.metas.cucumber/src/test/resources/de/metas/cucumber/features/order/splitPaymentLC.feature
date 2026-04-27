@@ -93,9 +93,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | PR     | null          |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | null          | PR     |
+      | OD                | 48058.08 | null          | WP     |
 
     # ── Proforma created and completed (GrandTotal = LC plan = 20596.32) — no pay-schedule change ──
     And metasfresh contains C_Invoice:
@@ -107,23 +107,23 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And the invoice identified by lcInvoice is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | PR     | null          |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | null          | PR     |
+      | OD                | 48058.08 | null          | WP     |
 
     # AC #17 — invoiceOpenToDate proforma branch on an unpaid proforma:
     # OpenAmt = GrandTotal, PaidAmt = 0, HasAllocations = false (proformas have no C_AllocationLine rows).
     Then for invoice the following invoiceOpenToDate result is expected:
-      | C_Invoice_ID.Identifier | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+      | C_Invoice_ID            | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
       | lcInvoice               | 20596.32 | 0       | 20596.32   | false          |
 
     # ── Allocate proforma → LC step Awaiting_Pay; LC_Date stamped ──
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | WP     | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | OD                | 48058.08 | null          | WP     |
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
@@ -154,15 +154,15 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | lcPayment               | Y            | lcInvoice           | 20596.32 |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | P      | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | P      |
+      | OD                | 48058.08 | null          | WP     |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment completion:
     # The CO payment lands in the SUM(abs(PayAmt)) so OpenAmt = GrandTotal - GrandTotal = 0,
     # PaidAmt = GrandTotal. HasAllocations stays false (proforma never has C_AllocationLine rows).
     Then for invoice the following invoiceOpenToDate result is expected:
-      | C_Invoice_ID.Identifier | OpenAmt | PaidAmt  | GrandTotal | HasAllocations |
+      | C_Invoice_ID            | OpenAmt | PaidAmt  | GrandTotal | HasAllocations |
       | lcInvoice               | 0       | 20596.32 | 20596.32   | false          |
 
   Scenario: S2 - Proforma GrandTotal below planned LC DueAmt — DueAmt_Actual captures the actual amount
@@ -190,9 +190,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
 
     # DueAmt = plan (20596.32, unchanged); DueAmt_Actual = proforma.GrandTotal (20500.00).
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | WP     | 20500.00      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20500.00      | WP     |
+      | OD                | 48058.08 | null          | WP     |
 
 
   Scenario: S3 - Deallocation before payment rolls LC back to Pending (DueAmt_Actual + LC_Date cleared)
@@ -218,9 +218,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | WP     | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | OD                | 48058.08 | null          | WP     |
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
@@ -228,9 +228,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And I deallocate proforma 'lcInvoice' from order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | PR     | null          |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | null          | PR     |
+      | OD                | 48058.08 | null          | WP     |
     And validate the created orders
       | Identifier | LC_Date |
       | lcOrder    | null    |
@@ -260,9 +260,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | WP     | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | OD                | 48058.08 | null          | WP     |
 
     And metasfresh contains Pay Selection
       | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -278,9 +278,9 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | lcInvoice    | 20596.32 | lcPayment    |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | P      | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | P      |
+      | OD                | 48058.08 | null          | WP     |
 
     # ── Reverse the proforma payment ──
     # MPayment.reverseCorrectIt() creates a counter-payment that mirrors the original — every
@@ -300,15 +300,15 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | lcPaymentReversal       | RE        | Y            | lcInvoice           | -20596.32 |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | Status | DueAmt_Actual |
-      | LC                | 20596.32 | WP     | 20596.32      |
-      | OD                | 48058.08 | WP     | null          |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | OD                | 48058.08 | null          | WP     |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
     # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
     # so the proforma reverts to unpaid: OpenAmt = GrandTotal, PaidAmt = 0.
     Then for invoice the following invoiceOpenToDate result is expected:
-      | C_Invoice_ID.Identifier | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+      | C_Invoice_ID            | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
       | lcInvoice               | 20596.32 | 0       | 20596.32   | false          |
 
     And validate the created orders

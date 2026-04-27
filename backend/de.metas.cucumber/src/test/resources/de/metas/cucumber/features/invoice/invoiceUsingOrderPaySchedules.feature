@@ -71,7 +71,7 @@ Feature: Invoices with pay schedules created from order pay schedules
     Then the order identified by po1 has following pay schedules
       | Identifier        | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | orderPaySchedule1 | paymentTerm1_break1    | 2025-10-10 | 25.58  | WP     |
-      | orderPaySchedule2 | paymentTerm1_break2    | 9999-12-31 | 76.72  | PR     |
+      | orderPaySchedule2 | paymentTerm1_break2    | 9999-12-01 | 76.72  | PR     |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |
       | ic1                    | po1_l1         | 10           |
@@ -87,4 +87,4 @@ Feature: Invoices with pay schedules created from order pay schedules
     And the invoice identified by invoice1 has following pay schedules
       | C_OrderPaySchedule_ID | DueDate    | DueAmt    | IsValid |
       | orderPaySchedule1     | 2025-10-10 | 25.58 CHF | Y       |
-      | orderPaySchedule2     | 9999-12-31 | 76.72 CHF | Y       |
+      | orderPaySchedule2     | 9999-12-01 | 76.72 CHF | Y       |

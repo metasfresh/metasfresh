@@ -127,9 +127,9 @@ public class C_OrderPaySchedule_StepDef
 	 *
 	 * <pre>{@code
 	 * Then the order identified by po has following pay schedule lines by ReferenceDateType
-	 *   | ReferenceDateType | DueAmt    | Status       | DueAmt_Actual |
-	 *   | LC                | 20596.32  | Awaiting_Pay | 20596.32      |
-	 *   | OD                | 48058.08  | Pending      | null          |
+	 *   | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+	 *   | LC                | 20596.32 | 20596.32      | WP     |
+	 *   | OD                | 48058.08 | null          | WP     |
 	 * }</pre>
 	 */
 	@And("^the order identified by (.*) has following pay schedule lines by ReferenceDateType$")

@@ -57,7 +57,9 @@ public class InvoiceOpenToDate_StepDef
 	/**
 	 * Asserts the {@code invoiceOpenToDate} function's return for the named invoice.
 	 *
-	 * <p>Required column: {@code C_Invoice_ID.Identifier}.
+	 * <p>Required column: {@code C_Invoice_ID} (identifier reference — also accepted as
+	 * {@code C_Invoice_ID.Identifier} for legacy compatibility, but new feature files should
+	 * use the bare form).
 	 *
 	 * <p>Optional columns (each is asserted only if the column appears in the table):
 	 * <ul>
@@ -77,8 +79,8 @@ public class InvoiceOpenToDate_StepDef
 	 *
 	 * <pre>{@code
 	 * Then for invoice the following invoiceOpenToDate result is expected:
-	 *   | C_Invoice_ID.Identifier | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
-	 *   | lcInvoice               | 20596.32 | 0       | 20596.32   | false          |
+	 *   | C_Invoice_ID | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+	 *   | lcInvoice    | 20596.32 | 0       | 20596.32   | false          |
 	 * }</pre>
 	 */
 	@Then("for invoice the following invoiceOpenToDate result is expected:")
