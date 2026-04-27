@@ -106,8 +106,27 @@ public class DeliveryStepInputs
 		/**
 		 * Invoice already matched to this receipt, if any.
 		 * {@code null} until the financial invoice for this shipment is completed.
+		 * When {@code invoiceDocStatus = "RE"} (reversed), this field is treated as
+		 * {@code null} by the service — the sub-row status reverts to Pending and
+		 * {@code C_Invoice_ID} is cleared.
 		 */
 		@Nullable InvoiceId matchedInvoiceId;
+
+		/**
+		 * DocStatus of the matched invoice.
+		 * {@code null} when {@code matchedInvoiceId} is {@code null}.
+		 * Relevant values: {@code "DR"} (ignored — no status change),
+		 * {@code "CO"} / {@code "CL"} (→ Awaiting_Pay or Paid),
+		 * {@code "RE"} (→ Pending, C_Invoice_ID cleared).
+		 */
+		@Nullable String invoiceDocStatus;
+
+		/**
+		 * Open amount of the matched invoice after any existing allocations.
+		 * {@code null} when {@code matchedInvoiceId} is {@code null}.
+		 * Used to distinguish Awaiting_Pay (OpenAmt > 0) from Paid (OpenAmt = 0).
+		 */
+		@Nullable Money invoiceOpenAmt;
 
 		/**
 		 * Amount already allocated from the iter-2 proforma prepayment to this receipt's invoice.
