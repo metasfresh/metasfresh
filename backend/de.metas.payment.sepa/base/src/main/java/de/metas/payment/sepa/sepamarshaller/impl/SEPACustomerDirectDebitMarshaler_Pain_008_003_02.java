@@ -54,6 +54,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -461,7 +462,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		partyIdCopy.setNm(Optional.ofNullable(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(bankAccount.getAccountName())))
 								  .orElseGet(() -> SepaUtils.replaceForbiddenChars(partyId.getNm())));
 
-		if (!bankAccount.isAddressComplete())
+		// Bank account is authoritative: emit any populated field verbatim. When
+		// the bank-account address is fully empty we keep the previous behaviour
+		// of leaving the creditor without a postal address element.
+		if (bankAccount.isAddressEmpty())
 		{
 			return partyIdCopy;
 		}
@@ -472,12 +476,33 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		{
 			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
 		}
-		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet()));
-		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountZip() + " " + bankAccount.getAccountCity()));
+
+		final String streetLine = SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet());
+		if (Check.isNotBlank(streetLine))
+		{
+			postalAddressSEPA.getAdrLine().add(streetLine);
+		}
+
+		final String zipCityLine = joinNonBlank(bankAccount.getAccountZip(), bankAccount.getAccountCity());
+		if (Check.isNotBlank(zipCityLine))
+		{
+			postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(zipCityLine));
+		}
 
 		partyIdCopy.setPstlAdr(postalAddressSEPA);
 
 		return partyIdCopy;
+	}
+
+	private static String joinNonBlank(@Nullable final String a, @Nullable final String b)
+	{
+		final boolean hasA = Check.isNotBlank(a);
+		final boolean hasB = Check.isNotBlank(b);
+		if (hasA && hasB)
+		{
+			return a + " " + b;
+		}
+		return hasA ? a : (hasB ? b : "");
 	}
 
 	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(@NonNull final I_SEPA_Export sepaHeader)

@@ -760,15 +760,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return result;
 	}
 
-	private PostalAddress6CH createStructuredPstlAdr(
+	@VisibleForTesting
+	PostalAddress6CH createStructuredPstlAdr(
 			@Nullable final BankAccount bpBankAccount,
-			@NonNull final I_C_Location location)
+			@Nullable final I_C_Location location)
 	{
-		final PostalAddress6CH pstlAdr;
-
-		if (bpBankAccount != null && bpBankAccount.isAddressComplete())
+		// If the bank account carries any address data, treat it as authoritative
+		// and emit it verbatim — blank fields stay blank rather than being silently
+		// merged with the partner billing location.
+		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
-			pstlAdr = objectFactory.createPostalAddress6CH();
+			final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
 
 			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
 			{
@@ -776,16 +778,21 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
 
-			pstlAdr.setPstCd(bpBankAccount.getAccountZip());
+			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
+			{
+				pstlAdr.setPstCd(bpBankAccount.getAccountZip());
+			}
 
-			pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
-		}
-		else
-		{
-			pstlAdr = createStructuredPstlAdr(location);
+			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
+			{
+				pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
+			}
+
+			return pstlAdr;
 		}
 
-		return pstlAdr;
+		Check.assumeNotNull(location, "location must be set when bank account address is empty");
+		return createStructuredPstlAdr(location);
 	}
 
 	/**
@@ -823,28 +830,50 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	@NonNull
-	private PostalAddress6CH createUnstructuredPstlAdr(
+	@VisibleForTesting
+	PostalAddress6CH createUnstructuredPstlAdr(
 			@Nullable final BankAccount bpBankAccount,
-			@NonNull final I_C_Location location)
+			@Nullable final I_C_Location location)
 	{
 		final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
 
-		if (bpBankAccount != null && bpBankAccount.isAddressComplete())
+		// Bank account is authoritative when it carries any address data; emit each
+		// populated field as-is and skip the partner-location fallback.
+		if (bpBankAccount != null && !bpBankAccount.isAddressEmpty())
 		{
-			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
+			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
+			{
+				pstlAdr.setCtry(bpBankAccount.getAccountCountry());
+			}
 
 			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
 
-			pstlAdr.setPstCd(bpBankAccount.getAccountZip());
+			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
+			{
+				pstlAdr.setPstCd(bpBankAccount.getAccountZip());
+			}
 
-			pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
+			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
+			{
+				pstlAdr.setTwnNm(bpBankAccount.getAccountCity());
+			}
 
-			pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet()));
-			pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountZip() + " " + bpBankAccount.getAccountCity()));
+			final String streetLine = SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountStreet());
+			if (Check.isNotBlank(streetLine))
+			{
+				pstlAdr.getAdrLine().add(streetLine);
+			}
+
+			final String zipCityLine = joinNonBlank(bpBankAccount.getAccountZip(), bpBankAccount.getAccountCity());
+			if (Check.isNotBlank(zipCityLine))
+			{
+				pstlAdr.getAdrLine().add(SepaUtils.replaceForbiddenChars(zipCityLine));
+			}
 			return pstlAdr;
 		}
 
 		// fall back to the billing location
+		Check.assumeNotNull(location, "location must be set when bank account address is empty");
 		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
 		pstlAdr.setCtry(countryCode);
 
@@ -853,6 +882,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
 		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
 		return pstlAdr;
+	}
+
+	private static String joinNonBlank(@Nullable final String a, @Nullable final String b)
+	{
+		final boolean hasA = Check.isNotBlank(a);
+		final boolean hasB = Check.isNotBlank(b);
+		if (hasA && hasB)
+		{
+			return a + " " + b;
+		}
+		return hasA ? a : (hasB ? b : "");
 	}
 
 	/**
@@ -1039,14 +1079,26 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					() -> getBPartnerNameById(line.getC_BPartner_ID()))));
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
-		final I_C_BPartner_Location billToLocation = partnerDAO.retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
-		if ((bankAccount == null || !bankAccount.isAddressComplete()) && billToLocation == null)
-		{
-			return cdtr;
-		}
+		// Bank account is authoritative: when it carries any address data we use it
+		// verbatim and never consult the partner billing location. The partner
+		// location is only loaded as a fallback for the empty-bank-account case.
+		final boolean useBankAccount = bankAccount != null && !bankAccount.isAddressEmpty();
 
-		final I_C_Location location = locationDAO.getById(LocationId.ofRepoId(billToLocation.getC_Location_ID()));
+		final I_C_Location location;
+		if (useBankAccount)
+		{
+			location = null;
+		}
+		else
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
+			final I_C_BPartner_Location billToLocation = partnerDAO.retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
+			if (billToLocation == null)
+			{
+				return cdtr;
+			}
+			location = locationDAO.getById(LocationId.ofRepoId(billToLocation.getC_Location_ID()));
+		}
 
 		final PostalAddress6CH pstlAdr;
 		if (Objects.equals(paymentType, PAYMENT_TYPE_5) || Objects.equals(paymentType, PAYMENT_TYPE_6))

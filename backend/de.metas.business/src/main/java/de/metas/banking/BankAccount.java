@@ -107,10 +107,11 @@ public class BankAccount
 
 	}
 
-	public boolean isAddressComplete()
+	public boolean isAddressEmpty()
 	{
-		return Check.isNotBlank(accountStreet) &&
-				Check.isNotBlank(accountZip) &&
-				Check.isNotBlank(accountCity);
+		return Check.isBlank(accountStreet)
+				&& Check.isBlank(accountZip)
+				&& Check.isBlank(accountCity)
+				&& Check.isBlank(accountCountry);
 	}
 }
