@@ -121,19 +121,36 @@ public class C_Invoice // 03771
 	}
 
 	// ==========================================================================
-	// AC #14 — IsPartialInvoice readonly after Complete (guard stub; logic added in next commit)
+	// AC #14 — IsPartialInvoice readonly after Complete
 	// ==========================================================================
 
 	/**
+	 * Rejects changes to {@code IsPartialInvoice} once the invoice is no longer in
+	 * Drafted ({@code DR}) or In-Progress ({@code IP}) state.
+	 * <p>
+	 * AC #14: the field is editable while {@code DocStatus IN ('DR','IP')}; readonly otherwise.
+	 * Server-side guard complements the AD_Field ReadOnlyLogic that controls the UI.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+	public void rejectIsPartialInvoiceChangeAfterComplete_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		assertIsPartialInvoiceEditableForDocStatus(invoice.getDocStatus());
+	}
+
+	/**
 	 * Package-private static helper — testable without Spring context.
-	 * Stub: always throws — implementation added in the BEFORE_CHANGE commit.
-	 *
-	 * @throws AdempiereException always (stub — makes readonly guard tests RED until implemented)
+	 * Throws {@link AdempiereException} if the given {@code docStatus} is not editable
+	 * (i.e., not {@code DR} or {@code IP}).
 	 */
 	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final String docStatus)
 	{
-		throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
-				.markAsUserValidationError();
+		final DocStatus status = DocStatus.ofNullableCode(docStatus);
+		if (status == null || !status.isDraftedOrInProgress())
+		{
+			throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
+					.markAsUserValidationError();
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
