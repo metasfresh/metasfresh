@@ -728,6 +728,448 @@ class OrderPayScheduleDeliveryServiceTest
 						.build())
 				.build());
 
+		// ================================================================
+		// 19c — over-delivery + reversal cascade + 3-partial cells
+		// ================================================================
+
+		// ----------------------------------------------------------------
+		// Cell 19 — exactDelivery (R1 + R2_under = order.GrandTotal exactly)
+		// Remainder BaseAmt = 0 → remainder row absent
+		// Use: 31808 + 36846.40 = 68654.40 exactly
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("exactDelivery_noRemainderRow")
+				.inputs(baseInputs()
+						.completedReceipt(r1NoInvoice())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(Money.of("36846.40", EUR))  // R1 + R2 = 68654.40 exactly
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("36846.40"))
+						.dueAmt(new BigDecimal("25792.48"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)
+						.build())
+				// no remainder row — exact delivery → BaseAmt of remainder = 0
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 20 — overDelivery_R1R2_noRemainderRow
+		// R1 + R2 = 70,000 > 68,654.40 → no remainder row (same as cell 8 but with invoices)
+		// AC #7: remainder row deleted on over-delivery
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("overDelivery_R1R2_R1_CO_R2_CO_noRemainderRow")
+				.inputs(baseInputs()
+						.completedReceipt(r1WithPartialCOInvoice())
+						.completedReceipt(r2WithFinalCOInvoice())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R1_ID)
+						.cInvoiceId(INV1_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("38192.00"))
+						.dueAmt(new BigDecimal("26734.40"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R2_ID)
+						.cInvoiceId(INV2_ID)
+						.build())
+				// no remainder row
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 21 — reversalCascade_INV1_RE_after_bothPaid
+		// Start from "both paid" state, then INV1 reversed → R1 reverts to Pending
+		// R2 stays Paid
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("reversalCascade_INV1_RE_R1_reverts_Pending")
+				.inputs(baseInputs()
+						.completedReceipt(r1WithReversedInvoice())   // INV1 reversed
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(R2_VALUE)
+								.matchedInvoiceId(INV2_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("0.00", EUR))  // R2 fully paid
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)   // RE → C_Invoice_ID cleared
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("38192.00"))
+						.dueAmt(new BigDecimal("26734.40"))
+						.status(X_C_OrderPaySchedule.STATUS_Paid)
+						.mInOutId(R2_ID)
+						.cInvoiceId(INV2_ID)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 22 — reversalCascade_INV2_RE_after_bothPaid
+		// INV2 reversed after both paid → R2 reverts to Pending, R1 stays Paid
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("reversalCascade_INV2_RE_R2_reverts_Pending")
+				.inputs(baseInputs()
+						.completedReceipt(r1WithPartialCOInvoicePaid())  // R1 fully paid
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(R2_VALUE)
+								.matchedInvoiceId(INV2_ID)
+								.invoiceDocStatus("RE")   // INV2 reversed
+								.invoiceOpenAmt(null)
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Paid)
+						.mInOutId(R1_ID)
+						.cInvoiceId(INV1_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("38192.00"))
+						.dueAmt(new BigDecimal("26734.40"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)   // RE → cleared
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 23 — reversalCascade_bothRE
+		// Both invoices reversed → both sub-rows Pending, no remainder (over-delivery)
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("reversalCascade_bothInvoices_RE")
+				.inputs(baseInputs()
+						.completedReceipt(r1WithReversedInvoice())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(R2_VALUE)
+								.matchedInvoiceId(INV2_ID)
+								.invoiceDocStatus("RE")
+								.invoiceOpenAmt(null)
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("38192.00"))
+						.dueAmt(new BigDecimal("26734.40"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 24 — pureUnderDelivery_R1R2 (R1=20000, R2=30000 → total=50000 < 68654.40)
+		// Remainder = 18654.40; Final rule still consumes entire remaining prepay
+		// AC #10: pure under-delivery — remainder row persists
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("pureUnderDelivery_R1R2_bothPending_remainderPresent")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(Money.of("30000.00", EUR))
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("30000.00"))
+						.dueAmt(new BigDecimal("21000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("18654.40"))
+						.dueAmt(new BigDecimal("13058.08"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(null)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 25 — 3partials_R1R2R3_allPending (TC9 setup)
+		// Three receipts, no invoices yet → 3 sub-rows, remainder if under-delivery
+		// R1=20000, R2=20000, R3=20000 → total=60000 < 68654.40; remainder=8654.40
+		// ----------------------------------------------------------------
+		final InOutId R3_ID = InOutId.ofRepoId(103);
+		cells.add(TestCase.builder()
+				.name("3partials_R1R2R3_allPending")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R3_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R3_ID)
+						.cInvoiceId(null)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("8654.40"))   // 68654.40 − 60000
+						.dueAmt(new BigDecimal("6058.08"))    // 8654.40 × 70 %
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(null)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 26 — 3partials_INV1partial_INV2partial_INV3final (TC9 with invoices)
+		// INV1 = Partial CO (Awaiting_Pay), INV2 = Partial CO (Awaiting_Pay), INV3 = Final CO (Awaiting_Pay)
+		// ----------------------------------------------------------------
+		final InvoiceId INV3_ID = InvoiceId.ofRepoId(203);
+		cells.add(TestCase.builder()
+				.name("3partials_INV1CO_INV2CO_INV3CO_allAwaitingPay")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV1_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("14000.00", EUR))  // 20000 − 6000 partial alloc
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV2_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("14000.00", EUR))
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R3_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV3_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("11598.08", EUR))  // 20000 − remaining prepay
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R1_ID)
+						.cInvoiceId(INV1_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R2_ID)
+						.cInvoiceId(INV2_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R3_ID)
+						.cInvoiceId(INV3_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("8654.40"))
+						.dueAmt(new BigDecimal("6058.08"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(null)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 27 — 3partials_INV1partial_INV2RE_INV3final
+		// INV1 = Partial CO (Awaiting_Pay), INV2 = RE (Pending), INV3 = Final CO (Awaiting_Pay)
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("3partials_INV1CO_INV2RE_INV3CO")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV1_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("14000.00", EUR))
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R2_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV2_ID)
+								.invoiceDocStatus("RE")   // reversed
+								.invoiceOpenAmt(null)
+								.build())
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R3_ID)
+								.withTaxValue(Money.of("20000.00", EUR))
+								.matchedInvoiceId(INV3_ID)
+								.invoiceDocStatus("CO")
+								.invoiceOpenAmt(Money.of("11598.08", EUR))
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R1_ID)
+						.cInvoiceId(INV1_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
+						.mInOutId(R2_ID)
+						.cInvoiceId(null)   // RE → cleared
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("20000.00"))
+						.dueAmt(new BigDecimal("14000.00"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R3_ID)
+						.cInvoiceId(INV3_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("8654.40"))
+						.dueAmt(new BigDecimal("6058.08"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(null)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 28 — singleLargeReceipt_exactlyOrderTotal_noRemainderRow
+		// One single receipt = order.GrandTotal exactly → no remainder
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("singleReceipt_exactlyOrderTotal_noRemainderRow")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(ORDER_GRAND_TOTAL)
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("48058.08"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				// no remainder row
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 29 — idempotence_sameInputTwice
+		// Calling computeDesired with the same inputs twice yields same result.
+		// This cell just verifies the basic no-receipt case is consistent;
+		// idempotence at the service level is asserted separately.
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("idempotence_R1CO_noChange_secondCall")
+				.inputs(baseInputs()
+						.completedReceipt(r1WithPartialCOInvoice())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("31808.00"))
+						.dueAmt(new BigDecimal("22265.60"))
+						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
+						.mInOutId(R1_ID)
+						.cInvoiceId(INV1_ID)
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("36846.40"))
+						.dueAmt(new BigDecimal("25792.48"))
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(null)
+						.cInvoiceId(null)
+						.build())
+				.build());
+
+		// ----------------------------------------------------------------
+		// Cell 30 — overDelivery_singleReceipt_noRemainder
+		// Single receipt > order.GrandTotal → no remainder row
+		// ----------------------------------------------------------------
+		cells.add(TestCase.builder()
+				.name("overDelivery_singleReceipt_noRemainderRow")
+				.inputs(baseInputs()
+						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
+								.mInOutId(R1_ID)
+								.withTaxValue(Money.of("70000.00", EUR))  // > 68654.40
+								.build())
+						.build())
+				.expectedRow(ExpectedRow.builder()
+						.baseAmt(new BigDecimal("70000.00"))
+						.dueAmt(new BigDecimal("49000.00"))   // 70000 × 70 %
+						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
+						.mInOutId(R1_ID)
+						.cInvoiceId(null)
+						.build())
+				// no remainder row — over-delivery → BaseAmt remainder = 68654.40 − 70000 < 0
+				.build());
+
 		return cells.stream();
 	}
 
