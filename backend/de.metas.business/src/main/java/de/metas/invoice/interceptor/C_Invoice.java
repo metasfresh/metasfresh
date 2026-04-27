@@ -10,6 +10,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.due_date.InvoiceDueDateProviderService;
@@ -43,6 +44,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
@@ -61,6 +63,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
+	/** AC #14: error key for the readonly-after-Complete guard on IsPartialInvoice. */
+	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete =
+			AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
@@ -75,6 +81,60 @@ public class C_Invoice // 03771
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	// ==========================================================================
+	// AC #11 — default IsPartialInvoice from C_DocType on BEFORE_NEW
+	// ==========================================================================
+
+	/**
+	 * Defaults {@code IsPartialInvoice} on a new invoice from its document type.
+	 * <p>
+	 * AC #11: a user creating a financial purchase invoice without touching the flag gets
+	 * Partial behaviour (the doctype default is 'Y'). The default direction prevents silent
+	 * over-allocation: forgetting to mark Final only strands prepay (visible, recoverable);
+	 * forgetting to mark Partial on the wrong default would silently consume all prepay on
+	 * the first invoice.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void defaultIsPartialInvoiceFromDocType_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		defaultIsPartialInvoiceFromDocType(invoice);
+	}
+
+	/**
+	 * Package-private static helper — testable without Spring context.
+	 * Copies {@code IsPartialInvoice} from the invoice's current document type to the invoice.
+	 * Falls back to {@code true} (Partial) when no doctype is set.
+	 */
+	static void defaultIsPartialInvoiceFromDocType(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final int docTypeId = invoice.getC_DocType_ID();
+		if (docTypeId > 0)
+		{
+			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
+			invoice.setIsPartialInvoice(docType.isPartialInvoice());
+		}
+		else
+		{
+			invoice.setIsPartialInvoice(true); // safe default: Partial
+		}
+	}
+
+	// ==========================================================================
+	// AC #14 — IsPartialInvoice readonly after Complete (guard stub; logic added in next commit)
+	// ==========================================================================
+
+	/**
+	 * Package-private static helper — testable without Spring context.
+	 * Stub: always throws — implementation added in the BEFORE_CHANGE commit.
+	 *
+	 * @throws AdempiereException always (stub — makes readonly guard tests RED until implemented)
+	 */
+	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final String docStatus)
+	{
+		throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
+				.markAsUserValidationError();
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
