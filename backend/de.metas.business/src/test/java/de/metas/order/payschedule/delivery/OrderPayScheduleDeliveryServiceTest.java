@@ -156,7 +156,8 @@ class OrderPayScheduleDeliveryServiceTest
 
 	/**
 	 * Builds a base {@link DeliveryStepInputs.DeliveryStepInputsBuilder} with canonical constants.
-	 * Callers add completedReceipts and set proformaPrepaymentPaymentId as needed.
+	 * Callers add completedReceipts via {@code .completedReceipt(...)} (Lombok {@code @Singular})
+	 * and set proformaPrepaymentPaymentId as needed.
 	 */
 	private static DeliveryStepInputs.DeliveryStepInputsBuilder baseInputs()
 	{
@@ -164,8 +165,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.orderId(DUMMY_ORDER_ID)
 				.orderGrandTotal(ORDER_GRAND_TOTAL)
 				.lcPercent(LC_PERCENT)
-				.deliveryPercent(DELIVERY_PERCENT)
-				.completedReceipts(new ArrayList<>());
+				.deliveryPercent(DELIVERY_PERCENT);
 	}
 
 	private static DeliveryStepInputs.ReceiptInfo r1NoInvoice()

@@ -29,6 +29,7 @@ import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -74,7 +75,7 @@ public class DeliveryStepInputs
 	 * All completed (DocStatus=CO) receipts for this order, ordered by movement date.
 	 * May be empty for orders where no goods have been received yet.
 	 */
-	@NonNull List<ReceiptInfo> completedReceipts;
+	@NonNull @Singular List<ReceiptInfo> completedReceipts;
 
 	/**
 	 * Payment ID of the iter-2 proforma prepayment payment, if the LC step has been paid.

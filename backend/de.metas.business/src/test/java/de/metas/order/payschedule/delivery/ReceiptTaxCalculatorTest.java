@@ -25,7 +25,6 @@ package de.metas.order.payschedule.delivery;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.tax.api.TaxCategoryId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
@@ -233,7 +232,8 @@ class ReceiptTaxCalculatorTest
 	private I_M_InOut createReceipt()
 	{
 		final I_M_InOut receipt = newInstance(I_M_InOut.class);
-		receipt.setC_Currency_ID(TEST_CURRENCY.getRepoId());
+		// Note: I_M_InOut does not carry C_Currency_ID directly.
+		// Currency is derived from the order lines in ReceiptTaxCalculator.
 		save(receipt);
 		return receipt;
 	}
