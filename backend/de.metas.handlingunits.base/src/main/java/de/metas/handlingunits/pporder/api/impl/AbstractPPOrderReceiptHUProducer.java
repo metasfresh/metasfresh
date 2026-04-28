@@ -47,6 +47,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -358,7 +359,10 @@ import java.util.Optional;
 				if (Check.isNotBlank(lotNumber)
 						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 				{
-					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
+					huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+							.attributeCode(AttributeConstants.ATTR_LotNumber)
+							.attributeValue(lotNumber)
+							.build());
 				}
 			}
 
@@ -373,17 +377,15 @@ import java.util.Optional;
 				huAttributes.setValue(AttributeConstants.ProductionDate, getProductionDate());
 			}
 
-			huAttributesBL.updateHUAttributeRecursive(
-					huId,
-					HUAttributeConstants.ATTR_PP_Order_ID,
-					ppOrderId.getRepoId(),
-					null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(HUAttributeConstants.ATTR_PP_Order_ID)
+					.attributeValue(ppOrderId.getRepoId())
+					.build());
 
-			huAttributesBL.updateHUAttributeRecursive(
-					huId,
-					AttributeConstants.ATTR_DateReceived,
-					getProductionDate(),
-					null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(AttributeConstants.ATTR_DateReceived)
+					.attributeValue(getProductionDate())
+					.build());
 		}
 
 		//

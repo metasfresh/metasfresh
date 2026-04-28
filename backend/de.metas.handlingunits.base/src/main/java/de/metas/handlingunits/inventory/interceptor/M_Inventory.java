@@ -1,8 +1,10 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
@@ -112,22 +114,18 @@ public class M_Inventory
 		}
 
 		final Inventory inventory = inventoryService.toInventory(inventoryRecord);
-		for (final InventoryLine line : inventory.getLines())
+		final ImmutableSet<HuId> huIds = inventory.getHuIds();
+		if (huIds.isEmpty())
 		{
-			for (final InventoryLineHU lineHU : line.getInventoryLineHUs())
-			{
-				final HuId huId = lineHU.getHuId();
-				if (huId == null)
-				{
-					continue;
-				}
-				huAttributesBL.updateHUAttributeRecursiveIfNotSet(
-						huId,
-						AttributeConstants.ATTR_DateReceived,
-						inventoryRecord.getMovementDate(),
-						null);
-			}
+			return;
 		}
+		huAttributesBL.updateHUAttributeRecursive(
+				huIds,
+				HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_DateReceived)
+						.attributeValue(inventoryRecord.getMovementDate())
+						.onlyIfNotSet(true)
+						.build());
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)

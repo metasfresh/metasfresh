@@ -36,6 +36,7 @@ import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Optional;
 
 public interface IHUAttributesBL extends ISingletonService
@@ -79,28 +80,21 @@ public interface IHUAttributesBL extends ISingletonService
 	void updateHUAttribute(@NonNull final IHUContext huContext, @NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
 	/**
-	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
+	 * Iterates the HU-tree of the given HU and applies {@code request}. See
+	 * {@link HUAttributeUpdateRequest} for the available options
+	 * ({@code onlyHUStatus}, {@code onlyIfNotSet}).
 	 * <p>
-	 * Note: for complex scenarios (distributing a weight onto an HU-tree), see {@link de.metas.handlingunits.attribute.propagation.IHUAttributePropagator} and {@link de.metas.handlingunits.attribute.strategy.IAttributeStrategy}.
-	 *
-	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
+	 * For complex scenarios (distributing a weight onto an HU-tree) see
+	 * {@link de.metas.handlingunits.attribute.propagation.IHUAttributePropagator} and
+	 * {@link de.metas.handlingunits.attribute.strategy.IAttributeStrategy}.
 	 */
-	void updateHUAttributeRecursive(
-			@NonNull HuId huId,
-			@NonNull AttributeCode attributeId,
-			@Nullable Object attributeValue,
-			@Nullable String onlyHUStatus);
+	void updateHUAttributeRecursive(@NonNull HuId huId, @NonNull HUAttributeUpdateRequest request);
 
-	/**
-	 * Like {@link #updateHUAttributeRecursive(HuId, AttributeCode, Object, String)} but only updates HUs whose
-	 * current attribute value is {@code null} — HUs that already carry a value are left untouched. Useful for
-	 * stamping a default that should not overwrite a date set on a prior receipt or import.
-	 */
-	void updateHUAttributeRecursiveIfNotSet(
-			@NonNull HuId huId,
-			@NonNull AttributeCode attributeCode,
-			@Nullable Object attributeValue,
-			@Nullable String onlyHUStatus);
+	/** Same as {@link #updateHUAttributeRecursive(HuId, HUAttributeUpdateRequest)} but skips re-loading the HU. */
+	void updateHUAttributeRecursive(@NonNull I_M_HU hu, @NonNull HUAttributeUpdateRequest request);
+
+	/** Bulk variant — apply {@code request} to each HU in {@code huIds}. */
+	void updateHUAttributeRecursive(@NonNull Collection<HuId> huIds, @NonNull HUAttributeUpdateRequest request);
 
 	/**
 	 * @return quality discount percent (between 0...100); never return null

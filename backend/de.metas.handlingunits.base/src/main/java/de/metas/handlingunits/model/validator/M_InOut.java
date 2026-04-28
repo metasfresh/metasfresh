@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
@@ -52,7 +53,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -60,19 +60,14 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -94,7 +89,6 @@ public class M_InOut
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
-	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final PickingJobService pickingJobService;
 
@@ -149,7 +143,7 @@ public class M_InOut
 		emptyPickingSlots(shipment);
 		generateEmptiesMovementForEmptiesInOut(shipment);
 		updateAttributes(shipment);
-		setReceivedDateOnReceiptHUs(shipment);
+		huInOutBL.setReceivedDateOnReceiptHUs(shipment);
 	}
 
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
@@ -167,84 +161,27 @@ public class M_InOut
 		}
 
 		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(shipment);
+		final HUAttributeUpdateRequest request = HUAttributeUpdateRequest.builder()
+				.attributeCode(AttributeConstants.WarrantyStartDate)
+				.attributeValue(shipment.getMovementDate())
+				.build();
 		for (final I_M_HU hu : hus)
 		{
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
+			huAttributesBL.updateHUAttributeRecursive(hu, request);
 		}
 	}
 
 	/**
-	 * Stamp {@link AttributeConstants#ATTR_DateReceived} with the receipt's {@code MovementDate} on each receipt
-	 * line's ASI. Runs at {@code BEFORE_COMPLETE}, declared before {@link #validateCustomerReturns(I_M_InOut)}
-	 * so it runs first within the same timing — that way HUs created downstream by
-	 * {@code CustomerReturnHUsCreateCommand} (or by inventory's {@code syncToHUs}) inherit the date via the
-	 * framework's existing line-ASI → HU propagation. Complementary to {@link #setReceivedDateOnReceiptHUs},
-	 * which catches HUs that pre-existed before completion.
+	 * Stamps {@code HU_DateReceived} on every receipt line's ASI before completion. The framework currently
+	 * invokes interceptor methods within the same class+timing in declaration order, so this method —
+	 * declared before {@link #validateCustomerReturns(I_M_InOut)} — runs first; HUs subsequently created by
+	 * {@code CustomerReturnHUsCreateCommand} inherit the date via the existing line-ASI → HU propagation.
+	 * Complementary to {@link IHUInOutBL#setReceivedDateOnReceiptHUs(I_M_InOut)} at AFTER_COMPLETE.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void setReceivedDateOnReceiptLineASIs(@NonNull final I_M_InOut inout)
 	{
-		final boolean isReceiptIntoStock = (!inout.isSOTrx() && !inOutBL.isVendorReturn(inout))
-				|| returnsServiceFacade.isCustomerReturn(inout);
-		if (!isReceiptIntoStock)
-		{
-			return;
-		}
-
-		final Timestamp movementDate = inout.getMovementDate();
-		for (final org.compiere.model.I_M_InOutLine line : inOutBL.getLines(inout))
-		{
-			setHUDateReceivedOnLineASI(line, movementDate);
-		}
-	}
-
-	private void setHUDateReceivedOnLineASI(@NonNull final org.compiere.model.I_M_InOutLine line, @Nullable final Timestamp value)
-	{
-		final AttributeSetInstanceId existingAsiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
-		final AttributeSetInstanceId newAsiId;
-		if (existingAsiId.isRegular())
-		{
-			newAsiId = attributeSetInstanceBL.setAttributeInstanceValue(existingAsiId, AttributeConstants.ATTR_DateReceived, value);
-		}
-		else
-		{
-			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
-			final I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASI(productId);
-			newAsiId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
-			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(newAsiId, AttributeConstants.ATTR_DateReceived, value);
-		}
-		if (newAsiId.getRepoId() != line.getM_AttributeSetInstance_ID())
-		{
-			line.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
-			InterfaceWrapperHelper.saveRecord(line);
-		}
-	}
-
-	/**
-	 * Stamp {@link AttributeConstants#ATTR_DateReceived} with the receipt's {@code MovementDate} on every assigned
-	 * HU. Runs for vendor receipts and customer returns; skipped for shipments and vendor returns. Always overwrites
-	 * so the attribute reflects when the HU last became available at this locator. Complementary to
-	 * {@link #setReceivedDateOnReceiptLineASIs} — the BEFORE_COMPLETE line-ASI write covers HUs created during
-	 * completion, this catches HUs that already existed (e.g. vendor receipt schedule HUs created upstream).
-	 */
-	private void setReceivedDateOnReceiptHUs(@NonNull final I_M_InOut inout)
-	{
-		final boolean isReceiptIntoStock = (!inout.isSOTrx() && !inOutBL.isVendorReturn(inout))
-				|| returnsServiceFacade.isCustomerReturn(inout);
-		if (!isReceiptIntoStock)
-		{
-			return;
-		}
-
-		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
-		for (final I_M_HU hu : hus)
-		{
-			huAttributesBL.updateHUAttributeRecursive(
-					HuId.ofRepoId(hu.getM_HU_ID()),
-					AttributeConstants.ATTR_DateReceived,
-					inout.getMovementDate(),
-					null);
-		}
+		huInOutBL.setReceivedDateOnReceiptLineASIs(inout);
 	}
 
 	private void setHUStatusShippedForShipment(final I_M_InOut shipment)
