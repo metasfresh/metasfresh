@@ -53,19 +53,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderPayScheduleDeliveryService
 {
-	@NonNull private final OrderPayScheduleDeliveryRepository repository;
+	@NonNull private final OrderPayScheduleDeliveryRepository repo;
 
 	/**
-	 * Recomputes the Delivery step for the given order.
+	 * Sole-writer entry point. Idempotent and total.
 	 *
-	 * <p>Loads inputs via the repository, calls {@link #computeDesired(DeliveryStepInputs)},
-	 * and writes the result back.
+	 * <p>Loads current truth from the repository, applies the dormancy guard (R13 / AC #22),
+	 * then derives the desired set of Delivery sub-rows and converges the DB to that set.
 	 *
-	 * @throws UnsupportedOperationException TODO Task 21c — wire to repository
+	 * <p><b>Dormancy guard (R13 / AC #22)</b>: iter-3 only acts on orders with an active
+	 * proforma prepayment allocation (iter-2 LC step). Without that allocation the schedule
+	 * splitting makes no sense — leave any existing single Delivery row untouched.
 	 */
 	public void recomputeDeliverySteps(@NonNull final OrderId orderId)
 	{
-		throw new UnsupportedOperationException("TODO Task 21c");
+		final DeliveryStepInputs inputs = repo.loadInputs(orderId);
+		// Dormancy guard (R13 / AC #22): iter-3 dormant for non-proforma orders.
+		// Without an iter-2 prepayment there is nothing to allocate; splitting the
+		// Delivery row would produce rows with no proforma context.
+		if (inputs.getProformaPrepaymentPaymentId() == null)
+		{
+			return;
+		}
+		final List<OrderPayScheduleDeliveryRepository.DesiredDeliveryRow> desired = computeDesired(inputs);
+		repo.writeDeliveryRows(orderId, desired);
 	}
 
 	/**
