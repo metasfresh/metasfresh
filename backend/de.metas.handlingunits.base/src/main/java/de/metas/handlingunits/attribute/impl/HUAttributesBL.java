@@ -186,7 +186,20 @@ public class HUAttributesBL implements IHUAttributesBL
 			return;
 		}
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
-		updateHUAttributeRecursive(hu, attribute, attributeValue, onlyHUStatus);
+		updateHUAttributeRecursive0(hu, attribute, attributeValue, onlyHUStatus, false);
+	}
+
+	@Override
+	public void updateHUAttributeRecursiveIfNotSet(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveActiveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exist or is inactive; -> do nothing", attributeCode.getCode());
+			return;
+		}
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		updateHUAttributeRecursive0(hu, attribute, attributeValue, onlyHUStatus, true);
 	}
 
 	@Override
@@ -195,6 +208,15 @@ public class HUAttributesBL implements IHUAttributesBL
 										   final I_M_Attribute attribute,
 										   final Object attributeValue,
 										   final String onlyHUStatus)
+	{
+		updateHUAttributeRecursive0(hu, attribute, attributeValue, onlyHUStatus, false);
+	}
+
+	private void updateHUAttributeRecursive0(@NonNull final I_M_HU rootHU,
+											 @NonNull final I_M_Attribute attribute,
+											 @Nullable final Object attributeValue,
+											 @Nullable final String onlyHUStatus,
+											 final boolean onlyIfNotSet)
 	{
 		final ILoggable loggable = Loggables.get();
 
@@ -214,7 +236,8 @@ public class HUAttributesBL implements IHUAttributesBL
 				{
 					final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(currentHU);
 
-					if (attributeStorage.hasAttribute(attribute))
+					if (attributeStorage.hasAttribute(attribute)
+							&& (!onlyIfNotSet || attributeStorage.getValue(attribute) == null))
 					{
 						attributeStorage.setValueNoPropagate(attribute, attributeValue);
 						attributeStorage.saveChangesIfNeeded();
@@ -226,7 +249,7 @@ public class HUAttributesBL implements IHUAttributesBL
 				return Result.CONTINUE;
 			}
 		});
-		iterator.iterate(hu);
+		iterator.iterate(rootHU);
 	}
 
 	@Override
@@ -255,11 +278,10 @@ public class HUAttributesBL implements IHUAttributesBL
 		return qualityDiscountPercent.divide(Env.ONEHUNDRED);
 	}
 
-	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
+	private IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		return attributeStorage;
+		return attributeStorageFactory.getAttributeStorage(hu);
 	}
 
 	@Override

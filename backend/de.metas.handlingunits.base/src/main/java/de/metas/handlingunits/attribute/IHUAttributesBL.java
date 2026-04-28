@@ -92,6 +92,17 @@ public interface IHUAttributesBL extends ISingletonService
 			@Nullable String onlyHUStatus);
 
 	/**
+	 * Like {@link #updateHUAttributeRecursive(HuId, AttributeCode, Object, String)} but only updates HUs whose
+	 * current attribute value is {@code null} — HUs that already carry a value are left untouched. Useful for
+	 * stamping a default that should not overwrite a date set on a prior receipt or import.
+	 */
+	void updateHUAttributeRecursiveIfNotSet(
+			@NonNull HuId huId,
+			@NonNull AttributeCode attributeCode,
+			@Nullable Object attributeValue,
+			@Nullable String onlyHUStatus);
+
+	/**
 	 * @return quality discount percent (between 0...100); never return null
 	 */
 	BigDecimal getQualityDiscountPercent(I_M_HU hu);

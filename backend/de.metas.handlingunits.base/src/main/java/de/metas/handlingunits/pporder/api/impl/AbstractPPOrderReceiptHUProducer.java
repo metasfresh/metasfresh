@@ -231,7 +231,7 @@ import java.util.Optional;
 	}
 
 	@Override
-	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 	{
 		this.receiveUsingSpec = HUPIItemProductLUTUSpec.lu(tuPIItemProductId, luPIItemId);
 		return receiveHUs(qtyToReceive);
@@ -377,6 +377,12 @@ import java.util.Optional;
 					huId,
 					HUAttributeConstants.ATTR_PP_Order_ID,
 					ppOrderId.getRepoId(),
+					null);
+
+			huAttributesBL.updateHUAttributeRecursive(
+					huId,
+					AttributeConstants.ATTR_DateReceived,
+					getProductionDate(),
 					null);
 		}
 
@@ -741,14 +747,14 @@ import java.util.Optional;
 		@NonNull HUPIItemProductId tuPIItemProductId;
 		@Nullable HuPackingInstructionsItemId luPIItemId;
 
-		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull HUPIItemProductId tuPIItemProductId)
+		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull final HUPIItemProductId tuPIItemProductId)
 		{
 			return tuPIItemProductId.isVirtualHU()
 					? VIRTUAL
 					: new HUPIItemProductLUTUSpec(tuPIItemProductId, null);
 		}
 
-		public static HUPIItemProductLUTUSpec lu(@NonNull HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+		public static HUPIItemProductLUTUSpec lu(@NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 		{
 			return new HUPIItemProductLUTUSpec(tuPIItemProductId, luPIItemId);
 		}
