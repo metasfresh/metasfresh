@@ -29,8 +29,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -69,7 +67,6 @@ public class C_Payment
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final CurrencyRepository currencyRepository;
-	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@Init
 	public void registerCallout()
@@ -100,12 +97,6 @@ public class C_Payment
 		if (InvoiceId.ofRepoIdOrNull(record.getProforma_Invoice_ID()) != null)
 		{
 			return;
-		}
-
-		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(record.getC_OrderPaySchedule_ID());
-		if (orderPayScheduleId != null)
-		{
-			return; // do not update form order, since all amounts are calculated
 		}
 
 		final I_C_Order order = orderDAO.getById(orderId);
@@ -186,19 +177,4 @@ public class C_Payment
 		}
 		invoiceBL.scheduleUpdateIsPaid(proformaInvoiceId);
 	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void updateOrderPayScheduleStatus(final I_C_Payment payment)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(payment.getC_Order_ID());
-		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(payment.getC_OrderPaySchedule_ID());
-
-		if (orderId == null || orderPayScheduleId == null)
-		{
-			return;
-		}
-
-		orderPayScheduleService.markAsPaid(orderId, orderPayScheduleId);
-	}
-
 }
