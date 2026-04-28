@@ -209,7 +209,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 	{
 		// Bank account has the street and country populated. Under the new contract
 		// this is emitted as-is — previously the entire address element was dropped
-		// because isAddressComplete() returned false.
+		// because the bank-account address was not "complete" (street + zip + city).
 		final I_SEPA_Export sepaExport = createSEPAExport("Creditor", "CRED1", "INGBNL2A");
 		createSEPAExportLine(sepaExport,
 				"001", "NL31INGB0000000044", "INGBNL2A",

@@ -109,6 +109,7 @@ public class SepaUtils
 	 * when both are blank. Used to assemble the "{zip} {city}" address line on a SEPA PostalAddress
 	 * without emitting "null null" / " " when one side is missing.
 	 */
+	@NonNull
 	public static String joinNonBlank(@Nullable final String a, @Nullable final String b)
 	{
 		final boolean hasA = Check.isNotBlank(a);
@@ -130,19 +131,22 @@ public class SepaUtils
 	 */
 	public static void assertValidAccountCountry(@NonNull final BankAccount bankAccount)
 	{
+		final int bankAccountId = bankAccount.getId().getRepoId();
 		final String country = bankAccount.getAccountCountry();
 		if (Check.isBlank(country))
 		{
-			throw new SepaMarshallerException(
+			throw new SepaMarshallerException(String.format(
 					"C_BP_BankAccount has an address but no country set; A_Country is required"
-							+ " (C_BP_BankAccount_ID=" + bankAccount.getId().getRepoId() + ")");
+							+ " (C_BP_BankAccount_ID=%d)",
+					bankAccountId));
 		}
 		if (!ISO_3166_ALPHA2.matcher(country).matches())
 		{
-			throw new SepaMarshallerException(
-					"C_BP_BankAccount.A_Country '" + country + "' is not a valid ISO-3166 alpha-2 country code;"
+			throw new SepaMarshallerException(String.format(
+					"C_BP_BankAccount.A_Country '%s' is not a valid ISO-3166 alpha-2 country code;"
 							+ " expected two uppercase letters"
-							+ " (C_BP_BankAccount_ID=" + bankAccount.getId().getRepoId() + ")");
+							+ " (C_BP_BankAccount_ID=%d)",
+					country, bankAccountId));
 		}
 	}
 }

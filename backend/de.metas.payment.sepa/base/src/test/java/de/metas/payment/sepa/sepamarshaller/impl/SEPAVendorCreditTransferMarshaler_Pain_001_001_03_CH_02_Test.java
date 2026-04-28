@@ -683,21 +683,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	}
 
 	@Test
-	public void createStructuredPstlAdr_bankAccountAuthoritative_countryOnly()
+	public void createStructuredPstlAdr_bankAccountAuthoritative_countryOnly_fallsBackToLocation()
 	{
-		// Country alone is enough to make the bank account "non-empty" under
-		// isAddressEmpty(); the result is a PostalAddress with only Ctry set.
-		// Documents the contract for this corner case.
-		final BankAccount bankAccount = bankAccount(null, null, null, "CH");
+		// Country alone is NOT a usable address; isAddressEmpty() ignores it on
+		// purpose so we don't emit a <PstlAdr> with only a <Ctry> child (which
+		// would be schema-invalid). The partner billing location is used instead.
+		// The bank-account country value is irrelevant here — the bank-account
+		// path is never entered, so it is neither validated nor read.
+		final BankAccount bankAccount = bankAccount(null, null, null, "ZZ");
 		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
 
 		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation);
 
+		// Resolved from the location — bank-account country is ignored.
 		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
-		assertThat(pstlAdr.getStrtNm()).isNull();
-		assertThat(pstlAdr.getBldgNb()).isNull();
-		assertThat(pstlAdr.getPstCd()).isNull();
-		assertThat(pstlAdr.getTwnNm()).isNull();
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Partnerstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("5");
+		assertThat(pstlAdr.getPstCd()).isEqualTo("3000");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Bern");
 	}
 
 }

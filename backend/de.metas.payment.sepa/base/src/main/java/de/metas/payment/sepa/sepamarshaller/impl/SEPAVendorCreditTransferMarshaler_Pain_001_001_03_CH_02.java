@@ -782,7 +782,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			if (Check.isNotBlank(bpBankAccount.getAccountZip()))
 			{
-				pstlAdr.setPstCd(bpBankAccount.getAccountZip());
+				pstlAdr.setPstCd(SepaUtils.replaceForbiddenChars(bpBankAccount.getAccountZip()));
 			}
 
 			if (Check.isNotBlank(bpBankAccount.getAccountCity()))
@@ -809,8 +809,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		splitStreetAndNumber(SepaUtils.replaceForbiddenChars(location.getAddress1()), pstlAdr);
 
 		pstlAdr.setCtry(countryDAO.getById(CountryId.ofRepoId(location.getC_Country_ID())).getCountryCode());
-		pstlAdr.setPstCd(location.getPostal());
-		pstlAdr.setTwnNm(SepaUtils.replaceForbiddenChars((location.getCity())));
+		pstlAdr.setPstCd(SepaUtils.replaceForbiddenChars(location.getPostal()));
+		pstlAdr.setTwnNm(SepaUtils.replaceForbiddenChars(location.getCity()));
 
 		return pstlAdr;
 	}
