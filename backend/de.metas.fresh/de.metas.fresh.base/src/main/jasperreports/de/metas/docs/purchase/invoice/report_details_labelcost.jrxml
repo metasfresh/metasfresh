@@ -57,7 +57,6 @@
 	</background>
 	<detail>
 		<band height="12" splitType="Stretch">
-			<printWhenExpression><![CDATA[!$F{ishu}]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="263" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<printWhenExpression><![CDATA[$F{label}!=null]]></printWhenExpression>
