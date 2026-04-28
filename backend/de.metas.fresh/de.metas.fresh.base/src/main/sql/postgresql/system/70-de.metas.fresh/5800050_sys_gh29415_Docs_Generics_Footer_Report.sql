@@ -1,9 +1,11 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric,
-                                                                                       character(1))
+                                                                                       character(1),
+                                                                                       IN p_ad_language character varying)
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
-                                                                               p_isFactoringPartner character(1) DEFAULT 'N')
+                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
+                                                                               IN p_ad_language     character varying DEFAULT 'de_DE')
     RETURNS TABLE
             (
                 org_name              character varying,
@@ -106,7 +108,7 @@ FROM ad_org org
          INNER JOIN LATERAL report.Fresh_Org_BankAccount(org.AD_Org_ID) org_ba ON TRUE
          LEFT OUTER JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
          LEFT OUTER JOIN c_country country ON loc.c_country_id = country.c_country_id
-         LEFT OUTER JOIN c_country_trl country_trl ON country_trl.c_country_id = country.c_country_id AND country_trl.ad_language = 'de_DE'
+         LEFT OUTER JOIN c_country_trl country_trl ON country_trl.c_country_id = country.c_country_id AND country_trl.ad_language = p_ad_language
          LEFT OUTER JOIN c_bp_bankaccount bpb ON org_bp.c_bpartner_id = bpb.c_bpartner_id
          LEFT OUTER JOIN c_bank bank ON bpb.c_bank_id = bank.c_bank_id
          LEFT OUTER JOIN C_Currency cur ON bpb.C_Currency_ID = cur.C_Currency_ID
