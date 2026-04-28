@@ -583,6 +583,23 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 		</band>
+		<band height="50">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="5e4ea1f0-99ac-41ea-8749-7c48317eb78d">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoiceline_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details_labelcost.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>
