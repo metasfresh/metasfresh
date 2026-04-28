@@ -1,27 +1,8 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Add QtyCUsPerTU to DesadvLineWithNoPacking entries
+-- so that clearing centers (e.g. Migros via Eddyson) can always generate a QTY+59 segment,
+-- even for unshipped/unpacked order lines.
+-- Source: edi_desadvline.QtyItemCapacity (copied from c_orderline.QtyItemCapacity at DESADV creation time)
 
--- Function for desadv lines with no pack
--- Ensure edi_desadv_line_object_v is defined and efficient
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
@@ -46,17 +27,8 @@ BEGIN
              -- Crucial: Ensure v_edi_desadv_line_object is efficient or inline its logic.
              LEFT JOIN "de.metas.edi".edi_desadv_line_object_v line_obj_no_pack ON line_obj_no_pack.edi_desadvline_id = edl_lat.edi_desadvline_id
              -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
-             -- LATERAL + LIMIT 1 prevents row multiplication when one edi_desadvline maps to multiple m_inoutline records in the same shipment.
-             LEFT JOIN LATERAL (
-                 SELECT diol_inner.desadvlinetotalqtydelivered
-                 FROM m_inoutline iol_diol
-                          JOIN edi_desadvline_inoutline diol_inner
-                               ON diol_inner.m_inoutline_id = iol_diol.m_inoutline_id
-                              AND diol_inner.edi_desadvline_id = edl_lat.edi_desadvline_id
-                 WHERE iol_diol.m_inout_id = p_m_inout_id
-                   AND iol_diol.edi_desadvline_id = edl_lat.edi_desadvline_id
-                 LIMIT 1
-             ) diol ON TRUE
+             LEFT JOIN m_inoutline iol_diol ON iol_diol.m_inout_id = p_m_inout_id AND iol_diol.edi_desadvline_id = edl_lat.edi_desadvline_id
+             LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = iol_diol.m_inoutline_id AND diol.edi_desadvline_id = edl_lat.edi_desadvline_id
     WHERE edl_lat.edi_desadv_id = p_edi_desadv_id -- Filter by parameter!
       AND edl_lat.isactive = 'Y'
       -- Include lines that either have a shipment line in this InOut (shipped but no pack),

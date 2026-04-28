@@ -25,7 +25,6 @@ package de.metas.edi.api.impl.pack;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
@@ -57,6 +56,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.product.asidata.ProductASIData;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -81,9 +82,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -112,22 +111,24 @@ public class EDIDesadvPackService
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
+	private final ProductASIDataRepository productASIDataRepository;
 
 	@VisibleForTesting
 	public static EDIDesadvPackService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
+		final ProductASIDataRepository productASIDataRepository = new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class));
 		return SpringContextHolder.getBeanOrSupply(EDIDesadvPackService.class,
-				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(),
-						EDIDesadvPackRepository.newInstanceForUnitTesting())
+				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(productASIDataRepository),
+						EDIDesadvPackRepository.newInstanceForUnitTesting(),
+						productASIDataRepository)
 		);
 	}
 
@@ -317,14 +318,11 @@ public class EDIDesadvPackService
 		final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
 		if (huPackingMaterials.size() == 1)
 		{
-			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
-					.retrieveBPartnerProductAssociation(Env.getCtx(),
-							bPartnerId,
-							ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-							OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
-			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+			final ProductId packingMaterialProductId = ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID());
+			final ProductASIData asiData = productASIDataRepository.retrieveBestMatch(packingMaterialProductId, bPartnerId, null);
+			if (asiData != null && isNotBlank(asiData.getGtin()))
 			{
-				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
+				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(asiData.getGtin());
 			}
 		}
 		else

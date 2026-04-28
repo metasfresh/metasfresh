@@ -1,5 +1,9 @@
--- Required view for desadv line objects
-CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v AS
+-- me03#29063: Update edi_desadv_line_object_v to use M_Product_ASI_Data instead of C_BPartner_Product
+-- for GTIN/ProductNo resolution. Uses content-based ASI subset matching via IsASIAttributesKeySubset().
+
+DROP VIEW IF EXISTS "de.metas.edi".edi_desadv_line_object_v$new;
+
+CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v$new AS
 SELECT dl.edi_desadvline_id,
        JSONB_BUILD_OBJECT(
                'Product', JSONB_BUILD_OBJECT(
@@ -58,3 +62,13 @@ FROM edi_desadvline dl
     ORDER BY seqno
     LIMIT 1 ) asi_data ON TRUE
 ;
+
+SELECT db_alter_view(
+    '"de.metas.edi".edi_desadv_line_object_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_desadv_line_object_v$new')
+       AND views.table_schema = 'de.metas.edi')
+);
+
+DROP VIEW IF EXISTS "de.metas.edi".edi_desadv_line_object_v$new;
