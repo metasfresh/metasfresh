@@ -6,34 +6,44 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import HazardIcon from '../HazardIcon';
 import AllergenIcon from '../AllergenIcon';
 import * as uiTrace from '../../utils/ui_trace';
+import { trl } from '../../utils/translations';
+import { computeId, computeTestId } from '../../utils/testing_support';
+import { WorkflowLauncherIndicator } from '../../constants/WorkflowLauncherIndicator';
 
 const SYMBOLS_SIZE_PX = 25;
 
 const ButtonWithIndicator = ({
-  caption,
+  id: idParam,
+  testId: testIdParam,
+  caption: captionParam,
+  captionKey,
   showWarningSign,
   typeFASIconName,
   hazardSymbols = null,
   allergens = null,
   isDanger,
+  indicator1,
+  indicator2,
   completeStatus,
   disabled,
   onClick,
   children,
   additionalCssClass,
+  ...otherProps
 }) => {
-  const indicatorClassName = getIndicatorClassName(completeStatus);
+  const testId = computeTestId({ testIdParam, captionKey });
+  const id = computeId({ idParam, testIdParam, captionKey });
+  const caption = computeCaption({ caption: captionParam, captionKey });
 
   const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
-
   const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
-
   const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
-
   const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
   const fireOnClick = uiTrace.traceFunction(onClick, {
     eventName: 'buttonClick',
+    componentId: id,
+    testId,
     caption,
     showWarningSign,
     completeStatus,
@@ -41,10 +51,15 @@ const ButtonWithIndicator = ({
     hazardSymbols,
     allergens,
     isDanger,
+    otherProps,
   });
 
   return (
     <button
+      id={id}
+      data-testid={testId}
+      data-left-icon={typeFASIconName}
+      {...extractTestDataProps(otherProps)}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
       onClick={fireOnClick}
@@ -92,37 +107,25 @@ const ButtonWithIndicator = ({
             {children}
           </div>
         </div>
-        {indicatorClassName && (
-          <div className="right-btn-side">
-            <span className={indicatorClassName} />
-          </div>
-        )}
+        <Indicators completeStatus={completeStatus} indicator1={indicator1} indicator2={indicator2} />
       </div>
     </button>
   );
 };
 
-const getIndicatorClassName = (completeStatus) => {
-  switch (completeStatus) {
-    case CompleteStatus.NOT_STARTED:
-      return 'indicator-red';
-    case CompleteStatus.COMPLETED:
-      return 'indicator-green';
-    case CompleteStatus.IN_PROGRESS:
-      return 'indicator-yellow';
-    default:
-      return '';
-  }
-};
-
 ButtonWithIndicator.propTypes = {
-  caption: PropTypes.string.isRequired,
+  id: PropTypes.string,
+  testId: PropTypes.string,
+  caption: PropTypes.string,
+  captionKey: PropTypes.string,
   showWarningSign: PropTypes.bool,
   typeFASIconName: PropTypes.string,
   hazardSymbols: PropTypes.array,
   allergens: PropTypes.array,
   isDanger: PropTypes.bool,
   completeStatus: PropTypes.string,
+  indicator1: PropTypes.string,
+  indicator2: PropTypes.string,
   disabled: PropTypes.bool,
   children: PropTypes.node,
   additionalCssClass: PropTypes.string,
@@ -130,3 +133,123 @@ ButtonWithIndicator.propTypes = {
 };
 
 export default ButtonWithIndicator;
+
+//
+//
+//
+//
+//
+
+const Indicators = ({ completeStatus, indicator1, indicator2 }) => {
+  const hasIndicators = completeStatus || indicator1 || indicator2;
+  if (!hasIndicators) return null;
+
+  const isJustifyContentInCenter = completeStatus && !indicator1 && !indicator2;
+
+  return (
+    <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
+      <Indicator
+        key={`indicator_${indicator1}_${completeStatus}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
+        testId="indicator"
+        indicator={indicator1}
+        completeStatus={completeStatus}
+      />
+      <Indicator
+        key={`indicator_${indicator2}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
+        testId="indicator2"
+        indicator={indicator2}
+      />
+    </div>
+  );
+};
+Indicators.propTypes = {
+  completeStatus: PropTypes.string,
+  indicator1: PropTypes.string,
+  indicator2: PropTypes.string,
+};
+
+//
+//
+//
+//
+//
+
+const Indicator = ({ testId: testIdParam, indicator, completeStatus }) => {
+  let testId = testIdParam;
+  let className = null;
+  if (indicator) {
+    switch (indicator) {
+      case 'none':
+      case '-':
+        className = 'indicator-box';
+        // in case of placeholder element we are not setting the "data-testid",
+        // because that would be matched in playwright tests as an existing indicator.
+        testId = undefined;
+        break;
+      case WorkflowLauncherIndicator.JOB_ALREADY_STARTED:
+        className = 'indicator-box fas fa-lock';
+        break;
+      case WorkflowLauncherIndicator.STOCK_NOT_AVAILABLE:
+        className = 'indicator-box indicator-color-red fas fa-warehouse';
+        break;
+      case WorkflowLauncherIndicator.STOCK_PARTIALLY_AVAILABLE:
+        className = 'indicator-box indicator-color-yellow fas fa-warehouse';
+        break;
+      case WorkflowLauncherIndicator.STOCK_FULLY_AVAILABLE:
+        className = 'indicator-box indicator-color-green fas fa-warehouse';
+        break;
+    }
+  } else if (completeStatus) {
+    switch (completeStatus) {
+      case CompleteStatus.NOT_STARTED:
+        className = 'indicator-box indicator-color-red fas fa-circle';
+        break;
+      case CompleteStatus.IN_PROGRESS:
+        className = 'indicator-box indicator-color-yellow fas fa-circle-half-stroke';
+        break;
+      case CompleteStatus.COMPLETED:
+        className = 'indicator-box indicator-color-green fas fa-circle';
+        break;
+    }
+  }
+
+  if (!className) return null;
+
+  // IMPORTANT: Wrap in <span> because FontAwesome mutates the <i> into <svg>; without a stable wrapper React throws removeChild errors.
+  return (
+    <span>
+      <i data-testid={testId} className={className} />
+    </span>
+  );
+};
+Indicator.propTypes = {
+  testId: PropTypes.string,
+  indicator: PropTypes.string,
+  completeStatus: PropTypes.string,
+};
+
+//
+//
+//
+//
+//
+
+const computeCaption = ({ captionKey, caption }) => {
+  if (caption) {
+    return caption;
+  } else if (captionKey) {
+    return trl(captionKey);
+  } else {
+    return '';
+  }
+};
+
+const extractTestDataProps = (props) => {
+  if (!props) return {};
+  return Object.keys(props).reduce((acc, key) => {
+    if (key.startsWith('data')) {
+      acc[key] = props[key];
+    }
+    return acc;
+  }, {});
+};

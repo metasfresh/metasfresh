@@ -22,19 +22,34 @@
 
 package de.metas.postgrest.config;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 import java.time.Duration;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class PostgRESTConfig
 {
+	@Nullable
+	PostgRESTConfigId id;
+
+	@NonNull
+	OrgId orgId;
+
 	@NonNull
 	String baseURL;
 
+	@Nullable
 	Duration connectionTimeout;
 
+	@Nullable
 	Duration readTimeout;
+
+	@NonNull
+	@Builder.Default
+	String resultDirectory = "/tmp";
 }

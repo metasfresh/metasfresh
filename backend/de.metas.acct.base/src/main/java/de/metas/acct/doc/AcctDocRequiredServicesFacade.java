@@ -7,11 +7,11 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.api.impl.FactAcctDAO;
@@ -32,6 +32,9 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cost.classification.CostClassificationCategoryId;
+import de.metas.cost.classification.CostClassificationId;
+import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
@@ -159,6 +162,7 @@ public class AcctDocRequiredServicesFacade
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService;
+	private final CostClassificationRepository costClassificationRepository;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -265,6 +269,11 @@ public class AcctDocRequiredServicesFacade
 		return validCombination.getElementValueId();
 	}
 
+	public CostClassificationCategoryId getCostClassificationCategoryId(final CostClassificationId costClassificationId)
+	{
+		return costClassificationRepository.getById(costClassificationId).getCostClassificationCategoryId();
+	}
+
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
@@ -291,19 +300,9 @@ public class AcctDocRequiredServicesFacade
 		return bankAccountService.getById(bpBankAccountId);
 	}
 
-	public void postImmediateNoFail(
-			@NonNull final TableRecordReference documentRef,
-			@NonNull final ClientId clientId)
+	public void scheduleReposting(@NonNull final DocumentPostMultiRequest requests)
 	{
-		postingService.newPostingRequest()
-				.setClientId(clientId)
-				.setDocumentRef(documentRef)
-				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-				.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
-				.setForce(false) // don't force it
-				.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document
-				.postIt(); // do it!
-
+		postingService.schedule(requests);
 	}
 
 	public I_M_Product getProductById(@NonNull final ProductId productId)
@@ -576,6 +575,9 @@ public class AcctDocRequiredServicesFacade
 
 		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
 		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
+
+		record.setC_CostClassification_ID(CostClassificationId.toRepoId(factLine.getCostClassificationId()));
+		record.setC_CostClassification_Category_ID(CostClassificationCategoryId.toRepoId(factLine.getCostClassificationCategoryId()));
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

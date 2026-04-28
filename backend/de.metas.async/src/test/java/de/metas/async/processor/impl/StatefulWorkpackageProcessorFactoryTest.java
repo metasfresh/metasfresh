@@ -1,39 +1,37 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.sameInstance;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Assert;
-import org.junit.Test;
+package de.metas.async.processor.impl;
 
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class StatefulWorkpackageProcessorFactoryTest extends QueueProcessorTestBase
 {
@@ -55,19 +53,18 @@ public class StatefulWorkpackageProcessorFactoryTest extends QueueProcessorTestB
 		Services.clear();
 
 		final IStatefulWorkpackageProcessorFactory factory = Services.get(IStatefulWorkpackageProcessorFactory.class);
-		Assert.assertNotNull("No factory was found for " + IStatefulWorkpackageProcessorFactory.class, factory);
+		Assertions.assertNotNull(factory, "No factory was found for " + IStatefulWorkpackageProcessorFactory.class);
 
 		final IStatefulWorkpackageProcessorFactory factory2 = Services.get(IStatefulWorkpackageProcessorFactory.class);
-		Assert.assertNotNull("No factory2 was found for " + IStatefulWorkpackageProcessorFactory.class, factory2);
+		Assertions.assertNotNull(factory2, "No factory2 was found for " + IStatefulWorkpackageProcessorFactory.class);
 
-		Assert.assertThat("Each time when we retrieve an " + IStatefulWorkpackageProcessorFactory.class + " we shall get a new instance",
-				factory2, not(sameInstance(factory)));
+		Assertions.assertNotSame(factory2, factory, "Each time when we retrieve an " + IStatefulWorkpackageProcessorFactory.class + " we shall get a new instance");
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_registerWorkpackageProcessor_null()
 	{
-		statefulFactory.registerWorkpackageProcessor(null);
+		Assertions.assertThrows(AdempiereException.class, () -> statefulFactory.registerWorkpackageProcessor(null));
 	}
 
 	@Test
@@ -79,20 +76,21 @@ public class StatefulWorkpackageProcessorFactoryTest extends QueueProcessorTestB
 		// Create and register the stateful package processor
 		final IWorkpackageProcessor statefulPackageProcessor = new TestableWorkpackageProcessor1();
 		statefulFactory.registerWorkpackageProcessor(statefulPackageProcessor);
-		
+
 		//
 		// Test stateless workpackage processors - each time we need to get a different instance
 		final IWorkpackageProcessor statelessPackageProcessorActual1 = statefulFactory.getWorkpackageProcessorInstance(TestableWorkpackageProcessor2.class.getName());
-		Assert.assertThat("Invalid statelessPackageProcessorActual1", statelessPackageProcessorActual1, instanceOf(TestableWorkpackageProcessor2.class));
-		
+		assertThat(statelessPackageProcessorActual1)
+				.as("Invalid statelessPackageProcessorActual1").isInstanceOf(TestableWorkpackageProcessor2.class);
+
 		final IWorkpackageProcessor statelessPackageProcessorActual2 = statefulFactory.getWorkpackageProcessorInstance(TestableWorkpackageProcessor2.class.getName());
-		Assert.assertThat("Invalid statelessPackageProcessorActual2", statelessPackageProcessorActual2, instanceOf(TestableWorkpackageProcessor2.class));
-		Assert.assertThat("Invalid statelessPackageProcessorActual2", statelessPackageProcessorActual2, not(sameInstance(statelessPackageProcessorActual1)));
-		
+		assertThat(statelessPackageProcessorActual2).as("Invalid statelessPackageProcessorActual2").isInstanceOf(TestableWorkpackageProcessor2.class);
+		assertThat(statelessPackageProcessorActual2).as("Invalid statelessPackageProcessorActual2").isNotSameAs(statelessPackageProcessorActual1);
+
 		//
 		// Test stateful workpackage processor - each time we need to get THE SAME instance
 		final IWorkpackageProcessor statefulPackageProcessorActual = statefulFactory.getWorkpackageProcessorInstance(TestableWorkpackageProcessor1.class.getName());
-		Assert.assertThat("Invalid statefulPackageProcessorActual", statefulPackageProcessorActual, sameInstance(statefulPackageProcessor));
+		assertThat(statefulPackageProcessorActual).as("Invalid statefulPackageProcessorActual").isSameAs(statefulPackageProcessor);
 	}
 
 	public static class TestableWorkpackageProcessor1 implements IWorkpackageProcessor

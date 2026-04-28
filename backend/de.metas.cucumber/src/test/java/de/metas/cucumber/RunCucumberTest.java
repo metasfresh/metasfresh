@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,27 +22,29 @@
 
 package de.metas.cucumber;
 
-import io.cucumber.junit.Cucumber;
-import io.cucumber.junit.CucumberOptions;
-import org.junit.runner.RunWith;
+import io.cucumber.junit.platform.engine.Constants;
+import org.junit.platform.suite.api.ConfigurationParameter;
+import org.junit.platform.suite.api.IncludeEngines;
+import org.junit.platform.suite.api.SelectPackages;
+import org.junit.platform.suite.api.Suite;
 
 /**
- * Use this class to run cucumber tests as junit-4 tests.
+ * Use this class to run cucumber tests as junit-5 tests.
  * But note that in IntelliJ you can also run scenarios directly from the feature file.
- * Just make sure that your {@code Scenario} or {@code Background} contain the Step
+ * Just make sure that your {@code Scenario} or {@code Background} contain this Step:
  * {@code Given infrastructure and metasfresh are running}.
+ * <p>
+ * Also note that this class is invoked when the cucumber-tests are run from {@code mvn test}
  */
-@RunWith(Cucumber.class)
-@CucumberOptions(
-		glue = "de.metas.cucumber.stepdefs",
-		tags = "not @ignore", // use this tag to temporatily ignore single scenarios
-		// tags = "@dev:runThisOne", // use this tag to run only particular scenarios
-		plugin = {
-				"html:target/cucumber.html",
-				"json:target/cucumber.1json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
-				"junit:target/cucumber-junit.xml" /* thx to https://stackoverflow.com/a/52676659/1012103 */,
-				"message:target/cucumber.message"
-		})
+@Suite
+@IncludeEngines("cucumber")
+@SelectPackages("de.metas.cucumber")
+@ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "de.metas.cucumber.stepdefs")
+// NOTE: cucumber.filter.tags moved to pom.xml <configurationParameters> (default: "not @ignore")
+// so it can be overridden via -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @ignore"
+// @ConfigurationParameter for FILTER_TAGS has highest JUnit5 priority and cannot be overridden!
+@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
 public class RunCucumberTest
 {
 }
+

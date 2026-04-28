@@ -78,9 +78,7 @@ public class FlatrateTermPricing
 	public IPricingResult computeOrThrowEx()
 	{
 		final PriceListId priceListId = retrievePriceListForTerm();
-		final IPricingResult pricingResult = retrievePricingResultUsingPriceList(priceListId);
-
-		return pricingResult;
+		return retrievePricingResultUsingPriceList(priceListId);
 	}
 
 	private PriceListId retrievePriceListForTerm()
@@ -88,7 +86,10 @@ public class FlatrateTermPricing
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
+		final PricingSystemId pricingSystemIdToUse = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> PricingSystemId.ofRepoIdOrNull(term.getM_PricingSystem_ID()),
+				() -> PricingSystemId.ofRepoIdOrNull(term.getC_Flatrate_Conditions().getM_PricingSystem_ID()),
+				() -> bpartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), SOTrx.SALES));
 
 		final BPartnerLocationAndCaptureId dropShipLocationId = ContractLocationHelper.extractDropshipLocationId(term);
 		final BPartnerLocationAndCaptureId billLocationId = ContractLocationHelper.extractBillToLocationId(term);
@@ -104,9 +105,8 @@ public class FlatrateTermPricing
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(billLocationId.getBpartnerLocationId());
 
 			throw new AdempiereException(MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
-										 new Object[] {
-												 priceListDAO.getPricingSystemName(pricingSystemIdToUse),
-												 billLocationRecord.getName() });
+										 priceListDAO.getPricingSystemName(pricingSystemIdToUse),
+										 billLocationRecord.getName());
 		}
 		return priceListId;
 	}
@@ -142,6 +142,6 @@ public class FlatrateTermPricing
 
 		final String priceListName = Services.get(IPriceListDAO.class).getPriceListName(result.getPriceListId());
 		final String productName = Services.get(IProductBL.class).getProductValueAndName(termRelatedProductId);
-		throw new AdempiereException(MSG_FLATRATEBL_PRICE_MISSING_2P, new Object[] { priceListName, productName });
+		throw new AdempiereException(MSG_FLATRATEBL_PRICE_MISSING_2P, priceListName, productName);
 	}
 }

@@ -3,20 +3,24 @@ import { render } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 
 import PrintingOptions from '../../../components/app/PrintingOptions';
 import testModal from '../../../../test_setup/fixtures/modal/test_modal.json';
-import printingOptions from '../../../../test_setup/fixtures/window/printingOptions.json';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
+import printingOptions
+  from '../../../../test_setup/fixtures/window/printingOptions.json';
 import thunk from 'redux-thunk';
+
 const mockStore = configureStore([thunk]);
 
 const getInitialState = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: {
@@ -26,8 +30,6 @@ const getInitialState = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 describe('PrintingOptions test', () => {
@@ -38,7 +40,7 @@ describe('PrintingOptions test', () => {
 
     const wrapper = render(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <PrintingOptions printingOptions={dummyProps} />
         </ShortcutProvider>
       </Provider>

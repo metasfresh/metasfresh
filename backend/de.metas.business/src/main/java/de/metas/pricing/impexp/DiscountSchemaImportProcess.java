@@ -48,7 +48,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(selection);
@@ -61,7 +61,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 	}
 
 	@Override
-	protected I_I_DiscountSchema retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_DiscountSchema retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_DiscountSchema(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -167,10 +167,6 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 
 	/**
 	 * reuse previous discount schema
-	 *
-	 * @param importRecord
-	 * @param previousImportRecord
-	 * @return
 	 */
 	private ImportRecordResult doNothingAndUsePreviousDiscountSchema(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_I_DiscountSchema previousImportRecord)
 	{
@@ -179,7 +175,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 		return ImportRecordResult.Nothing;
 	}
 
-	private I_M_DiscountSchemaBreak importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
+	private void importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
 	{
 		I_M_DiscountSchemaBreak schemaBreak = importRecord.getM_DiscountSchemaBreak();
 		if (schemaBreak == null)
@@ -194,7 +190,6 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 		InterfaceWrapperHelper.save(schemaBreak);
 
 		importRecord.setM_DiscountSchemaBreak_ID(schemaBreak.getM_DiscountSchemaBreak_ID());
-		return schemaBreak;
 	}
 
 	private void setDiscountSchemaBreakFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)

@@ -7,7 +7,7 @@ import { mergeWFProcessToState, updateUserEditable } from './utils';
 export const workflowReducer = ({ draftState, action }) => {
   switch (action.type) {
     case workflowTypes.UPDATE_WORKFLOW_PROCESS: {
-      const { wfProcess: fromWFProcess } = action.payload;
+      const { wfProcess: fromWFProcess, parent } = action.payload;
 
       let draftWFProcess = draftState[fromWFProcess.id];
 
@@ -21,6 +21,7 @@ export const workflowReducer = ({ draftState, action }) => {
       draftState[fromWFProcess.id] = mergeWFProcessToState({
         draftWFProcess: draftWFProcess,
         fromWFProcess,
+        parent,
       });
 
       return draftState;

@@ -31,7 +31,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -149,8 +148,8 @@ public class DataTableUtil
 	}
 
 	private int extractIntOrDefaultForColumnName(
-			final @NotNull Map<String, String> dataTableRow,
-			final @NotNull String columnName,
+			final @NonNull Map<String, String> dataTableRow,
+			final @NonNull String columnName,
 			final int defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -355,6 +354,12 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnNameOrNull(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
 	{
 		try
@@ -402,6 +407,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@NonNull
+	public static BigDecimal extractBigDecimalForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull
@@ -502,9 +513,10 @@ public class DataTableUtil
 	@Nullable
 	public String extractValueOrNull(@Nullable final String value)
 	{
-		if (value == null || value.equals("null"))
+		if (value == null || value.equals(NULL_STRING))
+		{
 			return null;
-
+		}
 		return value;
 	}
 

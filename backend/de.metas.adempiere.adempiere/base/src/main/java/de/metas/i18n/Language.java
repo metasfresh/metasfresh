@@ -1,41 +1,8 @@
-package de.metas.i18n;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-import java.awt.*;
-import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Supplier;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -52,6 +19,40 @@ import java.util.function.Supplier;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.i18n;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
+import org.jetbrains.annotations.Contract;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.awt.*;
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 /**
  * Language.
@@ -106,6 +107,7 @@ public final class Language implements Serializable
 	private static final String AD_Language_ar_TN = "ar_TN";
 	private static final String AD_Language_hu_HU = "hu_HU";
 	private static final String AD_Language_el_GR = "el_GR";
+	private static final String AD_Language_tr_TR = "tr_TR";
 
 	/** System Languages. */
 	private static final CopyOnWriteArrayList<Language> s_languages = new CopyOnWriteArrayList<>(new Language[] {
@@ -220,6 +222,9 @@ public final class Language implements Serializable
 			new Language("\u0e44\u0e17\u0e22 (TH)",
 					AD_Language_th_TH, new Locale("th", "TH"), Boolean.FALSE, "dd/MM/yyyy",
 					MediaSize.ISO.A4),
+			new Language("T\u00fcrk\u00e7e",
+					AD_Language_tr_TR, new Locale("tr", "TR"), Boolean.FALSE, "dd.MM.yyyy",
+					MediaSize.ISO.A4),
 			new Language("Vi\u1EC7t Nam",
 					AD_Language_vi_VN, new Locale("vi", "VN"), Boolean.FALSE, "dd-MM-yyyy",
 					MediaSize.ISO.A4),
@@ -245,7 +250,7 @@ public final class Language implements Serializable
 	 * @param langInfo either language (en) or locale (en_US) or display name
 	 * @return language instance
 	 */
-	public static Language getLanguage(final String langInfo)
+	public static Language getLanguage(@Nullable final String langInfo)
 	{
 		String langInfoActual = langInfo;
 		if (langInfoActual == null || langInfoActual.isEmpty())
@@ -379,6 +384,8 @@ public final class Language implements Serializable
 		return getBaseLanguage().getAD_Language(); // metas
 	}   // getBase
 
+	@Contract("null -> null")
+	@Nullable
 	public static String asLanguageStringOrNull(@Nullable final Language language)
 	{
 		if (language == null)
@@ -388,9 +395,11 @@ public final class Language implements Serializable
 		return language.getAD_Language();
 	}
 
+	@Contract("null -> null")
+	@Nullable
 	public static Language asLanguage(@Nullable final String languageInfo)
 	{
-		return !Check.isBlank(languageInfo) ? getLanguage(languageInfo) : null;
+		return Check.isNotBlank(languageInfo) ? getLanguage(languageInfo) : null;
 	}
 
 	public static Optional<Language> optionalOfNullable(@Nullable final String adLanguage)

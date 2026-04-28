@@ -1,7 +1,29 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.base.Joiner;
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -67,7 +89,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
 	private IInvoicingParams _invoicingParams;
-	private I_C_Async_Batch _asyncBatch = null;
+	private AsyncBatchId _asyncBatchId = null;
 	private IWorkpackagePrioStrategy _priority = null;
 
 	private boolean setWorkpackageADPInstanceCreatorId = true;
@@ -89,6 +111,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Override
 	public void prepareSelection(@NonNull final PInstanceId pInstanceId)
 	{
+		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
+		// otherwise, we can easly run into DB-deadloacks
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+
 		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
 		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
 		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pInstanceId);
@@ -96,10 +122,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Create invoice candidates changes checker.
 		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
 		icChangesChecker.setBeforeChanges(unorderedICs);
-
-		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
-		// otherwise, we can easly run into DB-deadloacks
-		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
 
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
@@ -139,7 +161,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
 				.setInvoicingParams(getInvoicingParams())
-				.setC_Async_Batch(_asyncBatch);
+				.setAsyncBatchId(_asyncBatchId);
 
 		if (setWorkpackageADPInstanceCreatorId)
 		{
@@ -306,12 +328,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
 
-		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (invoicingParams.isSupplementMissingPaymentTermIds())
-		{
-			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
-		}
-
 		//
 		// Flag those invoice candidates as approved, since user decided to invoice them.
 		// Also, this will prevent changing the prices, net amounts etc while invoicing.
@@ -412,9 +428,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public IInvoiceCandidateEnqueuer setAsyncBatchId(final AsyncBatchId asyncBatchId)
 	{
-		_asyncBatch = asyncBatch;
+		_asyncBatchId = asyncBatchId;
 		return this;
 	}
 

@@ -60,6 +60,8 @@ import java.util.Set;
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
+	I_M_ReceiptSchedule getById(@NonNull ReceiptScheduleId id);
+
 	/**
 	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
 	 */
@@ -80,15 +82,13 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	@Builder
 	class CreateReceiptsParameters
 	{
-		@NonNull
-		Properties ctx;
+		@NonNull Properties ctx;
 
 		/**
 		 * <code>null</code> or a subset of M_HU_IDs that shall be considered. If called with <code>null</code>, then all (planned?) HUs from the
 		 * {@link de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc} will be assigned to the inOut.
 		 */
-		@Nullable
-		Set<HuId> selectedHuIds;
+		@Nullable Set<HuId> selectedHuIds;
 
 		/**
 		 * If this is {@code true}, and if more than one receipt is created, then successfully created receipts won't be rolled back if other receipts fail.
@@ -103,17 +103,14 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		/**
 		 * If the receipt was created and the good were not automatically moved to the quarantine warehouse,
 		 * then the system can create a movement or distribution order (depends on product-planning master data) to this warehouse-locator.
-		 *
+		 * <p>
 		 * If {@code null}, then the respective receipt schedules', {@link I_M_ReceiptSchedule#getM_Warehouse_Dest_ID()}s' default locators will be used.
 		 */
-		@Nullable
-		LocatorId destinationLocatorIdOrNull;
+		@Nullable LocatorId destinationLocatorIdOrNull;
 
-		@NonNull
-		ReceiptMovementDateRule movementDateRule;
+		@NonNull ReceiptMovementDateRule movementDateRule;
 
-		@Nullable
-		Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+		@Nullable Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 	}
 
 	/**
@@ -124,7 +121,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	/**
 	 * Mark LU and TU handling units of the allocations as destroyed, and unassign them, if the allocation does not already reference a receipt, if they are active and if they have the status
 	 * "Planning".
-	 *
+	 * <p>
 	 * Also, the receipt schedule allocations of the destroyed HUs will be deactivated and saved.
 	 */
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
@@ -146,10 +143,10 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Set request's initial attribute values defaults to be used when new HUs are created.
-	 *
+	 * <p>
 	 * Mainly this method is setting the {@link HUAttributeConstants#ATTR_CostPrice}.
 	 *
-	 * @param request request to be updated
+	 * @param request          request to be updated
 	 * @param receiptSchedules receipt schedule from where to extract the inital attributes
 	 * @return updated request (could be the same, but it's not guaranteed)
 	 */

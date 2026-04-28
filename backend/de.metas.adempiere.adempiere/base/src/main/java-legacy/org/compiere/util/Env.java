@@ -121,7 +121,7 @@ public final class Env
 	/**
 	 * Initializes the context provider if necessary. Multiple calls shall be no problem.
 	 * See ThreadLocalContextProvider#init(), because currently that is the only implementation which actually does something
-	 *
+	 * <p>
 	 * task 08859
 	 */
 	public static void initContextProvider()
@@ -277,6 +277,7 @@ public final class Env
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
+	public static final String CTXNAME_IsAllowPasswordChangeForOthers = "#" + I_AD_Role.COLUMNNAME_IsAllowPasswordChangeForOthers;
 	public static final String CTXNAME_TimeZone = "#TimeZone";
 
 	public static final String CTXNAME_AD_Session_ID = "#AD_Session_ID";
@@ -1189,6 +1190,11 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}    // getAD_Client_ID
 
+	public static Optional<ClientId> getClientIdIfSet(@NonNull final Properties ctx)
+	{
+		return ClientId.optionalOfRepoId(Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID, -1));
+	}
+
 	public static ClientId getClientId(@NonNull final Properties ctx)
 	{
 		return ClientId.ofRepoId(getAD_Client_ID(ctx));
@@ -1250,6 +1256,12 @@ public final class Env
 		return ClientAndOrgId.ofClientAndOrg(Env.getClientId(ctx), Env.getOrgId(ctx));
 	}
 
+	public static void setClientAndOrgId(@NonNull final Properties ctx, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		setClientId(ctx, clientAndOrgId.getClientId());
+		setOrgId(ctx, clientAndOrgId.getOrgId());
+	}
+
 	/**
 	 * Get Login AD_User_ID
 	 *
@@ -1274,7 +1286,7 @@ public final class Env
 	public static UserId getLoggedUserId(final Properties ctx)
 	{
 		final UserId loggedUserId = UserId.ofRepoIdOrNull(getAD_User_ID(ctx));
-		if(loggedUserId == null)
+		if (loggedUserId == null)
 		{
 			throw new AdempiereException("No user logged in");
 		}
@@ -1666,7 +1678,7 @@ public final class Env
 		//
 		// Pick a similar language (with different country code and/or variant)
 		final String similarADLanguage = AD_Languages.findSimilarADLanguage(searchAD_Language).orElse(null);
-		if(similarADLanguage != null)
+		if (similarADLanguage != null)
 		{
 			s_log.debug("Found similar Language {} for {}", similarADLanguage, testLang);
 			final Language similarLanguage = testLang.toBuilder().m_AD_Language(similarADLanguage).build();
@@ -2064,7 +2076,7 @@ public final class Env
 
 	/**
 	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
-	 *
+	 * <p>
 	 * task 08451
 	 */
 	public static final Timestamp MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
@@ -2110,10 +2122,10 @@ public final class Env
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
 	public static String getContext(@NonNull final Properties ctx,
-			final int WindowNo,
-			final int TabNo,
-			final String context,
-			final Scope scope)
+									final int WindowNo,
+									final int TabNo,
+									final String context,
+									final Scope scope)
 	{
 		final CtxName name = CtxNames.parse(context);
 		Check.assumeNotNull(name, "name not null");

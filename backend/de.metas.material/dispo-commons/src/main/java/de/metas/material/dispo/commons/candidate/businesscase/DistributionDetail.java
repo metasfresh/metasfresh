@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -77,9 +78,9 @@ public class DistributionDetail implements BusinessCaseDetail
 	@Nullable
 	private static PPOrderRef extractForwardPPOrderRef(final I_MD_Candidate_Dist_Detail record)
 	{
-		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(record.getPP_Order_Candidate_ID());
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}

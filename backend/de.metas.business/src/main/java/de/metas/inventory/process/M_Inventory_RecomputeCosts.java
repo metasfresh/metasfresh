@@ -48,7 +48,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.util.DB;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
@@ -60,6 +59,9 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID, mandatory = true)
 	private AcctSchemaId p_C_AcctSchema_ID;
+
+	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_CostingMethod, mandatory = false)
+	private CostingMethod p_costingMethod;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -76,7 +78,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 	protected String doIt() throws Exception
 	{
 		final PInstanceId productsSelectionId = createProductsSelection();
-		final Instant startDate = getStartDate().minus(1, ChronoUnit.DAYS);
+		final Instant startDate = getStartDate();
 
 		getCostElements().forEach(costElement -> recomputeCosts(costElement, productsSelectionId, startDate));
 
@@ -127,10 +129,12 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	private List<CostElement> getCostElements()
 	{
-		final AcctSchema schema = acctSchemaDAO.getById(getAccountingSchemaId());
-		final CostingMethod costingMethod = schema.getCosting().getCostingMethod();
+		if (p_costingMethod != null)
+		{
+			return costElementRepository.getMaterialCostingElementsForCostingMethod(p_costingMethod);
+		}
 
-		return costElementRepository.getMaterialCostingElementsForCostingMethod(costingMethod);
+		return costElementRepository.getActiveMaterialCostingElements(getClientID());
 	}
 
 	private AcctSchemaId getAccountingSchemaId() {return p_C_AcctSchema_ID;}

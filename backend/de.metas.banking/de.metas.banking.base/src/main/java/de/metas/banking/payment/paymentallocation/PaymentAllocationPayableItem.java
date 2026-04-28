@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -58,8 +58,6 @@ public class PaymentAllocationPayableItem
 	InvoiceId invoiceId;
 	BPartnerId invoiceBPartnerId;
 	
-	boolean invoiceIsCreditMemo;
-	
 	String documentNo;
 
 	/**
@@ -83,18 +81,16 @@ public class PaymentAllocationPayableItem
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final BPartnerId invoiceBPartnerId,
-			final boolean invoiceIsCreditMemo,
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateInvoiced,
-			@NonNull final LocalDate dateAcct)
+			@Nullable final LocalDate dateAcct)
 	{
 		this.amtMultiplier = amtMultiplier;
 		this.openAmt = openAmt;
 		this.payAmt = payAmt;
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
-		this.invoiceIsCreditMemo = invoiceIsCreditMemo;
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
 		this.paymentDate = CoalesceUtil.coalesce(paymentDate, Instant::now);
 		this.bPartnerId = bPartnerId;
@@ -103,6 +99,6 @@ public class PaymentAllocationPayableItem
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
 		this.dateInvoiced = dateInvoiced;
-		this.dateAcct = dateAcct;
+		this.dateAcct = dateAcct != null ? dateAcct : dateInvoiced;
 	}
 }

@@ -34,13 +34,13 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 
+@Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class PPOrderCandidateRequestedEvent extends AbstractPPOrderCandidateEvent
 {
 	public static final String TYPE = "PPOrderCandidateRequestedEvent";
 
-	@Getter
 	boolean directlyCreatePPOrder;
 
 	@JsonCreator
@@ -55,4 +55,7 @@ public class PPOrderCandidateRequestedEvent extends AbstractPPOrderCandidateEven
 
 		this.directlyCreatePPOrder = directlyCreatePPOrder;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

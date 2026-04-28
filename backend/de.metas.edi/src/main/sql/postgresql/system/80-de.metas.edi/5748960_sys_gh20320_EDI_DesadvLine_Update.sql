@@ -1,0 +1,3 @@
+ALTER TABLE public.EDI_DesadvLine
+    DROP COLUMN TU_GTIN
+;

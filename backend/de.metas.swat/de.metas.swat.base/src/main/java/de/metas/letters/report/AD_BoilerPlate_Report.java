@@ -3,16 +3,15 @@
  */
 package de.metas.letters.report;
 
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.Query;
-import org.compiere.print.MPrintFormat;
-
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.Query;
+import org.compiere.print.MPrintFormat;
 
 /**
  * @author teo_sarca
@@ -82,10 +81,11 @@ public class AD_BoilerPlate_Report extends JavaProcess
 				.anyMatch();
 	}
 
-	private void startJasper() throws Exception
+	private void startJasper()
 	{
 		ProcessInfo.builder()
 				.setCtx(getCtx())
+				.setProcessCalledFrom(getProcessInfo().getProcessCalledFrom())
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setPInstanceId(getPinstanceId())

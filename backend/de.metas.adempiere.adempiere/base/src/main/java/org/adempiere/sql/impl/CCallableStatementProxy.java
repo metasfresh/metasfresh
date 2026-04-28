@@ -22,6 +22,10 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.util.CCallableStatement;
+import org.compiere.util.CStatementVO;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -43,9 +47,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 
-import org.compiere.util.CCallableStatement;
-import org.compiere.util.CStatementVO;
-
 /* package */final class CCallableStatementProxy extends CPreparedStatementProxy implements CCallableStatement
 {
 	public CCallableStatementProxy(final CStatementVO vo)
@@ -58,14 +59,15 @@ import org.compiere.util.CStatementVO;
 		super(resultSetType, resultSetConcurrency, sql, trxName);
 	}
 
+	@NonNull
 	@Override
-	protected final CallableStatement createStatement(final Connection conn, final CStatementVO vo) throws SQLException
+	protected CallableStatement createStatement(@NonNull final Connection conn, @NonNull final CStatementVO vo) throws SQLException
 	{
 		final CallableStatement stmt = conn.prepareCall(vo.getSql(), vo.getResultSetType(), vo.getResultSetConcurrency());
-		return stmt;
+		return Check.assumeNotNull(stmt, "Statement shall not be null for {}", vo);
 	}
 
-	protected final CCallableStatement getCCallableStatementImpl()
+	protected CCallableStatement getCCallableStatementImpl()
 	{
 		return (CCallableStatement)super.getStatementImpl();
 	}

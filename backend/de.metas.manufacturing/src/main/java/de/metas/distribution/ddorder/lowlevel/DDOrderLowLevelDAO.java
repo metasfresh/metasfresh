@@ -15,6 +15,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -223,9 +224,13 @@ public class DDOrderLowLevelDAO
 
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
-		return toSqlQuery(query)
-				.create()
-				.iterateAndStream();
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
 	}
 
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
@@ -290,9 +295,22 @@ public class DDOrderLowLevelDAO
 
 		//
 		// Warehouse To
-		if (query.getWarehouseToIds() != null && !query.getWarehouseToIds().isEmpty())
+		if (query.getWarehouseToIds() != null)
 		{
 			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getWarehouseToIds());
+		}
+
+		//
+		// Locator To
+		if (query.getLocatorToIds() != null)
+		{
+			queryBuilder.addInSubQueryFilter()
+					.matchingColumnNames(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID)
+					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
+							.create())
+					.end();
 		}
 
 		//
@@ -310,6 +328,13 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Plant
+		if (query.getPlantIds() != null && !query.getPlantIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_PP_Plant_ID, query.getPlantIds());
+		}
+
+		//
 		// Date Promised
 		if (query.getDatesPromised() != null && !query.getDatesPromised().isEmpty())
 		{
@@ -318,6 +343,13 @@ public class DDOrderLowLevelDAO
 			{
 				filter.addEqualsFilter(I_DD_Order.COLUMNNAME_DatePromised, datePromised, DateTruncQueryFilterModifier.DAY);
 			}
+		}
+
+		//
+		// only DD_Order_IDs
+		if (query.getOnlyDDOrderIds() != null && !query.getOnlyDDOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, query.getOnlyDDOrderIds());
 		}
 
 		//
@@ -357,10 +389,12 @@ public class DDOrderLowLevelDAO
 		return queryBuilder;
 	}
 
-	private void setOrderBys(
+	private static void setOrderBys(
 			@NonNull IQueryBuilder<I_DD_Order> queryBuilder,
 			@Nullable List<DDOrderQuery.OrderBy> orderBys)
 	{
+		queryBuilder.clearOrderBys();
+
 		if (orderBys != null && !orderBys.isEmpty())
 		{
 			orderBys.forEach(orderBy -> addOrderBy(queryBuilder, orderBy));
@@ -370,21 +404,37 @@ public class DDOrderLowLevelDAO
 		queryBuilder.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID);
 	}
 
-	private void addOrderBy(
+	private static void addOrderBy(
 			@NonNull final IQueryBuilder<I_DD_Order> queryBuilder,
 			@NonNull final DDOrderQuery.OrderBy orderBy)
 	{
-		if (orderBy == DDOrderQuery.OrderBy.PriorityRule)
+		final DDOrderQuery.OrderByField field = orderBy.getField();
+		final String sqlColumnName;
+		if (field == DDOrderQuery.OrderByField.PriorityRule)
 		{
-			queryBuilder.orderBy(I_DD_Order.COLUMNNAME_PriorityRule);
+			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
 		}
-		else if (orderBy == DDOrderQuery.OrderBy.DatePromised)
+		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{
-			queryBuilder.orderBy(I_DD_Order.COLUMNNAME_DatePromised);
+			sqlColumnName = I_DD_Order.COLUMNNAME_DatePromised;
+		}
+		else if (field == DDOrderQuery.OrderByField.SeqNo)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_SeqNo;
 		}
 		else
 		{
 			throw new AdempiereException("Unknown order by: " + orderBy);
+		}
+
+		final IQueryOrderBy.Direction direction = orderBy.getDirection();
+		if (direction.isAscending())
+		{
+			queryBuilder.orderBy(sqlColumnName);
+		}
+		else
+		{
+			queryBuilder.orderByDescending(sqlColumnName);
 		}
 	}
 

@@ -4,6 +4,8 @@ import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
 
 const QtyInputField = ({
+  id,
+  testId,
   qty: qtyInitial,
   uom,
   integerValuesOnly = false,
@@ -74,6 +76,8 @@ const QtyInputField = ({
     <div className="field">
       <div className={cx('control', { 'has-icons-right': !!uom })}>
         <input
+          id={id}
+          data-testid={testId}
           ref={qtyInputRef}
           className="input"
           type="number"
@@ -84,12 +88,16 @@ const QtyInputField = ({
         />
         {uom && <span className="icon is-small is-right">{uom}</span>}
       </div>
-      <p className="help is-danger">{qtyInfo.notValidMessage}&nbsp;</p>
+      <p data-testid="qty-validation-error" className="help is-danger">
+        {qtyInfo.notValidMessage}&nbsp;
+      </p>
     </div>
   );
 };
 
 QtyInputField.propTypes = {
+  id: PropTypes.string,
+  testId: PropTypes.string,
   qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   uom: PropTypes.string,
   integerValuesOnly: PropTypes.bool,

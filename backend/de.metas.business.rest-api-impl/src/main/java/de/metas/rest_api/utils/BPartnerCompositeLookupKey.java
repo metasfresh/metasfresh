@@ -1,12 +1,14 @@
 package de.metas.rest_api.utils;
 
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Nullable;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
@@ -40,7 +42,7 @@ public class BPartnerCompositeLookupKey
 {
 	public static BPartnerCompositeLookupKey ofMetasfreshId(@NonNull final MetasfreshId metasfreshId)
 	{
-		return new BPartnerCompositeLookupKey(metasfreshId, null, null, null);
+		return new BPartnerCompositeLookupKey(metasfreshId, null, null, null, null);
 	}
 
 	public static <T extends RepoIdAware> BPartnerCompositeLookupKey ofMetasfreshId(@NonNull final T id)
@@ -50,7 +52,7 @@ public class BPartnerCompositeLookupKey
 
 	public static BPartnerCompositeLookupKey ofJsonExternalId(@NonNull final JsonExternalId jsonExternalId)
 	{
-		return new BPartnerCompositeLookupKey(null, jsonExternalId, null, null);
+		return new BPartnerCompositeLookupKey(null, jsonExternalId, null, null, null);
 	}
 
 	public static BPartnerCompositeLookupKey ofExternalId(@NonNull final ExternalId externalId)
@@ -61,12 +63,17 @@ public class BPartnerCompositeLookupKey
 	public static BPartnerCompositeLookupKey ofCode(@NonNull final String code)
 	{
 		assumeNotEmpty(code, "Given parameter 'code' may not be empty");
-		return new BPartnerCompositeLookupKey(null, null, code.trim(), null);
+		return new BPartnerCompositeLookupKey(null, null, code.trim(), null, null);
 	}
 
 	public static BPartnerCompositeLookupKey ofGln(@NonNull final GLN gln)
 	{
-		return new BPartnerCompositeLookupKey(null, null, null, gln);
+		return new BPartnerCompositeLookupKey(null, null, null, gln, null);
+	}
+
+	public static BPartnerCompositeLookupKey ofGlnWithLabel(@NonNull final GlnWithLabel glnWithLabel)
+	{
+		return new BPartnerCompositeLookupKey(null, null, null, null, glnWithLabel);
 	}
 
 	public static BPartnerCompositeLookupKey ofIdentifierString(@NonNull final IdentifierString bpartnerIdentifier)
@@ -79,6 +86,8 @@ public class BPartnerCompositeLookupKey
 				return BPartnerCompositeLookupKey.ofCode(bpartnerIdentifier.asValue());
 			case GLN:
 				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
+			case GLN_WITH_LABEL:
+				return BPartnerCompositeLookupKey.ofGlnWithLabel(bpartnerIdentifier.asGlnWithLabel());
 			case METASFRESH_ID:
 				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
 			default:
@@ -90,16 +99,19 @@ public class BPartnerCompositeLookupKey
 	JsonExternalId jsonExternalId;
 	String code;
 	GLN gln;
+	GlnWithLabel glnWithLabel;
 
 	private BPartnerCompositeLookupKey(
-			final MetasfreshId metasfreshId,
-			final JsonExternalId jsonExternalId,
-			final String code,
-			final GLN gln)
+			@Nullable final MetasfreshId metasfreshId,
+			@Nullable final JsonExternalId jsonExternalId,
+			@Nullable final String code,
+			@Nullable final GLN gln,
+			@Nullable final GlnWithLabel glnWithLabel)
 	{
 		this.metasfreshId = metasfreshId;
 		this.jsonExternalId = jsonExternalId;
 		this.code = code;
 		this.gln = gln;
+		this.glnWithLabel = glnWithLabel;
 	}
 }

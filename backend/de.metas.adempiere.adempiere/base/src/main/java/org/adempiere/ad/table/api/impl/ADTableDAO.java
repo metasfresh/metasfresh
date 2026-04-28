@@ -167,6 +167,7 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	@NonNull
 	public String retrieveTableName(@NonNull final AdTableId adTableId)
 	{
 		return TableIdsCache.instance.getTableName(adTableId);

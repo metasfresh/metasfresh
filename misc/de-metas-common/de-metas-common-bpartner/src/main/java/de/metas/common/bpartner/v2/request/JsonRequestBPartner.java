@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-bpartner
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -64,6 +64,13 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
+	@ApiModelProperty(position = 35,  //
+			value = "This translates to `C_BPartner.Lookup_Label`.")
+	private @org.jetbrains.annotations.Nullable String lookupLabel;
+
+	@ApiModelProperty(hidden = true)
+	private boolean lookupLabelSet;
+	
 	@ApiModelProperty(position = 40,  //
 			value = "This translates to `C_BPartner.Name2`.")
 	private String name2;
@@ -111,7 +118,8 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
-	@ApiModelProperty(position = 90)
+	@ApiModelProperty(position = 90, //
+			value = "Optional; the partner's language, like `de_DE` or `en_GB`" )
 	private String language;
 
 	@ApiModelProperty(hidden = true)
@@ -228,6 +236,12 @@ public class JsonRequestBPartner
 		this.companyNameSet = true;
 	}
 
+	public void setLookupLabel(@Nullable final String lookupLabel)
+	{
+		this.lookupLabel = lookupLabel;
+		this.lookupLabelSet = true;
+	}
+		
 	public void setVendor(final Boolean vendor)
 	{
 		this.vendor = vendor;

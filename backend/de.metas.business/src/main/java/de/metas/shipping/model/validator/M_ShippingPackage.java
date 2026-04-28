@@ -1,5 +1,6 @@
 package de.metas.shipping.model.validator;
 
+import de.metas.shipping.mpackage.PackageId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -8,7 +9,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.cache.CacheMgt;
-import de.metas.shipping.MPackageId;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
@@ -58,8 +58,8 @@ public class M_ShippingPackage
 			return;
 		}
 
-		final MPackageId mPackageId = MPackageId.ofRepoId(shippingPackage.getM_Package_ID());
-		packageRepo.closeMPackage(mPackageId);
+		final PackageId packageId = PackageId.ofRepoId(shippingPackage.getM_Package_ID());
+		packageRepo.closeMPackage(packageId);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -73,7 +73,7 @@ public class M_ShippingPackage
 			return;
 		}
 
-		final MPackageId mPackageId = MPackageId.ofRepoId(shippingPackage.getM_Package_ID());
+		final PackageId mPackageId = PackageId.ofRepoId(shippingPackage.getM_Package_ID());
 		packageRepo.closeMPackage(mPackageId);
 	}
 }

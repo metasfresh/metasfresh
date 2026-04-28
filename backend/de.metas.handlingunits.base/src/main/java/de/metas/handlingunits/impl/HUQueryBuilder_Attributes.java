@@ -226,7 +226,7 @@ final class HUQueryBuilder_Attributes
 
 	public void addOnlyWithAttribute(final AttributeId attributeId, final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeId);
 		addOnlyWithAttribute(attribute, value);
 	}
 

@@ -38,6 +38,7 @@ import java.util.Objects;
 @Value
 public class CountryId implements RepoIdAware
 {
+	public static final CountryId GERMANY = new CountryId(101);
 	public static final CountryId SWITZERLAND = new CountryId(107);
 
 	@JsonCreator

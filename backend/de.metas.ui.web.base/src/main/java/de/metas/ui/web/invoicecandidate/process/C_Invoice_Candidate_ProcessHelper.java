@@ -28,7 +28,11 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -83,6 +87,20 @@ public abstract class C_Invoice_Candidate_ProcessHelper extends ViewBasedProcess
 
 		return MSG_OK;
 	}
+
+
+	protected IQueryFilter<I_C_Invoice_Candidate> getSelectionFilter()
+	{
+		final SqlViewRowsWhereClause viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
+		return viewSqlWhereClause.toQueryFilter();
+	}
+
+	private SqlViewRowsWhereClause getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
+	{
+		final String invoiceCandidateTableName = I_C_Invoice_Candidate.Table_Name;
+		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(invoiceCandidateTableName));
+	}
+
 
 	protected abstract boolean isApproveForInvoicing();
 

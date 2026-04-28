@@ -1,9 +1,30 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for I_Product
  *  @author metasfresh (generated) 
@@ -73,8 +94,7 @@ public interface I_I_Product
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner-Schlüssel.
-	 * The Key of the Business Partner
+	 * Set Business Partner No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -83,8 +103,7 @@ public interface I_I_Product
 	void setBPartner_Value (@Nullable java.lang.String BPartner_Value);
 
 	/**
-	 * Get Geschäftspartner-Schlüssel.
-	 * The Key of the Business Partner
+	 * Get Business Partner No..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -188,7 +207,7 @@ public interface I_I_Product
 	String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
 
 	/**
-	 * Set Klassifizierung.
+	 * Set Classification.
 	 * Classification for grouping
 	 *
 	 * <br>Type: String
@@ -198,7 +217,7 @@ public interface I_I_Product
 	void setClassification (@Nullable java.lang.String Classification);
 
 	/**
-	 * Get Klassifizierung.
+	 * Get Classification.
 	 * Classification for grouping
 	 *
 	 * <br>Type: String
@@ -211,7 +230,7 @@ public interface I_I_Product
 	String COLUMNNAME_Classification = "Classification";
 
 	/**
-	 * Set Bestellkosten.
+	 * Set Cost per Order.
 	 * Fixed Cost Per Order
 	 *
 	 * <br>Type: CostPrice
@@ -221,7 +240,7 @@ public interface I_I_Product
 	void setCostPerOrder (@Nullable BigDecimal CostPerOrder);
 
 	/**
-	 * Get Bestellkosten.
+	 * Get Cost per Order.
 	 * Fixed Cost Per Order
 	 *
 	 * <br>Type: CostPrice
@@ -281,7 +300,7 @@ public interface I_I_Product
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
-	 * Set MwSt-Kategorie.
+	 * Set Tax Category.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -290,7 +309,7 @@ public interface I_I_Product
 	void setC_TaxCategory_Name (@Nullable java.lang.String C_TaxCategory_Name);
 
 	/**
-	 * Get MwSt-Kategorie.
+	 * Get Tax Category.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -305,7 +324,7 @@ public interface I_I_Product
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -315,7 +334,7 @@ public interface I_I_Product
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -345,7 +364,7 @@ public interface I_I_Product
 	String COLUMNNAME_CustomsTariff = "CustomsTariff";
 
 	/**
-	 * Set Zugesicherte Lieferzeit.
+	 * Set Promised Delivery Time.
 	 * Promised days between order and delivery
 	 *
 	 * <br>Type: Integer
@@ -355,7 +374,7 @@ public interface I_I_Product
 	void setDeliveryTime_Promised (int DeliveryTime_Promised);
 
 	/**
-	 * Get Zugesicherte Lieferzeit.
+	 * Get Promised Delivery Time.
 	 * Promised days between order and delivery
 	 *
 	 * <br>Type: Integer
@@ -389,7 +408,7 @@ public interface I_I_Product
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Beschreibungs-URL.
+	 * Set Description URL.
 	 * URL for the description
 	 *
 	 * <br>Type: URL
@@ -399,7 +418,7 @@ public interface I_I_Product
 	void setDescriptionURL (@Nullable java.lang.String DescriptionURL);
 
 	/**
-	 * Get Beschreibungs-URL.
+	 * Get Description URL.
 	 * URL for the description
 	 *
 	 * <br>Type: URL
@@ -435,28 +454,7 @@ public interface I_I_Product
 	String COLUMNNAME_DietType = "DietType";
 
 	/**
-	 * Set Is commissioned.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsCommissioned (boolean IsCommissioned);
-
-	/**
-	 * Get Is commissioned.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isCommissioned();
-
-	ModelColumn<I_I_Product, Object> COLUMN_IsCommissioned = new ModelColumn<>(I_I_Product.class, "IsCommissioned", null);
-	String COLUMNNAME_IsCommissioned = "IsCommissioned";
-
-	/**
-	 * Set Eingestellt.
+	 * Set Discontinued.
 	 * This product is no longer available
 	 *
 	 * <br>Type: YesNo
@@ -466,7 +464,7 @@ public interface I_I_Product
 	void setDiscontinued (boolean Discontinued);
 
 	/**
-	 * Get Eingestellt.
+	 * Get Discontinued.
 	 * This product is no longer available
 	 *
 	 * <br>Type: YesNo
@@ -479,7 +477,7 @@ public interface I_I_Product
 	String COLUMNNAME_Discontinued = "Discontinued";
 
 	/**
-	 * Set Eingestellt durch.
+	 * Set Discontinued by.
 	 * Discontinued By
 	 *
 	 * <br>Type: Date
@@ -489,7 +487,7 @@ public interface I_I_Product
 	void setDiscontinuedBy (@Nullable java.sql.Timestamp DiscontinuedBy);
 
 	/**
-	 * Get Eingestellt durch.
+	 * Get Discontinued by.
 	 * Discontinued By
 	 *
 	 * <br>Type: Date
@@ -502,8 +500,7 @@ public interface I_I_Product
 	String COLUMNNAME_DiscontinuedBy = "DiscontinuedBy";
 
 	/**
-	 * Set Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Set Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -512,8 +509,7 @@ public interface I_I_Product
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Get Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -523,6 +519,68 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_DocumentNote = new ModelColumn<>(I_I_Product.class, "DocumentNote", null);
 	String COLUMNNAME_DocumentNote = "DocumentNote";
+
+	/**
+	 * Set Menge-Darreichung .
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDosageQty (@Nullable BigDecimal DosageQty);
+
+	/**
+	 * Get Menge-Darreichung .
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDosageQty();
+
+	ModelColumn<I_I_Product, Object> COLUMN_DosageQty = new ModelColumn<>(I_I_Product.class, "DosageQty", null);
+	String COLUMNNAME_DosageQty = "DosageQty";
+
+	/**
+	 * Set DosageUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDosageUOM (@Nullable java.lang.String DosageUOM);
+
+	/**
+	 * Get DosageUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDosageUOM();
+
+	ModelColumn<I_I_Product, Object> COLUMN_DosageUOM = new ModelColumn<>(I_I_Product.class, "DosageUOM", null);
+	String COLUMNNAME_DosageUOM = "DosageUOM";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDosageUOM_ID (int DosageUOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDosageUOM_ID();
+
+	String COLUMNNAME_DosageUOM_ID = "DosageUOM_ID";
 
 	/**
 	 * Set External ID.
@@ -544,6 +602,50 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_I_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGuaranteeDaysMin();
+
+	ModelColumn<I_I_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_I_Product.class, "GuaranteeDaysMin", null);
+	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
+	 * Set Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHeightInCm (int HeightInCm);
+
+	/**
+	 * Get Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHeightInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_HeightInCm = new ModelColumn<>(I_I_Product.class, "HeightInCm", null);
+	String COLUMNNAME_HeightInCm = "HeightInCm";
 
 	/**
 	 * Set Help.
@@ -657,7 +759,7 @@ public interface I_I_Product
 	String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
-	 * Set Bild-URL.
+	 * Set Image URL.
 	 * URL of  image
 	 *
 	 * <br>Type: URL
@@ -667,7 +769,7 @@ public interface I_I_Product
 	void setImageURL (@Nullable java.lang.String ImageURL);
 
 	/**
-	 * Get Bild-URL.
+	 * Get Image URL.
 	 * URL of  image
 	 *
 	 * <br>Type: URL
@@ -680,7 +782,28 @@ public interface I_I_Product
 	String COLUMNNAME_ImageURL = "ImageURL";
 
 	/**
-	 * Set Import - Produkt.
+	 * Set Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicableQtyBasedOn (@Nullable java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicableQtyBasedOn();
+
+	ModelColumn<I_I_Product, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_I_Product.class, "InvoicableQtyBasedOn", null);
+	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
+
+	/**
+	 * Set Import Product.
 	 * Import Item or Service
 	 *
 	 * <br>Type: ID
@@ -690,7 +813,7 @@ public interface I_I_Product
 	void setI_Product_ID (int I_Product_ID);
 
 	/**
-	 * Get Import - Produkt.
+	 * Get Import Product.
 	 * Import Item or Service
 	 *
 	 * <br>Type: ID
@@ -726,7 +849,49 @@ public interface I_I_Product
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set ISO Währungscode.
+	 * Set Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCommissioned (boolean IsCommissioned);
+
+	/**
+	 * Get Is commissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCommissioned();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsCommissioned = new ModelColumn<>(I_I_Product.class, "IsCommissioned", null);
+	String COLUMNNAME_IsCommissioned = "IsCommissioned";
+
+	/**
+	 * Set Default Packing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultPacking (boolean IsDefaultPacking);
+
+	/**
+	 * Get Default Packing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultPacking();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsDefaultPacking = new ModelColumn<>(I_I_Product.class, "IsDefaultPacking", null);
+	String COLUMNNAME_IsDefaultPacking = "IsDefaultPacking";
+
+	/**
+	 * Set ISO Currency Code.
 	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
@@ -736,7 +901,7 @@ public interface I_I_Product
 	void setISO_Code (@Nullable java.lang.String ISO_Code);
 
 	/**
-	 * Get ISO Währungscode.
+	 * Get ISO Currency Code.
 	 * Three letter ISO 4217 Code of the Currency
 	 *
 	 * <br>Type: String
@@ -793,8 +958,29 @@ public interface I_I_Product
 	String COLUMNNAME_IsScalePrice = "IsScalePrice";
 
 	/**
-	 * Set Verkauft.
-	 * Die Organisation verkauft dieses Produkt
+	 * Set Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSelfPacked (boolean IsSelfPacked);
+
+	/**
+	 * Get Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSelfPacked();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsSelfPacked = new ModelColumn<>(I_I_Product.class, "IsSelfPacked", null);
+	String COLUMNNAME_IsSelfPacked = "IsSelfPacked";
+
+	/**
+	 * Set Sold.
+	 * Organization sells this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -803,8 +989,8 @@ public interface I_I_Product
 	void setIsSold (boolean IsSold);
 
 	/**
-	 * Get Verkauft.
-	 * Die Organisation verkauft dieses Produkt
+	 * Get Sold.
+	 * Organization sells this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -816,8 +1002,8 @@ public interface I_I_Product
 	String COLUMNNAME_IsSold = "IsSold";
 
 	/**
-	 * Set Lagerhaltig.
-	 * Die Organisation hat dieses Produkt auf Lager
+	 * Set Stocked.
+	 * Organization stocks this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -826,8 +1012,8 @@ public interface I_I_Product
 	void setIsStocked (boolean IsStocked);
 
 	/**
-	 * Get Lagerhaltig.
-	 * Die Organisation hat dieses Produkt auf Lager
+	 * Get Stocked.
+	 * Organization stocks this product
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -839,8 +1025,71 @@ public interface I_I_Product
 	String COLUMNNAME_IsStocked = "IsStocked";
 
 	/**
+	 * Set Update Name.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateName (boolean IsUpdateName);
+
+	/**
+	 * Get Update Name.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateName();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateName = new ModelColumn<>(I_I_Product.class, "IsUpdateName", null);
+	String COLUMNNAME_IsUpdateName = "IsUpdateName";
+
+	/**
+	 * Set Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateProductCategory (boolean IsUpdateProductCategory);
+
+	/**
+	 * Get Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateProductCategory();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateProductCategory = new ModelColumn<>(I_I_Product.class, "IsUpdateProductCategory", null);
+	String COLUMNNAME_IsUpdateProductCategory = "IsUpdateProductCategory";
+
+	/**
+	 * Set Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLengthInCm (int LengthInCm);
+
+	/**
+	 * Get Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLengthInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_LengthInCm = new ModelColumn<>(I_I_Product.class, "LengthInCm", null);
+	String COLUMNNAME_LengthInCm = "LengthInCm";
+
+	/**
 	 * Set Manufacturer.
-	 * Hersteller des Produktes
+	 * Manufacturer of the Product
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -850,7 +1099,7 @@ public interface I_I_Product
 
 	/**
 	 * Get Manufacturer.
-	 * Hersteller des Produktes
+	 * Manufacturer of the Product
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -859,7 +1108,6 @@ public interface I_I_Product
 	int getManufacturer_ID();
 
 	String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
-
 
 	/**
 	 * Set Manufacturing Method.
@@ -908,8 +1156,29 @@ public interface I_I_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
-	 * Set Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Set M_HU_PI_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Value (@Nullable java.lang.String M_HU_PI_Value);
+
+	/**
+	 * Get M_HU_PI_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getM_HU_PI_Value();
+
+	ModelColumn<I_I_Product, Object> COLUMN_M_HU_PI_Value = new ModelColumn<>(I_I_Product.class, "M_HU_PI_Value", null);
+	String COLUMNNAME_M_HU_PI_Value = "M_HU_PI_Value";
+
+	/**
+	 * Set Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -918,8 +1187,8 @@ public interface I_I_Product
 	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/**
-	 * Get Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Get Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -997,7 +1266,7 @@ public interface I_I_Product
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set M_ProductPlanningSchema_Selector.
+	 * Set Product Planning Schema.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1006,7 +1275,7 @@ public interface I_I_Product
 	void setM_ProductPlanningSchema_Selector (@Nullable java.lang.String M_ProductPlanningSchema_Selector);
 
 	/**
-	 * Get M_ProductPlanningSchema_Selector.
+	 * Get Product Planning Schema.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1060,6 +1329,47 @@ public interface I_I_Product
 	String COLUMNNAME_NetWeight = "NetWeight";
 
 	/**
+	 * Set NetWeightUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNetWeightUOM (@Nullable java.lang.String NetWeightUOM);
+
+	/**
+	 * Get NetWeightUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNetWeightUOM();
+
+	ModelColumn<I_I_Product, Object> COLUMN_NetWeightUOM = new ModelColumn<>(I_I_Product.class, "NetWeightUOM", null);
+	String COLUMNNAME_NetWeightUOM = "NetWeightUOM";
+
+	/**
+	 * Set Netto-Verkaufsmengeneinheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNetWeight_UOM_ID (int NetWeight_UOM_ID);
+
+	/**
+	 * Get Netto-Verkaufsmengeneinheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getNetWeight_UOM_ID();
+
+	String COLUMNNAME_NetWeight_UOM_ID = "NetWeight_UOM_ID";
+
+	/**
 	 * Set Minimum Order Qty.
 	 * Minimum order quantity in UOM
 	 *
@@ -1083,7 +1393,7 @@ public interface I_I_Product
 	String COLUMNNAME_Order_Min = "Order_Min";
 
 	/**
-	 * Set Packungsgröße.
+	 * Set Order Pack Qty.
 	 * Package order size in UOM (e.g. order set of 5 units)
 	 *
 	 * <br>Type: Integer
@@ -1093,7 +1403,7 @@ public interface I_I_Product
 	void setOrder_Pack (int Order_Pack);
 
 	/**
-	 * Get Packungsgröße.
+	 * Get Order Pack Qty.
 	 * Package order size in UOM (e.g. order set of 5 units)
 	 *
 	 * <br>Type: Integer
@@ -1174,7 +1484,7 @@ public interface I_I_Product
 	String COLUMNNAME_PriceEffective = "PriceEffective";
 
 	/**
-	 * Set Mindestpreis.
+	 * Set Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -1184,7 +1494,7 @@ public interface I_I_Product
 	void setPriceLimit (@Nullable BigDecimal PriceLimit);
 
 	/**
-	 * Get Mindestpreis.
+	 * Get Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -1197,8 +1507,8 @@ public interface I_I_Product
 	String COLUMNNAME_PriceLimit = "PriceLimit";
 
 	/**
-	 * Set Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Set List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -1207,8 +1517,8 @@ public interface I_I_Product
 	void setPriceList (@Nullable BigDecimal PriceList);
 
 	/**
-	 * Get Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Get List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -1220,7 +1530,7 @@ public interface I_I_Product
 	String COLUMNNAME_PriceList = "PriceList";
 
 	/**
-	 * Set Einkaufspreis.
+	 * Set PO Price.
 	 * Price based on a purchase order
 	 *
 	 * <br>Type: CostPrice
@@ -1230,7 +1540,7 @@ public interface I_I_Product
 	void setPricePO (@Nullable BigDecimal PricePO);
 
 	/**
-	 * Get Einkaufspreis.
+	 * Get PO Price.
 	 * Price based on a purchase order
 	 *
 	 * <br>Type: CostPrice
@@ -1306,7 +1616,7 @@ public interface I_I_Product
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Produktkategorie-Schlüssel.
+	 * Set Product Category Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1315,7 +1625,7 @@ public interface I_I_Product
 	void setProductCategory_Value (@Nullable java.lang.String ProductCategory_Value);
 
 	/**
-	 * Get Produktkategorie-Schlüssel.
+	 * Get Product Category Key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1371,6 +1681,27 @@ public interface I_I_Product
 	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
+	 * Set PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPZN (@Nullable java.lang.String PZN);
+
+	/**
+	 * Get PZN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPZN();
+
+	ModelColumn<I_I_Product, Object> COLUMN_PZN = new ModelColumn<>(I_I_Product.class, "PZN", null);
+	String COLUMNNAME_PZN = "PZN";
+
+	/**
 	 * Set Quantity.
 	 * Quantity
 	 *
@@ -1394,25 +1725,66 @@ public interface I_I_Product
 	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set PZN.
+	 * Set Menge CU.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPZN (@Nullable java.lang.String PZN);
+	void setQtyCU (@Nullable BigDecimal QtyCU);
 
 	/**
-	 * Get PZN.
+	 * Get Menge CU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyCU();
+
+	ModelColumn<I_I_Product, Object> COLUMN_QtyCU = new ModelColumn<>(I_I_Product.class, "QtyCU", null);
+	String COLUMNNAME_QtyCU = "QtyCU";
+
+	/**
+	 * Set QtyCU UOM Code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPZN();
+	void setQtyCU_UOM_Code (@Nullable java.lang.String QtyCU_UOM_Code);
 
-	ModelColumn<I_I_Product, Object> COLUMN_PZN = new ModelColumn<>(I_I_Product.class, "PZN", null);
-	String COLUMNNAME_PZN = "PZN";
+	/**
+	 * Get QtyCU UOM Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQtyCU_UOM_Code();
+
+	ModelColumn<I_I_Product, Object> COLUMN_QtyCU_UOM_Code = new ModelColumn<>(I_I_Product.class, "QtyCU_UOM_Code", null);
+	String COLUMNNAME_QtyCU_UOM_Code = "QtyCU_UOM_Code";
+
+	/**
+	 * Set Maßeinheit CU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCU_UOM_ID (int QtyCU_UOM_ID);
+
+	/**
+	 * Get Maßeinheit CU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyCU_UOM_ID();
+
+	String COLUMNNAME_QtyCU_UOM_ID = "QtyCU_UOM_ID";
 
 	/**
 	 * Set Raw Material Origin Country Code.
@@ -1461,7 +1833,7 @@ public interface I_I_Product
 	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
 
 	/**
-	 * Set Lizenzbetrag.
+	 * Set Royalty Amount.
 	 * (Included) Amount for copyright, etc.
 	 *
 	 * <br>Type: Amount
@@ -1471,7 +1843,7 @@ public interface I_I_Product
 	void setRoyaltyAmt (@Nullable BigDecimal RoyaltyAmt);
 
 	/**
-	 * Get Lizenzbetrag.
+	 * Get Royalty Amount.
 	 * (Included) Amount for copyright, etc.
 	 *
 	 * <br>Type: Amount
@@ -1484,17 +1856,17 @@ public interface I_I_Product
 	String COLUMNNAME_RoyaltyAmt = "RoyaltyAmt";
 
 	/**
-	 * Set Regaltiefe.
+	 * Set Shelf Depth.
 	 * Shelf depth required
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setShelfDepth (BigDecimal ShelfDepth);
+	void setShelfDepth (@Nullable BigDecimal ShelfDepth);
 
 	/**
-	 * Get Regaltiefe.
+	 * Get Shelf Depth.
 	 * Shelf depth required
 	 *
 	 * <br>Type: Amount
@@ -1507,20 +1879,20 @@ public interface I_I_Product
 	String COLUMNNAME_ShelfDepth = "ShelfDepth";
 
 	/**
-	 * Set Regalhöhe.
+	 * Set Shelf Height.
 	 * Shelf height required
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setShelfHeight (BigDecimal ShelfHeight);
+	void setShelfHeight (@Nullable BigDecimal ShelfHeight);
 
 	/**
-	 * Get Regalhöhe.
+	 * Get Shelf Height.
 	 * Shelf height required
 	 *
-	 * <br>Type: BigDecimal
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1530,17 +1902,17 @@ public interface I_I_Product
 	String COLUMNNAME_ShelfHeight = "ShelfHeight";
 
 	/**
-	 * Set Regalbreite.
+	 * Set Shelf Width.
 	 * Shelf width required
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setShelfWidth (BigDecimal ShelfWidth);
+	void setShelfWidth (@Nullable BigDecimal ShelfWidth);
 
 	/**
-	 * Get Regalbreite.
+	 * Get Shelf Width.
 	 * Shelf width required
 	 *
 	 * <br>Type: Amount
@@ -1597,7 +1969,7 @@ public interface I_I_Product
 	String COLUMNNAME_Trademark = "Trademark";
 
 	/**
-	 * Set Einheiten pro Palette.
+	 * Set Units Per Pallet.
 	 * Units Per Pallet
 	 *
 	 * <br>Type: Integer
@@ -1607,7 +1979,7 @@ public interface I_I_Product
 	void setUnitsPerPallet (int UnitsPerPallet);
 
 	/**
-	 * Get Einheiten pro Palette.
+	 * Get Units Per Pallet.
 	 * Units Per Pallet
 	 *
 	 * <br>Type: Integer
@@ -1618,6 +1990,27 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_UnitsPerPallet = new ModelColumn<>(I_I_Product.class, "UnitsPerPallet", null);
 	String COLUMNNAME_UnitsPerPallet = "UnitsPerPallet";
+
+	/**
+	 * Set UOM Multiplier Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUOM_MultiplierRate (@Nullable BigDecimal UOM_MultiplierRate);
+
+	/**
+	 * Get UOM Multiplier Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUOM_MultiplierRate();
+
+	ModelColumn<I_I_Product, Object> COLUMN_UOM_MultiplierRate = new ModelColumn<>(I_I_Product.class, "UOM_MultiplierRate", null);
+	String COLUMNNAME_UOM_MultiplierRate = "UOM_MultiplierRate";
 
 	/**
 	 * Set UPC.
@@ -1692,7 +2085,7 @@ public interface I_I_Product
 
 	/**
 	 * Set Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1702,7 +2095,7 @@ public interface I_I_Product
 
 	/**
 	 * Get Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1714,7 +2107,7 @@ public interface I_I_Product
 	String COLUMNNAME_VendorCategory = "VendorCategory";
 
 	/**
-	 * Set Produkt-Nr. Geschäftspartner.
+	 * Set Partner Product Key.
 	 * Product Key of the Business Partner
 	 *
 	 * <br>Type: String
@@ -1724,7 +2117,7 @@ public interface I_I_Product
 	void setVendorProductNo (@Nullable java.lang.String VendorProductNo);
 
 	/**
-	 * Get Produkt-Nr. Geschäftspartner.
+	 * Get Partner Product Key.
 	 * Product Key of the Business Partner
 	 *
 	 * <br>Type: String
@@ -1740,17 +2133,17 @@ public interface I_I_Product
 	 * Set Volume.
 	 * Volume of a product
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setVolume (BigDecimal Volume);
+	void setVolume (@Nullable BigDecimal Volume);
 
 	/**
 	 * Get Volume.
 	 * Volume of a product
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1760,7 +2153,7 @@ public interface I_I_Product
 	String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Weight.
+	 * Set Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Amount
@@ -1770,7 +2163,7 @@ public interface I_I_Product
 	void setWeight (@Nullable BigDecimal Weight);
 
 	/**
-	 * Get Weight.
+	 * Get Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Amount
@@ -1783,7 +2176,69 @@ public interface I_I_Product
 	String COLUMNNAME_Weight = "Weight";
 
 	/**
-	 * Set Kodierung der Mengeneinheit.
+	 * Set WeightUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeightUOM (@Nullable java.lang.String WeightUOM);
+
+	/**
+	 * Get WeightUOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWeightUOM();
+
+	ModelColumn<I_I_Product, Object> COLUMN_WeightUOM = new ModelColumn<>(I_I_Product.class, "WeightUOM", null);
+	String COLUMNNAME_WeightUOM = "WeightUOM";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeight_UOM_ID (int Weight_UOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWeight_UOM_ID();
+
+	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
+
+	/**
+	 * Set Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWidthInCm (int WidthInCm);
+
+	/**
+	 * Get Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWidthInCm();
+
+	ModelColumn<I_I_Product, Object> COLUMN_WidthInCm = new ModelColumn<>(I_I_Product.class, "WidthInCm", null);
+	String COLUMNNAME_WidthInCm = "WidthInCm";
+
+	/**
+	 * Set UOM Code.
 	 * UOM EDI X12 Code
 	 *
 	 * <br>Type: String
@@ -1793,7 +2248,7 @@ public interface I_I_Product
 	void setX12DE355 (@Nullable java.lang.String X12DE355);
 
 	/**
-	 * Get Kodierung der Mengeneinheit.
+	 * Get UOM Code.
 	 * UOM EDI X12 Code
 	 *
 	 * <br>Type: String

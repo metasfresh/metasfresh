@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -14,7 +15,6 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
@@ -24,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -43,6 +44,8 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.storage.IStorageEngine;
@@ -62,9 +65,9 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -77,20 +80,24 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -110,30 +117,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -161,6 +145,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
+	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED = AdMessageKey.of("salesorder.shipmentschedule.exported");
+	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING = AdMessageKey.of("salesorder.shipmentschedule.cannotReactivateBecauseScheduledForPicking");
 
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
@@ -176,6 +162,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -405,7 +392,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		else
 		{
-			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));			
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
 		}
 		return storageQuery;
 	}
@@ -652,8 +639,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (record.isProcessed())
 			{
 				throw new AdempiereException(
-						Services.get(IMsgBL.class)
-								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
+						MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID())
 						.markAsUserValidationError();
 			}
 			closeShipmentSchedule(record);
@@ -702,26 +688,50 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
+		// Track which schedules were fully shipped in this shipment (MovementQty >= QtyOrdered)
+		final HashSet<ShipmentScheduleId> fullyShippedScheduleIds = new HashSet<>();
+		final HashSet<OrderId> orderIds = new HashSet<>();
+
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
 			{
 				for (final I_M_ShipmentSchedule shipmentScheduleRecord : shipmentSchedulePA.retrieveForInOutLine(iolrecord))
 				{
-					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+					final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+					final OrderId orderId = OrderId.ofRepoIdOrNull(shipmentScheduleRecord.getC_Order_ID());
+					if (orderId != null)
 					{
-						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
-						{
-							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
-										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
-							closeShipmentSchedule(shipmentScheduleRecord);
-						}
-						else
-						{
-							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
-										 iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
-						}
+						orderIds.add(orderId);
 					}
+
+					if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) >= 0)
+					{
+						fullyShippedScheduleIds.add(scheduleId);
+					}
+				}
+			}
+		}
+
+		// Close all schedules from the involved orders that were NOT fully shipped.
+		// This includes partially shipped schedules (MovementQty < QtyOrdered) and
+		// completely unshipped schedules (no shipment line at all).
+		for (final OrderId orderId : orderIds)
+		{
+			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
+			for (final ShipmentScheduleId scheduleId : allScheduleIds)
+			{
+				if (fullyShippedScheduleIds.contains(scheduleId))
+				{
+					logger.debug("Not closing shipment schedule {} - fully shipped in this delivery", scheduleId);
+					continue;
+				}
+
+				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
+				if (!schedule.isClosed())
+				{
+					logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
+					closeShipmentSchedule(schedule);
 				}
 			}
 		}
@@ -847,7 +857,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (qtyToDeliverWasIncreased)
 			{
 				logger.debug("currentExportStatus={} and qtyToDeliverWasIncreased from {} to {}; -> set export status to {}",
-							 APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
+						APIExportStatus.toCodeOrNull(currentExportStatus), oldSchedRecord.getQtyToDeliver(), schedRecord.getQtyToDeliver(), APIExportStatus.Pending.getCode());
 				schedRecord.setExportStatus(APIExportStatus.Pending.getCode());
 			}
 		}
@@ -913,27 +923,44 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-						 {
-							 allCounter.incrementAndGet();
-							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-							 {
-								 return;
-							 }
-							 record.setExportStatus(newExportStatus.getCode());
-							 updateCanBeExportedAfter(record);
-							 InterfaceWrapperHelper.saveRecord(record);
+				{
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedAfter(record);
+					InterfaceWrapperHelper.saveRecord(record);
 
-							 updatedCounter.incrementAndGet();
-						 });
+					updatedCounter.incrementAndGet();
+				});
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ShipmentSchedule", updatedCounter.get(), allCounter.get());
+	}
+
+	@Override
+	public void setAsyncBatchByIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		setAsyncBatchAndSave(shipmentSchedules, asyncBatchId);
+	}
+
+	@Override
+	public void setAsyncBatchAndSave(@NonNull final Collection<I_M_ShipmentSchedule> shipmentSchedules, final @NotNull AsyncBatchId asyncBatchId)
+	{
+		shipmentSchedules.forEach(shipmentSchedule -> setAsyncBatchAndSave(shipmentSchedule, asyncBatchId));
 	}
 
 	@Override
 	public void setAsyncBatch(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+		setAsyncBatchAndSave(shipmentSchedule, asyncBatchId);
+	}
 
+	private void setAsyncBatchAndSave(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final AsyncBatchId asyncBatchId)
+	{
 		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
 		{
 			throw new AdempiereException("Reassigning shipmentSchedule.C_Async_Batch_ID is not allowed!");
@@ -941,8 +968,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (shipmentSchedule.isProcessed())
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("ShipmentScheduleBL.setAsyncBatch(): M_ShipmentScheduled already processed,"
-																	+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
+			Loggables.withLogger(logger, Level.WARN).addLog("ShipmentScheduleBL.setAsyncBatchAndSave(): M_ShipmentScheduled already processed,"
+					+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
 			return;
 		}
 
@@ -950,4 +977,120 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		shipmentSchedulePA.save(shipmentSchedule);
 	}
+
+	@Override
+	public I_M_ShipmentSchedule getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return shipmentSchedulePA.getByOrderLineId(orderLineId);
+	}
+
+	@Override
+	public void assertSalesOrderCanBeReactivated(@NonNull final OrderId salesOrderId)
+	{
+		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(salesOrderId))
+		{
+			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED);
+		}
+		if (shipmentSchedulePA.existsSheduledForPickingShipmentScheduleForOrder(salesOrderId))
+		{
+			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING);
+		}
+	}
+
+	@Override
+	public Quantity getQtyScheduledForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final BigDecimal qtyScheduledForPicking = shipmentScheduleRecord.getQtyScheduledForPicking();
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
+		return Quantity.of(qtyScheduledForPicking, uom);
+	}
+
+	@Override
+	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final Quantity qtyToDeliver = getQtyToDeliver(shipmentScheduleRecord);
+		final Quantity qtyScheduledForPicking = getQtyScheduledForPicking(shipmentScheduleRecord);
+		return qtyToDeliver.subtract(qtyScheduledForPicking).toZeroIfNegative();
+	}
+
+	@Override
+	public ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache()
+	{
+		return newLoadingCache(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> ShipmentScheduleLoadingCache<T> newLoadingCache(@NonNull Class<T> modelClass)
+	{
+		return ShipmentScheduleLoadingCache.<T>builder()
+				.shipmentSchedulePA(shipmentSchedulePA)
+				.modelClass(modelClass)
+				.build();
+	}
+
+	@Override
+	public void updateProjectId(@NonNull final OrderLineId orderLineId, @Nullable final ProjectId projectId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getByOrderLineId(orderLineId);
+		if (shipmentSchedule == null)
+		{
+			logger.debug("No shipment schedule found for C_OrderLine_ID={}; skip project propagation", orderLineId);
+			return;
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			return;
+		}
+
+		final ProjectId schedProjectId = ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
+		if (ProjectId.equals(schedProjectId, projectId))
+		{
+			return;
+		}
+
+		shipmentSchedule.setC_Project_ID(ProjectId.toRepoId(projectId));
+		shipmentSchedulePA.save(shipmentSchedule);
+		logger.debug("Updated C_Project_ID={} on M_ShipmentSchedule_ID={} from C_OrderLine_ID={}", projectId, shipmentSchedule.getM_ShipmentSchedule_ID(), orderLineId);
+	}
+
+	@Override
+	public void updateASIFromProjectId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.isProcessed())
+		{
+			return;
+		}
+		if (!attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+		{
+			return;
+		}
+
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
+		if (asiId.isNone() && projectId == null)
+		{
+			return;
+		}
+		if (asiId.isNone())
+		{
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		}
+
+		final Object value;
+		if (projectId != null)
+		{
+			final I_C_Project project = projectRepository.get().getById(projectId);
+			value = project.getValue();
+		}
+		else
+		{
+			value = null;
+		}
+
+		final AttributeSetInstanceId newAsiId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, value);
+		shipmentSchedule.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
+	}
+
 }

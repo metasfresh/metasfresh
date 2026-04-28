@@ -46,14 +46,13 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
@@ -80,7 +79,7 @@ class PPOrderIssueServiceProductCommand
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
 
 	// Params
@@ -195,7 +194,7 @@ class PPOrderIssueServiceProductCommand
 		if (bomLineAttributes == null)
 		{
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(getBOMLineRecord().getM_AttributeSetInstance_ID());
-			bomLineAttributes = _bomLineAttributes = attributeDAO.getImmutableAttributeSetById(asiId);
+			bomLineAttributes = _bomLineAttributes = asiBL.getImmutableAttributeSetById(asiId);
 		}
 		return bomLineAttributes;
 	}
@@ -256,13 +255,13 @@ class PPOrderIssueServiceProductCommand
 			// The original HU will also be replaced.
 			for (int i = 1; i <= huQty; i++)
 			{
-				final I_M_HU extractedHU = CollectionUtils.singleElement(
-						HUTransformService.newInstance(huContext)
-								.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
-										.sourceHU(hu)
-										.productId(finishedGoodProductId)
-										.qtyCU(Quantity.of(1, uomEach))
-										.build()));
+				final I_M_HU extractedHU = HUTransformService.newInstance(huContext)
+						.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+								.sourceHU(hu)
+								.productId(finishedGoodProductId)
+								.qtyCU(Quantity.of(1, uomEach))
+								.build())
+						.singleCU();
 
 				singleItemHUs.add(extractedHU);
 

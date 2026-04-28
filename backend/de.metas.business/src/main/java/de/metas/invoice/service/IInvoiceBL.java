@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -12,6 +34,7 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -19,8 +42,10 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
+import de.metas.invoice.service.impl.InvoiceTotal;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -40,6 +65,7 @@ import org.compiere.model.X_C_DocType;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -106,6 +132,9 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
+	@NonNull
+	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
+
 	/**
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
 	 */
@@ -124,18 +153,13 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isReversal(I_C_Invoice invoice);
 
 	/**
-	 * @return true if the given invoice is a AR CreditMemo (ARC)
-	 */
-	boolean isARCreditMemo(I_C_Invoice invoice);
-
-	/**
 	 * Writes off the given openAmt from the given invoice.
 	 *
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
-	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+	List<I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
@@ -196,6 +220,10 @@ public interface IInvoiceBL extends ISingletonService
 			@NonNull BigDecimal openAmt,
 			@NonNull InvoicePaymentStatus paymentStatus);
 
+	InvoiceTotal extractGrandTotal(@NonNull I_C_Invoice invoice);
+
+	InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull I_C_Invoice invoice);
+
 	/**
 	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
@@ -219,10 +247,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
-	 *
-	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
+	void setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -271,6 +297,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void setTaxAmt(I_C_InvoiceLine invoiceLine);
 
+	@Nullable
 	I_C_DocType getC_DocType(I_C_Invoice invoice);
 
 	/**
@@ -294,10 +321,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
 	 * Invoice but sets the quantity read only.
-	 *
-	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
+	void adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
@@ -412,4 +437,10 @@ public interface IInvoiceBL extends ISingletonService
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
+	@Nullable
+	Instant getUniqueInvoiceDateForOrderId(@NonNull OrderId orderId);
+
+	Amount retrieveOpenAmt(InvoiceId invoiceId);
+
+	void save(@NonNull I_C_Invoice invoice);
 }

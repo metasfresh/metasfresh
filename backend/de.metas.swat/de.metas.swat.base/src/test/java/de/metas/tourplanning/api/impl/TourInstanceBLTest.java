@@ -12,12 +12,12 @@ import java.time.LocalDate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.tourplanning.TourPlanningTestBase;
@@ -61,7 +61,7 @@ public class TourInstanceBLTest extends TourPlanningTestBase
 
 	/**
 	 * Make sure M_DeliveryDay.Processed is updated when M_Tour_Instance.Processed is changed
-	 * 
+	 *
 	 * @see de.metas.tourplanning.model.validator.M_Tour_Instance#updateDeliveryDays(I_M_Tour_Instance)
 	 */
 	@Test
@@ -125,7 +125,7 @@ public class TourInstanceBLTest extends TourPlanningTestBase
 		deliveryDay.setProcessed(false);
 
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
-		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
+		Assertions.assertNotNull(deliveryDay.getDeliveryDateTimeMax(), "DeliveryDateTimeMax shall be set");
 
 		InterfaceWrapperHelper.save(deliveryDay);
 

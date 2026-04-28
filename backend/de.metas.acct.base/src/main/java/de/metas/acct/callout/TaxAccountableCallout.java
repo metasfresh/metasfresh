@@ -33,6 +33,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -41,6 +42,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
@@ -76,7 +78,7 @@ import java.math.BigDecimal;
 	 */
 	public void onTaxBaseAmt(final ITaxAccountable taxAccountable)
 	{
-		final Tax tax = taxDAO.getTaxById(taxAccountable.getC_Tax_ID());
+		final Tax tax = getTaxOrNull(taxAccountable);
 		if (tax == null)
 		{
 			return;
@@ -99,6 +101,18 @@ import java.math.BigDecimal;
 		taxAccountable.setTaxTotalAmt(totalAmt);
 	}
 
+	@Nullable
+	private Tax getTaxOrNull(@NonNull final ITaxAccountable taxAccountable)
+	{
+		final TaxId taxId = TaxId.ofRepoIdOrNull(taxAccountable.getC_Tax_ID());
+		if (taxId == null)
+		{
+			return null;
+		}
+
+		return taxDAO.getTaxById(taxId);
+	}
+
 	/**
 	 * Called when TaxAmt is changed.
 	 * <p>
@@ -119,7 +133,7 @@ import java.math.BigDecimal;
 	 */
 	public void onTaxTotalAmt(final ITaxAccountable taxAccountable)
 	{
-		final Tax tax = taxDAO.getTaxById(taxAccountable.getC_Tax_ID());
+		final Tax tax = getTaxOrNull(taxAccountable);
 		if (tax == null)
 		{
 			return;
@@ -205,11 +219,12 @@ import java.math.BigDecimal;
 			return null;
 		}
 
-		final int taxId = account.getC_Tax_ID();
-		if (taxId <= 0)
+		final TaxId taxId = TaxId.ofRepoIdOrNull(account.getC_Tax_ID());
+		if (taxId == null)
 		{
 			return null;
 		}
+		
 		return InterfaceWrapperHelper.load(taxId, I_C_Tax.class);
 	}
 

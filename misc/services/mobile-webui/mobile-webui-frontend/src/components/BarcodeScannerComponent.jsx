@@ -8,6 +8,9 @@ import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reduc
 import { debounce } from 'lodash';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
+import Spinner from './Spinner';
+import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
+import { isMobileOrTablet } from '../utils/browser';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -20,7 +23,18 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const useConfigParams = () => {
+const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRunningParam } = {}) => {
+  const isShowInputText =
+    isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
+
+  const isInputTextReadonly = isShowInputText
+    ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
+    : true;
+
+  const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
+
+  const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
+
   return {
     okBeepParams: {
       name: 'OK',
@@ -36,42 +50,110 @@ const useConfigParams = () => {
       beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
-    isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
+    isShowInputText,
+    isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
     ),
     textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
+    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+    isShowVideo,
+    continuousRunning,
   };
 };
 
 const BarcodeScannerComponent = ({
+  testId,
+  isShowInputText: isShowInputTextParam,
+  isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning,
+  continuousRunning: continuousRunningParam,
 }) => {
   const {
-    isShowInputText,
-    triggerOnChangeIfLengthGreaterThan,
-    textChangedDebounceMillis,
     okBeepParams,
     errorBeepParams,
-  } = useConfigParams();
+    isShowInputText,
+    isInputTextReadonly,
+    triggerOnChangeIfLengthGreaterThan,
+    textChangedDebounceMillis,
+    scanDuplicatesIntervalMillis,
+    isShowVideo,
+    continuousRunning,
+  } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
 
-  const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
+  const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
+
+  //
+  // Video
+  const mountedRef = useRef(true);
+  const videoRef = useRef();
+  useEffect(() => {
+    mountedRef.current = true;
+
+    if (isShowVideo) {
+      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+        if (mountedRef.current === false) {
+          controls.stop();
+        } else if (typeof result !== 'undefined') {
+          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+        }
+      });
+    }
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [isShowVideo]);
+
+  useEffect(() => {
+    return () => handleInputTextChangedDebounced.cancel();
+  });
+
+  useEffect(
+    () => {
+      if (isShowVideo) {
+        videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      }
+      inputTextRef?.current?.focus();
+    } /* no deps, call it on each render */
+  );
+
+  useKeyboardBarcodeReader({
+    onReadDone: (barcode) => {
+      // console.log('onReadDone', barcode);
+      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = '';
+      }
+    },
+    onReadInProgress: (barcode) => {
+      // console.log('onReadInProgress', barcode);
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = barcode;
+      }
+    },
+    rateMs: textChangedDebounceMillis,
+    minLength: triggerOnChangeIfLengthGreaterThan,
+    disabled: isProcessing,
+  });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
     inputTextRef?.current?.select();
 
     const scanningStatus = scanningStatusRef.current;
     if (scanningStatus.running || scanningStatus.done) {
+      uiTrace.putContext({ isIgnored: true, ignoreReason: `scanning is already running or done` });
       console.log('Ignore scanned barcode because we are already running or done', { scannedBarcode, scanningStatus });
       return;
     }
+
     scanningStatus.running = true;
     setProcessing(true);
 
@@ -83,13 +165,20 @@ const BarcodeScannerComponent = ({
     // });
 
     try {
+      if (trackDuplicateScan({ scannedBarcode })) {
+        beep(errorBeepParams);
+        uiTrace.putContext({ isIgnored: true, ignoreReason: 'duplicate' });
+        console.log('Ignore scanned barcode because it is a duplicate', { scannedBarcode });
+        return;
+      }
+
       let resolvedResult;
       if (resolveScannedBarcode) {
         resolvedResult = await resolveScannedBarcode({ scannedBarcode });
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -117,29 +206,18 @@ const BarcodeScannerComponent = ({
       }
     }
   };
-
   const validateScannedBarcodeAndForward = uiTrace.traceFunction(
     validateScannedBarcodeAndForward0,
-    ({ scannedBarcode }) => ({ eventName: 'barcodeScanned', scannedBarcode })
+    ({ scannedBarcode }) => ({
+      eventName: 'barcodeScanned',
+      scannedBarcode,
+      isShowInputText,
+      isInputTextReadonly,
+      triggerOnChangeIfLengthGreaterThan,
+      textChangedDebounceMillis,
+      scanDuplicatesIntervalMillis,
+    })
   );
-
-  const mountedRef = useRef(true);
-  useEffect(() => {
-    mountedRef.current = true;
-
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
-
-    return function cleanup() {
-      mountedRef.current = false;
-    };
-  }, []);
 
   const handleInputTextChanged = (e) => {
     const scannedBarcode = e.target.value;
@@ -153,13 +231,9 @@ const BarcodeScannerComponent = ({
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
   };
-
   const handleInputTextChangedDebounced = useMemo(() => {
     return debounce(handleInputTextChanged, textChangedDebounceMillis);
   }, [textChangedDebounceMillis]);
-  useEffect(() => {
-    return () => handleInputTextChangedDebounced.cancel();
-  });
 
   const handleInputTextKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -179,11 +253,6 @@ const BarcodeScannerComponent = ({
     }, 2000);
   };
 
-  useEffect(() => {
-    videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
-    inputTextRef?.current?.focus();
-  });
-
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
@@ -197,15 +266,18 @@ const BarcodeScannerComponent = ({
           compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
       {!isProcessing && (
         <input
+          id="input-text"
           key="input-text"
           ref={inputTextRef}
           className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
+          data-testid={testId ?? 'qrCode-input'}
         />
       )}
       <video key="video" ref={videoRef} width="100%" height="100%" />
@@ -213,21 +285,47 @@ const BarcodeScannerComponent = ({
   );
 };
 
-const Spinner = () => {
-  return (
-    <div className="loading">
-      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
-    </div>
-  );
-};
-
 BarcodeScannerComponent.propTypes = {
-  //
-  // Props:
+  testId: PropTypes.string,
+  isShowInputText: PropTypes.bool,
+  isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
-  onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
   continuousRunning: PropTypes.bool,
+  onResolvedResult: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+const useDuplicateScansGuard = ({ scanDuplicatesIntervalMillis }) => {
+  const lastScanRef = useRef(null);
+  // console.log('useDuplicateScansGuard', { lastScan: lastScanRef.current, scanDuplicatesIntervalMillis });
+
+  const trackDuplicateScan = ({ scannedBarcode }) => {
+    const lastScan = lastScanRef.current;
+    const thisScan = { scannedBarcode, timestamp: Date.now() };
+    const isDuplicateScan =
+      scanDuplicatesIntervalMillis > 0 &&
+      lastScan &&
+      lastScan.scannedBarcode === thisScan.scannedBarcode &&
+      thisScan.timestamp - lastScan.timestamp < scanDuplicatesIntervalMillis;
+
+    if (isDuplicateScan) {
+      uiTrace.putContext({ duplicateIntervalMillis: thisScan.timestamp - lastScan?.timestamp });
+    }
+
+    lastScanRef.current = thisScan;
+
+    return isDuplicateScan;
+  };
+
+  return {
+    trackDuplicateScan,
+  };
+};

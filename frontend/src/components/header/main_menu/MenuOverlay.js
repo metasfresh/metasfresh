@@ -648,7 +648,7 @@ class MenuOverlay extends Component {
 
                 {pendingQuery && (
                   <div className="menu-overlay-spinner">
-                    <SpinnerOverlay iconSize={50} />
+                    <SpinnerOverlay iconSize={50} spinnerType="inline" />
                   </div>
                 )}
               </div>

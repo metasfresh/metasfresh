@@ -75,7 +75,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 				.setAutoCleanup(true)
 				.setOwner(LockOwner.forOwnerName(lockName)) // don't use LockOwner.NONE; we need the owner for lockManager.getLockedByFilter
 				.setFailIfAlreadyLocked(false)
-				.setSetRecordsByFilter(I_C_Queue_WorkPackage.class, processFilter);
+				.setRecordsByFilter(I_C_Queue_WorkPackage.class, processFilter);
 
 		try (final ILockAutoCloseable lock = logCommand.acquire().asAutoCloseable())
 		{

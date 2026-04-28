@@ -48,7 +48,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.util.Services;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 {

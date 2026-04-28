@@ -22,9 +22,8 @@ package org.adempiere.util.text;
  * #L%
  */
 
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TokenizedStringBuilderTest
 {
@@ -42,6 +41,6 @@ public class TokenizedStringBuilderTest
 		sb.appendSeparatorIfNeeded(); // shall do nothing
 		sb.append("s2");
 
-		Assert.assertEquals("s1\ns2", sb.toString());
+		Assertions.assertEquals("s1\ns2", sb.toString());
 	}
 }

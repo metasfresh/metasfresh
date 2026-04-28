@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1169265162L;
+	private static final long serialVersionUID = -518351623L;
 
     /** Standard Constructor */
     public X_AD_Issue (final Properties ctx, final int AD_Issue_ID, @Nullable final String trxName)
@@ -236,6 +237,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
+	public void setErrorCode (final @Nullable java.lang.String ErrorCode)
+	{
+		set_Value (COLUMNNAME_ErrorCode, ErrorCode);
+	}
+
+	@Override
+	public java.lang.String getErrorCode()
+	{
+		return get_ValueAsString(COLUMNNAME_ErrorCode);
+	}
+
+	@Override
 	public void setErrorTrace (final @Nullable java.lang.String ErrorTrace)
 	{
 		set_Value (COLUMNNAME_ErrorTrace, ErrorTrace);
@@ -254,7 +267,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getFrontendURL() 
+	public java.lang.String getFrontendURL()
 	{
 		return get_ValueAsString(COLUMNNAME_FrontendURL);
 	}
@@ -480,14 +493,14 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}
 
 	@Override
-	public int getRecord_ID() 
+	public int getRecord_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
@@ -499,7 +512,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getReleaseNo() 
+	public java.lang.String getReleaseNo()
 	{
 		return get_ValueAsString(COLUMNNAME_ReleaseNo);
 	}
@@ -511,7 +524,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getReleaseTag() 
+	public java.lang.String getReleaseTag()
 	{
 		return get_ValueAsString(COLUMNNAME_ReleaseTag);
 	}
@@ -523,7 +536,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getRemote_Addr() 
+	public java.lang.String getRemote_Addr()
 	{
 		return get_ValueAsString(COLUMNNAME_Remote_Addr);
 	}
@@ -535,7 +548,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getRemote_Host() 
+	public java.lang.String getRemote_Host()
 	{
 		return get_ValueAsString(COLUMNNAME_Remote_Host);
 	}
@@ -547,7 +560,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getRequestDocumentNo() 
+	public java.lang.String getRequestDocumentNo()
 	{
 		return get_ValueAsString(COLUMNNAME_RequestDocumentNo);
 	}
@@ -559,7 +572,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getResponseText() 
+	public java.lang.String getResponseText()
 	{
 		return get_ValueAsString(COLUMNNAME_ResponseText);
 	}
@@ -789,7 +802,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public java.lang.String getUserAgent() 
+	public java.lang.String getUserAgent()
 	{
 		return get_ValueAsString(COLUMNNAME_UserAgent);
 	}

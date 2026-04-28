@@ -23,13 +23,14 @@ package org.adempiere.ad.trx.processor.api.impl;
  */
 
 
+import org.junit.jupiter.api.Disabled;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
 
-@Ignore
+@Disabled
 public class ItemProcessorResult
 {
 	private final List<AggregatedItem> aggregatedItems = new ArrayList<AggregatedItem>();

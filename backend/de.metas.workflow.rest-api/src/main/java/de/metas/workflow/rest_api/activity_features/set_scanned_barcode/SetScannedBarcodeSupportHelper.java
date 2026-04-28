@@ -43,7 +43,8 @@ public class SetScannedBarcodeSupportHelper
 			@Nullable final Collection<JsonQRCode> validOptions,
 			@Nullable final WFActivityAlwaysAvailableToUser alwaysAvailableToUser,
 			@Nullable final UIComponentType componentType,
-			@Nullable final String confirmationModalMsg)
+			@Nullable final String confirmationModalMsg,
+			final boolean displaySuggestions)
 	{
 		return UIComponent.builder()
 				.type(componentType != null ? componentType : UIComponentType.SCAN_BARCODE)
@@ -55,6 +56,7 @@ public class SetScannedBarcodeSupportHelper
 										? ImmutableSet.copyOf(validOptions)
 										: null)
 						.valueObj("confirmationModalMsg", confirmationModalMsg)
+						.valueObj("displaySuggestions", displaySuggestions)
 						.build())
 				.build();
 	}

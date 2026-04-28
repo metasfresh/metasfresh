@@ -104,7 +104,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	}
 
 	@Override
-	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	protected MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();

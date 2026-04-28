@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +20,10 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+package de.metas.invoicecandidate.api.impl;
+
 import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
@@ -70,7 +71,7 @@ import java.util.Properties;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
 	private IInvoicingParams invoicingParams;
-	private I_C_Async_Batch _asyncBatch = null;
+	private AsyncBatchId _asyncBatchId = null;
 
 	// status
 	private final IdentityHashMap<IWorkPackageBuilder, ICNetAmtToInvoiceChecker> group2netAmtToInvoiceChecker = new IdentityHashMap<>();
@@ -188,9 +189,9 @@ import java.util.Properties;
 		}
 		parameters.setParameter(IInvoicingParams.PARA_Check_NetAmtToInvoice, netAmtToInvoiceChecker.getValue());
 
-		if (_asyncBatch != null)
+		if (_asyncBatchId != null)
 		{
-			group.setC_Async_Batch(_asyncBatch);
+			group.setAsyncBatchId(_asyncBatchId);
 		}
 
 		//
@@ -204,9 +205,9 @@ import java.util.Properties;
 		return this;
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public InvoiceCandidate2WorkpackageAggregator setAsyncBatchId(final AsyncBatchId asyncBatchId)
 	{
-		_asyncBatch = asyncBatch;
+		_asyncBatchId = asyncBatchId;
 		return this;
 	}
 
@@ -227,7 +228,6 @@ import java.util.Properties;
 	 */
 	public final int getQueueSize()
 	{
-		final int countUnprocessedWorkPackages = getWorkPackageQueue().size();
-		return countUnprocessedWorkPackages;
+		return getWorkPackageQueue().size();
 	}
 }

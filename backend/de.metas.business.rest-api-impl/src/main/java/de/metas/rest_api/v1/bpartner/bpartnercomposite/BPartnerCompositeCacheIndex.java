@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -107,7 +108,8 @@ final class BPartnerCompositeCacheIndex
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, dataItem.getBpartner() == null ? null : dataItem.getBpartner().getId()))
 		{
-			final OrgId orgId = dataItem.getOrgId();
+			final OrgId orgId = Check.assumeNotNull(dataItem.getOrgId(), "dataItem.getOrgId() is not null for dataItem={}", dataItem);
+			
 			final ImmutableList.Builder<OrgAndBPartnerCompositeLookupKey> cacheKeys = ImmutableList.builder();
 
 			final String value = dataItem.getBpartner().getValue();
@@ -118,6 +120,14 @@ final class BPartnerCompositeCacheIndex
 						orgId));
 			}
 
+			final ImmutableSet<GlnWithLabel> locationGlnsWithLabel = dataItem.extractLocationGlnsWithLabel();
+			for (final GlnWithLabel locationGln : locationGlnsWithLabel)
+			{
+				cacheKeys.add(OrgAndBPartnerCompositeLookupKey.of(
+						BPartnerCompositeLookupKey.ofGlnWithLabel(locationGln),
+						orgId));
+			}
+
 			final ImmutableSet<GLN> locationGlns = dataItem.extractLocationGlns();
 			for (final GLN locationGln : locationGlns)
 			{
@@ -125,7 +135,7 @@ final class BPartnerCompositeCacheIndex
 						BPartnerCompositeLookupKey.ofGln(locationGln),
 						orgId));
 			}
-
+			
 			final ExternalId externalId = dataItem.getBpartner().getExternalId();
 			if (externalId != null)
 			{

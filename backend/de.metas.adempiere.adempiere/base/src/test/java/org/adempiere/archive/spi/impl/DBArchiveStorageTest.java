@@ -22,22 +22,21 @@ package org.adempiere.archive.spi.impl;
  * #L%
  */
 
-
-import java.util.Random;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Random;
 
 public class DBArchiveStorageTest
 {
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -45,7 +44,7 @@ public class DBArchiveStorageTest
 
 	private DBArchiveStorage storage;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -61,10 +60,10 @@ public class DBArchiveStorageTest
 		storage.setBinaryData(archive, data);
 		InterfaceWrapperHelper.save(archive);
 
-		Assert.assertEquals("Invalid IsFileSystem flag", false, archive.isFileSystem());
+		Assertions.assertFalse(archive.isFileSystem(), "Invalid IsFileSystem flag");
 
 		final byte[] dataActual = storage.getBinaryData(archive);
-		Assert.assertArrayEquals("Invalid data", data, dataActual);
+		Assertions.assertArrayEquals(data, dataActual, "Invalid data");
 	}
 
 	private final Random random = new Random();

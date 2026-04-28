@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
@@ -40,7 +41,6 @@ import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
-import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.IPrintingQueueHandler;
@@ -82,7 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
+	private final static Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers

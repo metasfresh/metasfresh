@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -42,11 +42,14 @@ public interface IInvoicingParams
 	String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
 	String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
-	String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
 	String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
+	String PARA_IsDeliveryDateAsInvoiceDate = "IsDeliveryDateAsInvoiceDate";
+	String PARA_OverrideDueDate = "OverrideDueDate";
+
 
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
@@ -79,9 +82,9 @@ public interface IInvoicingParams
 	String getPOReference();
 
 	/**
-	 * @return {@code true} if invoice candidates with {@code C_Payment_Term_ID=null} shall get the payment term ID or some other ICs, right before enqueueing them.
+	 * @return override due date to be used for the invoice (when the payment term allows overriding).
 	 */
-	boolean isSupplementMissingPaymentTermIds();
+	LocalDate getOverrideDueDate();
 
 	/**
 	 * Gets total net amount to invoice checksum (i.e. sum of all IC's let net amount to invoice, without considering the currency).
@@ -89,7 +92,7 @@ public interface IInvoicingParams
 	 * This parameter is created and when invoice candidates to invoice workpackage is enqueued.
 	 *
 	 * @return total net amount to invoice checksum
-	 * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
+	 * task mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
 	 */
 	BigDecimal getCheck_NetAmtToInvoice();
 
@@ -114,9 +117,20 @@ public interface IInvoicingParams
 	 */
 	boolean isUpdateLocationAndContactForInvoice();
 
-	default Map<String, ? extends Object> asMap()
+	/**
+	 * @return {@code true} if the delivery date shall be used as invoice date.
+	 */
+	boolean isDeliveryDateAsInvoiceDate();
+
+	/**
+	 *  When this parameter is set on true, the newly generated invoices are directly completed.
+	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
+	 */
+	boolean isCompleteInvoices();
+	
+	default Map<String, ?> asMap()
 	{
-		final Builder<String, Object> result = ImmutableMap.<String, Object>builder();
+		final Builder<String, Object> result = ImmutableMap.builder();
 
 		if (getCheck_NetAmtToInvoice() != null)
 		{
@@ -134,12 +148,17 @@ public interface IInvoicingParams
 		{
 			result.put(InvoicingParams.PARA_POReference, getPOReference());
 		}
+		if (getOverrideDueDate() != null)
+		{
+			result.put(InvoicingParams.PARA_OverrideDueDate, getOverrideDueDate());
+		}
 
 		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
 		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
-		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
+		result.put(InvoicingParams.PARA_IsDeliveryDateAsInvoiceDate, isDeliveryDateAsInvoiceDate());
 
 		return result.build();
 	}

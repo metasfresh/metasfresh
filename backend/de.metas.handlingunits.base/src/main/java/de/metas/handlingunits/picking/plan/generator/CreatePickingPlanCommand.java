@@ -23,7 +23,6 @@
 package de.metas.handlingunits.picking.plan.generator;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -32,6 +31,8 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.handlingunits.picking.plan.generator.allocableHUStorages.AllocableStorage;
 import de.metas.handlingunits.picking.plan.generator.allocableHUStorages.AllocableStoragesSupplier;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFrom;
@@ -49,9 +50,6 @@ import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -60,7 +58,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
@@ -74,7 +71,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class CreatePickingPlanCommand
@@ -86,7 +82,7 @@ public class CreatePickingPlanCommand
 
 	//
 	// Params
-	private final PackageableList packageables;
+	private final ScheduledPackageableList packageables;
 
 	//
 	// State
@@ -138,7 +134,7 @@ public class CreatePickingPlanCommand
 				.build();
 	}
 
-	private static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
+	private static AllocablePackageable toAllocablePackageable(@NonNull final ScheduledPackageable packageable)
 	{
 		return AllocablePackageable.builder()
 				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
@@ -161,24 +157,24 @@ public class CreatePickingPlanCommand
 				.productId(packageable.getProductId())
 				.asiId(packageable.getAsiId())
 				.bestBeforePolicy(packageable.getBestBeforePolicy()
-										  .orElseGet(() -> bpartnersService.getBestBeforePolicy(packageable.getCustomerId())))
+						.orElseGet(() -> bpartnersService.getBestBeforePolicy(packageable.getCustomerId())))
 				.reservationRef(packageable.getReservationRef())
 				.enforceMandatoryAttributesOnPicking(true)
 				.build();
 	}
 
-	private static SourceDocumentInfo extractSourceDocumentInfo(@NonNull final Packageable packageable)
+	private static SourceDocumentInfo extractSourceDocumentInfo(@NonNull final ScheduledPackageable packageable)
 	{
 		return SourceDocumentInfo.builder()
-				.shipmentScheduleId(packageable.getShipmentScheduleId())
-				.salesOrderLineId(OrderAndLineId.ofNullable(packageable.getSalesOrderId(), packageable.getSalesOrderLineIdOrNull()))
+				.scheduleId(packageable.getId())
+				.salesOrderLineId(packageable.getSalesOrderAndLineIdOrNull())
 				.shipperId(packageable.getShipperId())
 				.packToSpec(extractPackToSpec(packageable))
 				.existingPickingCandidate(null)
 				.build();
 	}
 
-	private static PackToSpec extractPackToSpec(@NonNull final Packageable packageable)
+	private static PackToSpec extractPackToSpec(@NonNull final ScheduledPackageable packageable)
 	{
 		return PackToSpec.ofTUPackingInstructionsId(packageable.getPackToHUPIItemProductId());
 	}
@@ -214,8 +210,8 @@ public class CreatePickingPlanCommand
 
 	private List<PickingPlanLine> createLinesFromExistingPickingCandidates(@NonNull final AllocablePackageable packageable)
 	{
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdAndStatus(
-				packageable.getSourceDocumentInfo().getShipmentScheduleId(),
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByScheduleIdAndStatus(
+				packageable.getSourceDocumentInfo().getScheduleId(),
 				PickingCandidateStatus.Draft);
 
 		return pickingCandidates
@@ -291,18 +287,6 @@ public class CreatePickingPlanCommand
 				.map(line -> allocateLineFromHU(line, packageable))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private Set<LocatorId> getPickFromLocatorIds(final AllocablePackageable packageable)
-	{
-		return warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId());
-	}
-
-	@NonNull
-	private ShipmentAllocationBestBeforePolicy getBestBeforePolicy(final AllocablePackageable packageable)
-	{
-		return packageable.getBestBeforePolicy()
-				.orElseGet(() -> bpartnersService.getBestBeforePolicy(packageable.getCustomerId()));
 	}
 
 	@Nullable

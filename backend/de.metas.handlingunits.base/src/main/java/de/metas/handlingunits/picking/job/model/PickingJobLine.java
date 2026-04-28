@@ -26,51 +26,70 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class PickingJobLine
+public class PickingJobLine implements PickingJobHeaderOrLine
 {
 	@NonNull PickingJobLineId id;
+	@NonNull ITranslatableString caption;
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
+	@Nullable GS1ProductCodes gs1ProductCodes;
 	@NonNull ProductCategoryId productCategoryId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
+	@NonNull String salesOrderDocumentNo;
 	int orderLineSeqNo;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 	@Nullable UomId catchUomId;
+	@Nullable PPOrderId pickFromManufacturingOrderId;
 	@NonNull ImmutableList<PickingJobStep> steps;
 	boolean isManuallyClosed;
 
 	// computed values
 	@NonNull PickingJobProgress progress;
+
 	//
+	// Pick Target
+	@NonNull @Getter CurrentPickingTarget currentPickingTarget;
+
 	@NonNull PickingUnit pickingUnit;
 	@NonNull Quantity qtyPicked;
 	@NonNull Quantity qtyRejected;
@@ -83,36 +102,48 @@ public class PickingJobLine
 	@Builder(toBuilder = true)
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
+			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
+			@Nullable final GS1ProductCodes gs1ProductCodes,
 			@NonNull final ProductCategoryId productCategoryId,
-			@NonNull final ITranslatableString productName,
+			@NonNull final ProductValueAndName productValueAndName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final String salesOrderDocumentNo,
 			@NonNull final Integer orderLineSeqNo,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final BPartnerLocationId deliveryBPLocationId,
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			@Nullable final UomId catchUomId,
+			@Nullable final PPOrderId pickFromManufacturingOrderId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
+			@Nullable final CurrentPickingTarget currentPickingTarget,
 			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
 		this.id = id;
+		this.caption = caption;
 		this.productId = productId;
 		this.productNo = productNo;
+		this.gs1ProductCodes = gs1ProductCodes;
 		this.productCategoryId = productCategoryId;
-		this.productName = productName;
+		this.productValueAndName = productValueAndName;
 		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
+		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.orderLineSeqNo = orderLineSeqNo;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.deliveryBPLocationId = deliveryBPLocationId;
+		this.scheduleId = scheduleId;
 		this.catchUomId = catchUomId;
+		this.pickFromManufacturingOrderId = pickFromManufacturingOrderId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
-		this.pickingUnit = pickingUnit;
+		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 
+		this.pickingUnit = pickingUnit;
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		this.qtyRejected = steps.stream().map(PickingJobStep::getQtyRejected).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		final Quantity qtyPickedOrRejected = qtyPicked.add(qtyRejected);
@@ -134,27 +165,31 @@ public class PickingJobLine
 			this.qtyRemainingToPickTUs = null;
 		}
 
-		this.progress = computeProgress(this.steps, this.isManuallyClosed);
+		this.progress = computeProgress(this.isManuallyClosed, this.qtyToPick, this.qtyPicked);
 	}
 
-	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
+
+	private static PickingJobProgress computeProgress(final boolean isManuallyClosed, final Quantity qtyToPick, final Quantity qtyPicked)
 	{
-		if (isManuallyClosed)
+		if (isManuallyClosed || qtyPicked.compareTo(qtyToPick) >= 0)
 		{
 			return PickingJobProgress.DONE;
 		}
-
-		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream().map(PickingJobStep::getProgress).collect(ImmutableSet.toImmutableSet());
-		return PickingJobProgress.reduce(stepProgresses);
+		if (qtyPicked.isPositive())
+		{
+			return PickingJobProgress.IN_PROGRESS;
+		}
+		return PickingJobProgress.NOT_STARTED;
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
-	Stream<ShipmentScheduleId> streamShipmentScheduleId()
+	Stream<ShipmentScheduleAndJobScheduleId> streamScheduleIds()
 	{
 		return Stream.concat(
-						Stream.of(shipmentScheduleId),
-						streamSteps().map(PickingJobStep::getShipmentScheduleId)
+						Stream.of(scheduleId),
+						streamSteps().map(PickingJobStep::getScheduleId)
 				)
 				.filter(Objects::nonNull);
 	}
@@ -195,9 +230,9 @@ public class PickingJobLine
 				.id(request.getNewStepId())
 				.isGeneratedOnFly(request.isGeneratedOnFly())
 				.salesOrderAndLineId(salesOrderAndLineId)
-				.shipmentScheduleId(shipmentScheduleId)
+				.scheduleId(scheduleId)
 				.productId(productId)
-				.productName(productName)
+				.productValueAndName(productValueAndName)
 				.qtyToPick(request.getQtyToPick())
 				.pickFroms(PickingJobStepPickFromMap.ofList(ImmutableList.of(
 						PickingJobStepPickFrom.builder()
@@ -225,11 +260,53 @@ public class PickingJobLine
 	}
 
 	@NonNull
-	public List<HuId> getPickedHUIds()
+	public ImmutableSet<HuId> getPickedHUIds()
 	{
 		return steps.stream()
 				.map(PickingJobStep::getPickedHUIds)
 				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<HuId> getLastPickedHUId()
+	{
+		return steps.stream()
+				.map(PickingJobStep::getLastPickedHU)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt))
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.map(HUInfo::getId);
+	}
+
+	PickingJobLine withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)
+	{
+		return !CurrentPickingTarget.equals(this.currentPickingTarget, currentPickingTarget)
+				? toBuilder().currentPickingTarget(currentPickingTarget).build()
+				: this;
+	}
+
+	PickingJobLine withCurrentPickingTarget(@NonNull final UnaryOperator<CurrentPickingTarget> currentPickingTargetMapper)
+	{
+		final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTargetMapper.apply(this.currentPickingTarget);
+		return !CurrentPickingTarget.equals(this.currentPickingTarget, changedCurrentPickingTarget)
+				? toBuilder().currentPickingTarget(changedCurrentPickingTarget).build()
+				: this;
+	}
+
+	public boolean isPickingSlotSet() {return currentPickingTarget.isPickingSlotSet();}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return currentPickingTarget.getPickingSlotId();}
+
+	public PickingJobLine withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
+	{
+		return withCurrentPickingTarget(currentPickingTarget.withPickingSlot(pickingSlot));
+	}
+
+	public boolean isFullyPicked() {return qtyRemainingToPick.signum() <= 0;}
+
+	public boolean isFullyPickedExcludingRejectedQty()
+	{
+		return qtyToPick.subtract(qtyPicked).signum() <= 0;
 	}
 }

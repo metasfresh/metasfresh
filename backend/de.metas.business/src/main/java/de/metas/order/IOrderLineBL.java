@@ -56,6 +56,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
+	I_C_OrderLine getOrderLineById(@NonNull OrderAndLineId orderLineId);
+
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
@@ -63,6 +65,8 @@ public interface IOrderLineBL extends ISingletonService
 	Quantity getQtyOrdered(I_C_OrderLine orderLine);
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyDelivered(OrderAndLineId orderAndLineId);
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
@@ -75,7 +79,7 @@ public interface IOrderLineBL extends ISingletonService
 	<T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, final Class<T> orderLineClass);
 
 	/**
-	 * Set Defaults from Order. Does not set C_Order_ID. Also invoked by the createOrderLine methods
+	 * Set Defaults from Order. <b>Does not set C_Order_ID</b>. Also invoked by the createOrderLine methods
 	 */
 	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 
@@ -234,4 +238,8 @@ public interface IOrderLineBL extends ISingletonService
 	Optional<BPartnerId> getBPartnerId(OrderLineId orderLineId);
 
 	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
+
+	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
+
+	void setGrossWeightInKg(@NonNull I_C_OrderLine orderLine);
 }

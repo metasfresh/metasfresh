@@ -1,7 +1,22 @@
 ARG REFNAME=local
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM metasfresh/metas-mvn-backend:$REFNAME as backend
-FROM metasfresh/metas-app:$REFNAME as app
+# Aggregate SQL files in a separate stage to avoid copying entire backend to runtime
+# This stage runs on the backend image and only exports the small aggregated SQL
+FROM backend AS sql-aggregator
+WORKDIR /sql-aggregate
+# NOTE: Must use /bin/bash explicitly because 'read -d' is bash-specific (not in dash/sh)
+RUN /bin/bash -c 'mkdir -p sql && \
+    find /backend -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -print0 | \
+    while IFS= read -r -d "" sql_file; do \
+        intermediate_folder=$(basename "$(dirname "$sql_file")"); \
+        mkdir -p "sql/$intermediate_folder"; \
+        cp "$sql_file" "sql/$intermediate_folder/"; \
+    done && \
+    echo "Aggregated $(find sql -name "*.sql" | wc -l) SQL files in $(find sql -mindepth 1 -maxdepth 1 -type d | wc -l) folders"'
+
+FROM ${REGISTRY}metasfresh/metas-app:$REFNAME AS app
 
 # instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
 FROM eclipse-temurin:8-jre-jammy AS runtime
@@ -19,7 +34,9 @@ RUN mkdir heapdump
 COPY --from=app /opt/metasfresh .
 
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
-COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql dist/sql/
+
+# Copy only the aggregated SQL from sql-aggregator stage (not the entire backend)
+COPY --from=sql-aggregator /sql-aggregate/sql dist/sql/
 
 RUN touch local_settings.properties \
     && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties \

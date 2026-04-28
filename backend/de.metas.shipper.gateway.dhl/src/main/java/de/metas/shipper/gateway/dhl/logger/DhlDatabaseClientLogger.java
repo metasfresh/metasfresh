@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.dhl.logger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
@@ -29,12 +31,17 @@ import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+
+import static de.metas.shipper.gateway.dhl.DhlConstants.PARAM_RESPONSE_BODY_AS_STRING;
+
 public class DhlDatabaseClientLogger
 {
-	public static final transient DhlDatabaseClientLogger instance = new DhlDatabaseClientLogger();
+	public static final DhlDatabaseClientLogger instance = new DhlDatabaseClientLogger();
 	private static final Logger logger = LogManager.getLogger(DhlDatabaseClientLogger.class);
 
 	private DhlDatabaseClientLogger()
@@ -81,7 +88,7 @@ public class DhlDatabaseClientLogger
 		logRecord.setDHL_ShipmentOrderRequest_ID(DeliveryOrderId.toRepoId(event.getDeliveryOrderId()));
 
 		//noinspection ConstantConditions
-		logRecord.setRequestMessage(event.getRequestAsString());
+		logRecord.setRequestMessage(toJsonOrNull(event.getRequestElement()));
 
 		if (event.getResponseException() != null)
 		{
@@ -89,6 +96,7 @@ public class DhlDatabaseClientLogger
 
 			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(event.getResponseException());
 			logRecord.setAD_Issue_ID(issueId.getRepoId());
+			logRecord.setResponseMessage(toJsonOrNull(AdempiereException.wrapIfNeeded(event.getResponseException()).getParameter(PARAM_RESPONSE_BODY_AS_STRING)));
 		}
 		else
 		{
@@ -98,6 +106,27 @@ public class DhlDatabaseClientLogger
 		}
 
 		InterfaceWrapperHelper.save(logRecord);
+	}
+
+	@Nullable
+	private String toJsonOrNull(@Nullable final Object object)
+	{
+		if (object == null)
+		{
+			return null;
+		}
+		if (object instanceof String)
+		{
+			return (String)object;
+		}
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(object);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed to parse object!", e);
+		}
 	}
 
 }

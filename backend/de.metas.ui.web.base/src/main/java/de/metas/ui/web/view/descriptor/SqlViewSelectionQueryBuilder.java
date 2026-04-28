@@ -593,7 +593,7 @@ public final class SqlViewSelectionQueryBuilder
 						continue;
 					}
 
-					if (sqlKeyColumnNames.length() > 0)
+					if (!sqlKeyColumnNames.isEmpty())
 					{
 						sqlKeyColumnNames.append("\n, ");
 					}

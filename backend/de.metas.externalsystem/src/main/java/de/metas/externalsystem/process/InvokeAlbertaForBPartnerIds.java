@@ -97,7 +97,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
-		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, ExternalSystemType.Alberta.getName()));
+		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, ExternalSystemType.Alberta.getValue()));
 	}
 
 	@Override

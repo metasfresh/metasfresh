@@ -10,24 +10,23 @@ package org.adempiere.util.text;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MapFormatTest
 {
@@ -42,7 +41,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -56,7 +55,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2/and_again_session/1/end";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -70,7 +69,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2/and_a_missing_arg/{MissingArgID}/end";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -81,20 +80,17 @@ public class MapFormatTest
 		final String strExpected = pattern;
 		final String strActual = MapFormat.format(pattern, null);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void test_format_null_pattern() throws Exception
 	{
 		final String pattern = null;
 		final Map<String, String> args = new HashMap<String, String>();
 		args.put("SessionID", "1");
 		args.put("TransactionID", "2");
-
-		final String strExpected = pattern;
-		final String strActual = MapFormat.format(pattern, args); // shall throw NPE
-
-		Assert.assertEquals(strExpected, strActual);
+		
+		Assertions.assertThrows(NullPointerException.class, () -> MapFormat.format(pattern, args)); // shall throw NPE
 	}
 }

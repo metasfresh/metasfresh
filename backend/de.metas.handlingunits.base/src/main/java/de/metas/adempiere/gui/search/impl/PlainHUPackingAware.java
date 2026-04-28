@@ -25,6 +25,7 @@ package de.metas.adempiere.gui.search.impl;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.Data;
@@ -49,6 +50,8 @@ public class PlainHUPackingAware implements IHUPackingAware
 	private BigDecimal qtyTU;
 	private BigDecimal qtyCUsPerTU;
 	private BPartnerId bpartnerId;
+	private BigDecimal qtyLU;
+	private HuPackingInstructionsId luId;
 	private boolean inDispute = false;
 
 	@Override

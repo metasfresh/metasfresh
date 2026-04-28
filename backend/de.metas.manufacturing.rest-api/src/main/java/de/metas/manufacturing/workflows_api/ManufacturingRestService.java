@@ -12,7 +12,6 @@ import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
-import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.callExternalSystem.CallExternalSystemActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
@@ -32,6 +31,7 @@ import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -149,24 +149,32 @@ public class ManufacturingRestService
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					// Manual issues from mobile UI shall fail for IssueOnlyForReceived lines
+					.failIfIssueOnlyForReceived(true)
 					.build());
 		}
 		else if (event.getReceiveFrom() != null)
 		{
 			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
-			return manufacturingJobService.receiveGoods(
-					job,
-					receiveFrom.getFinishedGoodsReceiveLineId(),
-					SelectedReceivingTarget.builder()
-							.luReceivingTarget(receiveFrom.getAggregateToLU())
-							.tuReceivingTarget(receiveFrom.getAggregateToTU())
-							.build(),
-					receiveFrom.getQtyReceived(),
-					SystemTime.asZonedDateTime());
+			return manufacturingJobService.receiveGoods(receiveFrom, job, SystemTime.asZonedDateTime());
 		}
 		else
 		{
 			throw new AdempiereException("Cannot handle: " + event);
 		}
 	}
+
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCode)
+	{
+		return manufacturingJobService.createOnTheFlyIssueSchedule(ppOrderId, callerId, huQRCode);
+	}
+
+	public QueryLimit getLaunchersLimit()
+	{
+		return manufacturingJobService.getLaunchersLimit();
+	}
+
 }

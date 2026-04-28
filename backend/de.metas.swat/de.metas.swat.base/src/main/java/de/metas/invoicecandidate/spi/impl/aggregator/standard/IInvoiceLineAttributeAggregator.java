@@ -22,10 +22,11 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * #L%
  */
 
-
-import java.util.Set;
-
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implementations of this interface are responsible for aggregating sets of {@link IInvoiceLineAttribute}s
@@ -37,8 +38,19 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 public interface IInvoiceLineAttributeAggregator
 {
 	/** @return aggregated invoice line attributes; never returns null */
-	Set<IInvoiceLineAttribute> aggregate();
+	List<IInvoiceLineAttribute> aggregate();
 
-	/** Adds a set of {@link IInvoiceLineAttribute} to be aggregated */
-	IInvoiceLineAttributeAggregator addAll(Set<IInvoiceLineAttribute> invoiceLineAttributesToAdd);
+	/**
+	 * From all attributes added via this method, only common attributes are retained.
+	 * <p>
+	 * I.e. if an {@link IInvoiceLineAttribute} is added
+	 * and we already have another {@link IInvoiceLineAttribute} with same attribute name but different attribute value,
+	 * then that attribute won't be part of the aggregation result because it's considered a duplicate.
+	 */
+	void addToIntersection(@NonNull Set<IInvoiceLineAttribute> invoiceLineAttributesToAdd);
+
+	/**
+	 * All attribute added via this method will for sure be added to the invoice line.
+	 */
+	void addToUnion(@NonNull List<IInvoiceLineAttribute> attributesFromIC);
 }

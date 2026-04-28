@@ -258,6 +258,7 @@ public final class TransactionEventFactory
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(modelProductDescriptorExtractor.createProductDescriptor(inventoryLineRecord))
 				.warehouseId(transaction.getWarehouseId())
+				.locatorId(transaction.getLocatorId())
 				.date(transaction.getTransactionDate())
 				.quantity(deltaQty)
 				.build();

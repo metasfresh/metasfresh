@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick TUs from LU
+## F00230: MobileUI Picking
 
   Background:
     Given infrastructure and metasfresh are running
@@ -50,8 +54,8 @@ Feature: mobileUI Picking - Pick TUs from LU
       | PLV                    | product      | 6.0      | PCE               | Nominal              | Normal                        |
 
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  |
-      | Y                   | CREATE_COMPLETE_CLOSE |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -86,6 +90,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs
     When transform CU to new LU
       | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -169,6 +176,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs - into a new LU
     When transform CU to new LU
       | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -257,6 +267,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with TUs (not-aggregated)
     When transform CU to new TUs
       | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                              |

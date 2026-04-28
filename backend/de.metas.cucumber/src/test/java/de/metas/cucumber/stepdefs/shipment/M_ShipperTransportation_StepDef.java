@@ -24,10 +24,23 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Package_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.order.OrderId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,14 +49,19 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 
+import java.sql.Timestamp;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @AllArgsConstructor
@@ -51,12 +69,21 @@ public class M_ShipperTransportation_StepDef
 {
 	private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	private final M_Shipper_StepDefData shipperTable;
+	private final M_ShippingPackage_StepDefData shippingPackageTable;
+	private final M_Package_StepDefData packageTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
-	private final M_InOut_StepDefData shipmentTable;
 
-	public final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_Order_StepDefData orderTable;
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+
 
 	@And("validate M_ShipperTransportation:")
 	public void validateM_ShipperTransportation(@NonNull final DataTable dataTable)
@@ -114,4 +141,199 @@ public class M_ShipperTransportation_StepDef
 			deliveryInstructionTable.putOrReplace(shipperTransportationIdentifier, shipperTransportation);
 		}
 	}
+
+	/**
+	 * Polling variant of {@code load Transportation Order from Shipment} — waits for the async
+	 * {@code M_InOut.afterComplete → CreatePackagesForShipmentWorkpackageProcessor} chain triggered by
+	 * sysconfig {@code de.metas.handlingunits.picking.addToDailyShipperTransportationOrder=true}.
+	 */
+	@And("^after not more than (.*)s, Transportation Order is found for Shipment:$")
+	public void findTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			try
+			{
+				pollTransportationOrderForShipment(timeoutSec, row);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	private void pollTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_M_InOut shipment = shipmentTable.get(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
+
+		final I_M_ShipperTransportation[] resultHolder = new I_M_ShipperTransportation[1];
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+			final I_M_ShipperTransportation found = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.orderBy(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+					.first();
+			if (found == null)
+			{
+				return false;
+			}
+			resultHolder[0] = found;
+			return true;
+		});
+
+		assertThat(resultHolder[0])
+				.as("No M_ShipperTransportation found for M_InOut_ID=%s within %ss — is sysconfig "
+						+ "'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder' set to true?",
+						shipment.getM_InOut_ID(), timeoutSec)
+				.isNotNull();
+
+		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID), resultHolder[0]);
+	}
+
+	@And("metasfresh contains Transport Order")
+	public void add_TransportOrder(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+				.forEach(this::createTransportOrder);
+	}
+
+	public void createTransportOrder(@NonNull final DataTableRow row)
+	{
+		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
+
+		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(id -> shipperTransportationBL.setShipper(shipperTransportationRecord,id));
+
+		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID)
+				.map(bPartnerTable::getId)
+				.ifPresent(id -> shipperTransportationRecord.setShipper_BPartner_ID(id.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID)
+				.map(bPartnerLocationTable::getId)
+				.ifPresent(id -> shipperTransportationRecord.setShipper_Location_ID(id.getRepoId()));
+
+		saveRecord(shipperTransportationRecord);
+
+		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(), shipperTransportationRecord);
+	}
+
+	@And("^metasfresh contains exactly (.*) M_ShippingPackages for transportation order: (.*)$")
+	public void validateShippingPackagesForTransportationOrder(final int expectedShippingPackages, @NonNull final String transportationOrderIdentifier)
+	{
+		final int shipperTransportationId = deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID();
+		final int actualShippingPackages = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.count();
+		assertThat(actualShippingPackages).as("Number of M_ShippingPackages for M_ShipperTransportation_ID" + shipperTransportationId).isEqualTo(expectedShippingPackages);
+	}
+
+	@And("metasfresh contains M_ShippingPackage")
+	public void add_M_ShippingPackage(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShippingPackage.COLUMNNAME_M_ShippingPackage_ID)
+				.forEach(this::createM_ShippingPackage);
+	}
+
+
+	@And("^C_Order_AddTo_M_ShipperTransportation is invoked for order (.*) and transportation order: (.*)")
+	public void addOrderToShipperTransportation(@NonNull final String orderIdentifier, @NonNull final String transportationOrderIdentifier)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderTable.get(orderIdentifier)
+				.getC_Order_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID());
+
+		purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId);
+	}
+
+
+	public void createM_ShippingPackage(@NonNull final DataTableRow row)
+	{
+		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
+
+		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+				.map(deliveryInstructionTable::getId)
+				.ifPresent(id -> shippingPackageRecord.setM_ShipperTransportation_ID(id.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_C_Order_ID)
+				.map(orderTable::getId)
+				.ifPresent(id -> shippingPackageRecord.setC_Order_ID(id.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID)
+				.map(shipmentTable::getId)
+				.ifPresent(id -> shippingPackageRecord.setM_InOut_ID(id.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_Package_ID)
+				.map(packageTable::getId)
+				.ifPresent(id -> shippingPackageRecord.setM_Package_ID(id.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_C_BPartner_Location_ID)
+				.map(bPartnerLocationTable::getId)
+				.ifPresent(id -> shippingPackageRecord.setC_BPartner_Location_ID(id.getRepoId()));
+
+		saveRecord(shippingPackageRecord);
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(shippingPackageIdentifier -> shippingPackageTable.putOrReplace(shippingPackageIdentifier, shippingPackageRecord));
+	}
+
+	@And("metasfresh contains M_Package")
+	public void add_M_Package(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(this::create_M_Package);
+	}
+
+	private void create_M_Package(@NonNull final DataTableRow row)
+	{
+		final I_M_Package packageRecord = newInstance(I_M_Package.class);
+
+		row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(id -> packageRecord.setM_Shipper_ID(id.getRepoId()));
+		saveRecord(packageRecord);
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(packageIdentifier -> packageTable.putOrReplace(packageIdentifier, packageRecord));
+	}
+
+	@And("update transport order")
+	public void update_TransportOrder(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+				.forEach(this::updateTransportOrder);
+	}
+
+	private void updateTransportOrder(@NonNull final DataTableRow tableRow)
+	{
+		final ShipperTransportationId shipperTransportationId = tableRow.getAsIdentifier().lookupNotNullIdIn(deliveryInstructionTable);
+		final I_M_ShipperTransportation record = shipperTransportationDAO.getById(shipperTransportationId);
+
+		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETA)
+				.ifPresent(expected -> record.setETA(Timestamp.from(expected)));
+
+		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_BLDate)
+				.ifPresent(expected -> record.setBLDate(Timestamp.from(expected)));
+		saveRecord(record);
+
+		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);
+	}
+
+	@And("^the transport order identified by (.*) is completed$")
+	public void completeTransportOrder(@NonNull final String orderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
+		transportOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 }

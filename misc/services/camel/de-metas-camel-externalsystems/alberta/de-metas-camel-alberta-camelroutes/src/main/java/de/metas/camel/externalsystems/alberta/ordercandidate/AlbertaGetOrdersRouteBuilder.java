@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -70,7 +70,7 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 			// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
 			from(direct(GET_ORDERS_ROUTE_ID))
 					.routeId(GET_ORDERS_ROUTE_ID)
-					.streamCaching()
+					.streamCache("true")
 					.process(new RetrieveOrdersProcessor()).id(GET_ORDERS_PROCESSOR_ID)
 					.multicast()
 						.stopOnException()

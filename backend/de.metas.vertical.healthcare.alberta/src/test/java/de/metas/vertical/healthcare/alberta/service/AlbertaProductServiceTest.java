@@ -23,26 +23,22 @@
 package de.metas.vertical.healthcare.alberta.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalreference.AlbertaExternalSystem;
-import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaArticle;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaBillableTherapy;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaPackagingUnit;
 import de.metas.vertical.healthcare.alberta.model.I_M_Product_AlbertaTherapy;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_PriceList_Version;
@@ -68,12 +64,7 @@ public class AlbertaProductServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
-		final ExternalSystems externalSystems = new ExternalSystems();
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-
-		albertaProductService = new AlbertaProductService(new AlbertaProductDAO(),
-														  new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes));
+		albertaProductService = AlbertaProductService.newInstanceForUnitTesting(new ExternalReferenceTypes());
 	}
 
 	@Test
@@ -239,7 +230,7 @@ public class AlbertaProductServiceTest
 		externalReference.setRecord_ID(recordId);
 		externalReference.setType(externalReferenceType.getCode());
 		externalReference.setExternalReference("albertaRecord");
-		externalReference.setExternalSystem(AlbertaExternalSystem.ALBERTA.getCode());
+		externalReference.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Alberta).getId().getRepoId());
 
 		saveRecord(externalReference);
 

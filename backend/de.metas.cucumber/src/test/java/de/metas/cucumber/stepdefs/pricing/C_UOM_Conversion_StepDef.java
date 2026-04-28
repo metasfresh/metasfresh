@@ -38,6 +38,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
@@ -66,6 +67,25 @@ public class C_UOM_Conversion_StepDef
 		this.conversionTable = conversionTable;
 	}
 
+	/**
+	 * Create UOM conversions for a product.
+	 * <p>
+	 * NOTE: this step uses legacy {@link DataTableUtil} with explicit column suffixes.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID.Identifier</b> — (required, identifier-ref) product alias from M_Product_StepDefData<br>
+	 *   <b>FROM_C_UOM_ID.X12DE355</b> — (required) source UOM X12DE355 code (e.g. "PCE", "KGM")<br>
+	 *   <b>TO_C_UOM_ID.X12DE355</b> — (required) target UOM X12DE355 code<br>
+	 *   <b>MultiplyRate</b> — (required) conversion multiplier (from → to)<br>
+	 *   <b>OPT.IsCatchUOMForProduct</b> — (optional, default false) catch UOM flag<br>
+	 * @cucumber.example
+	 * <pre>{@code
+	 * And metasfresh contains C_UOM_Conversions
+	 *   | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+	 *   | product_1               | PCE                     | KGM                   | 0.5          |
+	 * }</pre>
+	 */
 	@And("metasfresh contains C_UOM_Conversions")
 	public void add_C_UOM_Conversions(@NonNull final DataTable dataTable)
 	{
@@ -84,6 +104,46 @@ public class C_UOM_Conversion_StepDef
 		{
 			update_C_UOM_Conversions(tableRow);
 		}
+	}
+
+	@And("validate C_UOM_Conversion:")
+	public void validate_C_UOM_Conversions(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validate_C_UOM_Conversions(tableRow);
+		}
+	}
+
+	private void validate_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final String fromX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final X12DE355 fromX12DE355 = X12DE355.ofCode(fromX12de355Code);
+		final UomId fromUomId = uomDAO.getUomIdByX12DE355(fromX12DE355);
+
+		final String toX12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID + "." + X12DE355.class.getSimpleName());
+		final X12DE355 toX12DE355 = X12DE355.ofCode(toX12de355Code);
+		final UomId toUomId = uomDAO.getUomIdByX12DE355(toX12DE355);
+
+		final UOMConversionRate rate = uomConversionDAO.getProductConversions(productId).getRate(fromUomId, toUomId);
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		final BigDecimal fromToMultiplier = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_MultiplyRate);
+		softly.assertThat(rate.getFromToMultiplier()).as(I_C_UOM_Conversion.COLUMNNAME_MultiplyRate).isEqualByComparingTo(fromToMultiplier);
+
+		final Boolean isCatchUomForProduct = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_UOM_Conversion.COLUMNNAME_IsCatchUOMForProduct);
+		if (isCatchUomForProduct != null)
+		{
+			softly.assertThat(rate.isCatchUOMForProduct()).as(I_C_UOM_Conversion.COLUMNNAME_IsCatchUOMForProduct).isEqualTo(isCatchUomForProduct);
+		}
+
+		softly.assertAll();
 	}
 
 	private void update_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)

@@ -1,28 +1,11 @@
 package org.adempiere.ad.dao.impl;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,18 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit test for {@link CompositeQueryFilter}
  *
  * @author tsa
- *
  */
 public class CompositeQueryFilterTest
 {
@@ -74,7 +51,7 @@ public class CompositeQueryFilterTest
 		@Override
 		public boolean accept(T model)
 		{
-			Assert.fail("accept method shall not be called for " + this);
+			Assertions.fail("accept method shall not be called for " + this);
 			return true;
 		}
 	}
@@ -94,7 +71,7 @@ public class CompositeQueryFilterTest
 			nextId++;
 
 			this.sql = "/*" + DummySqlQueryFilter.class.getSimpleName() + "-ID=" + id + "*/ 1=1";
-			this.sqlParams = Arrays.<Object> asList("SqlQuery" + id + "-param1");
+			this.sqlParams = Collections.singletonList("SqlQuery" + id + "-param1");
 		}
 
 		@Override
@@ -118,7 +95,7 @@ public class CompositeQueryFilterTest
 		@Override
 		public boolean accept(T model)
 		{
-			Assert.fail("accept method shall not be called for " + this);
+			Assertions.fail("accept method shall not be called for " + this);
 			return true;
 		}
 	}
@@ -134,7 +111,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void Defaults()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		assertDefaults(filter);
 
 	}
@@ -142,7 +119,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void DefaultAccept_True()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		filter.setDefaultAccept(true);
 
 		assertSqlQueryFilter("Invalid filter", filter, CompositeQueryFilter.DEFAULT_SQL_TRUE, Collections.emptyList());
@@ -151,7 +128,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void DefaultAccept_False()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		filter.setDefaultAccept(false);
 
 		assertSqlQueryFilter("Invalid filter", filter, CompositeQueryFilter.DEFAULT_SQL_FALSE, Collections.emptyList());
@@ -160,23 +137,26 @@ public class CompositeQueryFilterTest
 	@Test
 	public void addFilter_Duplicate()
 	{
-		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filters = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummyNonSqlQueryFilter<I_ModelClass> filterToAdd = new DummyNonSqlQueryFilter<>();
 
 		filters.addFilter(filterToAdd);
-		Assert.assertEquals("Invalid getFilters(): " + filters, Collections.singletonList(filterToAdd), filters.getFilters());
+		Assertions.assertEquals(Collections.singletonList(filterToAdd), filters.getFilters(), "Invalid getFilters(): " + filters);
 
 		// Add it again and check to not add duplicates
 		filters.addFilter(filterToAdd);
-		Assert.assertEquals("Invalid getFilters(): " + filters, Collections.singletonList(filterToAdd), filters.getFilters());
+		Assertions.assertEquals(Collections.singletonList(filterToAdd), filters.getFilters(), "Invalid getFilters(): " + filters);
 	}
 
 	@Test
 	public void addFilter_NULL()
 	{
-		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filters = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
-		assertThatThrownBy(() -> filters.addFilter(null))
+		assertThatThrownBy(() -> {
+			//noinspection DataFlowIssue
+			filters.addFilter(null);
+		})
 				.isInstanceOf(NullPointerException.class)
 				.hasMessageContaining("filter");
 	}
@@ -184,7 +164,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void addFilters_NullList()
 	{
-		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filters = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final List<IQueryFilter<I_ModelClass>> filtersToAdd = null;
 		filters.addFilters(filtersToAdd); // shall do nothing
@@ -195,7 +175,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void addFilters_EmptyList()
 	{
-		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filters = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final List<IQueryFilter<I_ModelClass>> filtersToAdd = new ArrayList<>();
 		filters.addFilters(filtersToAdd); // shall do nothing
@@ -206,12 +186,12 @@ public class CompositeQueryFilterTest
 	@Test
 	public void addFilters_ListWithOneNullValue()
 	{
-		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filters = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final List<IQueryFilter<I_ModelClass>> filtersAndNulls = new ArrayList<>();
-		filtersAndNulls.add(new DummyNonSqlQueryFilter<I_ModelClass>());
+		filtersAndNulls.add(new DummyNonSqlQueryFilter<>());
 		filtersAndNulls.add(null);
-		filtersAndNulls.add(new DummyNonSqlQueryFilter<I_ModelClass>());
+		filtersAndNulls.add(new DummyNonSqlQueryFilter<>());
 
 		assertThatThrownBy(() -> filters.addFilters(filtersAndNulls))
 				.isInstanceOf(NullPointerException.class)
@@ -221,7 +201,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void compile_empty()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		assertDefaults(filter);
 		assertPureSql(filter);
@@ -231,7 +211,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void empty_IsPureSQL()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		filter.setJoinAnd();
 		assertEmpty(filter);
 		assertPureSql(filter);
@@ -240,33 +220,33 @@ public class CompositeQueryFilterTest
 	@Test
 	public void compile_PureSQL()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		filter.addEqualsFilter(I_ModelClass.COLUMNNAME_Column1, 1);
 		filter.addEqualsFilter(I_ModelClass.COLUMNNAME_Column2, 2);
 
 		assertDefaults(filter);
-		assertPureSql(filter, "(Column1 = ?) AND (Column2 = ?)", Arrays.<Object> asList(1, 2));
+		assertPureSql(filter, "(Column1 = ?) AND (Column2 = ?)", Arrays.asList(1, 2));
 	}
 
 	@Test
 	public void compile_PureNonSQL()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final DummyNonSqlQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.addFilter(nonSqlFilter);
 
 		assertDefaults(filter);
 		assertPureNonSql(filter);
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Collections.singletonList(nonSqlFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Collections.singletonList(nonSqlFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 	}
 
 	// see http://stackoverflow.com/questions/1445233/is-it-possible-to-solve-the-a-generic-array-of-t-is-created-for-a-varargs-param
 	@Test
 	public void compile_MixedFiltersWithJoinAND_AddSqlFilter_AddNonSqlFilter()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
@@ -275,15 +255,15 @@ public class CompositeQueryFilterTest
 		filter.addFilter(sqlFilter);
 		filter.addFilter(nonSqlFilter);
 
-		Assert.assertEquals("Invalid SqlFilter: " + filter, Arrays.asList(sqlFilter), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(nonSqlFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Collections.singletonList(sqlFilter), filter.getSqlFilters(), "Invalid SqlFilter: " + filter);
+		Assertions.assertEquals(Collections.singletonList(nonSqlFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 		assertPartialSql(filter, "(" + sqlFilter.getSql() + ")", sqlFilter.getSqlParams(ctx));
 	}
 
 	@Test
 	public void compile_MixedFiltersWithJoinAND_AddNonSqlFilter_AddSqlFilter()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
@@ -292,8 +272,8 @@ public class CompositeQueryFilterTest
 		filter.addFilter(nonSqlFilter);
 		filter.addFilter(sqlFilter);
 
-		Assert.assertEquals("Invalid SqlFilter: " + filter, Arrays.asList(sqlFilter), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(nonSqlFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Collections.singletonList(sqlFilter), filter.getSqlFilters(), "Invalid SqlFilter: " + filter);
+		Assertions.assertEquals(Collections.singletonList(nonSqlFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 		assertPartialSql(filter, "(" + sqlFilter.getSql() + ")", sqlFilter.getSqlParams(ctx));
 	}
 
@@ -302,7 +282,7 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> includedFilter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinAnd(); // just to be sure
@@ -311,7 +291,7 @@ public class CompositeQueryFilterTest
 
 		//
 		// Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinAnd(); // just to be sure
@@ -319,8 +299,8 @@ public class CompositeQueryFilterTest
 		filter.addFilter(nonSqlFilter);
 		filter.addFilter(includedFilter);
 
-		Assert.assertEquals("Invalid SqlFilter: " + filter, Arrays.asList(sqlFilter, includedSqlFilter), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(nonSqlFilter, includedNonSqlFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Arrays.asList(sqlFilter, includedSqlFilter), filter.getSqlFilters(), "Invalid SqlFilter: " + filter);
+		Assertions.assertEquals(Arrays.asList(nonSqlFilter, includedNonSqlFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 		assertPartialSql(filter,
 				"(" + sqlFilter.getSql() + ")" + CompositeQueryFilter.SQL_AND + "(" + includedSqlFilter.getSql() + ")", // sql
 				join(sqlFilter.getSqlParams(ctx), includedSqlFilter.getSqlParams(ctx)) // sql params
@@ -332,7 +312,7 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> includedFilter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinOr();
@@ -341,7 +321,7 @@ public class CompositeQueryFilterTest
 
 		//
 		// Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinAnd(); // just to be sure
@@ -349,9 +329,9 @@ public class CompositeQueryFilterTest
 		filter.addFilter(nonSqlFilter);
 		filter.addFilter(includedFilter);
 
-		Assert.assertEquals("Invalid IsPureSQL: " + filter, false, filter.isPureSql());
-		Assert.assertEquals("Invalid SqlFilter: " + filter, Arrays.asList(sqlFilter), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(nonSqlFilter, includedFilter), filter.getNonSqlFilters());
+		Assertions.assertFalse(filter.isPureSql(), "Invalid IsPureSQL: " + filter);
+		Assertions.assertEquals(Collections.singletonList(sqlFilter), filter.getSqlFilters(), "Invalid SqlFilter: " + filter);
+		Assertions.assertEquals(Arrays.asList(nonSqlFilter, includedFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 		assertPartialSql(filter,
 				"(" + sqlFilter.getSql() + ")",
 				sqlFilter.getSqlParams(ctx));
@@ -360,7 +340,7 @@ public class CompositeQueryFilterTest
 	@Test
 	public void compile_MixedFiltersWithJoinOR()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		final IQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
@@ -378,7 +358,7 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> includedFilter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinAnd();
@@ -387,7 +367,7 @@ public class CompositeQueryFilterTest
 
 		//
 		// Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinOr();
@@ -396,7 +376,7 @@ public class CompositeQueryFilterTest
 		filter.addFilter(includedFilter);
 
 		assertPureNonSql(filter);
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 	}
 
 	@Test
@@ -404,21 +384,21 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> includedFilter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		includedFilter.setJoinAnd();
 		includedFilter.addFilter(includedSqlFilter);
 
 		//
 		// Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		filter.setJoinOr();
 		filter.addFilter(sqlFilter);
 		filter.addFilter(includedFilter);
 
 		assertPureSql(filter);
-		Assert.assertEquals("Invalid SqlFilters: " + filter, Arrays.asList(sqlFilter, includedFilter), filter.getSqlFilters());
+		Assertions.assertEquals(Arrays.asList(sqlFilter, includedFilter), filter.getSqlFilters(), "Invalid SqlFilters: " + filter);
 	}
 
 	@Test
@@ -426,7 +406,7 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> includedFilter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinOr();
@@ -435,7 +415,7 @@ public class CompositeQueryFilterTest
 
 		//
 		// Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinOr();
@@ -444,13 +424,13 @@ public class CompositeQueryFilterTest
 		filter.addFilter(includedFilter);
 
 		assertPureNonSql(filter);
-		Assert.assertEquals("Invalid NonSqlFilter: " + filter, Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilter: " + filter);
 	}
 
 	@Test
 	public void filter_mayNotIncludeItself()
 	{
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 
 		assertThatThrownBy(() -> filter.addFilter(filter))
 				.isInstanceOf(RuntimeException.class)
@@ -462,20 +442,20 @@ public class CompositeQueryFilterTest
 	{
 		//
 		// Included Filter
-		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		final CompositeQueryFilter<I_ModelClass> filter = CompositeQueryFilter.newInstance(I_ModelClass.class);
 		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		filter.addFilter(includedSqlFilter);
 
 		//
 		// Check before disabling the SQL filters
-		Assert.assertEquals("Invalid SqlFilters: " + filter, Arrays.asList(includedSqlFilter), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(), filter.getNonSqlFilters());
+		Assertions.assertEquals(Collections.singletonList(includedSqlFilter), filter.getSqlFilters(), "Invalid SqlFilters: " + filter);
+		Assertions.assertEquals(Collections.emptyList(), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 
 		filter.allowSqlFilters(false);
 
 		//
-		Assert.assertEquals("Invalid SqlFilters: " + filter, Arrays.asList(), filter.getSqlFilters());
-		Assert.assertEquals("Invalid NonSqlFilters: " + filter, Arrays.asList(includedSqlFilter), filter.getNonSqlFilters());
+		Assertions.assertEquals(Collections.emptyList(), filter.getSqlFilters(), "Invalid SqlFilters: " + filter);
+		Assertions.assertEquals(Collections.singletonList(includedSqlFilter), filter.getNonSqlFilters(), "Invalid NonSqlFilters: " + filter);
 
 	}
 
@@ -484,7 +464,7 @@ public class CompositeQueryFilterTest
 	//
 
 	@SafeVarargs
-	private final static <T> List<T> join(final List<T>... lists)
+	private static <T> List<T> join(final List<T>... lists)
 	{
 		if (lists == null || lists.length == 0)
 		{
@@ -502,14 +482,14 @@ public class CompositeQueryFilterTest
 
 	private <T> void assertDefaults(final ICompositeQueryFilter<T> filter)
 	{
-		Assert.assertEquals("Invalid Default - DefaultAccept", true, filter.isDefaultAccept());
-		Assert.assertEquals("Invalid Default - Join AND", true, filter.isJoinAnd());
-		Assert.assertEquals("Invalid Default - Join OR", false, filter.isJoinOr());
+		Assertions.assertTrue(filter.isDefaultAccept(), "Invalid Default - DefaultAccept");
+		Assertions.assertTrue(filter.isJoinAnd(), "Invalid Default - Join AND");
+		Assertions.assertFalse(filter.isJoinOr(), "Invalid Default - Join OR");
 	}
 
 	private <T> void assertEmpty(final ICompositeQueryFilter<T> filter)
 	{
-		Assert.assertEquals("Invalid isEmpty: " + filter, true, filter.isEmpty());
+		Assertions.assertTrue(filter.isEmpty(), "Invalid isEmpty: " + filter);
 
 		// NOTE: an empty composite filter shall be a PureSQL filter
 		assertPureSql(filter);
@@ -517,21 +497,21 @@ public class CompositeQueryFilterTest
 
 	private <T> void assertPureSql(final ICompositeQueryFilter<T> filter)
 	{
-		Assert.assertEquals("Invalid PureSQL - IsPureSql: " + filter, true, filter.isPureSql());
-		Assert.assertEquals("Invalid PureSQL - IsPureNonSql: " + filter, false, filter.isPureNonSql());
-		Assert.assertEquals("Invalid PureSQL - Partial NonSqlFilter: " + filter, null, filter.asPartialNonSqlFilterOrNull());
+		Assertions.assertTrue(filter.isPureSql(), "Invalid PureSQL - IsPureSql: " + filter);
+		Assertions.assertFalse(filter.isPureNonSql(), "Invalid PureSQL - IsPureNonSql: " + filter);
+		Assertions.assertNull(filter.asPartialNonSqlFilterOrNull(), "Invalid PureSQL - Partial NonSqlFilter: " + filter);
 	}
 
 	private <T> void assertPureNonSql(final ICompositeQueryFilter<T> filter)
 	{
-		Assert.assertEquals("Invalid Pure nonSQL - IsPureSql: " + filter, false, filter.isPureSql());
-		Assert.assertEquals("Invalid Pure nonSQL - IsPureNonSql: " + filter, true, filter.isPureNonSql());
-		Assert.assertEquals("Invalid Pure nonSQL - SqlFilters: " + filter, Collections.emptyList(), filter.getSqlFilters());
-		Assert.assertNotNull("Invalid Pure nonSQL - Partial NonSqlFilter: " + filter, filter.asPartialNonSqlFilterOrNull());
+		Assertions.assertFalse(filter.isPureSql(), "Invalid Pure nonSQL - IsPureSql: " + filter);
+		Assertions.assertTrue(filter.isPureNonSql(), "Invalid Pure nonSQL - IsPureNonSql: " + filter);
+		Assertions.assertEquals(Collections.emptyList(), filter.getSqlFilters(), "Invalid Pure nonSQL - SqlFilters: " + filter);
+		Assertions.assertNotNull(filter.asPartialNonSqlFilterOrNull(), "Invalid Pure nonSQL - Partial NonSqlFilter: " + filter);
 
-		Assert.assertEquals("Invalid Pure nonSQL - NonSqlFilters shall be the same as all filters: " + filter,
+		Assertions.assertEquals(
 				filter.getFilters(),
-				filter.getNonSqlFilters());
+				filter.getNonSqlFilters(), "Invalid Pure nonSQL - NonSqlFilters shall be the same as all filters: " + filter);
 
 		// Make sure build SQL is empty
 		assertPartialSql(filter, "", Collections.emptyList());
@@ -541,11 +521,11 @@ public class CompositeQueryFilterTest
 	}
 
 	private <T> void assertPartialSql(final ICompositeQueryFilter<T> filter,
-			final String expectedSqlFiltersWhereClause,
-			final List<Object> expectedSqlFiltersParam)
+									  final String expectedSqlFiltersWhereClause,
+									  final List<Object> expectedSqlFiltersParam)
 	{
-		Assert.assertEquals("Invalid Partial SQL - SQL: " + filter, expectedSqlFiltersWhereClause, filter.getSqlFiltersWhereClause());
-		Assert.assertEquals("Invalid Partial SQL - SQL Params: " + filter, expectedSqlFiltersParam, filter.getSqlFiltersParams(ctx));
+		Assertions.assertEquals(expectedSqlFiltersWhereClause, filter.getSqlFiltersWhereClause(), "Invalid Partial SQL - SQL: " + filter);
+		Assertions.assertEquals(expectedSqlFiltersParam, filter.getSqlFiltersParams(ctx), "Invalid Partial SQL - SQL Params: " + filter);
 
 		//
 		// Also validate sql query filter returned by "asPartialSqlQueryFilter" with same expectations
@@ -554,18 +534,19 @@ public class CompositeQueryFilterTest
 	}
 
 	private void assertSqlQueryFilter(final String messagePrefix,
-			final ISqlQueryFilter filter,
-			final String expectedSql,
-			final List<Object> expectedSqlParam)
+									  final ISqlQueryFilter filter,
+									  final String expectedSql,
+									  final List<Object> expectedSqlParam)
 	{
-		Assert.assertNotNull(messagePrefix + " - NOT NULL: " + filter, filter);
-		Assert.assertEquals(messagePrefix + " - SQL: " + filter, expectedSql, filter.getSql());
-		Assert.assertEquals(messagePrefix + " - SQL Params: " + filter, expectedSqlParam, filter.getSqlParams(ctx));
+		Assertions.assertNotNull(filter, messagePrefix + " - NOT NULL: " + filter);
+		Assertions.assertEquals(expectedSql, filter.getSql(), messagePrefix + " - SQL: " + filter);
+		Assertions.assertEquals(expectedSqlParam, filter.getSqlParams(ctx), messagePrefix + " - SQL Params: " + filter);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private <T> void assertPureSql(final ICompositeQueryFilter<T> filter,
-			final String expectedSqlFiltersWhereClause,
-			final List<Object> expectedSqlFiltersParam)
+								   final String expectedSqlFiltersWhereClause,
+								   final List<Object> expectedSqlFiltersParam)
 	{
 		assertPureSql(filter);
 		assertPartialSql(filter, expectedSqlFiltersWhereClause, expectedSqlFiltersParam);
@@ -583,7 +564,7 @@ public class CompositeQueryFilterTest
 			exception = e;
 		}
 
-		Assert.assertNotNull("filter.asSqlQueryFilter() expected to throw exception: " + filter, exception);
+		Assertions.assertNotNull(exception, "filter.asSqlQueryFilter() expected to throw exception: " + filter);
 	}
 
 }

@@ -6,12 +6,14 @@ export const registerHandler = ({
   computeActivityDataStoredInitialValue,
   computeActivityStatus,
   mergeActivityDataStored,
+  uiComponentFactory,
 }) => {
   registeredHandlers[componentType] = {
     normalizeComponentProps,
     computeActivityDataStoredInitialValue,
     computeActivityStatus,
     mergeActivityDataStored,
+    uiComponentFactory,
   };
 
   console.log(`Registered activity state handlers for ${componentType}`);
@@ -50,4 +52,8 @@ export const computeActivityStatus = ({ draftActivity }) => {
   } else {
     return null;
   }
+};
+
+export const getUIComponentFactory = ({ componentType }) => {
+  return registeredHandlers[componentType]?.uiComponentFactory;
 };

@@ -17,12 +17,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -33,7 +33,7 @@ public class PickFromHUsSupplier
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final HUReservationService huReservationService;
 	@Getter
 	private final HUsLoadingCache husCache;
@@ -151,17 +151,17 @@ public class PickFromHUsSupplier
 
 		if (request.isEnforceMandatoryAttributesOnPicking())
 		{
-			final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
-			for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+			final ImmutableList<Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
+			for (final Attribute attribute : attributesMandatoryOnPicking)
 			{
-				vhuQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue()));
+				vhuQuery.addOnlyWithAttributeNotNull(attribute.getAttributeCode());
 			}
 		}
 
 		// ASI
 		if (considerAttributes)
 		{
-			final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(request.getAsiId());
+			final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(request.getAsiId());
 			// TODO: shall we consider only storage relevant attributes?
 			vhuQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(request.getPartnerId(), request.getProductId(), attributeSet);
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());

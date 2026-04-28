@@ -146,7 +146,7 @@ public class SecurPharmProductRepository
 				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
 				.addInArrayFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huIds)
 				.create()
-				.listIds(SecurPharmProductId::ofRepoId);
+				.idsAsSet(SecurPharmProductId::ofRepoId);
 
 		return getProductsByIds(ids);
 	}

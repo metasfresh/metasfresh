@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erpwebui.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="122"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="873"/>
@@ -42,127 +42,186 @@
 	<parameter name="StartDate" class="java.sql.Date"/>
 	<parameter name="EndDate" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
-	$P{Account_From_ID},
-	$P{Account_To_ID},
-	$P{C_Period_Start_ID},
-	$P{C_Period_End_ID},
-	$P{StartDate},
-	$P{EndDate},
-	$P{C_Activity_ID},
-	$P{DisplayVoidDocuments},
-	$P{showCurrencyExchange},
-	$P{DisplayOnlyEmptyActivity},
-	$P{ad_org_id}
-);]]>
+		<![CDATA[SELECT *
+FROM report.Fresh_Account_Info_Report(
+    p_account_from_id => $P{Account_From_ID},
+	p_account_to_id => $P{Account_To_ID},
+	p_C_Period_Start_ID => $P{C_Period_Start_ID},
+	p_C_Period_End_ID => $P{C_Period_End_ID},
+	p_StartDate => $P{StartDate},
+	p_EndDate => $P{EndDate},
+	p_c_activity_id => $P{C_Activity_ID},
+	p_displayvoiddocuments => $P{DisplayVoidDocuments},
+	p_showcurrencyexchange => $P{showCurrencyExchange},
+	p_showonlyemptyactivity => $P{DisplayOnlyEmptyActivity},
+	p_ad_org_id => $P{ad_org_id}
+)
+ORDER BY param_acct_name, dateacct, unionorder
+;]]>
 	</queryString>
 	<field name="dateacct" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="dateacct"/>
+		<property name="com.jaspersoft.studio.field.name" value="dateacct"/>
 	</field>
 	<field name="fact_acct_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="fact_acct_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="fact_acct_id"/>
 	</field>
 	<field name="bp_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="bp_name"/>
 	</field>
 	<field name="description" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 	</field>
 	<field name="account2_id" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="account2_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="account2_id"/>
 	</field>
 	<field name="a_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="a_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="a_value"/>
 	</field>
 	<field name="amtsourcedr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtsourcedr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtsourcedr"/>
 	</field>
 	<field name="amtsourcecr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtsourcecr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtsourcecr"/>
 	</field>
 	<field name="source_currency" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
+		<property name="com.jaspersoft.studio.field.name" value="source_currency"/>
 	</field>
 	<field name="amtacctdr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtacctdr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtacctdr"/>
 	</field>
 	<field name="amtacctcr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtacctcr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtacctcr"/>
 	</field>
 	<field name="saldo" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="saldo"/>
+		<property name="com.jaspersoft.studio.field.name" value="saldo"/>
 	</field>
 	<field name="param_acct_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_acct_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_acct_value"/>
 	</field>
 	<field name="param_acct_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_acct_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_acct_name"/>
 	</field>
 	<field name="param_end_date" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_end_date"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_end_date"/>
 	</field>
 	<field name="param_start_date" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_start_date"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_start_date"/>
 	</field>
 	<field name="param_activity_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_activity_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_activity_value"/>
 	</field>
 	<field name="param_activity_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_activity_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_activity_name"/>
 	</field>
 	<field name="overallcount" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="overallcount"/>
+		<property name="com.jaspersoft.studio.field.name" value="overallcount"/>
 	</field>
 	<field name="unionorder" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="unionorder"/>
+		<property name="com.jaspersoft.studio.field.name" value="unionorder"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 	</field>
 	<field name="eurosaldo" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
+		<property name="com.jaspersoft.studio.field.name" value="eurosaldo"/>
 	</field>
 	<field name="containseur" class="java.lang.Boolean">
 		<property name="com.jaspersoft.studio.field.label" value="containseur"/>
+		<property name="com.jaspersoft.studio.field.name" value="containseur"/>
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 	</field>
 	<field name="vat_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="vat_code"/>
+		<property name="com.jaspersoft.studio.field.name" value="vat_code"/>
 	</field>
 	<field name="tax_rate_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="tax_rate_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="tax_rate_name"/>
+	</field>
+	<field name="beginingbalance1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance1"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance1"/>
 	</field>
 	<field name="sourcebalance1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance1"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance1"/>
 	</field>
 	<field name="sourcebalance_currency1" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency1"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency1"/>
+	</field>
+	<field name="beginingbalance2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance2"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance2"/>
 	</field>
 	<field name="sourcebalance2" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance2"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance2"/>
 	</field>
 	<field name="sourcebalance_currency2" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency2"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency2"/>
+	</field>
+	<field name="beginingbalance3" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance3"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance3"/>
 	</field>
 	<field name="sourcebalance3" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance3"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance3"/>
 	</field>
 	<field name="sourcebalance_currency3" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency3"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency3"/>
+	</field>
+	<field name="beginingbalance4" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance4"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance4"/>
 	</field>
 	<field name="sourcebalance4" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance4"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance4"/>
 	</field>
 	<field name="sourcebalance_currency4" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency4"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency4"/>
+	</field>
+	<field name="beginingbalance5" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance5"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance5"/>
 	</field>
 	<field name="sourcebalance5" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance5"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance5"/>
 	</field>
 	<field name="sourcebalance_currency5" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency5"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency5"/>
 	</field>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
@@ -485,7 +544,7 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="40" splitType="Stretch">
+		<band height="41">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="1" y="0" width="56" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
@@ -595,7 +654,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance1} :  $F{sourcebalance1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="739" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="69771371-b4ac-4196-8e4d-96b91be311d5">
@@ -622,7 +681,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance2}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance2} : $F{sourcebalance2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="739" y="16" width="15" height="6" isRemoveLineWhenBlank="true" uuid="a58e3e42-33b3-4ca2-b53c-5573aa87a4c1">
@@ -649,7 +708,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance3}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance3} : $F{sourcebalance3}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="739" y="22" width="15" height="6" isRemoveLineWhenBlank="true" uuid="924952ea-c0d8-47cc-9243-6a1dc6474c98">
@@ -685,7 +744,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance5}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance5} : $F{sourcebalance5}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="714" y="28" width="25" height="6" isRemoveLineWhenBlank="true" uuid="8a5ee8a9-e09a-417b-8584-5dc77535a3d6">
@@ -694,7 +753,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance4}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance4} : $F{sourcebalance4}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="704" y="28" width="10" height="6" isRemoveLineWhenBlank="true" uuid="fb5a4b30-8d08-4bde-a991-65f22b87bbd0">
@@ -768,6 +827,51 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{source_currency}+")"]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="537" y="9" width="5" height="6" uuid="aeb10aef-8cec-4db4-9d09-66b6bc2f1fe7">
+					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency1}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="4"/>
+				</textElement>
+				<text><![CDATA[_|]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="537" y="15" width="5" height="6" uuid="213ed862-a3a0-4270-9d51-e7a7d2f398c0">
+					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency2}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="4"/>
+				</textElement>
+				<text><![CDATA[_|]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="537" y="21" width="5" height="6" uuid="0c6f9b50-8bfb-467b-8907-8dd91265e9f3">
+					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency3}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="4"/>
+				</textElement>
+				<text><![CDATA[_|]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="537" y="27" width="5" height="6" uuid="31e03865-f1e4-4822-9fc2-d6bc842c93cc">
+					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency4}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="4"/>
+				</textElement>
+				<text><![CDATA[_|]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="537" y="33" width="5" height="6" uuid="e1942775-95b4-430c-9858-bba60f63dc6b">
+					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency5}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans Mono" size="4"/>
+				</textElement>
+				<text><![CDATA[_|]]></text>
+			</staticText>
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>

@@ -1,22 +1,20 @@
 package de.metas.acct.process;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.doc.AcctDocRegistry;
-import de.metas.acct.api.IPostingService;
-import de.metas.process.JavaProcess;
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
  * #%L
@@ -40,6 +38,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@Deprecated
 public class Documents_EnqueueNotPosted extends JavaProcess
 {
 	private final transient AcctDocRegistry docFactory = Adempiere.getBean(AcctDocRegistry.class);
@@ -61,13 +60,11 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 	{
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(docTableName);
 
-		final String sql = new StringBuilder("")
-				.append("SELECT ").append(keyColumnName)
-				.append(" FROM ").append(docTableName)
-				.append(" WHERE AD_Client_ID=").append(getAD_Client_ID())
-				.append(" AND Processed='Y' AND Posted='N' AND IsActive='Y'")
-				.append(" ORDER BY Created")
-				.toString();
+		final String sql = "SELECT " + keyColumnName
+				+ " FROM " + docTableName
+				+ " WHERE AD_Client_ID=" + getAD_Client_ID()
+				+ " AND Processed='Y' AND Posted='N' AND IsActive='Y'"
+				+ " ORDER BY Created";
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -93,7 +90,7 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 		catch (final SQLException ex)
 		{
 			addLog("{}: failed fetching IDs. Check log.", docTableName);
-			log.warn("Failed fetching IDs: \n SQL={} \n Params={}", sql, ex);
+			log.warn("Failed fetching IDs: \n SQL={}", sql, ex);
 		}
 		catch (final Exception ex)
 		{
@@ -108,13 +105,11 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 
 	private void enqueueDocument(final String tableName, final int recordId)
 	{
-		postingService.newPostingRequest()
-				// Post it in same context and transaction as the process
-				.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
-				.setDocumentRef(TableRecordReference.of(tableName, recordId)) // the document to be posted
-				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-				.setPostImmediate(PostImmediate.No) // no, just enqueue it
-				.setForce(false) // don't force it
-				.postIt();
+		postingService.schedule(
+				DocumentPostRequest.builder()
+						.record(TableRecordReference.of(tableName, recordId)) // the document to be posted
+						.clientId(getClientId())
+						.build()
+		);
 	}
 }

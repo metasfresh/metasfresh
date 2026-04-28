@@ -23,6 +23,7 @@
 package de.metas.elementvalue;
 
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,5 +37,6 @@ public class ChartOfAccounts
 	@NonNull ChartOfAccountsId id;
 	@NonNull String name;
 	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 	@NonNull AdTreeId treeId;
 }

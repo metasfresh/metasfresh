@@ -1,27 +1,27 @@
 package de.metas.shipper.gateway.derkurier;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_ID;
-import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_TRANSPORTATION_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Country;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Country;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_ID;
+import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_TRANSPORTATION_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 	private DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
 	private I_C_Country countryDe;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -81,7 +81,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 
 		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
-		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
+		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getId().getRepoId());
 		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID.getRepoId());
 		assertThat(headerRecord.getM_ShipperTransportation_ID()).isEqualTo(M_SHIPPER_TRANSPORTATION_ID.getRepoId());
 
@@ -111,10 +111,11 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final Address pickupAddress = DerKurierTestTools.createPickupAddress();
 		final PickupDate pickupDate = DerKurierTestTools.createPickupDate();
 
-		// create a builder, add properties that are mandatory, but not related to the deliveryOrderLine's data
+		// create a builder, add properties that are mandatory, but not related to the deliveryOrderParcel's data
 		final DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.pickupAddress(pickupAddress) // pickupAddress is mandatory, but not coming from I_DerKurier_DeliveryOrderLine
 				.pickupDate(pickupDate) // same as pickupAddress
+				.shipperId(ShipperId.ofRepoId(1))
 				.shipperProduct(DerKurierShipperProduct.OVERNIGHT);
 
 		// invoke the method under test

@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.IDocTypeDAO;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -43,7 +45,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -74,7 +76,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Ignore
+@Disabled
 final class TestMasterdata
 {
 	public static final String RESOURCE_PATH = "/de/metas/rest_api/v1/ordercandidates/impl/";
@@ -98,6 +100,16 @@ final class TestMasterdata
 				.build());
 	}
 
+	public void createExternalSystem(@NonNull final String name, @NonNull final ExternalSystemType type)
+	{
+		final I_ExternalSystem externalSystem = newInstance(I_ExternalSystem.class);
+
+		externalSystem.setName(name);
+		externalSystem.setValue(type.getValue());
+
+		saveRecord(externalSystem);
+	}
+
 	@Builder(builderMethodName = "prepareBPartnerAndLocation", builderClassName = "_BPartnerAndLocationBuilder")
 	private BPartnerLocationId createBPartnerAndLocation(
 			@Nullable final OrgId orgId,
@@ -112,6 +124,7 @@ final class TestMasterdata
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setName(bpValue + "-name");
+		groupRecord.setValue(bpValue + "-value");
 		if (orgId != null)
 		{
 			groupRecord.setAD_Org_ID(orgId.getRepoId());
@@ -164,6 +177,7 @@ final class TestMasterdata
 		{
 			groupRecord = newInstance(I_C_BP_Group.class);
 			groupRecord.setName(bpValue + "-name");
+			groupRecord.setValue(bpValue + "-value");
 			if (orgId != null)
 			{
 				groupRecord.setAD_Org_ID(orgId.getRepoId());

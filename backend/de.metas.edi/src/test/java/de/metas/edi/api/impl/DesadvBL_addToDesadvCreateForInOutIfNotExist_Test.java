@@ -3,8 +3,6 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
-import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -18,10 +16,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
-import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -36,13 +30,17 @@ import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFi
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.service.impl.ASIBuilder;
 import de.metas.product.ProductId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -103,7 +101,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	private I_M_HU_PI_Item_Product huPIItemProductRecord;
 
 	private I_C_UOM catchUomRecord;
-	private UomId orderUomId;
+	private UomId stockUomId;
 
 	private final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(20);
 
@@ -117,6 +115,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	private DesadvBL desadvBL;
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private I_EDI_DesadvLine desadvLine;
+
+	private I_M_Attribute bestBeforeAttrRecord;
 
 	@BeforeEach
 	void beforeEach()
@@ -137,12 +137,11 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		catchUomRecord = BusinessTestHelper.createUOM("catchUom", 3, -1);
 		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("stockUOM", 0, -1);
 		final I_C_UOM orderUOMRecord = BusinessTestHelper.createUOM("orderUOM", 3, -1);
-		orderUomId = UomId.ofRepoId(orderUOMRecord.getC_UOM_ID());
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", stockUOMRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
-		final UomId stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
+		stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 													   .productId(productId)
 													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
@@ -167,7 +166,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 													   .toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
 													   .fromToMultiplier(new BigDecimal("1.5"))
 													   .build());
-		
+
 		// setup HU packing instructions
 		final I_M_HU_PI huDefPalet = huTestHelper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		huTestHelper.createHU_PI_Item_PackingMaterial(huDefPalet, huTestHelper.pmPalet);
@@ -217,8 +216,9 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		final HURepository huRepository = new HURepository();
-		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
+		desadvBL = DesadvBL.newInstanceForUnitTesting();
+
+		bestBeforeAttrRecord = huTestHelper.attr_BestBeforeDate;
 	}
 
 	@Test
@@ -321,11 +321,21 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	}
 
 	/**
-	 * tests inoutLine whose quantity is partially covered by an HU
+	 * Tests inoutLine whose quantity is partially covered by an HU.
+	 * Setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
 	 */
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_HU()
 	{
+		inOutLineRecord.setQtyEntered(new BigDecimal("52"));
+		inOutLineRecord.setC_UOM_ID(stockUomId.getRepoId());
+		inOutLineRecord.setM_AttributeSetInstance_ID(
+				ASIBuilder.newInstance()
+						.setAttribute(bestBeforeAttrRecord, TimeUtil.parseTimestamp("2019-12-02"))
+						.build()
+						.getM_AttributeSetInstance_ID());
+		saveRecord(inOutLineRecord);
+
 		setupHandlingUnit(); // HU with 49 CUs
 
 		// invoke the method under test
@@ -338,7 +348,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 						/* the first pack is based on the HU that we added */
 						tuple(false, "001111110000000015"),
 
-						// the 2nd pack represents "the rest" that is requiered to arrive at the inOutLineRecord's qtyEntered = 42
+						// the 2nd pack represents "the rest" that is requiered to arrive at the inOutLineRecord's qtyEntered = 52
+						// This normally would be a second inoutLine because of different ASI
 						tuple(true, "001111110000000022")//
 				);
 
@@ -346,14 +357,30 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(),
+								TimeUtil.parseTimestamp("2019-12-02"),
+								10,
+								new BigDecimal("2.500"),
+								new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
 				);
 	}
 
+	/**
+	 * setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
+	 */
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_HU_desadvLineWithCOLIasUOM()
 	{
+		inOutLineRecord.setQtyEntered(new BigDecimal("52"));
+		inOutLineRecord.setC_UOM_ID(stockUomId.getRepoId());
+		inOutLineRecord.setM_AttributeSetInstance_ID(
+				ASIBuilder.newInstance()
+						.setAttribute(bestBeforeAttrRecord, TimeUtil.parseTimestamp("2019-12-02"))
+						.build()
+						.getM_AttributeSetInstance_ID());
+		saveRecord(inOutLineRecord);
+
 		changeDesadvLineToCOLIasUOM();
 		setupHandlingUnit();
 
@@ -373,14 +400,14 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("5"), new BigDecimal("49")),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("5"), new BigDecimal("35")) //
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 7, new BigDecimal("5"), new BigDecimal("35")) //
 				);
 	}
 
 	private void changeDesadvLineToCOLIasUOM()
 	{
 		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
-		
+
 		desadvLine.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
 		desadvLine.setQtyItemCapacity(TEN);
 		saveRecord(desadvLine);
@@ -396,13 +423,13 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final I_M_Attribute sscc18AttrRecord = newInstance(I_M_Attribute.class);
 		sscc18AttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		sscc18AttrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
+		sscc18AttrRecord.setValue(AttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(sscc18AttrRecord);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final I_M_HU_PI_Attribute sscc18HUPIAttributeRecord = huTestHelper
 				.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(sscc18AttrRecord)
-												 .setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+						.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
 		final I_M_HU lu = huTestHelper.createLU(
 				huContext,
 				huPIItemPallet,
@@ -415,21 +442,43 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		huAttrRecord.setM_HU_PI_Attribute_ID(sscc18HUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 		saveRecord(huAttrRecord);
 
-		final I_M_Attribute bestBeforeAttrRecord = newInstance(I_M_Attribute.class);
-		bestBeforeAttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
-		bestBeforeAttrRecord.setValue(AttributeConstants.ATTR_BestBeforeDate.getCode());
-		saveRecord(bestBeforeAttrRecord);
+		// Find the existing M_HU_PI_Attribute for BestBeforeDate (created by HUTestHelper)
+		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = POJOLookupMap.get()
+				.getRecords(I_M_HU_PI_Attribute.class,
+						record -> record.getM_Attribute_ID() == bestBeforeAttrRecord.getM_Attribute_ID())
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No M_HU_PI_Attribute found for BestBeforeDate attribute"));
 
-		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(bestBeforeAttrRecord)
-																											   .setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
-		for (final I_M_HU childHU : handlingUnitsDAO.retrieveIncludedHUs(lu))
+		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(lu))
 		{
 			final I_M_HU_Attribute childHUAttrRecord = newInstance(I_M_HU_Attribute.class);
 			childHUAttrRecord.setM_Attribute_ID(bestBeforeHUPIAttributeRecord.getM_Attribute_ID());
-			childHUAttrRecord.setM_HU_ID(childHU.getM_HU_ID());
+			childHUAttrRecord.setM_HU_ID(tu.getM_HU_ID());
 			childHUAttrRecord.setValueDate(TimeUtil.parseTimestamp("2019-12-02"));
 			childHUAttrRecord.setM_HU_PI_Attribute_ID(bestBeforeHUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 			saveRecord(childHUAttrRecord);
+
+			// need to make sure all TUs and CUs are asociated - like when we do actual picking
+			huAssignmentBL.createHUAssignmentBuilder()
+					.initializeAssignment(ctx, ITrx.TRXNAME_None)
+					.setModel(inOutLineRecord)
+					.setTopLevelHU(lu)
+					.setM_LU_HU(lu)
+					.setM_TU_HU(tu)
+					.build();
+
+			for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(tu))
+			{
+				huAssignmentBL.createHUAssignmentBuilder()
+						.initializeAssignment(ctx, ITrx.TRXNAME_None)
+						.setModel(inOutLineRecord)
+						.setTopLevelHU(lu)
+						.setM_LU_HU(lu)
+						.setM_TU_HU(tu)
+						.setVHU(cu)
+						.build();
+			}
 		}
 
 		huAssignmentBL.createHUAssignmentBuilder()

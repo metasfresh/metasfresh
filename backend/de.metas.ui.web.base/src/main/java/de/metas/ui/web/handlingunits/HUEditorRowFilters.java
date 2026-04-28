@@ -1,20 +1,18 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.function.Predicate;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.function.Predicate;
 
 /*
  * #%L

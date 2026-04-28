@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -87,7 +87,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 		from(direct(GET_ORDERS_ROUTE_ID))
 				.routeId(GET_ORDERS_ROUTE_ID)
 				.log("Route invoked")
-				.streamCaching()
+				.streamCache("true")
 				.process(new BuildOrdersContextProcessor(processLogger, producerTemplate)).id(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 				.to(direct(PROCESS_ORDERS_PAGE_ROUTE_ID))
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
@@ -154,8 +154,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to process OLCand: ${body}")
 							.to(direct(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID))
 						.end()
-					.end()
-				.endChoice();
+					.end();
 
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
@@ -166,8 +165,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert runtime parameters: ${body}")
 					.otherwise()
 						.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID))
-				.endChoice()
-				.end();
+    				.end();
 		//@formatter:on
 	}
 

@@ -1,0 +1,4 @@
+
+ALTER TABLE DHL_ShipmentOrder
+    DROP COLUMN IF EXISTS PackageId
+;

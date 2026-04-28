@@ -8,6 +8,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
 /*
  * #%L
@@ -51,4 +56,14 @@ public class SupplyRequiredEvent implements MaterialEvent
 	{
 		return supplyRequiredDescriptor.getEventDescriptor();
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(MD_CANDIDATE_TABLE_NAME, supplyRequiredDescriptor.getDemandCandidateId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

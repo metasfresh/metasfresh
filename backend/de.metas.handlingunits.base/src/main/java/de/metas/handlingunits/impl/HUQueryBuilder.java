@@ -35,7 +35,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.product.ProductId;
@@ -71,8 +71,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * {@link IHUQueryBuilder} implementation.
@@ -314,12 +316,6 @@ import java.util.Set;
 	}
 
 	@Override
-	public String getAttributesSummary()
-	{
-		return attributes.getAttributesSummary();
-	}
-
-	@Override
 	public IQueryBuilder<I_M_HU> createQueryBuilder()
 	{
 		//
@@ -340,8 +336,7 @@ import java.util.Set;
 
 		//
 		// ORDER BY
-		queryBuilder.orderBy()
-				.addColumn(I_M_HU.COLUMN_M_HU_ID); // just to have a predictable order
+		queryBuilder.orderBy(I_M_HU.COLUMN_M_HU_ID); // just to have a predictable order
 
 		return queryBuilder;
 	}
@@ -584,7 +579,7 @@ import java.util.Set;
 			filtersFinal = queryBL.createCompositeQueryFilter(I_M_HU.class)
 					.setJoinOr()
 					.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, _huIdsToAlwaysInclude);
-			if(!andFilters.isEmpty())
+			if (!andFilters.isEmpty())
 			{
 				filtersFinal.addFilter(andFilters);
 			}
@@ -608,13 +603,19 @@ import java.util.Set;
 	public ImmutableSet<HuId> listIds()
 	{
 		final IQuery<I_M_HU> query = createQuery();
-		return query.listIds(HuId::ofRepoId);
+		return query.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override
 	public List<I_M_HU> list()
 	{
 		return list(IQuery.NO_LIMIT);
+	}
+
+	@Override
+	public Stream<I_M_HU> stream()
+	{
+		return list().stream();
 	}
 
 	@Override
@@ -661,6 +662,19 @@ import java.util.Set;
 		}
 
 		return hu;
+	}
+
+	@Override
+	public Optional<HuId> firstId()
+	{
+		final int huRepoId = createQuery().firstId();
+		return Optional.ofNullable(HuId.ofRepoIdOrNull(huRepoId));
+	}
+
+	@Override
+	public Optional<HuId> firstIdOnly()
+	{
+		return createQuery().firstIdOnlyOptional(HuId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -810,11 +824,11 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithProductIds(final Collection<Integer> productIds)
+	public IHUQueryBuilder addOnlyWithProductIds(final Collection<ProductId> productIds)
 	{
 		if (productIds != null && !productIds.isEmpty())
 		{
-			_onlyWithProductIds.addAll(ProductId.ofRepoIds(productIds));
+			_onlyWithProductIds.addAll(productIds);
 		}
 		else
 		{

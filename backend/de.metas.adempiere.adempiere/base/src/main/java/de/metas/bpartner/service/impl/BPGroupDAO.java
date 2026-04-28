@@ -7,11 +7,13 @@ import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -75,18 +77,20 @@ public class BPGroupDAO implements IBPGroupDAO
 
 	@Override
 	@Nullable
-	public I_C_BP_Group getDefaultByClientId(@NonNull final ClientId clientId)
+	public I_C_BP_Group getDefaultByClientOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final BPGroupId bpGroupId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BP_Group.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
+				.addInArrayFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId(), OrgId.ANY)
 				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_IsDefault, true)
+				.orderByDescending(I_C_BP_Group.COLUMNNAME_AD_Org_ID)
 				.create()
-				.firstIdOnly(BPGroupId::ofRepoIdOrNull);
+				.firstId(BPGroupId::ofRepoIdOrNull);
 		if (bpGroupId == null)
 		{
-			logger.warn("No default BP group found for {}", clientId);
+			logger.warn("No default BP group found for {}", clientAndOrgId);
 			return null;
 		}
 
@@ -101,5 +105,11 @@ public class BPGroupDAO implements IBPGroupDAO
 		return StringUtils.trimBlankToOptional(bpGroup.getBPNameAndGreetingStrategy())
 				.map(BPartnerNameAndGreetingStrategyId::ofString)
 				.orElse(DoNothingBPartnerNameAndGreetingStrategy.ID);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_BP_Group bpGroup)
+	{
+		InterfaceWrapperHelper.saveRecord(bpGroup);
 	}
 }

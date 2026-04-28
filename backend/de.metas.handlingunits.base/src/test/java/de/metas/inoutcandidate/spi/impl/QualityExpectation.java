@@ -27,7 +27,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_UOM;
-import org.junit.Assert;
 
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -37,6 +36,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.junit.jupiter.api.Assertions;
 
 public class QualityExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -158,7 +158,7 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 
 	private I_M_ReceiptSchedule_Alloc createRSA()
 	{
-		Assert.assertNotNull("receipt schedule shall be set", receiptSchedule);
+		Assertions.assertNotNull(receiptSchedule, "receipt schedule shall be set");
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(receiptSchedule);
 		final I_M_ReceiptSchedule_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class, context);
 		rsa.setM_ReceiptSchedule(receiptSchedule);
@@ -198,7 +198,6 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		qtyAndQuality().qtyWithIssues(qtyWithIssues);
 		return this;
 	}
-
 
 	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(@NonNull final StockQtyAndUOMQty qtyWithoutIssues)
 	{

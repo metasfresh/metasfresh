@@ -22,15 +22,24 @@
 
 package de.metas.handlingunits.qrcodes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
 public interface IHUQRCode
 {
+	String getAsString();
+
+	@JsonIgnore
+	default boolean isWeightRequired() {return false;}
+
 	Optional<BigDecimal> getWeightInKg();
 
 	Optional<LocalDate> getBestBeforeDate();
+
+	default Optional<LocalDate> getProductionDate() {return Optional.empty();}
 
 	Optional<String> getLotNumber();
 }

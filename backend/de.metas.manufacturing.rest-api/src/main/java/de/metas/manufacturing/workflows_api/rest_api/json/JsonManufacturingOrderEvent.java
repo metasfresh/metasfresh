@@ -5,6 +5,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonTUReceivingTarget;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,6 +45,12 @@ public class JsonManufacturingOrderEvent
 	{
 		@NonNull String lineId;
 		@NonNull BigDecimal qtyReceived;
+		@Nullable String bestBeforeDate;
+		@Nullable String productionDate;
+		@Nullable String lotNo;
+		@Nullable BigDecimal catchWeight;
+		@Nullable String catchWeightUomSymbol;
+		@Nullable ScannedCode barcode;
 		@Nullable JsonLUReceivingTarget aggregateToLU;
 		@Nullable JsonTUReceivingTarget aggregateToTU;
 
@@ -53,6 +60,18 @@ public class JsonManufacturingOrderEvent
 
 	@Nullable ReceiveFrom receiveFrom;
 
+	@Value
+	@Builder
+	@Jacksonized
+	public static class PickTo
+	{
+		@NonNull String wfProcessId;
+		@NonNull String activityId;
+		@NonNull String lineId;
+	}
+
+	@Nullable PickTo pickTo;
+
 	@Builder
 	@Jacksonized
 	private JsonManufacturingOrderEvent(
@@ -60,7 +79,8 @@ public class JsonManufacturingOrderEvent
 			@NonNull final String wfActivityId,
 			//
 			@Nullable final IssueTo issueTo,
-			@Nullable final ReceiveFrom receiveFrom)
+			@Nullable final ReceiveFrom receiveFrom,
+			@Nullable final PickTo pickTo)
 	{
 		if (CoalesceUtil.countNotNulls(issueTo, receiveFrom) != 1)
 		{
@@ -72,5 +92,6 @@ public class JsonManufacturingOrderEvent
 
 		this.issueTo = issueTo;
 		this.receiveFrom = receiveFrom;
+		this.pickTo = pickTo;
 	}
 }

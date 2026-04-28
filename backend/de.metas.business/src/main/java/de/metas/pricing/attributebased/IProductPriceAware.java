@@ -25,10 +25,10 @@ package de.metas.pricing.attributebased;
 
 /**
  * Implemented by models which is are aware of Product Price record.
- * 
+ * <p>
  * It is used in attribute pricing engines to fetch explicit product price attribute settings.
- * 
- * To create a new instance, please use {@link ProductPriceAttributeAware#ofModel(Object)}.
+ * <p>
+ * To create a new instance, please use {@link ProductPriceAware#ofModel(Object)}.
  * 
  * @author tsa
  *
@@ -36,13 +36,13 @@ package de.metas.pricing.attributebased;
 public interface IProductPriceAware
 {
 	//@formatter:off
-    public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
-	public int getM_ProductPrice_ID();
+    String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
+	int getM_ProductPrice_ID();
 	//@formatter:on
 
 	//@formatter:off
 	// NOTE: mainly used for Excel imports (see task 08839)
-	public static final String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
-	public boolean isExplicitProductPriceAttribute();
+	String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
+	boolean isExplicitProductPriceAttribute();
 	//@formatter:on
 }

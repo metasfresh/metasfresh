@@ -2,6 +2,7 @@ package de.metas.order;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -15,6 +16,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -71,18 +73,19 @@ public class OrderLineBuilder
 
 	private ProductId productId;
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	@Nullable private HUPIItemProductId piItemProductId;
 	private Quantity qty;
 
-	@Nullable
-	private BigDecimal manualPrice;
-	@Nullable
-	private UomId manualPriceUomId;
+	@Nullable private BigDecimal manualPrice;
+	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
+	@Nullable private BigDecimal qtyEnteredTU;
 
 	@Nullable
 	private String description;
 
 	private boolean hideWhenPrinting;
+	@Nullable private ExternalId externalId;
 
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
@@ -107,6 +110,10 @@ public class OrderLineBuilder
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		if (piItemProductId != null)
+		{
+			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+		}
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
@@ -118,6 +125,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
+			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -131,11 +139,6 @@ public class OrderLineBuilder
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
-		if (manualPriceUomId != null)
-		{
-			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
-		}
-
 		orderLineBL.updatePrices(orderLine);
 
 		if (!Check.isBlank(description))
@@ -143,7 +146,13 @@ public class OrderLineBuilder
 			orderLine.setDescription(description);
 		}
 
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
+		}
+
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+		orderLine.setExternalId(ExternalId.toValue(externalId));
 
 		saveRecord(orderLine);
 
@@ -185,6 +194,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.productId = productId;
+		return this;
+	}
+
+	public OrderLineBuilder piItemProductId(@Nullable final HUPIItemProductId piItemProductId)
+	{
+		assertNotBuilt();
+		this.piItemProductId = piItemProductId;
 		return this;
 	}
 
@@ -231,17 +247,24 @@ public class OrderLineBuilder
 		return qty != null ? qty.getUomId() : null;
 	}
 
+	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
+	{
+		assertNotBuilt();
+		this.priceUomId = priceUomId;
+		return this;
+	}
+
+	public OrderLineBuilder externalId(@Nullable final ExternalId externalId)
+	{
+		assertNotBuilt();
+		this.externalId = externalId;
+		return this;
+	}
+	
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
-		return this;
-	}
-
-	public OrderLineBuilder manualPriceUomId(@Nullable final UomId manualPriceUomId)
-	{
-		assertNotBuilt();
-		this.manualPriceUomId = manualPriceUomId;
 		return this;
 	}
 
@@ -254,6 +277,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.manualDiscount = manualDiscount;
+		return this;
+	}
+
+	public OrderLineBuilder qtyEnteredTU(@Nullable final BigDecimal qtyEnteredTU)
+	{
+		assertNotBuilt();
+		this.qtyEnteredTU = qtyEnteredTU;
 		return this;
 	}
 

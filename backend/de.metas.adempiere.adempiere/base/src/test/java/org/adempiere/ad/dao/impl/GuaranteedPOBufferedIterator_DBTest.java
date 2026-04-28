@@ -22,14 +22,8 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,12 +33,16 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Database coupled test which makes sure the {@link GuaranteedPOBufferedIterator} works OK.
@@ -52,7 +50,7 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 // requires database connection
 public class GuaranteedPOBufferedIterator_DBTest
 {
@@ -147,7 +145,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 
 		//
 		// Compare the results
-		Assert.assertEquals(expectedTableNames, actualTableNames);
+		Assertions.assertEquals(expectedTableNames, actualTableNames);
 	}
 
 	@Test
@@ -211,7 +209,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 
 		//
 		// Assert correct results
-		Assert.assertEquals(recordIds, actualRecordIds);
+		Assertions.assertEquals(recordIds, actualRecordIds);
 	}
 
 	private final I_Test createRecord()

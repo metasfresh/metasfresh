@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -52,7 +52,8 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 	@NonNull
 	private final ProcessLogger processLogger;
 
-	private final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
+	@VisibleForTesting
+	final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
 
 	public CallDispatcherRouteBuilder(final @NonNull ProcessLogger processLogger)
 	{
@@ -72,7 +73,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 
 		from("direct:dispatch")
 				.routeId(DISPATCH_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
 				.process(this::processExternalSystemRequest)
 				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}")
@@ -100,6 +101,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 	private void processExternalSystemRequest(@NonNull final Exchange exchange)
 	{
 		final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+		
 		exchange.getIn().setHeader(HEADER_TARGET_ROUTE, request.getExternalSystemName().getName() + "-" + request.getCommand());
 		exchange.getIn().setHeader(HEADER_TRACE_ID, request.getTraceId());
 

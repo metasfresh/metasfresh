@@ -83,7 +83,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
@@ -107,7 +107,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 @Service
 class ReceiptCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ReceiptCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ReceiptCandidateAPIService.class);
 
 	private final ReceiptScheduleAuditRepository receiptScheduleAuditRepository;
 	private final ReceiptScheduleRepository receiptScheduleRepository;
@@ -115,7 +115,7 @@ class ReceiptCandidateAPIService
 	private final ProductRepository productRepository;
 	private final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICommodityNumberDAO commodityNumberDAO = Services.get(ICommodityNumberDAO.class);
@@ -179,7 +179,7 @@ class ReceiptCandidateAPIService
 			}
 			else
 			{
-				attributesForASIs = attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+				attributesForASIs = asiBL.getAttributesForASIs(idsRegistry.getAsiIds());
 			}
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()
@@ -281,12 +281,12 @@ class ReceiptCandidateAPIService
 			@Nullable final String commodityNumber)
 	{
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.stocked(product.isStocked())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.commodityNumberValue(commodityNumber)
 				.description(product.getDescription().translate(adLanguage));
 

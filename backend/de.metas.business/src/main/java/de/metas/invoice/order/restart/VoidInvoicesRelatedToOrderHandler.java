@@ -4,6 +4,7 @@ import de.metas.common.util.pair.IPair;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
@@ -78,7 +79,7 @@ public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDoc
 						I_C_Invoice.COLUMNNAME_C_Invoice_ID,
 						invoiceRecord.getDocumentNo(),
 						invoiceDocStatus);
-				throw new AdempiereException(errorMsg);
+				throw new AdempiereException(errorMsg,Services.get(IMsgBL.class).getErrorCode(VoidOrderAndRelatedDocsHandler.Msg_OrderDocumentCancelNotAllowed_4P) );
 			}
 		}
 	}

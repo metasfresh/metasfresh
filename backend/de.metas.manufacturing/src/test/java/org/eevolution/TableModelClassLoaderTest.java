@@ -27,8 +27,8 @@ import org.adempiere.ad.persistence.TableModelClassLoaderTester;
 import org.adempiere.test.AdempiereTestHelper;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.MPPCostCollector;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Makes sure the right libero classes are loaded.
@@ -41,7 +41,7 @@ public class TableModelClassLoaderTest
 	private TableModelClassLoaderTester tester = new TableModelClassLoaderTester()
 			.setEntityTypeModelPackage(LiberoConstants.ENTITYTYPE_Manufacturing, "org.eevolution.model");
 
-	@Before
+	@BeforeEach
 	public void setup()
 	{
 		AdempiereTestHelper.get().init();

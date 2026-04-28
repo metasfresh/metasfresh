@@ -93,7 +93,7 @@ public interface I_C_PurchaseCandidate_Alloc
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Bestellposition.
+	 * Set Purchase Order Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -102,7 +102,7 @@ public interface I_C_PurchaseCandidate_Alloc
 	void setC_OrderLinePO_ID (int C_OrderLinePO_ID);
 
 	/**
-	 * Get Bestellposition.
+	 * Get Purchase Order Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -118,8 +118,8 @@ public interface I_C_PurchaseCandidate_Alloc
 	String COLUMNNAME_C_OrderLinePO_ID = "C_OrderLinePO_ID";
 
 	/**
-	 * Set Bestellung.
-	 * Bestellung
+	 * Set Purchase Order.
+	 * Purchase Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -128,8 +128,8 @@ public interface I_C_PurchaseCandidate_Alloc
 	void setC_OrderPO_ID (int C_OrderPO_ID);
 
 	/**
-	 * Get Bestellung.
-	 * Bestellung
+	 * Get Purchase Order.
+	 * Purchase Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -216,8 +216,31 @@ public interface I_C_PurchaseCandidate_Alloc
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
+	 * Set Date.
+	 * Date of Order
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateOrdered (@Nullable java.sql.Timestamp DateOrdered);
+
+	/**
+	 * Get Date.
+	 * Date of Order
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateOrdered();
+
+	ModelColumn<I_C_PurchaseCandidate_Alloc, Object> COLUMN_DateOrdered = new ModelColumn<>(I_C_PurchaseCandidate_Alloc.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
+
+	/**
+	 * Set Date Promised.
+	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -226,8 +249,8 @@ public interface I_C_PurchaseCandidate_Alloc
 	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
+	 * Get Date Promised.
+	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

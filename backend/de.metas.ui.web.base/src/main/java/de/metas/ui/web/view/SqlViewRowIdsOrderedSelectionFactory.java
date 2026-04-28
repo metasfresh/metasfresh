@@ -361,7 +361,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			while (rs.next())
 			{
 				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", false);
-				if(rowId != null)
+				if (rowId != null)
 				{
 					rowIds.add(rowId);
 				}

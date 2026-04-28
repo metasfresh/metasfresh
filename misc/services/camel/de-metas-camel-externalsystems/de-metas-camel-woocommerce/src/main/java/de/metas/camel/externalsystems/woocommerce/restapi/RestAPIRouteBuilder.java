@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-woocommerce
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -85,7 +85,7 @@ public class RestAPIRouteBuilder extends RouteBuilder implements IExternalSystem
 		//@formatter:off
 		from(direct(ENABLE_RESOURCE_ROUTE_ID))
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::prepareRestAPIContext)
 
@@ -99,7 +99,7 @@ public class RestAPIRouteBuilder extends RouteBuilder implements IExternalSystem
 
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::prepareRestAPIContext)
 
@@ -113,13 +113,14 @@ public class RestAPIRouteBuilder extends RouteBuilder implements IExternalSystem
 
 		rest().path(RestServiceRoutes.WOO.getPath())
 				.post()
-				.route()
+				.to("direct:" + REST_API_ROUTE_ID);
+
+		from("direct:" + REST_API_ROUTE_ID)
 				.routeId(REST_API_ROUTE_ID)
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.process(this::restAPIProcessor)
-				.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
-				.end();
-
+				.to(direct(MF_LOG_MESSAGE_ROUTE_ID));
+		
 		//@formatter:on
 
 	}

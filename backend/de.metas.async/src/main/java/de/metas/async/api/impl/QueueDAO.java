@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,6 +51,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ import java.util.Set;
 
 public class QueueDAO extends AbstractQueueDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(QueueDAO.class);
+	private static final Logger logger = LogManager.getLogger(QueueDAO.class);
 
 	public QueueDAO()
 	{
@@ -138,7 +139,7 @@ public class QueueDAO extends AbstractQueueDAO
 
 	@Override
 	@NonNull
-	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
+	protected <T> T retrieveItem(@NonNull final I_C_Queue_Element element, @NonNull final Class<T> clazz, @Nullable final String trxName)
 	{
 		final int adTableId = element.getAD_Table_ID();
 		final int recordId = element.getRecord_ID();
@@ -193,6 +194,11 @@ public class QueueDAO extends AbstractQueueDAO
 			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_IsError).append("=?");
 			params.add(packageQuery.getError());
 		}
+
+		// Only packages that are not currently locked
+		// Used with FOR UPDATE SKIP LOCKED for optimized concurrent polling
+		wc.append(" AND ");
+		wc.append(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt).append(" IS NULL");
 
 		// Only packages that have not been skipped,
 		// or where 'retryTimeoutMillis' has already passed since they were skipped.

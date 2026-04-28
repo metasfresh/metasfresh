@@ -20,10 +20,11 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
@@ -52,7 +53,7 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class PMMWeekReportEventTrxItemProcessorTest
 {
 	private static final int AD_Org_ID_1 = 1;
@@ -60,14 +61,11 @@ public class PMMWeekReportEventTrxItemProcessorTest
 	private final List<String> ALL_TRENDS = Arrays.asList(null, X_PMM_WeekReport_Event.PMM_TREND_Down, X_PMM_WeekReport_Event.PMM_TREND_Same, X_PMM_WeekReport_Event.PMM_TREND_Up,
 			X_PMM_WeekReport_Event.PMM_TREND_Zero);
 
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	// services
 	private IServerSyncBL serverSyncBL;
 	private int nextSyncWeeklySupplyVersion = 0;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -335,7 +333,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 	{
 		for (final I_PMM_WeekReport_Event event : POJOLookupMap.get().getRecords(I_PMM_WeekReport_Event.class))
 		{
-			Assert.assertEquals("Processed: " + event, true, event.isProcessed());
+			Assertions.assertTrue(event.isProcessed(), "Processed: " + event);
 		}
 	}
 

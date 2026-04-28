@@ -1,11 +1,14 @@
 package org.adempiere.warehouse;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
@@ -35,6 +38,7 @@ import java.util.Set;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class LocatorId implements RepoIdAware
 {
@@ -140,5 +144,26 @@ public class LocatorId implements RepoIdAware
 	public String toJson()
 	{
 		return warehouseId.getRepoId() + "_" + repoId;
+	}
+
+	@JsonCreator
+	public static LocatorId fromJson(final String json)
+	{
+		final String[] parts = json.split("_");
+		if (parts.length != 2)
+		{
+			throw new IllegalArgumentException("Invalid json: " + json);
+		}
+		final int warehouseId = Integer.parseInt(parts[0]);
+		final int locatorId = Integer.parseInt(parts[1]);
+		return ofRepoId(warehouseId, locatorId);
+	}
+
+	public void assetWarehouseId(@NonNull final WarehouseId expectedWarehouseId)
+	{
+		if (!WarehouseId.equals(this.warehouseId, expectedWarehouseId))
+		{
+			throw new AdempiereException("Expected " + expectedWarehouseId + " for " + this);
+		}
 	}
 }

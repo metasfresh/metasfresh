@@ -1,14 +1,20 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
@@ -16,6 +22,7 @@ import org.compiere.model.X_C_DocType;
 public class DocTypeBL implements IDocTypeBL
 {
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
 
 	@Override
 	@NonNull
@@ -35,6 +42,13 @@ public class DocTypeBL implements IDocTypeBL
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
 	{
 		return docTypesRepo.getDocTypeIdOrNull(docTypeQuery);
+	}
+
+	@Override
+	@NonNull
+	public DocTypeId getDocTypeId(@NonNull final DocTypeQuery docTypeQuery)
+	{
+		return docTypesRepo.getDocTypeId(docTypeQuery);
 	}
 
 	@Override
@@ -154,8 +168,50 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isFinancial(@NonNull final DocTypeId docTypeId)
+	{
+		return getDocBaseType(docTypeId).isFinancial();
+	}
+
+	private DocBaseType getDocBaseType(@NonNull final DocTypeId docTypeId)
+	{
+		return DocBaseType.ofCode(docTypesRepo.getById(docTypeId).getDocBaseType());
+	}
+
+	@Override
 	public void save(@NonNull final I_C_DocType dt)
 	{
 		docTypesRepo.save(dt);
+	}
+
+	@NonNull
+	public ImmutableList<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		return docTypesRepo.retrieveForSelection(pinstanceId);
+	}
+
+	public DocTypeId cloneToOrg(@NonNull final I_C_DocType fromDocType, @NonNull final OrgId toOrgId)
+	{
+		final String newName = fromDocType.getName() + "_cloned";
+		final I_C_DocType newDocType = InterfaceWrapperHelper.copy()
+				.setFrom(fromDocType)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_C_DocType.class);
+
+		newDocType.setAD_Org_ID(toOrgId.getRepoId());
+		// dev-note: unique index (ad_client_id, name)
+		newDocType.setName(newName);
+
+		final DocSequenceId fromDocSequenceId = DocSequenceId.ofRepoIdOrNull(fromDocType.getDocNoSequence_ID());
+		if (fromDocType.isDocNoControlled() && fromDocSequenceId != null)
+		{
+			final DocSequenceId clonedDocSequenceId = sequenceDAO.cloneToOrg(fromDocSequenceId, toOrgId);
+			newDocType.setDocNoSequence_ID(clonedDocSequenceId.getRepoId());
+			newDocType.setIsDocNoControlled(true);
+		}
+
+		save(newDocType);
+
+		return DocTypeId.ofRepoId(newDocType.getC_DocType_ID());
 	}
 }

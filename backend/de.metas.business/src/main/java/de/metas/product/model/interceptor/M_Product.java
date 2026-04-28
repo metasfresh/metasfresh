@@ -1,10 +1,13 @@
 package de.metas.product.model.interceptor;
 
 import com.google.common.collect.Iterators;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductConstants;
@@ -23,6 +26,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -62,15 +67,16 @@ public class M_Product
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
-
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-
+	private static final String SYSCONFIG_SyncEANAndGTIN = "M_Product.SyncEANAndGTIN";
 
 	@Init
 	public void registerCallouts()
@@ -82,6 +88,7 @@ public class M_Product
 	public void beforeSave(final @NonNull I_M_Product product)
 	{
 		ProductDAO.extractIssuingToleranceSpec(product); // validate
+		normalizeProductCodeFields(product);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -150,7 +157,6 @@ public class M_Product
 		return Optional.empty();
 	}
 
-
 	private Optional<AdMessageKey> isProductUsed(@NonNull final ProductId productId)
 	{
 		if (productDAO.isProductUsed(productId))
@@ -179,4 +185,32 @@ public class M_Product
 					saveRecord(order);
 				});
 	}
+
+	private void normalizeProductCodeFields(@NonNull final I_M_Product record)
+	{
+		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		if (!syncEANAndGTIN)
+		{
+			return;
+		}
+
+		if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
+		{
+			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
+			productBL.setProductCodeFieldsFromGTIN(record, gtin);
+		}
+		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
+		{
+			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
+			productBL.setProductCodeFieldsFromGTIN(record, gtin);
+		}
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_EAN13_ProductCode))
+		{
+			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(record.getEAN13_ProductCode());
+			productBL.setProductCodeFieldsFromEAN13ProductCode(record, ean13ProductCode);
+		}
+	}
+
 }

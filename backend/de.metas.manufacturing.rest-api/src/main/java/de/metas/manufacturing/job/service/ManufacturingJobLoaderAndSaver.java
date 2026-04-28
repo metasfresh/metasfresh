@@ -36,8 +36,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.BOMIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
@@ -92,11 +93,11 @@ public class ManufacturingJobLoaderAndSaver
 				.currentScaleDeviceId(DeviceId.ofNullableString(ppOrder.getCurrentScaleDeviceId()))
 				//
 				.activities(routing.getActivities()
-									.stream()
-									.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
-									.map(this::toJobActivity)
-									.filter(Objects::nonNull)
-									.collect(ImmutableList.toImmutableList()))
+						.stream()
+						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
+						.map(this::toJobActivity)
+						.filter(Objects::nonNull)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -133,9 +134,9 @@ public class ManufacturingJobLoaderAndSaver
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
 	}
 
-	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMIssueMethod method)
+	private boolean hasAnyIssueOnlyForReceivedLines(@NonNull final PPOrderId ppOrderId)
 	{
-		return getBOMLines(ppOrderId).stream().anyMatch(line -> method.getCode().equals(line.getIssueMethod()));
+		return getBOMLines(ppOrderId).stream().anyMatch(line -> BOMComponentIssueMethod.IssueOnlyForReceived.getCode().equals(line.getIssueMethod()));
 	}
 
 	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
@@ -199,11 +200,11 @@ public class ManufacturingJobLoaderAndSaver
 
 		return RawMaterialsIssue.builder()
 				.lines(getBOMLines(ppOrderId)
-							   .stream()
-							   .filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
-							   .map(this::toRawMaterialsIssueLine)
-							   .filter(Objects::nonNull)
-							   .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
+						.map(this::toRawMaterialsIssueLine)
+						.filter(Objects::nonNull)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -224,23 +225,27 @@ public class ManufacturingJobLoaderAndSaver
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
+				.orderBOMLineId(ppOrderBOMLineId)
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.productValue(supportingServices.getProductValue(productId))
 				.isWeightable(isWeightable)
+				.issueMethod(BOMComponentIssueMethod.ofNullableCode(orderBOMLine.getIssueMethod()))
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
 				.steps(getIssueSchedules(ppOrderId)
-							   .get(ppOrderBOMLineId)
-							   .stream()
-							   .sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
-							   .map(this::toRawMaterialsIssueStep)
-							   .collect(ImmutableList.toImmutableList()))
+						.get(ppOrderBOMLineId)
+						.stream()
+						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
+						.map(this::toRawMaterialsIssueStep)
+						.collect(ImmutableList.toImmutableList()))
+				.seqNo(orderBOMLine.getLine())
 				.build();
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
+		final String locatorCaption = supportingServices.getLocatorName(schedule.getIssueFromLocatorId());
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
 				.isAlternativeIssue(schedule.isAlternativeIssue())
@@ -248,14 +253,18 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-										  .id(schedule.getIssueFromLocatorId())
-										  .caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
-										  .build())
+						.id(schedule.getIssueFromLocatorId())
+						.caption(locatorCaption)
+						.qrCode(LocatorQRCode.builder()
+								.locatorId(schedule.getIssueFromLocatorId())
+								.caption(locatorCaption)
+								.build())
+						.build())
 				.issueFromHU(HUInfo.builder()
-									 .id(schedule.getIssueFromHUId())
-									 .barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-									 .huCapacity(getHUCapacity(schedule))
-									 .build())
+						.id(schedule.getIssueFromHUId())
+						.huCapacity(getHUCapacity(schedule))
+						.barcode(supportingServices.getFirstQRCodeByHuId(schedule.getIssueFromHUId()))
+						.build())
 				.issued(schedule.getIssued())
 				.build();
 	}
@@ -276,7 +285,7 @@ public class ManufacturingJobLoaderAndSaver
 
 		return FinishedGoodsReceive.builder()
 				.linesById(Stream.concat(Stream.of(finishedGood), coProducts)
-								   .collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
+						.collect(ImmutableMap.toImmutableMap(FinishedGoodsReceiveLine::getId, line -> line)))
 				.build();
 	}
 
@@ -296,6 +305,8 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
 				.receivingTarget(extractReceivingTarget(ppOrder))
+				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
+				.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
 				.build();
 
 	}
@@ -347,6 +358,7 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
 				.receivingTarget(extractReceivingTarget(orderBOMLine))
+				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
 				.build();
 	}
 
@@ -417,13 +429,13 @@ public class ManufacturingJobLoaderAndSaver
 	@NonNull
 	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
 	{
-		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMIssueMethod.Planning))
+		if (!hasAnyIssueOnlyForReceivedLines(from.getOrderId()))
 		{
 			return Optional.empty();
 		}
 
 		return Optional.of(prepareJobActivity(from)
-								   .issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(from.getRawMaterialsIssueStrategy()))
-								   .build());
+				.issueOnlyWhatWasReceivedConfig(IssueOnlyWhatWasReceivedConfig.ofIssueStrategy(from.getRawMaterialsIssueStrategy()))
+				.build());
 	}
 }

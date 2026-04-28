@@ -2,8 +2,9 @@ package org.adempiere.ad.persistence.po;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 /*
  * #%L
@@ -31,7 +32,7 @@ public class NoDataFoundHandlersTests
 {
 	private static final TestHandler testHandler = new TestHandler();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		NoDataFoundHandlers.get().addHandler(testHandler);

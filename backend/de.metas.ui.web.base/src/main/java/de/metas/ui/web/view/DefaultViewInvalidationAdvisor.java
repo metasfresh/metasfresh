@@ -1,14 +1,12 @@
 package de.metas.ui.web.view;
 
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -34,7 +32,7 @@ import lombok.NonNull;
 
 public final class DefaultViewInvalidationAdvisor implements IViewInvalidationAdvisor
 {
-	public static final transient DefaultViewInvalidationAdvisor instance = new DefaultViewInvalidationAdvisor();
+	public static final DefaultViewInvalidationAdvisor instance = new DefaultViewInvalidationAdvisor();
 
 	private DefaultViewInvalidationAdvisor()
 	{

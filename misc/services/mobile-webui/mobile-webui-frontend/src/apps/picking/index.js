@@ -1,11 +1,13 @@
-import { COMPONENTTYPE_ScanBarcode } from '../../containers/activities/scan/ScanActivity';
-import { getNextEligibleLineToPick } from '../../utils/picking';
+import { getNextEligibleLineToPick, isLineLevelPickTarget } from '../../utils/picking';
 import { getActivityById, getFirstActivityByComponentType } from '../../reducers/wfProcesses';
 import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
 import { NEXT_NextPickingLine } from '../../containers/activities/picking/PickLineScanScreen';
+import { isCurrentTargetEligibleForActivityAndLine } from '../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 
-const APPLICATION_ID_Picking = 'picking';
+export const APPLICATION_ID_Picking = 'picking';
+const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
+export const ACTIVITY_ID_PickLines = 'pickLines'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_...
 
 export const applicationDescriptor = {
   applicationId: APPLICATION_ID_Picking,
@@ -18,19 +20,15 @@ export const applicationDescriptor = {
 
     const state = getState();
     const activity = getActivityById(state, wfProcessId, activityId);
+    // console.log('onWFActivityCompleted', { activity });
 
-    //
-    // Scan picking slot activity completed
-    if (isScanPickingSlotActivity(activity)) {
+    if (activity.activityId === ACTIVITY_ID_ScanPickingSlot) {
+      // Scan picking slot activity completed => consider scanning HU for the first pick line
       openFirstEligiblePickingLineScanner({ state, applicationId, wfProcessId, history });
+    } else {
+      history.goBack();
     }
   },
-};
-
-const isScanPickingSlotActivity = (activity) => {
-  // NOTE: we assume there is only one ScanBarcode activity and that's about scanning the current picking slot
-  const componentType = activity?.componentType;
-  return componentType === COMPONENTTYPE_ScanBarcode;
 };
 
 const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId, history }) => {
@@ -40,15 +38,24 @@ const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId
     componentType: COMPONENTTYPE_PickProducts,
   });
 
-  if (pickActivity?.dataStored?.isPickWithNewLU) {
+  // In case we do line level picking, after scanning the picking slot go back to picking job screen
+  if (isLineLevelPickTarget({ activity: pickActivity })) {
     history.goBack();
     return;
   }
 
   const eligibleLine = getNextEligibleLineToPick({ activity: pickActivity });
   const lineId = eligibleLine?.pickingLineId;
-  // console.log('onWFActivityCompleted', { lineId, lines, linesToPick, activity });
+  //console.log('openFirstEligiblePickingLineScanner', { eligibleLine });
   if (!lineId) {
+    return;
+  }
+
+  //
+  // Check if the current picking target is eligible for picking that line
+  // if not, go back to the picking job screen
+  if (!isCurrentTargetEligibleForActivityAndLine({ activity: pickActivity, line: eligibleLine })) {
+    history.goBack();
     return;
   }
 

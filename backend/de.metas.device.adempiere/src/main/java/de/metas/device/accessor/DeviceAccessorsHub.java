@@ -96,8 +96,9 @@ public class DeviceAccessorsHub
 				.findFirst();
 	}
 
-	public DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
+	public @NonNull DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
 	{
+		//noinspection DataFlowIssue
 		return cache.getOrLoad(attributeCode, this::createDeviceAccessorsList);
 	}
 

@@ -5,25 +5,31 @@ import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import nock from 'nock';
 
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 import { SET_PROCESS_STATE_PENDING } from '../../../constants/ActionTypes';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
-import { initialState as viewHandlerState } from '../../../reducers/viewHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
+import {
+  initialState as viewHandlerState
+} from '../../../reducers/viewHandler';
 
 import Modal, { DisconnectedModal } from '../../../components/app/Modal';
 import fixtures from '../../../../test_setup/fixtures/modal/modal.json';
 import testModal from '../../../../test_setup/fixtures/modal/test_modal.json';
 import layoutFixtures from '../../../../test_setup/fixtures/modal/layout.json';
-import processResponses from '../../../../test_setup/fixtures/process/responses.json'
+import processResponses
+  from '../../../../test_setup/fixtures/process/responses.json'
 
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
 import thunk from 'redux-thunk';
+
 const mockStore = configureStore([thunk]);
 
 const getInitialState = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: {
@@ -34,8 +40,6 @@ const getInitialState = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 describe('Modal test', () => {
@@ -60,7 +64,7 @@ describe('Modal test', () => {
 
     const wrapper = render(
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Modal {...dummyProps} />
         </ShortcutProvider>
       </Provider>
@@ -100,7 +104,7 @@ describe('Modal test', () => {
       .reply(200, response);
 
     const startProcessMock = jest.fn().mockResolvedValue({ body: {} });
-    const wrapper = mount(
+    mount(
       <DisconnectedModal
         {...fixtures}
         createProcess={startProcessMock}

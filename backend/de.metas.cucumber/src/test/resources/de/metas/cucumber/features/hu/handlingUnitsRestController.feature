@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Handling unit rest controller
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -59,7 +63,7 @@ Feature: Handling unit rest controller
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
+      | createdCU           | 9     | huProductTU                        | createdTU                     | newCreatedCU                  |
 
     And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -93,7 +97,7 @@ Feature: Handling unit rest controller
       | storageCreatedTU           | createdTU          | huProduct               | 9   |
       | storageNewCreatedCU        | newCreatedCU       | huProduct               | 9   |
 
-    When store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/@createdLU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -103,7 +107,7 @@ Feature: Handling unit rest controller
       | createdTU          | TU         | newCreatedCU | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
       | newCreatedCU       | CU         |              | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
-    When store HU endpointPath /api/v2/material/handlingunits/byId/:newCreatedCU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/@newCreatedCU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -117,7 +121,7 @@ Feature: Handling unit rest controller
 
     And the metasfresh REST-API endpoint path '/api/v2/material/handlingunits' receives a 'PUT' request with the payload from context and responds with '200' status code
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@createdLU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -173,7 +177,7 @@ Feature: Handling unit rest controller
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU           | 9     | huProductTU                        | createdTU                 | newCreatedCU              |
+      | createdCU           | 9     | huProductTU                        | createdTU                     | newCreatedCU                  |
 
     And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -213,7 +217,7 @@ Feature: Handling unit rest controller
 
     And the metasfresh REST-API endpoint path '/api/v2/material/handlingunits/clearance' receives a 'PUT' request with the payload from context and responds with '200' status code
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@createdLU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -267,8 +271,8 @@ Feature: Handling unit rest controller
       | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | supplierLocation_PO | supplierPO01 | supplier_PO              | true                | true                |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
+      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | POO             | ps_PO                             |
 
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
@@ -293,14 +297,9 @@ Feature: Handling unit rest controller
       | processedLU        | A            |
 
     And validate M_HUs:
-      | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.M_HU_Parent.Identifier |
-      | processedLU        | packingVersionLU              | A        | locatorHauptlager           |                            |
-      | processedTU        | packingVersionCU              | A        | locatorHauptlager           | processedLU                |
-
-    And validate M_HU_Storage:
-      | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
-      | storageProcessedLU         | processedLU        | purchaseProduct         | 18  |
-      | storageProcessedTU         | processedTU        | purchaseProduct         | 18  |
+      | M_HU_Parent | M_HU_ID     | M_HU_PI_ID  | HUStatus | M_Locator_ID      | IsAggregate | QtyTUs | M_Product_ID    | Qty    |
+      |             | processedLU | huPackingLU | A        | locatorHauptlager | N           |        | purchaseProduct | 18 PCE |
+      | processedLU | processedTU | huPackingTU | A        | locatorHauptlager | Y           | 2      | purchaseProduct | 18 PCE |
 
     And metasfresh contains M_HU_QRCode
       | M_HU_QRCode_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | M_HU_PI_ID.Identifier | M_HU_PI_Version_ID.Identifier |
@@ -322,7 +321,7 @@ Feature: Handling unit rest controller
       | splitTU            | packingVersionTU              | huItemPurchaseProduct                  | A        | locatorHauptlager           |                            |
       | includedCU         | packingVersionCU              |                                        | A        | locatorHauptlager           | splitTU                    |
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:splitTU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@splitTU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -331,7 +330,7 @@ Feature: Handling unit rest controller
       | splitTU            | TU         | includedCU  | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
       | includedCU         | CU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | ClearedStatusNote |
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:processedLU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@processedLU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -353,7 +352,7 @@ Feature: Handling unit rest controller
       | TU                            | TU                    | My TU Name - current | TU          | Y         |
 
     And put REST context variables
-      | Name   | Value                                                                                                                                                                                                                                                                                                                                                  |
+      | Name   | Value                                                                                                                                                                                                                                                                                                                                                                         |
       | qrCode | HU#1#{\"id\":\"246d30ad0476a373263b777b41b2-09054\",\"packingInfo\":{\"huUnitType\":\"TU\",\"packingInstructionsId\":@M_HU_PI_ID@,\"caption\":\"My TU Name - current\"},\"product\":{\"id\":@M_Product_ID@,\"code\":\"testNewHUQRCode Value\",\"name\":\"testNewHUQRCode Name\"},\"attributes\":[{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\",\"value\":\"aaa\"}]} |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/material/handlingunits/byQRCode' and fulfills with '200' status code

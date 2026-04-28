@@ -58,6 +58,8 @@ public interface IPaymentDocument
 
 	void addAllocatedAmt(Money allocatedPayAmtToAdd);
 
+	void addAllocatedAmt(AllocationAmounts amount);
+
 	LocalDate getDate();
 
 	LocalDate getDateAcct();
@@ -74,4 +76,9 @@ public interface IPaymentDocument
 	Money calculateProjectedOverUnderAmt(final Money payAmountToAllocate);
 
 	boolean canPay(PayableDocument payable);
+
+	/**
+	 *  This is about the paymentTerm.Discount of an invoice when used as payment. (i.e. CreditMemo or PurchaseInvoice allocated against a SalesInvoice)
+	 */
+	Money getPaymentDiscountAmt();
 }

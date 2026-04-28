@@ -22,7 +22,7 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Input item used in tests
@@ -30,7 +30,7 @@ import org.junit.Ignore;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 public class Item
 {
 	private final String groupKey;

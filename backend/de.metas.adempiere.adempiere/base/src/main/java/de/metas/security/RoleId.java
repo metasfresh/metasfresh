@@ -35,6 +35,7 @@ import java.util.Objects;
 public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
+	public static final RoleId WEBUI = new RoleId(540024);
 
 	/**
 	 * Used by the reports service when it accesses the REST-API
@@ -48,11 +49,33 @@ public class RoleId implements RepoIdAware
 		return Check.assumeNotNull(roleId, "Unable to create a roleId for repoId={}", repoId);
 	}
 
+	/**
+	 * Returns a {@link RoleId} for the given repo ID, or {@code null} if the ID is negative.
+	 *
+	 * <p><b>CAUTION</b>: {@code ofRepoIdOrNull(0)} returns {@link #SYSTEM} (System Administrator), NOT {@code null}.
+	 * When reading nullable FK columns from model records, {@code getAD_Role_ID()} returns {@code 0} for SQL NULL
+	 * (Java int default), which this method interprets as System Administrator.
+	 * Use {@link org.adempiere.model.InterfaceWrapperHelper#getValueOrNull} to distinguish NULL from explicit 0.
+	 *
+	 * <p>Affected columns (where ID=0 is a valid value) —
+	 * see {@code POWrapper._ColumnNamesWithFirstValidIdZERO}:
+	 * AD_Client_ID, AD_Org_ID, Record_ID, C_DocType_ID, Node_ID, AD_User_ID, AD_Role_ID,
+	 * M_AttributeSet_ID, M_AttributeSetInstance_ID, AD_System_ID, GL_Category_ID.
+	 *
+	 * <p>This pitfall applies only to {@code Integer} and {@code BigDecimal} returning getters.
+	 * All other model getter types return {@code null} for SQL NULL values.
+	 *
+	 * @see org.adempiere.model.InterfaceWrapperHelper#getValueOrNull
+	 */
 	public static RoleId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == SYSTEM.getRepoId())
 		{
 			return SYSTEM;
+		}
+		else if (repoId == WEBUI.getRepoId())
+		{
+			return WEBUI;
 		}
 		else if (repoId == JSON_REPORTS.getRepoId())
 		{

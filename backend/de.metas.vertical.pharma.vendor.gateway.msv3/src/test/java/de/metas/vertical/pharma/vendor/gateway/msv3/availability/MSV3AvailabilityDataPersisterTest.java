@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import com.google.common.collect.ImmutableMap;
 
@@ -18,6 +17,8 @@ import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -43,7 +44,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_Verfuegbarkeits
 
 public class MSV3AvailabilityDataPersisterTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

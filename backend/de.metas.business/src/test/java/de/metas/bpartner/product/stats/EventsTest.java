@@ -1,23 +1,21 @@
 package de.metas.bpartner.product.stats;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-
-import de.metas.common.util.time.SystemTime;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.InvoiceChangedEvent.ProductPrice;
+import de.metas.common.util.time.SystemTime;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.Month;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

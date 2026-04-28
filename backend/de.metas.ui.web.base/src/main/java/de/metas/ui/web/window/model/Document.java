@@ -270,6 +270,8 @@ public final class Document
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
+
+			setDynAttributesNoCheck(builder.dynAttributes);
 		}
 
 		//
@@ -1176,6 +1178,11 @@ public final class Document
 
 		if (readonlyRevaluator.isReadonly(documentField))
 		{
+			if (Objects.equals(value, documentField.getValue()))
+			{
+				return;
+			}
+
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
 
@@ -1686,7 +1693,7 @@ public final class Document
 		return fieldCalloutExecutor;
 	}
 
-	/* package */ boolean isProcessed()
+	public boolean isProcessed()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processed);
 		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
@@ -1744,6 +1751,20 @@ public final class Document
 
 		logger.trace("Changed document dyn attribute {}'s value: {} -> {}", name, valueOld, value);
 		return valueOld;
+	}
+
+	private void setDynAttributesNoCheck(@Nullable final HashMap<String, Object> dynAttributes)
+	{
+		if (dynAttributes == null || dynAttributes.isEmpty())
+		{
+			return;
+		}
+
+		if (_dynAttributes == null)
+		{
+			_dynAttributes = new HashMap<>();
+		}
+		_dynAttributes.putAll(dynAttributes);
 	}
 
 	/**
@@ -2265,6 +2286,7 @@ public final class Document
 		private Integer _windowNo;
 		private static final AtomicInteger _nextWindowNo = new AtomicInteger(1);
 		private IDocumentEvaluatee shadowParentDocumentEvaluatee;
+		@Nullable private HashMap<String, Object> dynAttributes = null; // lazy
 
 		private IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 
@@ -2283,8 +2305,7 @@ public final class Document
 			}
 
 			final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
-			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
-			document.documentCallout = documentCallout;
+			document.documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 
 			//
 			// Initialize document fields
@@ -2337,6 +2358,19 @@ public final class Document
 		public Builder setShadowParentDocumentEvaluatee(@Nullable final IDocumentEvaluatee shadowParentDocumentEvaluatee)
 		{
 			this.shadowParentDocumentEvaluatee = shadowParentDocumentEvaluatee;
+			return this;
+		}
+
+		public Builder dynAttribute(@NonNull final String name, @Nullable final Object value)
+		{
+			Check.assumeNotEmpty(name, "name not empty");
+
+			if (dynAttributes == null)
+			{
+				dynAttributes = new HashMap<>();
+			}
+			dynAttributes.put(name, value);
+
 			return this;
 		}
 

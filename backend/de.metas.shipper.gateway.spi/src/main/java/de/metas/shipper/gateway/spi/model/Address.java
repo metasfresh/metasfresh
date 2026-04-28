@@ -3,7 +3,11 @@ package de.metas.shipper.gateway.spi.model;
 import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -30,16 +34,16 @@ import lombok.Value;
 @Value
 public class Address
 {
-	String companyName1;
-	String companyName2;
-	String companyDepartment;
+	@NonNull String companyName1;
+	@Nullable String companyName2;
+	@Nullable String companyDepartment;
 
-	String street1;
-	String street2;
-	String houseNo;
-	CountryCode country;
-	String zipCode;
-	String city;
+	@Nullable String street1;
+	@Nullable String street2;
+	@Nullable String houseNo;
+	@NonNull CountryCode country;
+	@NonNull String zipCode;
+	@NonNull String city;
 
 	//
 	// External partner
@@ -51,16 +55,17 @@ public class Address
 	int bpartnerId;
 
 	@Builder
+	@Jacksonized
 	private Address(
-			final String companyName1,
-			final String companyName2,
-			final String companyDepartment,
-			final String street1,
-			final String street2,
-			final String houseNo,
-			final CountryCode country,
-			final String zipCode,
-			final String city,
+			@NonNull final String companyName1,
+			@Nullable final String companyName2,
+			@Nullable final String companyDepartment,
+			@Nullable final String street1,
+			@Nullable final String street2,
+			@Nullable final String houseNo,
+			@NonNull final CountryCode country,
+			@NonNull final String zipCode,
+			@NonNull final String city,
 			//
 			final int bpartnerId)
 	{

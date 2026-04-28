@@ -29,6 +29,7 @@ public class BusinessRuleLoggerContext
 	@Nullable BusinessRuleTriggerId triggerId;
 	@Nullable TableRecordReference sourceRecordRef;
 	@Nullable TableRecordReference targetRecordRef;
+	@Nullable TableRecordReference rootTargetRecordRef;
 	@Nullable BusinessRuleEventId eventId;
 
 	@Builder(toBuilder = true, builderMethodName = "_builder")
@@ -42,6 +43,7 @@ public class BusinessRuleLoggerContext
 			@Nullable final BusinessRuleTriggerId triggerId,
 			@Nullable final TableRecordReference sourceRecordRef,
 			@Nullable final TableRecordReference targetRecordRef,
+			@Nullable final TableRecordReference rootTargetRecordRef,
 			@Nullable final BusinessRuleEventId eventId)
 	{
 		this.isRootContext = isRootContext;
@@ -54,12 +56,13 @@ public class BusinessRuleLoggerContext
 		this.triggerId = triggerId;
 		this.sourceRecordRef = sourceRecordRef;
 		this.targetRecordRef = targetRecordRef;
+		this.rootTargetRecordRef = rootTargetRecordRef;
 		this.eventId = eventId;
 	}
 
 	public static class BusinessRuleLoggerContextBuilder
 	{
-		public BusinessRuleLoggerContextBuilder businessRule(final BusinessRule businessRule)
+		public BusinessRuleLoggerContextBuilder businessRule(@Nullable final BusinessRule businessRule)
 		{
 			businessRuleId(businessRule != null ? businessRule.getId() : null);
 			logLevel(businessRule != null ? businessRule.getLogLevel() : null);
@@ -90,6 +93,13 @@ public class BusinessRuleLoggerContext
 	{
 		return !TableRecordReference.equals(this.targetRecordRef, targetRecordRef)
 				? toBuilder().targetRecordRef(targetRecordRef).build()
+				: this;
+	}
+
+	public BusinessRuleLoggerContext withRootTargetRecordRef(final TableRecordReference rootTargetRecordRef)
+	{
+		return !TableRecordReference.equals(this.rootTargetRecordRef, rootTargetRecordRef)
+				? toBuilder().rootTargetRecordRef(rootTargetRecordRef).build()
 				: this;
 	}
 

@@ -22,11 +22,9 @@
 
 package de.metas.pricing.rules.campaign_price.impexp;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -34,11 +32,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.I_I_Campaign_Price;
-import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_C_Campaign_Price;
 import org.compiere.model.X_I_Campaign_Price;
-import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -72,7 +67,7 @@ public class CampaignPriceImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		CampaignPriceImportTableSqlUpdater.builder()
 				.ctx(getCtx())
@@ -87,7 +82,7 @@ public class CampaignPriceImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_Campaign_Price retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Campaign_Price retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Campaign_Price(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

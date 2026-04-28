@@ -1,159 +1,143 @@
 package de.metas.shipper.gateway.dhl.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for DHL_Shipper_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_DHL_Shipper_Config 
 {
 
-    /** TableName=DHL_Shipper_Config */
-    public static final String Table_Name = "DHL_Shipper_Config";
+	String Table_Name = "DHL_Shipper_Config";
 
-    /** AD_Table_ID=541411 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541411 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Kontonummer.
+	 * Set Account Number.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAccountNumber (java.lang.String AccountNumber);
+	void setAccountNumber (@Nullable java.lang.String AccountNumber);
 
 	/**
-	 * Get Kontonummer.
+	 * Get Account Number.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAccountNumber();
+	@Nullable java.lang.String getAccountNumber();
 
-    /** Column definition for AccountNumber */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_AccountNumber = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "AccountNumber", null);
-    /** Column name AccountNumber */
-    public static final String COLUMNNAME_AccountNumber = "AccountNumber";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_AccountNumber = new ModelColumn<>(I_DHL_Shipper_Config.class, "AccountNumber", null);
+	String COLUMNNAME_AccountNumber = "AccountNumber";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Anwendungs-ID.
+	 * Set Application ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setapplicationID (java.lang.String applicationID);
+	void setapplicationID (@Nullable java.lang.String applicationID);
 
 	/**
-	 * Get Anwendungs-ID.
+	 * Get Application ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getapplicationID();
+	@Nullable java.lang.String getapplicationID();
 
-    /** Column definition for applicationID */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_applicationID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "applicationID", null);
-    /** Column name applicationID */
-    public static final String COLUMNNAME_applicationID = "applicationID";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_applicationID = new ModelColumn<>(I_DHL_Shipper_Config.class, "applicationID", null);
+	String COLUMNNAME_applicationID = "applicationID";
 
 	/**
-	 * Set Anwendungs-Token.
+	 * Set Application Token.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setApplicationToken (java.lang.String ApplicationToken);
+	void setApplicationToken (@Nullable java.lang.String ApplicationToken);
 
 	/**
-	 * Get Anwendungs-Token.
+	 * Get Application Token.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getApplicationToken();
+	@Nullable java.lang.String getApplicationToken();
 
-    /** Column definition for ApplicationToken */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_ApplicationToken = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "ApplicationToken", null);
-    /** Column name ApplicationToken */
-    public static final String COLUMNNAME_ApplicationToken = "ApplicationToken";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_ApplicationToken = new ModelColumn<>(I_DHL_Shipper_Config.class, "ApplicationToken", null);
+	String COLUMNNAME_ApplicationToken = "ApplicationToken";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Created = new ModelColumn<>(I_DHL_Shipper_Config.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set DHL API URL.
@@ -162,7 +146,7 @@ public interface I_DHL_Shipper_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setdhl_api_url (java.lang.String dhl_api_url);
+	void setdhl_api_url (@Nullable java.lang.String dhl_api_url);
 
 	/**
 	 * Get DHL API URL.
@@ -171,33 +155,30 @@ public interface I_DHL_Shipper_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getdhl_api_url();
+	@Nullable java.lang.String getdhl_api_url();
 
-    /** Column definition for dhl_api_url */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_dhl_api_url = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "dhl_api_url", null);
-    /** Column name dhl_api_url */
-    public static final String COLUMNNAME_dhl_api_url = "dhl_api_url";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_dhl_api_url = new ModelColumn<>(I_DHL_Shipper_Config.class, "dhl_api_url", null);
+	String COLUMNNAME_dhl_api_url = "dhl_api_url";
 
 	/**
-	 * Set Dhl_LenghtUOM_ID.
+	 * Set Dhl Lenght UOM ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDhl_LenghtUOM_ID (int Dhl_LenghtUOM_ID);
+	void setDhl_LenghtUOM_ID (int Dhl_LenghtUOM_ID);
 
 	/**
-	 * Get Dhl_LenghtUOM_ID.
+	 * Get Dhl Lenght UOM ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDhl_LenghtUOM_ID();
+	int getDhl_LenghtUOM_ID();
 
-    /** Column name Dhl_LenghtUOM_ID */
-    public static final String COLUMNNAME_Dhl_LenghtUOM_ID = "Dhl_LenghtUOM_ID";
+	String COLUMNNAME_Dhl_LenghtUOM_ID = "Dhl_LenghtUOM_ID";
 
 	/**
 	 * Set DHL Shipper Configuration.
@@ -206,7 +187,7 @@ public interface I_DHL_Shipper_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDHL_Shipper_Config_ID (int DHL_Shipper_Config_ID);
+	void setDHL_Shipper_Config_ID (int DHL_Shipper_Config_ID);
 
 	/**
 	 * Get DHL Shipper Configuration.
@@ -215,138 +196,127 @@ public interface I_DHL_Shipper_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDHL_Shipper_Config_ID();
+	int getDHL_Shipper_Config_ID();
 
-    /** Column definition for DHL_Shipper_Config_ID */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_DHL_Shipper_Config_ID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "DHL_Shipper_Config_ID", null);
-    /** Column name DHL_Shipper_Config_ID */
-    public static final String COLUMNNAME_DHL_Shipper_Config_ID = "DHL_Shipper_Config_ID";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_DHL_Shipper_Config_ID = new ModelColumn<>(I_DHL_Shipper_Config.class, "DHL_Shipper_Config_ID", null);
+	String COLUMNNAME_DHL_Shipper_Config_ID = "DHL_Shipper_Config_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_DHL_Shipper_Config.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipper_ID();
+	int getM_Shipper_ID();
 
-	public org.compiere.model.I_M_Shipper getM_Shipper();
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
 
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
 
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_M_Shipper>(I_DHL_Shipper_Config.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+	ModelColumn<I_DHL_Shipper_Config, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_DHL_Shipper_Config.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Unterschrift.
+	 * Set Signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSignature (java.lang.String Signature);
+	void setSignature (@Nullable java.lang.String Signature);
 
 	/**
-	 * Get Unterschrift.
+	 * Get Signature.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSignature();
+	@Nullable java.lang.String getSignature();
 
-    /** Column definition for Signature */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Signature = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "Signature", null);
-    /** Column name Signature */
-    public static final String COLUMNNAME_Signature = "Signature";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Signature = new ModelColumn<>(I_DHL_Shipper_Config.class, "Signature", null);
+	String COLUMNNAME_Signature = "Signature";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_Updated = new ModelColumn<>(I_DHL_Shipper_Config.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Nutzer-ID/Login.
+	 * Set UserName.
+	 * UserName / Login to use for login
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUserName (java.lang.String UserName);
+	void setUserName (@Nullable java.lang.String UserName);
 
 	/**
-	 * Get Nutzer-ID/Login.
+	 * Get UserName.
+	 * UserName / Login to use for login
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUserName();
+	@Nullable java.lang.String getUserName();
 
-    /** Column definition for UserName */
-    public static final org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_UserName = new org.adempiere.model.ModelColumn<I_DHL_Shipper_Config, Object>(I_DHL_Shipper_Config.class, "UserName", null);
-    /** Column name UserName */
-    public static final String COLUMNNAME_UserName = "UserName";
+	ModelColumn<I_DHL_Shipper_Config, Object> COLUMN_UserName = new ModelColumn<>(I_DHL_Shipper_Config.class, "UserName", null);
+	String COLUMNNAME_UserName = "UserName";
 }

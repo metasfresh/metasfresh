@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -142,37 +142,37 @@ public class PushProductsRouteTests extends CamelTestSupport
 		template.sendBody("direct:" + PUSH_PRODUCTS, invokeExternalSystemRequest);
 
 		assertThat(sentExternalReferenceRequestEP.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(
 			final MockSuccessfullyCalledEndpoint successfullySentExternalReferenceRequest) throws Exception
 	{
 		AdviceWith.adviceWith(context, PUSH_PRODUCTS,
-							  advice -> {
-								  advice.weaveById(RETRIEVE_PRODUCTS_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_GET_PRODUCTS_REQUEST);
+				advice -> {
+					advice.weaveById(RETRIEVE_PRODUCTS_PROCESSOR_ID)
+							.after()
+							.to(MOCK_GET_PRODUCTS_REQUEST);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_GET_PRODUCTS_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(new MockGetProductsFromMetasfreshProcessor());
-							  });
+					advice.interceptSendToEndpoint("direct:" + MF_GET_PRODUCTS_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.process(new MockGetProductsFromMetasfreshProcessor());
+				});
 
 		AdviceWith.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(PREPARE_ARTICLE_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPSERT_ARTICLE_REQUEST);
+				advice -> {
+					advice.weaveById(PREPARE_ARTICLE_PROCESSOR_ID)
+							.after()
+							.to(MOCK_UPSERT_ARTICLE_REQUEST);
 
-								  advice.weaveById(PUSH_ARTICLE_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_REPORT_ARTICLE_ID_IN_METASFRESH);
+					advice.weaveById(PUSH_ARTICLE_PROCESSOR_ID)
+							.after()
+							.to(MOCK_REPORT_ARTICLE_ID_IN_METASFRESH);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(successfullySentExternalReferenceRequest);
-							  });
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(successfullySentExternalReferenceRequest);
+				});
 	}
 
 	private static class MockSuccessfullyCalledEndpoint implements Processor

@@ -23,8 +23,8 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactory;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;

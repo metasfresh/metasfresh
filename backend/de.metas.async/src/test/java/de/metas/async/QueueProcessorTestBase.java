@@ -32,31 +32,25 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Properties;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class QueueProcessorTestBase
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 		LogManager.setLevel(Level.INFO);
 	}
-
-	@Rule
-	public final TestName testName = new TestName();
 
 	protected final Logger logger = LogManager.getLogger(getClass());
 	protected Helper helper;
@@ -64,7 +58,7 @@ public class QueueProcessorTestBase
 
 	protected PlainLockManager lockManager;
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -87,7 +81,7 @@ public class QueueProcessorTestBase
 		// nothing at this level
 	}
 
-	@After
+	@AfterEach
 	public void afterTest()
 	{
 		afterTestCustomized();

@@ -124,7 +124,7 @@ public class CustomerTradeMarginService
 		final LocationId locationId = LocationId.ofRepoId(salesRepShipToLocation.getC_Location_ID());
 		final CountryId countryId = locationDAO.getCountryIdByLocationId(locationId);
 
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, request.getSoTrx());
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, request.getSoTrx(), null);
 
 		if (priceListId == null)
 		{
@@ -188,7 +188,7 @@ public class CustomerTradeMarginService
 				salesRepPricingResult.getProductId().getRepoId(),
 				Objects.requireNonNull(TimeUtil.asTimestamp(request.getCommissionDate())),
 				salesRepOrgId,
-				(WarehouseId)null,
+				null,
 				salesRepBillToLocationAndCapture,
 				request.getSoTrx());
 

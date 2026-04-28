@@ -1,11 +1,12 @@
 package de.metas.security.impl;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.IStringExpressionWrapper;
@@ -18,13 +19,10 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.UserRolePermissionsKey;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
+import javax.annotation.concurrent.Immutable;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -50,20 +48,19 @@ import de.metas.util.Check;
 
 /**
  * Wraps a given {@link IStringExpression} and applies the {@link IUserRolePermissions}'s security filters when this expression is evaluated.
- *
+ * <p>
  * It expects {@link #PARAM_UserRolePermissionsKey} present in evaluation context.
- *
+ * <p>
  * WARNING: this is a pure expression whom evaluation depends only on {@link Evaluatee} with one exception: it fetches the {@link IUserRolePermissions} based on {@link #PARAM_UserRolePermissionsKey}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 public final class AccessSqlStringExpression implements IStringExpression
 {
 	/**
 	 * Creates and returns a new wrapper for given parameters.
-	 *
+	 * <p>
 	 * Usually these wrappers are used in {@link CompositeStringExpression.Builder#wrap(IStringExpressionWrapper)} methods.
 	 */
 	public static IStringExpressionWrapper wrapper(final String tableNameIn, final boolean fullyQualified, final Access access)
@@ -81,7 +78,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 	 *
 	 * @see UserRolePermissionsKey#toPermissionsKeyString()
 	 */
-	public static final CtxName PARAM_UserRolePermissionsKey = CtxNames.parse("#PermissionsKey");
+	@NonNull public static final CtxName PARAM_UserRolePermissionsKey = CtxNames.parse("#PermissionsKey");
 
 	private final IStringExpression sqlExpression;
 	private final String tableNameIn;

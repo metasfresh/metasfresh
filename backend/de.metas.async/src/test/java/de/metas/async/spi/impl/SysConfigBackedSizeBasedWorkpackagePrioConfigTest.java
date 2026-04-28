@@ -1,14 +1,13 @@
 package de.metas.async.spi.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -37,7 +36,7 @@ import de.metas.util.Services;
 
 public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper
@@ -69,26 +68,26 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 		sysConfigBL.setValue(sysConfigPrefix + "02", "HIGH", ClientId.SYSTEM, OrgId.ANY);
 		sysConfigBL.setValue(sysConfigPrefix + "1", "URgENT", ClientId.SYSTEM, OrgId.ANY); // cases shall not matter
 
-		assertThat("Priority for size=100", config.apply(100), is(ConstantWorkpackagePrio.minor()));
+		assertThat(config.apply(100)).as("Priority for size=100").isEqualTo(ConstantWorkpackagePrio.minor());
 
 		//
 
-		assertThat("Priority for position=31/size=30", config.apply(31 - 1), is(ConstantWorkpackagePrio.minor()));
-		assertThat("Priority for position=30/size=29", config.apply(30 - 1), is(ConstantWorkpackagePrio.low()));
+		assertThat(config.apply(31 - 1)).as("Priority for position=31/size=30").isEqualTo(ConstantWorkpackagePrio.minor());
+		assertThat(config.apply(30 - 1)).as("Priority for position=30/size=29").isEqualTo(ConstantWorkpackagePrio.low());
 
 		//
-		assertThat("Priority for position=16/size=15", config.apply(16 - 1), is(ConstantWorkpackagePrio.low()));
-		assertThat("Priority for position=15/size=14", config.apply(15 - 1), is(ConstantWorkpackagePrio.medium()));
+		assertThat(config.apply(16 - 1)).as("Priority for position=16/size=15").isEqualTo(ConstantWorkpackagePrio.low());
+		assertThat(config.apply(15 - 1)).as("Priority for position=15/size=14").isEqualTo(ConstantWorkpackagePrio.medium());
 
 		// still low, because there is no correct number string for 5
-		assertThat("Priority for position=6/size=5", config.apply(6 - 1), is(ConstantWorkpackagePrio.medium()));
-		assertThat("Priority for position=5/size=4", config.apply(5 - 1), is(ConstantWorkpackagePrio.high()));
+		assertThat(config.apply(6 - 1)).as("Priority for position=6/size=5").isEqualTo(ConstantWorkpackagePrio.medium());
+		assertThat(config.apply(5 - 1)).as("Priority for position=5/size=4").isEqualTo(ConstantWorkpackagePrio.high());
 
-		assertThat("Priority for position=2/size=1", config.apply(2 - 1), is(ConstantWorkpackagePrio.high()));
-		assertThat("Priority for position=1/size=0", config.apply(1 - 1), is(ConstantWorkpackagePrio.urgent()));
+		assertThat(config.apply(2 - 1)).as("Priority for position=2/size=1").isEqualTo(ConstantWorkpackagePrio.high());
+		assertThat(config.apply(1 - 1)).as("Priority for position=1/size=0").isEqualTo(ConstantWorkpackagePrio.urgent());
 
 		// won't happen, but still works
-		assertThat("Priority for position=0/size=-1", config.apply(0), is(ConstantWorkpackagePrio.urgent()));
+		assertThat(config.apply(0)).as("Priority for position=0/size=-1").isEqualTo(ConstantWorkpackagePrio.urgent());
 	}
 
 	/**
@@ -115,22 +114,22 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 		iSysConfigBL.setValue(sysConfigPrefix + "2", "high", ClientId.SYSTEM, OrgId.ANY);
 		iSysConfigBL.setValue(sysConfigPrefix + "1.2", "urgent", ClientId.SYSTEM, OrgId.ANY); // not an int number, should also be skipped
 
-		assertThat("Priority for size=101", config.apply(101 - 1), is(ConstantWorkpackagePrio.minor()));
-		assertThat("Priority for size=100", config.apply(100 - 1), is(ConstantWorkpackagePrio.low()));
-		assertThat("Priority for size=99", config.apply(99 - 1), is(ConstantWorkpackagePrio.low()));
+		assertThat(config.apply(101 - 1)).as("Priority for size=101").isEqualTo(ConstantWorkpackagePrio.minor());
+		assertThat(config.apply(100 - 1)).as("Priority for size=100").isEqualTo(ConstantWorkpackagePrio.low());
+		assertThat(config.apply(99 - 1)).as("Priority for size=99").isEqualTo(ConstantWorkpackagePrio.low());
 
-		assertThat("Priority for size=51", config.apply(51 - 1), is(ConstantWorkpackagePrio.low()));
-		assertThat("Priority for size=50", config.apply(50 - 1), is(ConstantWorkpackagePrio.high()));
-		assertThat("Priority for size=49", config.apply(49 - 1), is(ConstantWorkpackagePrio.high())); // because there is no correct "medium", everything between 2 and 50 is high
+		assertThat(config.apply(51 - 1)).as("Priority for size=51").isEqualTo(ConstantWorkpackagePrio.low());
+		assertThat(config.apply(50 - 1)).as("Priority for size=50").isEqualTo(ConstantWorkpackagePrio.high());
+		assertThat(config.apply(49 - 1)).as("Priority for size=49").isEqualTo(ConstantWorkpackagePrio.high()); // because there is no correct "medium", everything between 2 and 50 is high
 
 		// still low, because the value fore 25 has a wrong prio string
-		assertThat("Priority for size=26", config.apply(26 - 1), is(ConstantWorkpackagePrio.high()));
-		assertThat("Priority for size=25", config.apply(25 - 1), is(ConstantWorkpackagePrio.high()));
-		assertThat("Priority for size=24", config.apply(24 - 1), is(ConstantWorkpackagePrio.high()));
+		assertThat(config.apply(26 - 1)).as("Priority for size=26").isEqualTo(ConstantWorkpackagePrio.high());
+		assertThat(config.apply(25 - 1)).as("Priority for size=25").isEqualTo(ConstantWorkpackagePrio.high());
+		assertThat(config.apply(24 - 1)).as("Priority for size=24").isEqualTo(ConstantWorkpackagePrio.high());
 
-		assertThat("Priority for size=2", config.apply(2 - 1), is(ConstantWorkpackagePrio.high()));
+		assertThat(config.apply(2 - 1)).as("Priority for size=2").isEqualTo(ConstantWorkpackagePrio.high());
 
 		// also/still high (not urgent), because there is no correct number string for 1
-		assertThat("Priority for size=1", config.apply(1 - 1), is(ConstantWorkpackagePrio.high()));
+		assertThat(config.apply(1 - 1)).as("Priority for size=1").isEqualTo(ConstantWorkpackagePrio.high());
 	}
 }

@@ -82,7 +82,10 @@ public class M_Transaction_PostTransactionEvent
 		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
-			materialEventService.enqueueEventAfterNextCommit(event);
+			// Use enqueueEventNow because this method runs inside a runAfterCommit callback,
+			// meaning data is already committed. Using enqueueEventAfterNextCommit here would
+			// nest two after-commit registrations, unnecessarily delaying event posting.
+			materialEventService.enqueueEventNow(event);
 		}
 	}
 }

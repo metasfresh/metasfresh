@@ -2,10 +2,13 @@ package de.metas.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -101,22 +104,22 @@ public class OrderAndLineId
 		return Optional.ofNullable(ofRepoIdsOrNull(orderRepoId, orderLineRepoId));
 	}
 
-	public static int toOrderRepoId(final OrderAndLineId orderAndLineId)
+	public static int toOrderRepoId(@Nullable final OrderAndLineId orderAndLineId)
 	{
 		return getOrderRepoIdOr(orderAndLineId, -1);
 	}
 
-	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static int getOrderRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
 	}
 
-	public static int toOrderLineRepoId(final OrderAndLineId orderAndLineId)
+	public static int toOrderLineRepoId(@Nullable final OrderAndLineId orderAndLineId)
 	{
 		return getOrderLineRepoIdOr(orderAndLineId, -1);
 	}
 
-	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static int getOrderLineRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderLineRepoId() : defaultValue;
 	}
@@ -124,6 +127,11 @@ public class OrderAndLineId
 	public static Set<Integer> getOrderLineRepoIds(final Collection<OrderAndLineId> orderAndLineIds)
 	{
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineRepoId).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static Set<OrderId> getOrderIds(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static Set<OrderLineId> getOrderLineIds(final Collection<OrderAndLineId> orderAndLineIds)
@@ -155,4 +163,23 @@ public class OrderAndLineId
 		return Objects.equals(o1, o2);
 	}
 
+	@JsonValue
+	public String toJson()
+	{
+		return orderId.getRepoId() + "_" + orderLineId.getRepoId();
+	}
+
+	@JsonCreator
+	public static OrderAndLineId ofJson(@NonNull String json)
+	{
+		try
+		{
+			final int idx = json.indexOf("_");
+			return ofRepoIds(Integer.parseInt(json.substring(0, idx)), Integer.parseInt(json.substring(idx + 1)));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid JSON: " + json, ex);
+		}
+	}
 }

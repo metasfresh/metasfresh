@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
@@ -362,13 +384,10 @@ public class TimeUtil
 			return false;
 		}
 		// case c
-		if (!start_2.before(end_1))        // end not including
-		{
-			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return false;
-		}
+		// end not including
+		// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
+		return start_2.before(end_1);
 		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-		return true;
 	}    // inRange
 
 	/**
@@ -416,21 +435,17 @@ public class TimeUtil
 				&& calStart.get(Calendar.MONTH) == calEnd.get(Calendar.MONTH)
 				&& calStart.get(Calendar.DAY_OF_MONTH) == calEnd.get(Calendar.DAY_OF_YEAR))
 		{
-			if (!OnSaturday && dayStart == Calendar.SATURDAY
+			// log.debug( "TimeUtil.InRange - SameDay - Yes", start + "->" + end + " - "
+			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
+			return !OnSaturday && dayStart == Calendar.SATURDAY
 					|| !OnSunday && dayStart == Calendar.SUNDAY
 					|| !OnMonday && dayStart == Calendar.MONDAY
 					|| !OnTuesday && dayStart == Calendar.TUESDAY
 					|| !OnWednesday && dayStart == Calendar.WEDNESDAY
 					|| !OnThursday && dayStart == Calendar.THURSDAY
-					|| !OnFriday && dayStart == Calendar.FRIDAY)
-			{
-				// log.debug( "TimeUtil.InRange - SameDay - Yes", start + "->" + end + " - "
-				// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
-				return true;
-			}
+					|| !OnFriday && dayStart == Calendar.FRIDAY;
 			// log.debug( "TimeUtil.InRange - SameDay - No", start + "->" + end + " - "
 			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
-			return false;
 		}
 		//
 		// log.debug( "TimeUtil.inRange - WeekDay Start=" + dayStart + ", Incl.End=" + dayEnd);
@@ -457,22 +472,18 @@ public class TimeUtil
 		// System.out.println("Result i=" + i + " - " + days.get(i));
 
 		// Compare days to availability
-		if (!OnSaturday && days.get(Calendar.SATURDAY)
+		// log.debug( "MAssignment.InRange - Yes", start + "->" + end + " - "
+		// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
+		return !OnSaturday && days.get(Calendar.SATURDAY)
 				|| !OnSunday && days.get(Calendar.SUNDAY)
 				|| !OnMonday && days.get(Calendar.MONDAY)
 				|| !OnTuesday && days.get(Calendar.TUESDAY)
 				|| !OnWednesday && days.get(Calendar.WEDNESDAY)
 				|| !OnThursday && days.get(Calendar.THURSDAY)
-				|| !OnFriday && days.get(Calendar.FRIDAY))
-		{
-			// log.debug( "MAssignment.InRange - Yes", start + "->" + end + " - "
-			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
-			return true;
-		}
+				|| !OnFriday && days.get(Calendar.FRIDAY);
 
 		// log.debug( "MAssignment.InRange - No", start + "->" + end + " - "
 		// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
-		return false;
 	}    // isRange
 
 	/**
@@ -494,13 +505,9 @@ public class TimeUtil
 		{
 			calTwo.setTimeInMillis(two.getTime());
 		}
-		if (calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
+		return calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
 				&& calOne.get(Calendar.MONTH) == calTwo.get(Calendar.MONTH)
-				&& calOne.get(Calendar.DAY_OF_MONTH) == calTwo.get(Calendar.DAY_OF_MONTH))
-		{
-			return true;
-		}
-		return false;
+				&& calOne.get(Calendar.DAY_OF_MONTH) == calTwo.get(Calendar.DAY_OF_MONTH);
 	}    // isSameDay
 
 	/**
@@ -522,14 +529,10 @@ public class TimeUtil
 		{
 			calTwo.setTimeInMillis(two.getTime());
 		}
-		if (calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
+		return calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
 				&& calOne.get(Calendar.MONTH) == calTwo.get(Calendar.MONTH)
 				&& calOne.get(Calendar.DAY_OF_MONTH) == calTwo.get(Calendar.DAY_OF_MONTH)
-				&& calOne.get(Calendar.HOUR_OF_DAY) == calTwo.get(Calendar.HOUR_OF_DAY))
-		{
-			return true;
-		}
-		return false;
+				&& calOne.get(Calendar.HOUR_OF_DAY) == calTwo.get(Calendar.HOUR_OF_DAY);
 	}    // isSameHour
 
 	/**
@@ -556,7 +559,7 @@ public class TimeUtil
 		calStart.setTimeInMillis(start.getTime());
 		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTimeInMillis(end.getTime());
-		if (calStart.get(Calendar.HOUR_OF_DAY) == calEnd.get(Calendar.HOUR_OF_DAY)
+		return calStart.get(Calendar.HOUR_OF_DAY) == calEnd.get(Calendar.HOUR_OF_DAY)
 				&& calStart.get(Calendar.MINUTE) == calEnd.get(Calendar.MINUTE)
 				&& calStart.get(Calendar.SECOND) == calEnd.get(Calendar.SECOND)
 				&& calStart.get(Calendar.MILLISECOND) == calEnd.get(Calendar.MILLISECOND)
@@ -564,12 +567,8 @@ public class TimeUtil
 				&& calStart.get(Calendar.MINUTE) == 0
 				&& calStart.get(Calendar.SECOND) == 0
 				&& calStart.get(Calendar.MILLISECOND) == 0
-				&& start.before(end))
-		{
-			return true;
-		}
+				&& start.before(end);
 		//
-		return false;
 	}    // isAllDay
 
 	/**
@@ -1017,12 +1016,7 @@ public class TimeUtil
 			return false;
 		}
 
-		if (dateTo != null && date.after(dateTo))
-		{
-			return false;
-		}
-
-		return true;
+		return dateTo == null || !date.after(dateTo);
 	}
 
 	public static boolean isBetween(
@@ -1035,12 +1029,7 @@ public class TimeUtil
 			return false;
 		}
 
-		if (dateTo != null && date.isAfter(dateTo))
-		{
-			return false;
-		}
-
-		return true;
+		return dateTo == null || !date.isAfter(dateTo);
 	}
 
 	/**
@@ -1142,7 +1131,7 @@ public class TimeUtil
 			cal.set(Calendar.MINUTE, mm);
 			return cal.getTimeInMillis();
 		}
-		
+
 		// M - Minute
 		if (TRUNC_MINUTE.equals(trunc))
 		{
@@ -1324,6 +1313,7 @@ public class TimeUtil
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Date date)
 	{
@@ -1337,6 +1327,7 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
@@ -1353,6 +1344,7 @@ public class TimeUtil
 	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
 	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
@@ -1360,6 +1352,7 @@ public class TimeUtil
 		return asTimestamp(localDate, timezone);
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(
 			@Nullable final LocalDate localDate,
@@ -1649,7 +1642,7 @@ public class TimeUtil
 				: null;
 	}
 
-	public static LocalDate asLocalDate(@Nullable XMLGregorianCalendar calendar)
+	public static LocalDate asLocalDate(@Nullable final XMLGregorianCalendar calendar)
 	{
 		return calendar != null
 				? calendar.toGregorianCalendar().toInstant().atZone(SystemTime.zoneId()).toLocalDate()
@@ -1687,6 +1680,7 @@ public class TimeUtil
 		}
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
@@ -1695,6 +1689,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
 	{
@@ -1703,6 +1698,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
 	{
@@ -1719,12 +1715,14 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		return asLocalTime(obj, null);
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1757,6 +1755,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1845,9 +1844,16 @@ public class TimeUtil
 		return InstantAndOrgId.ofTimestamp(ts, orgId).toZonedDateTime(orgDAO::getTimeZone);
 	}
 
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
-		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
+		return timestamp != null ? asZonedDateTimeNonNull(timestamp, zoneId) : null;
+	}
+
+	@NonNull
+	public static ZonedDateTime asZonedDateTimeNonNull(@NonNull final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp.toInstant().atZone(zoneId);
 	}
 
 	/**
@@ -1865,6 +1871,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
@@ -1880,6 +1887,13 @@ public class TimeUtil
 		{
 			return asInstant(obj, zoneId).atZone(zoneId);
 		}
+	}
+
+	@Nullable
+	public static Date asStartOfDay(@Nullable final Object obj)
+	{
+		final Date date = asDate(obj);
+		return date == null ? null : trunc(date, TRUNC_DAY);
 	}
 
 	@Nullable
@@ -1914,6 +1928,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static Instant asInstant(@Nullable final Object obj)
 	{
 		return asInstant(obj, SystemTime.zoneId());
@@ -1988,6 +2003,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static Instant asInstant(
 			@Nullable final Object obj,
 			@NonNull final ZoneId zoneId)
@@ -2019,17 +2035,17 @@ public class TimeUtil
 		else if (obj instanceof LocalDateTime)
 		{
 			final LocalDateTime localDateTime = (LocalDateTime)obj;
-            return localDateTime.atZone(zoneId).toInstant();
+			return localDateTime.atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalDate)
 		{
 			final LocalDate localDate = (LocalDate)obj;
-            return localDate.atStartOfDay(zoneId).toInstant();
+			return localDate.atStartOfDay(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalTime)
 		{
 			final LocalTime localTime = (LocalTime)obj;
-            return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
+			return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof XMLGregorianCalendar)
 		{
@@ -2382,7 +2398,7 @@ public class TimeUtil
 	 */
 	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
 	{
-		if(from.isEqual(to))
+		if (from.isEqual(to))
 		{
 			return 0;
 		}
@@ -2418,4 +2434,10 @@ public class TimeUtil
 	{
 		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
+
+	public static Instant addDays(@NonNull final Instant baseInstant, final long daysToAdd)
+	{
+		return baseInstant.plus(daysToAdd, ChronoUnit.DAYS);
+	}
+
 }    // TimeUtil

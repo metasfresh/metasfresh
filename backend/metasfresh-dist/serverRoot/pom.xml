@@ -109,11 +109,15 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
             <groupId>de.metas.manufacturing</groupId>
             <artifactId>de.metas.manufacturing.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-
         <dependency>
             <groupId>de.metas.workflow</groupId>
             <artifactId>de.metas.workflow.rest-api</artifactId>
@@ -122,6 +126,16 @@
         <dependency>
             <groupId>de.metas.picking</groupId>
             <artifactId>de.metas.picking.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.hu_consolidation</groupId>
+            <artifactId>de.metas.hu_consolidation.mobile</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.inventory</groupId>
+            <artifactId>de.metas.inventory.mobileui</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
         <dependency>
@@ -137,6 +151,11 @@
         <dependency>
             <groupId>de.metas.payment.sumup</groupId>
             <artifactId>de.metas.payment.sumup.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.frontend-testing</groupId>
+            <artifactId>de.metas.frontend-testing</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
     </dependencies>

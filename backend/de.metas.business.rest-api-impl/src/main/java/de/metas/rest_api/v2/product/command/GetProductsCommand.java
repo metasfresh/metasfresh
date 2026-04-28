@@ -49,7 +49,8 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
@@ -96,7 +97,7 @@ public class GetProductsCommand
 	@NonNull
 	private final ExternalSystemService externalSystemService;
 	@NonNull
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierProductLookupService productLookupService;
 
 	@NonNull
 	private final String adLanguage;
@@ -106,7 +107,7 @@ public class GetProductsCommand
 	@Nullable
 	private final String orgCode;
 
-	private final ExternalSystemType externalSystemType;
+	@Nullable private final ExternalSystemType externalSystemType;
 	private final String externalSystemConfigValue;
 	private final ExternalIdentifier productIdentifier;
 
@@ -126,7 +127,7 @@ public class GetProductsCommand
 			@NonNull final ProductsServicesFacade servicesFacade,
 			@NonNull final AlbertaProductService albertaProductService,
 			@NonNull final ExternalSystemService externalSystemService,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierProductLookupService productLookupService,
 			@NonNull final String adLanguage,
 			@Nullable final Instant since,
 			@Nullable final String orgCode,
@@ -137,7 +138,7 @@ public class GetProductsCommand
 		this.servicesFacade = servicesFacade;
 		this.albertaProductService = albertaProductService;
 		this.externalSystemService = externalSystemService;
-		this.productRestService = productRestService;
+		this.productLookupService = productLookupService;
 		this.adLanguage = adLanguage;
 		this.since = CoalesceUtil.coalesceNotNull(since, DEFAULT_SINCE);
 		this.orgCode = orgCode;
@@ -441,7 +442,7 @@ public class GetProductsCommand
 	@Nullable
 	private PriceListId getPharmacyPriceListIdOrNull()
 	{
-		if (!ExternalSystemType.Alberta.equals(externalSystemType) || Check.isBlank(externalSystemConfigValue))
+		if (externalSystemType == null || !externalSystemType.isAlberta() || Check.isBlank(externalSystemConfigValue))
 		{
 			return null;
 		}
@@ -466,7 +467,7 @@ public class GetProductsCommand
 			@NonNull final ImmutableList.Builder<I_M_Product> productRecordsBuilder,
 			@NonNull final HashSet<ProductId> loadedProductIds)
 	{
-		if (!ExternalSystemType.Alberta.equals(externalSystemType))
+		if (externalSystemType == null || !externalSystemType.isAlberta())
 		{
 			return;
 		}
@@ -498,7 +499,8 @@ public class GetProductsCommand
 		{
 			Check.assumeNotNull(productIdentifier, "ProductIdentifier must be set in case of single export!");
 
-			final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+			final ProductId productId = productLookupService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+					.map(ProductAndHUPIItemProductId::getProductId)
 					.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
 							.appendParametersToMessage()
 							.setParameter("ExternalIdentifier", productIdentifier));

@@ -10,6 +10,7 @@ import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -126,17 +127,13 @@ public class Database
 	 * Create SQL for formatted Date, Number
 	 *
 	 * @param columnName  the column name in the SQL
-	 * @param displayType Display Type
 	 * @see #TO_CHAR(String, int, String)
 	 */
-	public static String TO_CHAR(final String columnName, final int displayType)
+	public static String TO_CHAR(final String columnName)
 	{
 		Check.assumeNotEmpty(columnName, "columnName is not empty");
 
-		final StringBuilder retValue = new StringBuilder("CAST (");
-		retValue.append(columnName);
-		retValue.append(" AS Text)");
-		return retValue.toString();
+		return "CAST (" + columnName + " AS Text)";
 	}
 
 	/**
@@ -155,30 +152,29 @@ public class Database
 	{
 		if (Check.isEmpty(formatPattern, false))
 		{
-			return TO_CHAR(columnName, displayType);
+			return TO_CHAR(columnName);
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final String pgFormatPattern = convertDecimalPatternToPG(formatPattern);
 			if (pgFormatPattern == null)
 			{
-				return TO_CHAR(columnName, displayType);
+				return TO_CHAR(columnName);
 			}
 
-			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType);
+			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')");
 		}
 		else
 		{
-			return TO_CHAR(columnName, displayType);
+			return TO_CHAR(columnName);
 		}
 	}
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
 	 * <p>
-	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
+	 * See <a href="http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE">http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE</a>.
 	 *
-	 * @param formatPattern
 	 * @return PostgreSQL's number formatting pattern or <code>null</code> if it could not be converted
 	 * @see DecimalFormat
 	 */
@@ -235,7 +231,7 @@ public class Database
 		final int scale = DisplayType.getDefaultPrecision(displayType);
 		if (scale > number.scale())
 		{
-			result = number.setScale(scale, BigDecimal.ROUND_HALF_UP);
+			result = number.setScale(scale, RoundingMode.HALF_UP);
 		}
 		return result.toString();
 	}

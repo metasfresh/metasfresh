@@ -5,7 +5,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Component;
 public class M_Inventory
 {
 	public static final AdMessageKey MSG_WEBUI_ADD_VIRTUAL_INV_NOT_ALLOWED = AdMessageKey.of("MSG_WEBUI_ADD_VIRTUAL_INV_NOT_ALLOWED");
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public M_Inventory()
 	{
@@ -46,7 +44,7 @@ public class M_Inventory
 
 		if (InventoryDocSubType.VirtualInventory.getCode().equals(documentNoInfo.getDocSubType()))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_ADD_VIRTUAL_INV_NOT_ALLOWED));
+			throw new AdempiereException(MSG_WEBUI_ADD_VIRTUAL_INV_NOT_ALLOWED);
 		}
 
 		// DocumentNo

@@ -22,9 +22,13 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
@@ -39,11 +43,16 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
+import static de.metas.workflow.rest_api.service.Constants.ARE_YOU_SURE;
 
 @Component
 public class CompletePickingWFActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.completePicking");
+	private static final AdMessageKey NOT_ALL_LINES_ARE_COMPLETED_WARNING = AdMessageKey
+			.of("de.metas.picking.workflow.handlers.activity_handlers.NOT_ALL_LINES_ARE_COMPLETED_WARNING");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final PickingJobRestService pickingJobRestService;
 
@@ -67,7 +76,7 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
 				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
-						.question("Are you sure?")
+						.question(getQuestion(wfProcess, jsonOpts.getAdLanguage()))
 						.build());
 	}
 
@@ -91,5 +100,22 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 				request.getWfProcess(),
 				pickingJobRestService::complete
 		);
+	}
+
+	private String getQuestion(@NonNull final WFProcess wfProcess, @NonNull final String language)
+	{
+		final PickingJob pickingJob = wfProcess.getDocumentAs(PickingJob.class);
+		if (pickingJob.getProgress().isDone())
+		{
+			return msgBL.getMsg(language, ARE_YOU_SURE);
+		}
+
+		final PickingJobOptions options = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
+		if (!options.isAllowCompletingPartialPickingJob())
+		{
+			return msgBL.getMsg(language, ARE_YOU_SURE);
+		}
+
+		return msgBL.getMsg(language, NOT_ALL_LINES_ARE_COMPLETED_WARNING);
 	}
 }

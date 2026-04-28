@@ -72,11 +72,18 @@ if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
 module.exports = {
   mode: 'development',
   bail: true,
-  devtool: 'source-map',
+  devtool: 'eval-cheap-module-source-map',
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+  },
   entry: entries,
   output: {
     path: '/',
-    filename: '[name].bundle-[git-revision-hash]-git-[chunkhash].js',
+    // filename: '[name].bundle-[git-revision-hash]-git-[chunkhash].js',
+    filename: '[name].bundle.js', // Simplified for development
     publicPath: '/',
   },
   plugins,

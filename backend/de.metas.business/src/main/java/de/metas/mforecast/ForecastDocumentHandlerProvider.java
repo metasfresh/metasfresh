@@ -1,5 +1,6 @@
 package de.metas.mforecast;
 
+import de.metas.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,8 @@ import de.metas.document.engine.DocumentHandlerProvider;
 public class ForecastDocumentHandlerProvider implements DocumentHandlerProvider
 {
 
+	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
+
 	@Override
 	public String getHandledTableName()
 	{
@@ -40,6 +43,6 @@ public class ForecastDocumentHandlerProvider implements DocumentHandlerProvider
 	@Override
 	public DocumentHandler provideForDocument(final Object model)
 	{
-		return new ForecastDocumentHandler();
+		return new ForecastDocumentHandler(forecastDAO);
 	}
 }

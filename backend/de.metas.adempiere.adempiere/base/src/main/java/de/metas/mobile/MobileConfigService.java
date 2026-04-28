@@ -24,6 +24,7 @@ package de.metas.mobile;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -36,8 +37,7 @@ public class MobileConfigService
 	private final MobileConfigRepository configRepository;
 
 	@NonNull
-	public Optional<MobileConfig> getConfig()
-	{
-		return configRepository.getConfig();
-	}
+	public Optional<MobileConfig> getConfig() {return configRepository.getConfig();}
+
+	public void save(@NonNull final MobileConfig mobileConfig) {configRepository.save(mobileConfig);}
 }

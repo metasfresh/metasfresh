@@ -137,10 +137,20 @@ public class TransactionEventFactoryForInOutLine
 			final AbstractTransactionEvent event;
 			if (deleted || isReversal)
 			{
+				// For reversals (isReversal && !deleted), the reversal M_Transaction already has the
+				// opposite sign (+10 to undo a -10 shipment). Since TransactionDeletedEvent.getQuantityDelta()
+				// negates the MaterialDescriptor quantity, we must negate it here first to avoid a
+				// double-negation that would decrease stock instead of restoring it.
+				// Example without fix: descriptor.qty=+10 → getQuantityDelta()=negate(+10)=-10 → stock DECREASES (wrong!)
+				// Example with fix:    descriptor.qty=-10 → getQuantityDelta()=negate(-10)=+10 → stock INCREASES (correct)
+				final MaterialDescriptor eventMaterialDescriptor = isReversal && !deleted
+						? materialDescriptor.withQuantity(materialDescriptor.getQuantity().negate())
+						: materialDescriptor;
+
 				event = TransactionDeletedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
 						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor)
+						.materialDescriptor(eventMaterialDescriptor)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)

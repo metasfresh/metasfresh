@@ -3,7 +3,6 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
@@ -29,7 +28,6 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	@Override
@@ -68,10 +66,5 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 			return Optional.of(Quantity.infinite(capacity.getC_UOM()));
 		}
 		return Optional.of(uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId));
-	}
-
-	private UomId extractUomId(@NonNull final I_C_OLCand olCand)
-	{
-		return UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
 	}
 }

@@ -1,15 +1,14 @@
 package de.metas.handlingunits.trace;
 
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
 
 /*
  * #%L
@@ -36,7 +35,7 @@ import de.metas.handlingunits.model.X_M_HU;
 public class HUAccessServiceTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

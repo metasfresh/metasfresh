@@ -12,20 +12,24 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.logging.LogManager;
+import de.metas.product.Product;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IProductBOMDAO;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.concurrent.Immutable;
@@ -35,8 +39,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -62,22 +66,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 @Service
+@RequiredArgsConstructor
 public class SourceHUsService
 {
-	private static final Logger logger = LogManager.getLogger(SourceHUsService.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+	@NonNull private final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
-	private final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+	@NonNull private final WarehouseRepository warehouseRepository;
+	@NonNull private final ProductRepository productRepository;
 
 	public static SourceHUsService get()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new SourceHUsService();
+			return new SourceHUsService(
+					WarehouseRepository.newInstanceForUnitTesting(),
+					ProductRepository.newInstanceForUnitTesting()
+			);
 		}
 		else
 		{
@@ -138,13 +146,23 @@ public class SourceHUsService
 		return topLevelHuThatHasNoSourceHuInItsPath;
 	}
 
+	public boolean isEligibleFroSourceHuMarker(@NonNull final I_M_HU hu, @NonNull final Warehouse warehouse)
+	{
+		if(!warehouse.isReceiveAsSourceHU())
+		{
+			return false;
+		}
+		final Set<ProductId> productIds = handlingUnitsBL.getStorageFactory().getStorage(hu).getProductStorages().stream()
+				.map(IProductStorage::getProductId)
+				.collect(Collectors.toSet());
+		return productRepository.getByIds(productIds).stream()
+				.map(Product::getProductCategoryId)
+				.anyMatch(warehouse::isConfiguredToReceiveAsSourceHU);
+	}
+
 	public void addSourceHuMarker(@NonNull final HuId huId)
 	{
-		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
-		sourceHU.setM_HU_ID(huId.getRepoId());
-		save(sourceHU);
-
-		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
+		sourceHuDAO.addSourceHuMarker(huId);
 	}
 
 	public boolean deleteSourceHuMarker(@NonNull final HuId huId)
@@ -169,7 +187,7 @@ public class SourceHUsService
 		save(sourceHU);
 	}
 
-	public void restoreHuFromSourceHuMarkerIfPossible(I_M_HU destroyedHU)
+	public void restoreHuFromSourceHuMarkerIfPossible(@NonNull final I_M_HU destroyedHU)
 	{
 		final I_M_Source_HU sourceHuRecord = sourceHuDAO.retrieveSourceHuMarkerOrNull(destroyedHU);
 		if (sourceHuRecord == null)
@@ -218,19 +236,27 @@ public class SourceHUsService
 		return sourceHuDAO.isSourceHu(huId);
 	}
 
-	/**
-	 *  Creates a M_Source_HU record for the given HU, if it carries component products and the target warehouse has
-	 *  the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
-	 *
-	 * @param huId			target HU id
-	 * @param productId		target product Id
-	 * @param warehouseId   target warehouse ID
-	 */
-	public void addSourceHUMarkerIfCarringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	public void addSourceHUMarkerIfCarryingComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
+		addSourceHUMarkerIfCarryingComponents(ImmutableSet.of(huId), productId, warehouseId);
+	}
 
+	/**
+	 * Creates an M_Source_HU record for the given HU, if it carries component products and the target warehouse has
+	 * the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
+	 */
+	public void addSourceHUMarkerIfCarryingComponents(@NonNull final Set<HuId> huIds, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	{
+		if (huIds.isEmpty()) {return;}
+
+		final Warehouse warehouse = warehouseRepository.getById(warehouseId);
 		if (!warehouse.isReceiveAsSourceHU())
+		{
+			return;
+		}
+
+		final ProductCategoryId productCategoryId = productRepository.getById(productId).getProductCategoryId();
+		if (!warehouse.isConfiguredToReceiveAsSourceHU(productCategoryId))
 		{
 			return;
 		}
@@ -241,14 +267,14 @@ public class SourceHUsService
 			return;
 		}
 
-		addSourceHuMarker(huId);
+		huIds.forEach(sourceHuDAO::addSourceHuMarker);
 	}
 
 	/**
 	 * Specifies which source HUs (products and warehouse) to retrieve in particular
 	 */
-	@lombok.Value
-	@lombok.Builder
+	@Value
+	@Builder
 	@Immutable
 	public static class MatchingSourceHusQuery
 	{
@@ -264,7 +290,7 @@ public class SourceHUsService
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			
+
 			final I_M_HU hu = handlingUnitsBL.getById(huId);
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			final IHUStorage storage = storageFactory.getStorage(hu);

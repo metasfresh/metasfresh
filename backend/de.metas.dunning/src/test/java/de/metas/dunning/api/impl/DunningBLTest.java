@@ -22,20 +22,22 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.PlainDunningConfigurator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DunningBLTest extends DunningTestBase
 {
@@ -49,77 +51,46 @@ public class DunningBLTest extends DunningTestBase
 		// Not processed, not DunningDocProcessed
 		candidate.setProcessed(false);
 		candidate.setIsDunningDocProcessed(false);
-		try
-		{
-			dunningBL.validate(candidate);
-			Assert.assertTrue("Candidate shall be valid: " + candidate, true);
-		}
-		catch (AdempiereException e)
-		{
-			Assert.fail("Candidate shall be valid: " + candidate + " but got exception: " + e.getLocalizedMessage());
-		}
+		assertThatCode(() -> dunningBL.validate(candidate))
+				.as("Candidate shall be valid: " + candidate)
+				.doesNotThrowAnyException();
 
 		//
 		// Not processed, DunningDocProcessed
 		candidate.setProcessed(false);
 		candidate.setIsDunningDocProcessed(true);
-		try
-		{
-			dunningBL.validate(candidate);
-			Assert.fail("Candidate shall NOT be valid: " + candidate);
-		}
-		catch (AdempiereException e)
-		{
-			Assert.assertTrue("Candidate shall NOT be valid: " + candidate, true);
-		}
+		assertThatThrownBy(() -> dunningBL.validate(candidate))
+				.as("Candidate shall NOT be valid: " + candidate)
+				.isInstanceOf(AdempiereException.class);
 
 		//
 		// Processed, not DunningDocProcessed
 		candidate.setProcessed(true);
 		candidate.setIsDunningDocProcessed(false);
-		try
-		{
-			dunningBL.validate(candidate);
-			Assert.assertTrue("Candidate shall be valid: " + candidate, true);
-		}
-		catch (AdempiereException e)
-		{
-			Assert.fail("Candidate shall be valid: " + candidate);
-		}
+		assertThatCode(() -> dunningBL.validate(candidate))
+				.as("Candidate shall be valid: " + candidate)
+				.doesNotThrowAnyException();
 
 		//
 		// Processed, DunningDocProcessed
 		candidate.setProcessed(true);
 		candidate.setIsDunningDocProcessed(true);
 		candidate.setDunningDateEffective(null);
-		try
-		{
-			dunningBL.validate(candidate);
-			Assert.fail("Candidate shall NOT be valid: " + candidate);
-		}
-		catch (AdempiereException e)
-		{
-			Assert.assertTrue("Candidate shall NOT be valid: " + candidate, true);
-		}
+		assertThatThrownBy(() -> dunningBL.validate(candidate))
+				.as("Candidate shall NOT be valid: " + candidate)
+				.isInstanceOf(AdempiereException.class);
 
 		//
 		// Processed, DunningDocProcessed
 		candidate.setProcessed(true);
 		candidate.setIsDunningDocProcessed(true);
 		candidate.setDunningDateEffective(SystemTime.asTimestamp());
-		try
-		{
-			dunningBL.validate(candidate);
-			Assert.assertTrue("Candidate shall be valid: " + candidate, true);
-		}
-		catch (AdempiereException e)
-		{
-			Assert.fail("Candidate shall be valid: " + candidate);
-		}
-
+		assertThatCode(() -> dunningBL.validate(candidate))
+				.as("Candidate shall be valid: " + candidate)
+				.doesNotThrowAnyException();
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_validateCandidate_InactiveNotAllowed()
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
@@ -128,29 +99,39 @@ public class DunningBLTest extends DunningTestBase
 		candidate.setDunningDateEffective(de.metas.common.util.time.SystemTime.asTimestamp());
 
 		candidate.setIsActive(false);
-		dunningBL.validate(candidate);
+		
+		assertThatThrownBy(() -> dunningBL.validate(candidate))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
 	public void test_getSummary()
 	{
-		Assert.assertNull("summary shall be null for null", dunningBL.getSummary(null));
+		assertThat(dunningBL.getSummary(null))
+				.as("summary shall be null for null")
+				.isNull();
 
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		InterfaceWrapperHelper.save(candidate);
-		Assert.assertNotNull("Invalid summary", dunningBL.getSummary(candidate));
+		
+		assertThat(dunningBL.getSummary(candidate))
+				.as("Invalid summary")
+				.isNotNull();
 	}
 
-	@Test(expected = DunningException.class)
+	@Test
 	public void test_setDunningConfigurator_AlreadyConfigured()
 	{
 		final IDunningConfig config1 = dunningBL.getDunningConfig();
-		Assert.assertNotNull("config1 shall not be null", config1);
+		assertThat(config1)
+				.as("config1 shall not be null")
+				.isNotNull();
 
 		final PlainDunningConfigurator configurator = new PlainDunningConfigurator();
 
 		// this shall throw an exception because we already have a config for this dunningBL
-		dunningBL.setDunningConfigurator(configurator);
+		assertThatThrownBy(() -> dunningBL.setDunningConfigurator(configurator))
+				.isInstanceOf(DunningException.class);
 
 		// final IDunningConfig config2 = dunningBL.getDunningConfig();
 		// Assert.assertNotNull("config2 shall not be null", config2);
@@ -163,7 +144,7 @@ public class DunningBLTest extends DunningTestBase
 		// Assert.assertEquals("Configurator shall be called only once", 1, configurator.configureRequestCount);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_setDunningConfigurator_ConfiguratorReturnsNull()
 	{
 		final PlainDunningConfigurator configurator = new PlainDunningConfigurator();
@@ -172,7 +153,8 @@ public class DunningBLTest extends DunningTestBase
 		dunningBL.setDunningConfigurator(configurator);
 
 		// shall trigger an error because configurator returns null
-		dunningBL.getDunningConfig();
+		assertThatThrownBy(() -> dunningBL.getDunningConfig())
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -191,10 +173,11 @@ public class DunningBLTest extends DunningTestBase
 		assertExpired(false, null, TimeUtil.getDay(2013, 3, 10), true);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_isExpired_NullCandidate()
 	{
-		dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10));
+		assertThatThrownBy(() -> dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10)))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	private void assertExpired(final boolean expectedExpired, final Timestamp dunningGraceDate, final Timestamp dunningDate, final boolean processed)
@@ -202,7 +185,9 @@ public class DunningBLTest extends DunningTestBase
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setDunningDate(dunningDate);
 		candidate.setProcessed(processed);
-		Assert.assertEquals("Invalid isExpired result for dunningGraceDate=" + dunningGraceDate + ", dunningDate=" + dunningDate + ", processed=" + processed,
-				expectedExpired, dunningBL.isExpired(candidate, dunningGraceDate));
+		
+		assertThat(dunningBL.isExpired(candidate, dunningGraceDate))
+				.as("Invalid isExpired result for dunningGraceDate=" + dunningGraceDate + ", dunningDate=" + dunningDate + ", processed=" + processed)
+				.isEqualTo(expectedExpired);
 	}
 }

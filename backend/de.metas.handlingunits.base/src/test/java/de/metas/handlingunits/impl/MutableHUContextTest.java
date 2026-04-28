@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-import org.junit.Test;
 
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

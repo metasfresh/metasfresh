@@ -1,10 +1,8 @@
-package de.metas.async.api.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.api.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
@@ -48,8 +48,6 @@ import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
@@ -107,7 +105,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final QueuePackageProcessorId enquingPackageProcessorId;
 
 	/**
-	 * Task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * Task mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	private final String enquingPackageProcessorInternalName;
 
@@ -117,8 +115,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			@NonNull final Properties ctx,
 			@NonNull final ImmutableSet<QueuePackageProcessorId> packageProcessorIds,
 			@NonNull final QueueProcessorId queueProcessorId,
-			final String enquingPackageProcessorInternalName,
-			final String priorityFrom,
+			@Nullable final String enquingPackageProcessorInternalName,
+			@Nullable final String priorityFrom,
 			final boolean forEnqueing)
 	{
 		Check.assume(!packageProcessorIds.isEmpty(), "packageProcessorIds not empty");
@@ -270,41 +268,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public void unlock(final I_C_Queue_WorkPackage workPackage)
-	{
-		// NOTE: unlocking shall not be synchronized with mainLock because else we can get dead-locks or unlocked workPackages will be left on shutdown
-
-		try
-		{
-			final boolean success = Services.get(ILockManager.class).unlock(workPackage);
-			if (!success)
-			{
-				throw new UnlockFailedException("Cannot unlock");
-			}
-		}
-		catch (final Exception e)
-		{
-			throw UnlockFailedException.wrapIfNeeded(e)
-					.setParameter("Workpackage", workPackage);
-		}
-	}
-
-	@Override
-	public boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
-	{
-		try
-		{
-			unlock(workPackage);
-			return true;
-		}
-		catch (final Exception e)
-		{
-			logger.warn("Got exception while unlocking " + workPackage, e);
-			return false;
-		}
-	}
-
-	@Override
 	public I_C_Queue_WorkPackage enqueueWorkPackage(
 			@NonNull final I_C_Queue_WorkPackage workPackage,
 			@NonNull final IWorkpackagePrioStrategy priority)
@@ -399,7 +362,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		catch (final Throwable e)
 		{
-			asyncBatchBL.decreaseEnqueued(workPackage);
+			asyncBatchBL.decreaseEnqueued(workPackage); // if the save didn't work, we need to decrease the enqueued count
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}

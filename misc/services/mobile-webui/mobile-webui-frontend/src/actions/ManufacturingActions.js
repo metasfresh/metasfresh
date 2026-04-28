@@ -1,29 +1,14 @@
 import {
-  UPDATE_MANUFACTURING_ISSUE_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_LU_RECEIPT_TARGET,
   UPDATE_MANUFACTURING_TU_RECEIPT_TARGET,
 } from '../constants/ManufacturingActionTypes';
 
-import { getLineById, getWfProcess } from '../reducers/wfProcesses';
+import { getLineById, getStepByIdFromLine } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 import { toQRCodeString } from '../utils/qrCode/hu';
+import { updateWFProcess } from './WorkflowActions';
 
-const updateManufacturingIssueQty = ({ wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode }) => {
-  return {
-    type: UPDATE_MANUFACTURING_ISSUE_QTY,
-    payload: {
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      qtyPicked,
-      qtyRejectedReasonCode,
-    },
-  };
-};
-
-export const updateManufacturingIssue = ({
+export const postManufacturingIssueEventThunk = ({
   wfProcessId,
   activityId,
   lineId,
@@ -34,14 +19,10 @@ export const updateManufacturingIssue = ({
   qtyRejectedReasonCode,
 }) => {
   return (dispatch, getState) => {
-    const state = getState();
-
-    const wfProcess = getWfProcess(state, wfProcessId);
-    const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-    const line = activity != null ? activity.dataStored.lines[lineId] : null;
+    const line = getLineById(getState(), wfProcessId, activityId, lineId);
 
     if (line) {
-      const step = line.steps[stepId];
+      const step = getStepByIdFromLine(line, stepId);
       const { id, huQRCode } = step;
 
       return postManufacturingIssueEvent({
@@ -55,18 +36,9 @@ export const updateManufacturingIssue = ({
           qtyRejected,
           qtyRejectedReasonCode,
         },
-      }).then(() =>
-        dispatch(
-          updateManufacturingIssueQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: qtyIssued,
-            qtyRejectedReasonCode,
-          })
-        )
-      );
+      }).then((wfProcess) => {
+        return dispatch(updateWFProcess({ wfProcess }));
+      });
     } else {
       return Promise.reject('No line found');
     }
@@ -87,8 +59,19 @@ export const updateManufacturingTUReceiptTarget = ({ wfProcessId, activityId, li
   };
 };
 
-export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived }) => {
-  console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived });
+export const postManufacturingReceiveEventThunk = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  qtyReceived,
+  pickTo,
+  catchWeight,
+  catchWeightUom,
+  bestBeforeDate,
+  productionDate,
+  lotNo,
+  barcode, // i.e. the catch weight QR code
+}) => {
   return (dispatch, getState) => {
     const { aggregateToLU, aggregateToTU } = getAggregateTarget({
       globalState: getState(),
@@ -99,11 +82,22 @@ export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId,
     return postManufacturingReceiveEvent({
       wfProcessId,
       activityId,
-      receiveFrom: { lineId, aggregateToLU, aggregateToTU, qtyReceived },
+      receiveFrom: {
+        lineId,
+        aggregateToLU,
+        aggregateToTU,
+        qtyReceived,
+        catchWeight,
+        catchWeightUomSymbol: catchWeightUom,
+        bestBeforeDate,
+        productionDate,
+        lotNo,
+        barcode,
+      },
+      pickTo,
     }) //
-      .then((response) => {
-        dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });
-        dispatch(updateManufacturingLUReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
+      .then((wfProcess) => {
+        return dispatch(updateWFProcess({ wfProcess }));
       });
   };
 };

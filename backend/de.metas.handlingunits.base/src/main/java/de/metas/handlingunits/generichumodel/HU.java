@@ -9,22 +9,18 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -52,6 +48,11 @@ import java.util.function.Function;
 @Builder(toBuilder = true)
 public class HU
 {
+	/**
+	 * The {@code M_HU_ID} of the underlying {@link de.metas.handlingunits.model.I_M_HU}-record.
+	 * Note that in case of aggregated HUs one {@link HU} can have multiple child-HUs with the same id.
+	 * That's because logically, the aggregated  {@link de.metas.handlingunits.model.I_M_HU} represents not one but {@code n} HUs.
+	 */
 	@NonNull
 	HuId id;
 
@@ -61,8 +62,8 @@ public class HU
 	@NonNull
 	HUType type;
 
-	@NonNull
-	Optional<PackagingCode> packagingCode;
+	@Nullable
+	PackagingCode packagingCode;
 
 	@NonNull
 	@Singular
@@ -72,97 +73,134 @@ public class HU
 	@Singular("productQtyInStockUOM")
 	ImmutableMap<ProductId, Quantity> productQtysInStockUOM;
 
-	@NonNull
-	Optional<Quantity> weightNet;
+	@Nullable
+	Quantity weightNet;
 
 	@NonNull
 	IAttributeSet attributes;
 
 	@NonNull
+	@Singular("referencingModel")
+	ImmutableList<TableRecordReference> referencingModels;
+
+	/**
+	 * Also see the remark at {@link #id}.
+	 */
+	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
 
-	public <T> T extractSingleAttributeValue(
-			@NonNull final Function<IAttributeSet, T> attrValueFunction,
-			@NonNull final BinaryOperator<T> mergeFunction)
+	/**
+	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code reference}.
+	 * ! Note that the HU's attribute-sets are <b>not</b> reduced by this method.
+	 */
+	@Nullable
+	public HU retain(
+			@NonNull final TableRecordReference reference,
+			@NonNull final ProductId productId)
 	{
-		final Mutable<T> result = new Mutable<>();
-		for (final HU hu : allHUAsList())
-		{
-			final T attrValue = attrValueFunction.apply(hu.getAttributes());
-			result.setValue(mergeFunction.apply(result.getValue(), attrValue));
-		}
-		return result.getValue();
-	}
-
-	public List<HU> allHUAsList()
-	{
-		return recurseNext(this);
-	}
-
-	private List<HU> recurseNext(@NonNull final HU hu)
-	{
-		if (hu.getChildHUs().isEmpty())
-		{
-			return ImmutableList.of(hu);
-		}
-
-		final ImmutableList.Builder<HU> results = ImmutableList.builder();
-
-		results.add(hu);
-
-		for (final HU child : hu.getChildHUs())
-		{
-			final List<HU> recurseNext = recurseNext(child);
-			results.addAll(recurseNext);
-		}
-		return results.build();
+		return retain(reference, productId, ImmutableList.of());
 	}
 
 	/**
-	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code productId}.
+	 * @param referencingModelsOfParentHU if an HU has no own ReferencingModels, then assume these
 	 */
-	public Optional<HU> retainProduct(@NonNull final ProductId productId)
+	@Nullable
+	private HU retain(@NonNull final TableRecordReference reference,
+					  @NonNull final ProductId productId,
+					  @NonNull final ImmutableList<TableRecordReference> referencingModelsOfParentHU)
 	{
-		if (!this.getProductQtysInStockUOM().containsKey(productId))
-		{
-			return Optional.empty(); // we know that the M_HU datamodel is such that if we don't have a product here, the children won't have it either.
-		}
+		// If the current HU has no referencing models at all, we assume the parent's models.
+		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels().isEmpty() ? referencingModelsOfParentHU : getReferencingModels();
 
-		final Quantity quantity = this.getProductQtysInStockUOM().get(productId);
-		final HUBuilder result = this.toBuilder()
-				.clearProductQtysInStockUOM()
-				.clearChildHUs()
-				.productQtyInStockUOM(productId, quantity);
+		final HUBuilder result = this.toBuilder();
+
+		final boolean hasChildHUs = !getChildHUs().isEmpty();
 
 		Quantity newWeightNet;
-		if (getChildHUs().isEmpty())
+		Quantity newProductQtyInStockUOM;
+		
+		if (hasChildHUs)
 		{
-			newWeightNet = weightNet.orElse(null);
+			// we will rebuild this from the child-HUs
+			result.clearProductQtysInStockUOM()
+					.clearReferencingModels()
+					.clearChildHUs();
+			newWeightNet = toZeroOrNull(weightNet);
+			newProductQtyInStockUOM = null;
 		}
 		else
-		{
-			// we will sum it up from our childrens' weights
-			newWeightNet = weightNet.map(Quantity::toZero).orElse(null);
+		{   // we are a leaf
+			if (!effectiveReferencingModels.contains(reference) || !getProductQtysInStockUOM().containsKey(productId))
+			{
+				return null;
+			}
+
+			result.clearProductQtysInStockUOM(); // clear now, will add it at the end of this method
+			
+			// If this leaf didn't have any own referencing models, keep it like that.
+			// If it contains the given 'reference', then make sure we retain only that one
+			if (!getReferencingModels().isEmpty())
+			{
+				result.clearReferencingModels().referencingModel(reference);
+			}
+			
+			newWeightNet = weightNet;
+			newProductQtyInStockUOM = getProductQtysInStockUOM().get(productId);
 		}
+		
+		final LinkedHashSet<TableRecordReference> newReferencingModels = new LinkedHashSet<>();
 
 		for (final HU child : getChildHUs())
 		{
-			final Optional<HU> childWithProduct = child.retainProduct(productId);
-			if (childWithProduct.isPresent())
+			final HU retainedChild = child.retain(reference, productId, effectiveReferencingModels);
+			if (retainedChild != null)
 			{
-				result.childHU(childWithProduct.get());
+				result.childHU(retainedChild);
+				newReferencingModels.addAll(retainedChild.getReferencingModels());
 
-				final Quantity childWeightNet = childWithProduct.get().getWeightNet().orElse(null);
-				if (newWeightNet != null && childWeightNet != null)
+				final Quantity retainedChildConfig = retainedChild.getProductQtysInStockUOM().get(productId);
+				if (newProductQtyInStockUOM == null)
 				{
-					newWeightNet = Quantitys.add(UOMConversionContext.of(productId), newWeightNet, childWeightNet);
+					newProductQtyInStockUOM = retainedChildConfig;
+				}
+				else
+				{
+					newProductQtyInStockUOM = Quantitys.add(null, newProductQtyInStockUOM, retainedChildConfig);
+				}
+				
+				if (newWeightNet == null && retainedChild.getWeightNet() != null)
+				{
+					newWeightNet = retainedChild.getWeightNet();
+				}
+				else if (newWeightNet != null && retainedChild.getWeightNet() != null)
+				{
+					newWeightNet = Quantitys.add(null, newWeightNet, retainedChild.getWeightNet());
 				}
 			}
 		}
+		if(newProductQtyInStockUOM == null)
+		{
+			return null; // no product-qty in here. nothing to return.
+		}
+		
+		result
+				.productQtyInStockUOM(productId, newProductQtyInStockUOM)
+				.referencingModels(newReferencingModels)
+				.weightNet(newWeightNet);
 
-		result.weightNet(Optional.ofNullable(newWeightNet));
-		return Optional.of(result.build());
+		final HU resultingHU = result.build();
+		if (hasChildHUs && resultingHU.getChildHUs().isEmpty())
+		{
+			return null; // none of the child-HUs matched our predicate
+		}
+		return resultingHU;
+	}
+
+	@Nullable
+	private Quantity toZeroOrNull(@Nullable final Quantity weightNet)
+	{
+		return weightNet != null ? weightNet.toZero() : null;
 	}
 
 	/**
@@ -180,6 +218,7 @@ public class HU
 
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()
+				.filter(hu -> hu.getProductQtysInStockUOM().containsKey(productId))
 				.map(hu -> hu.getProductQtysInStockUOM().get(productId).toBigDecimal())
 				.sorted()
 				.collect(ImmutableList.toImmutableList());
@@ -192,7 +231,7 @@ public class HU
 	public String getPackagingGTIN(@NonNull final BPartnerId bpartnerId)
 	{
 		final String gtin = packagingGTINs.get(bpartnerId);
-		if(Check.isNotBlank(gtin))
+		if (Check.isNotBlank(gtin))
 		{
 			return gtin;
 		}

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 DROP VIEW IF EXISTS Historical_Sales_Orders_V
 ;
 
@@ -42,6 +20,7 @@ SELECT o.C_Order_ID
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
      , o.externalid                             AS ExternalId
+     , esystem.value                            AS ExternalSystemCode
      , (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
@@ -70,6 +49,7 @@ FROM C_Order o
          LEFT JOIN C_Currency c ON c.C_Currency_ID = o.C_Currency_ID
          LEFT JOIN C_PaymentTerm pterm ON pterm.c_paymentterm_id = o.c_paymentterm_id
          LEFT JOIN AD_InputDataSource dsource ON dsource.ad_inputdatasource_id = o.ad_inputdatasource_id
+         LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = o.externalsystem_id
 WHERE dt.docbasetype = 'SOO'
   AND dt.docsubtype = 'SO'
   AND o.DocStatus IN ('CO')

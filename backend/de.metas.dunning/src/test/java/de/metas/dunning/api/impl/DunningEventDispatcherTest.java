@@ -22,22 +22,21 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
 import de.metas.dunning.spi.impl.MockedDunningCandidateListener.Event;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DunningEventDispatcherTest extends DunningTestBase
 {
@@ -60,15 +59,29 @@ public class DunningEventDispatcherTest extends DunningTestBase
 		final MockedDunningCandidateListener listener1 = new MockedDunningCandidateListener();
 		final MockedDunningCandidateListener listener2 = new MockedDunningCandidateListener();
 
-		Assert.assertEquals("Invalid return type when registering listener1 to event1", true, dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener1));
-		Assert.assertEquals("Invalid return type when registering listener1 to event2", true, dispatcher.registerDunningCandidateListener(EVENT_TestEvent, listener1));
-		Assert.assertEquals("Invalid return type when registering listener1 to event1 again", false,
-				dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener1));
+		assertThat(dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener1))
+				.as("Invalid return type when registering listener1 to event1")
+				.isTrue();
+		
+		assertThat(dispatcher.registerDunningCandidateListener(EVENT_TestEvent, listener1))
+				.as("Invalid return type when registering listener1 to event2")
+				.isTrue();
+		
+		assertThat(dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener1))
+				.as("Invalid return type when registering listener1 to event1 again")
+				.isFalse();
 
-		Assert.assertEquals("Invalid return type when registering listener2 to event1", true, dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener2));
-		Assert.assertEquals("Invalid return type when registering listener2 to event2", true, dispatcher.registerDunningCandidateListener(EVENT_TestEvent, listener2));
-		Assert.assertEquals("Invalid return type when registering listener2 to event1 again", false,
-				dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener2));
+		assertThat(dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener2))
+				.as("Invalid return type when registering listener2 to event1")
+				.isTrue();
+		
+		assertThat(dispatcher.registerDunningCandidateListener(EVENT_TestEvent, listener2))
+				.as("Invalid return type when registering listener2 to event2")
+				.isTrue();
+		
+		assertThat(dispatcher.registerDunningCandidateListener(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, listener2))
+				.as("Invalid return type when registering listener2 to event1 again")
+				.isFalse();
 	}
 
 	@Test
@@ -128,8 +141,13 @@ public class DunningEventDispatcherTest extends DunningTestBase
 		}
 
 		final Event event = listener1.getEvent(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate);
-		Assert.assertNotNull("Event shall be triggered", event);
-		Assert.assertEquals("Invalid trigger count for " + event, threadsCount * runsPerThreadCount, event.getTriggeredCount());
+		assertThat(event)
+				.as("Event shall be triggered")
+				.isNotNull();
+		
+		assertThat(event.getTriggeredCount())
+				.as("Invalid trigger count for " + event)
+				.isEqualTo(threadsCount * runsPerThreadCount);
 	}
 
 	private I_C_Dunning_Candidate createDunningCandidate()

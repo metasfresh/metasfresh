@@ -22,16 +22,13 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.dunning.spi.IDunningCandidateListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-
-import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.dunning.spi.IDunningCandidateListener;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MockedDunningCandidateListener implements IDunningCandidateListener
 {
@@ -129,13 +126,16 @@ public class MockedDunningCandidateListener implements IDunningCandidateListener
 	{
 		final Event event = getEvent(eventName, candidate);
 
-		Assert.assertNotNull("Event " + eventName + " was never triggered for " + candidate, event);
-		Assert.assertThat("Event " + eventName + " shall be triggered at least once for " + candidate, event.getTriggeredCount(), greaterThanOrEqualTo(1));
-	}
+		assertThat(event).as("Event " + eventName + " was not triggered for " + candidate).isNotNull();
+
+		assertThat(event.getTriggeredCount())
+				.as("Event " + eventName + " shall be triggered at least once for " + candidate)
+				.isGreaterThanOrEqualTo(1);
+		}
 
 	public void assertNotTriggered(final String eventName, final I_C_Dunning_Candidate candidate)
 	{
 		final Event event = getEvent(eventName, candidate);
-		Assert.assertNull("Event " + eventName + " was triggered for " + candidate, event);
+		assertThat(event).as("Event " + eventName + " was triggered for " + candidate).isNull();
 	}
 }

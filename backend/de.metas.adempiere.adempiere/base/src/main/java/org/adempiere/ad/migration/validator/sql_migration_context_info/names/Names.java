@@ -1,9 +1,9 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info.names;
 
-import de.metas.i18n.AdMessageId;
-import de.metas.process.AdProcessId;
 import de.metas.ad_reference.ADRefListId;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.AdMessageId;
+import de.metas.process.AdProcessId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -11,11 +11,11 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdUIColumnId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 import org.adempiere.ad.element.api.AdUISectionId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.window.api.UIElementGroupId;
 import org.compiere.util.DB;
 
 import java.sql.ResultSet;
@@ -318,7 +318,7 @@ public final class Names
 	{
 		private static final String PREFIX = "uieg_";
 
-		public static ADUIElementGroupNameFQ retrieve(@NonNull final UIElementGroupId uiElementGroupId)
+		public static ADUIElementGroupNameFQ retrieve(@NonNull final AdUIElementGroupId uiElementGroupId)
 		{
 			final ADUIElementGroupNameFQ uiElementGroupNameFQ = DB.retrieveFirstRowOrNull(
 					"SELECT " + ADUIElementGroupNameFQ_Loader.sqlSelect("eg")
@@ -351,7 +351,7 @@ public final class Names
 		private static ADUIElementGroupNameFQ retrieve(final ResultSet rs) throws SQLException
 		{
 			return ADUIElementGroupNameFQ.builder()
-					.uiElementGroupId(UIElementGroupId.ofRepoId(rs.getInt(PREFIX + "AD_UI_ElementGroup_ID")))
+					.uiElementGroupId(AdUIElementGroupId.ofRepoId(rs.getInt(PREFIX + "AD_UI_ElementGroup_ID")))
 					.name(rs.getString(PREFIX + "Name"))
 					.uiColumnName(ADUIColumnNameFQ_Loader.retrieve(rs))
 					.build();

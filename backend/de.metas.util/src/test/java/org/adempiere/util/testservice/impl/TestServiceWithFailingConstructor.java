@@ -30,7 +30,6 @@ public class TestServiceWithFailingConstructor implements ITestServiceWithFailin
 
 	public TestServiceWithFailingConstructor()
 	{
-		super();
 		throw new RuntimeException("Test fail on init: " + getClass());
 	}
 

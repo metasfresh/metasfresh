@@ -1,28 +1,26 @@
 package de.metas.procurement.base.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import de.metas.product.ProductId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -128,12 +126,12 @@ public class PMMProductBL implements IPMMProductBL
 	@Nullable
 	@Override
 	public I_PMM_Product getPMMProductForDateProductAndASI(final Date date,
-			@NonNull final ProductId productId,
-			@Nullable final BPartnerId partnerId,
-			final int huPIPId,
-			final I_M_AttributeSetInstance asi)
+														   @NonNull final ProductId productId,
+														   @Nullable final BPartnerId partnerId,
+														   final int huPIPId,
+														   final I_M_AttributeSetInstance asi)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 		final IPMMProductDAO productDAO = Services.get(IPMMProductDAO.class);
 
 		final List<I_PMM_Product> pmmProducts = productDAO.retrieveForDateAndProduct(date, productId, partnerId, huPIPId);
@@ -144,7 +142,7 @@ public class PMMProductBL implements IPMMProductBL
 			return null;
 		}
 
-		final List<I_M_AttributeInstance> instances = attributeDAO.retrieveAttributeInstances(asi);
+		final List<I_M_AttributeInstance> instances = asiBL.getAttributeInstances(asi);
 
 		// this shows which was the maximum number of instances set and fit in both the lists
 		// if it stays -1, there are no suitable pmm products
@@ -157,7 +155,7 @@ public class PMMProductBL implements IPMMProductBL
 		{
 
 			final I_M_AttributeSetInstance pmmASI = pmmProduct.getM_AttributeSetInstance();
-			final List<I_M_AttributeInstance> pmmAttributeInstances = attributeDAO.retrieveAttributeInstances(pmmASI);
+			final List<I_M_AttributeInstance> pmmAttributeInstances = asiBL.getAttributeInstances(pmmASI);
 
 			final int instancesMatchings = countInstanceMatchings(pmmAttributeInstances, instances);
 
@@ -227,7 +225,7 @@ public class PMMProductBL implements IPMMProductBL
 					break;
 				}
 
-				if (!Objects.equals(pmmStringValue,instanceStringValue))
+				if (!Objects.equals(pmmStringValue, instanceStringValue))
 				{
 					// not valid
 					isValid = false;

@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -63,10 +63,10 @@ public class M_HU_Reservation_StepDef
 	public void reserveHUToOrder(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
-			final I_C_OrderLine orderLine = row.getAsIdentifier("C_OrderLine_ID").lookupIn(orderLineTable);
+			final I_C_OrderLine orderLine = row.getAsIdentifier("C_OrderLine_ID").lookupNotNullIn(orderLineTable);
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 
-			final I_M_HU hu = row.getAsIdentifier("M_HU_ID").lookupIn(huTable);
+			final I_M_HU hu = row.getAsIdentifier("M_HU_ID").lookupNotNullIn(huTable);
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
 			final I_M_HU_Storage huStorageRecord = getHUStorageRecord(huId);

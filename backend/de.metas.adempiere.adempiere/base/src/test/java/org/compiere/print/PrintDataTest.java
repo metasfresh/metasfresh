@@ -23,20 +23,19 @@ package org.compiere.print;
  */
 
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.Test;
 
 public class PrintDataTest
 {
 	/**
-	 * Lagacy test to make sure the XML is correcty generated and parsed.
-	 * 
-	 * @throws IOException
+	 * Legacy test to make sure the XML is correcty generated and parsed.
 	 */
 	@Test
 	public void test_parseXml() throws IOException

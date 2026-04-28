@@ -50,15 +50,16 @@ public class MatchInvoiceRepository
 	}
 
 	public I_M_MatchInv getRecordByIdOutOfTrx(@NonNull final MatchInvId matchInvId)
+	{
+		final I_M_MatchInv record = InterfaceWrapperHelper.loadOutOfTrx(matchInvId, I_M_MatchInv.class);
+		if (record == null)
 		{
-			final I_M_MatchInv record = InterfaceWrapperHelper.loadOutOfTrx(matchInvId, I_M_MatchInv.class);
-			if (record == null)
-			{
-				throw new AdempiereException("No Match Invoice found for " + matchInvId);
-			}
+			throw new AdempiereException("No Match Invoice found for " + matchInvId);
+		}
 
-			return record;
+		return record;
 	}
+
 	public static MatchInv fromRecord(@NonNull final I_M_MatchInv record)
 	{
 		final MatchInvType type = MatchInvType.ofCode(record.getType());
@@ -125,6 +126,14 @@ public class MatchInvoiceRepository
 				.map(MatchInvoiceRepository::fromRecord);
 	}
 
+	public MatchInv firstOnly(@NonNull final MatchInvQuery query)
+	{
+		final I_M_MatchInv record = toSqlQuery(query)
+				.create()
+				.firstOnlyNotNull();
+		return MatchInvoiceRepository.fromRecord(record);
+	}
+
 	public ImmutableList<MatchInv> list(@NonNull final MatchInvQuery query)
 	{
 		return toSqlQuery(query)
@@ -166,6 +175,10 @@ public class MatchInvoiceRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_Type, query.getType());
 		}
+		if (query.getInvoiceId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, query.getInvoiceId());
+		}
 		if (query.getInvoiceAndLineId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, query.getInvoiceAndLineId());
@@ -204,7 +217,7 @@ public class MatchInvoiceRepository
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()
-				.listIds(MatchInvId::ofRepoId);
+				.idsAsSet(MatchInvId::ofRepoId);
 	}
 
 	public Set<MatchInvId> getIdsProcessedButNotPostedByInvoiceLineIds(@NonNull final Set<InvoiceAndLineId> invoiceAndLineIds)
@@ -221,6 +234,6 @@ public class MatchInvoiceRepository
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()
-				.listIds(MatchInvId::ofRepoId);
+				.idsAsSet(MatchInvId::ofRepoId);
 	}
 }

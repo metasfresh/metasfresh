@@ -12,7 +12,6 @@
 	<artifactId>de.metas.acct.webui</artifactId>
 
 	<properties>
-		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>

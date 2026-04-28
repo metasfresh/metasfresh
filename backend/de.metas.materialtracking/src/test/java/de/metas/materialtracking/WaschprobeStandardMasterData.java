@@ -25,7 +25,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -217,7 +217,7 @@ public class WaschprobeStandardMasterData
 		final int actualSize = actual.size();
 		if (expectedSize != actualSize)
 		{
-			Assert.fail("Invalid size"
+			Assertions.fail("Invalid size"
 					+ "\n Expected Items: " + expected
 					+ "\n Actual Items: " + actual);
 		}
@@ -228,7 +228,7 @@ public class WaschprobeStandardMasterData
 			final IProductionMaterial actualItem = actual.get(i);
 			if (!ProductionMaterialComparator.instance.equals(expectedItem, actualItem))
 			{
-				Assert.fail("Invalid item at index " + i
+				Assertions.fail("Invalid item at index " + i
 						+ "\n Expected item: " + expectedItem
 						+ "\n Actual item: " + actualItem
 						+ "\n Expected Items: " + expected

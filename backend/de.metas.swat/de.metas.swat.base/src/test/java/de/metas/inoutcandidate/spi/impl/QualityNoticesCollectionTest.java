@@ -28,10 +28,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.util.StringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class QualityNoticesCollectionTest
 {
@@ -66,10 +65,10 @@ public class QualityNoticesCollectionTest
 					+ "\n Expected string: " + qualityNoticesStringExpected
 					+ "\n Actual string: " + qualityNoticesStringActual
 					+ "\n Added notices (" + addedNotices.size() + "): " + addedNotices;
-			Assert.assertEquals(message,
-					qualityNoticesStringExpected, // expected
+			Assertions.assertEquals(
+					qualityNoticesStringExpected,  // expected
 					qualityNoticesStringActual // actual
-			);
+			, message);
 
 			//
 			// Test re-parsing the QualityNoticesString
@@ -85,10 +84,10 @@ public class QualityNoticesCollectionTest
 			final QualityNoticesCollection collector = new QualityNoticesCollection();
 			collector.addQualityNotice(nullString);
 
-			Assert.assertEquals("Invalid built qualityNoticesString for NullString=\"'" + nullString + "\'",
-					"", // expected
+			Assertions.assertEquals(
+					"",  // expected
 					collector.asQualityNoticesString() // actual
-			);
+			, "Invalid built qualityNoticesString for NullString=\"'" + nullString + "\'");
 		}
 	}
 
@@ -107,7 +106,7 @@ public class QualityNoticesCollectionTest
 
 		notices.addQualityNotice("note2");
 
-		Assert.assertEquals("snapshot shall not be modified", noticesSnapshotExpected, noticesSnapshot);
+		Assertions.assertEquals( noticesSnapshotExpected,  noticesSnapshot, "snapshot shall not be modified");
 
 	}
 
@@ -127,10 +126,10 @@ public class QualityNoticesCollectionTest
 				+ "\n Expected string: " + qualityNoticesStringExpected
 				+ "\n Actual string: " + qualityNoticesStringActual
 				+ "\n";
-		Assert.assertEquals(message,
-				qualityNoticesStringExpected, // expected
+		Assertions.assertEquals(
+				qualityNoticesStringExpected,  // expected
 				qualityNoticesStringActual // actual
-		);
+		, message);
 
 	}
 

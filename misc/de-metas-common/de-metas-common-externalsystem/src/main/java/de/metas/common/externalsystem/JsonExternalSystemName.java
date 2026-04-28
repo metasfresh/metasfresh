@@ -23,7 +23,6 @@
 package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,5 +43,5 @@ public class JsonExternalSystemName
 	{
 		this.name = name;
 	}
-	
+
 }

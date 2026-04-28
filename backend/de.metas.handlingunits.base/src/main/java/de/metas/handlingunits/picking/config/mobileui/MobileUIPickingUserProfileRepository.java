@@ -22,26 +22,33 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -60,9 +67,16 @@ public class MobileUIPickingUserProfileRepository
 			.tableName(I_MobileUI_UserProfile_Picking_Job.Table_Name)
 			.build();
 
-	public PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId)
+	@NonNull
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId)
 	{
 		return getProfile().getPickingJobOptions(customerId, getPickingJobOptionsCollection());
+	}
+
+	@NonNull
+	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId)
+	{
+		return getProfile().getAggregationType(customerId, getPickingJobOptionsCollection());
 	}
 
 	private PickingJobOptionsCollection getPickingJobOptionsCollection()
@@ -88,6 +102,10 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.isAllowPickingAnyCustomer(profileRecord.isAllowAnyCustomer())
+				.isFilterByBarcode(profileRecord.isFilterByBarcode())
+				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
+				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
+				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -98,18 +116,55 @@ public class MobileUIPickingUserProfileRepository
 	private static PickingJobOptions extractPickingJobOptions(final I_MobileUI_UserProfile_Picking profileRecord)
 	{
 		return PickingJobOptions.builder()
+				.aggregationType(PickingJobAggregationType.ofCode(profileRecord.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
-				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
-				.isAllowNewTU(profileRecord.isAllowNewTU())
+				.allowedPickToStructures(extractAllowedPickToStructures(profileRecord))
+				.pickAttributes(extractPickAttributes(profileRecord))
+				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
+				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
+				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
+				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
+				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
 				.build();
+	}
+
+	private static PickAttributesConfig extractPickAttributes(final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		return PickAttributesConfig.builder()
+				.attributeToRead(PickAttribute.BestBeforeDate, profileRecord.isBestBeforeDate())
+				.attributeToRead(PickAttribute.LotNo, profileRecord.isLotNumber())
+				.build();
+	}
+
+	private static AllowedPickToStructures extractAllowedPickToStructures(final I_MobileUI_UserProfile_Picking record)
+	{
+		final HashSet<PickToStructure> allowed = new HashSet<>();
+		if (record.isAllowPickToStructure_LU_TU())
+		{
+			allowed.add(PickToStructure.LU_TU);
+		}
+		if (record.isAllowPickToStructure_TU())
+		{
+			allowed.add(PickToStructure.TU);
+		}
+		if (record.isAllowPickToStructure_LU_CU())
+		{
+			allowed.add(PickToStructure.LU_CU);
+		}
+		if (record.isAllowPickToStructure_CU())
+		{
+			allowed.add(PickToStructure.CU);
+		}
+		return AllowedPickToStructures.ofAllowed(allowed);
 	}
 
 	@Nullable
@@ -150,47 +205,110 @@ public class MobileUIPickingUserProfileRepository
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
-	public void save(@NonNull final MobileUIPickingUserProfile profile)
+	public void update(@NonNull UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
-		//
-		// Header record
-		final MobileUIPickingUserProfileId profileId;
-		{
-			I_MobileUI_UserProfile_Picking profileRecord = retrieveProfileRecord();
-			if (profileRecord == null)
-			{
-				profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
-			}
-			profileRecord.setIsActive(true);
-			profileRecord.setName(profile.getName());
-			profileRecord.setIsAllowAnyCustomer(profile.isAllowPickingAnyCustomer());
-			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
-			InterfaceWrapperHelper.saveRecord(profileRecord);
-			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());
-		}
-
-		//
-		// BPartner configs
-		save_BPartnerConfigs(profile, profileId);
+		final MobileUIPickingUserProfile profile = getProfile();
+		final MobileUIPickingUserProfile profileChanged = updater.apply(profile);
+		save(profileChanged);
 	}
 
-	private void save_BPartnerConfigs(final @NonNull MobileUIPickingUserProfile profile, final MobileUIPickingUserProfileId profileId)
+	private void save(@NonNull final MobileUIPickingUserProfile profile)
+	{
+		final MobileUIPickingUserProfileId profileId = save_Header(profile);
+		save_CustomerConfigs(profile.getCustomerConfigs(), profileId);
+		save_Filters(profile.getFilterGroupsInOrder(), profileId);
+		save_Fields(profile.getFields(), profileId);
+	}
+
+	@NonNull
+	private MobileUIPickingUserProfileId save_Header(final @NotNull MobileUIPickingUserProfile profile)
+	{
+		I_MobileUI_UserProfile_Picking profileRecord = retrieveProfileRecord();
+		if (profileRecord == null)
+		{
+			profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
+		}
+		updateRecord(profileRecord, profile);
+		InterfaceWrapperHelper.saveRecord(profileRecord);
+
+		return MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());
+	}
+
+	private void save_CustomerConfigs(@NonNull final PickingCustomerConfigsCollection customerConfigs, final MobileUIPickingUserProfileId profileId)
 	{
 		final HashMap<BPartnerId, I_MobileUI_UserProfile_Picking_BPartner> profileBPartnerRecords = streamProfileBPartnerRecords(profileId)
 				.collect(GuavaCollectors.toHashMapByKey(MobileUIPickingUserProfileRepository::extractBPartnerId));
-		for (final PickingCustomerConfig bpartnerConfig : profile.getCustomerConfigs())
+		for (final PickingCustomerConfig customerConfig : customerConfigs)
 		{
-			I_MobileUI_UserProfile_Picking_BPartner bpartnerConfigRecord = profileBPartnerRecords.remove(bpartnerConfig.getCustomerId());
+			I_MobileUI_UserProfile_Picking_BPartner bpartnerConfigRecord = profileBPartnerRecords.remove(customerConfig.getCustomerId());
 			if (bpartnerConfigRecord == null)
 			{
 				bpartnerConfigRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_BPartner.class);
 				bpartnerConfigRecord.setMobileUI_UserProfile_Picking_ID(profileId.getRepoId());
 			}
-			updateRecord(bpartnerConfigRecord, bpartnerConfig);
+			updateRecord(bpartnerConfigRecord, customerConfig);
 			InterfaceWrapperHelper.saveRecord(bpartnerConfigRecord);
 		}
 
 		InterfaceWrapperHelper.deleteAll(profileBPartnerRecords.values());
+	}
+
+	private void save_Filters(@NonNull final ImmutableList<PickingJobFacetGroup> filterGroupsInOrder, final MobileUIPickingUserProfileId profileId)
+	{
+		final HashMap<PickingJobFacetGroup, I_PickingProfile_Filter> filterRecords = streamFilterRecords(profileId)
+				.collect(GuavaCollectors.toHashMapByKey(MobileUIPickingUserProfileRepository::extractPickingJobFacetGroup));
+		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+		for (final PickingJobFacetGroup filterGroup : filterGroupsInOrder)
+		{
+			I_PickingProfile_Filter filterRecord = filterRecords.remove(filterGroup);
+			if (filterRecord == null)
+			{
+				filterRecord = InterfaceWrapperHelper.newInstance(I_PickingProfile_Filter.class);
+				filterRecord.setMobileUI_UserProfile_Picking_ID(profileId.getRepoId());
+			}
+			filterRecord.setIsActive(true);
+			filterRecord.setSeqNo(seqNoProvider.getAndIncrement().toInt());
+			filterRecord.setFilterType(filterGroup.getCode());
+			InterfaceWrapperHelper.saveRecord(filterRecord);
+		}
+
+		InterfaceWrapperHelper.deleteAll(filterRecords.values());
+	}
+
+	private void save_Fields(final @NonNull ImmutableList<PickingJobField> fields, final MobileUIPickingUserProfileId profileId)
+	{
+		final ArrayListMultimap<PickingJobFieldType, I_PickingProfile_PickingJobConfig> recordsByFieldType = streamFieldRecords(profileId)
+				.collect(GuavaCollectors.toArrayListMultimapByKey(record -> PickingJobFieldType.ofCode(record.getPickingJobField())));
+
+		for (final PickingJobField field : fields)
+		{
+			final PickingJobFieldType fieldType = field.getField();
+			final I_PickingProfile_PickingJobConfig record;
+			if (recordsByFieldType.containsKey(fieldType))
+			{
+				record = recordsByFieldType.get(fieldType).get(0);
+				recordsByFieldType.remove(fieldType, record);
+			}
+			else
+			{
+				record = InterfaceWrapperHelper.newInstance(I_PickingProfile_PickingJobConfig.class);
+				record.setMobileUI_UserProfile_Picking_ID(profileId.getRepoId());
+			}
+
+			updateRecord(record, field);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+
+		InterfaceWrapperHelper.deleteAll(recordsByFieldType.values());
+	}
+
+	private void updateRecord(final I_PickingProfile_PickingJobConfig record, final PickingJobField from)
+	{
+		record.setPickingJobField(from.getField().getCode());
+		record.setSeqNo(from.getSeqNo());
+		record.setIsDisplayInSummary(from.isShowInSummary());
+		record.setIsDisplayInDetailed(from.isShowInDetailed());
+		record.setFormatPattern(from.getPattern());
 	}
 
 	private static void updateRecord(@NonNull final I_MobileUI_UserProfile_Picking_BPartner record, @NonNull final PickingCustomerConfig from)
@@ -200,44 +318,93 @@ public class MobileUIPickingUserProfileRepository
 		record.setMobileUI_UserProfile_Picking_Job_ID(PickingJobOptionsId.toRepoId(from.getPickingJobOptionsId()));
 	}
 
+	private static void updateRecord(final I_MobileUI_UserProfile_Picking record, final @NonNull MobileUIPickingUserProfile from)
+	{
+		record.setIsActive(true);
+		record.setName(from.getName());
+		record.setIsAllowAnyCustomer(from.isAllowPickingAnyCustomer());
+		record.setIsFilterByBarcode(from.isFilterByBarcode());
+		record.setIsActiveWorkplaceRequired(from.isActiveWorkplaceRequired());
+		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
+		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
+		updateRecord(record, from.getDefaultPickingJobOptions());
+	}
+
 	private static void updateRecord(@NonNull final I_MobileUI_UserProfile_Picking record, @NonNull final PickingJobOptions from)
 	{
-		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
+		record.setPickingJobAggregationType(Objects.requireNonNull(from.getAggregationType()).getCode());
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
-		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
-		record.setIsAllowNewTU(from.isAllowNewTU());
-		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
-		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
+		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
+		updateRecord(record, from.getAllowedPickToStructures());
+		updateRecord(record, from.getPickAttributes());
+		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
+		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
+		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
+		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
+		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
+		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
+		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
+	}
+
+	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
+	{
+		record.setAllowPickToStructure_LU_TU(from.isStrictlyAllowed(PickToStructure.LU_TU));
+		record.setAllowPickToStructure_TU(from.isStrictlyAllowed(PickToStructure.TU));
+		record.setAllowPickToStructure_LU_CU(from.isStrictlyAllowed(PickToStructure.LU_CU));
+		record.setAllowPickToStructure_CU(from.isStrictlyAllowed(PickToStructure.CU));
+	}
+
+	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final PickAttributesConfig from)
+	{
+		record.setBestBeforeDate(from.isReadAttribute(PickAttribute.BestBeforeDate));
+		record.setLotNumber(from.isReadAttribute(PickAttribute.LotNo));
 	}
 
 	@NonNull
 	private PickingFiltersList retrieveFilters(@NonNull final MobileUIPickingUserProfileId profileId)
 	{
+		return streamFilterRecords(profileId)
+				.map(record -> PickingFilter.of(extractPickingJobFacetGroup(record), record.getSeqNo()))
+				.collect(PickingFiltersList.collect());
+	}
+
+	private static @NonNull PickingJobFacetGroup extractPickingJobFacetGroup(final I_PickingProfile_Filter record)
+	{
+		return PickingJobFacetGroup.ofCode(record.getFilterType());
+	}
+
+	private Stream<I_PickingProfile_Filter> streamFilterRecords(final @NonNull MobileUIPickingUserProfileId profileId)
+	{
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
 				.create()
-				.stream()
-				.map(record -> PickingFilter.of(PickingJobFacetGroup.ofCode(record.getFilterType()), record.getSeqNo()))
-				.collect(PickingFiltersList.collect());
+				.stream();
 	}
 
 	@NonNull
 	private ImmutableList<PickingJobField> retrieveFields(@NonNull final MobileUIPickingUserProfileId profileId)
 	{
-		final ImmutableList<PickingJobField> fields = queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
-				.create()
-				.stream()
+		final ImmutableList<PickingJobField> fields = streamFieldRecords(profileId)
 				.map(MobileUIPickingUserProfileRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		return !fields.isEmpty() ? fields : MobileUIPickingUserProfile.DEFAULT.getFields();
+	}
+
+	private Stream<I_PickingProfile_PickingJobConfig> streamFieldRecords(final @NonNull MobileUIPickingUserProfileId profileId)
+	{
+		return queryBL.createQueryBuilder(I_PickingProfile_PickingJobConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PickingProfile_PickingJobConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				.create()
+				.stream();
 	}
 
 	private static PickingJobField fromRecord(final I_PickingProfile_PickingJobConfig record)
@@ -266,19 +433,36 @@ public class MobileUIPickingUserProfileRepository
 	{
 		final PickingJobOptionsId pickingJobOptionsId = PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
 		final PickingJobOptions pickingJobOptions = PickingJobOptions.builder()
+				.aggregationType(PickingJobAggregationType.ofNullableCode(record.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
-				.isPickWithNewLU(record.isPickingWithNewLU())
-				.isAllowNewTU(record.isAllowNewTU())
+				.allowedPickToStructures(extractAllowedPickToStructures(record))
+				.pickAttributes(PickAttributesConfig.UNKNOWN)
+				.isShipOnCloseLU(record.isShipOnCloseLU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(record.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(record.isShowConfirmationPromptWhenOverPick())
+				.isShowLastPickedBestBeforeDateForLines(record.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
+				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();
 
 		return GuavaCollectors.entry(pickingJobOptionsId, pickingJobOptions);
 	}
+
+	private static AllowedPickToStructures extractAllowedPickToStructures(final I_MobileUI_UserProfile_Picking_Job record)
+	{
+		final HashMap<PickToStructure, Boolean> map = new HashMap<>();
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_LU_TU()).ifPresent(allowed -> map.put(PickToStructure.LU_TU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_TU()).ifPresent(allowed -> map.put(PickToStructure.TU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_LU_CU()).ifPresent(allowed -> map.put(PickToStructure.LU_CU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_CU()).ifPresent(allowed -> map.put(PickToStructure.CU, allowed));
+		return AllowedPickToStructures.ofMap(map);
+	}
+
 }

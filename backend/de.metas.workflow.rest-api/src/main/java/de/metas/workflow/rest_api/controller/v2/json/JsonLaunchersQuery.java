@@ -22,9 +22,9 @@
 
 package de.metas.workflow.rest_api.controller.v2.json;
 
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.mobile.application.MobileApplicationId;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,9 +39,12 @@ import java.util.Set;
 public class JsonLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
-	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable ScannedCode filterByQRCode;
 	@Nullable String filterByDocumentNo;
+	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
+	boolean excludeAlreadyStarted;
+	@Nullable Integer limit;
 
 	boolean countOnly;
 }

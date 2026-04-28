@@ -26,12 +26,13 @@ package de.metas.cache.interceptor.testservices.impl;
 import java.util.UUID;
 
 import org.adempiere.util.proxy.Cached;
-import org.junit.Ignore;
+
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.interceptor.testservices.ITestServiceWithInvalidMethod;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class TestServiceWithInvalidMethod implements ITestServiceWithInvalidMethod
 {
 	@Override

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,9 +32,9 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.product.processor.GetProductVariantParentProcessor;
-import de.metas.camel.externalsystems.shopware6.product.processor.ProductUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.GetProductsProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductPriceProcessor;
+import de.metas.camel.externalsystems.shopware6.product.processor.ProductUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductVariantUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.unit.GetUnitsRequest;
 import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
@@ -105,7 +105,7 @@ public class GetProductsRouteBuilder extends RouteBuilder
 		from(direct(GET_PRODUCTS_ROUTE_ID))
 				.routeId(GET_PRODUCTS_ROUTE_ID)
 				.log("Route invoked")
-				.streamCaching()
+				.streamCache("true")
 
 				.process(this::buildAndAttachRouteContext).id(ATTACH_CONTEXT_PROCESSOR_ID)
 

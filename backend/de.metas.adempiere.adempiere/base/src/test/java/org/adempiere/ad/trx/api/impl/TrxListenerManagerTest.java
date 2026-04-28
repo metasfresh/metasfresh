@@ -11,11 +11,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.trxConstraints.api.impl.TrxConstraintsBL;
 import org.compiere.util.Trx;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ import de.metas.util.Services;
 public class TrxListenerManagerTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

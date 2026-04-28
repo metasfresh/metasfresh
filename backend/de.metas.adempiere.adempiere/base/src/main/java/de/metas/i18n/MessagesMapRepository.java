@@ -43,7 +43,7 @@ class MessagesMapRepository
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final String sql = "SELECT"
-				+ " m.AD_Message_ID, m.Value, m.MsgText, m.MsgTip,"
+				+ " m.AD_Message_ID, m.Value, m.MsgText, m.MsgTip, m.ErrorCode,"
 				+ " trl.AD_Language, trl.MsgText as trl_MsgText, trl.MsgTip as trl_MsgTip"
 				+ " FROM AD_Message m"
 				+ " LEFT OUTER JOIN AD_Message_Trl trl on trl.AD_Message_ID=m.AD_Message_ID"
@@ -63,6 +63,7 @@ class MessagesMapRepository
 			AdMessageKey currentAdMessage = null;
 			ImmutableTranslatableString.ImmutableTranslatableStringBuilder msgTextBuilder = null;
 			ImmutableTranslatableString.ImmutableTranslatableStringBuilder msgTipBuilder = null;
+			String errorCode = null;
 
 			while (rs.next())
 			{
@@ -71,11 +72,12 @@ class MessagesMapRepository
 				{
 					if (currentAdMessageId != null)
 					{
-						list.add(Message.ofTextAndTip(currentAdMessageId, currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build()));
+						list.add(Message.ofTextTipAndErrorCode(currentAdMessageId, currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build(), errorCode));
 						currentAdMessageId = null;
 						currentAdMessage = null;
 						msgTextBuilder = null;
 						msgTipBuilder = null;
+						errorCode = null;
 					}
 				}
 
@@ -85,6 +87,7 @@ class MessagesMapRepository
 					currentAdMessage = AdMessageKey.of(rs.getString("Value"));
 					msgTextBuilder = ImmutableTranslatableString.builder().defaultValue(normalizeToJavaMessageFormat(rs.getString("MsgText")));
 					msgTipBuilder = ImmutableTranslatableString.builder().defaultValue(normalizeToJavaMessageFormat(rs.getString("MsgTip")));
+					errorCode = rs.getString("ErrorCode");
 				}
 
 				final String adLanguage = rs.getString("AD_Language");
@@ -98,7 +101,7 @@ class MessagesMapRepository
 
 			if (currentAdMessageId != null)
 			{
-				list.add(Message.ofTextAndTip(currentAdMessageId, currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build()));
+				list.add(Message.ofTextTipAndErrorCode(currentAdMessageId, currentAdMessage, msgTextBuilder.build(), msgTipBuilder.build(), errorCode));
 			}
 
 			final MessagesMap result = new MessagesMap(list);

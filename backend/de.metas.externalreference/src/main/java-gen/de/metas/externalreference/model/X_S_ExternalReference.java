@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1996831869L;
+	private static final long serialVersionUID = 1215790119L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -58,37 +58,34 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 		return get_ValueAsString(COLUMNNAME_ExternalReferenceURL);
 	}
 
-	/** 
-	 * ExternalSystem AD_Reference_ID=541117
-	 * Reference name: ExternalSystem
-	 */
-	public static final int EXTERNALSYSTEM_AD_Reference_ID=541117;
-	/** Github = Github */
-	public static final String EXTERNALSYSTEM_Github = "Github";
-	/** Everhour = Everhour */
-	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
-	/** ALBERTA = ALBERTA */
-	public static final String EXTERNALSYSTEM_ALBERTA = "ALBERTA";
-	/** Shopware6 = Shopware6 */
-	public static final String EXTERNALSYSTEM_Shopware6 = "Shopware6";
-	/** Other = Other */
-	public static final String EXTERNALSYSTEM_Other = "Other";
-	/** WooCommerce = WooCommerce */
-	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
-	/** GRSSignum = GRSSignum */
-	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
-	/** LeichUndMehl = LeichUndMehl */
-	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
 	@Override
-	public void setExternalSystem (final java.lang.String ExternalSystem)
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
 	{
-		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
+		if (ExternalSystem_Config_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
 	}
 
 	@Override
-	public java.lang.String getExternalSystem() 
+	public int getExternalSystem_Config_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override

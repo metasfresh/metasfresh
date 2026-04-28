@@ -35,6 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_PP_ComponentGenerator;
 import org.compiere.model.I_PP_ComponentGenerator_Param;
+import org.compiere.model.X_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -237,6 +238,7 @@ class PasswordGeneratorTest
 			final I_M_Attribute po = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 			po.setName(attributeCode.getCode());
 			po.setValue(attributeCode.getCode());
+			po.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
 			InterfaceWrapperHelper.save(po);
 		}
 	}

@@ -1,50 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-
-import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
-import { clearLaunchers, populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
-import { getApplicationLaunchers, getApplicationLaunchersFilters } from '../../reducers/launchers';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useFacets, useFilters } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
-import { getTokenFromState } from '../../reducers/appHandler';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
-import { toQRCodeDisplayable, toQRCodeString } from '../../utils/qrCode/hu';
-import WFLaunchersFilterButton from './WFLaunchersFilterButton';
+import { toQRCodeDisplayable } from '../../utils/qrCode/hu';
+import WFLaunchersFilterButton from './filters/WFLaunchersFilterButton';
 import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
-import { appLaunchersFilterLocation } from '../../routes/launchers';
+import { appLaunchersBarcodeScannerLocation, appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
 import { useApplicationInfo } from '../../reducers/applications';
 import { useCurrentWorkstation } from '../../api/workstation';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
+import { useLaunchers } from './useLaunchers';
+import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
+import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
+import { useCurrentTrolley } from '../../api/trolley';
 
 const WFLaunchersScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
-
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
   const dispatch = useDispatch();
+  const { url, applicationId } = useMobileLocation();
 
-  const {
-    url,
-    params: { applicationId },
-  } = useRouteMatch();
-
-  const [currentPanel, setCurrentPanel] = useState('default');
-  const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
+  const { showFilterByQRCode, showFilters } = useApplicationInfo({ applicationId });
   const { isWorkstationLoading, isWorkstationRequired, workstation, setWorkstationByQRCode } = useCurrentWorkstation({
     applicationId,
   });
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
     applicationId,
   });
-  const { filterByDocumentNo, facets } = useFilters({ applicationId });
-  const { isLaunchersLoading, launchers, filterByQRCode, setFilterByQRCode } = useLaunchers({
+  const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode, clearTrolley } = useCurrentTrolley({
     applicationId,
-    requiresLaunchersQRCodeFilter,
-    filterByDocumentNo,
+  });
+  const filters = useFilters({ applicationId });
+  const facets = useFacets({ applicationId });
+  const { isLaunchersLoading, launchers, filterByQRCode, actions } = useLaunchers({
+    applicationId,
+    showFilterByQRCode,
+    filters,
     facets,
-    isEnabled: !isWorkplaceLoading,
+    isEnabled: !isWorkplaceLoading && !isTrolleyLoading,
   });
 
   const workplaceName = workplace?.name;
@@ -110,28 +108,49 @@ const WFLaunchersScreen = () => {
   }
 
   //
+  // Trolley
+  if (isTrolleyLoading) {
+    return (
+      <div className="container launchers-container">
+        <Spinner />
+      </div>
+    );
+  } else if (isTrolleyRequired && !trolley) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => setTrolleyByScannedCode(scannedBarcode)}
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
+          continuousRunning={true}
+        />
+      </div>
+    );
+  }
+
+  //
   // Launchers
   return (
     <div className="container launchers-container">
-      {currentPanel === 'scanQRCode' && (
-        <BarcodeScannerComponent
-          onResolvedResult={({ scannedBarcode }) => {
-            setFilterByQRCode(scannedBarcode);
-            setCurrentPanel('default');
-          }}
+      {showFilterByQRCode && (
+        <ButtonWithIndicator
+          typeFASIconName="fa-solid fa-barcode"
+          caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
+          onClick={() => history.push(appLaunchersBarcodeScannerLocation({ applicationId }))}
+          testId="filterByQRCode-button"
         />
       )}
-      {currentPanel === 'default' && requiresLaunchersQRCodeFilter && (
-        <div className="mb-5">
-          <ButtonWithIndicator
-            caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
-            onClick={() => setCurrentPanel('scanQRCode')}
-          />
-        </div>
+      {isTrolleyRequired && (
+        <ButtonWithIndicator
+          additionalCssClass="action-button"
+          typeFASIconName="fa-solid fa-cart-shopping"
+          caption={trolley?.caption ?? trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
+          onClick={() => clearTrolley()}
+          testId="scanTrolley-button"
+        />
       )}
-      {currentPanel === 'default' && showFilters && !requiresLaunchersQRCodeFilter && (
+      {showFilters && (
         <WFLaunchersFilterButton
-          filterByDocumentNo={filterByDocumentNo}
+          filters={filters}
           facets={facets}
           onClick={() => {
             history.push(appLaunchersFilterLocation({ applicationId }));
@@ -139,18 +158,23 @@ const WFLaunchersScreen = () => {
         />
       )}
       <br />
-      {currentPanel === 'default' &&
-        launchers &&
+      {applicationId === APPLICATION_ID_Distribution && (
+        <DistributionJobsListActions actions={actions} disabled={isLaunchersLoading} />
+      )}
+      {launchers &&
         launchers.map((launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          const id = `launcher-${index}-button`;
           return (
             <WFLauncherButton
-              key={key}
+              key={id}
               applicationId={launcher.applicationId}
               caption={launcher.caption}
               startedWFProcessId={launcher.startedWFProcessId}
               wfParameters={launcher.wfParameters}
               showWarningSign={launcher.showWarningSign}
+              indicator={launcher.indicator}
+              testId={launcher.testId}
+              disabled={!!launcher.disabled}
             />
           );
         })}
@@ -158,6 +182,8 @@ const WFLaunchersScreen = () => {
     </div>
   );
 };
+
+export default WFLaunchersScreen;
 
 //
 //
@@ -172,80 +198,3 @@ const Spinner = () => {
     </div>
   );
 };
-
-//
-//
-// ------------------------------------------------------------------------------------------------------------------------------
-//
-//
-
-const useLaunchers = ({ applicationId, requiresLaunchersQRCodeFilter, facets, filterByDocumentNo, isEnabled }) => {
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-
-  const {
-    filterByQRCode: currentFilterByQRCode,
-    requestTimestamp,
-    list: launchers,
-  } = useSelector((state) => getApplicationLaunchers(state, applicationId));
-
-  const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
-  const isAllowQueryingLaunchers = isEnabled && (!requiresLaunchersQRCodeFilter || !!filterByQRCode);
-
-  //
-  // Load application launchers
-  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
-    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
-  };
-  useEffect(() => {
-    if (isAllowQueryingLaunchers) {
-      setLoading(true);
-      getLaunchers({ applicationId, filterByQRCode, filterByDocumentNo, facets })
-        .then((applicationLaunchers) => {
-          onNewLaunchers({ applicationId, applicationLaunchers });
-        })
-        .finally(() => setLoading(false));
-    } else {
-      console.log('Skip fetching querying launchers is prohibited');
-      dispatch(clearLaunchers({ applicationId }));
-    }
-  }, [
-    isAllowQueryingLaunchers,
-    applicationId,
-    toQRCodeString(filterByQRCode),
-    filterByDocumentNo,
-    facets,
-    requestTimestamp,
-  ]);
-
-  //
-  // Connect to WebSocket topic
-  const userToken = useSelector((state) => getTokenFromState(state));
-  useLaunchersWebsocket({
-    enabled: isAllowQueryingLaunchers,
-    userToken,
-    applicationId,
-    filterByQRCode,
-    filterByDocumentNo,
-    facets,
-    onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
-      onNewLaunchers({ applicationId, applicationLaunchers }),
-  });
-
-  const setFilterByQRCode = (qrCode) => {
-    dispatch(populateLaunchersStart({ applicationId, filterByQRCode: { code: qrCode, displayable: qrCode } }));
-  };
-
-  return {
-    isLaunchersLoading: loading,
-    launchers,
-    filterByQRCode,
-    setFilterByQRCode,
-  };
-};
-
-const useFilters = ({ applicationId }) => {
-  return useSelector((state) => getApplicationLaunchersFilters(state, applicationId));
-};
-
-export default WFLaunchersScreen;

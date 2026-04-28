@@ -30,15 +30,17 @@ import org.compiere.model.X_AD_UI_Element;
 
 import javax.annotation.Nullable;
 
+@Getter
 public enum LayoutElementType implements ReferenceListAwareEnum
 {
 	Field(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field),
 	Labels(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels),
-	InlineTab(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab);
+	InlineTab(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab),
+	Attributes(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Attributes),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LayoutElementType> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
 	private final String code;
 
 	LayoutElementType(@NonNull final String code)

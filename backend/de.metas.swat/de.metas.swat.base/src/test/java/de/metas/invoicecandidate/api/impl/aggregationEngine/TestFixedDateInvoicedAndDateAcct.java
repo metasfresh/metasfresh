@@ -1,31 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Test;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,8 +20,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
+
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
+import de.metas.payment.paymentterm.PaymentTermId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_PaymentTerm;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineTestBase
 {
+	@BeforeEach
 	@Override
 	public void init()
 	{
@@ -143,5 +147,179 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final IInvoiceHeader invoice = invoices.get(0);
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
+	}
+
+	/**
+	 * Regression: Verifies that dateAcctParam takes precedence over PresetDateInvoiced for DateAcct.
+	 */
+	@Test
+	public void test_dateAcctParam_overrides_presetDateInvoiced()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 5))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 5));
+	}
+
+	/**
+	 * Regression: Verifies that when only dateInvoicedParam is set, PresetDateInvoiced influences DateAcct.
+	 */
+	@Test
+	public void test_presetDateInvoiced_becomes_dateAcct_without_dateAcctParam()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
+	}
+
+	/**
+	 * Regression: Verifies that PresetDateInvoiced affects DateAcct when IC's dateAcct is also set.
+	 */
+	@Test
+	public void test_presetDateInvoiced_overrides_ic_dateAcct()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 20))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
+	}
+
+	/**
+	 * Regression: Verifies that dateAcctParam takes ultimate precedence even with PresetDateInvoiced and IC dateAcct set.
+	 */
+	@Test
+	public void test_dateAcctParam_takes_precedence_over_all()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 20))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 25))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 25));
+	}
+
+	/** Verifies that the "param" DueDateOverride is used when the payment term allows override. */
+	@Test
+	public void test_using_dateDateDueOverrideParam()
+	{
+		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setValue("pt_allow_override");
+		paymentTerm.setName("pt_allow_override");
+		paymentTerm.setIsAllowOverrideDueDate(true);
+		InterfaceWrapperHelper.save(paymentTerm);
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
+
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPaymentTermId(paymentTermId)
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.overrideDueDateParam(LocalDate.parse("2023-02-01"))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getOverrideDueDate()).isEqualTo(LocalDate.parse("2023-02-01"));
+	}
+
+	/** Verifies that the "param" DueDateOverride is NOT used when the payment term does not allow override. */
+	@Test
+	public void test_using_dateDateDueOverrideParam_disallowed()
+	{
+		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setValue("pt_disallow_override");
+		paymentTerm.setName("pt_disallow_override");
+		paymentTerm.setIsAllowOverrideDueDate(false);
+		InterfaceWrapperHelper.save(paymentTerm);
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
+
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPaymentTermId(paymentTermId)
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.overrideDueDateParam(LocalDate.parse("2023-02-01"))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getOverrideDueDate()).isNull();
 	}
 }

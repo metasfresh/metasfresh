@@ -1,15 +1,8 @@
-package org.adempiere.ad.trx.processor.api.impl;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,11 +20,9 @@ import static org.junit.Assert.assertTrue;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+package org.adempiere.ad.trx.processor.api.impl;
 
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.MockedTrx;
 import org.adempiere.ad.trx.api.impl.MockedTrxManager;
@@ -40,10 +31,14 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class TrxItemProcessorExecutorTest
 {
@@ -62,9 +57,6 @@ public class TrxItemProcessorExecutorTest
 
 	/**
 	 * Assert that all items besides the excluded ones are processed. For the excluded items (if any), asserts that the were <b>not</b> processed.
-	 *
-	 * @param items
-	 * @param excludeItem
 	 */
 	private void assertAllItemsProcessed(final List<Item> items, final Item... excludeItem)
 	{
@@ -74,11 +66,6 @@ public class TrxItemProcessorExecutorTest
 	/**
 	 * Asserts that the given <code>whatever</code> function returns <code>true</code> for all <code>items</code> that are not among the given <code>excludeItem</code> (equality is sufficient).
 	 * For the given <code>excludeItem</code>, it asserts that the given <code>whatever</code> function returns <code>false</code>.
-	 *
-	 * @param items
-	 * @param whatever
-	 * @param whateverText
-	 * @param excludeItem
 	 */
 	private void assertAllItemsWhatever(
 			final List<Item> items,
@@ -91,19 +78,14 @@ public class TrxItemProcessorExecutorTest
 		items
 				.stream()
 				.filter(i -> !excludeItemsList.contains(i))
-				.forEach(i -> assertTrue("item " + i + "is/has not " + whateverText, whatever.apply(i)));
+				.forEach(i -> Assertions.assertTrue(whatever.apply(i), "item " + i + "is/has not " + whateverText));
 
 		excludeItemsList
-				.forEach(i -> assertFalse("item " + i + "is/has " + whateverText, whatever.apply(i)));
+				.forEach(i -> Assertions.assertFalse(whatever.apply(i), "item " + i + "is/has " + whateverText));
 	}
 
 	/**
 	 * Execute {@link #processor} on given items and check expectations.
-	 *
-	 * @param items
-	 * @param onItemErrorPolicy
-	 * @param resultExpected
-	 * @param expectedExceptionClass
 	 */
 	private void assertProcessorResult(
 			final List<Item> items,
@@ -141,19 +123,13 @@ public class TrxItemProcessorExecutorTest
 	{
 		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(trxName);
 
-		assertThat("trx=" + trxName + " has a wrong number of commit() invocations", trx.getCommits().size(), is(commits));
-		assertThat("trx=" + trxName + " has a wrong number of rollback() invocations", trx.getRollbacks().size(), is(rollbacks));
-		assertThat("trx=" + trxName + " has a wrong isActive() status", trx.isActive(), is(false));
+		Assertions.assertEquals(trx.getCommits().size(),commits, "trx=" + trxName + " has a wrong number of commit() invocations");	
+		Assertions.assertEquals(trx.getRollbacks().size(), rollbacks, "trx=" + trxName + " has a wrong number of rollback() invocations");
+		Assertions.assertFalse(trx.isActive(),"trx=" + trxName + " has a wrong isActive() status");
 	}
 
 	/**
 	 * Returns the first {@link Item} from the given <code>itemsList</code> that has the given <code>groupKey</code> and <code>value</code>.
-	 *
-	 * @param items
-	 * @param groupKey
-	 * @param value
-	 *
-	 * @return
 	 */
 	private Item findItem(final List<Item> items, final String groupKey, final String value)
 	{
@@ -166,7 +142,7 @@ public class TrxItemProcessorExecutorTest
 		return itemOrNull.orElse(null);
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -278,8 +254,8 @@ public class TrxItemProcessorExecutorTest
 						new Item("1", "1"),
 						new Item("1", "2"),
 						new Item("1", "3"))
-		// NOTE: following chunks shall not be present because cancelChunk fails on chunk "2"
-		// which means that entire batch processing will be stopped
+				// NOTE: following chunks shall not be present because cancelChunk fails on chunk "2"
+				// which means that entire batch processing will be stopped
 		);
 
 		// the items that shall remain unprocessed

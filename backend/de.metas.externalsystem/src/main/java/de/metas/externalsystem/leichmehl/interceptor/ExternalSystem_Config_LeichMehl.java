@@ -56,9 +56,9 @@ public class ExternalSystem_Config_LeichMehl
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.LeichUndMehl.getCode().equals(parentType))
+		if (!ExternalSystemType.LeichUndMehl.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 }

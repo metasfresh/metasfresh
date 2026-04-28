@@ -59,6 +59,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.alberta.common.CommonAlbertaConstants.EXTERNAL_SYSTEM_ALBERTA;
 import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
 import static de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants.ROUTE_PROPERTY_CURRENT_ORDER;
 import static de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID;
@@ -127,6 +128,7 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 				.orgCode(orgCode)
 				.externalHeaderId(order.getId())
 				.bpartner(getBPartnerIdentifiers(jsonResponseComposite, deliveryAddressId))
+				.externalSystemCode(EXTERNAL_SYSTEM_ALBERTA)
 				.dataSource(CommonAlbertaConstants.ALBERTA_DATA_INPUT_SOURCE)
 				.poReference(CoalesceUtil.firstNotEmptyTrimmed(order.getSalesId(), order.getId()))
 				.dateRequired(asJavaLocalDate(order.getDeliveryDate()));

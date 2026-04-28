@@ -1,12 +1,12 @@
 import React from 'react';
-import { mount, shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import nock from 'nock';
-import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../components/keyshortcuts/ShortcutProvider';
 import { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
 
-import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../test_setup/fixtures/keymap.json';
 jest.mock('../../api');
 
 const createDummyProps = function(override = {}) {
@@ -53,7 +53,7 @@ describe('QuickActions standalone component', () => {
     it('renders nothing when no actions', () => {
       const props = createDummyProps({ viewId: emptyViewId, quickActions: { actions: [], pending: false } });
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <QuickActions {...props} />
         </ShortcutProvider>
       );
@@ -64,7 +64,7 @@ describe('QuickActions standalone component', () => {
     it('renders actions', () => {
       const props = createDummyProps();
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <QuickActions {...props} />,
         </ShortcutProvider>
       );

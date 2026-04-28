@@ -1,13 +1,12 @@
 package de.metas.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import de.metas.common.util.time.SystemTime;
-import org.junit.Test;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.common.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
+
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

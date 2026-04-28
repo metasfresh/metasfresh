@@ -1,28 +1,21 @@
 package de.metas.javaclasses.impl;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import com.google.common.collect.ImmutableSet;
+import de.metas.javaclasses.IJavaClassTypeBL;
+import de.metas.javaclasses.impl.JavaClassTypeBL.IReflectionTypeProvider;
+import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestServiceImplementation;
+import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIAnnotatedServiceInterface;
+import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIServiceAnnotation;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.javaclasses.IJavaClassTypeBL;
-import de.metas.javaclasses.impl.JavaClassTypeBL.IReflectionTypeProvider;
-import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIAnnotatedServiceInterface;
-import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIServiceAnnotation;
-import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestServiceImplementation;
-import de.metas.javaclasses.model.I_AD_JavaClass_Type;
-import de.metas.util.Services;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -48,10 +41,11 @@ import de.metas.util.Services;
 public class JavaClassTypeBLTests extends JavaClassTestBase
 {
 
+	@Test
 	public void testCorrectServiceImpl()
 	{
 		final IJavaClassTypeBL javaClassTypeBL = Services.get(IJavaClassTypeBL.class);
-		assertThat(javaClassTypeBL, instanceOf(JavaClassTypeBL.class));
+		assertThat(javaClassTypeBL).isInstanceOf(JavaClassTypeBL.class);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -66,12 +60,12 @@ public class JavaClassTypeBLTests extends JavaClassTestBase
 
 		final List<Class<?>> serviceClasses = javaClassTypeBL.scanForClasses(javaType);
 
-		assertThat(serviceClasses, notNullValue());
-		assertThat(serviceClasses.isEmpty(), is(false));
-		assertThat(serviceClasses,
-				containsInAnyOrder(
-						(Class)TestsIAnnotatedServiceInterface.class,
-						(Class)TestServiceImplementation.class));
+		assertThat(serviceClasses)
+			.isNotNull()
+			.isNotEmpty()
+			.containsExactlyInAnyOrder(
+				TestsIAnnotatedServiceInterface.class,
+				TestServiceImplementation.class);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -85,10 +79,11 @@ public class JavaClassTypeBLTests extends JavaClassTestBase
 		javaClassTypeBL.setReflectionTypeProvider(mkReflectionProvider());
 		final List<Class<?>> serviceClasses = javaClassTypeBL.scanForClasses(javaType);
 
-		assertThat(serviceClasses, notNullValue());
-		assertThat(serviceClasses.isEmpty(), is(false));
-		assertThat(serviceClasses, containsInAnyOrder((Class)TestServiceImplementation.class));
-		assertThat(serviceClasses, not(containsInAnyOrder((Class)TestsIAnnotatedServiceInterface.class)));
+		assertThat(serviceClasses)
+			.isNotNull()
+			.isNotEmpty()
+			.containsExactly(TestServiceImplementation.class)
+			.doesNotContain(TestsIAnnotatedServiceInterface.class);
 	}
 
 	private IReflectionTypeProvider mkReflectionProvider()

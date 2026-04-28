@@ -236,6 +236,7 @@ public class CreateRemittanceAdviceService
 		return CreateRemittanceAdviceLineRequest.builder()
 				.remittanceAdviceId(remittanceAdviceId)
 				.orgId(orgId)
+				.lineIdentifier(jsonRemittanceAdviceLine.getLineIdentifier())
 				.invoiceIdentifier(jsonRemittanceAdviceLine.getInvoiceIdentifier())
 				.remittedAmount(jsonRemittanceAdviceLine.getRemittedAmount())
 				.dateInvoiced(dateInvoiced)

@@ -19,7 +19,6 @@ import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit.ManufacturingOrderExportAuditBuilder;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
-import de.metas.manufacturing.rest_api.v1.ManufacturingOrderAPIService;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -205,12 +204,12 @@ final class ManufacturingOrdersExportCommand
 		final Product product = getProductById(productId);
 
 		return JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.description(product.getDescription().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked())
 				.build();
 	}

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -89,7 +89,7 @@ public class PaymentAllocationService
 	}
 
 	@VisibleForTesting
-	public PaymentAllocationResult allocatePayment(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
+	public PaymentAllocationResult allocatePaymentForRemittanceAdvise(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
 	{
 		final PaymentAllocationBuilder builder = preparePaymentAllocationBuilder(paymentAllocationCriteria)
 				.orElseThrow(() -> new AdempiereException("Invalid allocation")
@@ -129,7 +129,7 @@ public class PaymentAllocationService
 	{
 		return paymentAllocationRepository.retrieveInvoicesToAllocate(query);
 	}
-	
+
 	@NonNull
 	private Optional<PaymentAllocationBuilder> preparePaymentAllocationBuilder(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
 	{
@@ -143,14 +143,16 @@ public class PaymentAllocationService
 		final I_C_Payment payment = paymentAllocationCriteria.getPayment();
 
 		final PaymentDocument paymentDocument = toPaymentDocument(payment);
-		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault());
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(payment.getAD_Org_ID()));
+		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), timeZone);
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
 				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
 				.collect(ImmutableList.toImmutableList());
 
-		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
+		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx(), timeZone);
 		final PaymentAllocationBuilder builder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
 				.defaultDateTrx(dateTrx)
@@ -158,8 +160,10 @@ public class PaymentAllocationService
 				.payableDocuments(invoiceDocuments)
 				.allowPartialAllocations(paymentAllocationCriteria.isAllowPartialAllocations())
 				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
-				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed());
-
+				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed())
+				.allocatePayableAmountsAsIs(true) // no min/max computations! the sums will match in the end
+				.allowInvoiceToCreditMemoAllocation(paymentAllocationCriteria.isAllowInvoiceToCreditMemoAllocation())
+				;
 		return Optional.of(builder);
 	}
 
@@ -221,14 +225,14 @@ public class PaymentAllocationService
 					);
 
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
-					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
-							.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
-							.paymentDate(paymentDate)
-							.customerId(paymentAllocationPayableItem.getBPartnerId())
-							.invoiceId(paymentAllocationPayableItem.getInvoiceId())
-							.feeAmountIncludingTax(serviceFeeAmt)
-							.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
-							.build())
+							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+									.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
+									.paymentDate(paymentDate)
+									.customerId(paymentAllocationPayableItem.getBPartnerId())
+									.invoiceId(paymentAllocationPayableItem.getInvoiceId())
+									.feeAmountIncludingTax(serviceFeeAmt)
+									.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
+									.build())
 					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
 		}
 		else
@@ -241,12 +245,12 @@ public class PaymentAllocationService
 				: Money.zero(currencyId);
 
 		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
+		final boolean invoiceIsCreditMemo = amtMultiplier.isCreditMemo();
 
-		// for purchase invoices and sales credit memos, we need to negate
-		// but not for sales invoices and purchase credit memos
-		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
-		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
-		
+		// for purchase invoices and sales credit memos, we need to allow this,
+		// because we want the "outgoing-money"-invoice to be allocated against the "incoming-money"-payment 
+		final boolean allowAllocateAgainstDifferentSignumPayment = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ amtMultiplier.isOutgoingMoney();
+
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
@@ -254,17 +258,17 @@ public class PaymentAllocationService
 				.soTrx(paymentAllocationPayableItem.getSoTrx())
 				.openAmt(amtMultiplier.convertToRealValue(openAmt))
 				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(payAmt)
-										   .discountAmt(discountAmt)
-										   .invoiceProcessingFee(invoiceProcessingFee)
-										   .build()
-										   .convertToRealAmounts(amtMultiplier))
+						.payAmt(payAmt)
+						.discountAmt(discountAmt)
+						.invoiceProcessingFee(invoiceProcessingFee)
+						.build()
+						.convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.dateAcct(paymentAllocationPayableItem.getDateAcct())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
-				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
-				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way
+				.creditMemo(invoiceIsCreditMemo)
+				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)
 				.build();
 	}
 

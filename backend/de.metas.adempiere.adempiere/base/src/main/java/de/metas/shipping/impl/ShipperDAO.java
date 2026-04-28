@@ -3,15 +3,16 @@ package de.metas.shipping.impl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Shipper;
@@ -56,20 +57,15 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@Override
-	public ShipperId getShipperIdByShipperPartnerId(@NonNull final BPartnerId shipperPartnerId)
+	@NonNull
+	public Optional<ShipperId> getShipperIdByShipperPartnerId(@NonNull final BPartnerId shipperPartnerId)
 	{
-		final ShipperId shipperId = queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_C_BPartner_ID, shipperPartnerId)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
 				.create()
-				.firstId(ShipperId::ofRepoIdOrNull);
-		if (shipperId == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Shipper_ID@ (@C_BPartner_ID@: " + shipperPartnerId + ")");
-		}
-
-		return shipperId;
+				.firstIdOptional(ShipperId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -147,5 +143,15 @@ public class ShipperDAO implements IShipperDAO
 				.list();
 
 		return Maps.uniqueIndex(shipperList, I_M_Shipper::getInternalName);
+	}
+
+	@Override
+	public ExplainedOptional<ShipperGatewayId> getShipperGatewayId(@NonNull final ShipperId shipperId)
+	{
+		final I_M_Shipper shipper = getById(shipperId);
+		final ShipperGatewayId shipperGatewayId = ShipperGatewayId.ofNullableString(shipper.getShipperGateway());
+		return shipperGatewayId != null
+				? ExplainedOptional.of(shipperGatewayId)
+				: ExplainedOptional.emptyBecause("Shipper " + shipper.getName() + " has no gateway configured");
 	}
 }

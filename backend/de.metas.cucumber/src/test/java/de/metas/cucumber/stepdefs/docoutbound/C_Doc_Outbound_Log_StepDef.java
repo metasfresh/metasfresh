@@ -23,9 +23,9 @@
 package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.util.Check;
@@ -49,7 +49,7 @@ import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_C_
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID;
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_Line_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Doc_Outbound_Log_StepDef
 {
@@ -161,18 +161,18 @@ public class C_Doc_Outbound_Log_StepDef
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.Table_Name + "." + I_AD_Table.COLUMNNAME_Name);
 
-		switch (tableName)
+		if (I_C_Order.Table_Name.equals(tableName))
 		{
-			case I_C_Order.Table_Name:
-				final I_C_Order order = orderTable.get(recordIdentifier);
-				assertThat(order).isNotNull();
+			final I_C_Order order = orderTable.get(recordIdentifier);
+			assertThat(order).isNotNull();
 
-				return TableRecordReference.of(order);
-
-			default:
-				throw new AdempiereException("Unhandled tableName")
-						.appendParametersToMessage()
-						.setParameter("TableName", tableName);
+			return TableRecordReference.of(order);
+		}
+		else
+		{
+			throw new AdempiereException("Unhandled tableName")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
 		}
 	}
 

@@ -10,26 +10,17 @@ package de.metas.handlingunits.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -39,6 +30,13 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUItemAssertsBuilder
 {
@@ -84,14 +82,12 @@ public class HUItemAssertsBuilder
 	private HUItemAssertsBuilder assumeQty(final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		
+
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUItemStorage storage = storageFactory.getStorage(huItem);
 		final BigDecimal qtyActual = storage.getQty(productId, uom);
 
-		Assert.assertThat(assertPrefix + "Invalid qty for product " + product.getValue() + " uom=" + uom.getUOMSymbol(),
-				qtyActual,
-				Matchers.comparesEqualTo(qty));
+		assertThat(qtyActual).as(assertPrefix + "Invalid qty for product " + product.getValue() + " uom=" + uom.getUOMSymbol()).isEqualByComparingTo(qty);
 
 		return this;
 	}

@@ -27,14 +27,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.shipping.v2.shipment.JsonDimensions;
 import de.metas.common.shipping.v2.shipment.JsonPackage;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackageInfo;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackagesRequest;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
+import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.product.PackageDimensions;
 import de.metas.rest_api.v2.shipping.JsonShipmentService;
 import de.metas.rest_api.v2.shipping.ShippedCandidateKey;
 import de.metas.shipping.IShipperDAO;
@@ -183,9 +185,24 @@ public class ShippingPackageService
 					.trackingUrl(trackingURLWithTrackingNumber)
 					.trackingNumber(jsonPackage.getTrackingCode())
 					.weight(jsonPackage.getWeight())
+					.packageDimensions(extractDimensionsInCM(jsonPackage.getDimensions()))
 					.build());
 		}
 		return result;
+	}
+
+	@NonNull
+	private PackageDimensions extractDimensionsInCM(@Nullable final JsonDimensions dimensions)
+	{
+		if (dimensions == null)
+		{
+			return PackageDimensions.UNSPECIFIED;
+		}
+		return PackageDimensions.builder()
+				.lengthInCM(dimensions.getLength())
+				.widthInCM(dimensions.getWidth())
+				.heightInCM(dimensions.getHeight())
+				.build();
 	}
 
 	@Nullable

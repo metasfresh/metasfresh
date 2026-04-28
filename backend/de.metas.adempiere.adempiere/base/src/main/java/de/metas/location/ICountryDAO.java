@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
@@ -49,9 +50,6 @@ public interface ICountryDAO extends ISingletonService
 	/**
 	 * retrieve custom user info
 	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	CountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName);
 
@@ -70,7 +68,7 @@ public interface ICountryDAO extends ISingletonService
 	}
 
 	@Deprecated
-	public I_C_Country get(Properties ctx, int C_Country_ID);
+	I_C_Country get(Properties ctx, int C_Country_ID);
 
 	/**
 	 * Return Countries as Array
@@ -79,7 +77,7 @@ public interface ICountryDAO extends ISingletonService
 	 *            context
 	 * @return countries
 	 */
-	public List<I_C_Country> getCountries(Properties ctx);
+	List<I_C_Country> getCountries(Properties ctx);
 
 	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
 
@@ -89,6 +87,10 @@ public interface ICountryDAO extends ISingletonService
 
 	CountryId getCountryIdByCountryCode(String countryCode);
 
+	CountryId getCountryIdByCountryCode(@NonNull CountryCode countryCode);
+
+	CountryId getCountryIdByCountryCodeOrNull(String countryCode);
+
 	String retrieveCountryCode2ByCountryId(CountryId countryId);
 
 	String retrieveCountryCode3ByCountryId(CountryId countryId);
@@ -96,4 +98,6 @@ public interface ICountryDAO extends ISingletonService
 	ITranslatableString getCountryNameById(CountryId countryId);
 
 	Optional<CurrencyId> getCountryCurrencyId(CountryId countryId);
+
+	String getCountryCode(@NonNull CountryId countryId);
 }

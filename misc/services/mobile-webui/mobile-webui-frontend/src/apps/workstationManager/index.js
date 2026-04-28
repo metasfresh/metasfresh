@@ -1,8 +1,9 @@
 import messages_en from './i18n/en.json';
 import messages_de from './i18n/de.json';
-import { push } from 'connected-react-router';
 import { appLocation, routes } from './routes';
 import { APPLICATION_ID } from './constants';
+import { isResourceQRCode } from '../../utils/qrCode/resource';
+import * as api from '../../api/workstation';
 
 export const applicationDescriptor = {
   applicationId: APPLICATION_ID,
@@ -11,15 +12,16 @@ export const applicationDescriptor = {
     en: messages_en,
     de: messages_de,
   },
-  startApplication: () => {
-    return (dispatch) => {
-      dispatch(push(appLocation()));
-    };
+  startApplication: ({ history }) => {
+    history.push(appLocation());
   },
-  startApplicationByQRCode: ({ qrCode, parent }) => {
-    return (dispatch) => {
-      dispatch(push(appLocation({ qrCode, parent })));
-    };
+  startApplicationByQRCode: async ({ qrCode, callerApplicationId, history }) => {
+    if (!isResourceQRCode(qrCode)) {
+      return false;
+    }
+
+    await api.getWorkstationByQRCode(qrCode); // just to make sure the workstation QR code is valid
+    history.push(appLocation({ qrCode, callerApplicationId }));
   },
   //reduxReducer: () => {},
 };

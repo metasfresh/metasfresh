@@ -1,9 +1,6 @@
 package org.adempiere.ad.trx.processor.api.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
 import org.adempiere.ad.trx.api.impl.PredictableTrxNameGenerator;
@@ -11,11 +8,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ public class FixedBatchTrxItemProcessor_IntegrationTest
 {
 	private PlainTrxManager trxManager;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -82,7 +81,7 @@ public class FixedBatchTrxItemProcessor_IntegrationTest
 					@Override
 					public void process(final Item item) throws Exception
 					{
-						Assert.assertEquals("TrxName for " + item, item.getExpectedTrxName(), getTrxName());
+						Assertions.assertEquals( item.getExpectedTrxName(), getTrxName(),"TrxName for " + item);
 						result.add(item);
 					}
 
@@ -94,7 +93,7 @@ public class FixedBatchTrxItemProcessor_IntegrationTest
 				})
 				.process(items.iterator());
 
-		Assert.assertEquals("Result item's count", items.size(), result.getItemsCount());
+		Assertions.assertEquals(items.size(), result.getItemsCount(),"Result item's count");
 	}
 
 	private static class Item

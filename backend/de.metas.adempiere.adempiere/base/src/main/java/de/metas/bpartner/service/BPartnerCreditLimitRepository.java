@@ -3,24 +3,25 @@
  */
 package de.metas.bpartner.service;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableListMultimap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.springframework.stereotype.Repository;
 
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -51,6 +52,8 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
+	private @NonNull final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(
 			I_C_CreditLimit_Type.Table_Name + "#by#" + I_C_CreditLimit_Type.COLUMNNAME_C_CreditLimit_Type_ID,
 			10, // initial size
@@ -58,19 +61,33 @@ public class BPartnerCreditLimitRepository
 
 	private final Comparator<I_C_BPartner_CreditLimit> comparator = createComparator();
 
+	public ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> getAllByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		return queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_CreditLimit.class)
+				.addInArrayFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()),
+						record -> record));
+	}
+
 	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return retrieveCreditLimitsByBPartnerId(bpartnerId, date)
-				.stream()
-				.sorted(comparator)
-				.findFirst()
+				.stream().min(comparator)
 				.map(I_C_BPartner_CreditLimit::getAmount)
 				.orElse(BigDecimal.ZERO);
 	}
 
 	private List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
@@ -84,30 +101,22 @@ public class BPartnerCreditLimitRepository
 	private Comparator<I_C_BPartner_CreditLimit> createComparator()
 	{
 		final Comparator<I_C_BPartner_CreditLimit> byTypeSeqNoReversed = //
-				Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
+				Comparator.<I_C_BPartner_CreditLimit, SeqNo>comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
 
 		final Comparator<I_C_BPartner_CreditLimit> byDateFromRevesed = //
-				Comparator.<I_C_BPartner_CreditLimit, Date> comparing(bpCreditLimit -> bpCreditLimit.getDateFrom()).reversed();
+				Comparator.<I_C_BPartner_CreditLimit, Date>comparing(I_C_BPartner_CreditLimit::getDateFrom).reversed();
 
 		return byDateFromRevesed.thenComparing(byTypeSeqNoReversed);
 	}
 
-	@Builder
-	@Value
-	private static class CreditLimitType
-	{
-		private final int seqNo;
-		private final int creditLimitTypeId;
-	}
-
-	private CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
+	public CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
 	{
 		return cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveCreditLimitTypePOJO(C_CreditLimit_Type_ID));
 	}
 
 	private CreditLimitType retrieveCreditLimitTypePOJO(final int C_CreditLimit_Type_ID)
 	{
-		final I_C_CreditLimit_Type type = Services.get(IQueryBL.class)
+		final I_C_CreditLimit_Type type = queryBL
 				.createQueryBuilder(I_C_CreditLimit_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_CreditLimit_Type.COLUMN_C_CreditLimit_Type_ID, C_CreditLimit_Type_ID)
@@ -115,14 +124,16 @@ public class BPartnerCreditLimitRepository
 				.firstOnlyNotNull(I_C_CreditLimit_Type.class);
 
 		return CreditLimitType.builder()
-				.creditLimitTypeId(type.getC_CreditLimit_Type_ID())
-				.seqNo(type.getSeqNo())
+				.creditLimitTypeId(CreditLimitTypeId.ofRepoId(type.getC_CreditLimit_Type_ID()))
+				.seqNo(SeqNo.ofInt(type.getSeqNo()))
+				.name(type.getName())
+				.autoApproval(type.isAutoApproval())
 				.build();
 	}
 
 	public Optional<I_C_BPartner_CreditLimit> retrieveCreditLimitByBPartnerId(final int bpartnerId, final int typeId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
@@ -130,8 +141,6 @@ public class BPartnerCreditLimitRepository
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.create()
-				.stream()
-				.sorted(comparator)
-				.findFirst();
+				.stream().min(comparator);
 	}
 }

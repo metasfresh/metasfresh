@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 
 import javax.annotation.Nullable;
@@ -40,11 +41,17 @@ import static java.math.BigDecimal.ZERO;
 @ToString
 final class AvailableForSaleResultGroupBuilder
 {
+	@NonNull
 	@Getter
 	private final ProductId productId;
 
+	@NonNull
 	@Getter
 	private final AttributesKey storageAttributesKey;
+
+	@NonNull
+	@Getter
+	private final WarehouseId warehouseId;
 
 	@NonNull
 	private BigDecimal qtyOnHandStock;
@@ -58,12 +65,14 @@ final class AvailableForSaleResultGroupBuilder
 	private AvailableForSaleResultGroupBuilder(
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final WarehouseId warehouseId,
 			@Nullable final BigDecimal qtyOnHandStock,
 			@Nullable final BigDecimal qtyToBeShipped)
 	{
 
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
+		this.warehouseId = warehouseId;
 
 		this.qtyOnHandStock = CoalesceUtil.coalesce(qtyOnHandStock, ZERO);
 		this.qtyToBeShipped = CoalesceUtil.coalesce(qtyToBeShipped, ZERO);
@@ -78,6 +87,7 @@ final class AvailableForSaleResultGroupBuilder
 						.qtyOnHandStock(qtyOnHandStock)
 						.qtyToBeShipped(qtyToBeShipped)
 						.build())
+				.warehouseId(warehouseId)
 				.build();
 	}
 

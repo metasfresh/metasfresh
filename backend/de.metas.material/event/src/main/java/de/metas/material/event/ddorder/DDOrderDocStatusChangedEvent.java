@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_DD_Order;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,4 +44,15 @@ public class DDOrderDocStatusChangedEvent implements MaterialEvent
 	@NonNull EventDescriptor eventDescriptor;
 	int ddOrderId;
 	@NonNull DocStatus newDocStatus;
+	@Nullable DDOrder ddOrder;
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(I_DD_Order.Table_Name, ddOrderId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
+
 }

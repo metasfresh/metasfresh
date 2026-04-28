@@ -1,19 +1,6 @@
 package de.metas.dunning.export;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
@@ -32,9 +19,18 @@ import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -89,7 +85,7 @@ public class DunningToExportFactory
 			final CurrencyCode currencyCode = extractCurrencyCode(dunnedInvoiceRecord);
 			final Money grandTotal = Money.of(dunnedInvoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-			final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(dunnedInvoiceRecord), ZERO);
+			final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(dunnedInvoiceRecord).toBigDecimal();
 			final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 			final DunningToExport dunningToExport = DunningToExport

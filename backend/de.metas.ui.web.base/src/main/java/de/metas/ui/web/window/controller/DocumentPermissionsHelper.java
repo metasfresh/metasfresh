@@ -1,16 +1,6 @@
 package de.metas.ui.web.window.controller;
 
-import javax.annotation.Nullable;
-
 import de.metas.i18n.BooleanWithReason;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IRolePermLoggingBL;
-import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
@@ -25,6 +15,18 @@ import de.metas.ui.web.window.exceptions.DocumentPermissionException.DocumentPer
 import de.metas.ui.web.window.model.Document;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IRolePermLoggingBL;
+import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -239,6 +241,20 @@ public class DocumentPermissionsHelper
 		{
 			return document.getDocumentId().toIntOr(-1);
 		}
+	}
+
+	public static boolean isNewDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final UserSession userSession)
+	{
+		final AdWindowId adWindowId = entityDescriptor.getWindowId().toAdWindowIdOrNull();
+		if (adWindowId == null) {return true;}
+
+		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
+		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
+		if (!windowPermission.hasWriteAccess()) {return false;}
+
+		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
+		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), IExpressionEvaluator.OnVariableNotFound.ReturnNoResult);
+		return allow.isTrue();
 	}
 
 }

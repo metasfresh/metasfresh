@@ -1,50 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-const Tooltips = ({
-  action,
-  className,
-  delay,
-  extraClass,
-  name,
-  tooltipOnFirstlevelPositionLeft,
-  type,
-}) => {
-  const [opacity, setOpacity] = useState(0);
+// NOTE: we need to forward the ref because we are using it in TetherComponent (see FiltersItem.render)
+const Tooltips = forwardRef(
+  (
+    {
+      action,
+      className,
+      delay,
+      extraClass,
+      name,
+      tooltipOnFirstlevelPositionLeft,
+      type,
+    },
+    ref
+  ) => {
+    const [opacity, setOpacity] = useState(0);
 
-  useEffect(() => {
-    const timeout = setTimeout(
-      () => {
-        setOpacity(1);
-      },
-      delay ? delay : 1000
+    useEffect(() => {
+      const timeout = setTimeout(
+        () => {
+          setOpacity(1);
+        },
+        delay ? delay : 1000
+      );
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }, []);
+
+    const cx = classNames(
+      'tooltip-wrapp',
+      { [`tooltip-${type}`]: type },
+      { [`${extraClass}`]: extraClass },
+      { [`${className}`]: className }
     );
 
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  const cx = classNames(
-    'tooltip-wrapp',
-    { [`tooltip-${type}`]: type },
-    { [`${extraClass}`]: extraClass },
-    { [`${className}`]: className }
-  );
-
-  return (
-    <div style={{ opacity: opacity }}>
-      <div
-        className={cx}
-        style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
-      >
-        <div className="tooltip-shortcut">{name}</div>
-        <div className="tooltip-name">{action}</div>
+    return (
+      <div ref={ref} style={{ opacity: opacity }}>
+        <div
+          className={cx}
+          style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
+        >
+          <div className="tooltip-shortcut">{name}</div>
+          <div className="tooltip-name">{action}</div>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
 
 /**
  * @typedef {object} Props Component props

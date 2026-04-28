@@ -24,7 +24,6 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -41,8 +40,8 @@ import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.organization.OrgId;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -96,8 +95,7 @@ class HUQRCodesServiceTest
 	void beforeEach()
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
-		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+		this.huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -119,7 +117,7 @@ class HUQRCodesServiceTest
 		sysConfigBL.setValue(HUQRCodesService.SYSCONFIG_GenerateQRCodeIfMissing, generateQRCodeIfMissing, ClientId.SYSTEM, OrgId.ANY);
 	}
 
-	private HuId createLU(final Attributes attributes)
+	private HuId createLU(@Nullable final Attributes attributes)
 	{
 		final List<I_M_HU> hus = helper.newLUs()
 				.loadingUnitPIItem(luPIItem)
@@ -133,7 +131,9 @@ class HUQRCodesServiceTest
 		return HuId.ofRepoId(hu.getM_HU_ID());
 	}
 
-	private HuId createTU(final Attributes attributes)
+	private HuId createTU() {return createTU(null);}
+
+	private HuId createTU(@Nullable final Attributes attributes)
 	{
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final List<I_M_HU> hus = helper.createHUs(huContext, tuPI, productId, QTY_CUs_per_TU, helper.uomEach);
@@ -144,7 +144,7 @@ class HUQRCodesServiceTest
 		return HuId.ofRepoId(hu.getM_HU_ID());
 	}
 
-	private HuId createVHU(final Attributes attributes)
+	private HuId createVHU(@Nullable final Attributes attributes)
 	{
 		final I_M_HU vhu = helper.newVHU()
 				.productId(productId)
@@ -156,8 +156,9 @@ class HUQRCodesServiceTest
 		return HuId.ofRepoId(vhu.getM_HU_ID());
 	}
 
-	private void setAttributes(@NonNull final I_M_HU hu, final Attributes attributes)
+	private void setAttributes(@NonNull final I_M_HU hu, @Nullable final Attributes attributes)
 	{
+		if (attributes == null) {return;}
 		final IAttributeStorage huAttributes = helper.createMutableHUContext()
 				.getHUAttributeStorageFactory()
 				.getAttributeStorage(hu);
@@ -168,6 +169,7 @@ class HUQRCodesServiceTest
 	}
 
 	@Nested
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	class generateForExistingHU
 	{
 		@Test
@@ -184,8 +186,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.LU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("LU");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -214,8 +216,8 @@ class HUQRCodesServiceTest
 			{
 				assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.TU);
 				assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
-				assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-				assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+				assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+				assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 				assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 				assertThat(qrCode.getLotNumber()).contains("123");
 				assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -236,8 +238,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.TU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -257,8 +259,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.VHU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("VirtualPI");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -299,12 +301,26 @@ class HUQRCodesServiceTest
 	}
 
 	@Nested
-	class toHUQRCode
+	class parse
 	{
+		HUQRCodesService huQRCodesService;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
+		}
+
+		@Test
+		void pickOnFly()
+		{
+			assertThat(huQRCodesService.parse(PickOnTheFlyQRCode.instance.getAsString())).isSameAs(PickOnTheFlyQRCode.instance);
+		}
+
 		@Test
 		void gs1()
 		{
-			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("0197311876341811310300752015170809");
+			final IHUQRCode huQRCode = huQRCodesService.parse("0197311876341811310300752015170809");
 			assertThat(huQRCode).isInstanceOf(GS1HUQRCode.class);
 
 			final GS1HUQRCode gs1 = (GS1HUQRCode)huQRCode;
@@ -316,16 +332,32 @@ class HUQRCodesServiceTest
 		@Test
 		void ean13()
 		{
-			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("2859414004825");
+			final IHUQRCode huQRCode = huQRCodesService.parse("2859414004825");
 			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
 
 			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;
-			assertThat(ean13.getPrefix()).contains(EAN13HUQRCode.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).isEqualTo("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();
 		}
 
+		@Test
+		void huId_when_hu_missing()
+		{
+			final IHUQRCode parsedHUQRCode = huQRCodesService.parse("1000066");
+			System.out.println("parsedHUQRCode: " + parsedHUQRCode + " (" + parsedHUQRCode.getClass() + ")");
+			assertThat(parsedHUQRCode).isNotInstanceOf(HUQRCode.class);
+		}
+
+		@Test
+		void huId_when_hu_exists()
+		{
+			final HuId tuId = createTU();
+			final IHUQRCode parsedHUQRCode = huQRCodesService.parse(tuId.toHUValue());
+			System.out.println("parsedHUQRCode: " + parsedHUQRCode + " (" + parsedHUQRCode.getClass() + ")");
+			assertThat(parsedHUQRCode).isInstanceOf(HUQRCode.class);
+		}
 	}
 }

@@ -100,4 +100,7 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 	{
 		return getQuantity();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

@@ -69,7 +69,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -186,7 +186,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			context.BatchDocumentNo = impBatchDocumentNo;    // cannot compare real DocumentNo
 			context.batch = new MJournalBatch(ctx, 0, null);
 			context.batch.setClientOrg(importRecord.getAD_Client_ID(), importRecord.getAD_OrgDoc_ID());
-			if (importRecord.getBatchDocumentNo() != null && importRecord.getBatchDocumentNo().length() > 0)
+			if (importRecord.getBatchDocumentNo() != null && !importRecord.getBatchDocumentNo().isEmpty())
 			{
 				context.batch.setDocumentNo(importRecord.getBatchDocumentNo());
 			}
@@ -195,7 +195,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			context.batch.setC_DocType_ID(importRecord.getC_DocType_ID());
 			context.batch.setPostingType(importRecord.getPostingType());
 			String description = importRecord.getBatchDescription();
-			if (description == null || description.length() == 0)
+			if (description == null || description.isEmpty())
 			{
 				description = "*Import-";
 			}
@@ -290,7 +290,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		line.setDateAcct(importRecord.getDateAcct());
 		//
 		// Set/Get Account Combination
-		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
+		if (importRecord.getC_ValidCombinationFrom_ID() == 0 && importRecord.getAccountFrom_ID() > 0)
 		{
 			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
@@ -311,7 +311,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		// Set/Get Account Combination
-		if (importRecord.getC_ValidCombinationTo_ID() == 0)
+		if (importRecord.getC_ValidCombinationTo_ID() == 0 && importRecord.getAccountTo_ID() > 0)
 		{
 			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
@@ -337,6 +337,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 		line.setC_UOM_ID(importRecord.getC_UOM_ID());
 		line.setQty(importRecord.getQty());
+		line.setDescription(importRecord.getDescription());
 		//
 
 		// Set/Get Tax Account Combination From (Debit)
@@ -470,7 +471,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	public I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_GLJournal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

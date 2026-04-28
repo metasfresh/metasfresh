@@ -72,7 +72,7 @@ class OrderDropShipLocationAdapterTest
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-		documentLocationBL = new DocumentLocationBL(bpartnerBL);
+		documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 	}

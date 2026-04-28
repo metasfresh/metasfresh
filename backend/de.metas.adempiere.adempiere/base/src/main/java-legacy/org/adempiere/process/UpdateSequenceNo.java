@@ -23,7 +23,7 @@ import java.time.Year;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into
- * AD_Sequence_No table if the record does not exists
+ * AD_Sequence_No table if the record does not exist.
  *
  * @author Elaine
  */
@@ -66,9 +66,9 @@ public class UpdateSequenceNo extends JavaProcess
 									+ "SELECT AD_Sequence_ID "
 									+ "FROM AD_Sequence_No b "
 									+ "WHERE a.AD_Sequence_ID = b.AD_Sequence_ID "
-									+ "AND CalendarYear = ?"
-									+ "AND CalendarMonth = ?"
-									+ "AND CalendarDay = ?)) ",
+									+ " AND CalendarYear = ?"
+									+ " AND CalendarMonth = ?"
+									+ " AND CalendarDay = ?)) ",
 							get_TrxName());
 			insertStmt.setString(1, year);
 			insertStmt.setString(4, year);

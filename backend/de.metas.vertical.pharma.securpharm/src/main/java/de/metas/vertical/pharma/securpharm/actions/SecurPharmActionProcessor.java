@@ -1,13 +1,5 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import de.metas.Profiles;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -15,6 +7,12 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -38,26 +36,23 @@ import lombok.NonNull;
  * #L%
  */
 
-/**
- * Gets {@link SecurPharmaActionRequest}s from {@link SecurPharmService#subscribeOnActions(SecurPharmActionsHandler)} and process them.
- */
 @Component
 @Profile(Profiles.PROFILE_App)
 public class SecurPharmActionProcessor implements SecurPharmActionsHandler
 {
 	private static final Logger logger = LogManager.getLogger(SecurPharmActionProcessor.class);
-	private final SecurPharmService securPharmService;
+	private  SecurPharmService securPharmService;
 
-	public SecurPharmActionProcessor(@NonNull final SecurPharmService securPharmService)
+	public SecurPharmActionProcessor(@NonNull @Lazy final SecurPharmService securPharmService)
 	{
 		this.securPharmService = securPharmService;
 		logger.info("Started");
 	}
 
-	@PostConstruct
-	public void postConstruct()
+	@Override
+	public void setSecurPharmService(@NonNull final SecurPharmService securPharmService)
 	{
-		securPharmService.subscribeOnActions(this);
+		this.securPharmService = securPharmService;
 	}
 
 	@Override

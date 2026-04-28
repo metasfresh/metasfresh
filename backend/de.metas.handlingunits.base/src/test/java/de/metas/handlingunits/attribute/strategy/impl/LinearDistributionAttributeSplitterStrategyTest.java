@@ -10,46 +10,43 @@ package de.metas.handlingunits.attribute.strategy.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.attribute.strategy.IAttributeSplitResult;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
-import de.metas.handlingunits.attribute.strategy.IAttributeSplitResult;
-import de.metas.util.Services;
-
 public class LinearDistributionAttributeSplitterStrategyTest
 {
 	private LinearDistributionAttributeSplitterStrategy splitter;
 	private I_M_Attribute attribute;
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		//
@@ -158,10 +155,9 @@ public class LinearDistributionAttributeSplitterStrategyTest
 
 		//
 		// Assume: sum of all split values shall be the same as initial value to split
-		Assert.assertThat("Invalid splitValues SUM" + "\n" + info,
-				splitValueSUM, // actual
-				Matchers.comparesEqualTo(valueToSplit) // expected
-		);
+		Assertions.assertThat(splitValueSUM)
+				.as("Invalid splitValues SUM" + "\n" + info)
+				.isEqualByComparingTo(valueToSplit);
 	}
 
 	private MutableAttributeSplitRequest createRequest(final Object value, final int childrenCount)
@@ -181,9 +177,9 @@ public class LinearDistributionAttributeSplitterStrategyTest
 	}
 
 	public static void assertEquals(final String message,
-			final BigDecimal expected,
-			final BigDecimal actual,
-			final BigDecimal delta)
+									final BigDecimal expected,
+									final BigDecimal actual,
+									final BigDecimal delta)
 	{
 		if (expected == actual)
 		{
@@ -201,11 +197,11 @@ public class LinearDistributionAttributeSplitterStrategyTest
 			return;
 		}
 
-		Assert.fail(
+		Assertions.fail(
 				(message == null ? "" : message)
 						+ "\nExpected=<" + expected + ">"
 						+ "\nActual=<" + actual + ">"
 						+ "\nDelta=<" + delta + ">"
-				);
+		);
 	}
 }

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.pair.IPair;
+import de.metas.handlingunits.impl.CreateTUPackingInstructionsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -41,12 +42,14 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -57,6 +60,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -84,6 +89,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	boolean existsById(@NonNull HuId huId);
 
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
@@ -114,6 +121,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
+	List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull Set<HuPackingInstructionsItemId> piItemIds);
+
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
 	 */
@@ -129,11 +138,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @param hu may not be {@code null}
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(I_M_HU hu);
+	@Nullable HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
@@ -175,11 +180,18 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
 	// Handling Unit PI Retrieval
 
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull HuPackingInstructionsId piId,
 			@Nullable String itemType,
+			@Nullable BPartnerId bpartnerId);
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull I_M_HU_PI_Version version,
+			@Nullable HUItemType itemType,
 			@Nullable BPartnerId bpartnerId);
 
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
@@ -213,6 +225,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
+	@NonNull
 	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
@@ -259,6 +272,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
+	@NonNull
+	Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
+
 	/**
 	 * Retrieves the default LU.
 	 *
@@ -272,6 +288,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
+
+	I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull HuPackingInstructionsVersionId versionId, @Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
@@ -324,6 +342,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 
+	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
+
 	// TODO: replace it by getByIds
 	@Deprecated
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
@@ -346,4 +366,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	@NonNull
 	ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull HuId huId);
+
+	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
+
+	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
+
+	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
 }

@@ -32,6 +32,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Validator(I_M_InOutLine.class)
 public class M_InOutLine
 {
+	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+	
 	// TODO: delete AD_Message:
 	// private static final String MSG_CHANGE_MOVEMENT_QTY_NOT_SUPPORTED = "de.metas.inoutcandidate.modelvalidator.M_InOutLine_Shipment_ChangeMovementQtyNotSupported";
 
@@ -147,7 +149,7 @@ public class M_InOutLine
 
 		if (adjustments_alloc != null)
 		{
-			final StockQtyAndUOMQty currentAllocQty = createStockQtyAndUomQtyFor(productId, adjustments_alloc);
+			final StockQtyAndUOMQty currentAllocQty = shipmentScheduleAllocBL.extractQtyPicked(adjustments_alloc, productId);
 
 			final StockQtyAndUOMQty newAllocQty = StockQtyAndUOMQtys.add(currentAllocQty, qtyPickedToAdd);
 
@@ -168,7 +170,6 @@ public class M_InOutLine
 		else
 		{
 			// Case: there is no line were we can add the difference, so we are creating one now
-			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked adjustments_allocNew = //
 					shipmentScheduleAllocBL.createNewQtyPickedRecord(adjustments_shipmentSchedule, qtyPickedToAdd);
@@ -189,19 +190,9 @@ public class M_InOutLine
 		// * calculate how much qty was shipped for all shipment schedules (in total)
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
 		{
-			final StockQtyAndUOMQty allocQty = createStockQtyAndUomQtyFor(productId, alloc);
+			final StockQtyAndUOMQty allocQty = shipmentScheduleAllocBL.extractQtyPicked(alloc, productId);
 			result = StockQtyAndUOMQtys.add(result, allocQty);
 		}
 		return result;
 	}
-
-	private StockQtyAndUOMQty createStockQtyAndUomQtyFor(
-			@NonNull final ProductId productId,
-			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc)
-	{
-		return StockQtyAndUOMQtys.create(
-				alloc.getQtyPicked(), productId,
-				alloc.getQtyDeliveredCatch(), UomId.ofRepoIdOrNull(alloc.getCatch_UOM_ID()));
-	}
-
 }

@@ -32,6 +32,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
 import de.metas.process.Param;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -189,6 +190,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setAD_Process_ID(getPrintFormat().getReportProcessId())
 				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
 				.setReportLanguage(getProcessInfo().getReportLanguage())

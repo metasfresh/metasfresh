@@ -49,7 +49,7 @@ public class PPOrderCandidateListeners
 		@Override
 		public void handleEvent(final PPOrderCandidateUpdatedEvent event)
 		{
-			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(event.getPpOrderCandidateId());
+			final PPOrderCandidateId ppOrderCandidateId = event.getPpOrderCandidateId();
 
 			final ImmutableSet<PPOrderId> ppOrderIds = ppOrderCandidateDAO.getPPOrderIds(ppOrderCandidateId);
 			final PPOrderId ppOrderId = ppOrderIds.size() == 1 ? ppOrderIds.iterator().next() : null;

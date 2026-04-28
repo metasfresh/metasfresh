@@ -73,7 +73,27 @@ public interface I_C_BPartner_Location_QuickInput
 	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
-	 * Set Partner Location Quick Input.
+	 * Set Business Partner.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,7 +102,7 @@ public interface I_C_BPartner_Location_QuickInput
 	void setC_BPartner_Location_QuickInput_ID (int C_BPartner_Location_QuickInput_ID);
 
 	/**
-	 * Get Partner Location Quick Input.
+	 * Get Location.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -97,7 +117,7 @@ public interface I_C_BPartner_Location_QuickInput
 	 * Set New BPartner quick input.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_QuickInput_ID (int C_BPartner_QuickInput_ID);
@@ -106,14 +126,14 @@ public interface I_C_BPartner_Location_QuickInput
 	 * Get New BPartner quick input.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_QuickInput_ID();
 
-	org.compiere.model.I_C_BPartner_QuickInput getC_BPartner_QuickInput();
+	@Nullable org.compiere.model.I_C_BPartner_QuickInput getC_BPartner_QuickInput();
 
-	void setC_BPartner_QuickInput(org.compiere.model.I_C_BPartner_QuickInput C_BPartner_QuickInput);
+	void setC_BPartner_QuickInput(@Nullable org.compiere.model.I_C_BPartner_QuickInput C_BPartner_QuickInput);
 
 	ModelColumn<I_C_BPartner_Location_QuickInput, org.compiere.model.I_C_BPartner_QuickInput> COLUMN_C_BPartner_QuickInput_ID = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "C_BPartner_QuickInput_ID", org.compiere.model.I_C_BPartner_QuickInput.class);
 	String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
@@ -324,6 +344,27 @@ public interface I_C_BPartner_Location_QuickInput
 	String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
 
 	/**
+	 * Set One time transaction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOneTime (boolean IsOneTime);
+
+	/**
+	 * Get One time transaction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOneTime();
+
+	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_IsOneTime = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "IsOneTime", null);
+	String COLUMNNAME_IsOneTime = "IsOneTime";
+
+	/**
 	 * Set Remit-To Address.
 	 * Business Partner payment address
 	 *
@@ -415,19 +456,19 @@ public interface I_C_BPartner_Location_QuickInput
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (@Nullable java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_C_BPartner_Location_QuickInput, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Location_QuickInput.class, "Name", null);
 	String COLUMNNAME_Name = "Name";

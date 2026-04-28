@@ -1,5 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -10,6 +11,7 @@ import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -30,10 +32,13 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -44,7 +49,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.util.Check.assume;
@@ -81,6 +86,14 @@ public class HURepository
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	@VisibleForTesting
+	public static HURepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(HURepository.class, HURepository::new);
+	}
+
 	public HU getById(@NonNull final HuId id)
 	{
 		final I_M_HU huRecord = handlingUnitsDAO.getById(id);
@@ -103,6 +116,7 @@ public class HURepository
 	{
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 		private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
@@ -122,8 +136,8 @@ public class HURepository
 		private ImmutablePair<HuId, HUBuilder> extractIdAndBuilder(@NonNull final I_M_HU rootHuRecord)
 		{
 			final HuId huId = extractHuId(rootHuRecord);
-			final HUBuilder rootHu = createHUBuilder(rootHuRecord);
-			return ImmutablePair.of(huId, rootHu);
+			final HUBuilder huBuilder = createHUBuilder(rootHuRecord);
+			return ImmutablePair.of(huId, huBuilder);
 		}
 
 		private HuId extractHuId(@NonNull final I_M_HU rootHuRecord)
@@ -136,14 +150,18 @@ public class HURepository
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 			final Quantity weightNet = extractWeightNetOrNull(attributeStorage);
 
+			final String huUnitType = Check.assumeNotEmpty(handlingUnitsBL.getHU_UnitType(huRecord),
+					"Missing HU_UnitType for M_HU_ID={}", huRecord.getM_HU_ID());
+
 			return HU.builder()
 					.id(HuId.ofRepoId(huRecord.getM_HU_ID()))
 					.orgId(OrgId.ofRepoIdOrAny(huRecord.getAD_Org_ID()))
-					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
+					.type(HUType.ofCode(huUnitType))
 					.packagingCode(extractPackagingCodeId(huRecord))
 					.attributes(attributeStorage)
-					.weightNet(Optional.ofNullable(weightNet))
-					.packagingGTINs(extractPackagingGTINs(huRecord));
+					.weightNet(weightNet)
+					.packagingGTINs(extractPackagingGTINs(huRecord))
+					.referencingModels(huAssignmentDAO.retrieveReferencingRecordsForHU(huRecord, false));
 		}
 
 		/**
@@ -210,18 +228,31 @@ public class HURepository
 				}
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
 
-				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
-				childBuilder.productQtysInStockUOM(productsAndQuantitiesPerHU);
+				final ImmutableMap<ProductId, List<Quantity>> spreadProductQuantities = productsAndQuantities.entrySet().stream()
+						.collect(ImmutableMap.toImmutableMap(
+								Map.Entry::getKey,
+								entry -> entry.getValue().spreadEqually(logicalNumberOfTUs)));
 
 				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
-				final Optional<Quantity> weightNetPerHU = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
-								.map(weightNet -> weightNet.divide(logicalNumberOfTUs));
+				final List<Quantity> spreadWeights = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
+						.map(weightNet -> weightNet.spreadEqually(logicalNumberOfTUs))
+						.orElse(null);
 
-				childBuilder.weightNet(weightNetPerHU);
-				
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
-					final HU currentChild = childBuilder.build();
+					final int index = i;
+					final ImmutableMap<ProductId, Quantity> qtysForThisChild = productsAndQuantities.keySet().stream()
+							.collect(ImmutableMap.toImmutableMap(
+									productId -> productId,
+									productId -> spreadProductQuantities.get(productId).get(index)));
+
+					final Quantity weightForThisChild = spreadWeights != null ? spreadWeights.get(index) : null;
+
+					final HU currentChild = childBuilder.build()
+							.toBuilder()
+							.productQtysInStockUOM(qtysForThisChild)
+							.weightNet(weightForThisChild)
+							.build();
 					parentBuilderOrNull.childHU(currentChild);
 				}
 			}
@@ -240,16 +271,15 @@ public class HURepository
 
 		private ImmutableMap<ProductId, Quantity> extractProductsAndQuantities(@NonNull final I_M_HU huRecord)
 		{
-			final ImmutableMap<ProductId, Quantity> productsAndQuantities = handlingUnitsBL
+			return handlingUnitsBL
 					.getStorageFactory()
 					.getStorage(huRecord).getProductStorages()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(
 							IHUProductStorage::getProductId,
 							IHUProductStorage::getQtyInStockingUOM));
-			return productsAndQuantities;
 		}
-		
+
 		@Nullable
 		private Quantity extractWeightNetOrNull(@NonNull final IAttributeStorage attributeStorage)
 		{
@@ -266,35 +296,22 @@ public class HURepository
 			}
 		}
 
-		private ImmutableMap<ProductId, Quantity> divideQuantities(
-				@NonNull final ImmutableMap<ProductId, Quantity> productsAndQuantities,
-				final int divisor)
-		{
-			final ImmutableSet<Entry<ProductId, Quantity>> entrySet = productsAndQuantities.entrySet();
-			final BigDecimal divisorBD = new BigDecimal(divisor);
-			return entrySet
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							Entry::getKey,
-							e -> e.getValue().divide(divisorBD)));
-
-		}
-
-		private Optional<PackagingCode> extractPackagingCodeId(@NonNull final I_M_HU hu)
+		@Nullable
+		private PackagingCode extractPackagingCodeId(@NonNull final I_M_HU hu)
 		{
 			final I_M_HU_PI_Version piVersionrecord = loadOutOfTrx(hu.getM_HU_PI_Version_ID(), I_M_HU_PI_Version.class);
 			final int packagingCodeRecordId = piVersionrecord.getM_HU_PackagingCode_ID();
 			if (packagingCodeRecordId <= 0)
 			{
-				return Optional.empty();
+				return null;
 			}
 			final I_M_HU_PackagingCode packagingCodeRecord = loadOutOfTrx(packagingCodeRecordId, I_M_HU_PackagingCode.class);
 
-			return Optional.of(PackagingCode.builder()
-									   .id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
-									   .onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
-									   .value(packagingCodeRecord.getPackagingCode())
-									   .build());
+			return PackagingCode.builder()
+					.id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
+					.onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
+					.value(packagingCodeRecord.getPackagingCode())
+					.build();
 
 		}
 

@@ -25,7 +25,7 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.scannable_code.JsonPrintableScannedCode;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
@@ -36,6 +36,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Set;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -44,7 +45,8 @@ public class JsonWorkflowLaunchersList
 {
 	int count;
 	@Nullable ImmutableList<JsonWorkflowLauncher> launchers;
-	@Nullable JsonDisplayableQRCode filterByQRCode;
+	@Nullable JsonPrintableScannedCode filterByQRCode;
+	Set<String> actions;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
@@ -62,7 +64,7 @@ public class JsonWorkflowLaunchersList
 	{
 		final JsonWorkflowLaunchersListBuilder builder = builder()
 				.count(result.size())
-				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJsonDisplayableQRCode() : null)
+				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJson() : null)
 				.computedTime(result.getTimestamp());
 
 		if (!countOnly)
@@ -74,6 +76,8 @@ public class JsonWorkflowLaunchersList
 							WorkflowLauncherCaption.orderBy(adLanguage, result.getOrderByFields())))
 					.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
 					.collect(ImmutableList.toImmutableList()));
+
+			builder.actions(result.getActions());
 		}
 
 		return builder.build();

@@ -8,9 +8,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
@@ -20,6 +17,9 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabi
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -47,14 +47,14 @@ public class MSV3AvailiabilityClientTests
 {
 	private static final int UOM_ID = 1;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void manualTest()
 	{
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);

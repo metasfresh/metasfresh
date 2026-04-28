@@ -22,6 +22,7 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -134,7 +135,7 @@ import java.util.Map;
 	}
 
 	@Override
-	public void refresh(final Document processParameters)
+	public void refresh(final @NotNull Document processParameters)
 	{
 		final DocumentId adPInstanceId = processParameters.getDocumentId();
 		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(adPInstanceId);
@@ -150,7 +151,7 @@ import java.util.Map;
 	}
 
 	@Override
-	public SaveResult save(final Document processParameters)
+	public SaveResult save(final @NotNull Document processParameters)
 	{
 		final PInstanceId pinstanceId = processParameters.getDocumentId().toId(PInstanceId::ofRepoId);
 		final List<ProcessInfoParameter> piParams = processParameters.getFieldViews()
@@ -214,7 +215,7 @@ import java.util.Map;
 	}
 
 	@Override
-	public void delete(final Document processParameters)
+	public void delete(final @NotNull Document processParameters)
 	{
 		throw new UnsupportedOperationException();
 	}

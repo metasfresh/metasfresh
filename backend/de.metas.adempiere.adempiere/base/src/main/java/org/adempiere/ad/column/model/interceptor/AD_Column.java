@@ -18,6 +18,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MLookupFactory;
@@ -137,6 +138,13 @@ public class AD_Column
 					I_AD_Field.COLUMNNAME_AD_Reference_Value_ID })
 	public void onBeforeSave_ValidateReference(final I_AD_Column column)
 	{
+		boolean disableValidateOnSave = StringUtils.toBoolean(InterfaceWrapperHelper.getDynAttribute(column, "DisableValidateOnSave"));
+		if (disableValidateOnSave)
+		{
+			logger.info("Skip validating column on save because of DisableValidateOnSave=Y");
+			return;
+		}
+
 		final int adReferenceId = column.getAD_Reference_ID();
 		if (DisplayType.isAnyLookup(adReferenceId))
 		{
@@ -267,13 +275,13 @@ public class AD_Column
 		}
 		else
 		{
-			if (columnName.endsWith("_ID"))
+			if (columnName.endsWith("_ID") && displayType != DisplayType.Button)
 			{
-				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
+				throw new AdempiereException("Ending a non lookup column with `_ID` might be misleading");
 			}
 			if (columnName.endsWith("_Acct"))
 			{
-				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
+				throw new AdempiereException("Ending a non Account column with `_Acct` might be misleading");
 			}
 		}
 	}

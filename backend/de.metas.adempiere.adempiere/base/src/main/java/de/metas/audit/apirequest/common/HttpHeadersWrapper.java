@@ -34,6 +34,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -48,6 +49,19 @@ public class HttpHeadersWrapper
 	public static HttpHeadersWrapper of(final @NonNull ImmutableMultimap<String, String> keyValueHeaders)
 	{
 		return new HttpHeadersWrapper(keyValueHeaders);
+	}
+
+	@NonNull
+	public static HttpHeadersWrapper fromJson(@NonNull final String json, @NonNull final ObjectMapper objectMapper) {
+		if (Check.isBlank(json)) {
+			return HttpHeadersWrapper.of(ImmutableMultimap.of());
+		}
+
+		try {
+			return objectMapper.readValue(json, HttpHeadersWrapper.class);
+		} catch (final Exception e) {
+			throw new AdempiereException("Failed to parse HttpHeadersWrapper from JSON: " + json, e);
+		}
 	}
 
 	@JsonProperty("keyValueHeaders")

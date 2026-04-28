@@ -21,6 +21,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cost.classification.CostClassificationCategoryId;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -135,6 +137,8 @@ public class FactLine
 	@Getter private ProjectId C_Project_ID;
 	@Getter private ActivityId C_Activity_ID;
 	@Getter private int C_Campaign_ID;
+	@Getter private final CostClassificationId costClassificationId;
+	@Getter private final CostClassificationCategoryId costClassificationCategoryId;
 	@Getter private int User1_ID;
 	@Getter private int User2_ID;
 	@Getter @Setter(AccessLevel.PRIVATE) private int userElement1_ID;
@@ -183,7 +187,9 @@ public class FactLine
 			@Nullable final Optional<OrderId> salesOrderId,
 			@Nullable final Optional<String> userElementString1,
 			@Nullable final Optional<String> description,
-			@Nullable final String additionalDescription
+			@Nullable final String additionalDescription,
+			@Nullable final CostClassificationId costClassificationId,
+			@Nullable final CostClassificationCategoryId costClassificationCategoryId
 	)
 	{
 		this.services = services;
@@ -198,6 +204,8 @@ public class FactLine
 		this.accountId = computeAccountId(accountId, account);
 		this.C_SubAcct_ID = account != null ? account.getC_SubAcct_ID() : 0;
 		this.accountConceptualName = accountConceptualName;
+		this.costClassificationId = costClassificationId;
+		this.costClassificationCategoryId = costClassificationCategoryId;
 
 		this.M_Locator_ID = M_Locator_ID != null ? M_Locator_ID : 0;
 		this.C_SalesRegion_ID = computeSalesRegionId(doc, docLine, account);
@@ -590,6 +598,8 @@ public class FactLine
 				.acctSchema(acctSchema)
 				.accountId(accountId)
 				.accountConceptualName(accountConceptualName)
+				.costClassificationId(costClassificationId)
+				.costClassificationCategoryId(costClassificationCategoryId)
 				.qty(this.qty.negate())
 				.clientId(AD_Client_ID)
 				.orgId(orgId)
@@ -619,6 +629,8 @@ public class FactLine
 				.acctSchema(acctSchema)
 				.accountId(accountId)
 				.accountConceptualName(accountConceptualName)
+				.costClassificationId(costClassificationId)
+				.costClassificationCategoryId(costClassificationCategoryId)
 				.clientId(AD_Client_ID)
 				.orgId(orgId)
 				.build();
@@ -716,7 +728,6 @@ public class FactLine
 		return Optional.ofNullable(value)
 				.map(date -> date.toInstant(doc.getServices()::getTimeZone));
 	}
-
 
 	public CurrencyId getAcctCurrencyId()
 	{
@@ -1310,7 +1321,13 @@ public class FactLine
 		this.C_Campaign_ID = dimension.getCampaignId();
 		this.C_Activity_ID = dimension.getActivityId();
 		this.C_OrderSO_ID = dimension.getSalesOrderId();
-		this.M_Product_ID = dimension.getProductId();
+		if (dimension.getProductId() != null)
+		{
+			// NOTE: because the product dimension not usually populated for various other reasons
+			// we are copying it only if is set
+			// if is not set (because we cannot make a distinction between not set or really null) we skip copying it
+			this.M_Product_ID = dimension.getProductId();
+		}
 		this.C_BPartner2_ID = dimension.getBpartnerId2();
 		this.User1_ID = dimension.getUser1_ID();
 		this.User2_ID = dimension.getUser2_ID();
@@ -1517,18 +1534,36 @@ public class FactLine
 		}
 
 		this.taxId = taxId;
-		this.vatCode = computeVATCode().map(VATCode::getCode).orElse(null);
+		this.vatCode = computeVATCode(null).map(VATCode::getCode).orElse(null);
 
 	}
 
-	private Optional<VATCode> computeVATCode()
+	/**
+	 * Overload for reverse-charge legs: forces the {@code IsSOTrx} used for VATCode lookup,
+	 * since both T_Due_Acct (output, §13b USt) and T_Credit_Acct (input, §13b VSt) legs are
+	 * posted from the same DocLine whose doc-level {@code IsSOTrx} can't distinguish them.
+	 */
+	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
+	{
+		this.taxId = taxId;
+		this.vatCode = computeVATCode(isSOTrxOverride).map(VATCode::getCode).orElse(null);
+	}
+
+	public void setVatCode(@Nullable final String vatCode)
+	{
+		this.vatCode = vatCode;
+	}
+
+	private Optional<VATCode> computeVATCode(@Nullable final Boolean isSOTrxOverride)
 	{
 		if (taxId == null)
 		{
 			return Optional.empty();
 		}
 
-		final boolean isSOTrx = m_docLine != null ? m_docLine.isSOTrx() : m_doc.isSOTrx();
+		final boolean isSOTrx = isSOTrxOverride != null
+				? isSOTrxOverride
+				: (m_docLine != null ? m_docLine.isSOTrx() : m_doc.isSOTrx());
 		return services.findVATCode(VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(getAcctSchemaId().getRepoId())
 				.setC_Tax_ID(taxId.getRepoId())

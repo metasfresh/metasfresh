@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.packageable;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -35,11 +36,15 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
+
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 /*
  * #%L
@@ -78,7 +83,7 @@ final class PackageableRowsRepository
 
 	public PackageableRowsRepository(
 			@NonNull final MoneyService moneyService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.moneyService = moneyService;
 
@@ -94,9 +99,9 @@ final class PackageableRowsRepository
 		return PackageableRowsData.builder().repo(this);
 	}
 
-	List<PackageableRow> retrieveRows(final DocumentFilterList filters)
+	List<PackageableRow> retrieveRows(final DocumentFilterList filters, @Nullable final Set<ShipmentScheduleId> onlyShipmentScheduleIds)
 	{
-		final PackageableQuery query = createPackageableQuery(filters);
+		final PackageableQuery query = createPackageableQuery(filters, onlyShipmentScheduleIds);
 
 		return packageablesRepo.stream(query)
 				.collect(GuavaCollectors.toImmutableListMultimap(PackageableRowsRepository::extractGroupingKey))
@@ -109,16 +114,20 @@ final class PackageableRowsRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static PackageableQuery createPackageableQuery(final DocumentFilterList filters)
+	private static PackageableQuery createPackageableQuery(final DocumentFilterList filters, @Nullable final Set<ShipmentScheduleId> onlyShipmentScheduleIds)
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
+		final ZonedDateTime zonedDateTime = asZonedDateTime();
 		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
+				.onlyShipmentScheduleIds(onlyShipmentScheduleIds)
 				.salesOrderId(filterVO.getSalesOrderId())
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
 				.preparationDate(filterVO.getPreparationDate())
+				.maximumFixedPreparationDate(zonedDateTime)
+				.maximumFixedPromisedDate(zonedDateTime)
 				.shipperId(filterVO.getShipperId());
 
 		if (filterVO.getCustomerId() != null)

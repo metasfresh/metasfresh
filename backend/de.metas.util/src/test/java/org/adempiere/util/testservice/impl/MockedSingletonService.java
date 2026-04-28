@@ -22,16 +22,15 @@ package org.adempiere.util.testservice.impl;
  * #L%
  */
 
-
 import org.adempiere.util.testservice.IMockedSingletonService;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class MockedSingletonService implements IMockedSingletonService
 {
 	public static transient int NEXT_INSTANCE_NUMBER = 1;
 
-	public static final void resetNextInstanceNumber()
+	public static void resetNextInstanceNumber()
 	{
 		NEXT_INSTANCE_NUMBER = 1;
 	}
@@ -40,7 +39,6 @@ public class MockedSingletonService implements IMockedSingletonService
 
 	public MockedSingletonService()
 	{
-		super();
 		instanceNo = NEXT_INSTANCE_NUMBER;
 		NEXT_INSTANCE_NUMBER++;
 	}

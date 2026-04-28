@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -68,4 +70,6 @@ public class OrderId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+
+	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_C_Order.Table_Name, repoId);}
 }

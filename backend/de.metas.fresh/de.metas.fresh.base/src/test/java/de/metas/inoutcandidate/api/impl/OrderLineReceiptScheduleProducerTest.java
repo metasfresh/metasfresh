@@ -25,12 +25,13 @@ package de.metas.inoutcandidate.api.impl;
 import java.util.Collections;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
@@ -39,6 +40,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 {
@@ -69,10 +72,119 @@ public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBas
 		createOrderLine(order, product);
 
 		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
-		final List<I_M_ReceiptSchedule> receiptSched = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
+		final List<I_M_ReceiptSchedule> receiptSched = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule>emptyList());
 
-		Assert.assertEquals("Invalid M_Warehouse_ID", orderWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_ID());
-		Assert.assertEquals("Invalid M_Warehouse_Override_ID", 0, receiptSched.get(0).getM_Warehouse_Override_ID());
-		Assert.assertEquals("Invalid M_Warehouse_Dest_ID", productWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_Dest_ID());
+		Assertions.assertEquals(orderWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_ID(), "Invalid M_Warehouse_ID");
+		Assertions.assertEquals(0, receiptSched.get(0).getM_Warehouse_Override_ID(), "Invalid M_Warehouse_Override_ID");
+		Assertions.assertEquals(productWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_Dest_ID(), "Invalid M_Warehouse_Dest_ID");
+	}
+
+	/**
+	 * Verify that POReference set on a receipt schedule is NOT overwritten
+	 * when the receipt schedule is updated (e.g. after PO reactivation + re-completion).
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void poReference_isPreservedOnUpdate()
+	{
+		final I_M_Warehouse orderWarehouse = createWarehouse("WH_Order");
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM2");
+		final I_M_Product product = createProduct("Test Product 2", UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), null);
+
+		final I_C_Order order = createOrder(orderWarehouse);
+		order.setPOReference("ORDER-REF-001");
+		InterfaceWrapperHelper.save(order);
+
+		createOrderLine(order, product);
+
+		// Create the receipt schedule (initial creation)
+		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
+		final List<I_M_ReceiptSchedule> receiptSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(receiptSchedules).hasSize(1);
+
+		final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+		assertThat(receiptSchedule.getPOReference()).isEqualTo("ORDER-REF-001");
+
+		// Simulate user manually changing the POReference on the receipt schedule
+		receiptSchedule.setPOReference("MANUAL-REF-999");
+		InterfaceWrapperHelper.save(receiptSchedule);
+
+		// Simulate PO re-completion: the producer runs createOrUpdateReceiptSchedules again.
+		// Since the receipt schedule already exists, it takes the update path
+		// which should NOT overwrite the manually set POReference.
+		final List<I_M_ReceiptSchedule> updatedSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(updatedSchedules).hasSize(1);
+
+		// Reload from DB to verify persistence
+		InterfaceWrapperHelper.refresh(receiptSchedule);
+		assertThat(receiptSchedule.getPOReference())
+				.as("POReference should be preserved after receipt schedule update")
+				.isEqualTo("MANUAL-REF-999");
+	}
+
+	/**
+	 * Verify that POReference IS set from the order when creating a NEW receipt schedule.
+	 */
+	@Test
+	public void poReference_isSetFromOrderOnCreation()
+	{
+		final I_M_Warehouse orderWarehouse = createWarehouse("WH_Order");
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM3");
+		final I_M_Product product = createProduct("Test Product 3", UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), null);
+
+		final I_C_Order order = createOrder(orderWarehouse);
+		order.setPOReference("NEW-ORDER-REF");
+		InterfaceWrapperHelper.save(order);
+
+		createOrderLine(order, product);
+
+		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
+		final List<I_M_ReceiptSchedule> receiptSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+
+		assertThat(receiptSchedules).hasSize(1);
+		assertThat(receiptSchedules.get(0).getPOReference())
+				.as("POReference should be set from order on initial creation")
+				.isEqualTo("NEW-ORDER-REF");
+	}
+
+	/**
+	 * Verify that when the receipt schedule's POReference is blank,
+	 * the order's POReference IS synced on update.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void poReference_isSyncedFromOrderWhenBlank()
+	{
+		final I_M_Warehouse orderWarehouse = createWarehouse("WH_Order");
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM4");
+		final I_M_Product product = createProduct("Test Product 4", UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), null);
+
+		// Create order without POReference initially
+		final I_C_Order order = createOrder(orderWarehouse);
+		InterfaceWrapperHelper.save(order);
+
+		createOrderLine(order, product);
+
+		// Create the receipt schedule (initial creation — POReference is blank)
+		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
+		final List<I_M_ReceiptSchedule> receiptSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(receiptSchedules).hasSize(1);
+
+		final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+		assertThat(receiptSchedule.getPOReference()).isNullOrEmpty();
+
+		// Now set POReference on the order (simulating PO reactivation + edit + re-complete)
+		order.setPOReference("LATE-REF-001");
+		InterfaceWrapperHelper.save(order);
+
+		// Update: since the receipt schedule's POReference is blank, it should sync from order
+		final List<I_M_ReceiptSchedule> updatedSchedules = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+		assertThat(updatedSchedules).hasSize(1);
+
+		assertThat(updatedSchedules.get(0).getPOReference())
+				.as("Blank POReference should be synced from order on update")
+				.isEqualTo("LATE-REF-001");
 	}
 }

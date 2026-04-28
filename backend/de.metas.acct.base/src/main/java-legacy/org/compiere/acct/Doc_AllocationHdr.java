@@ -286,9 +286,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 
 				//
-				// Sales invoice - purchase invoice
+				// Invoice to Invoice compensation
 				{
-					final AmountSourceAndAcct compensationAmt = createPurchaseSalesInvoiceFacts(fact, line);
+					final AmountSourceAndAcct compensationAmt = createInvoiceToInvoiceCompensationFacts(fact, line);
 					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(compensationAmt);
 				}
 
@@ -376,8 +376,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				{
 					// Originally on Credit. The amount must be moved to Debit
 					fl_PaymentBuilder
-							.setCurrencyId(getCurrencyId())
-							.setAmtSourceDrOrCr(allocatedAmt)
+							.setAmtSource(getCurrencyId(), allocatedAmt, null)
 							.alsoAddZeroLine()
 							.buildAndAdd();
 				}
@@ -754,9 +753,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
+
+		// Determine account based on WriteOffType: bank fee uses PayBankFee_Acct, standard write-off uses WriteOff_Acct
+		final Account writeOffAcct;
+		if (line.isBankFeeWriteOff())
+		{
+			writeOffAcct = line.getBankFeeAccount(as.getId())
+					.orElseThrow(() -> newPostingException()
+							.setDocLine(line)
+							.setAcctSchema(as)
+							.setDetailMessage("PayBankFee_Acct not configured for the payment's bank account"));
+		}
+		else
+		{
+			writeOffAcct = getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as);
+		}
+
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as))
+				.setAccount(writeOffAcct)
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
 				.bPartnerAndLocationId(line.getPaymentBPartnerId(), line.getPaymentBPartnerLocationId())
@@ -887,21 +902,21 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Creates the {@link FactLine} to book the purchase - sales invoice compensation
+	 * Creates the {@link FactLine} to book the invoice-to-invoice compensation
 	 */
-	private AmountSourceAndAcct createPurchaseSalesInvoiceFacts(final Fact fact, final DocLine_Allocation line)
+	private AmountSourceAndAcct createInvoiceToInvoiceCompensationFacts(final Fact fact, final DocLine_Allocation line)
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
-		// Do nothing if this is not a compensation line or it was already compensated
+		// Do nothing if this is not a compensation line, or it was already compensated
 		if (!line.isSalesPurchaseInvoiceToCompensate(as.getId()))
 		{
 			return AmountSourceAndAcct.ZERO;
 		}
 
 		//
-		// Make sure the line is valid compensation line
-		Check.assume(!line.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", line);
+		// Make sure the line is a valid compensation line
+		Check.assume(!line.hasPaymentDocument(), "A invoice-to-invoice compensation line shall not have a payment document set: {}", line);
 
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
 		if (compensationAmtSource.signum() == 0)
@@ -913,11 +928,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		Check.assumeNotNull(counterLine, "counterLine not null");
 
 		//
-		// Make sure the counter line is valid compensation line
-		Check.assume(!counterLine.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", counterLine);
+		// Make sure the counter-line is a valid compensation line
+		Check.assume(!counterLine.hasPaymentDocument(), "A invoice-to-invoice compensation line shall not have a payment document set: {}", counterLine);
 
 		//
-		// Make sure it's not cash based accounting => we are not supporting that case.
+		// Make sure it's not cash-based accounting => we are not supporting that case.
 		if (!as.isAccrual())
 		{
 			throw newPostingException()
@@ -927,7 +942,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		//
-		// Make sure the compensation amount of this line and of it's counter part are matching
+		// Make sure the compensation amount of this line and of its counterpart are matching
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
 		if (compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0)
 		{
@@ -938,7 +953,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		//
-		// Create the fact line to book the counter invoice
+		// Create the fact line to book the counter-invoice
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
@@ -955,7 +970,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine factLine = factLineBuilder.buildAndAddNotNull();
 
 		//
 		// Mark the lines as compensated
@@ -1269,7 +1284,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get discount and write off amounts to be corrected
 		final Money discountAmt = taxCorrectionType.isDiscount() ? line.getDiscountAmt() : line.getDiscountAmt().toZero();
-		final Money writeOffAmt = taxCorrectionType.isWriteOff() ? line.getWriteOffAmt() : line.getWriteOffAmt().toZero();
+		// Bank fees are VAT-neutral — skip tax correction regardless of schema's TaxCorrectionType
+		final Money writeOffAmt;
+		if (line.isBankFeeWriteOff())
+		{
+			writeOffAmt = line.getWriteOffAmt().toZero();
+		}
+		else
+		{
+			writeOffAmt = taxCorrectionType.isWriteOff() ? line.getWriteOffAmt() : line.getWriteOffAmt().toZero();
+		}
 		if (discountAmt.signum() == 0 && writeOffAmt.signum() == 0)
 		{
 			// no amounts => nothing to do
@@ -1512,13 +1536,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (taxFactAcct.getAmtSourceDr().signum() != 0)
 				{
 					final MoneySourceAndAcct invoiceTaxAmt = extractMoneySourceAndAcctDebit(taxFactAcct, as);
-					final MoneySourceAndAcct amountCMAdjusted = calcAmount(
-							invoiceTaxAmt,
-							invoiceGrandTotalAmt,
-							m_DiscountAmt,
-							acctPrecision,
-							line.isCreditMemoInvoice());
-					if (amountCMAdjusted.signum() != 0)
+					final MoneySourceAndAcct taxAmtAdjustment = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, acctPrecision);
+					if (taxAmtAdjustment.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt=" + invoiceTaxAmt + ", GrandTotal=" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
 
@@ -1532,8 +1551,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
-									.setAmt(amountCMAdjusted, null)
-									.setC_Tax_ID(taxId)
+									.setAmt(taxAmtAdjustment, null)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1541,8 +1560,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
-									.setAmt(null, amountCMAdjusted)
-									.setC_Tax_ID(taxId)
+									.setAmt(null, taxAmtAdjustment)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1554,8 +1573,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
-									.setAmt(amountCMAdjusted.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setAmt(taxAmtAdjustment.negate(), null)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1563,8 +1582,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
-									.setAmt(null, amountCMAdjusted.negate())
-									.setC_Tax_ID(taxId)
+									.setAmt(null, taxAmtAdjustment.negate())
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1577,13 +1596,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				else
 				{
 					final MoneySourceAndAcct invoiceTaxAmt = extractMoneySourceAndAcctCredit(taxFactAcct, as);
-					final MoneySourceAndAcct amountCMAdjusted = calcAmount(
-							invoiceTaxAmt,
-							invoiceGrandTotalAmt,
-							m_DiscountAmt,
-							acctPrecision,
-							line.isCreditMemoInvoice());
-					if (amountCMAdjusted.signum() != 0)
+					final MoneySourceAndAcct taxAmtAdjustment = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, acctPrecision);
+					if (taxAmtAdjustment.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt=" + invoiceTaxAmt + ", GrandTotal=" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
 
@@ -1597,8 +1611,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
-									.setAmt(amountCMAdjusted, null)
-									.setC_Tax_ID(taxId)
+									.setAmt(taxAmtAdjustment, null)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1607,8 +1621,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
-									.setAmt(null, amountCMAdjusted)
-									.setC_Tax_ID(taxId)
+									.setAmt(null, taxAmtAdjustment)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1620,8 +1634,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
-									.setAmt(amountCMAdjusted.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setAmt(taxAmtAdjustment.negate(), null)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1630,8 +1644,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
-									.setAmt(null, amountCMAdjusted.negate())
-									.setC_Tax_ID(taxId)
+									.setAmt(null, taxAmtAdjustment.negate())
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1648,8 +1662,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (taxFactAcct.getAmtSourceDr().signum() != 0)
 				{
 					final MoneySourceAndAcct invoiceTaxAmt = extractMoneySourceAndAcctDebit(taxFactAcct, as);
-					final MoneySourceAndAcct amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, acctPrecision, line.isCreditMemoInvoice());
-					if (amountCMAdjusted.signum() != 0)
+					final MoneySourceAndAcct taxAmtAdjustment = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, acctPrecision);
+					if (taxAmtAdjustment.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt=" + invoiceTaxAmt + ", GrandTotal=" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
 
@@ -1660,8 +1674,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						fact.createLine()
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
-								.setAmt(amountCMAdjusted, null)
-								.setC_Tax_ID(taxId)
+								.setAmt(taxAmtAdjustment, null)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 
@@ -1669,8 +1683,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						fact.createLine()
 								.setDocLine(line)
 								.setAccount(taxAcct)
-								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId)
+								.setAmt(null, taxAmtAdjustment)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1680,7 +1694,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				else
 				{
 					final MoneySourceAndAcct invoiceTaxAmt = extractMoneySourceAndAcctCredit(taxFactAcct, as);
-					final MoneySourceAndAcct amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, acctPrecision, line.isCreditMemoInvoice());
+					final MoneySourceAndAcct amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, acctPrecision);
 					if (amountCMAdjusted.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt=" + invoiceTaxAmt + ", GrandTotal=" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
@@ -1693,7 +1707,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(amountCMAdjusted, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1703,7 +1717,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 					}
@@ -1728,8 +1742,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final MoneySourceAndAcct taxAmt,
 			final MoneySourceAndAcct invoiceGrandTotalAmt,
 			final Money discountAmt,
-			final CurrencyPrecision acctPrecision,
-			final boolean isCreditMemoInvoice)
+			final CurrencyPrecision acctPrecision)
 	{
 		if (taxAmt.signum() == 0
 				|| invoiceGrandTotalAmt.signum() == 0
@@ -1742,8 +1755,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		return taxAmt.divide(invoiceGrandTotalAmt, CurrencyPrecision.TEN)
 				.multiply(discountAmt.toBigDecimal())
-				.roundIfNeeded(sourcePrecision, acctPrecision)
-				.negateIf(isCreditMemoInvoice);
+				.roundIfNeeded(sourcePrecision, acctPrecision);
 	}
 
 	private static MoneySourceAndAcct extractMoneySourceAndAcctDebit(final I_Fact_Acct factAcct, final AcctSchema as)

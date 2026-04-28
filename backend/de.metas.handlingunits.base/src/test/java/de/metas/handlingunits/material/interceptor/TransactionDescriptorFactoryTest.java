@@ -18,11 +18,11 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class TransactionDescriptorFactoryTest
 {
 	private TransactionDescriptorFactory transactionDescriptorFactory;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

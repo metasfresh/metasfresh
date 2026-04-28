@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements I_MobileUI_UserProfile_DD, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1668751079L;
+	private static final long serialVersionUID = -1507138603L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_DD (final Properties ctx, final int MobileUI_UserProfile_DD_ID, @Nullable final String trxName)
@@ -44,6 +44,90 @@ public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements 
 	public boolean isAllowPickingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public void setIsAllowStartNextJobOnly (final boolean IsAllowStartNextJobOnly)
+	{
+		set_Value (COLUMNNAME_IsAllowStartNextJobOnly, IsAllowStartNextJobOnly);
+	}
+
+	@Override
+	public boolean isAllowStartNextJobOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowStartNextJobOnly);
+	}
+
+	@Override
+	public void setIsCompleteJobAutomatically (final boolean IsCompleteJobAutomatically)
+	{
+		set_Value (COLUMNNAME_IsCompleteJobAutomatically, IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public boolean isCompleteJobAutomatically() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public void setIsNavigateToJobsListAfterPickFromComplete (final boolean IsNavigateToJobsListAfterPickFromComplete)
+	{
+		set_Value (COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete, IsNavigateToJobsListAfterPickFromComplete);
+	}
+
+	@Override
+	public boolean isNavigateToJobsListAfterPickFromComplete() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete);
+	}
+
+	@Override
+	public void setIsRequireScanningProductCode (final boolean IsRequireScanningProductCode)
+	{
+		set_Value (COLUMNNAME_IsRequireScanningProductCode, IsRequireScanningProductCode);
+	}
+
+	@Override
+	public boolean isRequireScanningProductCode() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRequireScanningProductCode);
+	}
+
+	@Override
+	public void setIsRequireTrolley (final boolean IsRequireTrolley)
+	{
+		set_Value (COLUMNNAME_IsRequireTrolley, IsRequireTrolley);
+	}
+
+	@Override
+	public boolean isRequireTrolley() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRequireTrolley);
+	}
+
+	@Override
+	public void setMaxLaunchers (final int MaxLaunchers)
+	{
+		set_Value (COLUMNNAME_MaxLaunchers, MaxLaunchers);
+	}
+
+	@Override
+	public int getMaxLaunchers() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxLaunchers);
+	}
+
+	@Override
+	public void setMaxStartedLaunchers (final int MaxStartedLaunchers)
+	{
+		set_Value (COLUMNNAME_MaxStartedLaunchers, MaxStartedLaunchers);
+	}
+
+	@Override
+	public int getMaxStartedLaunchers() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxStartedLaunchers);
 	}
 
 	@Override

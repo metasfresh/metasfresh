@@ -75,7 +75,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -391,7 +390,7 @@ public class HUTracerInstance
 		}
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttr.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(huAttr.getM_Attribute_ID());
 		final String attrName = attribute == null ? "(no name?)" : attribute.getName();
 
 		return attrName

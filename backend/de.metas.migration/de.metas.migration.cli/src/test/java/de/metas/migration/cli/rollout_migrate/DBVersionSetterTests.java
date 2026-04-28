@@ -1,11 +1,8 @@
 package de.metas.migration.cli.rollout_migrate;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
-import de.metas.migration.cli.rollout_migrate.DBVersionSetter;
-import de.metas.migration.cli.rollout_migrate.RolloutMigrate;
 
 /*
  * #%L

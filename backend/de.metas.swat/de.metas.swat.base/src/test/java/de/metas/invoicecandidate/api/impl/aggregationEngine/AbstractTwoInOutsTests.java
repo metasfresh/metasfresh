@@ -22,20 +22,19 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test case:
@@ -44,12 +43,11 @@ import de.metas.quantity.StockQtyAndUOMQtys;
  * <li>two shipments, the first one with one line, the second one with two lines..each line has the same product etc
  * <li>both iols belong to the same order line and thus are associated to the same invoice candidate
  * </ul>
- *
+ * <p>
  * => Expectation: see subclasses
  * <p>
  *
  * @author ts
- *
  */
 public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngineTests
 {
@@ -102,22 +100,23 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines)
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
 		final BigDecimal summedQty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
-		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty));
-		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty));
+
+		assertThat(ic.getQtyDelivered()).as("Invalid QtyToDeliver on the IC level").isEqualByComparingTo(summedQty);
+		assertThat(ic.getQtyToInvoice()).as("Invalid QtyToInvoice on the IC level").isEqualByComparingTo(summedQty);
 
 		if (config_GetPriceEntered_Override() != null)
 		{
 			final ProductPrice priceEntered = invoiceCandBL.getPriceEnteredEffective(ic);
-			assertThat("Invalide priceEntered", priceEntered.toBigDecimal(), comparesEqualTo(config_GetPriceEntered_Override()));
+			assertThat(priceEntered.toBigDecimal()).as("Invalid priceEntered").isEqualByComparingTo(config_GetPriceEntered_Override());
 
 			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
-			assertThat("Invalide priceActual", priceActual.toBigDecimal(), comparesEqualTo(config_GetPriceEntered_Override())); // because we don't have a discount
+			assertThat(priceActual.toBigDecimal()).as("Invalid priceActual").isEqualByComparingTo(config_GetPriceEntered_Override()); // because we don't have a discount
 		}
 	}
 }

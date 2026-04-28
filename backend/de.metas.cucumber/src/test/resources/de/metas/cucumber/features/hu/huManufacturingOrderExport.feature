@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Handling unit export from manufacturing order
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -22,24 +26,23 @@ Feature: Handling unit export from manufacturing order
       | locatorHauptlager       | warehouseStd              | Hauptlager |
 
     And metasfresh contains M_Products:
-      | Identifier              | Name                 | HUClearanceStatus |
-      | manufacturingProduct_HU | manufacturingProduct | L                 |
-      | componentProduct_HU     | componentProduct     |                   |
+      | Identifier              | HUClearanceStatus |
+      | manufacturingProduct_HU | L                 |
+      | componentProduct_HU     |                   |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name            |
-      | huPackingTU           | huPackingTU     |
-      | huPackingVirtualPI    | No Packing Item |
+      | M_HU_PI_ID.Identifier |
+      | huPackingTU           |
+      | huPackingVirtualPI    |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
-      | packingVersionCU              | huPackingVirtualPI    | No Packing Item  | V           | Y         |
+      | M_HU_PI_Version_ID | M_HU_PI_ID  | HU_UnitType | IsCurrent |
+      | packingVersionTU   | huPackingTU | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
-      | huPiItemTU                 | packingVersionTU              | 0   | MI       |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType |
+      | huPiItemTU      | packingVersionTU   | 0   | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huItemManufacturingProduct         | huPiItemTU                 | manufacturingProduct_HU | 10  | 2022-01-01 |
+      | M_HU_PI_Item_Product_ID    | M_HU_PI_Item_ID | M_Product_ID            | Qty | ValidFrom  |
+      | huItemManufacturingProduct | huPiItemTU      | manufacturingProduct_HU | 10  | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier        | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
@@ -59,8 +62,8 @@ Feature: Handling unit export from manufacturing order
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | 2022-01-05T23:59:00.00Z | Y                |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
+      | PP_Order_ID           | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder_manufacturing | ppOrderTU          | N               | 0     | N               | 1     | N               | 10          | huItemManufacturingProduct         |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -75,7 +78,7 @@ Feature: Handling unit export from manufacturing order
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.M_HU_Parent.Identifier |
       | ppOrderTU          | packingVersionTU              | A        | locatorHauptlager           |                            |
-      | ppOrderCU          | packingVersionCU              | A        | locatorHauptlager           | ppOrderTU                  |
+      | ppOrderCU          | 101                           | A        | locatorHauptlager           | ppOrderTU                  |
 
     And validate M_HU_Storage:
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
@@ -90,14 +93,14 @@ Feature: Handling unit export from manufacturing order
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_manufacturing             | ppOrderTU              |
 
-    When store HU endpointPath /api/v2/material/handlingunits/byId/:ppOrderTU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/@ppOrderTU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName    | products.productValue   | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct_HU | manufacturingProduct_HU | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
+      | ppOrderCU          | CU         |             | manufacturingProduct_HU | manufacturingProduct_HU | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

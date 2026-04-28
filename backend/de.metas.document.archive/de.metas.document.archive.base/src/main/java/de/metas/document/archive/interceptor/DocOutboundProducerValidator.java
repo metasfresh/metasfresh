@@ -9,8 +9,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
+import org.adempiere.ad.table.api.AdTableId;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -28,9 +27,9 @@ import org.compiere.model.PO;
 	private final ModelValidationEngine modelValidationEngine;
 	private int m_AD_Client_ID = -1;
 
-	public DocOutboundProducerValidator(@NonNull final ModelValidationEngine modelValidationEngine, final I_C_Doc_Outbound_Config config)
+	public DocOutboundProducerValidator(@NonNull final ModelValidationEngine modelValidationEngine, final AdTableId tableId)
 	{
-		super(config);
+		super(tableId);
 
 		this.modelValidationEngine = modelValidationEngine;
 	}
@@ -38,27 +37,12 @@ import org.compiere.model.PO;
 	@Override
 	public void init(final IDocOutboundProducerService producerService)
 	{
-		// Detect AD_Client to be used for registering
-		final I_C_Doc_Outbound_Config config = getC_Doc_Outbound_Config();
-		final int adClientId = config.getAD_Client_ID();
-
-		if (adClientId > 0)
-		{
-			final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
-			modelValidationEngine.addModelValidator(this, client);
-		}
-		else
-		{
-			// register for all clients
-			modelValidationEngine.addModelValidator(this);
-		}
+		modelValidationEngine.addModelValidator(this);
 	}
 
-	// NOTE: keep in sync with initialize method
 	@Override
 	public void destroy(final IDocOutboundProducerService producerService)
 	{
-		// Unregister from model validation engine
 		final String tableName = getTableName();
 		modelValidationEngine.removeModelChange(tableName, this);
 		modelValidationEngine.removeDocValidate(tableName, this);
@@ -98,7 +82,7 @@ import org.compiere.model.PO;
 	}
 
 	@Override
-	public String modelChange(PO po, int type)
+	public String modelChange(final PO po, final int type)
 	{
 		if (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE)
 		{

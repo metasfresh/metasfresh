@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -18,11 +19,12 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
-import org.junit.Ignore;
+
 
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * #%L
@@ -46,7 +48,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Ignore
+@Disabled
 class PricingConditionsTestUtils
 {
 	public static I_M_Product createM_Product(final String value)
@@ -135,6 +137,7 @@ class PricingConditionsTestUtils
 		final I_M_Attribute attr = newInstance(I_M_Attribute.class);
 		attr.setValue(attrName);
 		attr.setName(attrName);
+		attr.setAttributeValueType(AttributeValueType.STRING.getCode());
 		save(attr);
 		return attr;
 	}

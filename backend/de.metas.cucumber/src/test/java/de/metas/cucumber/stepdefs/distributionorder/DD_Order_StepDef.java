@@ -27,13 +27,14 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
@@ -71,6 +72,8 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.X_DD_Order;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 @RequiredArgsConstructor
 public class DD_Order_StepDef
@@ -89,6 +92,25 @@ public class DD_Order_StepDef
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 
+	/**
+	 * @cucumber.stepdef Creates DD_Order header records.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — step-internal identifier for cross-step reference</li>
+	 *   <li>{@code M_Warehouse_ID.From} — identifier of the source warehouse</li>
+	 *   <li>{@code M_Warehouse_ID.To} — identifier of the target warehouse</li>
+	 *   <li>{@code M_Warehouse_ID.Transit} — identifier of the transit (in-transit) warehouse</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code C_BPartner_ID} — identifier of the business partner (defaults to org-linked BPartner)</li>
+	 *   <li>{@code S_Resource_ID} — identifier of the plant (PP_Plant)</li>
+	 *   <li>{@code C_DocType_ID.Name} — name of the doc type (defaults to first matching Distribution Order doc type)</li>
+	 *   <li>{@code DatePromised} — promised date (defaults to system time); used as supply date by material dispo</li>
+	 *   <li>{@code DateOrdered} — order date (defaults to system time)</li>
+	 * </ul>
+	 */
 	@And("metasfresh contains DD_Orders:")
 	public void metasfresh_contains_dd_orders(@NonNull final DataTable dataTable)
 	{
@@ -106,9 +128,9 @@ public class DD_Order_StepDef
 							? bpartnerDAO.retrieveBPartnerLocationId(BPartnerLocationQuery.builder().bpartnerId(bpartnerId).type(BPartnerLocationQuery.Type.SHIP_TO).build())
 							: null;
 
-					final WarehouseId fromWarehouseId = row.getAsIdentifier("M_Warehouse_ID.From").lookupIdIn(warehouseTable);
-					final WarehouseId toWarehouseId = row.getAsIdentifier("M_Warehouse_ID.To").lookupIdIn(warehouseTable);
-					final WarehouseId transitWarehouseId = row.getAsIdentifier("M_Warehouse_ID.Transit").lookupIdIn(warehouseTable);
+					final WarehouseId fromWarehouseId = row.getAsIdentifier("M_Warehouse_ID.From").lookupNotNullIdIn(warehouseTable);
+					final WarehouseId toWarehouseId = row.getAsIdentifier("M_Warehouse_ID.To").lookupNotNullIdIn(warehouseTable);
+					final WarehouseId transitWarehouseId = row.getAsIdentifier("M_Warehouse_ID.Transit").lookupNotNullIdIn(warehouseTable);
 
 					final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstanceOutOfTrx(I_DD_Order.class);
 					ddOrder.setAD_Org_ID(orgId.getRepoId());
@@ -121,6 +143,16 @@ public class DD_Order_StepDef
 					ddOrder.setIsSOTrx(false);
 					ddOrder.setIsInTransit(false);
 					ddOrder.setDeliveryRule(X_DD_Order.DELIVERYRULE_Availability);
+
+					final Timestamp defaultTimestamp = Timestamp.from(SystemTime.asInstant());
+					ddOrder.setDatePromised(row.getAsOptionalString(I_DD_Order.COLUMNNAME_DatePromised)
+							.map(Instant::parse)
+							.map(Timestamp::from)
+							.orElse(defaultTimestamp));
+					ddOrder.setDateOrdered(row.getAsOptionalString(I_DD_Order.COLUMNNAME_DateOrdered)
+							.map(Instant::parse)
+							.map(Timestamp::from)
+							.orElse(defaultTimestamp));
 
 					row.getAsOptionalIdentifier("S_Resource_ID")
 							.map(plantIdentifier -> resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class)))
@@ -145,6 +177,12 @@ public class DD_Order_StepDef
 				.build());
 	}
 
+	/**
+	 * @cucumber.stepdef Performs a document action on a DD_Order identified by its step-internal identifier.
+	 * <p>
+	 * Currently supported actions: {@code completed}.
+	 * The DD_Order must have been previously created and registered via {@code metasfresh contains DD_Orders:}.
+	 */
 	@And("^the dd_order identified by (.*) is (completed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String actionStr)
 	{
@@ -164,6 +202,21 @@ public class DD_Order_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Polls for DD_Orders until they match the expected values or the timeout is reached.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — step-internal identifier (must reference a previously created DD_Order)</li>
+	 * </ul>
+	 * Optional validation columns:
+	 * <ul>
+	 *   <li>{@code DocStatus} — expected document status (e.g. {@code Completed}, {@code Closed})</li>
+	 *   <li>{@code Forward_PP_Order_ID} — expected forward PP_Order identifier</li>
+	 *   <li>{@code Forward_PP_Order_BOMLine_ID} — expected forward PP_Order BOM line identifier</li>
+	 *   <li>{@code C_Order_ID} — expected sales order identifier</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, following DD_Orders are found$")
 	public void validateDDOrders(final int timeoutSec, @NonNull final DataTable dataTable)
 	{

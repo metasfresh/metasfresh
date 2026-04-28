@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.plan.model;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -39,7 +39,7 @@ import java.util.Objects;
 @Builder(toBuilder = true)
 public class SourceDocumentInfo
 {
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 	@Nullable OrderAndLineId salesOrderLineId;
 	@Nullable ShipperId shipperId;
 	@NonNull PackToSpec packToSpec;

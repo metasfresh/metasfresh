@@ -49,10 +49,9 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -275,7 +274,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final I_M_InOutLine receiptLineWithIssues,
 			final HUReceiptLineCandidate receiptLineCandidate)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(receiptLineWithIssues);
@@ -293,7 +292,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, qualityNoteAttributeId);
+		I_M_AttributeInstance ai = asiBL.getAttributeInstance(asiId, qualityNoteAttributeId);
 
 		if (ai == null)
 		{
@@ -301,7 +300,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// + "\n ASI=" + asi
 			// + "\n Attribute=" + huTrxAttribute.getM_Attribute());
 
-			ai = attributeDAO.createNewAttributeInstance(ctx, asi, qualityNoteAttributeId, trxName);
+			ai = asiBL.createNewAttributeInstance(ctx, asi, qualityNoteAttributeId, trxName);
 		}
 
 		final I_M_QualityNote qualityNote = receiptLineCandidate.get_qualityNote();
@@ -564,10 +563,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * Transfer handling units from <code>allocs</code> to <code>receiptLine</code>.
 	 * <p>
 	 * Also collect the packing materials.
-	 *
-	 * @param rs
-	 * @param allocs
-	 * @param receiptLine
 	 */
 	private void transferHandlingUnits(
 			final IHUContext huContext,
@@ -716,9 +711,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * @param hu top level HU (LU, TU, VHU)
 	 */
 	private void transferHandlingUnit(final IHUContext huContext,
-			final I_M_ReceiptSchedule rs,
-			final I_M_HU hu,
-			final I_M_InOutLine receiptLine)
+									  final I_M_ReceiptSchedule rs,
+									  final I_M_HU hu,
+									  final I_M_InOutLine receiptLine)
 	{
 		//
 		// Assign it to Receipt Line

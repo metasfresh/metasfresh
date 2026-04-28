@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor2
 Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,6 +14,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_100
   Scenario:
   In:
@@ -48,8 +55,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
@@ -67,7 +74,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -91,13 +98,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 100         | true      | 2                | 2               | 52.71          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_110
   Scenario:
   In:
@@ -136,8 +146,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
@@ -155,7 +165,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -179,13 +189,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 150         | true      | 2                | 2               | 73.97          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_120
   Scenario:
   In:
@@ -224,8 +237,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
@@ -243,7 +256,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -267,13 +280,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 102         | true      | 2                | 2               | 54.03          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_130
   Scenario:
   In:
@@ -312,8 +328,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
@@ -331,7 +347,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -355,13 +371,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 148         | true      | 2                | 2               | 71.37          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_140
   Scenario:
   In:
@@ -397,8 +416,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
@@ -410,7 +429,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -437,13 +456,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0                          | 150            | 150            | 0                              | 150           | 150                | 150              | 150                   | 153             | 153                  | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 153         | true      | 2                | 2               | 306            | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_150
   Scenario:
   In:
@@ -479,8 +501,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
@@ -492,7 +514,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -519,13 +541,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 2                          | 100            | 100            | 0                              | 100           | 100                | 100              | 100                   | 98              | 98                   | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 98          | true      | 2                | 2               | 196            | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_160
   Scenario:
   In:
@@ -551,10 +576,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | Y                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | CatchWeight              |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
@@ -598,8 +623,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 100            | 25.000         | 0                              | 100              | 26.000                | 100             | 26.000               | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 100         | true      | 1                | 1               | 26.00          | 0            |
@@ -609,9 +634,12 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | N                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | Nominal                  |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_170
   Scenario:
   In:
@@ -637,10 +665,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | Y                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | CatchWeight              |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
@@ -684,8 +712,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 150              | 35.000                | 150             | 35.000               | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 150         | true      | 1                | 1               | 35.00          | 0            |
@@ -694,9 +722,12 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | N                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | Nominal                  |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_200
   Scenario:
   In:
@@ -722,10 +753,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | Y                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | CatchWeight              |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
@@ -769,8 +800,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 100            | 25.000         | 0                              | 102              | 26.000                | 102             | 26.000               | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 102         | true      | 1                | 1               | 26.00          | 0            |
@@ -780,9 +811,12 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | N                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | Nominal                  |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_210
   Scenario:
   In:
@@ -808,10 +842,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | Y                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | CatchWeight              |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
@@ -856,8 +890,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 147         | true      | 1                | 1               | 35.00          | 0            |
@@ -867,9 +901,12 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 2002195                        | N                        |
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM                   | Nominal                  |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_180
   Scenario:
   IN:
@@ -923,8 +960,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endvendor_1              | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | ps_1                              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
@@ -962,13 +999,16 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 3                          | 100            | 100            | 0                              | 100              | 100                   | 97              | 97                   | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 97          | true      | 1                | 1               | 97             | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_190
   Scenario:
   In:
@@ -1022,8 +1062,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endvendor_1              | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | ps_1                              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
@@ -1061,8 +1101,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0                          | 150            | 150            | 0                              | 150              | 150                   | 152             | 152                  | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 152         | true      | 1                | 1               | 152            | 0            |

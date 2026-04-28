@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -138,9 +139,10 @@ public class SupplyRequiredDescriptor
 	@JsonIgnore
 	public AttributesKey getStorageAttributesKey() {return getMaterialDescriptor().getStorageAttributesKey();}
 
-	public int getPpOrderCandidateId()
+	@Nullable
+	public PPOrderCandidateId getPpOrderCandidateId()
 	{
 		final PPOrderRef ppOrderRef = getPpOrderRef();
-		return ppOrderRef == null ? 0 : ppOrderRef.getPpOrderCandidateId();
+		return ppOrderRef == null ? null : ppOrderRef.getPpOrderCandidateId();
 	}
 }

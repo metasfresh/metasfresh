@@ -22,39 +22,30 @@
 
 package de.metas.mobile;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_MobileConfiguration;
 import org.springframework.lang.Nullable;
 
-import java.util.stream.Stream;
-
-@Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum MobileAuthMethod implements ReferenceListAwareEnum
 {
 	QR_CODE(X_MobileConfiguration.DEFAULTAUTHENTICATIONMETHOD_QRCode),
 	USER_PASS(X_MobileConfiguration.DEFAULTAUTHENTICATIONMETHOD_UserPass),
 	;
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<MobileAuthMethod> index = ReferenceListAwareEnums.index(values());
+	private static final ImmutableList<MobileAuthMethod> list = index.toList();
+
+	@NonNull private final String code;
 
 	@NonNull
-	public static Stream<MobileAuthMethod> stream()
-	{
-		return index.stream();
-	}
-
-	@NonNull
-	public static ImmutableList<MobileAuthMethod> all()
-	{
-		return stream().collect(ImmutableList.toImmutableList());
-	}
+	public static ImmutableList<MobileAuthMethod> all() {return list;}
 
 	@Nullable
 	public static MobileAuthMethod ofNullableCode(final String code)
@@ -63,10 +54,14 @@ public enum MobileAuthMethod implements ReferenceListAwareEnum
 	}
 
 	@NonNull
+	@JsonCreator
 	public static MobileAuthMethod ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<MobileAuthMethod> index = ReferenceListAwareEnums.index(values());
+	@Override
+	@JsonValue
+	@NonNull
+	public String getCode() {return code;}
 }

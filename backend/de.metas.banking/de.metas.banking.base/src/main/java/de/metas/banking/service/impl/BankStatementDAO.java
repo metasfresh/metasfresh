@@ -139,7 +139,7 @@ public class BankStatementDAO implements IBankStatementDAO
 				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
 				.create()
 				.stream(I_C_BankStatementLine_Ref.class)
-				.map(record -> toBankStatementLineReference(record))
+				.map(BankStatementDAO::toBankStatementLineReference)
 				.collect(BankStatementLineReferenceList.collector());
 	}
 
@@ -188,18 +188,12 @@ public class BankStatementDAO implements IBankStatementDAO
 		}
 
 		//
-		// Check if payment is on any bank statement line, processed or not
-		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class)
+		// Check if the payment is on any bank statement line, processed or not
+		return queryBL.createQueryBuilder(I_C_BankStatementLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
 				.anyMatch();
-		if (hasBankStatementLines)
-		{
-			return true;
-		}
-
-		return false;
 	}
 
 	@Override
@@ -214,7 +208,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
 
 		// query Builder for the bank statement
 

@@ -40,6 +40,11 @@ public class ShipmentSchedulesMDC
 		return TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 	}
 
+	public MDCCloseable putShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return putShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+	}
+
 	public MDCCloseable putShipmentScheduleUpdateRunNo(final int runNo)
 	{
 		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
@@ -50,13 +55,14 @@ public class ShipmentSchedulesMDC
 		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
 	}
 
-	/** Remove shipment schedule ID from MDC just to add it back when the closable is closed. */
+	/**
+	 * Remove shipment schedule ID from MDC just to add it back when the closable is closed.
+	 */
 	public IAutoCloseable removeCurrentShipmentScheduleId()
 	{
 		final String value = MDC.get(I_M_ShipmentSchedule.Table_Name);
 		MDC.remove(I_M_ShipmentSchedule.Table_Name);
 
-		final IAutoCloseable result = () -> MDC.put(I_M_ShipmentSchedule.Table_Name, value);
-		return result;
+		return () -> MDC.put(I_M_ShipmentSchedule.Table_Name, value);
 	}
 }

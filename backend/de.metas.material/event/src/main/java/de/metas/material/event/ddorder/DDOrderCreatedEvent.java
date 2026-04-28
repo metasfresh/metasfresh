@@ -30,10 +30,11 @@ public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 				supplyRequiredDescriptor);
 	}
 
-	public static DDOrderCreatedEvent of(@NonNull final DDOrder ddOrder, @Nullable final String traceId)
+	public static DDOrderCreatedEvent of(@NonNull final DDOrder ddOrder, 
+										 @NonNull final EventDescriptor eventDescriptor)
 	{
 		return builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(ddOrder.getClientAndOrgId(), traceId))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(ddOrder.getClientAndOrgId()))
 				.ddOrder(ddOrder)
 				.build();
 	}
@@ -42,5 +43,8 @@ public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 	{
 		return (DDOrderCreatedEvent)ddOrderEvent;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -125,22 +125,22 @@ public class PushBPartnerRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + PushBPartnerRouteBuilder.PUSH_BPARTNERS_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockUpsertBPartnerEP.called).isEqualTo(1);
 	}
 
 	private void preparePushRouteForTesting(@NonNull final PushBPartnerRouteBuilderTest.MockUpsertBPartnerEP mockUpsertBPartnerEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, PushBPartnerRouteBuilder.PUSH_BPARTNERS_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(PushBPartnerRouteBuilder.PUSH_BPARTNERS_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPSERT_BPARTNER);
+				advice -> {
+					advice.weaveById(PushBPartnerRouteBuilder.PUSH_BPARTNERS_PROCESSOR_ID)
+							.after()
+							.to(MOCK_UPSERT_BPARTNER);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(mockUpsertBPartnerEP);
-							  });
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(mockUpsertBPartnerEP);
+				});
 	}
 
 	private static class MockUpsertBPartnerEP implements Processor

@@ -6,19 +6,18 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.MovementId;
 import org.adempiere.warehouse.LocatorId;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -64,15 +63,15 @@ public class DDOrderMoveSchedulePickedHUs
 		return byActualHUIdPicked.values().stream().allMatch(DDOrderMoveSchedulePickedHU::isDroppedTo);
 	}
 
-	public void setDropToMovementId(@NonNull final MovementId dropToMovementId)
+	public void setDroppedTo(@NonNull LocatorId dropToLocatorId, @NonNull final MovementId dropToMovementId)
 	{
 		for (final DDOrderMoveSchedulePickedHU pickedHU : byActualHUIdPicked.values())
 		{
-			pickedHU.setDropToMovementId(dropToMovementId);
+			pickedHU.setDroppedTo(dropToLocatorId, dropToMovementId);
 		}
 	}
 
-	public LocatorId getInTransitLocatorId()
+	public ExplainedOptional<LocatorId> getInTransitLocatorId()
 	{
 		final ImmutableSet<LocatorId> inTransitLocatorIds = byActualHUIdPicked.values()
 				.stream()
@@ -82,16 +81,17 @@ public class DDOrderMoveSchedulePickedHUs
 		if (inTransitLocatorIds.isEmpty())
 		{
 			// shall not happen
-			throw new AdempiereException("No in transit locator found for " + this);
+			return ExplainedOptional.emptyBecause("No in transit locator found");
 		}
 		else if (inTransitLocatorIds.size() == 1)
 		{
-			return inTransitLocatorIds.iterator().next();
+			final LocatorId inTransitLocatorId = inTransitLocatorIds.iterator().next();
+			return ExplainedOptional.of(inTransitLocatorId);
 		}
 		else
 		{
 			// shall not happen
-			throw new AdempiereException("More than one in transit locator found for " + this);
+			return ExplainedOptional.emptyBecause("More than one in transit locator found: " + inTransitLocatorIds);
 		}
 	}
 

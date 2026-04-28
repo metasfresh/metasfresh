@@ -22,6 +22,7 @@
 
 package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HUPIItemProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,4 +37,5 @@ public class JsonNewTUTarget
 {
 	@Nullable String caption;
 	@NonNull HUPIItemProductId tuPIItemProductId;
+	@Nullable JsonTestId testId;
 }

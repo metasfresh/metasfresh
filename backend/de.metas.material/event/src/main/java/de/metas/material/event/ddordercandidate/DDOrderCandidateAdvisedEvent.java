@@ -110,4 +110,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 
 		return ppOrderRef.getPpOrderId();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

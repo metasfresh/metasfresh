@@ -1,29 +1,27 @@
 package de.metas.security.permissions;
 
-import java.util.Set;
-import java.util.function.Function;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_AD_User_Record_Access;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import com.google.common.collect.Maps;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_User_Record_Access;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 /**
  * Defines permission access
- * 
- * @author tsa
  *
+ * @author tsa
  */
 @Value
-public final class Access implements ReferenceListAwareEnum
+public class Access implements ReferenceListAwareEnum
 {
 	public static final Access LOGIN = new Access("LOGIN", "L");
 	public static final Access READ = new Access("READ", X_AD_User_Record_Access.ACCESS_Read);
@@ -32,9 +30,7 @@ public final class Access implements ReferenceListAwareEnum
 	public static final Access EXPORT = new Access("EXPORT", X_AD_User_Record_Access.ACCESS_Export);
 	private static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(LOGIN, READ, WRITE, REPORT, EXPORT);
 
-	private static final ImmutableMap<String, Access> accessesByCode = ALL_ACCESSES.stream()
-			.filter(access -> access.getCode() != null)
-			.collect(ImmutableMap.toImmutableMap(Access::getCode, Function.identity()));
+	private static final ImmutableMap<String, Access> accessesByCode = Maps.uniqueIndex(ALL_ACCESSES, Access::getCode);
 
 	@JsonCreator
 	public static Access ofCode(@NonNull final String code)
@@ -52,10 +48,10 @@ public final class Access implements ReferenceListAwareEnum
 		return ALL_ACCESSES;
 	}
 
-	private final String name;
-	private final String code;
+	@NonNull String name;
+	@NonNull String code;
 
-	private Access(@NonNull final String name, final String code)
+	private Access(@NonNull final String name, final @NotNull String code)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
 
@@ -71,7 +67,7 @@ public final class Access implements ReferenceListAwareEnum
 
 	@Override
 	@JsonValue
-	public String getCode()
+	public @NotNull String getCode()
 	{
 		return code;
 	}

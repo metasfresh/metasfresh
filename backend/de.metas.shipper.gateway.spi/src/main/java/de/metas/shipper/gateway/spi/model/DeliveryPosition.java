@@ -1,7 +1,8 @@
 package de.metas.shipper.gateway.spi.model;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.mpackage.PackageId;
+import de.metas.product.PackageDimensions;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Singular;
@@ -46,7 +47,7 @@ public class DeliveryPosition
 	PackageDimensions packageDimensions;
 
 	@Nullable
-	CustomDeliveryData customDeliveryData;
+	CustomDeliveryLineData customDeliveryData;
 
 	ImmutableSet<PackageId> packageIds;
 
@@ -57,7 +58,7 @@ public class DeliveryPosition
 			final BigDecimal grossWeightKg,
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
-			@Nullable final CustomDeliveryData customDeliveryData,
+			@Nullable final CustomDeliveryLineData customDeliveryData,
 			@Singular final ImmutableSet<PackageId> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");

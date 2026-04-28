@@ -68,6 +68,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * Similar to {@link #retrieveProcessIdByClassIfUnique(Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
 	 * This can be beneficial since the exception message contains the class for which no {@code AD_Process_ID} could be fetched.
 	 */
+	@NonNull
 	AdProcessId retrieveProcessIdByClass(Class<?> processClass);
 
 	/**
@@ -77,7 +78,8 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	AdProcessId retrieveProcessIdByClassIfUnique(Class<?> processClass);
 
-	AdProcessId retrieveProcessIdByClassIfUnique(String processClassname);
+	@Nullable
+	AdProcessId retrieveProcessIdByClassIfUnique(@NonNull String processClassname);
 
 	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 

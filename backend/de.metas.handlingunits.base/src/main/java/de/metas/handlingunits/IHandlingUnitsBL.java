@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
@@ -49,6 +50,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -99,6 +101,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	HUType getHUUnitType(@NonNull I_M_HU hu);
 
+	HUPIItemProduct getPIItemProduct(HUPIItemProductId piItemProductId);
+
 	ImmutableSet<HuId> getVHUIds(HuId huId);
 
 	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
@@ -109,17 +113,24 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
+
+	void saveHU(I_M_HU hu);
 
 	/**
 	 * @return default storage factory
 	 */
 	IHUStorageFactory getStorageFactory();
 
+	Set<ProductId> getStoredProducts(Collection<HuId> huIds);
+
 	IHUProductStorage getSingleHUProductStorage(HuId huId);
 
+	@NonNull
 	IHUProductStorage getSingleHUProductStorage(I_M_HU hu);
 
 	IMutableHUContext createMutableHUContext();
@@ -178,7 +189,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	String getDisplayName(I_M_HU hu);
 
-	IHUDisplayNameBuilder buildDisplayName(I_M_HU hu);
+	IHUDisplayNameBuilder buildDisplayName(@Nullable I_M_HU hu);
 
 	/**
 	 * @param hu may be {@code null}
@@ -218,6 +229,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isPureVirtual(I_M_HU hu);
 
+	boolean destroyIfEmptyStorage(@NonNull HuId huIdToDestroy);
+
 	/**
 	 * Destroy given HU or some of it's children which are empty.
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
@@ -247,7 +260,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets HU Item Type.
 	 * <p>
-	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * <b>Important:</b> HU items that were created prior to <a href="https://github.com/metasfresh/metasfresh/issues/460">#460</a> might have an empty
 	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @see I_M_HU_PI_Item#getItemType()
@@ -283,6 +296,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
 
+	IAttributeStorage getAttributeStorage(HuId huId);
+
+	IAttributeStorage getAttributeStorage(I_M_HU hu);
+
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
@@ -312,6 +329,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI retrievePIDefaultForPicking();
 
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
+
+	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
+
+	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 
 	@Builder
 	@Value
@@ -474,6 +495,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
+	@NonNull
+	HuPackingInstructionsId getPIId(I_M_HU hu);
+
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Version piVersion);
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
@@ -486,6 +510,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	@NonNull
+	I_M_HU_PI_Item getPIItem(@NonNull HuPackingInstructionsItemId piItemId);
+
+	@NonNull
+	List<I_M_HU_PI_Item> getPIItems(@NonNull Collection<I_M_HU_Item> huItems);
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 
@@ -515,6 +545,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
+
+	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
 
 	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
@@ -563,16 +596,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	{
 		final int locatorRepoId = hu.getM_Locator_ID();
 		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
-	}
-
-	static I_M_Locator extractLocator(final I_M_HU hu)
-	{
-		final I_M_Locator locator = extractLocatorOrNull(hu);
-		if (locator == null)
-		{
-			throw new HUException("Warehouse Locator shall be set for: " + hu);
-		}
-		return locator;
 	}
 
 	@Nullable
@@ -657,8 +680,51 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
+	/**
+	 * Sets the reservation status for the given HU and all its included HUs recursively.
+	 * <p>
+	 * <b>Validation Behavior:</b><br>
+	 * When reserving (reserved=true), validates that none of the HUs in the hierarchy
+	 * are already reserved. If any HU is already reserved, returns {@code false} without
+	 * making any changes (atomic validation - no partial updates).
+	 * <p>
+	 * When unreserving (reserved=false), no validation is performed and always returns {@code true}.
+	 * <p>
+	 * <b>Recursive Updates:</b><br>
+	 * The method traverses the entire HU hierarchy using {@link IHandlingUnitsDAO#retrieveIncludedHUs(I_M_HU)}
+	 * and updates the {@code IsReserved} flag for each HU, saving changes to the database.
+	 *
+	 * @param hu       the handling unit to reserve/unreserve
+	 * @param reserved {@code true} to reserve, {@code false} to unreserve
+	 * @return {@code true} if the operation was successful (or if unreserving), {@code false} if validation failed (HU already reserved)
+	 */
+	boolean setReservedRecursively(@NonNull I_M_HU hu, boolean reserved);
+
+	/**
+	 * Sets the reservation status for multiple HUs and their hierarchies in bulk.
+	 * <p>
+	 * <b>Bulk Processing:</b><br>
+	 * For each HU ID in the provided set, calls {@link #setReservedRecursively(I_M_HU, boolean)}
+	 * which applies the reservation status recursively to the HU and all its children.
+	 * If the set is empty, this method returns immediately without any action.
+	 * <p>
+	 * <b>Validation Behavior:</b><br>
+	 * When reserving (reserved=true), validation is performed for each HU hierarchy.
+	 * If any HU in any hierarchy is already reserved, an {@link AdempiereException} is thrown.
+	 * Note that validation happens per-hierarchy, not across all hierarchies at once, so
+	 * partial processing of the set may occur before a validation failure.
+	 *
+	 * @param huIds    set of HU IDs to reserve/unreserve; if empty, no action is taken
+	 * @param reserved {@code true} to reserve, {@code false} to unreserve
+	 * @throws AdempiereException if {@code reserved} is {@code true} and any HU in any hierarchy is already reserved
+	 * @see #setReservedRecursively(I_M_HU, boolean) for detailed behavior of individual HU processing
+	 */
+	void setReservedByHUIds(@NonNull Set<HuId> huIds, boolean reserved);
+
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
+
+	Set<HuPackingMaterialId> getHUPackingMaterialIds(HuId huId);
 }

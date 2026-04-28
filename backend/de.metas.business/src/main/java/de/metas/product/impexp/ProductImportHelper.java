@@ -1,21 +1,8 @@
-package de.metas.product.impexp;
-
-import de.metas.common.util.CoalesceUtil;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.util.Check;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_I_Product;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.ModelValidationEngine;
-import de.metas.product.impexp.ProductsCache.Product;
-import java.math.BigDecimal;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,24 +20,40 @@ import java.math.BigDecimal;
  * #L%
  */
 
-/* package */ class ProductImportHelper
+package de.metas.product.impexp;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.product.impexp.ProductsCache.Product;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UomId;
+import de.metas.uom.UpdateUOMConversionRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_I_Product;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Builder
+		/* package */ class ProductImportHelper
 {
-	public static ProductImportHelper newInstance()
-	{
-		return new ProductImportHelper();
-	}
-
-	private ProductImportProcess process;
-
-	private ProductImportHelper()
-	{
-	}
-
-	public ProductImportHelper setProcess(final ProductImportProcess process)
-	{
-		this.process = process;
-		return this;
-	}
+	@NonNull private static final Logger log = LogManager.getLogger(ProductImportHelper.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	@NonNull private final ProductImportProcess process;
 
 	public void importRecord(final ProductImportContext context)
 	{
@@ -74,7 +77,6 @@ import java.math.BigDecimal;
 			updateExistingProductNotSave(product.getRecord(), context.getCurrentImportRecord());
 		}
 
-
 		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), product.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		product.save();
@@ -84,8 +86,14 @@ import java.math.BigDecimal;
 	private void updateExistingProductNotSave(@NonNull final I_M_Product product,
 											  @NonNull final I_I_Product from)
 	{
+		// gh#27540: reactivate inactive products when they are re-imported
+		product.setIsActive(true);
+
 		product.setValue(from.getValue());
-		product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		if (from.isUpdateName())
+		{
+			product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		}
 
 		if (from.getDescription() != null)
 		{
@@ -100,6 +108,7 @@ import java.math.BigDecimal;
 			product.setPackageSize(from.getPackageSize());
 		}
 		product.setIsSold(from.isSold());
+		product.setIsPurchased(from.isPurchased());
 		product.setIsStocked(from.isStocked());
 		if (from.getUPC() != null)
 		{
@@ -110,9 +119,14 @@ import java.math.BigDecimal;
 			product.setSKU(from.getSKU());
 		}
 
-		// Set UOM, product category, and classification
+		// set product category is wanted
+		if (from.isUpdateProductCategory())
+		{
+			product.setM_Product_Category_ID(from.getM_Product_Category_ID());
+		}
+
+		// Set UOM and classification
 		product.setC_UOM_ID(from.getC_UOM_ID());
-		product.setM_Product_Category_ID(from.getM_Product_Category_ID());
 		product.setClassification(from.getClassification());
 
 		// Set product type
@@ -125,11 +139,15 @@ import java.math.BigDecimal;
 		}
 		if (from.getWeight() != null)
 		{
-			product.setWeight(from.getWeight());
+			product.setGrossWeight(from.getWeight());
+		}
+		if (UomId.ofRepoIdOrNull(from.getWeight_UOM_ID()) != null)
+		{
+			product.setGrossWeight_UOM_ID(from.getWeight_UOM_ID());
 		}
 		if (from.getNetWeight() != null)
 		{
-			product.setNetWeight(from.getNetWeight());
+			product.setWeight(from.getNetWeight());
 		}
 		if (from.getShelfWidth() != null)
 		{
@@ -146,6 +164,20 @@ import java.math.BigDecimal;
 		if (from.getUnitsPerPallet() > 0)
 		{
 			product.setUnitsPerPallet(BigDecimal.valueOf(from.getUnitsPerPallet()));
+		}
+
+		product.setIsSelfPacked(from.isSelfPacked());
+		if (from.getHeightInCm() > 0)
+		{
+			product.setHeightInCm(from.getHeightInCm());
+		}
+		if (from.getWidthInCm() > 0)
+		{
+			product.setWidthInCm(from.getWidthInCm());
+		}
+		if (from.getLengthInCm() > 0)
+		{
+			product.setLengthInCm(from.getLengthInCm());
 		}
 
 		product.setDiscontinued(from.isDiscontinued());
@@ -170,6 +202,7 @@ import java.math.BigDecimal;
 			product.setM_ProductPlanningSchema_Selector(from.getM_ProductPlanningSchema_Selector());
 		}
 
+		product.setGuaranteeDaysMin(from.getGuaranteeDaysMin());
 	}
 
 	private de.metas.adempiere.model.I_M_Product createProductRecordNoSave(@NonNull final I_I_Product importRecord)
@@ -194,19 +227,79 @@ import java.math.BigDecimal;
 		product.setImageURL(importRecord.getImageURL());
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
+		product.setIsPurchased(importRecord.isPurchased());
 		product.setIsStocked(importRecord.isStocked());
-		product.setNetWeight(importRecord.getNetWeight());
+		product.setWeight(importRecord.getNetWeight());
+		product.setGrossWeight(importRecord.getWeight());
+		product.setGrossWeight_UOM_ID(importRecord.getWeight_UOM_ID());
 		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
-		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
-		product.setIsPurchased(importRecord.isPurchased());
+		product.setGuaranteeDaysMin(importRecord.getGuaranteeDaysMin());
+		product.setIsSelfPacked(importRecord.isSelfPacked());
+		product.setHeightInCm(importRecord.getHeightInCm());
+		product.setWidthInCm(importRecord.getWidthInCm());
+		product.setLengthInCm(importRecord.getLengthInCm());
 
 		return product;
 	}    // MProduct
 
+	public void createCatchWeightUOMConversion(@NonNull final I_I_Product importRecord)
+	{
+		final UomId fromUomId = UomId.ofRepoIdOrNull(importRecord.getQtyCU_UOM_ID());
+		if (fromUomId == null)
+		{
+			throw new AdempiereException(I_I_Product.COLUMNNAME_QtyCU_UOM_ID + " is mandatory for catch weight products");
+		}
 
+		final UomId toUomId = UomId.ofRepoId(importRecord.getC_UOM_ID());
+
+		if (fromUomId.equals(toUomId))
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+		final UOMConversionRate productRate = uomConversionDAO.getProductConversions(productId).getRateIfExists(fromUomId, toUomId).orElse(null);
+		if (productRate != null)
+		{
+			final BigDecimal multiplierRate = extractMultiplierRate(importRecord);
+			uomConversionDAO.updateUOMConversion(UpdateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(multiplierRate != null ? multiplierRate : productRate.getFromToMultiplier())
+					.catchUOMForProduct(true) // make sure it's the catch UOM
+					.build());
+		}
+		else
+		{
+			BigDecimal multiplierRate = extractMultiplierRate(importRecord);
+			if (multiplierRate == null)
+			{
+				multiplierRate = uomConversionDAO.getGenericConversions().getRateIfExists(fromUomId, toUomId)
+						.map(UOMConversionRate::getFromToMultiplier)
+						.orElseThrow(() -> new AdempiereException("UOM Conversion rate not set and no generic conversion found for " + fromUomId + " -> " + toUomId + "!"));
+			}
+
+			uomConversionDAO.createUOMConversion(CreateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(multiplierRate)
+					.catchUOMForProduct(true) // make sure it's the catch UOM
+					.build());
+		}
+	}
+
+	@Nullable
+	private static BigDecimal extractMultiplierRate(final @NonNull I_I_Product importRecord)
+	{
+		return !InterfaceWrapperHelper.isNull(importRecord, I_I_Product.COLUMNNAME_UOM_MultiplierRate)
+				? importRecord.getUOM_MultiplierRate()
+				: null;
+	}
 }

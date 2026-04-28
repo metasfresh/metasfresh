@@ -17,6 +17,19 @@ import com.google.common.base.Stopwatch;
 import org.compiere.util.SQLUpdateResult;
 import org.compiere.util.SQLValueStringResult;
 
+/**
+ * Executes SQL statements configured in {@link de.metas.process.ProcessInfo#getSQLStatement()}.
+ * Used by AD_Process records with ProcessType=SQL.
+ *
+ * <h3>RAISE NOTICE support</h3>
+ * PostgreSQL {@code RAISE NOTICE} messages are captured via the JDBC {@link java.sql.SQLWarning} chain:
+ * <ol>
+ *   <li>{@link DB#executeUpdateWithWarningEx} / {@link DB#getSQLValueStringWithWarningEx} execute the SQL</li>
+ *   <li>{@link org.compiere.util.SQLUtil#extractWarningMessages} walks the {@link java.sql.SQLWarning} chain</li>
+ *   <li>If {@code AD_Process.IsLogWarning='Y'}, the warnings are written to {@code AD_PInstance_Log.Warnings}
+ *       via {@link JavaProcess#addLog(java.util.List, String)}</li>
+ * </ol>
+ */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class ExecuteUpdateSQL extends JavaProcess
 {

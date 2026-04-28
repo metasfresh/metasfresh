@@ -1,10 +1,8 @@
-package de.metas.printing.api.impl;
-
 /*
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.printing.api.impl;
 
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
@@ -45,17 +45,14 @@ import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Note: all tests are still valid, it's just the architecture that is legacy.
@@ -78,7 +75,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		printPackageBL = Services.get(IPrintPackageBL.class);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception
 	{
 		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService());
@@ -87,11 +84,11 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	@Test
 	public void test01_cal()
 	{
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		helper.createPrinterHWCalibration("printer01-HW",
 				"iso-a7", // task 08458: printer doesn't have A4, but the system shall create it on the fly
-				"tray01-HW",10, 10, 20); // 03733
+				"tray01-HW", 10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob
@@ -115,13 +112,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		//
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
-		Assert.assertEquals("Invalid infos count: " + printPackageInfos, 1, printPackageInfos.size());
-		Assert.assertEquals("Invalid PageFrom for " + printPackageInfos.get(0), 1, printPackageInfos.get(0).getPageFrom());
-		Assert.assertEquals("Invalid PageTo for " + printPackageInfos.get(0), 60, printPackageInfos.get(0).getPageTo());
+		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
+		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
+		Assertions.assertEquals(60, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
 
 		// 03733 begin
-		Assert.assertEquals("Invalid CalX for " + printPackageInfos.get(0), 10, printPackageInfos.get(0).getCalX());
-		Assert.assertEquals("Invalid CalY for " + printPackageInfos.get(0), 20, printPackageInfos.get(0).getCalY());
+		Assertions.assertEquals(10, printPackageInfos.get(0).getCalX(), "Invalid CalX for " + printPackageInfos.get(0));
+		Assertions.assertEquals(20, printPackageInfos.get(0).getCalY(), "Invalid CalY for " + printPackageInfos.get(0));
 		// 03733 end
 	}
 
@@ -130,7 +127,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob, printerRouting, "01");
@@ -152,13 +149,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		//
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
-		Assert.assertEquals("Invalid infos count: " + printPackageInfos, 1, printPackageInfos.size());
-		Assert.assertEquals("Invalid PageFrom for " + printPackageInfos.get(0), 1, printPackageInfos.get(0).getPageFrom());
-		Assert.assertEquals("Invalid PageTo for " + printPackageInfos.get(0), 60, printPackageInfos.get(0).getPageTo());
+		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
+		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
+		Assertions.assertEquals(60, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
 
 		// 03733 begin
-		Assert.assertEquals("Invalid CalX for " + printPackageInfos.get(0), 0, printPackageInfos.get(0).getCalX());
-		Assert.assertEquals("Invalid CalY for " + printPackageInfos.get(0), 0, printPackageInfos.get(0).getCalY());
+		Assertions.assertEquals(0, printPackageInfos.get(0).getCalX(), "Invalid CalX for " + printPackageInfos.get(0));
+		Assertions.assertEquals(0, printPackageInfos.get(0).getCalY(), "Invalid CalY for " + printPackageInfos.get(0));
 		// 03733 end
 	}
 
@@ -170,13 +167,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
 				printerRouting,
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("printer01", "tray01",10, -1, 10, 15),
+				helper.createPrinterRouting("printer01", "tray01", 10, -1, 10, 15),
 				"02");
 		helper.createPrintJobLine(printJob,
 				printerRouting,
@@ -198,9 +195,9 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		//
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
-		Assert.assertEquals("Invalid infos count: " + printPackageInfos, 1, printPackageInfos.size());
-		Assert.assertEquals("Invalid PageFrom for " + printPackageInfos.get(0), 1, printPackageInfos.get(0).getPageFrom());
-		Assert.assertEquals("Invalid PageTo for " + printPackageInfos.get(0), 20 + 6 + 20, printPackageInfos.get(0).getPageTo());
+		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
+		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
+		Assertions.assertEquals(20 + 6 + 20, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
 	}
 
 	@Test
@@ -210,13 +207,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Setup PrintJob
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 1, 2),
+				helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 1, 2),
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer02", "tray01",10, -1, 3, 4),
+				helper.createPrinterRouting("test03-printer02", "tray01", 10, -1, 3, 4),
 				"02");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 5, 6),
+				helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 5, 6),
 				"03");
 		helper.createPrintJobInstructions(printJob);
 		InterfaceWrapperHelper.save(printJob);
@@ -237,14 +234,14 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		//
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
-		Assert.assertEquals("Invalid infos count: " + printPackageInfos, 3, printPackageInfos.size());
+		Assertions.assertEquals(3, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
 
-		assertEquals("Invalid PageFrom for " + printPackageInfos.get(0), 1, printPackageInfos.get(0).getPageFrom());
-		assertEquals("Invalid PageTo for " + printPackageInfos.get(0), 2, printPackageInfos.get(0).getPageTo());
-		assertEquals("Invalid PageFrom for " + printPackageInfos.get(1), 3, printPackageInfos.get(1).getPageFrom());
-		assertEquals("Invalid PageTo for " + printPackageInfos.get(1), 4, printPackageInfos.get(1).getPageTo());
-		assertEquals("Invalid PageFrom for " + printPackageInfos.get(2), 5, printPackageInfos.get(2).getPageFrom());
-		assertEquals("Invalid PageTo for " + printPackageInfos.get(2), 6, printPackageInfos.get(2).getPageTo());
+		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
+		Assertions.assertEquals(2, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
+		Assertions.assertEquals(3, printPackageInfos.get(1).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(1));
+		Assertions.assertEquals(4, printPackageInfos.get(1).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(1));
+		Assertions.assertEquals(5, printPackageInfos.get(2).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(2));
+		Assertions.assertEquals(6, printPackageInfos.get(2).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(2));
 	}
 
 	public static class MockedDBArchiveStorage extends DBArchiveStorage
@@ -281,7 +278,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/05034_Fehler_bei_Massendruck_%28103300146225%29
 	 */
-	@Test(expected = PrintingQueueAggregationException.class)
+	@Test
 	public void test_createPrintPackage_ArchiveWithError()
 	{
 		//
@@ -294,8 +291,8 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 
 		//
 		// Setup Routing
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
-		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW",10, 10, 20); // 03733
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
+		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW", 10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob
@@ -311,12 +308,12 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		final IPrintPackageCtx printCtx = printPackageBL.createInitialCtx(helper.getCtx());
 		final PrintJobLinesAggregator aggregator = new PrintJobLinesAggregator(printingDataFactory, printCtx, printJobInstructions);
 
-		final Mutable<ArrayKey> preceedingKey = new Mutable<Util.ArrayKey>(null);
+		final Mutable<ArrayKey> preceedingKey = new Mutable<>(null);
 		aggregator.add(line1, preceedingKey);
-		aggregator.add(line2, preceedingKey);
+		// Here we expect to throw the exception
+		Assertions.assertThrows(PrintingQueueAggregationException.class, () -> aggregator.add(line2, preceedingKey));
 		aggregator.add(line3, preceedingKey);
 
-		// Here we expect to throw exception
 		aggregator.createPrintPackage();
 	}
 }

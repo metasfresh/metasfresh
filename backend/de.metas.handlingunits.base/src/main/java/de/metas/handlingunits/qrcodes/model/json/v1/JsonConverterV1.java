@@ -12,6 +12,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -40,7 +41,7 @@ public class JsonConverterV1
 		return JsonHUQRCodeV1.builder()
 				.id(qrCode.getId())
 				.packingInfo(toJson(qrCode.getPackingInfo()))
-				.product(toJson(qrCode.getProduct()))
+				.product(qrCode.getProduct().map(JsonConverterV1::toJson).orElse(null))
 				.attributes(qrCode.getAttributes()
 						.stream()
 						.map(JsonConverterV1::toJson)
@@ -88,8 +89,13 @@ public class JsonConverterV1
 				.build();
 	}
 
-	private static HUQRCodeProductInfo fromJson(@NonNull final JsonHUQRCodeProductInfoV1 json)
+	private static HUQRCodeProductInfo fromJson(@Nullable final JsonHUQRCodeProductInfoV1 json)
 	{
+		if (json == null)
+		{
+			return null;
+		}
+
 		return HUQRCodeProductInfo.builder()
 				.id(json.getId())
 				.code(json.getCode())

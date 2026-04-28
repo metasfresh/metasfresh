@@ -30,12 +30,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.MeasurableRequest;
 import de.metas.common.shipping.v2.customerreturns.JsonCreateCustomerReturnInfo;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.util.List;
 import java.util.Objects;
 
+@EqualsAndHashCode(callSuper = true)
 @Value
 @JsonDeserialize(builder = JsonCreateReceiptsRequest.JsonCreateReceiptsRequestBuilder.class)
 public class JsonCreateReceiptsRequest extends MeasurableRequest

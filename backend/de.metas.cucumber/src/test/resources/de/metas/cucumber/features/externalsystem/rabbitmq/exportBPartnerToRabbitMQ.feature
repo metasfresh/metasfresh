@@ -1,5 +1,9 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
 Feature: Validate BPartner is sent to RabbitMQ
+## F00802: External System
+## F00802: External System
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,8 +12,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 
   Scenario: Export bpartner when created via rest-api
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name     | OPT.EMail          | OPT.Login |
-      | testUser_1            | testUser | testUser@email.com | testUser  |
+      | Identifier | Name     | OPT.EMail          | OPT.Login |
+      | testUser_1 | testUser | testUser@email.com | testUser  |
     And load AD_Roles
       | AD_Role_ID.Identifier | Name  |
       | userRole              | WebUI |

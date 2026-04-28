@@ -1,35 +1,26 @@
-package de.metas.handlingunits.expectations;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.junit.Assert;
+package de.metas.handlingunits.expectations;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -41,6 +32,15 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -59,15 +59,15 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		final String prefix = (message == null ? "" : message)
 				+ "\n\nInvalid: ";
 
-		Assert.assertNotNull(prefix + "HU Item Storage not null", storage);
+		assertThat(storage).as(prefix + "HU Item Storage not null").isNotNull();
 
 		if (_productId != null)
 		{
-			Assert.assertEquals(prefix + "Product", _productId, ProductId.ofRepoId(storage.getM_Product_ID()));
+			assertThat(ProductId.ofRepoId(storage.getM_Product_ID())).as(prefix + "Product").isEqualTo(_productId);
 		}
 		if (_qty != null)
 		{
-			assertEquals(prefix + "Qty", _qty, storage.getQty());
+			assertThat(storage.getQty()).as(prefix + "Qty").isEqualByComparingTo(_qty);
 		}
 		if (_uom != null)
 		{
@@ -143,7 +143,7 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		final IHUItemStorage storage = huStorageFactory.getStorage(huItem);
 
-		Assert.assertTrue("Storage shall be empty: " + storage, storage.isEmpty(getProductId()));
+		assertThat(storage.isEmpty(getProductId())).as("Storage shall be empty: " + storage).isTrue();
 
 		storage.addQty(getProductId(), getQty(), getC_UOM());
 

@@ -12,7 +12,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -22,12 +23,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
@@ -37,8 +38,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -52,18 +53,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
+@RequiredArgsConstructor
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	private final AttachmentEntryService attachmentEntryService;
-	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
+	@NonNull private final DocOutboundService docOutboundService;
+	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-	public DocOutboundArchiveEventListener(
-			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
+	public static DocOutboundArchiveEventListener newInstanceForUnitTesting()
 	{
-		this.attachmentEntryService = attachmentEntryService;
-		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
+		Adempiere.assertUnitTestMode();
+		return new DocOutboundArchiveEventListener(
+				AttachmentEntryService.createInstanceForUnitTesting(),
+				new DocOutboundLogMailRecipientRegistry(Optional.empty()),
+				DocOutboundService.newInstanceForUnitTesting());
 	}
 
 	@Override
@@ -91,6 +96,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastPrint(SystemTime.asTimestamp());
 		save(log);
+		docOutboundService.sendMailAutomaticallyIfActive(log);
 	}
 
 	@Override
@@ -114,7 +120,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_To(EMailAddress.toStringOrNull(to));
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
-		docExchangeLine.setStatus(status.toDisplayText(msgBL, Env.getADLanguageOrBaseLanguage()));
+		docExchangeLine.setStatus(status.getCode());
 		if (userMailConfig != null)
 		{
 			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
@@ -128,10 +134,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-			@Nullable final UserId userId,
-			final String printerName,
-			final int copies,
-			@NonNull final ArchivePrintOutStatus status)
+						   @Nullable final UserId userId,
+						   final String printerName,
+						   final int copies,
+						   @NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (status.isSuccess())
@@ -158,6 +164,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		save(docOutboundLogLineRecord);
 	}
 
+	@Override
+	public void onVoidDocument(@NonNull final I_AD_Archive archive)
+	{
+		final TableRecordReference reference = TableRecordReference.ofReferenced(archive);
+		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
+
+		docOutboundDAO.updateLogAndLinesDocStatus(reference, docStatus);
+	}
+
 	/**
 	 * We don't generate logs for archives without table IDs
 	 */
@@ -178,7 +193,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
 		final ArchiveId archiveId = ArchiveId.ofRepoId(archive.getAD_Archive_ID());
-		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archiveId);
+		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(archiveId);
 
 		if (docOutboundLogRecord == null)
 		{
@@ -210,9 +225,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	 */
 	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)
 	{
-		// Services
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
 
 		final int adTableId = reference.getAD_Table_ID();
@@ -246,38 +258,46 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
 
-		setMailRecipient(docOutboundLogRecord);
-
+		setMailRecipients(docOutboundLogRecord);
 		save(docOutboundLogRecord);
 
 		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
 	}
-	
-	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
-	{
-		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
-				DocOutboundLogMailRecipientRequest.builder()
-						.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
-						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
-						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
-						.build());
 
-		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
+	private void setMailRecipients(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final DocOutboundLogMailRecipientRequest recipientRequest = DocOutboundLogMailRecipientRequest.builder()
+				.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
+				.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+				.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+				.build();
+
+		docOutboundLogMailRecipientRegistry.getRecipient(recipientRequest)
+				.ifPresent(recipients -> updateRecordWithRecipient(docOutboundLogRecord, recipients));
 	}
 
 	private void updateRecordWithRecipient(
 			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			@NonNull final DocOutBoundRecipient recipient)
+			@NonNull final DocOutBoundRecipients recipients)
 	{
 		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
-		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipient.isInvoiceAsEmail();
+		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipients.isInvoiceAsEmail();
 		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
-		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());
-		docOutboundLogRecord.setCurrentEMailAddress(recipient.getEmailAddress());
+		if (recipients.getTo() != null)
+		{
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(recipients.getTo().getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
+		}
+
+		if (recipients.getCc() != null)
+		{
+			docOutboundLogRecord.setCurrentEMailCCRecipient_ID(recipients.getCc().getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddressCC(recipients.getCc().getEmailAddress());
+		}
 	}
 
 	private void shareDocumentAttachmentsWithDocoutBoundLog(

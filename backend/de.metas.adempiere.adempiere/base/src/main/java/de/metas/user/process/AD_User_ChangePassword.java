@@ -120,6 +120,8 @@ public class AD_User_ChangePassword extends JavaProcess implements IProcessPreco
 				.contextClientId(Env.getClientId(ctx))
 				.contextUserId(loggedUserId)
 				.contextDate(Env.getLocalDate(ctx))
+				.contextRoleId(Env.getLoggedRoleId())
+
 				//
 				.build());
 

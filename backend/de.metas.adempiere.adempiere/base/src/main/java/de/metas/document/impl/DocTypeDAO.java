@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
@@ -10,6 +11,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -20,10 +22,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
@@ -62,6 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class); // TODO move it out from this DAO to DocTypeBL, together with new AD_Sequence creation
 
 	private final CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
@@ -88,14 +93,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-		
+
 		if (docTypeRecord == null)
 		{
 			throw new AdempiereException("No C_DocType record found for ID!")
 					.appendParametersToMessage()
 					.setParameter("DocTypeId", docTypeId);
 		}
-		
+
 		return docTypeRecord;
 	}
 
@@ -264,8 +269,13 @@ public class DocTypeDAO implements IDocTypeDAO
 		}
 		else if (request.getNewDocNoSequenceStartNo() > 0)
 		{
-			final I_AD_Sequence sequence = new MSequence(ctx, Env.getAD_Client_ID(ctx), name, request.getNewDocNoSequenceStartNo(), trxName);
-			InterfaceWrapperHelper.save(sequence);
+			final ClientId clientId = Env.getClientId(ctx);
+			final I_AD_Sequence sequence = sequenceDAO.retrieveSequenceByName(name, clientId)
+					.orElseGet(() -> {
+						final MSequence newSequence = new MSequence(ctx, clientId.getRepoId(), name, request.getNewDocNoSequenceStartNo(), trxName);
+						InterfaceWrapperHelper.save(newSequence);
+						return newSequence;
+					});
 			docNoSequenceId = sequence.getAD_Sequence_ID();
 		}
 		else
@@ -273,7 +283,7 @@ public class DocTypeDAO implements IDocTypeDAO
 			docNoSequenceId = -1;
 		}
 
-		final I_C_DocType dt = newInstance(I_C_DocType.class);
+		final I_C_DocType dt = newInstance(I_C_DocType.class, ctx);
 		dt.setAD_Org_ID(0);
 		dt.setDocBaseType(request.getDocBaseType().getCode());
 		dt.setName(name);
@@ -330,7 +340,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
-	
+
 	@Override
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
@@ -344,11 +354,23 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
+	@NonNull
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docTypeRecord = getById(docTypeId);
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+	}
+
+	@NonNull
+	public ImmutableList<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_DocType.class)
+				.setOnlySelection(pinstanceId)
+				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
+				.create()
+				.listImmutable();
 	}
 
 	@EqualsAndHashCode
@@ -384,6 +406,6 @@ public class DocTypeDAO implements IDocTypeDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_C_DocType_Invoicing_Pool_ID, docTypeInvoicingPoolId)
 				.create()
-				.listIds(DocTypeId::ofRepoId);
+				.idsAsSet(DocTypeId::ofRepoId);
 	}
 }

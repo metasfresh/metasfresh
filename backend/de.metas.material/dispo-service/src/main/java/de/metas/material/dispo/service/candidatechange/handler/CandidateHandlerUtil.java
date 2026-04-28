@@ -43,6 +43,10 @@ public class CandidateHandlerUtil
 		{
 			return candidateRepositoryWriteService::deleteCandidateById;
 		}
+		if (candidateBusinessCase == CandidateBusinessCase.FORECAST)
+		{
+			return candidateRepositoryWriteService::deleteCandidateWithoutStock;
+		}
 
 		return candidateRepositoryWriteService::deleteCandidateAndDetailsById;
 	}

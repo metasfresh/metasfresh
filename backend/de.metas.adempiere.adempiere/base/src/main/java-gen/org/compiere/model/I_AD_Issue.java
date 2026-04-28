@@ -323,6 +323,27 @@ public interface I_AD_Issue
 	String COLUMNNAME_DBAddress = "DBAddress";
 
 	/**
+	 * Set Error Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setErrorCode (@Nullable java.lang.String ErrorCode);
+
+	/**
+	 * Get Error Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getErrorCode();
+
+	ModelColumn<I_AD_Issue, Object> COLUMN_ErrorCode = new ModelColumn<>(I_AD_Issue.class, "ErrorCode", null);
+	String COLUMNNAME_ErrorCode = "ErrorCode";
+
+	/**
 	 * Set Error Trace.
 	 * System Error Trace
 	 *

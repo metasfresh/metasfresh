@@ -135,7 +135,7 @@ public class PMM_Purchase_Candidate_UpdatePricing extends JavaProcess
 				.setOwner(lockOwner)
 				.setAutoCleanup(true)
 				.setFailIfNothingLocked(false)
-				.setSetRecordsByFilter(I_PMM_PurchaseCandidate.class, filter)
+				.setRecordsByFilter(I_PMM_PurchaseCandidate.class, filter)
 				.acquire();
 
 		//

@@ -159,7 +159,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return MSG_OK;
 	}
 
-	protected void pickQtyToNewHU(@NonNull final Quantity qtyToPack)
+	protected final void pickQtyToNewHU(@NonNull final Quantity qtyToPack)
 	{
 		final HuId packToHuId = createNewHuId();
 		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
@@ -180,7 +180,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	@NonNull
-	protected HuId createNewHuId()
+	protected final HuId createNewHuId()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 

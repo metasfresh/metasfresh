@@ -11,6 +11,7 @@ import lombok.Value;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -109,7 +110,8 @@ public class ProductionDetail implements BusinessCaseDetail
 		return CandidateBusinessCase.PRODUCTION;
 	}
 
-	public int getPpOrderCandidateId() {return ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : -1;}
+	@Nullable
+	public PPOrderCandidateId getPpOrderCandidateId() {return ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : null;}
 
 	public int getPpOrderLineCandidateId() {return ppOrderRef != null ? ppOrderRef.getPpOrderLineCandidateId() : -1;}
 

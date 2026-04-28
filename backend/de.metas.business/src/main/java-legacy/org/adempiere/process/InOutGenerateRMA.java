@@ -191,6 +191,7 @@ public class InOutGenerateRMA extends JavaProcess
 		shipment.setUser2_ID(originalReceipt.getUser2_ID());
 		shipment.setEMail(originalReceipt.getEMail());
 		shipment.setAD_InputDataSource_ID(originalReceipt.getAD_InputDataSource_ID());
+		shipment.setExternalSystem_ID(originalReceipt.getExternalSystem_ID());
 
 		if (!shipment.save())
 		{

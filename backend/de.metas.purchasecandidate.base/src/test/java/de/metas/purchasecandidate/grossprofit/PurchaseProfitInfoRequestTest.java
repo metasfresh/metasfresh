@@ -8,14 +8,15 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
@@ -43,7 +44,7 @@ import java.sql.Timestamp;
 
 public class PurchaseProfitInfoRequestTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -23,7 +23,6 @@
 package org.eevolution.productioncandidate.process;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -84,8 +83,7 @@ public class PP_Order_Candidate_ReOpenSelection extends JavaProcess implements I
 	{
 		if (createSelection() <= 0)
 		{
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_SELECTED_CLOSED_CANDIDATE);
-			throw new AdempiereException(message);
+			throw new AdempiereException(MSG_SELECTED_CLOSED_CANDIDATE);
 		}
 	}
 

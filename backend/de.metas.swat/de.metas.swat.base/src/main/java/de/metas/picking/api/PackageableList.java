@@ -25,23 +25,16 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.order.OrderAndLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -93,46 +86,7 @@ public final class PackageableList implements Iterable<Packageable>
 		return list.stream().map(Packageable::getShipmentScheduleId).sorted().collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<ShipmentScheduleId> getSingleShipmentScheduleIdIfUnique()
-	{
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds();
-		return shipmentScheduleIds.size() == 1 ? Optional.of(shipmentScheduleIds.iterator().next()) : Optional.empty();
-	}
-
 	public Optional<BPartnerId> getSingleCustomerId() {return getSingleValue(Packageable::getCustomerId);}
-
-	public ProductId getSingleProductId()
-	{
-		return getSingleValue(Packageable::getProductId).orElseThrow(() -> new AdempiereException("No single product found in " + list));
-	}
-
-	public HUPIItemProductId getSinglePackToHUPIItemProductId()
-	{
-		return getSingleValue(Packageable::getPackToHUPIItemProductId).orElseThrow(() -> new AdempiereException("No single PackToHUPIItemProductId found in " + list));
-	}
-
-	public Optional<UomId> getSingleCatchWeightUomIdIfUnique()
-	{
-		final List<UomId> catchWeightUomIds = list.stream()
-				.map(Packageable::getCatchWeightUomId)
-				// don't filter out null catch UOMs
-				.distinct()
-				.collect(Collectors.toList());
-		return catchWeightUomIds.size() == 1 ? Optional.ofNullable(catchWeightUomIds.get(0)) : Optional.empty();
-	}
-
-	public OrderAndLineId getSingleSalesOrderLineId()
-	{
-		return getSingleValue(Packageable::getSalesOrderAndLineIdOrNull).orElseThrow(() -> new AdempiereException("No single sales order line found for " + list));
-	}
-
-	public Quantity getQtyToPick()
-	{
-		return list.stream()
-				.map(Packageable::getQtyToPick)
-				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("No QtyToPick found in " + list));
-	}
 
 	public <T> Optional<T> getSingleValue(@NonNull final Function<Packageable, T> mapper)
 	{
@@ -157,7 +111,8 @@ public final class PackageableList implements Iterable<Packageable>
 		}
 		else
 		{
-			throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			//throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			return Optional.empty();
 		}
 	}
 

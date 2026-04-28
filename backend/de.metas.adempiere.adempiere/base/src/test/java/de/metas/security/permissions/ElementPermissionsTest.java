@@ -1,13 +1,13 @@
 package de.metas.security.permissions;
 
-import static de.metas.security.permissions.PermissionAsserts.assertAccess;
+import de.metas.security.permissions.ElementPermissions.Builder;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Test;
-
-import de.metas.security.permissions.ElementPermissions.Builder;
+import static de.metas.security.permissions.PermissionAsserts.assertAccess;
 
 public class ElementPermissionsTest
 {
@@ -33,7 +33,7 @@ public class ElementPermissionsTest
 				// Rebuild the permissions.
 				// They shall NOT change, so we will do the same assertions again.
 				, permissions0.asNewBuilder().build()
-				))
+		))
 		{
 			for (int windowId = 1; windowId <= 100; windowId++)
 			{
@@ -46,17 +46,18 @@ public class ElementPermissionsTest
 		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void test_DifferentResourceElementTableName()
 	{
 		final Builder builder = ElementPermissions.builder()
 				.setElementTableName("AD_Window");
 
 		// shall fail because the resource shall have the same tablename as the permissions.
-		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window_Different", 127), false));
+		Assertions.assertThrows(IllegalArgumentException.class,
+				() -> builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window_Different", 127), false)));
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_addPermissions_AlreadyExistingResource()
 	{
 		final Builder builder = ElementPermissions.builder()
@@ -66,7 +67,8 @@ public class ElementPermissionsTest
 		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window", 1), readWrite));
 
 		// adding permission for an already existing resource shall fail
-		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window", 1), !readWrite));
+		Assertions.assertThrows(AdempiereException.class, () ->
+				builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window", 1), !readWrite)));
 	}
 
 }

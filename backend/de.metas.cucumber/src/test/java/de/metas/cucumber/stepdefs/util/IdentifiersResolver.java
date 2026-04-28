@@ -1,12 +1,43 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.cucumber.stepdefs.util;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.dunning.DunningDocId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +48,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_MatchInv;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -24,110 +56,119 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Simplified version for soft_panda_hotfix - supports invoice, payment, allocationHdr, inOut.
- * Full version on intensive_care_hotfix also supports dunning, matchInv, order.
- */
 @RequiredArgsConstructor
 public class IdentifiersResolver
 {
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;
+	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
 	{
-		final String norm = StringUtils.trimBlankToNull(commaSeparatedIdentifiers);
-		if (norm == null || norm.equals("-"))
+		final String commaSeparatedIdentifiersNorm = StringUtils.trimBlankToNull(commaSeparatedIdentifiers);
+		if (commaSeparatedIdentifiersNorm == null || commaSeparatedIdentifiersNorm.equals("-"))
 		{
 			return ImmutableSet.of();
 		}
-		return getTableRecordReferences(StepDefDataIdentifier.ofCommaSeparatedString(norm));
+
+		return getTableRecordReferences(StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedIdentifiersNorm));
 	}
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferences(@NonNull final List<StepDefDataIdentifier> identifiers)
 	{
-		final HashSet<TableRecordReference> result = new HashSet<>();
-		for (final StepDefDataIdentifier identifier : identifiers)
-		{
-			result.add(getTableRecordReference(identifier));
-		}
-		return ImmutableSet.copyOf(result);
+		return identifiers.stream()
+				.map(this::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
 	public TableRecordReference getTableRecordReference(@NonNull final StepDefDataIdentifier identifier)
 	{
-		final ArrayList<TableRecordReference> candidates = new ArrayList<>();
-		invoiceTable.getOptional(identifier)
-				.map(inv -> TableRecordReference.of(I_C_Invoice.Table_Name, inv.getC_Invoice_ID()))
-				.ifPresent(candidates::add);
-		paymentTable.getOptional(identifier)
-				.map(pay -> TableRecordReference.of(I_C_Payment.Table_Name, pay.getC_Payment_ID()))
-				.ifPresent(candidates::add);
-		allocationTable.getOptional(identifier)
-				.map(alloc -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, alloc.getC_AllocationHdr_ID()))
-				.ifPresent(candidates::add);
-		inOutTable.getOptional(identifier)
-				.map(inOut -> TableRecordReference.of(I_M_InOut.Table_Name, inOut.getM_InOut_ID()))
-				.ifPresent(candidates::add);
+		final ArrayList<TableRecordReference> result = new ArrayList<>();
+		invoiceTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_Invoice.Table_Name, id))
+				.ifPresent(result::add);
+		paymentTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_Payment.Table_Name, id))
+				.ifPresent(result::add);
+		allocationTable.getIdOptional(identifier)
+				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
+				.ifPresent(result::add);
+		matchInvTable.getIdOptional(identifier)
+				.map(MatchInvId::toRecordRef)
+				.ifPresent(result::add);
+		inOutTable.getIdOptional(identifier)
+				.map(InOutId::toRecordRef)
+				.ifPresent(result::add);
+		orderTable.getIdOptional(identifier)
+				.map(OrderId::toRecordRef)
+				.ifPresent(result::add);
+		dunningDocTable.getIdOptional(identifier)
+				.map(DunningDocId::toRecordRef)
+				.ifPresent(result::add);
 
-		if (candidates.isEmpty())
+		if (result.isEmpty())
 		{
-			throw new AdempiereException("No record found for identifier: " + identifier);
+			throw new AdempiereException("No known document found for identifier: " + identifier);
 		}
-		if (candidates.size() > 1)
+		else if (result.size() > 1)
 		{
-			throw new AdempiereException("Multiple records found for identifier: " + identifier + " => " + candidates);
+			throw new AdempiereException("More than one document found for identifier " + identifier + ": " + result);
 		}
-		return candidates.get(0);
+		else
+		{
+			return result.get(0);
+		}
 	}
 
-	@NonNull
-	public TableRecordReferenceSet getTableRecordReferenceSetOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
+	public Optional<StepDefDataIdentifier> getIdentifier(final TableRecordReference documentRef)
 	{
-		return TableRecordReferenceSet.of(getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers));
+		final String tableName = documentRef.getTableName();
+		final int recordId = documentRef.getRecord_ID();
+
+		switch (tableName)
+		{
+			case I_C_Invoice.Table_Name:
+				return invoiceTable.getFirstIdentifierById(InvoiceId.ofRepoId(recordId));
+			case I_C_Payment.Table_Name:
+				return paymentTable.getFirstIdentifierById(PaymentId.ofRepoId(recordId));
+			case I_C_AllocationHdr.Table_Name:
+				return allocationTable.getFirstIdentifierById(PaymentAllocationId.ofRepoId(recordId));
+			case I_M_MatchInv.Table_Name:
+				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
+			case I_M_InOut.Table_Name:
+				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
+			default:
+				return Optional.empty();
+		}
 	}
 
-	@NonNull
-	public Optional<InvoiceId> resolveOptionalInvoiceId(@Nullable final StepDefDataIdentifier identifier)
+	public TableRecordReferenceSet getAccountableDocumentRefs()
 	{
-		if (identifier == null)
-		{
-			return Optional.empty();
-		}
-		return invoiceTable.getOptional(identifier)
-				.map(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-	}
+		final HashSet<TableRecordReference> result = new HashSet<>();
 
-	/** Reverse lookup: find the StepDefDataIdentifier for a given TableRecordReference */
-	@NonNull
-	public Optional<StepDefDataIdentifier> getIdentifier(@NonNull final TableRecordReference ref)
-	{
-		final String tableName = ref.getTableName();
-		final int recordId = ref.getRecord_ID();
+		invoiceTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Invoice.Table_Name, id))
+				.forEach(result::add);
+		paymentTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Payment.Table_Name, id))
+				.forEach(result::add);
+		allocationTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
+				.forEach(result::add);
+		matchInvTable.streamIds()
+				.map(MatchInvId::toRecordRef)
+				.forEach(result::add);
+		inOutTable.streamIds()
+				.map(InOutId::toRecordRef)
+				.forEach(result::add);
 
-		if (I_C_Invoice.Table_Name.equals(tableName))
-		{
-			return invoiceTable.getIdentifiers().stream()
-					.filter(id -> invoiceTable.getOptional(id).map(inv -> inv.getC_Invoice_ID() == recordId).orElse(false))
-					.findFirst();
-		}
-		if (I_C_Payment.Table_Name.equals(tableName))
-		{
-			return paymentTable.getIdentifiers().stream()
-					.filter(id -> paymentTable.getOptional(id).map(pay -> pay.getC_Payment_ID() == recordId).orElse(false))
-					.findFirst();
-		}
-		if (I_C_AllocationHdr.Table_Name.equals(tableName))
-		{
-			return allocationTable.getIdentifiers().stream()
-					.filter(id -> allocationTable.getOptional(id).map(alloc -> alloc.getC_AllocationHdr_ID() == recordId).orElse(false))
-					.findFirst();
-		}
-		return Optional.empty();
+		return TableRecordReferenceSet.of(result);
 	}
 }

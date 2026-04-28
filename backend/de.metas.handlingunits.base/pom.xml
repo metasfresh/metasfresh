@@ -11,10 +11,6 @@
     <groupId>de.metas.handlingunits</groupId>
     <artifactId>de.metas.handlingunits.base</artifactId>
 
-    <properties>
-        <migration-sql-basedir>70-de.metas.handlingunits</migration-sql-basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>de.metas.util</groupId>
@@ -119,6 +115,17 @@
             <artifactId>xmlunit-assertj3</artifactId>
             <version>${xmlunit-assertj3.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.qualitymgmt</groupId>
+            <artifactId>de.metas.qualitymgmt</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

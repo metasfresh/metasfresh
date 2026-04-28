@@ -386,6 +386,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.realizedLossAcct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedLoss_Acct))
 				.unrealizedGainAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedGain_Acct))
 				.unrealizedLossAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedLoss_Acct))
+				.payBankFeeAcct(record.getPayBankFee_Acct() > 0 ? Account.of(AccountId.ofRepoId(record.getPayBankFee_Acct()), I_C_AcctSchema_Default.COLUMNNAME_PayBankFee_Acct) : null)
 				.build();
 	}
 

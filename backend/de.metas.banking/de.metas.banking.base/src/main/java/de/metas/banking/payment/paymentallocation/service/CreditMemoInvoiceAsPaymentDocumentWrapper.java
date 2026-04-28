@@ -112,15 +112,39 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
-	public boolean isFullyAllocated()
+	public void addAllocatedAmt(final AllocationAmounts amount)
 	{
-		return creditMemoPayableDoc.isFullyAllocated();
+		creditMemoPayableDoc.addAllocatedAmounts(amount);
 	}
 
+	/**
+	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 */
+	@Override
+	public boolean isFullyAllocated()
+	{
+		return creditMemoPayableDoc.getAmountsToAllocate().getPayAmt().isZero();
+	}
+
+	/**
+	 * Computes projected over under amt taking into account discount.
+	 *
+	 * @implNote for credit memo as payment, the negated discount needs to be added to the open amount. Negated value is used
+	 * as it actually needs to increase the open amount.
+	 * 
+	 * e.g. Having a credit memo with totalGrandAmount = 10 and paymentTerm.Discount=10% translates to 11 total payment amount available.
+	 */
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
-		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
+		final Money discountAmt = creditMemoPayableDoc.getAmountsToAllocateInitial().getDiscountAmt().negate(); 
+		final Money openAmtWithDiscount = creditMemoPayableDoc.getOpenAmtInitial().add(discountAmt);
+		
+		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(creditMemoPayableDoc.getTotalAllocatedAmount());
+		
+		final Money adjustedPayAmountToAllocate = payAmountToAllocate.negate();
+
+		return remainingOpenAmtWithDiscount.subtract(adjustedPayAmountToAllocate);
 	}
 
 	@Override
@@ -136,12 +160,7 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		}
 
 		// A credit memo cannot pay another credit memo
-		if (payable.isCreditMemo())
-		{
-			return false;
-		}
-
-		return true;
+		return !payable.isCreditMemo();
 	}
 
 	@Override
@@ -175,5 +194,11 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 				.paymentCurrencyId(creditMemoPayableDoc.getCurrencyId())
 				.currencyConversionTypeId(creditMemoPayableDoc.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	@Override
+	public Money getPaymentDiscountAmt()
+	{
+		return creditMemoPayableDoc.getAmountsToAllocate().getDiscountAmt();
 	}
 }

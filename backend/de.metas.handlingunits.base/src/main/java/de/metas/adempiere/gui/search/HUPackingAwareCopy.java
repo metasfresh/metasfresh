@@ -1,18 +1,8 @@
-package de.metas.adempiere.gui.search;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_AttributeSetInstance;
-
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,9 +20,19 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.adempiere.gui.search;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+
+import java.math.BigDecimal;
+
 public class HUPackingAwareCopy
 {
-	public static final HUPackingAwareCopy from(final IHUPackingAware from)
+	public static HUPackingAwareCopy from(final IHUPackingAware from)
 	{
 		return new HUPackingAwareCopy(from);
 	}
@@ -61,6 +61,8 @@ public class HUPackingAwareCopy
 		to.setQty(from.getQty());
 		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
+		to.setLuId(from.getLuId());
+		to.setQtyLU(CoalesceUtil.coalesceNotNull(from.getQtyLU(), BigDecimal.ZERO));
 		from.getQtyCUsPerTU().ifPresent(to::setQtyCUsPerTU);
 
 		copyBPartner(to);
@@ -68,21 +70,21 @@ public class HUPackingAwareCopy
 
 	private void copyASI(final IHUPackingAware to)
 	{
-		final int asiId = from.getM_AttributeSetInstance_ID();
-		if (asiId <= 0)
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(from.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
 		{
 			return;
 		}
 
 		if (asiCopyMode == ASICopyMode.Clone)
 		{
-			final I_M_AttributeSetInstance fromASI = load(asiId, I_M_AttributeSetInstance.class);
-			final I_M_AttributeSetInstance toASI = Services.get(IAttributeDAO.class).copy(fromASI);
-			to.setM_AttributeSetInstance_ID(toASI.getM_AttributeSetInstance_ID());
+			final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
+			to.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
 		}
 		else if (asiCopyMode == ASICopyMode.CopyID)
 		{
-			to.setM_AttributeSetInstance_ID(asiId);
+			to.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		}
 		else
 		{

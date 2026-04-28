@@ -1,9 +1,6 @@
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
@@ -57,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -191,7 +187,7 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		// Logging
-		LogManager.setLevel(Level.WARN);
+		LogManager.setLevel(Level.INFO); // INFO is a decent level to not flood the test console but to understand what was initialized
 		//noinspection resource
 		Loggables.temporarySetLoggable(Loggables.console(">>> "));
 

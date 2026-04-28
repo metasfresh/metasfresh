@@ -25,6 +25,7 @@ package org.adempiere.archive.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -49,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
@@ -67,6 +69,9 @@ public class ArchiveBL implements IArchiveBL
 {
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final String SYSCONFIG_AttachDateAndTime = "de.metas.archive.AttachDateAndTime";
 
 	@Override
 	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
@@ -94,9 +99,28 @@ public class ArchiveBL implements IArchiveBL
 		// FRESH-218: extract and set the language to the archive
 		final String language = getLanguageFromReport(ctxToUse, request);
 		archive.setAD_Language(language);
-
 		archive.setDocumentNo(request.getDocumentNo());
-		archive.setName(request.getArchiveName());
+
+		final boolean isAttachDateAndTimeEnabled = sysConfigBL.getBooleanValue(SYSCONFIG_AttachDateAndTime, false);
+
+		if (isAttachDateAndTimeEnabled)
+		{
+			if (request.getArchiveName() != null && request.getArchiveName().contains(".pdf"))
+			{
+				final String fileName = request.getArchiveName();
+				final int pdfIndex = fileName.lastIndexOf(".pdf");
+				archive.setName(fileName.substring(0, pdfIndex) + " " + SystemTime.asTimestamp() + ".pdf");
+			}
+			else
+			{
+				archive.setName(request.getArchiveName() + " " + SystemTime.asTimestamp());
+			}
+		}
+		else
+		{
+			archive.setName(request.getArchiveName());
+		}
+
 		archive.setC_Async_Batch_ID(NumberUtils.asInt(request.getAsyncBatchId(), -1));
 		archive.setIsReport(request.isReport());
 		//
@@ -153,8 +177,7 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	/**
-	 * Return the BPartner's language, in case the request has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
-	 * in the given context
+	 * Return the BPartner's language, in case the request has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set in the given context
 	 * <p>
 	 * Task <a href="https://metasfresh.atlassian.net/browse/FRESH-218">FRESH-218</a>
 	 */
@@ -336,7 +359,7 @@ public class ArchiveBL implements IArchiveBL
 	{
 		return getLastArchiveRecord(reference).map(this::toAdArchive);
 	}
-	
+
 	@Override
 	public Optional<I_AD_Archive> getLastArchiveRecord(
 			@NonNull final TableRecordReference reference)

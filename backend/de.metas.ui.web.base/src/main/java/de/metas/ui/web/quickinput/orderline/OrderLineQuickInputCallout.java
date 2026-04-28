@@ -5,13 +5,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
 import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.util.Services;
@@ -89,6 +90,10 @@ final class OrderLineQuickInputCallout
 		final ProductId quickInputProductId = productAndAttributes.getProductId();
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		if (QuickInputConstants.isLUFieldsEnabled(SOTrx.ofBoolean(order.isSOTrx())))
+		{
+			return; // shall be handled by first selecting an LU
+		}
 		final Optional<DefaultPackingItemCriteria> defaultPackingItemCriteria = DefaultPackingItemCriteria.of(order, quickInputProductId);
 		final I_M_HU_PI_Item_Product huPIItemProduct = defaultPackingItemCriteria.flatMap(packingItemProductFieldHelper::getDefaultPackingMaterial).orElse(null);
 

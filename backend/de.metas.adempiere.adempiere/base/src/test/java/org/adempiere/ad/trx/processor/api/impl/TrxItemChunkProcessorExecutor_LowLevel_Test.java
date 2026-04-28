@@ -13,13 +13,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Test;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ public class TrxItemChunkProcessorExecutor_LowLevel_Test
 {
 	private ITrxItemProcessorExecutorService trxItemProcessorService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -100,11 +100,11 @@ public class TrxItemChunkProcessorExecutor_LowLevel_Test
 					.setExceptionHandler(FailTrxItemExceptionHandler.instance)
 					.process(generateTestItems(1));
 
-			Assert.fail("An exception was expected");
+			Assertions.fail("An exception was expected");
 		}
-		catch (Throwable ex)
+		catch (final Throwable ex)
 		{
-			Assert.assertSame(commitException, ex.getCause());
+			Assertions.assertSame(commitException, ex.getCause());
 		}
 
 	}

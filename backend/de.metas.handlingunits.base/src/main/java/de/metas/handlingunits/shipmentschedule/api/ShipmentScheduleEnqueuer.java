@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.api;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,11 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+package de.metas.handlingunits.shipmentschedule.api;
+
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
@@ -36,9 +35,11 @@ import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -46,18 +47,18 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Builder;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,9 +77,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
-import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
-import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -89,6 +91,7 @@ import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueu
 public class ShipmentScheduleEnqueuer
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEnqueuer.class);
+	private static final AdMessageKey MSG_NO_VALID_RECORDS = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
@@ -97,14 +100,23 @@ public class ShipmentScheduleEnqueuer
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
-	private Properties _ctx;
-	private String _trxNameInitial;
+	private final Properties _ctx;
+	private final String _trxNameInitial;
 
-	public ShipmentScheduleEnqueuer setContext(final Properties ctx, final String trxName)
+	private ShipmentScheduleEnqueuer(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
 		this._ctx = ctx;
-		this.setTrxNameInitial(trxName);
-		return this;
+		this._trxNameInitial = trxName;
+	}
+
+	public static ShipmentScheduleEnqueuer newInstance()
+	{
+		return new ShipmentScheduleEnqueuer(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static ShipmentScheduleEnqueuer newInstance(@NonNull final Properties ctx, @Nullable final String trxName)
+	{
+		return new ShipmentScheduleEnqueuer(ctx, trxName);
 	}
 
 	/**
@@ -118,15 +130,12 @@ public class ShipmentScheduleEnqueuer
 
 		final Mutable<Result> result = new Mutable<>();
 
-		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = workPackageParameters.getQueryFilters();
-		final PInstanceId adPInstanceId = workPackageParameters.getAdPInstanceId();
-
 		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
 			{
-				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
+				final ILock mainLock = acquireMainLock(workPackageParameters);
 				try (final ILockAutoCloseable ignore = mainLock.asAutoCloseable())
 				{
 					final Result result0 = createWorkpackages0(
@@ -138,7 +147,7 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
-		return result.getValue();
+		return result.getValueNotNull();
 	}
 
 	@NonNull
@@ -147,23 +156,22 @@ public class ShipmentScheduleEnqueuer
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final ILock mainLock)
 	{
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
-				.filter(workPackageParameters.queryFilters);
-
-		queryBuilder.orderBy()
+		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
+				.filter(workPackageParameters.getShipmentSchedulesQueryFiltersEffective())
+				//
+				.orderBy()
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
-
-		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
-		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = query
+				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.endOrderBy()
+				//
+				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_M_ShipmentSchedule.class);
 
 		if (!shipmentSchedules.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@").appendParametersToMessage().setParameter("query", query);
+			throw new AdempiereException(MSG_NO_VALID_RECORDS);
 		}
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
@@ -207,21 +215,23 @@ public class ShipmentScheduleEnqueuer
 				{
 					workpackageBuilder = queue
 							.newWorkPackage()
-							.setAD_PInstance_ID(workPackageParameters.adPInstanceId)
+							.setAD_PInstance_ID(workPackageParameters.getAdPInstanceId())
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName())
-							.setC_Async_Batch_ID(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
-
+							.setAsyncBatchId(workPackageParameters.getAsyncBatchId()) // don't rely on the shipment schedule to have an asyncBatchId.
+					;
+					
 					workpackageBuilder
 							.parameters()
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds, RepoIdAwares.toCommaSeparatedString(workPackageParameters.getOnlyLUIds()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
-					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
+					// Create a new locker which will grab the locked shipment candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
 					final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ShipmentScheds_" + shipmentSchedule.getHeaderAggregationKey());
 					final ILockCommand workpackageElementsLocker = mainLock
@@ -233,8 +243,17 @@ public class ShipmentScheduleEnqueuer
 
 				addAdvisedShipmentDocumentNo(workPackageParameters, workpackageBuilder, shipmentScheduleId);
 
-				// Enqueue shipmentSchedule to current workpackage
-				workpackageBuilder.addElement(shipmentSchedule);
+				// Enqueue shipmentSchedule to the current workpackage
+				final Set<PickingJobScheduleId> jobScheduleIds = workPackageParameters.getPickingJobScheduleIds(shipmentScheduleId);
+				if (jobScheduleIds.isEmpty())
+				{
+					workpackageBuilder.addElement(shipmentSchedule);
+				}
+				else
+				{
+					workpackageBuilder.addElement(shipmentSchedule);
+					workpackageBuilder.addElements(PickingJobScheduleId.toTableRecordReferenceSet(jobScheduleIds));
+				}
 			}
 		}
 
@@ -244,7 +263,7 @@ public class ShipmentScheduleEnqueuer
 		return result;
 	}
 
-	private void addAdvisedShipmentDocumentNo(
+	private static void addAdvisedShipmentDocumentNo(
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final IWorkPackageBuilder workpackageBuilder,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -299,27 +318,36 @@ public class ShipmentScheduleEnqueuer
 	/**
 	 * Lock all invoice candidates for selection and return an auto-closable lock.
 	 */
-	private ILock acquireLock(@NonNull final PInstanceId adPInstanceId, final IQueryFilter<I_M_ShipmentSchedule> queryFilters)
+	private ILock acquireMainLock(@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters)
 	{
-		final LockOwner lockOwner = LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId.getRepoId());
-		return lockManager.lock()
-				.setOwner(lockOwner)
+		final PInstanceId adPInstanceId = workPackageParameters.getAdPInstanceId();
+		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = workPackageParameters.getShipmentSchedulesQueryFiltersEffective();
+
+		final ILockCommand lockCommand = lockManager.lock()
+				.setOwner(LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId.getRepoId()))
 				// allow these locks to be cleaned-up on server starts.
 				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
-				.setSetRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters)
-				.acquire();
+				.retryOnFailure(10)
+				.setRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters);
+
+		final Set<PickingJobScheduleId> jobScheduleIds = workPackageParameters.getPickingJobScheduleIds();
+		if (!jobScheduleIds.isEmpty())
+		{
+			// IMPORTANT: mixing different type of records source (e.g. by filters and by record refs) is not supported  
+			lockCommand.addRecordsByFilter(
+					I_M_Picking_Job_Schedule.class,
+					new InArrayQueryFilter<>(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds)
+			);
+		}
+
+		return lockCommand.acquire();
 	}
 
 	public String getTrxNameInitial()
 	{
 		return _trxNameInitial;
-	}
-
-	private void setTrxNameInitial(final String _trxNameInitial)
-	{
-		this._trxNameInitial = _trxNameInitial;
 	}
 
 	/**
@@ -360,51 +388,6 @@ public class ShipmentScheduleEnqueuer
 		{
 			return enqueuedWorkpackageIds.size();
 		}
-	}
-
-	@Builder
-	@Value
-	public static class ShipmentScheduleWorkPackageParameters
-	{
-		public static final String PARAM_QuantityType = "QuantityType";
-		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
-		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
-		public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
-		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
-		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
-		public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
-		/**
-		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
-		 */
-		@NonNull
-		PInstanceId adPInstanceId;
-
-		@NonNull
-		IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-
-		@NonNull
-		M_ShipmentSchedule_QuantityTypeToUse quantityType;
-
-		/**
-		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
-		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
-		 */
-		@Builder.Default
-		boolean onTheFlyPickToPackingInstructions = false;
-
-		boolean completeShipments;
-		boolean isCloseShipmentSchedules;
-		boolean isShipmentDateToday;
-
-		/**
-		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
-		 * ShipmentScheduleIds that are not matched by {@link #getQueryFilters()} are ignored.
-		 */
-		@Nullable
-		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
-
-		@Nullable
-		QtyToDeliverMap qtysToDeliverOverride;
 	}
 
 }

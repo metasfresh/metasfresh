@@ -22,12 +22,16 @@
 
 package de.metas.picking.rest_api.json;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -36,8 +40,16 @@ public class JsonTUPickingTarget
 {
 	@NonNull String id;
 	@NonNull String caption;
-	@NonNull HuPackingInstructionsId tuPIId;
+
+	//
+	// New TU
+	@Nullable HuPackingInstructionsId tuPIId;
 	boolean isDefault;
+
+	//
+	// Existing TU
+	@Nullable HuId tuId;
+	@Nullable String tuQRCode;
 
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
 	{
@@ -46,6 +58,8 @@ public class JsonTUPickingTarget
 				.caption(target.getCaption())
 				.tuPIId(target.getTuPIId())
 				.isDefault(target.isDefaultPacking())
+				.tuId(target.getTuId())
+				.tuQRCode(target.getTuQRCode() != null ? target.getTuQRCode().toGlobalQRCodeString() : null)
 				.build();
 	}
 
@@ -54,6 +68,9 @@ public class JsonTUPickingTarget
 		return TUPickingTarget.builder()
 				.caption(caption)
 				.tuPIId(tuPIId)
+				.isDefaultPacking(isDefault)
+				.tuId(tuId)
+				.tuQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(tuQRCode))
 				.build();
 	}
 }

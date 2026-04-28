@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v1.ordercandidates.impl;
 
 import au.com.origin.snapshots.Expect;
@@ -8,10 +30,12 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.AdRefListRepositoryMocked;
 import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -40,6 +64,8 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -60,6 +86,8 @@ import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -126,29 +154,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
-/*
- * #%L
- * de.metas.ordercandidate.rest-api-impl
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
+@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class })
 public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
@@ -158,7 +164,6 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
-	private BPartnerBL bpartnerBL;
 	private TestMasterdata testMasterdata;
 
 	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
@@ -194,7 +199,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
-		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
+		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -221,6 +226,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			BusinessTestHelper.createProduct("ProductCode", uomId);
 
 			testMasterdata.createDocType(DOCTYPE_SALES_INVOICE);
+			testMasterdata.createExternalSystem("Shopware", ExternalSystemType.ofValue("Shopware6"));
 
 			testMasterdata.createDataSource(DATA_SOURCE_INTERNALNAME);
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
@@ -234,20 +240,25 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
+
+			SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
 		final DocTypeService docTypeService = new DocTypeService();
-		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService, ExternalSystemRepository.newInstanceForUnitTesting());
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
-				new BPGroupRepository(),
+				bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
 				currencyRepository,
 				Mockito.mock(ExternalReferenceRestControllerService.class));
@@ -258,7 +269,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 
@@ -282,7 +293,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(DocumentLocationBL.newInstanceForUnitTesting());
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
 		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService));
@@ -377,6 +388,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(dateOrdered)
@@ -464,6 +476,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			}
 
 			final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+					.externalSystemCode("Shopware6")
 					.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 					.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 					.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1))
@@ -509,6 +522,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
@@ -572,6 +586,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -658,6 +673,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -744,6 +760,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		handOverBPartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -862,6 +879,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -980,6 +998,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))

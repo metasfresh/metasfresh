@@ -1,10 +1,8 @@
-package de.metas.printing.api.impl;
-
 /*
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,30 +11,31 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import de.metas.user.UserId;
-import org.adempiere.model.InterfaceWrapperHelper;
+package de.metas.printing.api.impl;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.SingletonIterator;
 import lombok.NonNull;
+import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Used for creating a print job for a single printing queue item.
@@ -51,8 +50,13 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 
 	/**
 	 * Decides if marking the item as printed shall be persisted in database or just in memory
+	 * -- SETTER --
+	 *  Specifies if marking the items as printed shall be persisted to database (usually) or just in memory for this run (temporary).
+	 *
+	 * @param persistPrintedFlag true if item's printed status shall be persisted in database
+
 	 */
-	private boolean persistPrintedFlag = true;
+	@Setter private boolean persistPrintedFlag = true;
 
 	/**
 	 * When {@link #persistPrintedFlag} is set, indicates if current item is printed or not.
@@ -109,16 +113,6 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 	{
 		final List<I_C_Printing_Queue> list = Collections.emptyList();
 		return list.iterator();
-	}
-
-	/**
-	 * Specifies if marking the items as printed shall be persisted to database (usually) or just in memory for this run (temporary).
-	 *
-	 * @param persistPrintedFlag true if item's printed status shall be persisted in database
-	 */
-	public void setPersistPrintedFlag(final boolean persistPrintedFlag)
-	{
-		this.persistPrintedFlag = persistPrintedFlag;
 	}
 
 	@Override

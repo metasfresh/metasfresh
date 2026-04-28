@@ -55,7 +55,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Service
-public class MoneyService
+public class MoneyService implements CurrencyCodeToCurrencyIdBiConverter
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currencyRepository;
@@ -65,11 +65,13 @@ public class MoneyService
 		this.currencyRepository = currencyRepository;
 	}
 
+	@Override
 	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+	@Override
 	public CurrencyCode getCurrencyCodeByCurrencyId(@NonNull final CurrencyId currencyId)
 	{
 		return currencyRepository.getCurrencyCodeById(currencyId);

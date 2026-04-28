@@ -22,21 +22,19 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.impl.PlainDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 public class BaseDunnableSourceTest extends DunningTestBase
 {
@@ -67,7 +65,7 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setOpenAmt(BigDecimal.ZERO)
 				.create();
 
-		Assert.assertFalse("Invalid for " + dunnable, source.isEligible(dunningContext, dunnable));
+		Assertions.assertFalse( source.isEligible(dunningContext, dunnable),"Invalid for " + dunnable);
 	}
 
 	@Test
@@ -81,25 +79,25 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setOpenAmt(BigDecimal.valueOf(100))
 				.setDaysDue(5)
 				.create();
-		Assert.assertFalse("Invalid for " + dunnable_due5, source.isEligible(dunningContext, dunnable_due5));
+		Assertions.assertFalse(source.isEligible(dunningContext, dunnable_due5), "Invalid for " + dunnable_due5);
 
 		final IDunnableDoc dunnable_due10 = mkDunnableDocBuilder()
 				.setOpenAmt(BigDecimal.valueOf(100))
 				.setDaysDue(10)
 				.create();
-		Assert.assertTrue("Invalid for " + dunnable_due10, source.isEligible(dunningContext, dunnable_due10));
+		Assertions.assertTrue(source.isEligible(dunningContext, dunnable_due10), "Invalid for " + dunnable_due10);
 
 		final IDunnableDoc dunnable_due11 = mkDunnableDocBuilder()
 				.setOpenAmt(BigDecimal.valueOf(100))
 				.setDaysDue(11)
 				.create();
-		Assert.assertTrue("Invalid for " + dunnable_due11, source.isEligible(dunningContext, dunnable_due11));
+		Assertions.assertTrue(source.isEligible(dunningContext, dunnable_due11), "Invalid for " + dunnable_due11);
 
 		final IDunnableDoc dunnable_due15 = mkDunnableDocBuilder()
 				.setOpenAmt(BigDecimal.valueOf(100))
 				.setDaysDue(15)
 				.create();
-		Assert.assertTrue("Invalid for " + dunnable_due15, source.isEligible(dunningContext, dunnable_due15));
+		Assertions.assertTrue(source.isEligible(dunningContext, dunnable_due15), "Invalid for " + dunnable_due15);
 	}
 
 	@Test
@@ -114,7 +112,7 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setDaysDue(15)
 				.setInDispute(true)
 				.create();
-		Assert.assertFalse("Invalid for " + dunnable_due15_inDispute, source.isEligible(dunningContext, dunnable_due15_inDispute));
+		Assertions.assertFalse(source.isEligible(dunningContext, dunnable_due15_inDispute), "Invalid for " + dunnable_due15_inDispute);
 	}
 
 	@Test
@@ -131,10 +129,10 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.create();
 
 		dunningLevel1_10.setIsShowAllDue(false); // this flag does not matter because document is not due
-		Assert.assertFalse("Invalid for " + dunnable1, source.isEligible(dunningContext, dunnable1));
+		Assertions.assertFalse(source.isEligible(dunningContext, dunnable1), "Invalid for " + dunnable1);
 
 		dunningLevel1_10.setIsShowAllDue(true); // this flag does not matter because document is not due
-		Assert.assertFalse("Invalid for " + dunnable1, source.isEligible(dunningContext, dunnable1));
+		Assertions.assertFalse(source.isEligible(dunningContext, dunnable1), "Invalid for " + dunnable1);
 	}
 
 	@Test
@@ -150,10 +148,10 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setInDispute(false)
 				.create();
 		dunningLevel1_10.setIsShowAllDue(false);
-		Assert.assertFalse("Invalid for " + dunnable1, source.isEligible(dunningContext, dunnable1));
+		Assertions.assertFalse(source.isEligible(dunningContext, dunnable1), "Invalid for " + dunnable1);
 
 		dunningLevel1_10.setIsShowAllDue(true);
-		Assert.assertTrue("Invalid for " + dunnable1, source.isEligible(dunningContext, dunnable1));
+		Assertions.assertTrue(source.isEligible(dunningContext, dunnable1), "Invalid for " + dunnable1);
 	}
 
 	private DunnableDocBuilder mkDunnableDocBuilder()

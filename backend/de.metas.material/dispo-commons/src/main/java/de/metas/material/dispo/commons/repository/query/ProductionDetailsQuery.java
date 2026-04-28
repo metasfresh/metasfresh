@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 
@@ -72,7 +73,7 @@ public class ProductionDetailsQuery
 
 	@Nullable PPOrderId ppOrderId;
 	@NonNull @Builder.Default InSetPredicate<PPOrderBOMLineId> ppOrderLineIds = InSetPredicate.any();
-	int ppOrderCandidateId;
+	PPOrderCandidateId ppOrderCandidateId;
 	int ppOrderCandidateLineId;
 
 	/**
@@ -89,7 +90,7 @@ public class ProductionDetailsQuery
 	@Nullable
 	private PPOrderRef toPPOrderRef()
 	{
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}
@@ -140,7 +141,7 @@ public class ProductionDetailsQuery
 				doFilter = true;
 			}
 
-			if (ppOrderCandidateId > 0)
+			if (ppOrderCandidateId != null)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
 				doFilter = true;

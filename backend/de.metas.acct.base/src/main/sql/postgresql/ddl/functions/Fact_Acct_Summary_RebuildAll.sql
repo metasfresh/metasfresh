@@ -9,8 +9,8 @@ $$
 DECLARE
     v_rowcount numeric;
 BEGIN
-    PERFORM backup_table('Fact_Acct_Summary');
-    PERFORM backup_table('Fact_Acct_Log');
+    PERFORM backup_table('Fact_Acct_Summary', '_before_rebuildall');
+    PERFORM backup_table('Fact_Acct_Log', '_before_rebuildall');
 
     RAISE NOTICE 'Preparing TMP_Fact_Acct...';
     DROP TABLE IF EXISTS TMP_Fact_Acct;
@@ -117,6 +117,10 @@ BEGIN
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Inserted % rows to Fact_Acct_Summary', v_rowcount;
 
+    --
+    -- Perform a backup after rebuild, in case we want to compare the before/after changes
+    PERFORM backup_table('Fact_Acct_Summary', '_after_rebuildall');
+    PERFORM backup_table('Fact_Acct_Log', '_after_rebuildall');
 
     --
     -- Recalculate Fact_Acct_EndingBalance

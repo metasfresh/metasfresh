@@ -22,6 +22,10 @@ package de.metas.handlingunits.spi;
  * #L%
  */
 
+import de.metas.project.ProjectId;
+
+import javax.annotation.Nullable;
+
 public interface IHUPackingMaterialCollectorSource
 {
 	int getM_Product_ID();
@@ -29,4 +33,7 @@ public interface IHUPackingMaterialCollectorSource
 	int getRecord_ID();
 
 	boolean isCollectHUPipToSource();
+
+	@Nullable
+	ProjectId getProjectId();
 }

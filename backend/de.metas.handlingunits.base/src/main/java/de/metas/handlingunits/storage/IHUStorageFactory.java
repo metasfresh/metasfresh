@@ -75,6 +75,10 @@ public interface IHUStorageFactory
 	@NonNull
 	IHUProductStorage getSingleHUProductStorage(@NonNull I_M_HU hu);
 
+	List<IHUProductStorage> getProductStorages(@NonNull I_M_HU hu);
+
+	IHUProductStorage getProductStorage(@NonNull I_M_HU hu, @NonNull ProductId productId);
+
 	@NonNull
 	ImmutableMap<HuId, Set<ProductId>> getHUProductIds(@NonNull List<I_M_HU> hus);
 }

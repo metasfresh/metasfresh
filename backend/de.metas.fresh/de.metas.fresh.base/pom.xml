@@ -20,7 +20,6 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
-		<migration-sql-basedir/>
 		<metasfresh.version>10.0.0</metasfresh.version>
 		<testcontainers.version>1.16.2</testcontainers.version>
 	</properties>
@@ -331,6 +330,12 @@
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.nshift</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

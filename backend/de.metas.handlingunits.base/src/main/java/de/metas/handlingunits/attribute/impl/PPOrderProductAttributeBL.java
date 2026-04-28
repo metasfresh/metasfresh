@@ -39,8 +39,6 @@ import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -54,6 +52,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.mm.attributes.api.SerialNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -63,6 +62,8 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -216,7 +217,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	{
 		final DimensionSpec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 		Check.errorIf(dimPPOrderProductAttributesToTransfer == null,
-					  "Unable to load DIM_Dimension_Spec record with InternalName={}", HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+				"Unable to load DIM_Dimension_Spec record with InternalName={}", HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 
 		final Set<Integer> attributeIdsToBeTransferred = dimPPOrderProductAttributesToTransfer.retrieveAttributes()
 				.stream()
@@ -233,7 +234,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return ImmutableSet.of();
 		}
 
-		final I_M_AttributeSetInstance ppOrderASI = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
+		final I_M_AttributeSetInstance ppOrderASI = Services.get(IAttributeSetInstanceBL.class).getById(asiId);
 		if (ppOrderASI == null)
 		{
 			return ImmutableSet.of();
@@ -242,7 +243,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		//
 		// Collect all attributes from PP_Order's ASI
 		final Set<Integer> attributesSetInPPOrder = new HashSet<>();
-		final List<I_M_AttributeInstance> ppOrderAttributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(ppOrderASI);
+		final List<I_M_AttributeInstance> ppOrderAttributeInstances = Services.get(IAttributeSetInstanceBL.class).getAttributeInstances(ppOrderASI);
 		for (final I_M_AttributeInstance ppOrderAttributeInstance : ppOrderAttributeInstances)
 		{
 			if (ppOrderAttributeInstance.getValue() != null
@@ -397,7 +398,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			final BigDecimal valueNumber = getValueNumberOrNull(ppOrderAttribute);
 
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			final de.metas.handlingunits.model.I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId, de.metas.handlingunits.model.I_M_Attribute.class);
+			final de.metas.handlingunits.model.I_M_Attribute attribute = attributesRepo.getAttributeRecordById(attributeId, de.metas.handlingunits.model.I_M_Attribute.class);
 
 			return AttributeWithValue.newInstance(attribute, valueString, valueNumber);
 		}

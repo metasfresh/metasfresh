@@ -1,6 +1,6 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
@@ -44,9 +44,21 @@ public interface IOrderLineQuickInput
 	//@formatter:on
 
 	//@formatter:off
+	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
+	int getM_LU_HU_PI_ID();
+	void setM_LU_HU_PI_ID(final I_M_HU_PI M_LU_HU_PI_ID);
+	//@formatter:on
+
+	//@formatter:off
 	String COLUMNNAME_Qty = "Qty";
 	BigDecimal getQty();
-	BigDecimal setQty(BigDecimal qty);
+	void setQty(BigDecimal qty);
+	//@formatter:on
+
+	//@formatter:off
+	String COLUMNNAME_QtyLU = "QtyLU";
+	BigDecimal getQtyLU();
+	void setQtyLU(BigDecimal qtyLU);
 	//@formatter:on
 
 	//@formatter:off

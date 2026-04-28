@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +22,16 @@
 
 package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.job.JobRepository;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -35,43 +39,51 @@ import de.metas.title.TitleRepository;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class JsonServiceFactory
 {
-	private final JsonRequestConsolidateService jsonRequestConsolidateService;
-	private final BPartnerQueryService bpartnerQueryService;
-	private final BPartnerCompositeRepository bpartnerCompositeRepository;
-	private final BPGroupRepository bpGroupRepository;
-	private final GreetingRepository greetingRepository;
-	private final TitleRepository titleRepository;
-	private final CurrencyRepository currencyRepository;
-	private final JobRepository jobRepository;
-	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final @NonNull JsonRequestConsolidateService jsonRequestConsolidateService;
+	private final @NonNull BPartnerQueryService bpartnerQueryService;
+	private final @NonNull BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final @NonNull BPGroupRepository bpGroupRepository;
+	private final @NonNull BPGroupService bpGroupService;
+	private final @NonNull GreetingRepository greetingRepository;
+	private final @NonNull TitleRepository titleRepository;
+	private final @NonNull CurrencyRepository currencyRepository;
+	private final @NonNull JobRepository jobRepository;
+	private final @NonNull PaymentTermService paymentTermService;
+	private final @NonNull IncotermsRepository incotermsRepository;
+	private final @NonNull ExternalReferenceRestControllerService externalReferenceService;
+	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
-	public JsonServiceFactory(
-			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
-			@NonNull final BPartnerQueryService bpartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPGroupRepository bpGroupRepository,
-			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final TitleRepository titleRepository,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final JobRepository jobRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+	@VisibleForTesting
+	public static JsonServiceFactory newInstanceForUnitTesting(
+			@NonNull final LogEntriesRepository logEntriesRepository,
+			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
-		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
-		this.bpartnerQueryService = bpartnerQueryService;
-		this.greetingRepository = greetingRepository;
-		this.titleRepository = titleRepository;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.bpGroupRepository = bpGroupRepository;
-		this.currencyRepository = currencyRepository;
-		this.jobRepository = jobRepository;
-		this.externalReferenceService = externalReferenceService;
-		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		Adempiere.assertUnitTestMode();
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		return new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				BPartnerCompositeRepository.newInstanceForUnitTesting(logEntriesRepository),
+		        bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
+				new GreetingRepository(),
+				new TitleRepository(),
+				new CurrencyRepository(),
+				new JobRepository(),
+				new PaymentTermService(),
+				IncotermsRepository.newInstanceForUnitTesting(),
+				ExternalReferenceRestControllerService.newInstanceForUnitTesting(),
+				albertaBPartnerCompositeService
+		);
 	}
 
 	public JsonPersisterService createPersister()
@@ -84,9 +96,11 @@ public class JsonServiceFactory
 				jsonRequestConsolidateService,
 				bpartnerCompositeRepository,
 				bpGroupRepository,
+				bpGroupService,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
@@ -104,6 +118,8 @@ public class JsonServiceFactory
 				greetingRepository,
 				titleRepository,
 				jobRepository,
+				paymentTermService,
+				incotermsRepository,
 				externalReferenceService,
 				identifier);
 	}

@@ -1,20 +1,19 @@
 package de.metas.procurement.base.balance;
 
+import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -37,19 +36,16 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Ignore
+@ExtendWith(AdempiereTestWatcher.class)
+@Disabled
 public abstract class AbstractBalanceScenariosTest
 {
 	private static final boolean STRICTMATCHING_Yes = true;
 	private static final boolean STRICTMATCHING_No = false;
-
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
+	
 	private final Random random = new Random();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

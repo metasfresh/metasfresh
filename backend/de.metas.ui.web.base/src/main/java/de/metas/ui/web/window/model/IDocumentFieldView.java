@@ -7,10 +7,12 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -85,6 +87,8 @@ public interface IDocumentFieldView
 	DocumentZoomIntoInfo getZoomIntoInfo();
 	@Nullable
 	<T> T getValueAs(@NonNull final Class<T> returnType);
+	default Optional<BigDecimal> getValueAsBigDecimal() { return Optional.ofNullable(getValueAs(BigDecimal.class));}
+	default <T extends RepoIdAware> Optional<T> getValueAsId(Class<T> idType) { return Optional.ofNullable(getValueAs(idType));}
 	/** @return initial value / last saved value */
 	@Nullable
 	Object getInitialValue();

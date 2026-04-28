@@ -3,15 +3,21 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.frontend_testing.JsonTestId;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
@@ -27,6 +33,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -37,39 +46,35 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.Params;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class MaterialReceiptActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.materialReceipt");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IBPartnerBL bpartnerBL;
-	private final HUQRCodesService huQRCodeService;
-	private final ProductHazardSymbolService productHazardSymbolService;
-	private final ProductAllergensService productAllergensService;
-
-	public MaterialReceiptActivityHandler(
-			final @NonNull IBPartnerBL bpartnerBL,
-			final @NonNull HUQRCodesService huQRCodeService,
-			final @NonNull ProductHazardSymbolService productHazardSymbolService,
-			final @NonNull ProductAllergensService productAllergensService)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.huQRCodeService = huQRCodeService;
-		this.productHazardSymbolService = productHazardSymbolService;
-		this.productAllergensService = productAllergensService;
-	}
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final HUQRCodesService huQRCodeService;
+	@NonNull private final ProductHazardSymbolService productHazardSymbolService;
+	@NonNull private final ProductAllergensService productAllergensService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -78,15 +83,20 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
+
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
+
 		final ImmutableList<JsonFinishedGoodsReceiveLine> lines = job.getActivityById(wfActivity.getId())
 				.getFinishedGoodsReceiveAssumingNotNull()
 				.streamLines()
-				.map(line -> toJson(line, job.getCustomerId(), jsonOpts))
+				.map(line -> toJson(line, job.getCustomerId(), receiveUnitType, jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
+						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
 	}
@@ -94,6 +104,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private JsonFinishedGoodsReceiveLine toJson(
 			@NonNull final FinishedGoodsReceiveLine line,
 			@Nullable final BPartnerId customerId,
+			@NonNull final ReceiveUnitType receiveUnitType,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(
@@ -106,18 +117,42 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId);
 		final String adLanguage = jsonOpts.getAdLanguage();
 
+		final String uom;
+		final java.math.BigDecimal qtyToReceive;
+		final java.math.BigDecimal qtyReceived;
+
+		if (receiveUnitType.isTU() && line.getTuPIItemProductId() != null)
+		{
+			final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(line.getTuPIItemProductId());
+			final QtyTU qtyToReceiveTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyToReceive(), line.getProductId());
+			final QtyTU qtyReceivedTU = huPIItemProduct.computeQtyTUsOfTotalCUs(line.getQtyReceived(), line.getProductId());
+			qtyToReceive = qtyToReceiveTU.toBigDecimal();
+			qtyReceived = qtyReceivedTU.toBigDecimal();
+			uom = "TU";
+		}
+		else
+		{
+			qtyToReceive = line.getQtyToReceive().toBigDecimal();
+			qtyReceived = line.getQtyReceived().toBigDecimal();
+			uom = line.getQtyToReceive().getUOMSymbol();
+		}
+
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
 				.coproduct(line.getCoProductBOMLineId() != null)
 				.productName(line.getProductValueAndProductName().translate(adLanguage))
-				.uom(line.getQtyToReceive().getUOMSymbol())
+				.uom(uom)
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
 				.allergens(getJsonAllergens(line.getProductId(), adLanguage))
-				.qtyToReceive(line.getQtyToReceive().toBigDecimal())
-				.qtyReceived(line.getQtyReceived().toBigDecimal())
+				.qtyToReceive(qtyToReceive)
+				.qtyReceived(qtyReceived)
 				.currentReceivingHU(JsonHUQRCodeTargetConverters.fromNullable(line.getReceivingTarget(), huQRCodeService))
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
+				.catchWeightUomSymbol(Optional.ofNullable(line.getCatchWeightUOMId())
+						.map(uomDao::getById)
+						.map(I_C_UOM::getUOMSymbol)
+						.orElse(null))
 				.build();
 	}
 
@@ -172,6 +207,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 									.tuCaption(tuPIItemProduct.getName())
 									.luPIItemId(HuPackingInstructionsItemId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()))
 									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
+									.testId(extractNewLUTargetTestId(luPackingInstructionsItem))
 									.build());
 				}
 			}
@@ -191,6 +227,11 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		}
 	}
 
+	public static JsonTestId extractNewLUTargetTestId(final I_M_HU_PI_Item luPackingInstructionsItem)
+	{
+		return JsonTestId.ofString("luPIItem-" + luPackingInstructionsItem.getM_HU_PI_Item_ID());
+	}
+
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
@@ -200,15 +241,24 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	@NonNull
 	private JsonNewTUTargetList getNewTUTargets(@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts)
 	{
-		final List<JsonNewTUTarget> newTUTargets = tuPIItemProducts.stream()
-				.map(target -> JsonNewTUTarget.builder()
-						.caption(target.getName())
-						.tuPIItemProductId(HUPIItemProductId.ofRepoId(target.getM_HU_PI_Item_Product_ID()))
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
 		return JsonNewTUTargetList.builder()
-				.values(newTUTargets)
+				.values(tuPIItemProducts.stream()
+						.map(MaterialReceiptActivityHandler::toJsonNewTUTarget)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	private static JsonNewTUTarget toJsonNewTUTarget(final I_M_HU_PI_Item_Product target)
+	{
+		return JsonNewTUTarget.builder()
+				.caption(target.getName())
+				.tuPIItemProductId(HUPIItemProductId.ofRepoId(target.getM_HU_PI_Item_Product_ID()))
+				.testId(extractNewTUTargetTestId(target))
+				.build();
+	}
+
+	public static JsonTestId extractNewTUTargetTestId(final I_M_HU_PI_Item_Product target)
+	{
+		return JsonTestId.ofString("tuPIItemProduct-" + target.getM_HU_PI_Item_Product_ID());
 	}
 }

@@ -25,7 +25,7 @@ package de.metas.issue.tracking.everhour.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.issue.tracking.everhour.api.model.Task;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 

@@ -43,6 +43,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +55,13 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId bpartnerId, @NonNull final CurrencyId currencyId)
+	{
+		return retrieveBankAccountsForPartnerAndCurrency(Env.getCtx(), bpartnerId.getRepoId(), currencyId.getRepoId());
+	}
+
+	@Override
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
@@ -71,7 +78,9 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
-				.list();
+				.stream()
+				.map(this::of)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -156,6 +165,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	private BPartnerBankAccount of(@NonNull final I_C_BP_BankAccount record)
 	{
 		return BPartnerBankAccount.builder()
@@ -166,6 +176,12 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.iban(record.getIBAN())
 				.qrIban(record.getQR_IBAN())
 				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID()))
+				.accountName(record.getA_Name())
+				.accountStreet(record.getA_Street())
+				.accountZip(record.getA_Zip())
+				.accountCity(record.getA_City())
+				.accountCountry(record.getA_Country())
+				.bpBankAcctUse(BPBankAcctUse.ofCodeOrNull(record.getBPBankAcctUse()))
 				//.changeLog()
 				.build();
 	}

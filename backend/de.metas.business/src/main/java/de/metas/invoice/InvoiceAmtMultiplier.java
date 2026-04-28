@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,17 +31,17 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 @EqualsAndHashCode
-@ToString
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;
+
+	@Getter
 	private final boolean isCreditMemo;
 
 	@Getter
-	private final boolean isSOTrxAdjusted;
+	private final boolean isAPAdjusted;
 	@Getter
 	private final boolean isCreditMemoAdjusted;
 
@@ -50,16 +50,43 @@ public final class InvoiceAmtMultiplier
 	@SuppressWarnings("UnstableApiUsage")
 	private static final Interner<InvoiceAmtMultiplier> interner = Interners.newStrongInterner();
 
-	@Builder
+	public static InvoiceAmtMultiplier nonAdjustedFor(@NonNull final InvoiceDocBaseType invoiceDocBaseType)
+	{
+		return create(invoiceDocBaseType.getSoTrx(), invoiceDocBaseType.isCreditMemo(), false);
+	}
+
+	public static InvoiceAmtMultiplier adjustedFor(@NonNull final InvoiceDocBaseType invoiceDocBaseType)
+	{
+		return create(invoiceDocBaseType.getSoTrx(), invoiceDocBaseType.isCreditMemo(), true);
+	}
+
+	/**
+	 * @param adjusted indicates if the amount to be multiplied here is assumed to be already adjusted.
+	 *                 {@code true} means that actually no multiplication is necessary.
+	 */
+	public static InvoiceAmtMultiplier create(@NonNull final SOTrx soTrx,
+											  final boolean isCreditMemo,
+											  final boolean adjusted)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(soTrx)
+				.isAPAdjusted(adjusted)
+				.isCreditMemo(isCreditMemo)
+				.isCreditMemoAdjusted(adjusted)
+				.build()
+				.intern();
+	}
+
+	@Builder(toBuilder = true)
 	private InvoiceAmtMultiplier(
 			@NonNull final SOTrx soTrx,
 			final boolean isCreditMemo,
-			final boolean isSOTrxAdjusted,
+			final boolean isAPAdjusted,
 			final boolean isCreditMemoAdjusted)
 	{
 		this.soTrx = soTrx;
 		this.isCreditMemo = isCreditMemo;
-		this.isSOTrxAdjusted = isSOTrxAdjusted;
+		this.isAPAdjusted = isAPAdjusted;
 		this.isCreditMemoAdjusted = isCreditMemoAdjusted;
 	}
 
@@ -69,27 +96,69 @@ public final class InvoiceAmtMultiplier
 		return interner.intern(this);
 	}
 
+	@Override
+	public String toString()
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (soTrx.isAP())
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("AP");
+		}
+		if (isAPAdjusted)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("APAdjusted");
+		}
+		if (isCreditMemo)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("CM");
+		}
+		if (isCreditMemoAdjusted)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("CMAdjusted");
+		}
+
+		return sb.toString();
+	}
+
+	public boolean isAP() {return soTrx.isAP();}
+
 	public Amount convertToRealValue(@NonNull final Amount amount)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? amount : amount.negate();
 	}
 
 	public Money convertToRealValue(@NonNull final Money money)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? money : money.negate();
 	}
 
 	public Money convertToRelativeValue(@NonNull final Money realValue)
 	{
-		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		final int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
 
 	public Amount convertToRelativeValue(@NonNull final Amount realValue)
 	{
-		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		final int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
 
@@ -113,7 +182,7 @@ public final class InvoiceAmtMultiplier
 		int multiplier = 1;
 
 		// Adjust by SOTrx if needed
-		if (!isSOTrxAdjusted)
+		if (!isAPAdjusted)
 		{
 			final int multiplierAP = soTrx.isPurchase() ? -1 : +1;
 			multiplier *= multiplierAP;
@@ -137,7 +206,7 @@ public final class InvoiceAmtMultiplier
 
 	public Money fromNotAdjustedAmount(@NonNull final Money money)
 	{
-		int multiplier = computeFromNotAdjustedAmountMultiplier();
+		final int multiplier = computeFromNotAdjustedAmountMultiplier();
 		return multiplier > 0 ? money : money.negate();
 	}
 
@@ -146,7 +215,7 @@ public final class InvoiceAmtMultiplier
 		int multiplier = 1;
 
 		// Do we have to SO adjust?
-		if (isSOTrxAdjusted)
+		if (isAPAdjusted)
 		{
 			final int multiplierAP = soTrx.isPurchase() ? -1 : +1;
 			multiplier *= multiplierAP;
@@ -161,4 +230,21 @@ public final class InvoiceAmtMultiplier
 		return multiplier;
 	}
 
+	/**
+	 * @return {@code true} for purchase-invoice and sales-creditmemo. {@code false} otherwise.
+	 */
+	public boolean isOutgoingMoney()
+	{
+		return isCreditMemo ^ soTrx.isPurchase();
+	}
+
+	public InvoiceAmtMultiplier withAPAdjusted(final boolean isAPAdjustedNew)
+	{
+		return isAPAdjusted == isAPAdjustedNew ? this : toBuilder().isAPAdjusted(isAPAdjustedNew).build().intern();
+	}
+
+	public InvoiceAmtMultiplier withCMAdjusted(final boolean isCreditMemoAdjustedNew)
+	{
+		return isCreditMemoAdjusted == isCreditMemoAdjustedNew ? this : toBuilder().isCreditMemoAdjusted(isCreditMemoAdjustedNew).build().intern();
+	}
 }

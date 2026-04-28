@@ -28,9 +28,7 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 
 /**
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface I_C_OrderLine extends de.metas.interfaces.I_C_OrderLine
 {
@@ -74,5 +72,19 @@ public interface I_C_OrderLine extends de.metas.interfaces.I_C_OrderLine
 	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
 	BigDecimal getQtyEnteredTU();
 	void setQtyEnteredTU(BigDecimal QtyEnteredTU);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
+	void setM_LU_HU_PI_ID(int M_LU_PI_Item_Product_ID);
+	void setM_LU_HU_PI(final I_M_HU_PI M_HU_PI);
+	int getM_LU_HU_PI_ID();
+	I_M_HU_PI getM_LU_HU_PI() throws RuntimeException;
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_QtyLU = "QtyLU";
+	BigDecimal getQtyLU();
+	void setQtyLU(BigDecimal QtyLU);
 	// @formatter:on
 }

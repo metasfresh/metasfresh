@@ -25,6 +25,7 @@ package de.metas.ui.web.payment_allocation.process;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
@@ -188,7 +189,14 @@ public class PaymentsViewAllocateCommand
 				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
 				: Money.zero(currencyId);
 
-		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee);
+		// Bank fee: mapped into writeOffAmt with WriteOffType=BF
+		@Nullable final Amount bankFeeAmtRaw = row.getBankFeeAmt();
+		final Money bankFeeAmt = bankFeeAmtRaw != null && !bankFeeAmtRaw.isZero()
+				? moneyService.toMoney(bankFeeAmtRaw)
+				: Money.zero(currencyId);
+		final WriteOffType writeOffType = bankFeeAmt.signum() != 0 ? WriteOffType.BankFee : WriteOffType.WriteOff;
+
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
 
 		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
 
@@ -202,6 +210,7 @@ public class PaymentsViewAllocateCommand
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
+										   .writeOffAmt(bankFeeAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
@@ -210,6 +219,7 @@ public class PaymentsViewAllocateCommand
 				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
 				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
+				.writeOffType(writeOffType)
 				.build();
 	}
 

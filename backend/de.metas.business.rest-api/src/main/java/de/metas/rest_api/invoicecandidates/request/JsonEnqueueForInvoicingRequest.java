@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business.rest-api
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.invoicecandidates.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,27 +39,6 @@ import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-/*
- * #%L
- * de.metas.business.rest-api
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @Value
 public class JsonEnqueueForInvoicingRequest
 {
@@ -64,15 +65,15 @@ public class JsonEnqueueForInvoicingRequest
 					+ "Default = `false`")
 	Boolean ignoreInvoiceSchedule;
 
-	@ApiModelProperty(position = 60, required = false,//
-			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
-					+ "Default = `true`")
-	Boolean supplementMissingPaymentTermIds;
-
 	@ApiModelProperty(position = 70, required = false,//
 			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
 					+ "Default = `false`")
 	Boolean updateLocationAndContactForInvoice;
+
+	@ApiModelProperty(position = 80, required = false,//
+			value = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
+					+ "Otherwise they are just prepared and left in the DocStatus IP (in progress). Default = `true`")
+	Boolean completeInvoices;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -82,15 +83,15 @@ public class JsonEnqueueForInvoicingRequest
 			@JsonProperty("dateAcct") @Nullable final LocalDate dateAcct,
 			@JsonProperty("poReference") @Nullable final String poReference,
 			@JsonProperty("ignoreInvoiceSchedule") @Nullable final Boolean ignoreInvoiceSchedule,
-			@JsonProperty("supplementMissingPaymentTermIds") @Nullable final Boolean supplementMissingPaymentTermIds,
-			@JsonProperty("updateLocationAndContactForInvoice") @Nullable final Boolean updateLocationAndContactForInvoice)
+			@JsonProperty("updateLocationAndContactForInvoice") @Nullable final Boolean updateLocationAndContactForInvoice,
+			@JsonProperty("completeInvoices") @Nullable final Boolean completeInvoices)
 	{
 		this.invoiceCandidates = ImmutableList.copyOf(invoiceCandidates);
 		this.poReference = poReference;
 		this.dateAcct = dateAcct;
 		this.dateInvoiced = dateInvoiced;
 		this.ignoreInvoiceSchedule = coalesce(ignoreInvoiceSchedule, false);
-		this.supplementMissingPaymentTermIds = coalesce(supplementMissingPaymentTermIds, true);
 		this.updateLocationAndContactForInvoice = coalesce(updateLocationAndContactForInvoice, false);
+		this.completeInvoices = coalesce(completeInvoices, true);
 	}
 }

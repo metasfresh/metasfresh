@@ -21,8 +21,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
@@ -110,7 +112,7 @@ public class PPOrderPojoConverter
 									 .build())
 				.lines(toPPOrderLinesList(ppOrderRecord))
 				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
-				.ppOrderId(ppOrderRecord.getPP_Order_ID())
+				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.build();
 	}
 
@@ -139,9 +141,11 @@ public class PPOrderPojoConverter
 		final Quantity qtyRequiredInStockingUOM = uomConversionBL.convertToProductUOM(bomLineQuantities.getQtyRequired(), lineProductId);
 		final Quantity qtyDeliveredInStockingUOM = uomConversionBL.convertToProductUOM(bomLineQuantities.getQtyIssuedOrReceived(), lineProductId);
 
-		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
-				WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()), // both from-warehouse and product are mandatory DB-columns
-				ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID()));
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID());
+		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(ReplenishInfo.Identifier.of(
+				warehouseId, // both from-warehouse and product are mandatory DB-columns
+				LocatorId.ofRepoIdOrNull(warehouseId, ppOrderLineRecord.getM_Locator_ID()),
+				ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID())));
 
 		return PPOrderLine.builder()
 				.ppOrderLineData(PPOrderLineData.builder()

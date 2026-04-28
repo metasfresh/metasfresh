@@ -50,7 +50,7 @@ public class ExternalSystem_Other_ConfigParameter
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Other.getCode().equals(parentType))
+		if (!ExternalSystemType.Other.getValue().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

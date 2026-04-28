@@ -24,7 +24,7 @@ package de.metas.rest_api.v2.util;
 
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 

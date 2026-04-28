@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import lombok.NonNull;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ public class JsonSerializationDeserializationTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = new ObjectMapper()
@@ -56,7 +56,7 @@ public class JsonSerializationDeserializationTest
 		final Object obj2 = jsonObjectMapper.readValue(json, obj.getClass());
 		System.out.println("object deserialized: " + obj2);
 
-		Assert.assertEquals(obj, obj2);
+		Assertions.assertEquals(obj, obj2);
 	}
 
 	@Test

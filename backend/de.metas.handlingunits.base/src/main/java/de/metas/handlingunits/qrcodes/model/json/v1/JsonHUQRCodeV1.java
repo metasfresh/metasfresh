@@ -7,6 +7,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
@@ -15,6 +17,6 @@ public class JsonHUQRCodeV1
 	@NonNull HUQRCodeUniqueId id;
 
 	@NonNull JsonHUQRCodePackingInfoV1 packingInfo;
-	@NonNull JsonHUQRCodeProductInfoV1 product;
+	@Nullable JsonHUQRCodeProductInfoV1 product;
 	@NonNull ImmutableList<JsonHUQRCodeAttributeV1> attributes;
 }

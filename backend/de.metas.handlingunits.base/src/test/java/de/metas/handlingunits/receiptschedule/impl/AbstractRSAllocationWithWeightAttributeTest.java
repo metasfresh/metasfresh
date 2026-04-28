@@ -69,7 +69,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	protected final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	protected final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
-	protected final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	protected IHUReceiptScheduleBL huReceiptScheduleBL;
 
 	protected BigDecimal weightNetPaloxe;
 	protected BigDecimal weightTarePaloxe;
@@ -92,6 +92,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	@Override
 	protected void afterInitialize()
 	{
+		huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -246,7 +247,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		final I_M_HU luHU = null; // no LU
 		for (final I_M_HU tuHU : tusToAllocate)
 		{
-			List<I_M_HU> vhus;
+			final List<I_M_HU> vhus;
 			if (handlingUnitsBL.isVirtual(tuHU))
 			{
 				vhus = Collections.singletonList(tuHU);

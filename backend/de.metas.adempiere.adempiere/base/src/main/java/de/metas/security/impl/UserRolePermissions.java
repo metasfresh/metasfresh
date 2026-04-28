@@ -37,13 +37,13 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;
 import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.Constraints;
@@ -103,7 +103,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ToString(of = { "name", "roleId", "userId", "clientId" })
 class UserRolePermissions implements IUserRolePermissions
 {
-	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
+	private static final Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -184,8 +184,8 @@ class UserRolePermissions implements IUserRolePermissions
 	@Getter(AccessLevel.PACKAGE)
 	private final GenericPermissions miscPermissions;
 
-	@Getter(AccessLevel.PACKAGE)
-	private final ElementPermissions mobileApplicationPermissions;
+	@Getter
+	private final MobileApplicationPermissions mobileApplicationPermissions;
 
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
@@ -726,12 +726,6 @@ class UserRolePermissions implements IUserRolePermissions
 	public ElementPermission checkWorkflowPermission(final int AD_Workflow_ID)
 	{
 		return workflowPermissions.getPermission(AD_Workflow_ID);
-	}
-
-	@Override
-	public ElementPermission checkMobileApplicationPermission(@NonNull final MobileApplicationRepoId applicationId)
-	{
-		return mobileApplicationPermissions.getPermission(applicationId.getRepoId());
 	}
 
 	@Override

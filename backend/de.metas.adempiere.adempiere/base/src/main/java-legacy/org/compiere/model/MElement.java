@@ -89,10 +89,7 @@ public class MElement extends X_C_Element
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		if (getAD_Org_ID() != 0)
-		{
-			setAD_Org_ID(0);
-		}
+
 		final String elementType = getElementType();
 		// Natural Account
 		if (ELEMENTTYPE_UserDefined.equals(elementType) && isNaturalAccount())

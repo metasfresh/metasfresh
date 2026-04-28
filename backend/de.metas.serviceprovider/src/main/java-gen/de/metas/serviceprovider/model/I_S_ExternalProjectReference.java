@@ -140,7 +140,8 @@ public interface I_S_ExternalProjectReference
 	String COLUMNNAME_ExternalReference = "ExternalReference";
 
 	/**
-	 * Set ExternalReferenceURL.
+	 * Set URL in external system.
+	 * If a record was synched from an external system, this field can be used to store its URL
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -149,7 +150,8 @@ public interface I_S_ExternalProjectReference
 	void setExternalReferenceURL (@Nullable java.lang.String ExternalReferenceURL);
 
 	/**
-	 * Get ExternalReferenceURL.
+	 * Get URL in external system.
+	 * If a record was synched from an external system, this field can be used to store its URL
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -161,27 +163,25 @@ public interface I_S_ExternalProjectReference
 	String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
 
 	/**
-	 * Set External system.
-	 * Name of an external system (e.g. Github )
+	 * Set External System.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem (java.lang.String ExternalSystem);
+	void setExternalSystem_ID (int ExternalSystem_ID);
 
 	/**
-	 * Get External system.
-	 * Name of an external system (e.g. Github )
+	 * Get External System.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystem();
+	int getExternalSystem_ID();
 
-	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalSystem", null);
-	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Active.

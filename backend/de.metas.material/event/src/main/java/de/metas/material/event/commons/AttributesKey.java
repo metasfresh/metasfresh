@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -53,7 +54,9 @@ public final class AttributesKey implements Comparable<AttributesKey>
 {
 	// first, declare the "static" constants that might be used within the "factory-method" constants
 
-	/** The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}. */
+	/**
+	 * The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}.
+	 */
 	@VisibleForTesting
 	public static final String ATTRIBUTES_KEY_DELIMITER = "§&§";
 	private static final Joiner ATTRIBUTEVALUEIDS_JOINER = Joiner.on(ATTRIBUTES_KEY_DELIMITER).skipNulls();
@@ -62,7 +65,9 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	public static final AttributesKey ALL = AttributesKey.ofAttributeValueIds(-1000);
 	public static final AdMessageKey MSG_ATTRIBUTES_KEY_ALL = AdMessageKey.of("de.metas.material.dispo.<ALL_ATTRIBUTES_KEYS>");
 
-	/** This key's meaning depends on the other keys it comes with. */
+	/**
+	 * This key's meaning depends on the other keys it comes with.
+	 */
 	public static final AttributesKey OTHER = AttributesKey.ofAttributeValueIds(-1001);
 	public static final AdMessageKey MSG_ATTRIBUTES_KEY_OTHER = AdMessageKey.of("de.metas.material.dispo.<OTHER_ATTRIBUTES_KEYS>");
 
@@ -72,7 +77,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	@NonNull
 	public static AttributesKey ofString(@Nullable final String attributesKeyString)
 	{
-		if (attributesKeyString == null || attributesKeyString.trim().isEmpty())
+		if (attributesKeyString == null || attributesKeyString.trim().isEmpty() || attributesKeyString.equals(NONE.getAsString()))
 		{
 			return NONE;
 		}
@@ -148,6 +153,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	}
 
 	private final String attributesKeyString;
+	@Getter
 	@JsonIgnore
 	private final ImmutableSet<AttributesKeyPart> parts;
 
@@ -177,6 +183,16 @@ public final class AttributesKey implements Comparable<AttributesKey>
 		return attributesKeyString;
 	}
 
+	@Nullable
+	public static String toStringOrNull(@Nullable final AttributesKey key)
+	{
+		if (key == null || key.isNone())
+		{
+			return null;
+		}
+		return key.getAsString();
+	}
+
 	public boolean isNone()
 	{
 		return NONE.equals(this);
@@ -196,11 +212,6 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	{
 		Check.errorIf(isOther() || isAll(),
 				"AttributesKeys.OTHER or .ALL of the given attributesKey is not supported; attributesKey={}", this);
-	}
-
-	public ImmutableSet<AttributesKeyPart> getParts()
-	{
-		return parts;
 	}
 
 	private static ImmutableSet<AttributesKeyPart> extractAttributeKeyParts(final String attributesKeyString)
@@ -249,7 +260,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public String getValueByAttributeId(@NonNull final AttributeId attributeId)
 	{
-		for (AttributesKeyPart part : parts)
+		for (final AttributesKeyPart part : parts)
 		{
 			if (part.getType() == AttributeKeyPartType.AttributeIdAndValue
 					&& AttributeId.equals(part.getAttributeId(), attributeId))

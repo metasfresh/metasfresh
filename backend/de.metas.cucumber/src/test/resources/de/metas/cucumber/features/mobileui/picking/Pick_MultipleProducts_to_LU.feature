@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick multiple products to LU
+## F00230: MobileUI Picking
 
   Background:
     Given infrastructure and metasfresh are running
@@ -37,7 +41,6 @@ Feature: mobileUI Picking - Pick multiple products to LU
       | TUx4_P1                            | TU                         | product1                | 4   | 2000-01-01 |
       | TUx4_P2                            | TU                         | product2                | 4   | 2000-01-01 |
 
-
     And metasfresh contains M_PricingSystems
       | Identifier |
       | PS         |
@@ -53,8 +56,8 @@ Feature: mobileUI Picking - Pick multiple products to LU
       | PLV                    | product2     | 8.0      | PCE               | Nominal              | Normal                        |
 
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  |
-      | Y                   | CREATE_COMPLETE_CLOSE |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -84,6 +87,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  @F00230
   Scenario: Pick TUs from LU with aggregated TUs - into a new LU
     When transform CU to new LU
       | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -181,6 +187,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  @F00230
   Scenario: Pick from CUs into a new LU
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -219,7 +228,7 @@ Feature: mobileUI Picking - Pick multiple products to LU
 
     And complete picking job
 
-    Then after not more than 99960s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule1                | shipment              | CO            |
       | shipmentSchedule2                | shipment              | CO            |
@@ -257,3 +266,79 @@ Feature: mobileUI Picking - Pick multiple products to LU
       | asi1                      | Lot-Nummer        | 9876                  |
       | asi2                      | HU_BestBeforeDate | 2028-04-02 00:00:00.0 |
       | asi2                      | Lot-Nummer        | 5432                  |
+
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00240_MobileUI_Picking
+  @F00240
+  Scenario: Pick from CUs into a new LU/TU, 2 products in same TU. Shipment lines show 1 TU picked.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | L1         | product1                | 2          |
+      | SO                    | L2         | product2                | 2          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | L1                        | N             |
+      | shipmentSchedule2 | L2                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU  | QtyPicked |
+      | product1              | pickFromCU1 | 2         |
+      | product2              | pickFromCU2 | 2         |
+    And expect current picking target
+      | Existing_LU |
+      | lu          |
+    # aggTU is lazy registered here
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 2         | 1     | aggTU      | 1     | lu         | N         |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 2         | 1     | aggTU      | 1     | lu         | N         |
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | aggTU   | S        |
+      | lu      | S        |
+
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule1                | shipment              | CO            |
+      | shipmentSchedule2                | shipment              | CO            |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 2         | 1     | aggTU      | 1     | lu         | Y         | shipmentLine1  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule2
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 2         | 1     | aggTU      | 1     | lu         | Y         | shipmentLine2  |
+
+    # Previously QtyEnteredTU would have shown 1 for only one M_InOutLine.
+    And validate the created shipment lines by id
+      | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID |
+      | shipmentLine1 | product1     | 2           |                   | 1            | TUx4_P1                 |
+      | shipmentLine2 | product2     | 2           |                   | 1            | TUx4_P2                 |
+
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | aggTU   | E        |
+      | lu      | E        |
+
+    And validate M_HU_Storage:
+      | Identifier | M_HU_ID | M_Product_ID | Qty |
+      | p1         | aggTU   | product1     | 2   |
+      | p2         | aggTU   | product2     | 2   |

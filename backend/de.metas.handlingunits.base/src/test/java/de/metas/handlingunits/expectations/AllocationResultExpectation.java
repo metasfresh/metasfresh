@@ -10,27 +10,25 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
-
-import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 
 public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 {
@@ -43,8 +41,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 
 	public AllocationResultExpectation()
 	{
-		super(
-				null // parentExpectation
+		super(null // parentExpectation
 		);
 	}
 
@@ -61,7 +58,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 				+ "\n"
 				+ "\nInvalid ";
 
-		Assert.assertNotNull(prefix + "allocation result not null", result);
+		Assertions.assertNotNull(result, prefix + "allocation result not null");
 
 		if (_qtyAllocated != null)
 		{
@@ -73,11 +70,11 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 		}
 		if (_completed != null)
 		{
-			Assert.assertEquals(prefix + "Completed", _completed, result.isCompleted());
+			Assertions.assertEquals( _completed,  result.isCompleted(), prefix + "Completed");
 		}
 		if (_zeroAllocated != null)
 		{
-			Assert.assertEquals(prefix + "ZeroAllocated", _zeroAllocated, result.isZeroAllocated());
+			Assertions.assertEquals( _zeroAllocated,  result.isZeroAllocated(), prefix + "ZeroAllocated");
 		}
 		if (huTransactionExpectations != null)
 		{
@@ -92,7 +89,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 		final int count = transactions.size();
 		final int expectedCount = huTransactionExpectations.size();
 
-		Assert.assertEquals(message + " HU Items count", expectedCount, count);
+		Assertions.assertEquals( expectedCount,  count, message + " HU Items count");
 
 		for (int i = 0; i < count; i++)
 		{
@@ -153,7 +150,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 
 	/**
 	 * Gets {@link HUTransactionExpectation} by given <code>index</code>.
-	 *
+	 * <p>
 	 * NOTE: index starts from ZERO.
 	 *
 	 * @param index

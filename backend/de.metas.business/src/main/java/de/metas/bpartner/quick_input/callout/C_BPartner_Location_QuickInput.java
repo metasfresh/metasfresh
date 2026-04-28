@@ -24,6 +24,7 @@ package de.metas.bpartner.quick_input.callout;
 
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
@@ -38,6 +39,7 @@ import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 @Component
@@ -45,8 +47,10 @@ import javax.annotation.PostConstruct;
 public class C_BPartner_Location_QuickInput
 {
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final BPartnerQuickInputRepository repo;
+
 	public C_BPartner_Location_QuickInput(final BPartnerQuickInputRepository repo)
 	{
 		this.repo = repo;
@@ -62,27 +66,43 @@ public class C_BPartner_Location_QuickInput
 	@CalloutMethod(columnNames = I_C_BPartner_Location_QuickInput.COLUMNNAME_C_Location_ID)
 	public void onLocationChanged(@NonNull final I_C_BPartner_Location_QuickInput record)
 	{
-		final I_C_Location locationRecord = locationDAO.getById(LocationId.ofRepoIdOrNull(record.getC_Location_ID()));
+		final LocationId id = LocationId.ofRepoIdOrNull(record.getC_Location_ID());
+		if (id == null)
+		{
+			return;
+		}
+		final I_C_Location locationRecord = locationDAO.getById(id);
 
-		if(locationRecord == null)
+		if (locationRecord == null)
 		{
 			// location not yet created. Nothing to do yet
 			return;
 		}
 
-		final I_C_BPartner_QuickInput bpartnerQuickInputRecord = repo.getById(BPartnerQuickInputId.ofRepoId(record.getC_BPartner_QuickInput_ID()));
 		final POInfo poInfo = POInfo.getPOInfo(I_C_BPartner_Location_QuickInput.Table_Name);
 
 		// gh12157: Please, keep in sync with org.compiere.model.MBPartnerLocation.beforeSave
 		final String name = MakeUniqueLocationNameCommand.builder()
 				.name(record.getName())
 				.address(locationRecord)
-				.companyName(bpartnerQuickInputRecord.getCompanyname())
+				.companyName(getCompanyNameOrNull(record))
 				.existingNames(repo.getOtherLocationNames(record.getC_BPartner_QuickInput_ID(), record.getC_BPartner_Location_QuickInput_ID()))
 				.maxLength(poInfo.getFieldLength(I_C_BPartner_Location_QuickInput.COLUMNNAME_Name))
 				.build()
 				.execute();
 
 		record.setName(name);
+	}
+
+	@Nullable
+	private String getCompanyNameOrNull(@NonNull final I_C_BPartner_Location_QuickInput record)
+	{
+		final BPartnerQuickInputId bpartnerQuickInputId = BPartnerQuickInputId.ofRepoIdOrNull(record.getC_BPartner_QuickInput_ID());
+		if (bpartnerQuickInputId != null)
+		{
+			final I_C_BPartner_QuickInput bpartnerQuickInputRecord = repo.getById(bpartnerQuickInputId);
+			return bpartnerQuickInputRecord.getCompanyname();
+		}
+		return null;
 	}
 }

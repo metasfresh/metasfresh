@@ -1,5 +1,6 @@
 package de.metas.modelvalidator;
 
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -11,8 +12,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Attribute;
-
-import de.metas.util.Services;
 
 @Validator(I_M_AttributeInstance.class)
 public class M_AttributeInstance
@@ -29,9 +28,7 @@ public class M_AttributeInstance
 	}
 
 	/**
-	 * In case {@link I_M_AttributeInstance#COLUMNNAME_Value} column changed and we deal with an List attribute, search and set corresponding attribute value record
-	 *
-	 * @param ai
+	 * In case {@link I_M_AttributeInstance#COLUMNNAME_Value} column changed, and we deal with a List attribute, search and set corresponding attribute value record
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE } //
 			, ifColumnsChanged = I_M_AttributeInstance.COLUMNNAME_Value)
@@ -39,7 +36,7 @@ public class M_AttributeInstance
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(ai.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(ai.getM_Attribute_ID());
 
 		//
 		// Skip it if attribute value type is not of type List

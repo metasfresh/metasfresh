@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 476393024L;
+	private static final long serialVersionUID = -913012400L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -222,6 +222,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.sql.Timestamp getDateOrdered() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
+	}
+
+	@Override
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
+	{
+		set_ValueNoCheck (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
 	@Override
@@ -459,6 +471,30 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public boolean isDisplayed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
+	}
+
+	@Override
+	public void setIsFixedDatePromised (final boolean IsFixedDatePromised)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsFixedDatePromised, IsFixedDatePromised);
+	}
+
+	@Override
+	public boolean isFixedDatePromised() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedDatePromised);
+	}
+
+	@Override
+	public void setIsFixedPreparationDate (final boolean IsFixedPreparationDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsFixedPreparationDate, IsFixedPreparationDate);
+	}
+
+	@Override
+	public boolean isFixedPreparationDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
 	}
 
 	@Override
@@ -730,6 +766,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getProductName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
+	}
+
+	@Override
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
+	{
+		set_ValueNoCheck (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	@Override
+	public java.lang.String getProductValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
 
 	@Override

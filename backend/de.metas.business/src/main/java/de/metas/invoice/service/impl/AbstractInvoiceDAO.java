@@ -40,6 +40,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -170,6 +172,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, adOrgID)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
@@ -177,6 +180,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	@NonNull
 	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getByIdInTrx(invoiceId);
@@ -191,7 +195,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 	}
 
 	@Override
@@ -277,7 +281,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
+	public List<InvoiceTax> retrieveTaxes(@NonNull final InvoiceId invoiceId)
 	{
 		return retrieveTaxRecords(invoiceId)
 				.stream()
@@ -286,7 +290,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
+	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull final InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
 				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
@@ -301,8 +305,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.taxAmt(record.getTaxAmt())
 				.taxBaseAmt(record.getTaxBaseAmt())
 				.isTaxIncluded(record.isTaxIncluded())
-				.isReverseCharge(false)
-				.reverseChargeTaxAmt(BigDecimal.ZERO)
+				.isReverseCharge(record.isReverseCharge())
+				.reverseChargeTaxAmt(record.getReverseChargeTaxAmt())
 				.build();
 	}
 
@@ -444,7 +448,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	public List<org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
 	}
@@ -462,7 +466,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InvoiceId::ofRepoId)
+				.idsAsSet(InvoiceId::ofRepoId)
 				.stream();
 	}
 
@@ -480,6 +484,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull final InvoiceId invoiceId, @NonNull final Class<T> clazz)
+	{
+		return loadOutOfTrx(invoiceId, clazz);
 	}
 
 	@Override
@@ -547,6 +557,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
 				.setLimit(query.getQueryLimit());
 
@@ -654,7 +665,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
+				.idsAsSet(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)
@@ -673,5 +684,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		return docBaseAndSubType.equals(targetDocType);
+	}
+
+	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
+				.addFilter(filter)
+				.setLimit(QueryLimit.TEN)
+				.create()
+				.stream()
+				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

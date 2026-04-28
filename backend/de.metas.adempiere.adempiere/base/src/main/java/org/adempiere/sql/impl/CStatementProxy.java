@@ -22,12 +22,13 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.util.CStatementVO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.compiere.util.CStatementVO;
 
 /* package */final class CStatementProxy extends AbstractCStatementProxy<Statement>
 {
@@ -41,10 +42,11 @@ import org.compiere.util.CStatementVO;
 		super(vo);
 	}
 
+	@NonNull
 	@Override
-	protected final Statement createStatement(final Connection conn, final CStatementVO vo) throws SQLException
+	protected Statement createStatement(@NonNull final Connection conn, @NonNull final CStatementVO vo) throws SQLException
 	{
 		final Statement stmt = conn.createStatement(vo.getResultSetType(), vo.getResultSetConcurrency());
-		return stmt;
+		return Check.assumeNotNull(stmt, "stmt not null for vo: {}", vo);
 	}
 }

@@ -13,6 +13,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelp
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public class DocumentFilterParamDescriptor
 	@NonNull Class<?> valueClass;
 	@NonNull ITranslatableString displayName;
 	boolean showIncrementDecrementButtons;
+	boolean showInactiveValues;
 
 	Operator operator;
 	@Nullable Object defaultValue;
@@ -80,7 +82,8 @@ public class DocumentFilterParamDescriptor
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final ITranslatableString displayName,
-			final boolean showIncrementDecrementButtons,
+			final boolean showIncrementDecrementButtons, 
+			final boolean showInactiveValues,
 			final Operator operator,
 			@Nullable final Object defaultValue,
 			@Nullable final Object defaultValueTo,
@@ -99,6 +102,7 @@ public class DocumentFilterParamDescriptor
 		this.widgetType = widgetType;
 		this.displayName = displayName;
 		this.showIncrementDecrementButtons = showIncrementDecrementButtons;
+		this.showInactiveValues = showInactiveValues;
 		this.operator = operator;
 		this.defaultValue = defaultValue;
 		this.defaultValueTo = defaultValueTo;

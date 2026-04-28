@@ -2,24 +2,38 @@ package de.metas.request.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.inout.InOutId;
 import de.metas.inout.QualityNoteId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.order.model.I_C_Order;
+import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.request.RequestId;
+import de.metas.request.RequestPriority;
+import de.metas.request.RequestStatusId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.RequestCandidate;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
-import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.common.util.CoalesceUtil.optionalOfFirstNonNullSupplied;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
  * #%L
@@ -63,29 +77,56 @@ public class RequestDAO implements IRequestDAO
 		final I_R_Request request = newInstance(I_R_Request.class);
 
 		request.setSummary(candidate.getSummary());
-		request.setConfidentialType(candidate.getConfidentialType());
+		request.setConfidentialType(candidate.getConfidentialType().getCode());
 		request.setAD_Org_ID(candidate.getOrgId().getRepoId());
 		request.setM_Product_ID(ProductId.toRepoId(candidate.getProductId()));
 		request.setAD_Table_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getAD_Table_ID() : -1);
 		request.setRecord_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getRecord_ID() : -1);
 		request.setC_BPartner_ID(BPartnerId.toRepoId(candidate.getPartnerId()));
-		request.setC_Order_ID(candidate.getRecordRef() != null ?
-				candidate.getRecordRef().getTableName().equals(I_C_Order.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
-				: -1);
-		request.setM_InOut_ID(candidate.getRecordRef() != null ?
-				candidate.getRecordRef().getTableName().equals(I_M_InOut.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
-				: -1);
+		optionalOfFirstNonNullSupplied(candidate::getOrderId,
+				() -> getIdFromReferenceOrNull(candidate, I_C_Order.Table_Name, OrderId::ofRepoId))
+				.ifPresent(orderId -> request.setC_Order_ID(orderId.getRepoId()));
+		optionalOfFirstNonNullSupplied(candidate::getInOutId,
+				() -> getIdFromReferenceOrNull(candidate, I_M_InOut.Table_Name, InOutId::ofRepoId))
+				.ifPresent(inOutId -> request.setM_InOut_ID(inOutId.getRepoId()));
+		optionalOfFirstNonNullSupplied(candidate::getInvoiceId,
+				() -> getIdFromReferenceOrNull(candidate, I_C_Invoice.Table_Name, InvoiceId::ofRepoId))
+				.ifPresent(invoiceId -> request.setM_InOut_ID(invoiceId.getRepoId()));
 
-		request.setDateTrx(SystemTime.asTimestamp());
+		optionalOfFirstNonNullSupplied(candidate::getPaymentId,
+				() -> getIdFromReferenceOrNull(candidate, I_C_Invoice.Table_Name, PaymentId::ofRepoId))
+				.ifPresent(paymentId -> request.setM_InOut_ID(paymentId.getRepoId()));
+
+		request.setC_Project_ID(ProjectId.toRepoId(candidate.getProjectId()));
+
+		request.setDateTrx(coalesce(asTimestamp(candidate.getDateTrx()), SystemTime.asTimestamp()));
+		request.setReminderDate(asTimestamp(candidate.getReminderDate()));
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));
 		request.setPerformanceType(candidate.getPerformanceType());
-		request.setDateDelivered(TimeUtil.asTimestamp(candidate.getDateDelivered()));
+		request.setDateDelivered(asTimestamp(candidate.getDateDelivered()));
+		request.setR_Status_ID(RequestStatusId.toRepoId(candidate.getStatusId()));
+		if (candidate.getPriority() != null)
+		{
+			request.setPriority(coalesceNotNull(RequestPriority.toValue(candidate.getPriority()), RequestPriority.Medium.getCode()));
+		}
+		request.setSalesRep_ID(UserId.toRepoId(candidate.getSalesRepId()));
+		request.setC_BP_Vendor_ID(BPartnerId.toRepoId(candidate.getVendorId()));
 
 		save(request);
 
 		return request;
+	}
+
+	@Nullable
+	private static <T extends RepoIdAware> T getIdFromReferenceOrNull(final @NonNull RequestCandidate candidate, @NonNull final String tableName, @NonNull final Function<Integer, T> idMapper)
+	{
+		if (candidate.getRecordRef() != null && candidate.getRecordRef().getTableName().equals(tableName))
+		{
+			return idMapper.apply(candidate.getRecordRef().getRecord_ID());
+		}
+		return null;
 	}
 
 	@Override
@@ -103,7 +144,7 @@ public class RequestDAO implements IRequestDAO
 				.createQueryBuilder(I_R_Request.class)
 				.addEqualsFilter(I_R_Request.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(RequestId::ofRepoId)
+				.idsAsSet(RequestId::ofRepoId)
 				.stream();
 	}
 }

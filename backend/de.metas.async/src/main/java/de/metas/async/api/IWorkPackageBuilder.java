@@ -1,28 +1,8 @@
-package de.metas.async.api;
-
-import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.lock.api.ILockCommand;
-import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.UUID;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +19,27 @@ import java.util.UUID;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.api;
+
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.lock.api.ILockCommand;
+import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.UUID;
 
 public interface IWorkPackageBuilder
 {
@@ -136,6 +137,8 @@ public interface IWorkPackageBuilder
 	 */
 	IWorkPackageBuilder addElements(Iterable<?> models);
 
+	IWorkPackageBuilder addElements(TableRecordReferenceSet recordRefs);
+
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is committed.
@@ -165,7 +168,7 @@ public interface IWorkPackageBuilder
 	 * Overloading set async batch, to enable setting async batch also by id (optional).
 	 * If the asyncBatchId is not set, it will be inherited.
 	 */
-	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
+	IWorkPackageBuilder setAsyncBatchId(@Nullable AsyncBatchId asyncBatchId);
 
 	I_C_Queue_WorkPackage buildWithPackageProcessor();
 

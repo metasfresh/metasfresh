@@ -1,64 +1,96 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 import { fieldValueToString } from '../../utils/tableHelpers';
 
+// NOTE: we cannot convert to functional component because we need callers need a ref to this object in order to call the focus() function.
 export default class CostPrice extends PureComponent {
   constructor(props) {
     super(props);
-    this.costRef = React.createRef();
+    this.inputRef = React.createRef();
     this.state = { editMode: false };
   }
 
-  /**
-   * @method localOnBlur
-   * @summary - proxy onBlur that also sets the visibility before passing further the event to the onBlur function from the props
-   */
-  localOnBlur = (e) => {
+  handleBlur = (e) => {
     const { onBlur } = this.props;
     this.setState({ editMode: false });
-    onBlur(e);
+    onBlur?.(e);
   };
 
   focus = () => {
+    const { onFocus } = this.props;
     this.setState({ editMode: true }, () => {
-      this.costRef.current.focus();
+      this.inputRef.current.focus();
+      onFocus?.();
     });
   };
 
   render() {
-    const { value, precision, disabled } = this.props;
+    const {
+      autoComplete,
+      className,
+      disabled,
+      placeholder,
+      tabIndex,
+      title,
+      rank,
+      value,
+      precision,
+    } = this.props;
+    const { onChange, onFocus, onKeyDown } = this.props;
     const { editMode } = this.state;
 
-    return (
-      <div>
-        {!editMode && (
-          <input
-            className="input-field js-input-field"
-            value={fieldValueToString({ fieldValue: value, precision })}
-            type="text"
-            onChange={() => false}
-            onFocus={this.focus}
-            disabled={disabled}
-          />
-        )}
-
-        {editMode && (
-          <input
-            {...this.props}
-            onBlur={this.localOnBlur}
-            type="number"
-            ref={this.costRef}
-          />
-        )}
-      </div>
-    );
+    if (!editMode) {
+      return (
+        <input
+          className={cx(
+            className,
+            'input-field js-input-field',
+            rank ? `input-${rank}` : null
+          )}
+          type={'text'}
+          value={fieldValueToString({ fieldValue: value, precision })}
+          onChange={() => false}
+          onFocus={this.focus}
+          disabled={disabled}
+        />
+      );
+    } else {
+      return (
+        <input
+          ref={this.inputRef}
+          type={'number'}
+          value={value}
+          autoComplete={autoComplete}
+          className={cx(className, rank ? `input-${rank}` : null)}
+          disabled={disabled}
+          placeholder={placeholder}
+          tabIndex={tabIndex}
+          title={title}
+          //
+          onChange={onChange}
+          onFocus={onFocus}
+          onBlur={this.handleBlur}
+          onKeyDown={onKeyDown}
+        />
+      );
+    }
   }
 }
 
 CostPrice.propTypes = {
-  onChange: PropTypes.func.isRequired,
-  onBlur: PropTypes.func.isRequired,
+  rank: PropTypes.string,
   value: PropTypes.string,
   precision: PropTypes.number,
+  autoComplete: PropTypes.string,
+  className: PropTypes.string,
   disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  tabIndex: PropTypes.number,
+  title: PropTypes.string,
+  //
+  onChange: PropTypes.func.isRequired,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func,
 };

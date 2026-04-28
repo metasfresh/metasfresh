@@ -1,10 +1,5 @@
 package de.metas.ui.web.globalaction.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.Adempiere;
-
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -13,10 +8,12 @@ import de.metas.ui.web.globalaction.GlobalActionEvent;
 import de.metas.ui.web.globalaction.GlobalActionHandlerResult;
 import de.metas.ui.web.globalaction.GlobalActionsDispatcher;
 import de.metas.ui.web.globalaction.OpenViewGlobalActionHandlerResult;
-import de.metas.ui.web.process.adprocess.WebuiProcess;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.Adempiere;
 
 /*
  * #%L

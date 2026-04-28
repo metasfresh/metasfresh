@@ -74,6 +74,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_Name, BPartner.NAME)
 			.put(I_C_BPartner.COLUMNNAME_Name2, BPartner.NAME_2)
 			.put(I_C_BPartner.COLUMNNAME_Name3, BPartner.NAME_3)
+			.put(I_C_BPartner.COLUMNNAME_Lookup_Label, BPartner.GLN_LOOKUP_LABEL)
 			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, BPartner.PARENT_ID)
 			.put(I_C_BPartner.COLUMNNAME_Phone2, BPartner.PHONE)
 			.put(I_C_BPartner.COLUMNNAME_URL, BPartner.URL)
@@ -154,6 +155,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
+			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,
@@ -187,6 +189,11 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Name, BPartnerBankAccount.ACCOUNT_NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Street, BPartnerBankAccount.ACCOUNT_STREET)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Zip, BPartnerBankAccount.ACCOUNT_ZIP)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_City, BPartnerBankAccount.ACCOUNT_CITY)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Country, BPartnerBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(

@@ -1,32 +1,8 @@
-package de.metas.order;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.CCache;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.freighcost.FreightCostRule;
-import de.metas.lang.SOTrx;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BPartner;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,22 +20,57 @@ import java.util.Optional;
  * #L%
  */
 
+package de.metas.order;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.lang.SOTrx;
+import de.metas.payment.PaymentRule;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
 @Repository
+@RequiredArgsConstructor
 public class BPartnerOrderParamsRepository
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	private final CCache<BPartnerOrderParamsQuery, BPartnerOrderParams> cache = CCache
 			.<BPartnerOrderParamsQuery, BPartnerOrderParams>builder()
 			.cacheName(this.getClass().getSimpleName())
 			.tableName(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
-			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // procingSysteId might be coming from here
+			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // pricingSystemId might be coming from here
+			.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name)
 			.build();
 
+	public static BPartnerOrderParamsRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new BPartnerOrderParamsRepository(BPartnerEffectiveBL.newInstanceForUnitTesting());
+	}
+
+	@NonNull
 	public BPartnerOrderParams getBy(@NonNull final BPartnerOrderParamsQuery query)
 	{
-		return cache.getOrLoad(query, this::getBy0);
+		return cache.getOrLoadNonNull(query, this::getBy0);
 	}
 
 	@Value
@@ -76,6 +87,7 @@ public class BPartnerOrderParamsRepository
 		SOTrx soTrx;
 	}
 
+	@NonNull
 	private BPartnerOrderParams getBy0(@NonNull final BPartnerOrderParamsQuery query)
 	{
 		final I_C_BPartner billBPartnerRecord = bpartnersRepo.getById(query.getBillBPartnerId());
@@ -88,39 +100,25 @@ public class BPartnerOrderParamsRepository
 			@NonNull final I_C_BPartner shipBPartnerRecord,
 			@NonNull final SOTrx soTrx)
 	{
+		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
+		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
 		return BPartnerOrderParams.builder()
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
 				.freightCostRule(getFreightCostRule(shipBPartnerRecord))
-				.invoiceRule(getInvoiceRule(billBPartnerRecord, soTrx))
-				.paymentRule(getPaymentRule(billBPartnerRecord, soTrx))
-				.paymentTermId(getPaymentTermId(billBPartnerRecord, soTrx))
-				.pricingSystemId(getPricingSystemId(billBPartnerRecord, soTrx))
-				.shipperId(getShipperId(shipBPartnerRecord))
+				.invoiceRule(billBPartnerEffective.getInvoiceRule(soTrx))
+				.paymentRule(getPaymentRule(billBPartnerEffective, soTrx))
+				.paymentTermId(billBPartnerEffective.getPaymentTermId(soTrx))
+				.pricingSystemId(billBPartnerEffective.getPricingSystemId(soTrx))
+				.shipperId(getShipperId(shipBPartnerRecord)) //FIXME doesn't consider possibility of overwrite in c_bp_location
+				.isAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx))
+				.incoterms(shipBPartnerEffective.getIncoterms(soTrx))
 				.build();
-	}
-
-	private Optional<PaymentTermId> getPaymentTermId(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(
-				soTrx.isSales()
-						? bpartnerRecord.getC_PaymentTerm_ID()
-						: bpartnerRecord.getPO_PaymentTerm_ID());
-		return Optional.ofNullable(paymentTermId);
 	}
 
 	private Optional<FreightCostRule> getFreightCostRule(@NonNull final I_C_BPartner bpartnerRecord)
 	{
 		return Optional.ofNullable(FreightCostRule.ofNullableCode(bpartnerRecord.getFreightCostRule()));
-	}
-
-	private Optional<InvoiceRule> getInvoiceRule(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		final InvoiceRule invoiceRule = soTrx.isSales()
-				? InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule())
-				: InvoiceRule.ofNullableCode(bpartnerRecord.getPO_InvoiceRule());
-
-		return Optional.ofNullable(invoiceRule);
 	}
 
 	private Optional<DeliveryRule> getDeliveryRuleOrNull(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
@@ -154,13 +152,10 @@ public class BPartnerOrderParamsRepository
 		return Optional.ofNullable(ShipperId.ofRepoIdOrNull(shipperId));
 	}
 
-	private PaymentRule getPaymentRule(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
+	private PaymentRule getPaymentRule(@NonNull final BPartnerEffective bpartnerRecord, @NonNull final SOTrx soTrx)
 	{
 		// note that we fall back to a default because while the column is mandatory in the DB, it might be null in unit tests
-		final PaymentRule paymentRule = soTrx.isSales()
-				? PaymentRule.ofCode(CoalesceUtil.coalesceNotNull(bpartnerRecord.getPaymentRule(), X_C_BPartner.PAYMENTRULE_OnCredit))
-				: PaymentRule.ofCode(CoalesceUtil.coalesceNotNull(bpartnerRecord.getPaymentRulePO(), X_C_BPartner.PAYMENTRULEPO_OnCredit));
-
+		final PaymentRule paymentRule = bpartnerRecord.getPaymentRule(soTrx);
 		if (soTrx.isSales() && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
 		{
 			// for SO_Trx
@@ -171,15 +166,5 @@ public class BPartnerOrderParamsRepository
 			return PaymentRule.OnCredit; // Payment Term
 		}
 		return paymentRule;
-	}
-
-	private Optional<PricingSystemId> getPricingSystemId(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
-		final PricingSystemId pricingSysId = bpartnersDAO.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
-
-		return Optional.ofNullable(pricingSysId);
 	}
 }

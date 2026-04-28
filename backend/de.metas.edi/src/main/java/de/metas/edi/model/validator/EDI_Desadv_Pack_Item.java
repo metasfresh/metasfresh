@@ -68,13 +68,14 @@ public class EDI_Desadv_Pack_Item
 
 		final BigDecimal allLinePacksSum = otherPackItemsForLineSum.add(desadvPackItem.getMovementQty());
 		final BigDecimal lineSum = desadvPackItem.getEDI_DesadvLine().getQtyDeliveredInStockingUOM();
-
+		
 		if (allLinePacksSum.compareTo(lineSum) > 0)
 		{
 			throw new AdempiereException("EDI_DesadvLine.QtyDeliveredInStockingUOM=" + lineSum + ",but the sum of all EDI_Desadv_Pack_Item.MovementQtys=" + allLinePacksSum)
 					.appendParametersToMessage()
 					.setParameter("EDI_Desadv_Pack_Item_ID", desadvPackItem.getEDI_Desadv_Pack_Item_ID())
-					.setParameter("EDI_DesadvLine_ID", desadvPackItem.getEDI_DesadvLine_ID());
+					.setParameter("EDI_DesadvLine_ID", desadvPackItem.getEDI_DesadvLine_ID())
+					.setParameter("EDI_Desadv_ID", desadvPackItem.getEDI_DesadvLine().getEDI_Desadv_ID());
 		}
 	}
 }

@@ -22,13 +22,6 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -38,14 +31,17 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
 
 @Interceptor(I_C_Invoice_Clearing_Alloc.class)
 public class C_Invoice_Clearing_Alloc
 {
 	/**
 	 * If there is a <code>C_Flatrate_DataEntry </code> record for the given <code>ica</code>'s candidate and term, then retrieve and reference it.
-	 *
-	 * @param ica
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void linkToFlatrateDataEntryIfExists(final I_C_Invoice_Clearing_Alloc ica)

@@ -16,6 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -201,18 +202,26 @@ public final class DataTypes
 			{
 				return cast(WebuiImageId.ofNullableObject(value));
 			}
+			else if (RepoIdAware.class.isAssignableFrom(targetType))
+			{
+				final Integer valueInt = convertToInteger(value);
+				final Class<? extends RepoIdAware> idClass = targetType.asSubclass(RepoIdAware.class);
+				//noinspection unchecked
+				return (T)RepoIdAwares.ofObjectOrNull(valueInt, idClass);
+			}
 
 			//
 			// Fallbacks
 			//
 
 			// consider empty strings as null objects
-			if (value instanceof String || value.toString().isEmpty())
+			else if (value instanceof String || value.toString().isEmpty())
 			{
 				return null;
 			}
 			else if (targetType.isInstance(value))
 			{
+				//noinspection StringConcatenationArgumentToLogCall
 				logger.warn("Possible optimization issue: target type is assignable from source type, but they are not the same class."
 						+ "\n In future we will disallow this case, so please check and fix it."
 						+ "\n Field name: " + fieldName
@@ -295,7 +304,7 @@ public final class DataTypes
 				return null;
 			}
 
-			if(valueStr.equalsIgnoreCase("null"))
+			if (valueStr.equalsIgnoreCase("null"))
 			{
 				return null;
 			}
@@ -424,7 +433,7 @@ public final class DataTypes
 			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
-			if(lookupValue == null)
+			if (lookupValue == null)
 			{
 				return null;
 			}

@@ -12,7 +12,6 @@
 	<artifactId>metasfresh-dunning_gateway.spi</artifactId>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

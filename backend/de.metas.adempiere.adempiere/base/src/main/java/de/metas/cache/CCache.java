@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package de.metas.cache;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -26,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -609,6 +615,12 @@ public class CCache<K, V> implements CacheInterface
 		}
 	}
 
+	@NonNull
+	public V getOrLoadNonNull(@NonNull final K key, @NonNull final Callable<V> valueLoader)
+	{
+		return Check.assumeNotNull(getOrLoad(key, valueLoader), "Value loader shouldn't return a null value");
+	}
+
 	/**
 	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
 	 *
@@ -616,13 +628,20 @@ public class CCache<K, V> implements CacheInterface
 	 * @see #get(Object, Supplier)
 	 */
 	@Nullable
-	public V getOrLoad(final K key, final Callable<V> valueLoader)
+	public V getOrLoad(@NonNull final K key, @NonNull final Callable<V> valueLoader)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{
 			return get(key, valueLoader);
 		}
 	}
+
+	@NonNull
+	public V getOrLoadNonNull(final K key, @NonNull final Function<K, V> valueLoader)
+	{
+		return Check.assumeNotNull(getOrLoad(key, valueLoader), "Value loader shouldn't return a null value");
+	}
+
 
 	@Nullable
 	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)

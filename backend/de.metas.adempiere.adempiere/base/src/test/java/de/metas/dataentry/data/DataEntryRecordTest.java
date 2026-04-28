@@ -1,24 +1,22 @@
 package de.metas.dataentry.data;
 
-import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.math.BigDecimal;
 
-import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.user.UserId;
+import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ import de.metas.user.UserId;
 
 public class DataEntryRecordTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

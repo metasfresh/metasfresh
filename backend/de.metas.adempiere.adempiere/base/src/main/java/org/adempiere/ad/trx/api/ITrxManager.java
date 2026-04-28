@@ -208,7 +208,7 @@ public interface ITrxManager extends ISingletonService
 	 * @return callable's return value
 	 * @see #call(String, TrxCallable)
 	 */
-	<T> T call(String trxName, TrxCallable<T> callable);
+	<T> T call(@Nullable String trxName, TrxCallable<T> callable);
 
 	default <T> T callInThreadInheritedTrx(@NonNull final TrxCallable<T> callable)
 	{
@@ -279,6 +279,8 @@ public interface ITrxManager extends ISingletonService
 	 * Run after current transaction is committed. If no transaction, the code is executed right away.
 	 */
 	void runAfterCommit(final Runnable runnable);
+
+	void runAfterClose(@NonNull Consumer<ITrx> runnable);
 
 	/**
 	 * Commit transaction for given <code>trxName</code>.
@@ -352,6 +354,11 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void setTrxNameGenerator(ITrxNameGenerator trxNameGenerator);
 
+	default boolean canRegisterOnTiming(final ITrxListenerManager.TrxEventTiming timing)
+	{
+		return getCurrentTrxListenerManagerOrAutoCommit().canRegisterOnTiming(timing);
+	}
+
 	/**
 	 * Checks if given <code>trxName</code> is a valid and concrete transaction name.
 	 * <p>
@@ -402,7 +409,7 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Assumes that all models have <code>trxNameExpected</code>
 	 */
-	<T> void assertModelsTrxName(String trxNameExpected, Collection<T> models);
+	<T> void assertModelsTrxName(@Nullable String trxNameExpected, Collection<T> models);
 
 	/**
 	 * Assumes that given <code>model</code> have <code>trxNameExpected</code>
@@ -501,13 +508,29 @@ public interface ITrxManager extends ISingletonService
 
 	boolean isDebugConnectionBackendId();
 
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
+	{
+		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (isActive(trx) && canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.BEFORE_COMMIT))
+		{
+			trx.accumulateAndProcessBeforeCommit(propertyName, itemsToAccumulate, beforeCommitListProcessor);
+		}
+		else
+		{
+			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+	}
+
 	default <T> void accumulateAndProcessAfterCommit(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,
 			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
 	{
 		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (isActive(trx))
+		if (isActive(trx) && canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
 		{
 			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
 		}

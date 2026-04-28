@@ -44,8 +44,7 @@ public class PaymentReconcileReference
 		BANK_STATEMENT_LINE, BANK_STATEMENT_LINE_REF, REVERSAL, GL_Journal
 	}
 
-	@NonNull
-	Type type;
+	@NonNull Type type;
 	@Nullable BankStatementId bankStatementId;
 	@Nullable BankStatementLineId bankStatementLineId;
 	@Nullable BankStatementLineRefId bankStatementLineRefId;

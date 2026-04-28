@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}

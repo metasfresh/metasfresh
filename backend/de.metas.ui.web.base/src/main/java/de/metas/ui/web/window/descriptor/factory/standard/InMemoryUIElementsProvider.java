@@ -1,7 +1,15 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.descriptor.LayoutElementType;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.process.IWindowUIElementsGeneratorConsumer;
@@ -14,15 +22,7 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -51,10 +51,10 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	private static final Logger logger = LogManager.getLogger(InMemoryUIElementsProvider.class);
 
 	private final ListMultimap<AdTabId, I_AD_UI_Section> adTabId2sections = LinkedListMultimap.create();
-	private final ListMultimap<I_AD_UI_Section, I_AD_UI_Column> section2columns = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
-	private final ListMultimap<I_AD_UI_Column, I_AD_UI_ElementGroup> column2elementGroups = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
-	private final ListMultimap<I_AD_UI_ElementGroup, I_AD_UI_Element> elementGroup2elements = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
-	private final ListMultimap<I_AD_UI_Element, I_AD_UI_ElementField> element2elementFields = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
+	private final ListMultimap<I_AD_UI_Section, I_AD_UI_Column> section2columns = Multimaps.newListMultimap(Maps.newIdentityHashMap(), Lists::newLinkedList);
+	private final ListMultimap<I_AD_UI_Column, I_AD_UI_ElementGroup> column2elementGroups = Multimaps.newListMultimap(Maps.newIdentityHashMap(), Lists::newLinkedList);
+	private final ListMultimap<I_AD_UI_ElementGroup, I_AD_UI_Element> elementGroup2elements = Multimaps.newListMultimap(Maps.newIdentityHashMap(), Lists::newLinkedList);
+	private final ListMultimap<I_AD_UI_Element, I_AD_UI_ElementField> element2elementFields = Multimaps.newListMultimap(Maps.newIdentityHashMap(), Lists::newLinkedList);
 
 	@Override
 	public void consume(final I_AD_UI_Section uiSection, final I_AD_Tab parent)
@@ -127,9 +127,11 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	}
 
 	@Override
-	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final AdTabId adTabId)
+	public List<I_AD_UI_Element> getUIElementsOfType(@NonNull final AdTabId adTabId, @NonNull final LayoutElementType layoutElementType)
 	{
-		return ImmutableList.of();
+		return elementGroup2elements.values().stream()
+				.filter(uiElement -> layoutElementType.getCode().equals(uiElement.getAD_UI_ElementType()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

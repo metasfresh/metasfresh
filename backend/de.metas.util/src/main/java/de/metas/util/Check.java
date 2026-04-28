@@ -325,6 +325,7 @@ public final class Check
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
+	@Contract("null, _, _ -> fail")
 	public static String assumeNotEmpty(@Nullable final String str, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
@@ -568,6 +569,7 @@ public final class Check
 		}
 	}
 
+	@Contract("_, _ -> fail")
 	public static RuntimeException fail(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);

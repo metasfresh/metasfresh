@@ -16,18 +16,23 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Services;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -57,7 +62,8 @@ import java.util.List;
  */
 public class ImportOrder extends JavaProcess
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IOrderLineBL orderLineBL =Services.get(IOrderLineBL.class);
 
 	/**
 	 * Client to be imported to
@@ -357,18 +363,42 @@ public class ImportOrder extends JavaProcess
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from ContactName=" + no);
-		//	BP from Value
+		//	BP from Value — Step 1: resolve where exactly one BPartner matches
 		sql = new StringBuffer("UPDATE I_Order o "
-									   + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
+									   + "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
 									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
-									   //metas: bpl and l must be active
-									   + " AND bp.IsActive='Y' "
-									   //metas end
+									   + " AND bp.IsActive='Y'"
+									   + " HAVING count(*)=1"
 									   + " ) "
 									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
-		log.debug("Set BP from Value=" + no);
+		log.debug("Set BP from Value (unique)=" + no);
+		//	BP from Value — Step 2: disambiguate using IsSOTrx -> IsCustomer/IsVendor
+		sql = new StringBuffer("UPDATE I_Order o "
+									   + "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
+									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
+									   + " AND bp.IsActive='Y'"
+									   + " AND ((o.IsSOTrx='Y' AND bp.IsCustomer='Y') OR (o.IsSOTrx='N' AND bp.IsVendor='Y'))"
+									   + " HAVING count(*)=1"
+									   + " ) "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		log.debug("Set BP from Value (disambiguated)=" + no);
+		//	BP from Value — Step 3: mark remaining ambiguous rows as errors
+		sql = new StringBuffer("UPDATE I_Order o "
+									   + "SET I_IsImported='E',"
+									   + " I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||o.BPartnerValue||'\"' "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'"
+									   + " AND (SELECT count(*) FROM C_BPartner bp WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1"
+									   ).append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		if (no > 0)
+		{
+			log.warn("Marked " + no + " I_Order rows as error due to ambiguous BPartner Value");
+		}
 		//	Default BP
 		sql = new StringBuffer("UPDATE I_Order o "
 									   + "SET C_BPartner_ID=(SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo c"
@@ -607,8 +637,20 @@ public class ImportOrder extends JavaProcess
 						imp.setName(imp.getBPartnerValue());
 					}
 				}
-				//	BPartner
-				I_C_BPartner bp = MBPartner.get(getCtx(), imp.getBPartnerValue());
+				//	BPartner — use retrieveBPartnerByValue with try-catch for duplicate Value
+				I_C_BPartner bp;
+				try
+				{
+					bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue());
+				}
+				catch (final DBMoreThanOneRecordsFoundException e)
+				{
+					final AdempiereException ex = new AdempiereException(
+							BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+							imp.getBPartnerValue(), e.getMessage());
+					ex.initCause(e);
+					throw ex.markAsUserValidationError();
+				}
 				if (bp == null)
 				{
 					bp = MBPartner.newFromTemplate();
@@ -882,7 +924,7 @@ public class ImportOrder extends JavaProcess
 				}
 				else
 				{
-					line.setTax();
+					orderLineBL.setTax(line);
 					imp.setC_Tax_ID(line.getC_Tax_ID());
 				}
 

@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -21,9 +22,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +52,7 @@ public class PickingJobRepository
 
 	public PickingJobStepId newPickingJobStepId()
 	{
-		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name, ITrx.TRXNAME_None);
+		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name);
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 
@@ -59,11 +61,20 @@ public class PickingJobRepository
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
 
+	public PickingJob updateById(
+			@NonNull PickingJobId pickingJobId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull UnaryOperator<PickingJob> updater)
+	{
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.updateById(pickingJobId, updater);
+	}
+
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		final Set<PickingJobId> pickingJobIds = queryBuilderDraftJobsByPickerId(pickerId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -103,30 +114,50 @@ public class PickingJobRepository
 		final Set<BPartnerId> onlyCustomerIds = query.getOnlyCustomerIds();
 		if (!onlyCustomerIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds);
+			final IQuery<I_M_Picking_Job_Line> linesQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_C_BPartner_ID, onlyCustomerIds)
+					.create();
+
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds)
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, linesQuery);
 		}
 
 		final WarehouseId warehouseId = query.getWarehouseId();
 		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
 		if (warehouseId != null || salesOrderDocumentNo != null)
 		{
-			final IQueryBuilder<I_C_Order> salesOrderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter();
+			//
+			// filter on C_Order
+			final IQueryBuilder<I_C_Order> salesOrderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class).addOnlyActiveRecordsFilter();
 			if (warehouseId != null)
 			{
-				salesOrderQuery.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId);
+				salesOrderQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId);
 			}
 			if (salesOrderDocumentNo != null)
 			{
-				salesOrderQuery.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
+				salesOrderQueryBuilder.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
 			}
+			final IQuery<I_C_Order> salesOrderQuery = salesOrderQueryBuilder.create();
 
-			queryBuilder.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery.create());
+			//
+			// filter on M_Picking_Job_Line
+			final IQueryBuilder<I_M_Picking_Job_Line> linesQueryBuilder = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+					.addOnlyActiveRecordsFilter()
+					.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery);
+			final IQuery<I_M_Picking_Job_Line> linesQuery = linesQueryBuilder.create();
+
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery)
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, linesQuery);
 		}
 
 		final Set<PickingJobId> pickingJobIds = queryBuilder
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -177,7 +208,7 @@ public class PickingJobRepository
 				.collect(Collectors.groupingBy(
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
 						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
-										   Collectors.toList())));
+								Collectors.toList())));
 	}
 
 	@NonNull
@@ -189,7 +220,7 @@ public class PickingJobRepository
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.loadByIds(pickingJobIds);

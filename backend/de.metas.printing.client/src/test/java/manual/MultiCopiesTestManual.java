@@ -22,7 +22,7 @@ package manual;
  * #L%
  */
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Comment out the ignore flag to run the test
@@ -30,7 +30,7 @@ import org.junit.Ignore;
  * @author ts
  *
  */
-@Ignore
+@Disabled
 public class MultiCopiesTestManual extends AbstractMultiPageTestManual
 {
 	@Override

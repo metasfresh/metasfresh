@@ -1,7 +1,8 @@
 {
   "HU": "HU",
   "qrCode": "QR code",
-  "locator": "Lagerort",
+  "eanCode": "EAN Code",
+  "locator": "Lagerplatz",
   "HUStatus": "Status",
   "numberOfAggregatedHUs": "Aggregierte HU-Zahl",
   "product": "Produkt",
@@ -15,7 +16,7 @@
     },
     "move": {
       "buttonCaption": "Bewegen",
-      "scanTarget": "Lagerort scannen",
+      "scanTarget": "Lagerplatz scannen",
       "qtyTULabel": "TU-Zahl"
     },
     "scanAgain": {
@@ -24,8 +25,18 @@
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"
     },
+    "bulkActions": {
+      "buttonCaption": "Massenaktionen",
+      "windowName": "Massenaktionen",
+      "scan": "Scannen",
+      "move": "Bewegen",
+      "closeScanner": "Scanner schließen",
+      "scanHUPlaceholder": "Scannen HU",
+      "scanTargetPlaceholder": "Scan-Ziel",
+      "moveSuccess": "Erfolgreich verschoben"
+    },
     "setCurrentLocator": {
-      "buttonCaption": "Lagerort ändern"
+      "buttonCaption": "Lagerplatz ändern"
     },
     "changeQty": {
       "buttonCaption": "Menge verändern",
@@ -40,6 +51,22 @@
       "windowName": "Etiketten drucken",
       "print": "Drucken",
       "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
+    },
+    "scanGRAI": {
+      "buttonCaption": "GRAI scannen",
+      "windowName": "GRAI scannen",
+      "count": "%(scanned)s / %(total)s GRAIs gescannt",
+      "countExtra": "(%(extra)s extra)",
+      "clearAll": {
+        "buttonCaption": "Alle löschen",
+        "confirmQuestion": "Alle %(count)s GRAIs entfernen?"
+      },
+      "send": {
+        "buttonCaption": "Senden"
+      },
+      "undo": {
+        "buttonCaption": "Rückgängig"
+      }
     }
   }
 }

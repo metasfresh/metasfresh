@@ -416,6 +416,7 @@ export const computeSaveStatusFlags = ({
     indicator = IndicatorState.ERROR;
   }
 
+  // noinspection UnnecessaryLocalVariableJS
   const retValue = {
     indicator,
     isDocumentSaved,
@@ -444,6 +445,32 @@ export const useSaveStatusFlags = () => {
   );
 };
 
+export const getMasterDocumentStandardActions = ({
+  state,
+  windowId,
+  documentId,
+}) => {
+  if (!windowId || !documentId) {
+    return [];
+  }
+
+  return state.windowHandler?.master?.standardActions ?? [];
+};
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

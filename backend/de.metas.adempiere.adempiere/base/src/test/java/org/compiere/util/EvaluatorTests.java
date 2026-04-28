@@ -1,37 +1,14 @@
 package org.compiere.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Test {@link Evaluator} class.
@@ -43,9 +20,6 @@ import org.junit.Test;
  */
 public class EvaluatorTests
 {
-	/**
-	 * @see org.adempiere.ad.expression.api.impl.ExpressionFactoryTests#test_compileStringExpression_getParameters()
-	 */
 	@Test
 	public void test_parseDepends()
 	{
@@ -113,8 +87,8 @@ public class EvaluatorTests
 		assertEquals(false, Evaluator.evaluateLogic(ev2, "@name1/old@!valueOld1"));
 
 		// ' and "-signs outside of @ tags are ignored
-		assertEquals("'-signs outside of @ tags are ignored", true, Evaluator.evaluateLogic(ev2, "@name1/old@='valueOld1'"));
-		assertEquals("\"-signs outside of @ tags are ignored", true, Evaluator.evaluateLogic(ev2, "@name1/old@=\"valueOld1\""));
+		assertEquals(true, Evaluator.evaluateLogic(ev2, "@name1/old@='valueOld1'"), "'-signs outside of @ tags are ignored");
+		assertEquals(true, Evaluator.evaluateLogic(ev2, "@name1/old@=\"valueOld1\""), "\"-signs outside of @ tags are ignored");
 	}
 
 	/**
@@ -123,7 +97,7 @@ public class EvaluatorTests
 	@Test
 	public void test_evaluateLogic_defaultValue()
 	{
-		MockedEvaluatee ev = new MockedEvaluatee();
+		final MockedEvaluatee ev = new MockedEvaluatee();
 		ev.put("name1", "value1");
 
 		// guard: the case, where we don't need the default should work, too

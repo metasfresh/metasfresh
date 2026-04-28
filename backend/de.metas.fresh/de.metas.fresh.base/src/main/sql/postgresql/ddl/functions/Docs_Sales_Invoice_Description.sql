@@ -1,16 +1,16 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN record_id  numeric,
-                                                                                          IN p_language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN p_record_id numeric,
+                                                                                          IN p_language  Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(record_id  numeric,
-                                                                                             p_language character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(p_record_id numeric,
+                                                                                             p_language  character varying)
     RETURNS TABLE
             (
                 description        character varying,
                 documentno         character varying,
                 reference          character varying,
                 dateinvoiced       timestamp WITHOUT TIME ZONE,
-                duedate          timestamp WITH TIME ZONE,
+                duedate            timestamp WITH TIME ZONE,
                 vataxid            character varying,
                 bp_value           character varying,
                 eori               character varying,
@@ -25,10 +25,15 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice
                 sr_email           character varying,
                 printname          character varying,
                 order_docno        text,
+                order_date         text,
                 inout_docno        text,
                 io_movementdate    date,
                 iscreditmemo       character,
-                creditmemo_docno   character varying
+                creditmemo_docno   character varying,
+                offer_documentno   character varying,
+                offer_date         text,
+                warehouse          character varying,
+                projectno          character varying
             )
     STABLE
     LANGUAGE sql
@@ -38,26 +43,46 @@ SELECT i.description                                                            
        i.documentno                                                                     AS documentno,
        i.poreference                                                                    AS reference,
        i.dateinvoiced                                                                   AS dateinvoiced,
-       paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
-       bp.VATaxID,
+       i.DueDate::timestamp WITH TIME ZONE                                              AS DueDate,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'VATaxID') = 'N' THEN
+               bp.VATaxID
+       END                                                                              AS VATaxID,
        bp.value                                                                         AS bp_value,
        bp.eori                                                                          AS eori,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Customer_No_At_Vendor') = 'N' THEN
+               bp.customernoatvendor
+       END                                                                              AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
        COALESCE(' ' || cont.lastName, '')                                               AS cont_name,
-       cont.phone                                                                       AS cont_phone,
-       cont.fax                                                                         AS cont_fax,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Phone') = 'N' THEN
+               cont.phone
+       END                                                                              AS cont_phone,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Fax') = 'N' THEN
+               cont.fax
+       END                                                                              AS cont_fax,
        cont.email                                                                       AS cont_email,
-       COALESCE(srgr.name, '') ||
-       COALESCE(' ' || srep.title, '') ||
-       COALESCE(' ' || srep.firstName, '') ||
-       COALESCE(' ' || srep.lastName, '')                                               AS sr_name,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Name') = 'N' THEN
+               COALESCE(srgr.name, '') ||
+               COALESCE(' ' || srep.title, '') ||
+               COALESCE(' ' || srep.firstName, '') ||
+               COALESCE(' ' || srep.lastName, '')
+       END                                                                              AS sr_name,
        srep.phone                                                                       AS sr_phone,
        srep.fax                                                                         AS sr_fax,
-       srep.email                                                                       AS sr_email,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Email') = 'N' THEN
+               srep.email
+       END                                                                              AS sr_email,
        COALESCE(dtt.PrintName, dt.PrintName)                                            AS PrintName,
        o.docno                                                                          AS order_docno,
+       o.dateordered                                                                    AS order_date,
        io.docno                                                                         AS inout_docno,
        io.DateFrom                                                                      AS io_movementdate,
        CASE
@@ -65,10 +90,20 @@ SELECT i.description                                                            
                THEN 'Y'
                ELSE 'N'
        END                                                                              AS isCreditMemo,
-       cm.documentno                                                                    AS creditmemo_docNo
+       cm.documentno                                                                    AS creditmemo_docNo,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_DocumentNo') = 'N' THEN
+               o.offer_documentno
+       END                                                                              AS offer_documentno,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_Date') = 'N' THEN
+               o.offer_date
+       END                                                                              AS offer_date,
+       wh.name                                                                          AS warehouse,
+       pr.value                                                                         AS projectno
 FROM C_Invoice i
          JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
+         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID
          LEFT JOIN AD_User cont ON i.AD_User_ID = cont.AD_User_ID
          LEFT JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
          LEFT JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
@@ -78,12 +113,24 @@ FROM C_Invoice i
          LEFT JOIN LATERAL
     (
     SELECT First_Agg(o.DocumentNo ORDER BY o.DocumentNo) ||
-           CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END AS DocNo
+           CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END      AS DocNo,
+
+           First_Agg((o.dateordered::date)::text ORDER BY o.dateordered) ||
+           CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END     AS dateordered,
+
+           First_Agg(offer.DocumentNo ORDER BY offer.DocumentNo) ||
+           CASE WHEN COUNT(offer.DocumentNo) > 1 THEN ' ff.' ELSE '' END  AS offer_documentno,
+
+           First_Agg(offer.dateordered::text ORDER BY offer.dateordered) ||
+           CASE WHEN COUNT(offer.dateordered) > 1 THEN ' ff.' ELSE '' END AS offer_date
     FROM C_InvoiceLine il
              JOIN C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
              JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
-    WHERE il.C_Invoice_ID = record_id
+        -- proposal order
+             LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
+
+    WHERE il.C_Invoice_ID = p_record_id
     ) o ON TRUE
 
          LEFT JOIN LATERAL
@@ -95,11 +142,14 @@ FROM C_Invoice i
              JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID
              JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
 
-    WHERE il.C_Invoice_ID = record_id
+    WHERE il.C_Invoice_ID = p_record_id
     ) io ON TRUE
 
-
-WHERE i.C_Invoice_ID = record_id
+    -- warehouse
+         LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
+    -- project
+         LEFT JOIN c_project pr ON i.c_project_id = pr.c_project_id
+WHERE i.C_Invoice_ID = p_record_id
 
 $$
 ;

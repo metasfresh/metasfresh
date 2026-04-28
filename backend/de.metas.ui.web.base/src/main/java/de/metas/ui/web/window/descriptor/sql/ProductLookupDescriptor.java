@@ -160,9 +160,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final String ATTRIBUTE_ASI = "asi";
 
 	private final boolean excludeBOMProducts;
+	private final boolean isFallbackToBasePricelist;
 
 	@Getter
 	private final int searchStringMinLength;
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
@@ -173,7 +177,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -189,8 +194,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -198,7 +204,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -213,8 +220,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
 	}
 
 	@Override
@@ -381,10 +388,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		if (result.isEmpty())
 		{
 			result.add(ProductWithAvailabilityInfo.builder()
-							   .productId(productLookupValue.getIdAs(ProductId::ofRepoId))
-							   .productDisplayName(productLookupValue.getDisplayNameTrl())
-							   .qty(null)
-							   .build());
+					.productId(productLookupValue.getIdAs(ProductId::ofRepoId))
+					.productDisplayName(productLookupValue.getDisplayNameTrl())
+					.qty(null)
+					.build());
 		}
 
 		return ImmutableList.copyOf(result);
@@ -395,12 +402,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
 	}
 
-	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams,@NonNull final LookupDataSourceContext evalCtx)
+	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams, @NonNull final LookupDataSourceContext evalCtx)
 	{
 		final Timestamp priceDate = TimeUtil.asTimestamp(getEffectivePricingDate(evalCtx));
 
 		sqlWhereClause.append("\n AND ")
-		//@formatter:off
+				//@formatter:off
 				.append(" ( ")
 					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(false))
 				.append(" OR ")
@@ -525,12 +532,19 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return;
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		final List<PriceListVersionId> relevantPriceListVersionIds;
+		if (isFallbackToBasePricelist)
+		{
+			relevantPriceListVersionIds = priceListDAO.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		}
+		else
+		{
+			relevantPriceListVersionIds = ImmutableList.of(priceListVersionId);
+		}
 
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
-				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(allPriceListVersionIds, sqlWhereClauseParams::collectAll))
+				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(relevantPriceListVersionIds, sqlWhereClauseParams::collectAll))
 				.append(" AND pp.IsActive=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
 	}
@@ -547,9 +561,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int limit = evalCtx.getLimit(100);
 		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
 		final String sql = buildSql(sqlParams,
-									evalCtx,
-									offset,
-									limit + 1); // +1 is needed to recognize if we have more results
+				evalCtx,
+				offset,
+				limit + 1); // +1 is needed to recognize if we have more results
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -675,20 +689,20 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				null, // baseTable
 				"p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
 		final StringBuilder sql = new StringBuilder("SELECT"
-															+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
-															+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
-															+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
+				+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
+				+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
+				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
 		//
@@ -782,13 +796,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final ZonedDateTime date = getEffectivePricingDate(evalCtx);
-		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
+		return priceListDAO.retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
-	@Nullable
+	@NonNull
 	private ZonedDateTime getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> param_PricingDate.getValueAsZonedDateTime(evalCtx),
 				SystemTime::asZonedDateTime);
 	}
@@ -833,8 +847,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getATPAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-			final @Nullable BPartnerId bpartnerId,
-			final @NonNull ZonedDateTime dateOrNull)
+													 final @Nullable BPartnerId bpartnerId,
+													 final @NonNull ZonedDateTime dateOrNull)
 	{
 		return ATPProductLookupEnricher.builder()
 				.availableToPromiseAdapter(availableToPromiseAdapter)
@@ -845,10 +859,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getAFSAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-			final @NonNull ZonedDateTime dateOrNull,
-			final @Nullable WarehouseId warehouseId,
-			final @NonNull ClientId clientId,
-			final @NonNull OrgId orgId)
+													 final @NonNull ZonedDateTime dateOrNull,
+													 final @Nullable WarehouseId warehouseId,
+													 final @NonNull ClientId clientId,
+													 final @NonNull OrgId orgId)
 	{
 		return AFSProductLookupEnricher.builder()
 				.availableForSaleAdapter(availableForSaleAdapter)
@@ -886,7 +900,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private String getAvailableStockQueryActivatedInSysConfig()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
@@ -927,7 +940,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Properties ctx = Env.getCtx();
 
-		return Services.get(ISysConfigBL.class).getBooleanValue(
+		return sysConfigBL.getBooleanValue(
 				SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE,
 				true,
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
@@ -953,6 +966,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	}
 
+	public static ProductId toProductId(@NonNull final LookupValue lookupValue)
+	{
+		return lookupValue.getIdAs(ProductId::ofRepoId);
+	}
+
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
 	{
 		final ProductId productId = lookupValue.getIdAs(ProductId::ofRepoId);
@@ -968,7 +986,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private boolean isFullTextSearchEnabled()
 	{
-		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
+		final boolean disabled = sysConfigBL.getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
 		return !disabled;
 	}
 

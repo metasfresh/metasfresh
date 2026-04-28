@@ -31,6 +31,7 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 			.build();
 
 	@Override
+	@Nullable
 	public ActivityId retrieveActivityForAcct(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,

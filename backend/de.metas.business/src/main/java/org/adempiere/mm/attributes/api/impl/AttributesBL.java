@@ -29,21 +29,20 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
-import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -58,7 +57,6 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -81,19 +79,19 @@ public class AttributesBL implements IAttributesBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@VisibleForTesting
-	static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
-	private static final AdMessageKey MSG_NoAttributeGenerator = AdMessageKey.of("de.metas.swat.Attribute.generatorError");
+	public static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
+	public static final AdMessageKey MSG_NoAttributeGenerator = AdMessageKey.of("de.metas.swat.Attribute.generatorError");
 
 	private static final MathContext DEFAULT_MATHCONTEXT = new MathContext(2, RoundingMode.HALF_UP);
 
 	@Override
 	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
 	{
-		return attributesRepo.getAttributeById(attributeId);
+		return attributesRepo.getAttributeRecordById(attributeId);
 	}
 
 	@Override
-	public AttributeAction getAttributeAction(final Properties ctx)
+	public @NonNull AttributeAction getAttributeAction(final Properties ctx)
 	{
 		final String attributeActionCode = sysConfigs.getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(attributeActionCode, true))
@@ -104,12 +102,24 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
+	public @NonNull IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
 	{
 		final IAttributeValueGenerator generator = getAttributeValueGeneratorOrNull(attributeParam);
 		if (generator == null)
 		{
-			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, new Object[] { attributeParam.getName() });
+			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, attributeParam.getName());
+		}
+
+		return generator;
+	}
+
+	@Override
+	public @NonNull IAttributeValueGenerator getAttributeValueGenerator(final Attribute attribute)
+	{
+		final IAttributeValueGenerator generator = getAttributeValueGeneratorOrNull(attribute);
+		if (generator == null)
+		{
+			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, attribute.getDisplayName());
 		}
 
 		return generator;
@@ -118,12 +128,18 @@ public class AttributesBL implements IAttributesBL
 	@Override
 	public IAttributeValuesProvider createAttributeValuesProvider(final AttributeId attributeId)
 	{
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(attributeId);
 		return createAttributeValuesProvider(attribute);
 	}
 
 	@Override
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
+	{
+		return createAttributeValuesProvider(AttributeDAO.fromRecord(attribute));
+	}
+
+	@Override
+	public IAttributeValuesProvider createAttributeValuesProvider(final Attribute attribute)
 	{
 		final IAttributeValueHandler attributeHandler = getAttributeValueHandlerOrNull(attribute);
 
@@ -136,9 +152,9 @@ public class AttributesBL implements IAttributesBL
 		}
 		//
 		// Second try: check if our attribute is of type list, in which case we are dealing with standard M_AttributeValues
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
+		else if (attribute.getValueType().isList())
 		{
-			return new DefaultAttributeValuesProvider(attribute);
+			return new DefaultAttributeValuesProvider(attributesRepo, attribute);
 		}
 		//
 		// Fallback: there is no IAttributeValuesProvider because attribute does not support Lists
@@ -159,19 +175,30 @@ public class AttributesBL implements IAttributesBL
 		return null;
 	}
 
+	@Override
+	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final Attribute attribute)
+	{
+		final IAttributeValueHandler handler = getAttributeValueHandlerOrNull(attribute);
+		if (handler instanceof IAttributeValueGenerator)
+		{
+			return (IAttributeValueGenerator)handler;
+		}
+		return null;
+	}
+
 	private IAttributeValueHandler getAttributeValueHandlerOrNull(final org.compiere.model.I_M_Attribute attributeRecord)
 	{
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeRecord, I_M_Attribute.class);
+		final JavaClassId listValuesProviderJavaClassId = AttributeDAO.extractListValuesProviderJavaClassId(attributeRecord);
+		return listValuesProviderJavaClassId != null
+				? javaClassBL.newInstance(listValuesProviderJavaClassId)
+				: null;
+	}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
-		final I_AD_JavaClass javaClassDef = javaClassDAO.retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());
-		if (javaClassDef == null)
-		{
-			return null;
-		}
-
-		final IAttributeValueHandler handler = javaClassBL.newInstance(javaClassDef);
-		return handler;
+	private IAttributeValueHandler getAttributeValueHandlerOrNull(final Attribute attribute)
+	{
+		return attribute.getListValuesProviderJavaClassId() != null
+				? javaClassBL.newInstance(attribute.getListValuesProviderJavaClassId())
+				: null;
 	}
 
 	@Nullable
@@ -214,84 +241,70 @@ public class AttributesBL implements IAttributesBL
 	public boolean hasAttributeAssigned(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		return attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.isPresent();
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId).contains(attributeId);
 	}
 
 	@Override
 	public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnReceipt)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
+		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+				.getMandatoryOnReceipt(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnReceipt != null)
 		{
 			return mandatoryOnReceipt;
 		}
 
-		return attributesRepo.getAttributeById(attributeId).isMandatory();
+		return attributesRepo.getAttributeRecordById(attributeId).isMandatory();
 	}
 
 	@Override
 	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnShipment)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
+		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+				.getMandatoryOnShipment(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnShipment != null)
 		{
 			return mandatoryOnShipment;
 		}
 
-		return attributesRepo.getAttributeById(attributeId).isMandatory();
+		return attributesRepo.getAttributeRecordById(attributeId).isMandatory();
 	}
 
 	@Override
-	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
+	public ImmutableList<Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOnPicking(productId,
-						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOnPicking(productId, attribute.getAttributeId()))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnPicking;
 	}
 
 	@Override
-	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
+	public ImmutableList<Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOnShipment(productId,
-						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOnShipment(productId, attribute.getAttributeId()))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnShipment;
 	}
 
 	@Override
 	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-
-		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnPicking)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
+		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+				.getMandatoryOnPicking(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnPicking != null)
 		{
 			return mandatoryOnPicking;
 		}
 
-		return attributesRepo.getAttributeById(attributeId).isMandatory();
+		return attributesRepo.getAttributeRecordById(attributeId).isMandatory();
 	}
 
 	@Override
@@ -339,8 +352,7 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Calculate the Best-Before date
-		final Date bestBeforeDate = TimeUtil.addDays(dateReceipt, bestBeforeDays);
-		return bestBeforeDate;
+		return TimeUtil.addDays(dateReceipt, bestBeforeDays);
 	}
 
 	@Override

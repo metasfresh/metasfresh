@@ -29,7 +29,7 @@ import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeAction;
-import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
+import org.adempiere.mm.attributes.asi_aware.ModelAttributeSetInstanceListenerTestHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;

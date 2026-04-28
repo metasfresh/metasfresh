@@ -6,21 +6,25 @@ import { getAvailableApplicationsArray } from '../../reducers/applications';
 import ScreenToaster from '../../components/ScreenToaster';
 import ApplicationButton from './ApplicationButton';
 import LogoHeader from '../../components/LogoHeader';
-import { getApplicationStartFunction } from '../../apps';
-import { appLaunchersLocation } from '../../routes/launchers';
+import { startApplicationById, startApplicationByScannedCode } from '../../apps';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
 import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import Spinner from '../../components/Spinner';
+import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
+
+const SCREEN_ID = 'ApplicationsListScreen';
 
 const ApplicationsListScreen = () => {
-  const { history } = useScreenDefinition({ isHomeStop: true, back: '/' });
+  const { history } = useScreenDefinition({ screenId: SCREEN_ID, isHomeStop: true, back: '/' });
 
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
+  const isLoading = applications.length === 0;
   const applicationsDisplayed = applications.filter((app) => !!app.showInMainMenu);
 
   //
-  // If there is only one application displayed then start it automatically
+  // If there is only one application displayed, then start it automatically
   useEffect(() => {
     if (applicationsDisplayed.length === 1) {
       const singleApplicationId = applicationsDisplayed[0].id;
@@ -37,12 +41,7 @@ const ApplicationsListScreen = () => {
 
   const dispatch = useDispatch();
   const handleAppClick = (applicationId) => {
-    const startApplicationFunc = getApplicationStartFunction(applicationId);
-    if (startApplicationFunc) {
-      dispatch(startApplicationFunc());
-    } else {
-      history.push(appLaunchersLocation({ applicationId }));
-    }
+    startApplicationById({ applicationId, dispatch, history });
   };
 
   const auth = useAuth();
@@ -50,13 +49,22 @@ const ApplicationsListScreen = () => {
     auth.logout();
   };
 
+  const onBarcodeScanned = async ({ scannedBarcode }) => {
+    await startApplicationByScannedCode({ scannedBarcode, dispatch, history });
+  };
+
   return (
-    <div className="applications-list">
+    <div id={SCREEN_ID} className="applications-list">
       <LogoHeader />
       <div className="section">
+        {isLoading && <Spinner />}
+        {!isLoading && (
+          <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onBarcodeScanned} />
+        )}
         {applicationsDisplayed.map((app) => (
           <ApplicationButton
             key={app.id}
+            id={app.id}
             caption={app.caption}
             iconClassNames={app.iconClassNames}
             onClick={() => handleAppClick(app.id)}
@@ -65,6 +73,7 @@ const ApplicationsListScreen = () => {
         <br />
         <ApplicationButton
           key="logout"
+          id="logout"
           caption={trl('logout')}
           iconClassNames="fas fa-power-off"
           onClick={() => handleLogout()}

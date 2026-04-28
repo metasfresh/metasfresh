@@ -22,18 +22,11 @@
 
 package de.metas.ui.web.view.json;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
@@ -49,7 +42,15 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * View document (row).
@@ -209,6 +210,10 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String caption;
+
+	@JsonProperty("error")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Setter private JsonErrorItem error;
 
 	private JSONViewRow(final DocumentId documentId)
 	{

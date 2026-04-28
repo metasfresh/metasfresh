@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@ import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,7 +47,7 @@ public class BPRelationRouteBuilder extends RouteBuilder
 
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof BPRelationsCamelRequest))
@@ -62,7 +62,7 @@ public class BPRelationRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPRelationsUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
 
 	}

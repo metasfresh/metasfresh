@@ -78,7 +78,7 @@ public class RecordAccessService
 
 		final ImmutableSet<RecordAccessId> existingRecordIds = recordAccessRepository.query(query)
 				.create()
-				.listIds(RecordAccessId::ofRepoId);
+				.idsAsSet(RecordAccessId::ofRepoId);
 		recordAccessRepository.deleteByIds(existingRecordIds, request.getRequestedBy());
 
 		final List<RecordAccess> accessesToSave = toUserGroupRecordAccessesList(request);

@@ -21,14 +21,6 @@ package de.metas.handlingunits.allocation.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.business.BusinessTestHelper.createBPartner;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.junit.Assert;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
@@ -42,12 +34,18 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+
 /**
- * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class LULoaderTest extends AbstractHUTest
 {
@@ -132,10 +130,6 @@ public class LULoaderTest extends AbstractHUTest
 
 	/**
 	 * Simply creates an {@link I_M_HU} manually.
-	 *
-	 * @param huPI
-	 * @param bpartner
-	 * @return
 	 */
 	private final I_M_HU createHU(final I_M_HU_PI huPI, final BPartnerId bpartnerId)
 	{
@@ -157,22 +151,22 @@ public class LULoaderTest extends AbstractHUTest
 
 		final I_M_HU_Item tuParentHUItem = tuHU.getM_HU_Item_Parent();
 		final I_M_HU_PI_Item tuParentPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(tuParentHUItem);
-		Assert.assertEquals("TU was not added to right LU PI Item: " + tuHU,
-				luPIItem,// expected,
-				tuParentPIItem// actual
+		Assertions.assertEquals(luPIItem,// expected,
+				tuParentPIItem, // actual
+				"TU was not added to right LU PI Item: " + tuHU
 		);
 
 		final I_M_HU tuParentHU = tuParentHUItem.getM_HU();
-		Assert.assertEquals("Invalid LU for TU=" + tuHU,
-				luHU,// expected,
-				tuParentHU// actual
+		Assertions.assertEquals(luHU,// expected,
+				tuParentHU,// actual
+				"Invalid LU for TU=" + tuHU
 		);
 	}
 
 	private void assertLUsCount(final int expectedCount)
 	{
 		final List<I_M_HU> luHUs = luLoader.getLU_HUs();
-		Assert.assertEquals("Invalid LUs count: " + luHUs, expectedCount, luHUs.size());
+		Assertions.assertEquals(expectedCount, luHUs.size(), "Invalid LUs count: " + luHUs);
 
 	}
 }

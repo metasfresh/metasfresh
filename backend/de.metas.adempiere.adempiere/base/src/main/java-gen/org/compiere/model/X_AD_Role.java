@@ -1362,4 +1362,17 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 		}
 		return false;
 	}
+
+	@Override
+	public void setIsAllowPasswordChangeForOthers (final boolean IsAllowPasswordChangeForOthers)
+	{
+		set_Value (COLUMNNAME_IsAllowPasswordChangeForOthers, IsAllowPasswordChangeForOthers);
+	}
+
+	@Override
+	public boolean isAllowPasswordChangeForOthers()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPasswordChangeForOthers);
+	}
+
 }

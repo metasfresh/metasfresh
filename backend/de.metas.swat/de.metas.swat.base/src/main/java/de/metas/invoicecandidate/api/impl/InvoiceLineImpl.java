@@ -22,7 +22,7 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
@@ -37,16 +37,15 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
- *
+ * <p>
  * NOTE to developer: if you want to add a new field:
  * <ul>
  * <li>add private field, getter and setter methods
@@ -55,13 +54,12 @@ import java.util.TreeSet;
  * </ul>
  *
  * @author tsa
- *
  */
 
 // The excludes are here because they were this way in the former code. I'm not really sure that we really "must" include e.g. "C_PaymentTerm_ID"..
 @EqualsAndHashCode(exclude = { "activityID", "tax", "lineNo", "invoiceLineAttributes", "iciolsToUpdate", "C_PaymentTerm_ID" })
 @ToString(doNotUseGetters = true)
-/* package */ class InvoiceLineImpl implements IInvoiceLineRW
+		/* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
 	private int M_Product_ID;
 	private int C_Charge_ID;
@@ -83,13 +81,13 @@ import java.util.TreeSet;
 	private Money netLineAmt;
 
 	private String description;
-	private Collection<Integer> iciolIds = new TreeSet<>();
+	private final Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
 	private Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
-	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private List<IInvoiceLineAttribute> invoiceLineAttributes = ImmutableList.of();
+	private final List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
@@ -109,7 +107,6 @@ import java.util.TreeSet;
 	{
 		return C_OrderLine_ID;
 	}
-
 
 	@Override
 	public void setM_Product_ID(final int m_Product_ID)
@@ -147,6 +144,7 @@ import java.util.TreeSet;
 	}
 
 
+	@Nullable
 	@Override
 	public String getDescription()
 	{
@@ -154,12 +152,10 @@ import java.util.TreeSet;
 	}
 
 	@Override
-	public void setDescription(final String description)
+	public void setDescription(@Nullable final String description)
 	{
 		this.description = description;
 	}
-
-
 
 	@Override
 	public Collection<Integer> getC_InvoiceCandidate_InOutLine_IDs()
@@ -170,7 +166,7 @@ import java.util.TreeSet;
 	@Override
 	public void negateAmounts()
 	{
-		setPriceActual(getPriceActual().negate());
+		setQtysToInvoice(getQtysToInvoice().negate());
 		setNetLineAmt(getNetLineAmt().negate());
 	}
 
@@ -223,13 +219,13 @@ import java.util.TreeSet;
 	}
 
 	@Override
-	public void setInvoiceLineAttributes(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	public void setInvoiceLineAttributes(@NonNull final List<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
-		this.invoiceLineAttributes = ImmutableSet.copyOf(invoiceLineAttributes);
+		this.invoiceLineAttributes = ImmutableList.copyOf(invoiceLineAttributes);
 	}
 
 	@Override
-	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
+	public List<IInvoiceLineAttribute> getInvoiceLineAttributes()
 	{
 		return invoiceLineAttributes;
 	}

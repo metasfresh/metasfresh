@@ -2,6 +2,7 @@ package de.metas.order.createFrom.po_from_so.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -15,6 +16,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
@@ -139,7 +141,19 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
-		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		final I_C_BPartner vendor;
+		try
+		{
+			vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		}
+		catch (final DBMoreThanOneRecordsFoundException e)
+		{
+			final AdempiereException ex = new AdempiereException(
+					BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+					vendorBPartnerValue, e.getMessage());
+			ex.initCause(e);
+			throw ex.markAsUserValidationError();
+		}
 		if (vendor == null)
 		{
 			throw new AdempiereException("No vendor found for Value=" + vendorBPartnerValue + " or vendor is not active.");
@@ -204,16 +218,16 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 	}
 
-	private CreatePOLineFromSOLinesAggregator getCreateLineAggregator(final I_C_Order pruchaseOrder)
+	private CreatePOLineFromSOLinesAggregator getCreateLineAggregator(final I_C_Order purchaseOrder)
 	{
-		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
+		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(purchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(purchaseOrder, purchaseQtySource, p_TypeOfPurchase);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
-			orderKey2OrderLineAggregator.put(pruchaseOrder.getDocumentNo(), orderLinesAggregator);
+			orderKey2OrderLineAggregator.put(purchaseOrder.getDocumentNo(), orderLinesAggregator);
 		}
 		return orderLinesAggregator;
 	}
@@ -280,7 +294,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		// FW dropship ad
 		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase)
-				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() > 0)
 		{
 			purchaseOrder.setIsDropShip(true);
 			OrderDocumentLocationAdapterFactory
@@ -293,7 +307,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		{
 			purchaseOrder.setIsDropShip(p_IsDropShip);
 
-			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() > 0)
 			{
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(purchaseOrder)

@@ -22,6 +22,7 @@
 
 package de.metas.elementvalue;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,4 +34,5 @@ public class ChartOfAccountsCreateRequest
 {
 	@NonNull String name;
 	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 }

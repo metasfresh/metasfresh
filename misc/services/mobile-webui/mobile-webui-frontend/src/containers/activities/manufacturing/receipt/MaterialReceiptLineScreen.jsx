@@ -3,10 +3,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
-import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
+import { postManufacturingReceiveEventThunk } from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
-import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
+import {
+  getActivityByIdFromWFProcess,
+  getCustomQRCodeFormats,
+  getLineByIdFromActivity,
+  getWfProcess,
+} from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
@@ -14,16 +19,29 @@ import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndica
 import Spinner from '../../../../components/Spinner';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
+import { APPLICATION_ID_Picking } from '../../../../apps/picking';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'MaterialReceiptLineScreen',
     back: getWFProcessScreenLocation,
   });
 
   const {
     activityCaption,
     userInstructions,
-    lineProps: { aggregateToLU, aggregateToTU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
+    lineProps: {
+      aggregateToLU,
+      aggregateToTU,
+      currentReceivingHU,
+      productName,
+      uom,
+      catchWeightUomSymbol,
+      qtyReceived,
+      qtyToReceive,
+    },
+    pickTo,
+    customQRCodeFormats,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -60,7 +78,16 @@ const MaterialReceiptLineScreen = () => {
     );
   }, []);
 
-  const handleQuantityChange = (qtyReceived) => {
+  const handleQuantityChange = ({
+    qtyEnteredAndValidated,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    productionDate,
+    lotNo,
+    barcode, // i.e. the catch weight QR code
+    isDone = true,
+  }) => {
     // shall not happen
     if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
       console.log('skip receiving qty because there is no target');
@@ -68,8 +95,26 @@ const MaterialReceiptLineScreen = () => {
     }
 
     setShowSpinner(true);
-    dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyReceived: Number(qtyReceived) }))
-      .then(() => history.goBack())
+    dispatch(
+      postManufacturingReceiveEventThunk({
+        wfProcessId,
+        activityId,
+        lineId,
+        qtyReceived: Number(qtyEnteredAndValidated),
+        pickTo,
+        catchWeight,
+        catchWeightUom,
+        bestBeforeDate,
+        productionDate,
+        lotNo,
+        barcode,
+      })
+    )
+      .then(() => {
+        if (isDone) {
+          history.goBack();
+        }
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setShowSpinner(false));
   };
@@ -105,15 +150,17 @@ const MaterialReceiptLineScreen = () => {
     <>
       {showSpinner && <Spinner />}
       <div className="section pt-2">
-        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
+        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick} testId="receive-target-button">
           <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
         </ButtonWithIndicator>
         <PickQuantityButton
           qtyTarget={qtyToReceive - qtyReceived}
+          catchWeightUom={catchWeightUomSymbol}
           isDisabled={!allowReceivingQty}
           onClick={handleQuantityChange}
           uom={uom}
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
+          customQRCodeFormats={customQRCodeFormats}
         />
       </div>
     </>
@@ -121,13 +168,34 @@ const MaterialReceiptLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
+  const wfProcess = getWfProcess(state, wfProcessId);
+  const activity = getActivityByIdFromWFProcess(wfProcess, activityId);
   const lineProps = getLineByIdFromActivity(activity, lineId);
+  const customQRCodeFormats = getCustomQRCodeFormats({ activity });
+  // console.log('getPropsFromState', { customQRCodeFormats, activity });
 
   return {
     activityCaption: activity.caption,
     userInstructions: activity.userInstructions,
     lineProps,
+    pickTo: getPickTo({ wfProcess }),
+    customQRCodeFormats,
+  };
+};
+
+const getPickTo = ({ wfProcess }) => {
+  const parent = wfProcess?.parent;
+  if (!parent) {
+    return;
+  }
+  if (parent.applicationId !== APPLICATION_ID_Picking) {
+    return null;
+  }
+
+  return {
+    wfProcessId: parent.wfProcessId,
+    activityId: parent.activityId,
+    lineId: parent.lineId,
   };
 };
 

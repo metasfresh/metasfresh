@@ -58,10 +58,12 @@ public interface IPaymentBL extends ISingletonService
 
 	DefaultPaymentBuilder newOutboundPaymentBuilder();
 
-	DefaultPaymentBuilder newBuilderOfInvoice(I_C_Invoice invoice);
+	DefaultPaymentBuilder newBuilderOfInvoice(@NonNull I_C_Invoice invoice);
+
+	DefaultPaymentBuilder newBuilderOfOrder(@NonNull I_C_Order order);
 
 	/**
-	 * @param colName source column name
+	 * @param colName            source column name
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted);
@@ -117,10 +119,10 @@ public interface IPaymentBL extends ISingletonService
 
 	/**
 	 * WriteOff given payment.
-	 *
+	 * <p>
 	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created).
 	 *
-	 * @param writeOffAmt amount to write-off
+	 * @param writeOffAmt  amount to write-off
 	 * @param writeOffDate allocation writeOffDate
 	 * @return generated and completed allocation
 	 */

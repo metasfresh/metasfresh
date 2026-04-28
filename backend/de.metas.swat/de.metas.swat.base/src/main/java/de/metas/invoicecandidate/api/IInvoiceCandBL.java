@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -43,11 +44,11 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -57,6 +58,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -182,7 +184,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
@@ -239,6 +241,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	void handleVoidingForInvoice(@NonNull org.compiere.model.I_C_Invoice invoice);
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
@@ -408,7 +412,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
-	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
+	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
+
+	ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull InvoiceCandidateQuery query);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 
@@ -436,4 +442,17 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
 	 */
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+
+	/**
+	 * Extracts a common projectId from the given invoice candidates. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	Optional<ProjectId> extractCommonProjectId(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
+	/**
+	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
 }

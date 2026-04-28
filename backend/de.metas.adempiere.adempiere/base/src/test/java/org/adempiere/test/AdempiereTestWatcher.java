@@ -5,8 +5,6 @@ import de.metas.util.Check;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
@@ -14,15 +12,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Watches current test and dumps the database to console in case of failure.
- *
+ * Watches current test and dumps the database to the console in case of failure.
+ * <p>
  * To include in your tests:
  * <ul>
  * <li>JUnit5: annotate your class with <b><code>@ExtendWith(AdempiereTestWatcher.class)</code></b>
- * <li>Legacy JUnit4: you need to declare a public field like this: <code>@Rule public final TestWatcher testWatcher = new AdempiereTestWatcher();</code>
  * </ul>
  */
-public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecutionCallback
+public class AdempiereTestWatcher implements AfterTestExecutionCallback
 {
 	private static final Logger logger = LogManager.getLogger(AdempiereTestWatcher.class);
 
@@ -37,24 +34,7 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 			onTestFailed(context.getDisplayName(), context.getExecutionException().get());
 		}
 
-		onTestFinished(context.getDisplayName());
-	}
-
-	/**
-	 * Called after a test succeed.
-	 *
-	 * Does nothing at this level.
-	 */
-	@Override
-	protected final void succeeded(final Description description)
-	{
-		// nothing
-	}
-
-	@Override
-	protected final void failed(final Throwable exception, final Description description)
-	{
-		onTestFailed(description.getDisplayName(), exception);
+		onTestFinished();
 	}
 
 	/**
@@ -77,25 +57,16 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 		}
 	}
 
-	@Override
-	protected final void finished(final Description description)
-	{
-		onTestFinished(description.getDisplayName());
-	}
-
 	/**
 	 * Called after a test finished (successful or not). It:
 	 * <ul>
 	 * <li>clears database content
 	 * </ul>
 	 */
-	private void onTestFinished(final String name)
+	private void onTestFinished()
 	{
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
-		if (pojoLookupMap != null)
-		{
-			pojoLookupMap.clear();
-		}
+		pojoLookupMap.clear();
 
 		context.clear();
 	}

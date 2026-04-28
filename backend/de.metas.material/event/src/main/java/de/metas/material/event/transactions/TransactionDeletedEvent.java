@@ -97,4 +97,7 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 	{
 		return getMaterialDescriptor().getQuantity().negate();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

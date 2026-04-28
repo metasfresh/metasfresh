@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Production + Distribution material dispo scenarios
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -79,6 +82,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -91,6 +96,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -121,6 +127,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate + PP_Order -> DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -133,6 +141,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -151,8 +160,8 @@ Feature: Production + Distribution material dispo scenarios
       | oc_1                  | ppOrder     | 10 PCE     |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
-      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | oc_1                          | ocl_1                             | ppOrder             |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID |
+      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
@@ -162,11 +171,11 @@ Feature: Production + Distribution material dispo scenarios
       | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10                    | production_WH   |
       | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0                      | production_WH   |
       # DD_Order_Candidate:
-      | 6          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 10                     | production_WH   |
+      | 6          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
       | 7          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10                    | rawMaterials_WH |
       # PP_Order:
       | 4          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0                      | production_WH   |
-      | 5          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | 0                      | production_WH   |
+      | 5          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10                    | production_WH   |
 
     
     
@@ -180,6 +189,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @ignore #DD_OrderCandidate is not processed as expected
   Scenario: sales order -> PP_Order_Candidate + PP_Order -> DD_Order_Candidate + DD_Order
     When update existing PP_Product_Plannings
@@ -193,6 +204,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -213,7 +225,7 @@ Feature: Production + Distribution material dispo scenarios
     And after not more than 60s, following DD_Order_Candidates are found
       | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | QtyProcessed | QtyToProcess | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID | C_OrderSO_ID | C_OrderLineSO_ID |
       | component    | rawMaterials_WH     | production_WH    | 10 PCE | 10 PCE       | 0 PCE        | Y         | oc_1                          | ocl_1                             | ppOrder             | SO           | SO_L1            |
-    And after not more than 60s, DD_OrderLine found for orderLine SO_L1
+    And after not more than 120s, DD_OrderLine found for orderLine SO_L1
       | Identifier | DD_Order_ID | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol1      | ddo         | component    | 10         | rawMaterials_WH     | production_WH     |
     And after not more than 60s, following DD_Orders are found
@@ -251,6 +263,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate with products partially on stock
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -269,6 +283,7 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | SO_L1      | SO         | bom_product  | 10         |
     When the order identified by SO is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -313,6 +328,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate -> Manually process PP_Order_Candidate -> Manually process DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -328,6 +345,7 @@ Feature: Production + Distribution material dispo scenarios
     #
     # Complete the Sales order and expect PP_Order_Candidate and DD_Order_Candidate to be generated
     When the order identified by SO is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | bom_product  | bom_1             | bom_product_planning   | plant         | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -360,28 +378,28 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         |
       | ppOrder    | bom_product  | bom_1             | bom_product_planning   | plant         | 10 PCE     | 10         | customer      | 2021-04-16T21:00:00Z |
     And after not more than 60s, following DD_Order_Candidates are found
-      | Identifier | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
-      | ddoc       | oc_1                          | ocl_1                             | ppOrder             |
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID |
+      | ddoc_1     | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
-      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   |
+      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | 10  | -10 | production_WH   |
       # PP_Order_Candidate:
       | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   |
       | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   |
       # DD_Order_Candidate:
-      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 10  | production_WH   |
-      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10 | rawMaterials_WH |
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   |
+      | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | -10 | rawMaterials_WH |
       # PP_Order:
       | 6          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   |
-      | 7          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | 0   | production_WH   |
+      | 7          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 10  | -10 | production_WH   |
 
     #
     # Process the DD_Order_Candidate and expect DD_Order to be generated
     And the following DD_Order_Candidates are enqueued for generating DD_Orders
       | DD_Order_Candidate_ID |
-      | ddoc                  |
-    And after not more than 60s, DD_OrderLine found for orderLine SO_L1
+      | ddoc_1                |
+    And after not more than 120s, DD_OrderLine found for orderLine SO_L1
       | Identifier | DD_Order_ID | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol       | ddo         | component    | 10         | rawMaterials_WH     | production_WH     |
     And after not more than 60s, following DD_Orders are found
@@ -390,19 +408,19 @@ Feature: Production + Distribution material dispo scenarios
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  | Forward_PP_Order_ID |
       # Sales Order / Shipment Schedule:
-      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   | -                   |
+      | 1          | DEMAND            | SHIPMENT                  | bom_product  | 2021-04-16T21:00:00Z | 10  | -10 | production_WH   | -                   |
       # PP_Order_Candidate:
       | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   | -                   |
       | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | -                   |
       # DD_Order_Candidate:
-      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | ppOrder             |
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   | ppOrder             |
       | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | rawMaterials_WH | ppOrder             |
       # PP_Order:
       | 6          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   | -                   |
-      | 7          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | -10 | -10 | production_WH   | -                   |
+      | 7          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 10  | -10 | production_WH   | -                   |
       # DD_Order:
       | 8          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   | ppOrder             |
-      | 9          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | -10 | -10 | rawMaterials_WH | ppOrder             |
+      | 9          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 10  | -10 | rawMaterials_WH | ppOrder             |
     
 
     

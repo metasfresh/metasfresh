@@ -30,8 +30,12 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
 @Value
 @Builder
@@ -48,15 +52,29 @@ public class MaterialCandidateChangedEvent implements MaterialEvent
 	@NonNull
 	BigDecimal qtyFulfilledDelta;
 
+	int mdCandidateId;
+
 	@JsonCreator
 	@Builder
 	public MaterialCandidateChangedEvent(
 			@JsonProperty("eventDescriptor") final @NonNull EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final @NonNull MaterialDescriptor materialDescriptor,
-			@JsonProperty("qtyFulfilledDelta") final @NonNull BigDecimal qtyFulfilledDelta)
+			@JsonProperty("qtyFulfilledDelta") final @NonNull BigDecimal qtyFulfilledDelta,
+			@JsonProperty("mdCandidateId") final int mdCandidateId)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
 		this.qtyFulfilledDelta = qtyFulfilledDelta;
+		this.mdCandidateId = mdCandidateId;
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(MD_CANDIDATE_TABLE_NAME, mdCandidateId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

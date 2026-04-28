@@ -3,13 +3,22 @@ package de.metas.product.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.gs1.GS1ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
+import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -20,6 +29,8 @@ import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
@@ -29,31 +40,36 @@ import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -74,6 +90,7 @@ public final class ProductBL implements IProductBL
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -149,43 +166,105 @@ public final class ProductBL implements IProductBL
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
-	/**
-	 * @return UOM used for Product's Weight; never return null
-	 */
-	@Override
-	public I_C_UOM getWeightUOM(final I_M_Product product)
+	@NotNull
+	private I_C_UOM getNetWeightUOM()
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
 		return uomsRepo.getByX12DE355(X12DE355.KILOGRAM);
 	}
 
 	@Override
-	public BigDecimal getWeight(
-			@NonNull final I_M_Product product,
-			@NonNull final I_C_UOM uomTo)
+	public Optional<Quantity> computeGrossWeight(@NonNull final ProductId productId, @NonNull final Quantity qty)
 	{
-		final BigDecimal weightPerStockingUOM = product.getWeight();
-		if (weightPerStockingUOM.signum() == 0)
+		final Quantity unitWeight = getGrossWeight(productId, qty.getUOM()).orElse(null);
+		if (unitWeight == null)
 		{
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 
+		final Quantity totalWeight = unitWeight.multiply(qty.toBigDecimal());
+		return Optional.of(totalWeight);
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final ProductId productId, final I_C_UOM targetProductUOM)
+	{
+		final I_M_Product product = getById(productId);
+		return getGrossWeight(product, targetProductUOM);
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final I_M_Product product, final I_C_UOM targetProductUOM)
+	{
+		return getGrossWeight(product)
+				.map(weightForOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightForOneStockingUOM, product, targetProductUOM));
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return getGrossWeight(product);
+	}
+
+	private Optional<Quantity> getGrossWeight(final I_M_Product product)
+	{
+		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
+		if (weightUomId == null || InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
+		{
+			return getNetWeight(product);
+		}
+
+		final BigDecimal weightBD = product.getGrossWeight();
+		if (weightBD.signum() <= 0)
+		{
+			return getNetWeight(product);
+		}
+
+		return Optional.of(Quantitys.of(weightBD, weightUomId));
+	}
+
+	@Override
+	public Optional<Quantity> getNetWeight(@NonNull final I_M_Product product)
+	{
+		final BigDecimal weightPerStockingUOM = product.getWeight();
+		if (weightPerStockingUOM.signum() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(Quantity.of(weightPerStockingUOM, getNetWeightUOM()));
+	}
+
+	@Override
+	public Optional<Quantity> getNetWeight(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
+		return getNetWeight(product)
+				.map(weightPerOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightPerOneStockingUOM, product, targetProductUOM));
+	}
+
+	private Quantity convertWeightFromStockingUOMToTargetUOM(
+			@NonNull final Quantity weightPerOneStockingUOM,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
 		final I_C_UOM stockingUom = getStockUOM(product);
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class); // don't extract it to field because IUOMConversionBL already has IProductBL as a field
-		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
+		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, targetProductUOM);
 
 		//
 		// Calculate the Weight for one "uomTo"
-		final int weightPerUomToPrecision = getWeightUOM(product).getStdPrecision();
-		final BigDecimal weightPerUomTo = weightPerStockingUOM
-				.multiply(stocking2uomToRate)
-				.setScale(weightPerUomToPrecision, RoundingMode.HALF_UP);
+		final UOMPrecision weightPerUomToPrecision = UOMPrecision.ofInt(getNetWeightUOM().getStdPrecision());
 
-		return weightPerUomTo;
+		return weightPerOneStockingUOM
+				.multiply(stocking2uomToRate)
+				.setScale(weightPerUomToPrecision);
 	}
 
 	@Override
@@ -245,9 +324,9 @@ public final class ProductBL implements IProductBL
 		final boolean isItemProduct = productType.isItem();
 
 		logger.debug("isItemProduct - M_Product_ID={} has type={}; -> return {}",
-					 product.getM_Product_ID(),
-					 productType,
-					 isItemProduct);
+				product.getM_Product_ID(),
+				productType,
+				isItemProduct);
 		return isItemProduct;
 	}
 
@@ -274,6 +353,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public AttributeSetDescriptor getAttributeSet(@NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
+	}
+
+	@Override
 	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -282,7 +368,7 @@ public final class ProductBL implements IProductBL
 
 	@Override
 	@Nullable
-	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -290,7 +376,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@Nullable
@@ -358,22 +444,8 @@ public final class ProductBL implements IProductBL
 		final AttributeSetId attributeSetId = getAttributeSetId(product);
 		if (!attributeSetId.isNone())
 		{
-			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
-			if (mas == null || !mas.isInstanceAttribute())
-			{
-				return false;
-			}
-			// Outgoing transaction
-			else if (isSOTrx)
-			{
-				return mas.isMandatory();
-			}
-			// Incoming transaction
-			else
-			{
-				// isSOTrx == false
-				return mas.isMandatoryAlways();
-			}
+			return attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+					.isASIMandatory(SOTrx.ofBoolean(isSOTrx));
 		}
 		//
 		// Default not mandatory
@@ -387,13 +459,6 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = getById(productId);
 		return isASIMandatory(product, isSOTrx);
-	}
-
-	@Override
-	public boolean isInstanceAttribute(@NonNull final ProductId productId)
-	{
-		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
-		return mas != null && mas.isInstanceAttribute();
 	}
 
 	@Override
@@ -446,6 +511,58 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return getGS1ProductCodesCollection(product);
+	}
+
+	@Override
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final I_M_Product product)
+	{
+		final GS1ProductCodesCollectionBuilder result = GS1ProductCodesCollection.builder()
+				.productValue(product.getValue())
+				.defaultCodes(extractGS1ProductCodes(product));
+
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		for (final I_C_BPartner_Product bpartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerProductRecord.getC_BPartner_ID());
+			result.codes(bpartnerId, extractGS1ProductCodes(bpartnerProductRecord));
+		}
+
+		return result.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_M_Product product)
+	{
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(product.getGTIN()))
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()))
+				.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_C_BPartner_Product bpartnerProduct)
+	{
+		final String ean = StringUtils.trimBlankToNull(bpartnerProduct.getEAN_CU());
+
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(bpartnerProduct.getGTIN()))
+				.ean13(ean != null ? EAN13.ofString(ean).orElse(null) : null)
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(bpartnerProduct.getEAN13_ProductCode()))
+				.build();
+	}
+
+	@Override
+	public Optional<GTIN> getGTIN(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return GTIN.optionalOfNullableString(product.getGTIN());
+	}
+
+	@Override
 	public ImmutableMap<ProductId, String> getProductValues(@NonNull final Set<ProductId> productIds)
 	{
 		if (productIds.isEmpty())
@@ -457,18 +574,44 @@ public final class ProductBL implements IProductBL
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						product -> ProductId.ofRepoId(product.getM_Product_ID()),
-						product -> product.getValue()));
+						I_M_Product::getValue));
 	}
 
 	@Override
 	public String getProductName(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
+		return buildProductName(product, productId);
+	}
+
+	private static String buildProductName(@Nullable final I_M_Product product, @NonNull final ProductId productId)
+	{
 		if (product == null)
 		{
 			return "<" + productId + ">";
 		}
 		return product.getName();
+	}
+
+	@Override
+	public Map<ProductId, String> getProductNames(@NonNull final Set<ProductId> productIds)
+	{
+		final List<I_M_Product> products = getByIds(productIds);
+		if (products.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(products, product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		final HashMap<ProductId, String> result = new HashMap<>();
+		for (final ProductId productId : productIds)
+		{
+			final I_M_Product product = productsById.get(productId);
+			result.put(productId, buildProductName(product, productId));
+		}
+
+		return result;
 	}
 
 	@Override
@@ -526,19 +669,26 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	public AttributeSetDescriptor getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
-
-		final int attributeSetRepoId = product.getM_AttributeSet_ID();
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
+	}
+
+	@NonNull
+	@Override
+	public AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		return AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
 	}
 
 	@Override
@@ -567,7 +717,7 @@ public final class ProductBL implements IProductBL
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
 		return productRecord.getDiscontinuedFrom() == null
-				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+				|| !TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).isAfter(targetDate);
 	}
 
 	@Override
@@ -584,37 +734,144 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	public Optional<ProductId> getProductIdByBarcode(@NonNull final String barcode, @NonNull final ClientId clientId)
 	{
 		return productsRepo.getProductIdByBarcode(barcode, clientId);
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin)
 	{
-		return productsRepo.getProductIdByGTIN(gtin, clientId);
+		return getProductIdByGTIN(gtin, null, ClientId.METASFRESH);
 	}
 
 	@Override
-	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
 	{
-		return getProductIdByGTIN(gtin, clientId)
-				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
+		final EAN13 ean13 = gtin.toEAN13().orElse(null);
+
+		//noinspection OptionalAssignedToNull
+		return Optionals.firstPresentOfSuppliers(
+				() -> gtin.isFixed() ? getProductIdByGTINStrictly(gtin, bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariable() ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
+		);
+	}
+
+	private Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByGTIN(gtin, bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
-		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
+	}
+
+	@Override
+	public ProductId getProductIdByGTINStrictlyNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTINStrictly(gtin, clientId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ " + gtin));
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13) {return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(ean13.toGTIN(), bpartnerId, clientId);
+	}
+
+	private Optional<ProductId> getProductIdByEAN13ProductCode(
+			@NonNull final EAN13ProductCode ean13ProductCode,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13ProductCode, bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByEAN13ProductCode(ean13ProductCode, clientId);
+	}
+
+	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId)
+	{
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, null);
+	}
+
+	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
+	{
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, bpartnerId);
 	}
 
 	@Override
 	public Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull final String queryString,
 			@NonNull final ClientId clientId,
-			@NonNull QueryLimit limit)
+			@NonNull final QueryLimit limit)
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
+	}
+
+	@Override
+	@NonNull
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
+	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return productsRepo.isExistingValue(value, clientId);
+	}
+
+	@Override
+	public void setProductCodeFieldsFromGTIN(@NonNull final I_M_Product record, @Nullable final GTIN gtin)
+	{
+		record.setGTIN(gtin != null ? gtin.getAsString() : null);
+		record.setUPC(gtin != null ? gtin.getAsString() : null);
+
+		if (gtin != null)
+		{
+			record.setEAN13_ProductCode(null);
+		}
+	}
+
+	@Override
+	public void setProductCodeFieldsFromEAN13ProductCode(@NonNull final I_M_Product record, @Nullable final EAN13ProductCode ean13ProductCode)
+	{
+		record.setEAN13_ProductCode(ean13ProductCode != null ? ean13ProductCode.getAsString() : null);
+		if (ean13ProductCode != null)
+		{
+			record.setGTIN(null);
+			record.setUPC(null);
+		}
 	}
 
 }

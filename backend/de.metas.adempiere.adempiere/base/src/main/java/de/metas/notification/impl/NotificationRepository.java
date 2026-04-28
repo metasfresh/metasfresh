@@ -75,7 +75,7 @@ public class NotificationRepository implements INotificationRepository
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public NotificationRepository(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -104,6 +104,8 @@ public class NotificationRepository implements INotificationRepository
 		{
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
 		}
+
+		notificationPO.setNotificationSeverity(request.getSeverity().getCode());
 		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
 		//
@@ -168,13 +170,14 @@ public class NotificationRepository implements INotificationRepository
 		return toUserNotification(notificationPO);
 	}
 
+	@Nullable
 	private UserNotification toUserNotificationNoFail(@NonNull final I_AD_Note notificationPO)
 	{
 		try
 		{
 			return toUserNotification(notificationPO);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed creating user notification object from {}", notificationPO, ex);
 			return null;
@@ -188,8 +191,8 @@ public class NotificationRepository implements INotificationRepository
 				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())
 				.recipientUserId(notificationPO.getAD_User_ID())
-				.read(notificationPO.isProcessed());
-
+				.read(notificationPO.isProcessed())
+				.severity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
 		//
 		// detailADMessage
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
@@ -251,8 +254,8 @@ public class NotificationRepository implements INotificationRepository
 	@Nullable
 	private AdWindowId extractAdWindowId(final I_AD_Note notificationPO)
 	{
-		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
-		if(adWindowId == null)
+		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
+		if (adWindowId == null)
 		{
 			return null;
 		}
@@ -265,10 +268,10 @@ public class NotificationRepository implements INotificationRepository
 
 	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(@NonNull final UserId adUserId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Note.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId);
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, adUserId);
 	}
 
 	@Override
@@ -360,6 +363,16 @@ public class NotificationRepository implements INotificationRepository
 
 		deleteNotification(notificationPO);
 		return true;
+	}
+
+	@Override
+	public void deleteByUserAndTableRecordRef(final @NonNull UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
+	{
+		retrieveNotesByUserId(adUserId)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.delete(false);
 	}
 
 	@Override

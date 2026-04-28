@@ -1,11 +1,11 @@
 package de.metas.bpartner_product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
@@ -13,18 +13,16 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -47,12 +45,9 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class BPartnerProductDAOTest
 {
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private OrgId org0;
 	private OrgId org1;
 	private OrgId org2;
@@ -63,7 +58,7 @@ public class BPartnerProductDAOTest
 
 	private IBPartnerProductDAO bpartnerProductsRepo;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -181,7 +176,7 @@ public class BPartnerProductDAOTest
 				+ "\n Product " + productInput.getName()
 				+ "\n Org " + orgId;
 
-		Assert.assertEquals(errmsg, bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID());
+		Assertions.assertEquals(bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID(), errmsg);
 	}
 
 	private void test_BPartnerForProduct(final I_C_BPartner_Product bpProductexpected,
@@ -201,7 +196,7 @@ public class BPartnerProductDAOTest
 				+ "\n Product " + productInput.getName()
 				+ "\n Org " + orgId;
 
-		Assert.assertTrue(errmsg, bpProductActual.contains(bpProductexpected));
+		Assertions.assertTrue(bpProductActual.contains(bpProductexpected), errmsg);
 	}
 
 	private void test_BPProductForCustomer(final I_C_BPartner_Product bpProductexpected,
@@ -220,7 +215,7 @@ public class BPartnerProductDAOTest
 				+ "\n Product " + productInput.getName()
 				+ "\n Org " + orgId;
 
-		Assert.assertEquals(errmsg, bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID());
+		Assertions.assertEquals(bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID(), errmsg);
 
 	}
 

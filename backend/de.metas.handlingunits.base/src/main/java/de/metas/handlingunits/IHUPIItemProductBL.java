@@ -22,19 +22,27 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -83,8 +91,15 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_PI_Item_Product itemProduct)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
-		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
+		final UomId uomId = extractUomIdOrNull(itemProduct);
+		
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomId != null ? uomDAO.getById(uomId) : null;
+	}
+
+	static @Nullable UomId extractUomIdOrNull(final @NotNull I_M_HU_PI_Item_Product itemProduct)
+	{
+		return UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
 	}
 
 	static I_C_UOM extractUOM(@NonNull final I_M_HU_PI_Item_Product itemProduct)
@@ -95,5 +110,48 @@ public interface IHUPIItemProductBL extends ISingletonService
 			throw new AdempiereException("Cannot determine UOM of " + itemProduct.getName());
 		}
 		return uom;
+	}
+
+	I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine);
+
+	static StockQtyAndUOMQty getMaxQtyCUsPerLU(final @NonNull StockQtyAndUOMQty qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM, final ProductId productId)
+	{
+		final StockQtyAndUOMQty maxQtyCUsPerLU;
+		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			maxQtyCUsPerLU = StockQtyAndUOMQtys.createConvert(
+					qty.getStockQty(),
+					productId,
+					qty.getUOMQtyNotNull().getUomId());
+		}
+		else
+		{
+			maxQtyCUsPerLU = StockQtyAndUOMQtys.createConvert(
+					lutuConfigurationInStockUOM.getQtyCUsPerTU().multiply(lutuConfigurationInStockUOM.getQtyTU()),
+					productId,
+					qty.getUOMQtyNotNull().getUomId());
+		}
+		return maxQtyCUsPerLU;
+	}
+
+	static Quantity getQtyCUsPerTUInStockUOM(final @NonNull I_C_OrderLine orderLineRecord, final @NonNull Quantity stockQty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
+	{
+		final Quantity qtyCUsPerTUInStockUOM;
+		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
+		{
+			// we use the capacity which the goods were ordered in
+			qtyCUsPerTUInStockUOM = Quantitys.of(orderLineRecord.getQtyItemCapacity(), stockQty.getUomId());
+		}
+		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			// we make an educated guess, based on the packing-instruction's information
+			qtyCUsPerTUInStockUOM = Quantitys.of(lutuConfigurationInStockUOM.getQtyCUsPerTU(), stockQty.getUomId());
+		}
+		else
+		{
+			// we just don't have the info. So we assume that everything was put into one TU
+			qtyCUsPerTUInStockUOM = stockQty;
+		}
+		return qtyCUsPerTUInStockUOM;
 	}
 }

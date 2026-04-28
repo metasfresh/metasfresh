@@ -1,21 +1,19 @@
 package de.metas.event;
 
-import java.util.Map;
-import java.util.function.Function;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.JsonObjectMapperHolder;
-import lombok.NonNull;
+import java.util.Map;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -43,7 +41,7 @@ public class EventMessageFormatTemplateTest
 {
 	private ObjectMapper jsonMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -85,7 +83,7 @@ public class EventMessageFormatTemplateTest
 				.setArguments(args)
 				.format("test {v1}");
 
-		Assert.assertEquals("test C_Invoice-1234", resultActual);
+		Assertions.assertEquals("test C_Invoice-1234", resultActual);
 	}
 
 	@SuppressWarnings("serial")

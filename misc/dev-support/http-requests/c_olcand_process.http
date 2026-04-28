@@ -1,0 +1,12 @@
+PUT {{baseURL}}/api/v2/orders/sales/candidates/process
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "externalHeaderId": "1",
+  "inputDataSourceName": "int-DEST.de.metas.ordercandidate",
+  "ship": false,
+  "invoice": false,
+  "closeOrder": false
+}

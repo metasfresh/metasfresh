@@ -2,6 +2,7 @@ package de.metas.material.event.pporder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -10,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 
@@ -17,7 +19,7 @@ import javax.annotation.Nullable;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class PPOrderRef
 {
-	int ppOrderCandidateId;
+	PPOrderCandidateId ppOrderCandidateId;
 	int ppOrderLineCandidateId;
 
 	@Nullable PPOrderId ppOrderId;
@@ -26,18 +28,18 @@ public class PPOrderRef
 	@Builder(toBuilder = true)
 	@Jacksonized
 	public PPOrderRef(
-			final int ppOrderCandidateId,
+			final PPOrderCandidateId ppOrderCandidateId,
 			final int ppOrderLineCandidateId,
 			@Nullable final PPOrderId ppOrderId,
 			@Nullable final PPOrderBOMLineId ppOrderBOMLineId)
 	{
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			throw new AdempiereException("At least one of ppOrderCandidateId or ppOrderId shall be set");
 		}
 
-		this.ppOrderCandidateId = normalizeId(ppOrderCandidateId);
-		this.ppOrderLineCandidateId = this.ppOrderCandidateId > 0 ? normalizeId(ppOrderLineCandidateId) : -1;
+		this.ppOrderCandidateId = ppOrderCandidateId;
+		this.ppOrderLineCandidateId = this.ppOrderCandidateId != null ? normalizeId(ppOrderLineCandidateId) : -1;
 		this.ppOrderId = ppOrderId;
 		this.ppOrderBOMLineId = this.ppOrderId != null ? ppOrderBOMLineId : null;
 	}
@@ -45,9 +47,9 @@ public class PPOrderRef
 	private static int normalizeId(final int id) {return id > 0 ? id : -1;}
 
 	@Nullable
-	public static PPOrderRef ofPPOrderCandidateIdOrNull(final int ppOrderCandidateId)
+	public static PPOrderRef ofPPOrderCandidateIdOrNull(final PPOrderCandidateId ppOrderCandidateId)
 	{
-		return ppOrderCandidateId > 0
+		return ppOrderCandidateId != null
 				? builder().ppOrderCandidateId(ppOrderCandidateId).build()
 				: null;
 	}
@@ -56,7 +58,7 @@ public class PPOrderRef
 	{
 		Check.assume(ppOrderCandidateId > 0, "ppOrderCandidateId > 0");
 		Check.assume(ppOrderLineCandidateId > 0, "ppOrderLineCandidateId > 0");
-		return builder().ppOrderCandidateId(ppOrderCandidateId).ppOrderLineCandidateId(ppOrderLineCandidateId).build();
+		return builder().ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateId)).ppOrderLineCandidateId(ppOrderLineCandidateId).build();
 	}
 
 	public static PPOrderRef ofPPOrderId(final int ppOrderId)
@@ -67,6 +69,11 @@ public class PPOrderRef
 	public static PPOrderRef ofPPOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		return builder().ppOrderId(ppOrderId).build();
+	}
+
+	public static PPOrderRef ofPPOrderBOMLineId(@NonNull final RepoIdAware ppOrderId, final int ppOrderBOMLineId)
+	{
+		return ofPPOrderBOMLineId(ppOrderId.getRepoId(), ppOrderBOMLineId);
 	}
 
 	public static PPOrderRef ofPPOrderBOMLineId(final int ppOrderId, final int ppOrderBOMLineId)

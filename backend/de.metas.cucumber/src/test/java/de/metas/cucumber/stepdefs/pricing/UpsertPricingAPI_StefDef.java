@@ -36,8 +36,8 @@ import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.api.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
@@ -64,7 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UpsertPricingAPI_StefDef
 {

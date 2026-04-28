@@ -1,17 +1,6 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -28,10 +17,19 @@ import de.metas.product.ProductType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_M_Product;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
- *
+ * <p>
  * NOTE: atm we have modelChange/docValidate interceptors here. Please don't add more like this but consider creating separate model interceptors.
  *
  * @author ts
@@ -53,7 +51,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
-		engine.addModelValidator(new M_InOut_Shipment(), client);
+		//engine.addModelValidator(new M_InOut_Shipment(), client); // converted to spring bean
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
@@ -111,7 +109,9 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
-				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered);
+				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered,
+				I_M_ShipmentSchedule.COLUMNNAME_ExternalHeaderId,
+				I_M_ShipmentSchedule.COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override

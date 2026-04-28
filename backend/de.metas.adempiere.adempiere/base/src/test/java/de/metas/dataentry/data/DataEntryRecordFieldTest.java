@@ -1,24 +1,23 @@
 package de.metas.dataentry.data;
 
-import static de.metas.dataentry.data.DataEntryRecordTestConstants.CREATED_UPDATED_INFO;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-
-import org.compiere.util.TimeUtil;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMultimap;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.i18n.TranslatableStrings;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+
+import static de.metas.dataentry.data.DataEntryRecordTestConstants.CREATED_UPDATED_INFO;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -44,10 +43,10 @@ import de.metas.i18n.TranslatableStrings;
 
 public class DataEntryRecordFieldTest
 {
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void createDataEntryRecordField_nonNull()
 	{
-		DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, null);
+		Assertions.assertThrows(NullPointerException.class, () -> DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, null));
 	}
 
 	@Test
@@ -81,7 +80,7 @@ public class DataEntryRecordFieldTest
 	@Test
 	public void convertValueToFieldType_MakeSureCoversPrimitiveDataTypes()
 	{
-		final ImmutableMultimap<Class<?>, Object> testValuesByClass = ImmutableMultimap.<Class<?>, Object> builder()
+		final ImmutableMultimap<Class<?>, Object> testValuesByClass = ImmutableMultimap.<Class<?>, Object>builder()
 				.put(Integer.class, 1234)
 				.put(Integer.class, "1234")
 				.put(Integer.class, BigDecimal.valueOf(1234))

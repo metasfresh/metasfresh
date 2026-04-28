@@ -32,6 +32,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -78,6 +79,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -127,7 +129,7 @@ public class Scheduler extends AdempiereServer
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, null); // saveLogs=false
 	}	// Scheduler
 
-	private static final transient Logger log = LogManager.getLogger(Scheduler.class);
+	private static final Logger log = LogManager.getLogger(Scheduler.class);
 
 	/** The Concrete Model */
 	private final MScheduler m_model;
@@ -149,7 +151,7 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 */
-	private void setSchedulerStatus(final String status, final PInstanceId pinstanceId)
+	private void setSchedulerStatus(final String status, @Nullable final PInstanceId pinstanceId)
 	{
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
@@ -473,6 +475,7 @@ public class Scheduler extends AdempiereServer
 		final I_AD_Process adProcess = adScheduler.getAD_Process();
 
 		return ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.Scheduler)
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
@@ -724,7 +727,7 @@ public class Scheduler extends AdempiereServer
 		}
 
 		final String cronPattern = m_model.getCronPattern();
-		if (cronPattern != null && cronPattern.trim().length() > 0 && SchedulingPattern.validate(cronPattern))
+		if (Check.isNotBlank(cronPattern) && SchedulingPattern.validate(cronPattern))
 		{
 			cronScheduler = new it.sauronsoftware.cron4j.Scheduler();
 			cronScheduler.schedule(cronPattern, () -> {

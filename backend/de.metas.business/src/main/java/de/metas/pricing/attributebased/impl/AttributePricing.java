@@ -17,23 +17,21 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -57,6 +55,7 @@ public class AttributePricing implements IPricingRule
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
+	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
@@ -64,9 +63,8 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
 	 */
-	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
@@ -156,7 +154,7 @@ public class AttributePricing implements IPricingRule
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
-		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
 		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
@@ -325,6 +323,6 @@ public class AttributePricing implements IPricingRule
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
+		return Services.get(IAttributeSetInstanceBL.class).getById(attributeSetInstanceId);
 	}
 }

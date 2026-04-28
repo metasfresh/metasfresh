@@ -64,7 +64,7 @@ import de.metas.error.IssueCreateRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -99,7 +99,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -125,7 +125,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 @Service
 class ShipmentCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
@@ -133,7 +133,7 @@ class ShipmentCandidateAPIService
 	private final ProductRepository productRepository;
 	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -367,11 +367,11 @@ class ShipmentCandidateAPIService
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked());
 		if (product.getDescription() != null)
 		{
@@ -635,7 +635,7 @@ class ShipmentCandidateAPIService
 			return ImmutableMap.of();
 		}
 
-		return attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+		return asiBL.getAttributesForASIs(idsRegistry.getAsiIds());
 	}
 
 	private IdsRegistry buildIdsRegistry(@NonNull final List<ShipmentSchedule> schedules)
@@ -680,6 +680,7 @@ class ShipmentCandidateAPIService
 				.canBeExportedFrom(SystemTime.asInstant())
 				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
+				.includeInvalid(false)
 				.includeWithQtyToDeliverZero(true)
 				.fromCompleteOrderOrNullOrder(true)
 				.orderByOrderId(true)

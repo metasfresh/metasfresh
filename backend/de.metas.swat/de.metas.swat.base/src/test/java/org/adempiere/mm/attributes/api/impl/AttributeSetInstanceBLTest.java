@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.test.AdempiereTestHelper;
@@ -25,7 +26,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -109,7 +110,7 @@ public class AttributeSetInstanceBLTest
 		private final I_M_Attribute listAttribute;
 		private final I_M_Attribute numberAttribute;
 		private final I_M_Attribute stringAttribute;
-		private final ImmutableMap<AttributeCode, ? extends Object> valuesByAttributeCode;
+		private final ImmutableMap<AttributeCode, ?> valuesByAttributeCode;
 
 		private TestAttributeSet()
 		{

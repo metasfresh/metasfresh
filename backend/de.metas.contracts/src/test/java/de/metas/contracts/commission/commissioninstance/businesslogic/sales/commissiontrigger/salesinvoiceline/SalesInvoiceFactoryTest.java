@@ -8,6 +8,8 @@ import de.metas.contracts.commission.commissioninstance.services.CommissionProdu
 import de.metas.currency.CurrencyRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
@@ -67,6 +69,7 @@ class SalesInvoiceFactoryTest
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		salesInvoiceFactory = new SalesInvoiceFactory(new CommissionProductService());
 	}

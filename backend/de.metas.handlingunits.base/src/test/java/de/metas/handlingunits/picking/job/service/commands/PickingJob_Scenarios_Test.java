@@ -3,8 +3,10 @@ package de.metas.handlingunits.picking.job.service.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -16,12 +18,12 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
-import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -87,7 +89,7 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
-				.huQRCode(helper.getQRCode(vhu1))
+				.qrCode(helper.getQRCode(vhu1).toScannedCode())
 				.qtyPicked(new BigDecimal("100"))
 				.qtyRejectedReasonCode(null)
 				.build());
@@ -122,7 +124,7 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
-				.huQRCode(helper.getQRCode(vhu1))
+				.qrCode(helper.getQRCode(vhu1).toScannedCode())
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
@@ -153,6 +155,7 @@ class PickingJob_Scenarios_Test
 
 		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
 						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.SALES_ORDER)
 								.pickerId(UserId.ofRepoId(1234))
 								.salesOrderId(orderAndLineId.getOrderId())
 								.deliveryBPLocationId(helper.shipToBPLocationId)
@@ -168,7 +171,7 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
-				.huQRCode(vhu1.getQrCode())
+				.qrCode(vhu1.getQrCode().toScannedCode())
 				.qtyPicked(new BigDecimal("100"))
 				.qtyRejectedReasonCode(null)
 				.build());
@@ -186,6 +189,7 @@ class PickingJob_Scenarios_Test
 											.qtyPicked(Quantity.of("100", helper.uomEach))
 											.pickFromHUId(vhu1.getId())
 											.actualPickedHU(vhu1)
+											.createdAt(SystemTime.asInstant())
 											//.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
 											.build()))
 							.build());
@@ -195,7 +199,7 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
-				.huQRCode(vhu1.getQrCode())
+				.qrCode(vhu1.getQrCode().toScannedCode())
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
@@ -236,11 +240,13 @@ class PickingJob_Scenarios_Test
 
 			return helper.pickingJobService.createPickingJob(
 					PickingJobCreateRequest.builder()
+							.aggregationType(PickingJobAggregationType.SALES_ORDER)
 							.pickerId(UserId.ofRepoId(1234))
 							.salesOrderId(orderAndLineId.getOrderId())
 							.deliveryBPLocationId(helper.shipToBPLocationId)
 							.isAllowPickingAnyHU(false) // we need a plan built
-							.build());
+							.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 		}
 
 		@Test
@@ -252,15 +258,13 @@ class PickingJob_Scenarios_Test
 			final PickingJob pickingJob = createPickingJob(productId, "100");
 			System.out.println("Created " + pickingJob);
 			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
 
 			assertThatThrownBy(
 					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 							.pickingLineId(line.getId())
-							.pickingStepId(stepId)
 							.pickFromKey(PickingJobStepPickFromKey.MAIN)
 							.eventType(PickingJobStepEventType.PICK)
-							.huQRCode(GS1HUQRCode.fromString("019731187634181131030075201527080910501"))
+							.qrCode(ScannedCode.ofString("019731187634181131030075201527080910501"))
 							.qtyPicked(new BigDecimal("1"))
 							.qtyRejectedReasonCode(null)
 							.build())
@@ -277,17 +281,15 @@ class PickingJob_Scenarios_Test
 			final PickingJob pickingJob = createPickingJob(productId, "100");
 			System.out.println("Created " + pickingJob);
 			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
 
 			createProduct("97311876341811");
 
 			assertThatThrownBy(
 					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 							.pickingLineId(line.getId())
-							.pickingStepId(stepId)
 							.pickFromKey(PickingJobStepPickFromKey.MAIN)
 							.eventType(PickingJobStepEventType.PICK)
-							.huQRCode(GS1HUQRCode.fromString("019731187634181131030075201527080910501"))
+							.qrCode(ScannedCode.ofString("019731187634181131030075201527080910501"))
 							.qtyPicked(new BigDecimal("1"))
 							.qtyRejectedReasonCode(null)
 							.build())
@@ -328,6 +330,7 @@ class PickingJob_Scenarios_Test
 
 			return helper.pickingJobService.createPickingJob(
 							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.SALES_ORDER)
 									.pickerId(UserId.ofRepoId(1234))
 									.salesOrderId(orderAndLineId.getOrderId())
 									.deliveryBPLocationId(helper.shipToBPLocationId)
@@ -345,15 +348,13 @@ class PickingJob_Scenarios_Test
 			final PickingJob pickingJob = createPickingJob(productId, "100");
 			System.out.println("Created " + pickingJob);
 			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
 
 			assertThatThrownBy(
 					() -> helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 							.pickingLineId(line.getId())
-							.pickingStepId(stepId)
 							.pickFromKey(PickingJobStepPickFromKey.MAIN)
 							.eventType(PickingJobStepEventType.PICK)
-							.huQRCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow())
+							.qrCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow().toScannedCode())
 							.qtyPicked(new BigDecimal("1"))
 							.qtyRejectedReasonCode(null)
 							.build())
@@ -362,7 +363,7 @@ class PickingJob_Scenarios_Test
 		}
 
 		@Test
-		void ean13Valid()
+		void ean13Prefix28Valid()
 		{
 			// remark: we use 6 digits from productNo while our EAN13 contains 5 digits product no
 			// we expect product to be valid
@@ -370,7 +371,7 @@ class PickingJob_Scenarios_Test
 			final ProductId productId = createProduct("594143");
 			helper.createVHU(productId, "100");
 
-			PickingJob pickingJob = createPickingJob(productId, "100");
+			final PickingJob pickingJob = createPickingJob(productId, "100");
 			System.out.println("Created " + pickingJob);
 			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
@@ -380,11 +381,38 @@ class PickingJob_Scenarios_Test
 					.pickingStepId(stepId)
 					.pickFromKey(PickingJobStepPickFromKey.MAIN)
 					.eventType(PickingJobStepEventType.PICK)
-					.huQRCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow())
+					.qrCode(EAN13HUQRCode.fromString("2859414004825").orElseThrow().toScannedCode())
 					.qtyPicked(new BigDecimal("1"))
 					.qtyRejectedReasonCode(null)
 					.build());
 		}
 
+		@Test
+		void ean13Prefix29Valid()
+		{
+			final I_M_Product product = BusinessTestHelper.createProduct("594143", helper.uomEach);
+			product.setValue("594143");
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+			product.setEAN13_ProductCode("4888");
+			InterfaceWrapperHelper.save(product);
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+			helper.createVHU(productId, "100");
+
+			final PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(stepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(EAN13HUQRCode.fromString("2948882005745").orElseThrow().toScannedCode())
+					.qtyPicked(new BigDecimal("1"))
+					.qtyRejectedReasonCode(null)
+					.build());
+		}
 	}
 }

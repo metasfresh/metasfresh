@@ -23,10 +23,12 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -38,6 +40,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -52,9 +55,12 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_timeOutSec;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,7 +105,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	@And("^validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by (.*)$")
 	public void validateQtyPickedRowsByShipmentSchedule(
 			@NonNull final String shipmentScheduleIdentifier,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final DataTableRows rows = DataTableRows.of(dataTable);
 
@@ -201,6 +207,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final InOutLineId expectedShipmentLineId = shipmentLineTable.getIdOptional(expectedShipmentLineIdentifier).orElse(null);
 			if (expectedShipmentLineId == null)
 			{
+				assertThat(actualShipmentLineId).isNotNull();
 				shipmentLineTable.put(expectedShipmentLineIdentifier, inoutDAO.getLineByIdInTrx(actualShipmentLineId));
 			}
 			else
@@ -213,7 +220,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	@And("^M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule (.*) can be located in specified order$")
 	public void locate_ordered_M_ShipmentSchedule_QtyPicked_records_by_M_ShipmentSchedule(
 			@NonNull final String shipmentScheduleIdentifier,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
 
@@ -229,8 +236,10 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		}
 	}
 
-	private ImmutableList<I_M_ShipmentSchedule_QtyPicked> retrieveRecordsOrdered(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	private ImmutableList<I_M_ShipmentSchedule_QtyPicked> retrieveRecordsOrdered(@NonNull final ShipmentScheduleId shipmentScheduleId) throws InterruptedException
 	{
+		waitUntilValid(DEFAULT_timeOutSec, shipmentScheduleId);
+
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
@@ -240,11 +249,32 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private void waitUntilValid(final int timeoutSec, final ShipmentScheduleId shipmentScheduleId) throws InterruptedException
+	{
+		waitUntilValid(timeoutSec, ImmutableSet.of(shipmentScheduleId));
+	}
+
+	private void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		if (shipmentScheduleIds.isEmpty()) {return;}
+
+		final Supplier<Boolean> noRecords = () -> queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.noneMatch();
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
+
+		assertThat(noRecords.get())
+				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout -- " + shipmentScheduleIds, timeoutSec)
+				.isTrue();
+	}
+
 	@And("validate M_ShipmentSchedule_QtyPicked by id")
 	public void validate_M_ShipmentSchedule_QtyPicked(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
-			final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).lookupIn(shipmentScheduleQtyPickedTable);
+			final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).lookupNotNullIn(shipmentScheduleQtyPickedTable);
 			SharedTestContext.put("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked);
 
 			validateQtyPickedRow(row, shipmentScheduleQtyPicked);

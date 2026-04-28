@@ -28,6 +28,7 @@ import de.metas.security.Role;
 import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.ElementPermissions;
 import de.metas.security.permissions.GenericPermissions;
@@ -110,7 +111,7 @@ class UserRolePermissionsBuilder
 	private ElementPermissions taskAccesses;
 	private ElementPermissions workflowAccesses;
 	private ElementPermissions formAccesses;
-	@Getter private ElementPermissions mobileApplicationAccesses;
+	@Getter private MobileApplicationPermissions mobileApplicationAccesses;
 
 	private GenericPermissions miscPermissions;
 	private Constraints constraints;
@@ -202,7 +203,6 @@ class UserRolePermissionsBuilder
 			final ElementPermissions.Builder taskAccessesBuilder = taskAccesses.asNewBuilder();
 			final ElementPermissions.Builder workflowAccessesBuilder = workflowAccesses.asNewBuilder();
 			final ElementPermissions.Builder formAccessesBuilder = formAccesses.asNewBuilder();
-			final ElementPermissions.Builder mobileApplicationAccessesBuilder = mobileApplicationAccesses.asNewBuilder();
 
 			UserRolePermissionsInclude lastIncludedPermissionsRef = null;
 			for (final UserRolePermissionsInclude includedPermissionsRef : userRolePermissionsToInclude)
@@ -212,7 +212,7 @@ class UserRolePermissionsBuilder
 				CollisionPolicy collisionPolicy = CollisionPolicy.Merge;
 				//
 				// If roles have same SeqNo, then, the second role will override permissions from first role
-				if (lastIncludedPermissionsRef != null 
+				if (lastIncludedPermissionsRef != null
 						&& includedPermissionsRef.getSeqNo() >= 0
 						&& lastIncludedPermissionsRef.getSeqNo() == includedPermissionsRef.getSeqNo())
 				{
@@ -227,7 +227,7 @@ class UserRolePermissionsBuilder
 				taskAccessesBuilder.addPermissions(includedPermissions.getTaskPermissions(), collisionPolicy);
 				workflowAccessesBuilder.addPermissions(includedPermissions.getWorkflowPermissions(), collisionPolicy);
 				formAccessesBuilder.addPermissions(includedPermissions.getFormPermissions(), collisionPolicy);
-				mobileApplicationAccessesBuilder.addPermissions(includedPermissions.getMobileApplicationAccesses(), collisionPolicy);
+				this.mobileApplicationAccesses = MobileApplicationPermissions.merge(this.mobileApplicationAccesses, includedPermissions.getMobileApplicationAccesses(), collisionPolicy);
 
 				// add it to the list of included permissions.
 				userRolePermissionsIncludedBuilder.add(includedPermissionsRef);
@@ -235,15 +235,14 @@ class UserRolePermissionsBuilder
 				lastIncludedPermissionsRef = includedPermissionsRef;
 			}
 
-			orgAccesses = orgAccessesBuilder.build();
-			tableAccesses = tableAccessesBuilder.build();
-			columnAccesses = columnAccessesBuilder.build();
-			windowAccesses = windowAccessesBuilder.build();
-			processAccesses = processAccessesBuilder.build();
-			taskAccesses = taskAccessesBuilder.build();
-			workflowAccesses = workflowAccessesBuilder.build();
-			formAccesses = formAccessesBuilder.build();
-			mobileApplicationAccesses = mobileApplicationAccessesBuilder.build();
+			this.orgAccesses = orgAccessesBuilder.build();
+			this.tableAccesses = tableAccessesBuilder.build();
+			this.columnAccesses = columnAccessesBuilder.build();
+			this.windowAccesses = windowAccessesBuilder.build();
+			this.processAccesses = processAccessesBuilder.build();
+			this.taskAccesses = taskAccessesBuilder.build();
+			this.workflowAccesses = workflowAccessesBuilder.build();
+			this.formAccesses = formAccessesBuilder.build();
 		}
 
 		userRolePermissionsIncluded = userRolePermissionsIncludedBuilder.build();
@@ -477,7 +476,7 @@ class UserRolePermissionsBuilder
 		return this;
 	}
 
-	public UserRolePermissionsBuilder setMobileApplicationAccesses(final ElementPermissions mobileApplicationAccesses)
+	public UserRolePermissionsBuilder setMobileApplicationAccesses(final MobileApplicationPermissions mobileApplicationAccesses)
 	{
 		this.mobileApplicationAccesses = mobileApplicationAccesses;
 		return this;

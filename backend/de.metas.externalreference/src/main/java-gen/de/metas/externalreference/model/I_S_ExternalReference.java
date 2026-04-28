@@ -120,27 +120,46 @@ public interface I_S_ExternalReference
 	String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
 
 	/**
-	 * Set External system.
-	 * Name of an external system (e.g. Github )
+	 * Set External System Config.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem (java.lang.String ExternalSystem);
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
 
 	/**
-	 * Get External system.
-	 * Name of an external system (e.g. Github )
+	 * Get External System Config.
 	 *
-	 * <br>Type: List
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystem();
+	void setExternalSystem_ID (int ExternalSystem_ID);
 
-	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem", null);
-	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Active.

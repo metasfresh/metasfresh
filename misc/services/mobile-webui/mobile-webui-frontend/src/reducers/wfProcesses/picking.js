@@ -168,30 +168,51 @@ const normalizePickingLines = (lines) => {
 
 const normalizePickingSteps = (steps) => {
   return steps.reduce((accum, step) => {
-    accum[step.pickingStepId] = step;
+    accum[step.pickingStepId] = {
+      ...step,
+      pickFromAlternatives: normalizePickFromAlternatives(step.pickFromAlternatives),
+    };
+    return accum;
+  }, {});
+};
+
+const normalizePickFromAlternatives = (pickFromAlternatives) => {
+  if (!pickFromAlternatives || !Array.isArray(pickFromAlternatives)) {
+    return {};
+  }
+  return pickFromAlternatives.reduce((accum, alt) => {
+    accum[alt.alternativeId] = alt;
     return accum;
   }, {});
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
-  draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
-  draftActivityDataStored.tuPickTarget = fromActivity.componentProps.tuPickTarget;
-  draftActivityDataStored.isPickWithNewLU = fromActivity.componentProps.isPickWithNewLU;
-  draftActivityDataStored.isAllowNewTU = fromActivity.componentProps.isAllowNewTU;
+  draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
+
+  const fromPickingJob = fromActivity.componentProps.pickingJob;
+  draftActivityDataStored.aggregationType = fromPickingJob.aggregationType;
+  draftActivityDataStored.pickFromHU = fromPickingJob.pickFromHU;
+  draftActivityDataStored.isLineLevelPickTarget = fromPickingJob.lineLevelPickTarget;
+  draftActivityDataStored.luPickingTarget = fromPickingJob.luPickingTarget;
+  draftActivityDataStored.tuPickingTarget = fromPickingJob.tuPickingTarget;
+  draftActivityDataStored.allowedPickToStructures = fromPickingJob.allowedPickToStructures;
+  draftActivityDataStored.readAttributes = fromPickingJob.readAttributes ?? [];
+  draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
+  draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
+  draftActivityDataStored.isCompleteJobAutomatically = fromPickingJob.completeJobAutomatically;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
-  draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
-  draftActivityDataStored.isShowPromptWhenOverPicking = fromActivity.componentProps.isShowPromptWhenOverPicking;
 
   //
   // Copy lines
-  draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);
-  draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
+  draftActivityDataStored.lines = normalizePickingLines(fromPickingJob.lines);
+  draftActivityDataStored.qtyRejectedReasons = fromPickingJob.qtyRejectedReasons;
 
   //
   // Copy Pick From Alternatives Pool
   draftActivityDataStored.pickFromAlternatives = null;
   delete draftActivityDataStored.pickFromAlternatives;
-  draftActivityDataStored.pickFromAlternativesPool = fromActivity.componentProps.pickFromAlternatives.reduce(
+  draftActivityDataStored.pickFromAlternativesPool = fromPickingJob.pickFromAlternatives.reduce(
     (accum, pickFromAlternative) => {
       accum[pickFromAlternative.id] = pickFromAlternative;
       return accum;

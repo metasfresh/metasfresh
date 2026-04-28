@@ -1,35 +1,34 @@
-package org.adempiere.model.tree.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package org.adempiere.model.tree.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.MTreeNode;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import org.compiere.model.MTreeNode;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ADTreeBLTest
 {
@@ -45,16 +44,16 @@ public class ADTreeBLTest
 		
 		parent.add(child1);
 		parent.add(child2);
-		
-		assertThat(parent.isDisplayed(), is(true));
-		assertThat(child1.isDisplayed(), is(true));
-		assertThat(child2.isDisplayed(), is(true));
+
+		Assertions.assertThat(parent.isDisplayed()).isTrue();
+		assertThat(child1.isDisplayed()).isTrue();
+		assertThat(child2.isDisplayed()).isTrue();
 		
 		new ADTreeBL().filterIds(parent, Collections.singletonList(11)); // only child1 is selected.
 		
-		assertThat(parent.isDisplayed(), is(true)); // because one of its children was selected
-		assertThat(child1.isDisplayed(), is(true)); // because it was explicitly selected
-		assertThat(child2.isDisplayed(), is(false)); // because it wasn't selected
+		assertThat(parent.isDisplayed()).isTrue(); // because one of its children was selected
+		assertThat(child1.isDisplayed()).isTrue(); // because it was explicitly selected
+		assertThat(child2.isDisplayed()).isFalse(); // because it wasn't selected
 	}
 
 	
@@ -85,18 +84,18 @@ public class ADTreeBLTest
 		node11.add(node112);
 		node1.add(node12);
 				
-		assertThat(node1.isDisplayed(), is(true));
-		assertThat(node11.isDisplayed(), is(true));
-		assertThat(node111.isDisplayed(), is(true));
-		assertThat(node112.isDisplayed(), is(true));
-		assertThat(node12.isDisplayed(), is(true));
+		assertThat(node1.isDisplayed()).isTrue();
+		assertThat(node11.isDisplayed()).isTrue();
+		assertThat(node111.isDisplayed()).isTrue();
+		assertThat(node112.isDisplayed()).isTrue();
+		assertThat(node12.isDisplayed()).isTrue();
 		
 		new ADTreeBL().filterIds(node1, Collections.singletonList(111)); // only node111 is selected.
 		
-		assertThat(node111.isDisplayed(), is(true)); // because it was explicitly selected
-		assertThat(node11.isDisplayed(), is(true)); // because one of its children was selected
-		assertThat(node1.isDisplayed(), is(true)); // because one of its grand-children was selected
-		assertThat(node112.isDisplayed(), is(false)); // because it wasn't selected
-		assertThat(node12.isDisplayed(), is(false)); // because it wasn't selected
+		assertThat(node111.isDisplayed()).isTrue(); // because it was explicitly selected
+		assertThat(node11.isDisplayed()).isTrue(); // because one of its children was selected
+		assertThat(node1.isDisplayed()).isTrue(); // because one of its grand-children was selected
+		assertThat(node112.isDisplayed()).isFalse(); // because it wasn't selected
+		assertThat(node12.isDisplayed()).isFalse(); // because it wasn't selected
 	}
 }

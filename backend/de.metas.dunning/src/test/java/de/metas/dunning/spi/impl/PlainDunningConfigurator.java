@@ -22,14 +22,12 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
-
-import org.junit.Ignore;
-
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.api.IDunningEditableConfig;
 import de.metas.dunning.spi.IDunningConfigurator;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class PlainDunningConfigurator implements IDunningConfigurator
 {
 	public boolean returnNull = false;

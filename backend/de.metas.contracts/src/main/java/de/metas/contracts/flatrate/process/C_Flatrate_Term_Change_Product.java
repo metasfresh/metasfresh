@@ -26,9 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessPrecondition;
@@ -58,12 +56,15 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
 		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-
+		if(ProcessUtil.isFlatFeeContract(context))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not supported for FlatFee contracts");
+		}
+		
 		return ProcessPreconditionsResolution
 				.acceptIf(I_C_Flatrate_Term.Table_Name.equals(context.getTableName()));
 	}

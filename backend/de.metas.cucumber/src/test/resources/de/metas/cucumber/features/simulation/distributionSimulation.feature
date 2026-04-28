@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00106
 @ghActions:run_on_executor7
 Feature: create distribution simulation
+## F00106: Simulation
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,6 +11,8 @@ Feature: create distribution simulation
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00106
   @Id:S0171.300
   Scenario: create distribution simulation
     Given metasfresh contains M_Products:

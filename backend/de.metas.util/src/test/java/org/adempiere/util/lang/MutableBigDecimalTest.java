@@ -23,10 +23,12 @@ package org.adempiere.util.lang;
  */
 
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import org.junit.Assert;
-import org.junit.Test;
+
 
 public class MutableBigDecimalTest
 {
@@ -66,7 +68,7 @@ public class MutableBigDecimalTest
 		}
 		
 		final MutableBigDecimal valueMin = value1.min(value2);
-		Assert.assertSame(valueMinExpected, valueMin);
+		Assertions.assertSame(valueMinExpected, valueMin);
 	}
 	
 	@Test
@@ -105,7 +107,7 @@ public class MutableBigDecimalTest
 		}
 		
 		final MutableBigDecimal valueMin = value1.max(value2);
-		Assert.assertSame(valueMinExpected, valueMin);
+		Assertions.assertSame(valueMinExpected, valueMin);
 	}
 
 }

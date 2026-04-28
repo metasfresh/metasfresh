@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -68,6 +69,13 @@ public class BankAccountService
 		return bankAccountDAO.getById(bankAccountId);
 	}
 
+	@NonNull
+	public BankAccount getByIdNotNull(@NonNull final BankAccountId bankAccountId)
+	{
+		return Optional.ofNullable(getById(bankAccountId))
+				.orElseThrow(() -> new AdempiereException("No Bank Account found for " + bankAccountId));
+	}
+
 	public String createBankAccountName(@NonNull final BankAccountId bankAccountId)
 	{
 		final BankAccount bankAccount = getById(bankAccountId);
@@ -114,5 +122,14 @@ public class BankAccountService
 	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
 	{
 		return bankAccountDAO.getBankAccountIdByIBAN(iban);
+	}
+
+	@NonNull
+	public Optional<String> getBankName(@NonNull final BankAccountId bankAccountId)
+	{
+		return Optional.of(bankAccountDAO.getById(bankAccountId))
+				.map(BankAccount::getBankId)
+				.map(bankRepo::getById)
+				.map(Bank::getBankName);
 	}
 }

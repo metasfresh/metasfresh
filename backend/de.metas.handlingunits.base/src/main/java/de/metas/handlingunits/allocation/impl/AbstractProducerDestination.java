@@ -22,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUListCursor;
 import de.metas.i18n.AdMessageKey;
@@ -36,13 +37,13 @@ import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -61,6 +62,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final transient HUQRCodesService huQrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	/**
 	 * Error message which is thrown when the result of allocating to a new HU is ZERO
@@ -258,6 +260,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		DYNATTR_IsEmptyHU.setValue(hu, true);
 
+		if (request.getReference() != null && request.getReference().isOfType(I_M_HU.class))
+		{
+			huQrCodesService.propagateQrForSplitHUs(request.getReference().getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId),
+					ImmutableList.of(hu));
+		}
+
 		addToCreateHUs0(hu);
 
 		return hu;
@@ -379,6 +387,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 *
 	 * @return true if it was added; false if maximum capacity was reached and no other HUs are allowed
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	protected final boolean addToCreatedHUsIfAllowCreateNewHU(final I_M_HU hu)
 	{
 		if (!isAllowCreateNewHU())
@@ -390,6 +399,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return true;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	private boolean addToCreateHUs0(@NonNull final I_M_HU hu)
 	{
 		final boolean added = _createdHUs.add(hu);
@@ -457,7 +467,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final List<I_M_HU> getCreatedHUs()
+	public final ImmutableList<I_M_HU> getCreatedHUs()
 	{
 		if (_createdHUs.isEmpty())
 		{
@@ -488,13 +498,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					.setParameter("createdHUs", _createdHUs)
 					.setParameter("producer", this);
 		}
-	}
-
-	@Override
-	public final Optional<HuId> getSingleCreatedHuId()
-	{
-		return getSingleCreatedHU()
-				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override
@@ -663,10 +666,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items.
 	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU.
 	 *
-	 * @param result_IGNORED current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
+	 * @param ignoredResult current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
+	protected void loadFinished(final IMutableAllocationResult ignoredResult, final IHUContext huContext)
 	{
 		// TODO: i think we can move this stuff or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(
@@ -787,7 +790,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				};
 			};
 
-			try (final IAutoCloseable dontDestroyParentLU = getDontDestroyParentLUClosable.get())
+			try (final IAutoCloseable ignored = getDontDestroyParentLUClosable.get())
 			{
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}

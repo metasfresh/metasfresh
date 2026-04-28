@@ -30,11 +30,11 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.compiere.util.MockedEvaluatee;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class StringExpressionEvaluatorTests
 {
@@ -54,7 +54,7 @@ public class StringExpressionEvaluatorTests
 	private IExpressionFactory expressionFactory;
 	private MockedEvaluatee ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		this.expressionFactory = Services.get(IExpressionFactory.class);
@@ -70,7 +70,7 @@ public class StringExpressionEvaluatorTests
 		final boolean ignoreUnparsable = false;
 		final String expressionEvaluatedActual = expression1.evaluate(ctx, ignoreUnparsable);
 
-		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", IStringExpression.EMPTY_RESULT, expressionEvaluatedActual);
+		Assertions.assertEquals(IStringExpression.EMPTY_RESULT, expressionEvaluatedActual, "Empty string shall be returned because M_Warehouse_ID is missing");
 	}
 
 	@Test
@@ -78,15 +78,16 @@ public class StringExpressionEvaluatorTests
 	{
 		ctx.put("M_Product_ID", "1234");
 		final String expressionEvaluatedActual = expression1.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
-		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", IStringExpression.EMPTY_RESULT, expressionEvaluatedActual);
+		Assertions.assertEquals(IStringExpression.EMPTY_RESULT, expressionEvaluatedActual, "Empty string shall be returned because M_Warehouse_ID is missing");
 	}
 
-	@Test(expected = ExpressionEvaluationException.class)
+	@Test
 	public void test_evaluate_missing_IDParameter_OnVariableNotFound_Fail()
 	{
-		expression1.evaluate(ctx, OnVariableNotFound.Fail);
+		Assertions.assertThrows(ExpressionEvaluationException.class, () -> expression1.evaluate(ctx, OnVariableNotFound.Fail));
 	}
 
+	@Test
 	public void test_evaluate_missing_IDParameter_OnVariableNotFound_Return_NULL_default()
 	{
 		final String sqlWithNULLDefault = "select @M_Product_ID/NULL@ from M_Storage";
@@ -102,7 +103,7 @@ public class StringExpressionEvaluatorTests
 		final String expressionStr = "Some text with a @variable@ which is missing.";
 		final IStringExpression expression = expressionFactory.compile(expressionStr, IStringExpression.class);
 		final String expressionEvaluated = expression.evaluate(ctx, OnVariableNotFound.Preserve);
-		Assert.assertEquals("Invalid evaluated expression", expressionStr, expressionEvaluated);
+		Assertions.assertEquals(expressionStr, expressionEvaluated, "Invalid evaluated expression");
 	}
 
 	@Test
@@ -112,7 +113,7 @@ public class StringExpressionEvaluatorTests
 		final String expressionEvaluatedExpected = "Some text with a  which is missing.";
 		final IStringExpression expression = expressionFactory.compile(expressionStr, IStringExpression.class);
 		final String expressionEvaluated = expression.evaluate(ctx, OnVariableNotFound.Empty);
-		Assert.assertEquals("Invalid evaluated expression", expressionEvaluatedExpected, expressionEvaluated);
+		Assertions.assertEquals(expressionEvaluatedExpected, expressionEvaluated, "Invalid evaluated expression");
 	}
 
 	@Test
@@ -135,6 +136,6 @@ public class StringExpressionEvaluatorTests
 		final String expressionEvaluatedExpected = IStringExpression.EMPTY_RESULT;
 		final IStringExpression expression = expressionFactory.compile(expressionStr, IStringExpression.class);
 		final String expressionEvaluated = expression.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
-		Assert.assertSame("Invalid evaluated expression for: " + expressionStr, expressionEvaluatedExpected, expressionEvaluated);
+		Assertions.assertSame(expressionEvaluatedExpected, expressionEvaluated, "Invalid evaluated expression for: " + expressionStr);
 	}
 }

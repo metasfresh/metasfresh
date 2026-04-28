@@ -18,7 +18,6 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,7 +158,7 @@ public class MovementBLTest
 	private I_M_Locator createLocator(final I_C_Activity activity)
 	{
 		final I_M_Warehouse warehouseDest = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, context);
-		if(activity != null)
+		if (activity != null)
 		{
 			warehouseDest.setC_Activity_ID(activity.getC_Activity_ID());
 		}

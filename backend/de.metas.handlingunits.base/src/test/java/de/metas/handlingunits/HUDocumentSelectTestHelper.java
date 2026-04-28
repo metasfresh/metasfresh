@@ -17,7 +17,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_SysConfig;

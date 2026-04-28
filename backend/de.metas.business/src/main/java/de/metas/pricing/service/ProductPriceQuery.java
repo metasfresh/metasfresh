@@ -19,7 +19,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -83,12 +83,12 @@ public class ProductPriceQuery
 		/**
 		 * No ASI related matching at all
 		 */
-		IGNORE;
+		IGNORE,
+		;
 	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
-
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
@@ -188,7 +188,7 @@ public class ProductPriceQuery
 				return 1;
 			}
 
-			return -1 * attributeDAO.retrieveAttributeInstances(asiId).size();
+			return -1 * asiBL.getAttributeInstances(asiId).size();
 		};
 
 		final Comparator<T> orderByNumberOfMatchingAttributes = Comparator.comparing(orderByNumberOfMatchedAttributes)
@@ -548,7 +548,7 @@ public class ProductPriceQuery
 			return new ASIProductPriceAttributesFilter(asi, /* acceptNotAttributeDependent */true);
 		}
 
-		private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		private final I_M_AttributeSetInstance _asi;
 		private final boolean _acceptNotAttributeDependent;
@@ -636,7 +636,7 @@ public class ProductPriceQuery
 		{
 			if (_asiAttributes == null)
 			{
-				final List<I_M_AttributeInstance> asiAttributesList = attributeDAO.retrieveAttributeInstances(_asi);
+				final List<I_M_AttributeInstance> asiAttributesList = asiBL.getAttributeInstances(_asi);
 				_asiAttributes = Maps.uniqueIndex(asiAttributesList, I_M_AttributeInstance::getM_Attribute_ID);
 			}
 			return _asiAttributes;
@@ -650,7 +650,7 @@ public class ProductPriceQuery
 				return ImmutableList.of();
 			}
 
-			final List<I_M_AttributeInstance> productPriceAttributes = attributeDAO.retrieveAttributeInstances(productPriceASI);
+			final List<I_M_AttributeInstance> productPriceAttributes = asiBL.getAttributeInstances(productPriceASI);
 			return productPriceAttributes;
 		}
 	}

@@ -22,22 +22,22 @@
 
 package de.metas.location.impl;
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import lombok.NonNull;
+import de.metas.document.location.impl.DocumentLocationBL;
+import org.compiere.Adempiere;
 
 /**
  * Dummy Document Location BL. This service is required for testing Dunning module, decoupled from database.
  */
 public class DummyDocumentLocationBL extends DocumentLocationBL
 {
-	public DummyDocumentLocationBL(final @NonNull IBPartnerBL bpartnerBL)
+	public static DummyDocumentLocationBL newInstanceForUnitTesting()
 	{
-		super(bpartnerBL);
+		Adempiere.assertUnitTestMode();
+		return new DummyDocumentLocationBL();
 	}
 
 	@Override

@@ -1,0 +1,209 @@
+import { test } from "../../../../playwright.config";
+import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expect } from "@playwright/test";
+
+const NAME = 'GetQuantityDialog';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('.get-qty-dialog');
+
+export const QTY_NOT_FOUND_REASON_NOT_FOUND = 'N';
+// noinspection JSUnusedGlobalSymbols
+export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
+export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
+
+export const GetQuantityDialog = {
+    waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
+        await containerElement().waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
+        await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
+    }),
+
+    expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
+        const testId = `userInfo_${captionKey}`;
+        await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
+    typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
+        await page.locator('#qty-input').type(`${qty}`);
+    }),
+
+    expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+    }),
+
+    expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
+        await expect(page.getByTestId('lotNo')).not.toBeVisible();
+    }),
+
+    expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
+    }),
+
+    expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
+        const field = page.getByTestId('lotNo');
+        await clickAndType(field, lotNo);
+    }),
+
+    typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
+        // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
+        const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
+
+        const field = page.locator('#catch-weight');
+        await clickAndType(field, correctedQty);
+    }),
+
+    scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
+        const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
+
+        await page.getByTestId('qrCode-input').type(qrCode);
+        await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        await page.waitForFunction((prevQtyTarget) => {
+            const el = document.querySelector('[data-testid="qty-target"]');
+            return el && el.textContent !== prevQtyTarget;
+        }, prevQtyTarget);
+
+        await page.waitForFunction(
+            () => {
+                const el = document.querySelector('[data-testid="qrCode-input"]');
+                return el && el.value === '';
+            });
+    }),
+
+    clickQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Click qty not found reason '${reason}'`, async () => {
+        await page.getByTestId(`qty-reason-radio-${reason}`).tap();
+    }),
+
+    expectQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Expect qty not found reason '${reason}'`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        await expect(radioButton).toBeChecked();
+    }),
+
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
+    }),
+
+    clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
+        let doneButton = page.getByTestId('done-button');
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await doneButton.tap();
+                await GetQuantityDialog.expectComponentsDisabled();
+                await GetQuantityDialog.waitToClose();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+    }),
+
+    clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
+        await page.getByTestId('cancel-button').tap();
+        await GetQuantityDialog.expectComponentsDisabled();
+        await GetQuantityDialog.waitToClose();
+    }),
+
+    clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
+        await page.getByTestId('switchToManualInput-button').tap();
+        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
+    }),
+
+    expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
+        await expectMissingOrDisabled(page.locator('#qty-input'));
+        // await expectMissingOrDisabled(page.getByTestId('bestBeforeDate'));
+        // await expectMissingOrDisabled(page.getByTestId('lotNo'));
+        await expectMissingOrDisabled(page.getByTestId('done-button'));
+        await expectMissingOrDisabled(page.getByTestId('cancel-button'));
+        await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
+    }),
+
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+        await GetQuantityDialog.waitForDialog();
+
+        // run this first!
+        if (switchToManualInput) {
+            await GetQuantityDialog.clickManual();
+        }
+
+        if (expectQtyEntered != null) {
+            await GetQuantityDialog.expectQtyEntered(expectQtyEntered);
+        }
+        if (qtyEntered != null) {
+            await GetQuantityDialog.typeQtyEntered(qtyEntered);
+        }
+        if (lotNo != null) {
+            await GetQuantityDialog.typeLotNo(lotNo);
+        }
+        if (catchWeight != null) {
+            await GetQuantityDialog.typeCatchWeight(catchWeight);
+        }
+        if (catchWeightQRCode != null) {
+            const qrCodesArray = Array.isArray(catchWeightQRCode) ? catchWeightQRCode : [catchWeightQRCode];
+            const length = qrCodesArray.length;
+            for (let idx = 0; idx < length; idx++) {
+                const qrCode = qrCodesArray[idx];
+                await GetQuantityDialog.scanCatchWeightQRCode({ qrCode, stepName: `#${idx + 1}/${length}` });
+            }
+        }
+        if (expectQtyNotFoundReason != null) {
+            await GetQuantityDialog.expectQtyNotFoundReason({ reason: expectQtyNotFoundReason });
+        }
+        if (qtyNotFoundReason != null) {
+            await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
+        }
+
+        await GetQuantityDialog.clickDone({ expectedError });
+    }),
+};
+
+//
+//
+//
+//
+//
+
+const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
+    if (await locator.count() > 0) {
+        try {
+            await expect(locator).toBeDisabled();
+        } catch (e) {
+            if (await locator.count() === 0) return;
+            throw e;
+        }
+    }
+};
+
+const clickAndType = async (field, value) => {
+    // Tap the field before, to gain focus so our code will react and select all text
+    await field.tap();
+    // ... so when typing, we will actually override the current value
+    await field.type(value);
+
+    // cannot check in case of qtys, because we set "0,789" but we get "0.789"
+    // const enteredValue = await field.inputValue();
+    // if (enteredValue !== value) {
+    //     throw new Error(`Expected value '${value}', but got '${enteredValue}'`);
+    // }
+}

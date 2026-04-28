@@ -23,13 +23,17 @@ package de.metas.handlingunits.impl;
  */
 
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentListener;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,20 +42,26 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty;
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final CompositeHUAssignmentListener listeners = new CompositeHUAssignmentListener();
 
 	/**
@@ -85,27 +95,34 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public void assignHUs(final Object model, final Collection<I_M_HU> huList, final String trxName)
+	public void assignHUs(
+			@NonNull final Object model,
+			@NonNull final Collection<I_M_HU> huList,
+			@Nullable final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(huList, "huList not null");
 		if (huList.isEmpty())
 		{
-			// Nothing to do.
-			return;
+			return; // Nothing to do.
 		}
 
 		huList.forEach(hu -> assignHU(model, hu, trxName));
 	}
 
 	@Override
-	public I_M_HU_Assignment assignHU(final Object model, final I_M_HU hu, final String trxName)
+	public I_M_HU_Assignment assignHU(
+			@NonNull final Object model,
+			@NonNull final I_M_HU hu,
+			@Nullable final String trxName)
 	{
 		return assignHU0(model, hu, IsTransferPackingMaterials_DoNotChange, trxName);
 	}
 
 	@Override
-	public I_M_HU_Assignment assignHU(final Object model, final I_M_HU hu, final boolean isTransferPackingMaterials, final String trxName)
+	public I_M_HU_Assignment assignHU(
+			@NonNull final Object model,
+			@NonNull final I_M_HU hu,
+			final boolean isTransferPackingMaterials,
+			@Nullable final String trxName)
 	{
 		return assignHU0(model, hu, isTransferPackingMaterials, trxName);
 	}
@@ -114,7 +131,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			@NonNull final Object model,
 			@NonNull final I_M_HU hu,
 			@Nullable final Boolean isTransferPackingMaterials,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		// Validate the HU
 		final int huId = Check.assumeGreaterThanZero(hu.getM_HU_ID(), "hu.getM_HU_ID()");
@@ -170,6 +187,12 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final boolean isNewAssignment = builder.isNewAssignment();
 		final boolean isActiveOld = builder.isActive();
 
+		final BigDecimal qty = getQtyOrNull(model);
+		if (qty != null)
+		{
+			builder.setQty(qty);
+		}
+
 		//
 		// Update Assignment fields and save it
 		updateHUAssignmentAndSave(builder, model, hu, isTransferPackingMaterials);
@@ -208,6 +231,17 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			final IReference<Object> modelRef = ImmutableReference.valueOf(model);
 			listeners.onHUUnassigned(huRef, modelRef, trxName);
 		}
+	}
+
+	/**
+	 * Attempts to retrieve the quantity value from the given model object specified by certain column names.
+	 * If the value is not available, returns {@code null}.
+	 */
+	@Nullable
+	private BigDecimal getQtyOrNull(final Object model)
+	{
+		return CoalesceUtil.coalesceSuppliers(() -> InterfaceWrapperHelper.getValueAsBigDecimalOrNull(model, COLUMNNAME_QtyEntered),
+				() -> InterfaceWrapperHelper.getValueAsBigDecimalOrNull(model, COLUMNNAME_MovementQty));
 	}
 
 	/**
@@ -375,8 +409,35 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
+	}
+
+	@Override
+	public int retrieveTUCountForModel(final Object model)
+	{
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveDistinctAssignedTUsForModel(model);
+		int countTUs = 0;
+		for (final I_M_HU hu : hus)
+		{
+			if (handlingUnitsBL.isAggregateHU(hu))
+			{
+				final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(hu);
+				if (parentItem != null)
+				{
+					countTUs += parentItem.getQty().intValue();
+				}
+				else
+				{
+					countTUs += 1; // fallback: count as single TU if hierarchy is inconsistent
+				}
+			}
+			else
+			{
+				countTUs += 1; // pure TU.. that counts ONE
+			}
+		}
+		return countTUs;
 	}
 }

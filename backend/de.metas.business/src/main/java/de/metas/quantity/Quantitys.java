@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.quantity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -19,36 +41,33 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_UOM;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.function.Function;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
+/**
+ * Factory methods for creating {@link Quantity} instances.
+ * <p>
+ * Use this class as the single entry point for constructing {@link Quantity} objects:
+ * <ul>
+ *     <li>{@link #of(BigDecimal, I_C_UOM)} — when you already have the UOM record</li>
+ *     <li>{@link #of(BigDecimal, UomId)} — when you only have the UOM ID (resolves the record internally)</li>
+ *     <li>{@link #of(BigDecimal, ProductId)} — when the qty is in stock UOM</li>
+ *     <li>{@link #of(BigDecimal, X12DE355)} — when you have the ISO code</li>
+ *     <li>{@link #of(Object, Function, Function)} — when extracting qty and UOM ID from a record object (e.g. {@code Quantitys.of(record, I_M_InOutLine::getMovementQty, I_M_InOutLine::getC_UOM_ID)})</li>
+ * </ul>
  */
-
 @UtilityClass
 public class Quantitys
 {
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	{
+		return Quantity.of(qty, uom);
+	}
+
 	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
@@ -66,6 +85,14 @@ public class Quantitys
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
 
 		return Quantity.of(qty, uomRecord);
+	}
+
+	public <T> Quantity of(
+			@NonNull T obj,
+			@NonNull Function<T, BigDecimal> qtyExtractor,
+			@NonNull Function<T, Integer> uomIdExtractor)
+	{
+		return of(qtyExtractor.apply(obj), UomId.ofRepoId(uomIdExtractor.apply(obj)));
 	}
 
 	public Quantity of(
@@ -205,9 +232,22 @@ public class Quantitys
 	@Nullable
 	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
 	{
+		return toBigDecimalOr(quantity, null);
+	}
+
+	@NonNull
+	public static BigDecimal toBigDecimalOrZero(@Nullable final Quantity quantity)
+	{
+		return toBigDecimalOr(quantity, BigDecimal.ZERO);
+	}
+
+	@Contract(value = "null, null -> null; _, !null -> !null; !null, _ -> !null", pure = true)
+	@Nullable
+	private static BigDecimal toBigDecimalOr(@Nullable final Quantity quantity, @Nullable final BigDecimal defaultValue)
+	{
 		if (quantity == null)
 		{
-			return null;
+			return defaultValue;
 		}
 		return quantity.toBigDecimal();
 	}

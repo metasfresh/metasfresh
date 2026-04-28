@@ -1,16 +1,8 @@
-package de.metas.ordercandidate.api;
-
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,13 +20,21 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.ordercandidate.api;
+
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
 public class OLCandProcessorDescriptor
 {
-	private final int id;
-	private final OLCandOrderDefaults defaults;
-	private final OLCandAggregation aggregationInfo;
-	private final UserId userInChangeId;
+	int id;
+	@NonNull OLCandOrderDefaults defaults;
+	@NonNull OLCandAggregation aggregationInfo;
+	@NonNull UserId userInChangeId;
 
 	@Builder
 	private OLCandProcessorDescriptor(

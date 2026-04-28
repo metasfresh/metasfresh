@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.util.Check;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 

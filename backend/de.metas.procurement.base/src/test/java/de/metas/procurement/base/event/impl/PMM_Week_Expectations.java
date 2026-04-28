@@ -9,7 +9,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -87,7 +87,7 @@ public class PMM_Week_Expectations
 
 		if (strictMatching)
 		{
-			Assert.assertEquals("No other entries were expected", Collections.emptyMap(), records);
+			Assertions.assertEquals(Collections.emptyMap(), records, "No other entries were expected");
 		}
 
 		return this;

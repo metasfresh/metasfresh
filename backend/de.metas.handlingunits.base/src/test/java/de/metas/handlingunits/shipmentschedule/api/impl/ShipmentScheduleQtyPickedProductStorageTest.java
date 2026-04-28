@@ -25,13 +25,12 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import java.math.BigDecimal;
 
-import org.junit.Assume;
-
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 public class ShipmentScheduleQtyPickedProductStorageTest extends AbstractProductStorageTest
@@ -63,10 +62,10 @@ public class ShipmentScheduleQtyPickedProductStorageTest extends AbstractProduct
 	protected IProductStorage createStorage(final String qtyStr, final boolean reversal, final boolean outboundTrx)
 	{
 		// We are not supporting outboundTrx
-		Assume.assumeTrue(!outboundTrx);
+				Assumptions.assumeTrue(!outboundTrx);
 
 		// We are not supporting reversal transactions
-		Assume.assumeTrue(!reversal);
+		Assumptions.assumeTrue(!reversal);
 
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal(qtyStr), new BigDecimal("0"));
 		final ShipmentScheduleQtyPickedProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(schedule);

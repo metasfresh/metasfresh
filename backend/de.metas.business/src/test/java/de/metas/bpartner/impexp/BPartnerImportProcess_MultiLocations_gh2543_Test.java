@@ -1,36 +1,35 @@
 package de.metas.bpartner.impexp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.banking.api.BankRepository;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -55,24 +54,27 @@ import de.metas.util.Services;
  */
 
 /**
- * Test case described in https://github.com/metasfresh/metasfresh/issues/2543
+ * Test case described in <a href="https://github.com/metasfresh/metasfresh/issues/2543">this issue</a>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class })
 public class BPartnerImportProcess_MultiLocations_gh2543_Test
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		ctx = Env.getCtx();
+
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+		SpringContextHolder.registerJUnitBean(new BankRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(new BPartnerCreditLimitRepository());
+		SpringContextHolder.registerJUnitBean(new BPartnerPrintFormatRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
@@ -81,7 +83,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 	public void testMultiplePartnerAndAddresses()
 	{
 		final List<I_I_BPartner> ibpartners = prepareImportMultipleBPartners();
-		Assert.assertNotNull("list null", ibpartners);
+		assertThat(ibpartners).as("list null").isNotNull();
 
 		final BPartnerImportProcess importProcess = new BPartnerImportProcess();
 		importProcess.setCtx(ctx);
@@ -128,28 +130,26 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 	{
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
-		Assert.assertTrue(ibpartners.get(0).getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
+		assertThat(ibpartners.get(0).getC_BPartner_ID()).isEqualTo(ibpartners.get(1).getC_BPartner_ID());
 		final I_C_BPartner firstBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(0).getC_BPartner_ID()));
 		//
 		// check user
 		final List<I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
-		assertThat(fusers).isNotEmpty();
 		assertThat(fusers).hasSize(2);
 		fusers.forEach(user -> {
-			Assert.assertTrue(user.isShipToContact_Default());
-			Assert.assertFalse(user.isBillToContact_Default());
+			assertThat(user.isShipToContact_Default()).isTrue();
+			assertThat(user.isBillToContact_Default()).isFalse();
 		});
 		//
 		// check bplocation
-		final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBPartner);
-		Assert.assertTrue(!fbplocations.isEmpty());
+		final List<I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBPartner);
 		assertThat(fbplocations).hasSize(1);
 		fbplocations.forEach(bplocation -> {
-			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
-			Assert.assertTrue(bplocation.isBillToDefault());
-			Assert.assertTrue(bplocation.isBillTo());
-			Assert.assertFalse(bplocation.isShipToDefault());
-			Assert.assertFalse(bplocation.isShipTo());
+			assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
+			assertThat(bplocation.isBillToDefault()).isTrue();
+			assertThat(bplocation.isBillTo()).isTrue();
+			assertThat(bplocation.isShipToDefault()).isFalse();
+			assertThat(bplocation.isShipTo()).isFalse();
 		});
 	}
 
@@ -161,23 +161,21 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check user
 		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
-		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {
-			Assert.assertTrue(user.isShipToContact_Default());
-			Assert.assertTrue(user.isBillToContact_Default());
+			assertThat(user.isShipToContact_Default()).isTrue();
+			assertThat(user.isBillToContact_Default()).isTrue();
 		});
 		//
 		// check bplocation
-		final List<org.compiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
-		Assert.assertTrue(!bplocations.isEmpty());
+		final List<I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {
-			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
-			Assert.assertTrue(bplocation.isBillToDefault());
-			Assert.assertTrue(bplocation.isBillTo());
-			Assert.assertTrue(bplocation.isShipToDefault());
-			Assert.assertTrue(bplocation.isShipTo());
+			assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
+			assertThat(bplocation.isBillToDefault()).isTrue();
+			assertThat(bplocation.isBillTo()).isTrue();
+			assertThat(bplocation.isShipToDefault()).isTrue();
+			assertThat(bplocation.isShipTo()).isTrue();
 		});
 	}
 
@@ -189,23 +187,21 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check user
 		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
-		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {
-			Assert.assertTrue(user.isShipToContact_Default());
-			Assert.assertTrue(user.isBillToContact_Default());
+			assertThat(user.isShipToContact_Default()).isTrue();
+			assertThat(user.isBillToContact_Default()).isTrue();
 		});
 		//
 		// check bplocation
 		final List<I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
-		assertThat(bplocations).isNotEmpty();
 		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {
-			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
-			Assert.assertTrue(bplocation.isBillToDefault());
-			Assert.assertTrue(bplocation.isBillTo());
-			Assert.assertTrue(bplocation.isShipToDefault());
-			Assert.assertTrue(bplocation.isShipTo());
+			assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
+			assertThat(bplocation.isBillToDefault()).isTrue();
+			assertThat(bplocation.isBillTo()).isTrue();
+			assertThat(bplocation.isShipToDefault()).isTrue();
+			assertThat(bplocation.isShipTo()).isTrue();
 		});
 	}
 
@@ -218,8 +214,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 	 * <code>G0023	 FNTest3	LNTest3	  Y					Y				street 997	Berlin	DE			Standard	Y				Y				de_CH</code><br>
 	 * <code>G0024	 FNTest4	LNTest4	  Y					Y				street 998	Bonn	DE			Standard	Y				Y				de_CH</code><br>
 	 *
-	 * @param lines
-	 * @task https://github.com/metasfresh/metasfresh/issues/2543
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/2543">...</a>
 	 */
 	private List<I_I_BPartner> prepareImportMultipleBPartners()
 	{

@@ -79,6 +79,7 @@ public class C_ElementValueTest
 		this.chartOfAccounts = chartOfAccountsService.createChartOfAccounts(ChartOfAccountsCreateRequest.builder()
 				.name("Test")
 				.clientId(Env.getClientId())
+				.orgId(Env.getOrgId())
 				.build());
 	}
 

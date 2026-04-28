@@ -10,15 +10,16 @@ import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.product.ResourceId;
 import de.metas.resource.qrcode.ResourceQRCode;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
+import de.metas.scannable_code.PrintableScannedCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -38,23 +39,28 @@ public class ManufacturingWorkflowLaunchersProvider
 			@NonNull WorkflowLaunchersQuery query,
 			@Nullable final ResourceId workstationId)
 	{
-		final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
+		final ScannedCode filterScannedCode = query.getFilterByQRCode();
 		final ResourceId plantOrWorkstationId;
 		final PrintableQRCode filterByPrintableQRCode;
-		if (filterByQRCode == null)
+		if (filterScannedCode == null)
 		{
 			plantOrWorkstationId = null;
+
 			filterByPrintableQRCode = null;
-		}
-		else if (ResourceQRCode.isTypeMatching(filterByQRCode))
-		{
-			final ResourceQRCode resourceQRCode = ResourceQRCode.ofGlobalQRCode(filterByQRCode);
-			plantOrWorkstationId = resourceQRCode.getResourceId();
-			filterByPrintableQRCode = resourceQRCode.toPrintableQRCode();
 		}
 		else
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			final GlobalQRCode filterByQRCode = filterScannedCode.toGlobalQRCode();
+			if (ResourceQRCode.isTypeMatching(filterByQRCode))
+			{
+				final ResourceQRCode resourceQRCode = ResourceQRCode.ofGlobalQRCode(filterByQRCode);
+				plantOrWorkstationId = resourceQRCode.getResourceId();
+				filterByPrintableQRCode = resourceQRCode.toPrintableQRCode();
+			}
+			else
+			{
+				throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			}
 		}
 
 		final Instant now = SystemTime.asInstant();
@@ -64,7 +70,7 @@ public class ManufacturingWorkflowLaunchersProvider
 								.plantOrWorkstationId(plantOrWorkstationId)
 								.workstationId(workstationId)
 								.now(now)
-								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
+								.suggestedLimit(query.getLimit().orElseGet(manufacturingRestService::getLaunchersLimit))
 								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
 								.build()
 				)
@@ -72,7 +78,7 @@ public class ManufacturingWorkflowLaunchersProvider
 				.collect(ImmutableList.toImmutableList());
 
 		return WorkflowLaunchersList.builder()
-				.filterByQRCode(filterByPrintableQRCode)
+				.filterByQRCode(PrintableScannedCode.ofNullable(filterByPrintableQRCode))
 				.launchers(launchers)
 				.timestamp(now)
 				.build();
@@ -93,10 +99,7 @@ public class ManufacturingWorkflowLaunchersProvider
 			return WorkflowLauncher.builder()
 					.applicationId(ManufacturingMobileApplication.APPLICATION_ID)
 					.caption(computeCaption(manufacturingJobReference))
-					.wfParameters(ManufacturingWFProcessStartParams.builder()
-							.ppOrderId(manufacturingJobReference.getPpOrderId())
-							.build()
-							.toParams())
+					.wfParameters(ManufacturingWFProcessStartParams.ofPPOrderId(manufacturingJobReference.getPpOrderId()).toParams())
 					.build();
 		}
 	}

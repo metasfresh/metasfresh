@@ -22,9 +22,12 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -34,13 +37,7 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
 
 @VisibleForTesting
 public final class InvoiceLineAttribute implements IInvoiceLineAttribute
@@ -59,7 +56,7 @@ public final class InvoiceLineAttribute implements IInvoiceLineAttribute
 		// Build aggregation key
 		{
 			final int attributeId = attributeInstance.getM_Attribute_ID();
-			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeId);
 			final StringBuilder aggregationKey = new StringBuilder();
 			aggregationKey.append(attribute.getName());
 			aggregationKey.append("=");
@@ -91,7 +88,7 @@ public final class InvoiceLineAttribute implements IInvoiceLineAttribute
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{

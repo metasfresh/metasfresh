@@ -1,20 +1,83 @@
-import { useSelector } from 'react-redux';
-import { getActivityById } from '../index';
+import { shallowEqual, useSelector } from 'react-redux';
+import { getActivityById, getLineByIdFromActivity } from '../index';
+import { isLineLevelPickTarget } from '../../../utils/picking';
+import {
+  addPickToStructure,
+  isLUBasedPickToStructure,
+  PICKTO_STRUCTURE_CU,
+  PICKTO_STRUCTURE_LU_CU,
+  PICKTO_STRUCTURE_TU,
+  removePickToStructure,
+} from './PickToStructure';
 
-export const useCurrentPickTarget = ({ wfProcessId, activityId }) => {
-  return useSelector((state) => getCurrentPickTarget({ state, wfProcessId, activityId }));
+export const useCurrentPickingTargetInfo = ({ wfProcessId, activityId, lineId }) => {
+  return useSelector((state) => getCurrentPickingTargetInfo({ state, wfProcessId, activityId, lineId }), shallowEqual);
 };
 
-export const useCurrentTUPickTarget = ({ wfProcessId, activityId }) => {
-  return useSelector((state) => getCurrentTUPickTarget({ state, wfProcessId, activityId }));
-};
+const computeIsAllowReopeningLU = ({ allowedPickToStructures }) =>
+  allowedPickToStructures.some(isLUBasedPickToStructure);
 
-const getCurrentPickTarget = ({ state, wfProcessId, activityId }) => {
+const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId, fallbackToHeader = false }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
-  return activity?.dataStored?.pickTarget;
+  return getCurrentPickingTargetInfoFromActivity({ activity, lineId, fallbackToHeader });
 };
 
-const getCurrentTUPickTarget = ({ state, wfProcessId, activityId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
-  return activity?.dataStored?.tuPickTarget;
+export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fallbackToHeader = false }) => {
+  let luPickingTarget;
+  let tuPickingTarget;
+
+  let allowedPickToStructures;
+  let isAllowReopeningLU;
+
+  //
+  // Picking Job Line level
+  if (lineId) {
+    if (isLineLevelPickTarget({ activity })) {
+      const line = getLineByIdFromActivity(activity, lineId);
+      luPickingTarget = line?.luPickingTarget;
+      tuPickingTarget = line?.tuPickingTarget;
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
+    } else {
+      luPickingTarget = null;
+      tuPickingTarget = null;
+      allowedPickToStructures = [];
+      isAllowReopeningLU = false;
+    }
+
+    if (fallbackToHeader && luPickingTarget == null && tuPickingTarget == null) {
+      luPickingTarget = activity?.dataStored?.luPickingTarget;
+      tuPickingTarget = activity?.dataStored?.tuPickingTarget;
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
+    }
+  }
+  //
+  // Picking Job header level
+  else {
+    luPickingTarget = activity?.dataStored?.luPickingTarget;
+    tuPickingTarget = activity?.dataStored?.tuPickingTarget;
+
+    if (isLineLevelPickTarget({ activity })) {
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      allowedPickToStructures = addPickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_TU);
+      allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_LU_CU);
+      allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_CU);
+      // console.log('getCurrentPickingTargetInfoFromActivity: line level allowedPickToStructures', {
+      //   allowedPickToStructures_headerLevel: activity.dataStored.allowedPickToStructures,
+      //   allwoedPickToStructures_lineLevel: allowedPickToStructures,
+      // });
+      isAllowReopeningLU = false;
+    } else {
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
+    }
+  }
+
+  return {
+    allowedPickToStructures,
+    isAllowReopeningLU,
+    luPickingTarget,
+    tuPickingTarget,
+  };
 };

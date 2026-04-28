@@ -15,6 +15,7 @@ import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.business_rule.util.BusinessRuleRecordMatcher;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,6 +41,7 @@ public class BusinessRuleFireTriggersCommand
 
 	@NonNull private final TableRecordReference sourceModelRef;
 	@NonNull private final ClientAndOrgId clientAndOrgId;
+	@NonNull private final UserId triggeringUserId;
 
 	@Builder
 	private BusinessRuleFireTriggersCommand(
@@ -61,6 +63,7 @@ public class BusinessRuleFireTriggersCommand
 
 		this.sourceModelRef = TableRecordReference.of(sourceModel);
 		this.clientAndOrgId = InterfaceWrapperHelper.getClientAndOrgId(sourceModel);
+		this.triggeringUserId = InterfaceWrapperHelper.getUpdatedBy(sourceModel);
 	}
 
 	public void execute()
@@ -174,6 +177,7 @@ public class BusinessRuleFireTriggersCommand
 	{
 		eventRepository.create(BusinessRuleEventCreateRequest.builder()
 				.clientAndOrgId(clientAndOrgId)
+				.triggeringUserId(triggeringUserId)
 				.recordRef(sourceModelRef)
 				.businessRuleId(rule.getId())
 				.triggerId(trigger.getId())

@@ -51,9 +51,9 @@ export const traceFunction = (func, properties) => {
     const id = uuidv4();
     let propertiesEffective;
     if (typeof properties === 'function') {
-      propertiesEffective = { id, ...properties(...args) };
+      propertiesEffective = { ...properties(...args), id };
     } else {
-      propertiesEffective = { id, ...properties };
+      propertiesEffective = { ...properties, id };
     }
 
     const prevId = setCurrentEventId(id);
@@ -142,4 +142,9 @@ export const putContext = (properties) => {
 
 export const setModalDialogName = (name) => {
   modalDialog.name = name;
+};
+
+export const traceLogWarn = (message, properties) => {
+  console.warn(message, properties);
+  trace({ ...properties, eventName: 'logWarn', message });
 };

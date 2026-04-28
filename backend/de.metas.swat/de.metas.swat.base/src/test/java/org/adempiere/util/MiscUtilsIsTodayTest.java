@@ -10,42 +10,42 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.UnitTestTools;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class MiscUtilsIsTodayTest {
+public class MiscUtilsIsTodayTest
+{
 
 	@Test
-	public void today() {
-		
-		Assert.assertTrue(MiscUtils.isToday(SystemTime.asTimestamp()));
+	public void today()
+	{
+		Assertions.assertTrue(MiscUtils.isToday(SystemTime.asTimestamp()));
 	}
 
 	@Test
-	public void yesterDay() {
-
-		Assert.assertFalse(MiscUtils.isToday(UnitTestTools.daysBefore(1)));
+	public void yesterDay()
+	{
+		Assertions.assertFalse(MiscUtils.isToday(UnitTestTools.daysBefore(1)));
 	}
 
 	@Test
-	public void tomorrow() {
-
-		Assert.assertFalse(MiscUtils.isToday(UnitTestTools.daysAfter(1)));
+	public void tomorrow()
+	{
+		Assertions.assertFalse(MiscUtils.isToday(UnitTestTools.daysAfter(1)));
 	}
 
 }

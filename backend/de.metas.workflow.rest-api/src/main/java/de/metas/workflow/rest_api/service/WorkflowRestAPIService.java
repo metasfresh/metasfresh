@@ -29,9 +29,13 @@ import de.metas.mobile.application.MobileApplication;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.GetScannedBarcodeSuggestionsRequest;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScannedBarcodeSuggestions;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -46,13 +50,9 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -67,29 +67,24 @@ public class WorkflowRestAPIService
 {
 	private final static AdMessageKey NOT_WORKFLOW_APP_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.service.NOT_WORKFLOW_APP_ERROR_MSG");
 
-	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
-	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
-
+	@NonNull private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		mobileApplicationService.assertAccess(applicationId, permissions);
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationInfos(userPermissions);
+		return mobileApplicationService.streamMobileApplicationInfos(userId, permissions);
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		return getWorkflowBasedMobileApplication(query.getApplicationId())
-				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
+				.provideLaunchers(query);
 	}
 
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
@@ -110,17 +105,9 @@ public class WorkflowRestAPIService
 		}
 	}
 
-	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull final IUserRolePermissions permissions)
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, permissions);
-	}
-
-	private QueryLimit getLaunchersLimit()
-	{
-		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);
-		return limitInt == -100
-				? DEFAULT_LaunchersLimit
-				: QueryLimit.ofInt(limitInt);
+		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, userId, permissions);
 	}
 
 	public void logout(@NonNull final IUserRolePermissions permissions)
@@ -160,10 +147,10 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
-	public void abortAllWFProcesses(@NonNull final IUserRolePermissions permissions)
+	public void abortAllWFProcesses(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		streamWorkflowBasedMobileApplications(permissions)
-				.forEach(application -> abortAllNoFail(application, permissions.getUserId()));
+		streamWorkflowBasedMobileApplications(userId, permissions)
+				.forEach(application -> abortAllNoFail(application, userId));
 	}
 
 	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)
@@ -226,6 +213,20 @@ public class WorkflowRestAPIService
 						.wfProcess(wfProcess)
 						.wfActivity(wfActivity)
 						.scannedBarcode(scannedBarcode)
+						.build());
+	}
+
+	public JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final WFActivityId wfActivityId)
+	{
+		final WFProcess wfProcess = getWorkflowBasedMobileApplication(wfProcessId.getApplicationId()).getWFProcessById(wfProcessId);
+		final WFActivity wfActivity = wfProcess.getActivityById(wfActivityId);
+
+		return wfActivityHandlersRegistry
+				.getFeature(wfActivity.getWfActivityType(), SetScannedBarcodeSupport.class)
+				.getScannedBarcodeSuggestions(GetScannedBarcodeSuggestionsRequest.builder()
+						.wfProcess(wfProcess)
 						.build());
 	}
 

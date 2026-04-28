@@ -31,6 +31,11 @@
         </dependency>
         <dependency>
             <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
             <artifactId>de.metas.handlingunits.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>tests</classifier>
@@ -70,6 +75,16 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.rest-api</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

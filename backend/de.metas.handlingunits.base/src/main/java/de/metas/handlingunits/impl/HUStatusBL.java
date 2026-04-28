@@ -57,7 +57,7 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Destroyed,
 			X_M_HU.HUSTATUS_Active);
 
-	private final static Multimap<String, String> ALLOWED_STATUS_TRANSITIONS = ImmutableMultimap.<String, String> builder()
+	private final static Multimap<String, String> ALLOWED_STATUS_TRANSITIONS = ImmutableMultimap.<String, String>builder()
 
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Active)
 
@@ -98,8 +98,8 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Shipped, // when restoring a snapshot HU for a customer return, the locator is set on a HU with status E..
 			X_M_HU.HUSTATUS_Active);
 
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
@@ -175,24 +175,17 @@ public class HUStatusBL implements IHUStatusBL
 			return false; // can be the case with a new/unsaved HU
 		}
 
-		if (X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
+		switch (huStatus)
 		{
-			return false;
+			case X_M_HU.HUSTATUS_Destroyed:
+			case X_M_HU.HUSTATUS_Shipped:
+			case X_M_HU.HUSTATUS_Planning:
+				return false;
+			default:
+				// we consider the rest of the statuses to be physical
+				// (active, picked and issued)
+				return true;
 		}
-
-		if (X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return false;
-		}
-
-		if (X_M_HU.HUSTATUS_Shipped.equals(huStatus))
-		{
-			return false;
-		}
-
-		// we consider the rest of the statuses to be physical
-		// (active, picked and issued)
-		return true;
 	}
 
 	@Override
@@ -219,6 +212,19 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
+	public boolean isStatusActiveOrPicked(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+
+		final String huStatus = huRecord.getHUStatus();
+		return X_M_HU.HUSTATUS_Active.equals(huStatus)
+				|| X_M_HU.HUSTATUS_Picked.equals(huStatus);
+	}
+
+	@Override
 	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
 	{
 		if (huRecord == null)
@@ -239,7 +245,8 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public boolean isStatusIssued(@NonNull final HuId huId){
+	public boolean isStatusIssued(@NonNull final HuId huId)
+	{
 		return isStatusIssued(handlingUnitsDAO.getById(huId));
 	}
 
@@ -265,13 +272,14 @@ public class HUStatusBL implements IHUStatusBL
 
 	@Override
 	public void setHUStatus(final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			@NonNull final String huStatus)
+							@NonNull final I_M_HU hu,
+							@NonNull final String huStatus)
 	{
 		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
 		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
 	}
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public void setHUStatus(
 			@NonNull final IHUContext huContext,
@@ -288,8 +296,7 @@ public class HUStatusBL implements IHUStatusBL
 			return;
 		}
 
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final boolean isExchangeGebindelagerWhenEmpty = huStatusBL.isMovePackagingToEmptiesWarehouse(huStatus);
+		final boolean isExchangeGebindelagerWhenEmpty = isMovePackagingToEmptiesWarehouse(huStatus);
 
 		//
 		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
@@ -358,8 +365,6 @@ public class HUStatusBL implements IHUStatusBL
 			return;
 		}
 
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-
 		huTrxBL.process(huContext -> {
 			for (final I_M_HU hu : hus)
 			{
@@ -382,4 +387,5 @@ public class HUStatusBL implements IHUStatusBL
 			}
 		});
 	}
+
 }

@@ -1,8 +1,8 @@
 package de.metas.impex.api;
 
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.util.ISingletonService;
 
 import java.util.Optional;

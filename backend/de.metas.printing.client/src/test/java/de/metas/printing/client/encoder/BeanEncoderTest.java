@@ -22,14 +22,13 @@ package de.metas.printing.client.encoder;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.printing.esb.api.PrintPackage;
 import de.metas.printing.esb.api.PrintPackageInfo;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BeanEncoderTest
 {
@@ -75,7 +74,7 @@ public class BeanEncoderTest
 			final PrintPackage printPackageActual = parser.decodeBytes(data, PrintPackage.class);
 			final String printPackageActualStr = printPackageActual.toString();
 
-			Assert.assertEquals("Invalid data produced by parser " + parser, printPackageExpectedStr, printPackageActualStr);
+			Assertions.assertEquals(printPackageExpectedStr, printPackageActualStr, "Invalid data produced by parser " + parser);
 		}
 	}
 }

@@ -26,6 +26,9 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemProcesses;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -34,7 +37,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -43,6 +46,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ExternalSystemGRSSignumHouseKeepingTask.class);
@@ -51,16 +55,12 @@ public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKee
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
-
-	public ExternalSystemGRSSignumHouseKeepingTask(@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
-	{
-		this.externalSystemConfigDAO = externalSystemConfigDAO;
-	}
+	private final ExternalSystemRepository externalSystemRepository;
 
 	@Override
 	public void executeTask()
 	{
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemType.GRSSignum.getExternalSystemProcessClassName());
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(ExternalSystemType.GRSSignum));
 
 		if (processId == null)
 		{

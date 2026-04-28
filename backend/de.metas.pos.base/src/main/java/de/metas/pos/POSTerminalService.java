@@ -112,7 +112,7 @@ public class POSTerminalService
 		return queryBL.createQueryBuilder(I_C_POS.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(POSTerminalId::ofRepoId);
+				.idsAsSet(POSTerminalId::ofRepoId);
 	}
 
 	private POSTerminal fromRecord(final I_C_POS record)

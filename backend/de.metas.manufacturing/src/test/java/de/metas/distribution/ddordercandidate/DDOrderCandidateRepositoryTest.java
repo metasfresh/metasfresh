@@ -22,6 +22,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -56,7 +57,7 @@ class DDOrderCandidateRepositoryTest
 				//
 				.productId(ProductId.ofRepoId(20))
 				.hupiItemProductId(HUPIItemProductId.ofRepoId(30))
-				.qty(Quantity.of("123.45", uom))
+				.qtyEntered(Quantity.of("123.45", uom))
 				.qtyTUs(3)
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(50)) // TODO
@@ -73,7 +74,7 @@ class DDOrderCandidateRepositoryTest
 				.customerId(BPartnerId.ofRepoId(94))
 				.salesOrderLineId(OrderAndLineId.ofRepoIds(95, 951))
 				.forwardPPOrderRef(PPOrderRef.builder()
-						.ppOrderCandidateId(96)
+						.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(96))
 						.ppOrderLineCandidateId(97)
 						.ppOrderId(PPOrderId.ofRepoId(98))
 						.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(99))

@@ -1,37 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -41,7 +9,15 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
 
 public class HandlingUnitsDAOTest extends AbstractHUTest
 {
@@ -66,8 +42,8 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 
 		final List<I_M_HU_Item> items = dao.retrieveItems(hu);
 
-		Assert.assertEquals("Invalid size: " + items, 1, items.size());
-		Assert.assertEquals("Invalid item: " + items, huItem.getM_HU_Item_ID(), items.get(0).getM_HU_Item_ID());
+		Assertions.assertEquals(1, items.size(), "Invalid size: " + items);
+		Assertions.assertEquals(huItem.getM_HU_Item_ID(), items.get(0).getM_HU_Item_ID(), "Invalid item: " + items);
 	}
 
 	@Test
@@ -85,25 +61,22 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 		final I_M_HU_PI_Item item3 = helper.createHU_PI_Item_IncludedHU(pi, piIncluded, BigDecimal.ONE, bpartner2);
 		final I_M_HU_PI_Item item4 = helper.createHU_PI_Item_IncludedHU(pi, piIncluded, BigDecimal.ONE, bpartner_NULL);
 
-		Assert.assertEquals("Invalid result for BPartner=" + bpartner_NULL
-				, Arrays.asList(item1, item4)
+		Assertions.assertEquals(Arrays.asList(item1, item4)
 				, dao.retrievePIItems(pi, bpartner_NULL)
-				);
+				, "Invalid result for BPartner=" + bpartner_NULL
+		);
 
-		Assert.assertEquals("Invalid result for BPartner=" + bpartner1
-				, Arrays.asList(item1, item2, item4)
+		Assertions.assertEquals(Arrays.asList(item1, item2, item4)
 				, dao.retrievePIItems(pi, bpartner1)
-				);
+				, "Invalid result for BPartner=" + bpartner1);
 
-		Assert.assertEquals("Invalid result for BPartner=" + bpartner2
-				, Arrays.asList(item1, item3, item4)
+		Assertions.assertEquals(Arrays.asList(item1, item3, item4)
 				, dao.retrievePIItems(pi, bpartner2)
-				);
+				, "Invalid result for BPartner=" + bpartner2);
 
-		Assert.assertEquals("Invalid result for BPartner=" + bpartner3
-				, Arrays.asList(item1, item4) // same as for bpartner_NULL
+		Assertions.assertEquals(Arrays.asList(item1, item4) // same as for bpartner_NULL
 				, dao.retrievePIItems(pi, bpartner3)
-				);
+				, "Invalid result for BPartner=" + bpartner3);
 	}
 
 }

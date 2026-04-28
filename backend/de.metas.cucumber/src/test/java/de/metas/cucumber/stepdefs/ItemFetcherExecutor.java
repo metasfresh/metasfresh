@@ -31,6 +31,7 @@ public class ItemFetcherExecutor<T>
 	private final long checkingIntervalMs;
 	@Nullable private final ItemProvider<T> workerParam;
 	@Nullable private final IQuery<T> query;
+	@Nullable private final Supplier<T> dataSupplier;
 	@Nullable private final Function<T, BooleanWithReason> validateUsingFunction;
 	@Nullable private final Supplier<String> logContext;
 
@@ -40,6 +41,7 @@ public class ItemFetcherExecutor<T>
 			@Nullable final Long checkingIntervalMs,
 			@Nullable final ItemProvider<T> worker,
 			@Nullable final IQuery<T> query,
+			@Nullable final Supplier<T> dataSupplier,
 			@Nullable final Function<T, BooleanWithReason> validateUsingFunction,
 			@Nullable final Supplier<String> logContext)
 	{
@@ -47,6 +49,7 @@ public class ItemFetcherExecutor<T>
 		this.checkingIntervalMs = CoalesceUtil.coalesceNotNull(checkingIntervalMs, 500L);
 		this.workerParam = worker;
 		this.query = query;
+		this.dataSupplier = dataSupplier;
 		this.validateUsingFunction = validateUsingFunction;
 		this.logContext = logContext;
 	}
@@ -175,12 +178,21 @@ public class ItemFetcherExecutor<T>
 		if (workerParam != null)
 		{
 			Check.assumeNull(query, "query is not set");
+			Check.assumeNull(dataSupplier, "dataSupplier is not set");
 			Check.assumeNull(validateUsingFunction, "validatorFunction is not set");
 			return workerParam;
 		}
 		else if (query != null)
 		{
+			Check.assumeNull(workerParam, "workerParam is not set");
+			Check.assumeNull(dataSupplier, "dataSupplier is not set");
 			return new QueryBasedItemProvider<>(query, validateUsingFunction);
+		}
+		else if (dataSupplier != null)
+		{
+			Check.assumeNull(workerParam, "workerParam is not set");
+			Check.assumeNull(query, "query is not set");
+			return new DataSupplierBasedItemProvider<>(dataSupplier, validateUsingFunction);
 		}
 		else
 		{
@@ -207,7 +219,7 @@ public class ItemFetcherExecutor<T>
 
 			final List<T> items = query.list();
 			SharedTestContext.put("items", items);
-			
+
 			return checkValid(items);
 		}
 
@@ -276,4 +288,49 @@ public class ItemFetcherExecutor<T>
 		}
 
 	}
+
+	//
+	//
+	// ----------------------------------------------------------------------------
+	//
+	//
+
+	@RequiredArgsConstructor
+	private static class DataSupplierBasedItemProvider<T> implements ItemProvider<T>
+	{
+		@NonNull private final Supplier<T> dataSupplier;
+		@Nullable private final Function<T, BooleanWithReason> validateUsingFunction;
+
+		@Override
+		public ProviderResult<T> execute()
+		{
+			final T data = dataSupplier.get();
+			SharedTestContext.put("data", data);
+
+			return checkValid(data);
+		}
+
+		private ProviderResult<T> checkValid(final T data)
+		{
+			if (validateUsingFunction != null)
+			{
+				try
+				{
+					final BooleanWithReason valid = validateUsingFunction.apply(data);
+					if (valid.isFalse())
+					{
+						return ProviderResult.resultWasNotFound(valid.getReasonAsString());
+					}
+				}
+				catch (final Exception | AssertionError ex)
+				{
+					return ProviderResult.resultWasNotFound(ex);
+				}
+			}
+
+			return ProviderResult.resultWasFound(data);
+		}
+
+	}
+
 }

@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -101,18 +102,45 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductDAO implements IProductDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	final static int ONE_YEAR_DAYS = 365;
 	final static int TWO_YEAR_DAYS = 730;
 	final static int THREE_YEAR_DAYS = 1095;
 	final static int FIVE_YEAR_DAYS = 1825;
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
+	{
+		if (!product.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -491,7 +519,7 @@ public class ProductDAO implements IProductDAO
 				.createQueryBuilder(I_M_Product.class) // in trx!
 				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 		if (productIds.isEmpty())
 		{
 			return;
@@ -627,7 +655,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
 		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -640,6 +668,20 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.idsAsSet(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
 	{
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
@@ -648,7 +690,7 @@ public class ProductDAO implements IProductDAO
 				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
 				.setLimit(QueryLimit.TWO)
 				.create()
-				.listIds(ProductId::ofRepoIdOrNull);
+				.idsAsSet(ProductId::ofRepoIdOrNull);
 
 		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
@@ -724,7 +766,7 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
 				.orderBy(I_M_Product.COLUMNNAME_Value)
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Override
@@ -732,35 +774,6 @@ public class ProductDAO implements IProductDAO
 	{
 		final I_M_Product product = getById(productId);
 		return extractIssuingToleranceSpec(product);
-	}
-
-	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
-	{
-		if (!product.isEnforceIssuingTolerance())
-		{
-			return Optional.empty();
-		}
-
-		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
-		if (valueType == null)
-		{
-			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
-		}
-		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
-		{
-			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
-			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
-		}
-		else if (valueType == IssuingToleranceValueType.QUANTITY)
-		{
-			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
-			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
-		}
-		else
-		{
-			throw new AdempiereException("Unknown valueType: " + valueType);
-		}
 	}
 
 	@Override
@@ -811,13 +824,23 @@ public class ProductDAO implements IProductDAO
 				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
 				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
 
-		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+		return queryBuilder.create().idsAsSet(ProductId::ofRepoIdOrNull);
 	}
 
 	@Override
 	public void save(I_M_Product record)
 	{
 		InterfaceWrapperHelper.save(record);
+	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				//.addOnlyActiveRecordsFilter() // check inactive records too
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.anyMatch();
 	}
 
 }

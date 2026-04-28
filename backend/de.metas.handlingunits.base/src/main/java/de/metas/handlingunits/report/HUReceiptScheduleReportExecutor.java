@@ -1,24 +1,22 @@
 package de.metas.handlingunits.report;
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import com.google.common.base.Preconditions;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.i18n.Language;
 import de.metas.printing.IMassPrintingService;
+import de.metas.process.ProcessCalledFrom;
+import de.metas.process.ProcessInfo;
 import de.metas.report.PrintCopies;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.i18n.Language;
-import de.metas.process.ProcessInfo;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /*
  * #%L
@@ -54,8 +52,7 @@ public class HUReceiptScheduleReportExecutor
 
 	/**
 	 * The number of copies to create when we perform this print.
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/210
+	 * task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/210">https://github.com/metasfresh/metasfresh-webui-api/issues/210</a>
 	 */
 	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies = "de.metas.handlingunits.ReceiptScheduleHUPOSJasper.Copies";
 
@@ -74,9 +71,6 @@ public class HUReceiptScheduleReportExecutor
 
 	/**
 	 * Creates an returns a new instance of this services which can execute the jasper report for the given {@code receiptSchedule}.
-	 * 
-	 * @param receiptSchedule
-	 * @return
 	 */
 	public static HUReceiptScheduleReportExecutor get(final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -85,9 +79,6 @@ public class HUReceiptScheduleReportExecutor
 
 	/**
 	 * Give this service a window number. The default is {@link Env#WINDOW_None}.
-	 *
-	 * @param windowNo
-	 * @return
 	 */
 	public HUReceiptScheduleReportExecutor withWindowNo(final int windowNo)
 	{
@@ -95,9 +86,6 @@ public class HUReceiptScheduleReportExecutor
 		return this;
 	}
 
-	/**
-	 *
-	 */
 	public void executeHUReport()
 	{
 		final I_C_OrderLine orderLine = receiptSchedule.getC_OrderLine();
@@ -134,6 +122,7 @@ public class HUReceiptScheduleReportExecutor
 		ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process_ID(reportProcessId)
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				// .setAD_PInstance_ID() // NO AD_PInstance => we want a new instance
 				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
 				.setWindowNo(windowNo)

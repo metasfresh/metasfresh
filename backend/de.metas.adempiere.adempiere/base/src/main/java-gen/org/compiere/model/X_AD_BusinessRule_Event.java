@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule_Event extends org.compiere.model.PO implements I_AD_BusinessRule_Event, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1166482534L;
+	private static final long serialVersionUID = -1371014578L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule_Event (final Properties ctx, final int AD_BusinessRule_Event_ID, @Nullable final String trxName)
@@ -170,5 +170,20 @@ public class X_AD_BusinessRule_Event extends org.compiere.model.PO implements I_
 	public int getSource_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Source_Table_ID);
+	}
+
+	@Override
+	public void setTriggering_User_ID (final int Triggering_User_ID)
+	{
+		if (Triggering_User_ID < 1) 
+			set_Value (COLUMNNAME_Triggering_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Triggering_User_ID, Triggering_User_ID);
+	}
+
+	@Override
+	public int getTriggering_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Triggering_User_ID);
 	}
 }

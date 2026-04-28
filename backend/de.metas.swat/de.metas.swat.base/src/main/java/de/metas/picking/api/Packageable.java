@@ -21,8 +21,7 @@
  */
 
 package de.metas.picking.api;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -37,6 +36,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -48,6 +48,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -117,9 +118,8 @@ public class Packageable
 
 	FreightCostRule freightCostRule;
 
-	@NonNull
-	ProductId productId;
-	String productName;
+	@NonNull ProductId productId;
+	@NonNull ProductValueAndName productValueAndName;
 
 	@NonNull
 	AttributeSetInstanceId asiId;
@@ -150,6 +150,10 @@ public class Packageable
 
 	@Nullable
 	public OrderAndLineId getSalesOrderAndLineIdOrNull() {return OrderAndLineId.ofNullable(salesOrderId, salesOrderLineIdOrNull);}
+
+	public UomId getUomId() {return qtyOrdered.getUomId();}
+
+	public I_C_UOM getUOM() {return qtyOrdered.getUOM();}
 
 	public Quantity getQtyPickedOrDelivered()
 	{

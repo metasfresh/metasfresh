@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.common.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,7 +48,7 @@ public class ProductUpsertCamelRequest
 	{
 		try
 		{
-			return new ObjectMapper().writeValueAsString(this);
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(this);
 		}
 		catch (final JsonProcessingException e)
 		{

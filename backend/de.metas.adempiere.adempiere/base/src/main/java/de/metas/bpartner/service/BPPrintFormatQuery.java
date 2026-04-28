@@ -62,4 +62,7 @@ public class BPPrintFormatQuery
 
 	@Builder.Default
 	boolean onlyCopiesGreaterZero = false;
+
+	@Builder.Default
+	boolean isExactMatch = false;
 }

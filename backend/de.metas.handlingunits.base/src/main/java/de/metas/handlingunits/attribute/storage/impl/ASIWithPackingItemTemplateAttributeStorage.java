@@ -22,22 +22,7 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
-
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -49,6 +34,19 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.uom.UOMType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Wraps an {@link I_M_AttributeSetInstance}; returns values of the packing item template's {@link I_M_HU_PI_Attribute}s.
@@ -105,12 +103,12 @@ import lombok.NonNull;
 	protected List<IAttributeValue> loadAttributeValues()
 	{
 		final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		//
 		// Retrieve Attribute Instances for given ASI
 		// Build M_Attribute_ID to M_AttributeInstance map
-		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(asi);
+		final List<I_M_AttributeInstance> attributeInstances = asiBL.getAttributeInstances(asi);
 		final Map<AttributeId, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<>(attributeInstances.size());
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
@@ -141,7 +139,7 @@ import lombok.NonNull;
 				// => create one but don't save
 				final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
 				final String trxName = InterfaceWrapperHelper.getTrxName(asi);
-				attributeInstance = attributeDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
+				attributeInstance = asiBL.createNewAttributeInstance(ctx, asi, attributeId, trxName);
 				isGeneratedAttribute = true;
 			}
 			else
@@ -161,8 +159,7 @@ import lombok.NonNull;
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		final AIWithHUPIAttributeValue aiAttributeValue = new AIWithHUPIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
-		return aiAttributeValue;
+		return new AIWithHUPIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
 	}
 
 	@Override
@@ -178,9 +175,7 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * Method not supported.
-	 *
-	 * @throws UnsupportedOperationException
+	 * Method is not supported.
 	 */
 	@Override
 	protected void addChildAttributeStorage(final IAttributeStorage childAttributeStorage)
@@ -189,9 +184,7 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * Method not supported.
-	 *
-	 * @throws UnsupportedOperationException
+	 * Method is not supported.
 	 */
 	@Override
 	protected IAttributeStorage removeChildAttributeStorage(final IAttributeStorage childAttributeStorage)

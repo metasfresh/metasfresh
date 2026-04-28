@@ -1,17 +1,11 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -21,6 +15,16 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -58,8 +62,10 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 	{
 		AdempiereTestHelper.get().init();
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BankAccountService bankAccountService = new BankAccountService(new BankRepository(), new CurrencyRepository()); 
+		SpringContextHolder.registerJUnitBean(bankAccountService);
 
-		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();
+		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02(bankAccountService);
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -102,7 +108,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3");
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo("SEPA_CreditorName");
 
-		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("SEPA_CreditorName"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("bankAccount.A_Name"));
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
 	}
 

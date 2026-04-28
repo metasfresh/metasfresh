@@ -104,6 +104,12 @@ public class BillLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public I_M_ShipmentSchedule getWrappedRecord()
 	{
 		return delegate;

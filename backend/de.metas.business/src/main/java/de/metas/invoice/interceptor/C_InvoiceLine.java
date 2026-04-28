@@ -78,13 +78,8 @@ public class C_InvoiceLine
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 
-		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
-
-		if (productId == null)
-		{
-			return;
-		}
-
+		//Product should always be set, but we can't make it mandatory in db because of existing cases
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);

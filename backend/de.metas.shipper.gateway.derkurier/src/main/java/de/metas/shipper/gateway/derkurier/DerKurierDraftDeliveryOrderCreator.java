@@ -1,8 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
@@ -14,11 +12,15 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,29 +52,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 @Service
+@RequiredArgsConstructor
 public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	public DerKurierDraftDeliveryOrderCreator(
-			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
-	{
-		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
-
-	}
+	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(
 			@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getPackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -107,22 +105,19 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 				// Pickup
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
 				//
 				// Delivery
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
 						//.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(deliverToBPartner.getName())
 						.emailAddress(deliverToBPartner.getEMail())
 						.build())
 				//
@@ -130,8 +125,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE))
-						.content(request.getAllPackagesContentDescription())
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg))
+						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.customDeliveryData(derKurierDeliveryData)
 						.build())
 				// .customerReference(null)

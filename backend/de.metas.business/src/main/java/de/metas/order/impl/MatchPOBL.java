@@ -1,6 +1,8 @@
 package de.metas.order.impl;
 
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import com.google.common.collect.Streams;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IPostingService;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceAndLineId;
@@ -17,13 +19,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -38,12 +38,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,6 +53,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class MatchPOBL implements IMatchPOBL
 {
 	private final IMatchPODAO matchPODAO = Services.get(IMatchPODAO.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
 
 	@Override
 	public I_M_MatchPO create(
@@ -184,15 +185,11 @@ public class MatchPOBL implements IMatchPOBL
 		//
 		// Post eligible MatchPOs
 		{
-			final HashSet<Integer> matchPOIdsToPost = new HashSet<>();
-			existingMatchPOs.stream()
-					.filter(matchPO -> matchPO.getM_InOutLine_ID() > 0)
-					.forEach(matchPO -> matchPOIdsToPost.add(matchPO.getM_MatchPO_ID()));
-			if (retValue != null && retValue.getM_InOutLine_ID() > 0)
-			{
-				matchPOIdsToPost.add(retValue.getM_MatchPO_ID());
-			}
-			enqueToPost(matchPOIdsToPost);
+			Streams.concat(existingMatchPOs.stream(), Stream.of(retValue))
+					.filter(matchPO -> matchPO != null && matchPO.getM_InOutLine_ID() > 0)
+					.map(MatchPOBL::toDocumentPostRequest)
+					.collect(DocumentPostMultiRequest.collect())
+					.ifPresent(postingService::schedule);
 		}
 
 		return retValue;
@@ -211,7 +208,7 @@ public class MatchPOBL implements IMatchPOBL
 		matchPO.setM_Product_ID(sLine.getM_Product_ID());
 		matchPO.setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
 		matchPO.setQty(qty);
-		matchPO.setProcessed(true);		// auto
+		matchPO.setProcessed(true);        // auto
 
 		return matchPO;
 	}
@@ -232,28 +229,17 @@ public class MatchPOBL implements IMatchPOBL
 		matchPO.setM_Product_ID(iLine.getM_Product_ID());
 		matchPO.setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 		matchPO.setQty(qty);
-		matchPO.setProcessed(true);		// auto
+		matchPO.setProcessed(true);        // auto
 
 		return matchPO;
-	}	// MMatchPO
+	}    // MMatchPO
 
-	private void enqueToPost(@NonNull final Set<Integer> matchPOIds)
+	private static DocumentPostRequest toDocumentPostRequest(final I_M_MatchPO matchPO)
 	{
-		if (matchPOIds.isEmpty())
-		{
-			return;
-		}
-
-		final IPostingService postingService = Services.get(IPostingService.class);
-		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID());
-
-		matchPOIds.forEach(matchPOId -> postingService.newPostingRequest()
-				.setClientId(clientId)
-				.setDocumentRef(TableRecordReference.of(I_M_MatchPO.Table_Name, matchPOId)) // the document to be posted
-				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-				.setPostImmediate(PostImmediate.No) // no, just enqueue it
-				.setForce(false) // don't force it
-				.postIt());
+		return DocumentPostRequest.builder()
+				.record(TableRecordReference.of(I_M_MatchPO.Table_Name, matchPO.getM_MatchPO_ID()))
+				.clientId(ClientId.ofRepoId(matchPO.getAD_Client_ID()))
+				.build();
 	}
 
 	@Override

@@ -1,19 +1,8 @@
-package de.metas.order;
-
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.compiere.model.X_C_Order;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +19,17 @@ import javax.annotation.Nullable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.order;
+
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_C_Order;
+
+import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
 @Getter
@@ -55,4 +55,8 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 
 	@Nullable
 	public static String toCodeOrNull(@Nullable final InvoiceRule type) {return type != null ? type.getCode() : null;}
+
+	public boolean isAfterDelivery() {return AfterDelivery.equals(this);}
+	public boolean isAfterPick() {return AfterPick.equals(this);}
+	public boolean isOrderCompletelyDelivered() {return OrderCompletelyDelivered.equals(this);}
 }

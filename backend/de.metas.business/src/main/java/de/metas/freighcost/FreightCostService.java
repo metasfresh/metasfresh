@@ -1,20 +1,17 @@
 package de.metas.freighcost;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -96,8 +93,7 @@ public class FreightCostService
 	 * <li>Default freight cost</li>
 	 * </ul>
 	 *
-	 * @throws AdempiereException
-	 *             if there is no freight cost record for the given inOut
+	 * @throws AdempiereException if there is no freight cost record for the given inOut
 	 */
 	public FreightCost findBestMatchingFreightCost(final FreightCostContext context)
 	{
@@ -117,10 +113,7 @@ public class FreightCostService
 		final ShipperId shipperId = context.getShipperId();
 		if (shipperId == null)
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_Order_No_Shipper);
-			throw new AdempiereException(message);
+			throw new AdempiereException(MSG_Order_No_Shipper);
 		}
 
 		//

@@ -11,7 +11,6 @@ import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueCreateOrUpdateRequest;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -98,7 +97,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		// nothing
 	}
@@ -110,7 +109,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
+	public I_I_ElementValue retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_ElementValue(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -131,7 +130,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		final ElementValue elementValue = elementValueService.createOrUpdate(
 				ElementValueCreateOrUpdateRequest.builder()
 						.existingElementValueId(existingElementValueId)
-						.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+						.orgId(chartOfAccountsImportHelper.extractOrgId(importRecord))
 						.chartOfAccountsId(chartOfAccountsId)
 						.value(Check.assumeNotNull(importRecord.getValue(), "Value shall be set"))
 						.name(Check.assumeNotNull(importRecord.getName(), "Name shall be set"))

@@ -1,10 +1,8 @@
-package de.metas.connection.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.connection.impl;
  * #L%
  */
 
+package de.metas.connection.impl;
+
 import com.mchange.v2.c3p0.AbstractConnectionCustomizer;
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.logging.LogManager;
@@ -32,9 +32,9 @@ import java.sql.Connection;
 
 /**
  * Use this class to add specific behavior to c3p0 connection handling.
- *
+ * <p>
  * Added for task 04006.
- *
+ * <p>
  * see <a href="http://www.mchange.com/projects/c3p0/#connection_customizers">...</a>
  */
 public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustomizer
@@ -47,7 +47,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 	 * When a new connection is acquired from the underlying postgres JDBC driver, this method sets the connections log limit to "WARNING".
 	 * That way, only warning messages (and above) will be send to
 	 * the client to prevent an OutOfMemoryError due to too many messages being send from verbose and long-running DB functions.
-	 *
+	 * <p>
 	 * Added for task 04006.
 	 */
 	@Override

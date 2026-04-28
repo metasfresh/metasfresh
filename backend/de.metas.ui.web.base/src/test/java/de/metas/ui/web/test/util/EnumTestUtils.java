@@ -1,13 +1,13 @@
 package de.metas.ui.web.test.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import org.junit.jupiter.api.Disabled;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.junit.Ignore;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import org.junit.Ignore;
  * #L%
  */
 
-@Ignore
+@Disabled
 public class EnumTestUtils
 {
 	public static <JSONEnumType, EnumType> void assertMappingFullyCovered(final EnumType[] values, final Function<EnumType, JSONEnumType> toJson)

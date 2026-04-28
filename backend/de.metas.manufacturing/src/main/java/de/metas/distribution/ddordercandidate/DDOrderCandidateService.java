@@ -9,14 +9,7 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddordercandidate.async.DDOrderCandidateEnqueueService;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.material.event.MaterialEventObserver;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
-import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
@@ -25,6 +18,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
@@ -37,41 +31,33 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DDOrderCandidateService
 {
+	public static final String SYSCONFIG_DDOrderAggregation_header_bySalesOrderId = "DDOrderAggregation.header.bySalesOrderId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byPPOrderRef = "DDOrderAggregation.header.byPPOrderRef";
+	public static final String SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId = "DDOrderAggregation.line.bySalesOrderLineId";
+
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateEnqueueService ddOrderCandidateEnqueueService;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
-	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
-	@NonNull private final PostMaterialEventService materialEventService;
-	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public static DDOrderCandidateService newInstanceForUnitTesting()
 	{
 		final DDOrderCandidateRepository ddOrderCandidateRepository = new DDOrderCandidateRepository();
 
-		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
-		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
-				materialEventConverter,
-				PlainEventBusFactory.newInstance(),
-				new MaterialEventObserver());
-		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
-
 		return new DDOrderCandidateService(
 				ddOrderCandidateRepository,
 				new DDOrderCandidateAllocRepository(),
 				new DDOrderCandidateEnqueueService(ddOrderCandidateRepository),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
-				new DistributionNetworkRepository(),
-				postMaterialEventService,
-				new ReplenishInfoRepository()
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO())
 		);
 	}
 
@@ -112,9 +98,6 @@ public class DDOrderCandidateService
 		return DDOrderCandidateProcessCommand.builder()
 				.ddOrderLowLevelService(ddOrderLowLevelService)
 				.ddOrderCandidateService(this)
-				.distributionNetworkRepository(distributionNetworkRepository)
-				.materialEventService(materialEventService)
-				.replenishInfoRepository(replenishInfoRepository)
 				.orgDAO(orgDAO)
 				.docTypeDAO(docTypeDAO)
 				.documentBL(documentBL)
@@ -122,7 +105,17 @@ public class DDOrderCandidateService
 				.bpartnerOrgBL(bpartnerOrgBL)
 				.warehouseBL(warehouseBL)
 				.uomConversionBL(uomConversionBL)
-				.orderLineBL(orderLineBL);
+				.orderLineBL(orderLineBL)
+				.aggregationConfig(readAggregationConfig());
+	}
+
+	private DDOrderCandidateProcessCommand.AggregationConfig readAggregationConfig()
+	{
+		return DDOrderCandidateProcessCommand.AggregationConfig.builder()
+				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
+				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
+				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
+				.build();
 	}
 
 	public void saveAndUpdateCandidates(@NonNull final DDOrderCandidateAllocList list)
@@ -166,7 +159,7 @@ public class DDOrderCandidateService
 		for (final DDOrderCandidate candidate : candidates.values())
 		{
 			final DDOrderCandidateAllocList alloc = allocationsByCandidateId.getOrDefault(candidate.getId(), DDOrderCandidateAllocList.EMPTY);
-			final Quantity qtyProcessed = alloc.getQtySum().orElseGet(() -> candidate.getQty().toZero());
+			final Quantity qtyProcessed = alloc.getQtySum().orElseGet(() -> candidate.getQtyEntered().toZero());
 			candidate.setQtyProcessed(qtyProcessed);
 			ddOrderCandidateRepository.save(candidate);
 		}
@@ -176,4 +169,6 @@ public class DDOrderCandidateService
 	{
 		return ddOrderCandidateRepository.list(query);
 	}
+
+	public Collection<DDOrderCandidate> getByIds(final @NonNull Set<DDOrderCandidateId> ids) {return ddOrderCandidateRepository.getByIds(ids);}
 }

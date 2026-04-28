@@ -26,15 +26,19 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,18 +54,14 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 @Callout(I_C_Payment.class)
 @Interceptor(I_C_Payment.class)
 @Component
+@RequiredArgsConstructor
 public class C_Payment
 {
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-
-	private final CurrencyRepository currencyRepository;
-
-	public C_Payment(@NonNull final CurrencyRepository currencyRepository)
-	{
-		this.currencyRepository = currencyRepository;
-	}
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final PaymentTermService paymentTermService;
+	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@Init
 	public void registerCallout()
@@ -85,10 +85,16 @@ public class C_Payment
 			return;
 		}
 
-		final I_C_Order order = orderDAO.getById(orderId);
+		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(record.getC_OrderPaySchedule_ID());
+		if (orderPayScheduleId != null)
+		{
+			return; // do not update form order, since all amounts are calculated
+		}
 
+		final I_C_Order order = orderDAO.getById(orderId);
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID());
-		final Percent paymentTermDiscountPercent = paymentTermRepository.getPaymentTermDiscount(paymentTermId);
+
+		final Percent paymentTermDiscountPercent = paymentTermService.getPaymentTermDiscount(paymentTermId);
 		final Currency currency = currencyRepository.getById(record.getC_Currency_ID());
 
 		final BigDecimal priceActual = paymentTermDiscountPercent.subtractFromBase(order.getGrandTotal(), currency.getPrecision().toInt());
@@ -109,5 +115,19 @@ public class C_Payment
 		record.setPayAmt(priceActual);
 		record.setDiscountAmt(discountAmount);
 		paymentBL.validateDocTypeIsInSync(record);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void updateOrderPayScheduleStatus(final I_C_Payment payment)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(payment.getC_Order_ID());
+		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(payment.getC_OrderPaySchedule_ID());
+
+		if (orderId == null || orderPayScheduleId == null)
+		{
+			return;
+		}
+
+		orderPayScheduleService.markAsPaid(orderId, orderPayScheduleId);
 	}
 }

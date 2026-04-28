@@ -7,6 +7,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -16,7 +17,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -27,6 +28,8 @@ import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderLineData;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,6 +39,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
+import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -113,7 +117,8 @@ public class PPOrderCreatedHandlerTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval,  candidateQtyDetailsRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -124,13 +129,15 @@ public class PPOrderCreatedHandlerTests
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				supplyCandidateHandler,
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
 						availableToPromiseRepository,
 						stockCandidateService,
-						supplyCandidateHandler)));
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher())));
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
@@ -148,7 +155,7 @@ public class PPOrderCreatedHandlerTests
 		assert_data_after_ppOrderEvent(ppOrderCreatedEvent);
 	}
 
-	private MaterialDispoGroupId assert_data_after_ppOrderEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
+	private void assert_data_after_ppOrderEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); // for the produced qty
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // for the consumed qty (we have 2 bom components )
@@ -202,7 +209,7 @@ public class PPOrderCreatedHandlerTests
 			assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different if they are about different products or warehouses
 		}
 
-		final int ppOrderId = ppOrderEvent.getPpOrder().getPpOrderId();
+		final int ppOrderId = PPOrderId.toRepoId(ppOrderEvent.getPpOrder().getPpOrderId());
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOrderId(r, ppOrderId));
 
 		//
@@ -233,13 +240,12 @@ public class PPOrderCreatedHandlerTests
 					.allSatisfy(d -> assertThat(d.getM_ShipmentSchedule_ID()).isEqualTo(SHIPMENT_SCHEDULE_ID));
 		}
 
-		return supplyDemandGroupId;
 	}
 
 	@Test
 	public void handle_CreatedEvent_without_groupId()
 	{
-		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, (MaterialDispoGroupId)null);
+		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, null);
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
 		ppOrderCreatedHandler.handleEvent(ppOrderCreatedEvent);
 
@@ -258,7 +264,7 @@ public class PPOrderCreatedHandlerTests
 				.ppOrder(ppOrder)
 				.build();
 
-		assertThat(ppOrder.getPpOrderId()).isEqualTo(ppOrderId);
+		assertThat(ppOrder.getPpOrderId().getRepoId()).isEqualTo(ppOrderId);
 		return event;
 	}
 
@@ -270,7 +276,7 @@ public class PPOrderCreatedHandlerTests
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
 
 		return PPOrder.builder()
-				.ppOrderId(ppOrderId)
+				.ppOrderId(PPOrderId.ofRepoId(ppOrderId))
 				.docStatus(DocStatus.InProgress)
 				.ppOrderData(PPOrderData.builder()
 						.clientAndOrgId(CLIENT_AND_ORG_ID)

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -42,31 +44,48 @@ public class EventDescriptor
 {
 	@NonNull String eventId;
 	@NonNull ClientAndOrgId clientAndOrgId;
+	@NonNull UserId userId;
 	@Nullable String traceId;
 
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
-		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
+		return ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId), null);
 	}
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
 	{
-		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
+		return ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId), null);
 	}
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return builder()
-				.eventId(newEventId())
-				.clientAndOrgId(clientAndOrgId)
-				.build();
+		return ofClientOrgAndTraceId(clientAndOrgId, null);
 	}
 
-	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
+	public static EventDescriptor ofClientOrgAndUserId(@NonNull final ClientAndOrgId clientAndOrgId,
+													   @NonNull final UserId userId)
+	{
+		return ofClientOrgUserIdAndTraceId(clientAndOrgId, userId, null);
+	}
+
+	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId,
+														@Nullable final String traceId)
+	{
+		return ofClientOrgUserIdAndTraceId(
+				clientAndOrgId,
+				Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM),
+				traceId);
+	}
+
+	public static EventDescriptor ofClientOrgUserIdAndTraceId(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final UserId userId,
+			@Nullable final String traceId)
 	{
 		return builder()
 				.eventId(newEventId())
 				.clientAndOrgId(clientAndOrgId)
+				.userId(userId)
 				.traceId(traceId)
 				.build();
 	}
@@ -86,10 +105,19 @@ public class EventDescriptor
 		return getClientAndOrgId().getOrgId();
 	}
 
+	@NonNull
 	public EventDescriptor withNewEventId()
 	{
 		return toBuilder()
 				.eventId(newEventId())
+				.build();
+	}
+
+	@NonNull
+	public EventDescriptor withClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return toBuilder()
+				.clientAndOrgId(clientAndOrgId)
 				.build();
 	}
 }

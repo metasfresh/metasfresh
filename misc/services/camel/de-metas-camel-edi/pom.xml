@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -15,17 +37,18 @@
     <version>10.0.0</version>
     <properties>
         <java.version>14</java.version>
-        <spring-boot.version>2.6.3</spring-boot.version>
-        <camel.version>3.14.1</camel.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <camel.version>3.14.7</camel.version>
         <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
         <org.apache.poi.version>4.1.2</org.apache.poi.version>
-        <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
+        <jaxb.inhouse.v2.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev2</jaxb.inhouse.v2.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <jaxb.inhouse.v1.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev1</jaxb.inhouse.v1.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
             3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
@@ -36,9 +59,6 @@
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
-
-        <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
     </properties>
 
     <dependencyManagement>
@@ -94,6 +114,7 @@
             <version>${metasfresh-common.version}</version>
             <!-- Avoid startup failure
              org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
+             Please revise this exclusion when the rest of MF also runs with java-17 or later
             -->
             <exclusions>
                 <exclusion>
@@ -131,11 +152,6 @@
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
             <version>${camel.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-javaconfig</artifactId>
         </dependency>
 
         <dependency>
@@ -246,24 +262,12 @@
         </dependency>
 
         <dependency>
+            <!-- needed to run the tests with maven's surefire-plugin -->
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.8.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
+        
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -319,92 +323,10 @@
                 <version>${camel.version}</version>
             </plugin>
 
+            <!-- Adds java-xjc source roots for compile without regenerating.
+                 To regenerate after an XSD change: mvn generate-sources -Pregenerate-jaxb-sources
+                 Or: ./misc/dev-support/scripts/regenerate-jaxb-sources.sh -->
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>xjc-schema-metasfresh</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
-                            <generatePackage>${jaxb.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfresh</generateDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>xjc-stepcom-orders</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
-                            <generatePackage>${jaxb.orders.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</generateDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>xjc-stepcom-desadv</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
-                            <generatePackage>${jaxb.desadv.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</generateDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>xjc-stepcom-invoic</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
-                            <generatePackage>${jaxb.invoic.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</generateDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>xjc-schema-remadv</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <bindingDirectory>src/main/xsd/ecosio/ERPEL1p0</bindingDirectory>
-                            <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
-                            <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
-                            <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
-
-                            because it will end with "Two declarations cause a collision in the ObjectFactory class."
-                            -->
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                        <version>2.3.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
-            <plugin>
-                <!-- Adds src/main/java-xsd as additional source folder (if the directory
-                    is present) -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.3.0</version>
@@ -417,7 +339,8 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/main/java-xjc_metasfresh</source>
+                                <source>src/main/java-xjc_metasfreshinhousev1</source>
+                                <source>src/main/java-xjc_metasfreshinhousev2</source>
                                 <source>src/main/java-xjc_stepcom_orders</source>
                                 <source>src/main/java-xjc_stepcom_desadv</source>
                                 <source>src/main/java-xjc_stepcom_invoic</source>
@@ -454,5 +377,117 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!--
+                Regenerate JAXB sources from XSD schemas in src/main/xsd/.
+                Run this profile whenever a schema file changes:
+                  mvn generate-sources -Pregenerate-jaxb-sources
+                Or regenerate all JAXB modules at once:
+                  ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+                After regeneration, commit the changed java-xjc_* files together with the XSD change.
+            -->
+            <id>regenerate-jaxb-sources</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.jaxb2.maven2</groupId>
+                        <artifactId>maven-jaxb2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>xjc-schema-metasfresh-inhouse-v2</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/metasfreshinhousev2</schemaDirectory>
+                                    <generatePackage>${jaxb.inhouse.v2.packageName}</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev2</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>xjc-stepcom-orders</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
+                                    <generatePackage>${jaxb.orders.packageName}</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>xjc-stepcom-desadv</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
+                                    <generatePackage>${jaxb.desadv.packageName}</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>xjc-stepcom-invoic</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
+                                    <generatePackage>${jaxb.invoic.packageName}</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>xjc-schema-remadv</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <bindingDirectory>src/main/xsd/ecosio/ERPEL1p0</bindingDirectory>
+                                    <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
+                                    <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
+                                    <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
+
+                                    because it will end with "Two declarations cause a collision in the ObjectFactory class."
+                                    -->
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>xjc-schema-metasfresh-inhouse-v1</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/metasfreshinhousev1</schemaDirectory>
+                                    <generatePackage>${jaxb.inhouse.v1.packageName}</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev1</generateDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>javax.xml.bind</groupId>
+                                <artifactId>jaxb-api</artifactId>
+                                <version>2.3.1</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.glassfish.jaxb</groupId>
+                                <artifactId>jaxb-runtime</artifactId>
+                                <version>2.3.1</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

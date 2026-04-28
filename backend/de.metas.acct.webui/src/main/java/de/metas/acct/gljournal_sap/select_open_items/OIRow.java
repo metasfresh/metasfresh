@@ -14,7 +14,6 @@ import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
@@ -58,9 +57,6 @@ class OIRow implements IViewRow
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, captionKey = "Description")
 	@Nullable private final String description;
 
-	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_SectionCode_ID")
-	@Nullable private final LookupValue sectionCode;
-
 	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Text, captionKey = I_C_AcctSchema_Element.COLUMNNAME_UserElementString1)
 	@Nullable private final String userElementString1;
 
@@ -87,7 +83,6 @@ class OIRow implements IViewRow
 			@NonNull final Amount amount,
 			@NonNull final Amount openAmount,
 			@NonNull final Instant dateAcct,
-			@Nullable final LookupValue sectionCode,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final ITranslatableString bpartnerCaption,
 			@Nullable final String documentNo,
@@ -102,7 +97,6 @@ class OIRow implements IViewRow
 		this.amount = amount;
 		this.openAmount = openAmount;
 		this.dateAcct = dateAcct;
-		this.sectionCode = sectionCode;
 		this.bpartnerId = bpartnerId;
 		this.bpartnerCaption = bpartnerCaption;
 		this.documentNo = documentNo;

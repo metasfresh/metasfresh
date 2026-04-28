@@ -83,7 +83,7 @@ public class PrintingClientExternalSystemService
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(childConfigRecord.getExternalSystem_Config_ID()))
-				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.PrintClient.getName()))
+				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.PrintClient.getValue()))
 				.parameters(parameters)
 				.orgCode(orgDAO.getById(OrgId.ofRepoId(request.getOrgId())).getValue())
 				.command(EXTERNAL_SYSTEM_COMMAND_PRINTING_CLIENT)

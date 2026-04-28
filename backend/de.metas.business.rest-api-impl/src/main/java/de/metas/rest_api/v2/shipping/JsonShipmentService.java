@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,7 +63,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
@@ -75,6 +74,7 @@ import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -92,8 +92,10 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -105,7 +107,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,7 +125,6 @@ public class JsonShipmentService
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -131,6 +132,7 @@ public class JsonShipmentService
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	private final AttributeSetHelper attributeSetHelper;
 	private final JsonInvoiceService jsonInvoiceService;
@@ -221,7 +223,7 @@ public class JsonShipmentService
 			if (request.getCloseShipmentSchedule())
 			{
 				loggable.addLog("processShipmentSchedules - start closing shipmentSchedules");
-				generateShipmentRequest.getScheduleIds().forEach(shipmentScheduleBL::closeShipmentSchedule);
+				shipmentScheduleBL.closeShipmentSchedules(generateShipmentRequest.getScheduleIds().getShipmentScheduleIds());
 				loggable.addLog("processShipmentSchedules - finished closing shipmentSchedules");
 			}
 		}
@@ -235,6 +237,13 @@ public class JsonShipmentService
 		}
 
 		return responseBuilder.build();
+	}
+
+	@NonNull
+	public Optional<byte[]> getShipmentPDF(@NonNull final InOutId inOutId)
+	{
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_M_InOut.Table_Name, inOutId))
+				.map(archiveBL::getBinaryData);
 	}
 
 	private void updateShipmentSchedules(@NonNull final JsonCreateShipmentRequest request)
@@ -253,7 +262,7 @@ public class JsonShipmentService
 	{
 		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(generateShipmentsRequest.getScheduleIds());
 
-		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, generateShipmentsRequest.getAsyncBatchId());
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
 		return invoiceIds.stream()
 				.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
@@ -406,7 +415,7 @@ public class JsonShipmentService
 			@NonNull final ShippingInfoCache cache)
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
-		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
+		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation())
 				.orElse(null);
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
 		final List<JsonAttributeInstance> attributes = createShipmentInfo.getAttributes();
@@ -450,7 +459,7 @@ public class JsonShipmentService
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
-		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
+		final HashSet<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
 
 		final ShippingInfoCache cache = newShippingInfoCache();
 		cache.warmUpForShipmentScheduleIds(createShipmentInfoList, CreateShipmentInfoCandidate::getShipmentScheduleId);
@@ -460,7 +469,7 @@ public class JsonShipmentService
 			final ShipmentScheduleId shipmentScheduleId = createShipmentCandidate.getShipmentScheduleId();
 			final JsonCreateShipmentInfo createShipmentInfo = createShipmentCandidate.getCreateShipmentInfo();
 
-			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
+			shipmentScheduleIds.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo()))
 			{
@@ -481,7 +490,7 @@ public class JsonShipmentService
 
 		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
-				.scheduleIds(shipmentScheduleIdsBuilder.build())
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds))
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
 				.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.ofMap(scheduleToQuantityToDeliver.build()))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -499,6 +508,7 @@ public class JsonShipmentService
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 					.bpartnerValue(bPartnerValue)
+					.isCustomerFilter(true)
 					.build());
 		}
 	}
@@ -656,15 +666,21 @@ public class JsonShipmentService
 
 		final Map<ShipmentScheduleId, CreateShipmentInfoCandidate> candidateInfoById = Maps.uniqueIndex(createShipmentCandidates, CreateShipmentInfoCandidate::getShipmentScheduleId);
 
-		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleIds = shipmentService.getShipmentScheduleIdByAsyncBatchId(candidateInfoById.keySet());
+		final ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> asyncBatchId2ScheduleIds = shipmentService.groupSchedulesByAsyncBatch(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(candidateInfoById.keySet()));
 
 		return asyncBatchId2ScheduleIds.entrySet()
 				.stream()
-				.collect(Collectors.toMap(Map.Entry::getKey,
-						entry -> entry.getValue()
-								.stream()
-								.map(candidateInfoById::get)
-								.collect(ImmutableList.toImmutableList())));
+				.collect(
+						Collectors.toMap(
+								Map.Entry::getKey,
+								entry -> {
+									final Set<ShipmentScheduleId> shipmentScheduleIds = entry.getValue().getShipmentScheduleIds();
+									return shipmentScheduleIds.stream()
+											.map(candidateInfoById::get)
+											.collect(ImmutableList.toImmutableList());
+								}
+						)
+				);
 	}
 
 	@NonNull

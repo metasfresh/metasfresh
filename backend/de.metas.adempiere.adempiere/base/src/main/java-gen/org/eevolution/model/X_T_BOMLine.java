@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1163201524L;
+	private static final long serialVersionUID = 2082849656L;
 
     /** Standard Constructor */
     public X_T_BOMLine (final Properties ctx, final int T_BOMLine_ID, @Nullable final String trxName)
@@ -125,6 +125,8 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
+	/** MovingAverageInvoice = M */
+	public static final String COSTINGMETHOD_MovingAverageInvoice = "M";
 	@Override
 	public void setCostingMethod (final @Nullable java.lang.String CostingMethod)
 	{

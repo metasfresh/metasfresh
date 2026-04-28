@@ -19,6 +19,7 @@ package org.compiere.model;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
+import de.metas.email.EMailRequest;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
@@ -27,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
@@ -274,12 +276,12 @@ public class MClient extends X_AD_Client
 		{
 			return false;
 		}
-		
+
 		if (attachment != null)
 		{
 			email.addAttachment(attachment);
 		}
-		
+
 		try
 		{
 			return sendEmailNow(recipientUserId, email);
@@ -420,14 +422,14 @@ public class MClient extends X_AD_Client
 	/**
 	 * Create EMail from User
 	 *
-	 * @param to                  recipient
-	 * @param subject             sunject
-	 * @param message             nessage
+	 * @param to      recipient
+	 * @param subject sunject
+	 * @param message nessage
 	 * @return EMail
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail(
+	public @Nullable EMail createEMail(
 			final EMailAddress to,
 			final String subject,
 			final String message,
@@ -436,12 +438,18 @@ public class MClient extends X_AD_Client
 		try
 		{
 			final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
-
 			final Mailbox mailbox = mailService.findMailbox(MailboxQuery.ofClientId(ClientId.ofRepoId(getAD_Client_ID())));
-			
-			return mailService.createEMail(mailbox, to, subject, message, html);
+
+			final EMailRequest mailRequest = EMailRequest.builder()
+					.mailbox(mailbox)
+					.to(to)
+					.subject(subject)
+					.message(message)
+					.html(html)
+					.build();
+			return mailService.createEMail(mailRequest);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			log.error("Failed to create the email", ex);
 			return null;

@@ -45,12 +45,13 @@ public class GLN
 {
 	public static final int LENGTH = 13;
 
-	@JsonCreator
 	public static GLN ofString(@NonNull final String code)
 	{
 		return new GLN(code);
 	}
 
+	@Nullable
+	@JsonCreator
 	public static GLN ofNullableString(@Nullable final String code)
 	{
 		final String codeNorm = StringUtils.trimBlankToNull(code);
@@ -93,6 +94,7 @@ public class GLN
 		return glns.stream().map(GLN::getCode).collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	public static String toCode(@Nullable final GLN gln)
 	{
 		return gln != null ? gln.getCode() : null;

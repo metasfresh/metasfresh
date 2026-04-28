@@ -60,13 +60,13 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -104,7 +104,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -131,7 +131,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 @Service
 class ShipmentCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
@@ -140,7 +140,7 @@ class ShipmentCandidateAPIService
 	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 	private final OxidAdaptor oxidAdaptor;
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -314,9 +314,9 @@ class ShipmentCandidateAPIService
 	private ImmutableList<JsonQuantity> createJsonQuantities(@NonNull final Quantity quantity)
 	{
 		return ImmutableList.of(JsonQuantity.builder()
-										.qty(quantity.toBigDecimal())
-										.uomCode(quantity.getX12DE355().getCode())
-										.build());
+				.qty(quantity.toBigDecimal())
+				.uomCode(quantity.getX12DE355().getCode())
+				.build());
 	}
 
 	@NonNull
@@ -425,11 +425,11 @@ class ShipmentCandidateAPIService
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
 		return JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked())
 				.description(product.getDescription().translate(adLanguage))
 				.build();
@@ -470,11 +470,11 @@ class ShipmentCandidateAPIService
 		final OrgId orgId = shipmentSchedule.getOrgId();
 
 		final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(IssueCreateRequest.builder()
-																						  .throwable(e)
-																						  .loggerName(logger.getName())
-																						  .sourceClassname(ShipmentCandidateAPIService.class.getName())
-																						  .summary(e.getMessage())
-																						  .build());
+				.throwable(e)
+				.loggerName(logger.getName())
+				.sourceClassname(ShipmentCandidateAPIService.class.getName())
+				.summary(e.getMessage())
+				.build());
 
 		auditBuilder
 				.exportStatus(APIExportStatus.ExportError)
@@ -611,10 +611,10 @@ class ShipmentCandidateAPIService
 
 		final JsonErrorItem errorItem = error.getErrors().get(0);
 		return errorManager.createIssue(IssueCreateRequest.builder()
-												.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
-												.stackTrace(errorItem.getStackTrace())
-												.loggerName(logger.getName())
-												.build());
+				.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
+				.stackTrace(errorItem.getStackTrace())
+				.loggerName(logger.getName())
+				.build());
 	}
 
 	private void setNetPrices(
@@ -690,7 +690,7 @@ class ShipmentCandidateAPIService
 			return ImmutableMap.of();
 		}
 
-		return attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+		return asiBL.getAttributesForASIs(idsRegistry.getAsiIds());
 	}
 
 	private IdsRegistry buildIdsRegistry(@NonNull final List<ShipmentSchedule> schedules)
@@ -736,6 +736,7 @@ class ShipmentCandidateAPIService
 				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
 				.includeWithQtyToDeliverZero(true)
+				.includeInvalid(false)
 				.fromCompleteOrderOrNullOrder(true)
 				.orderByOrderId(true)
 				.build();
@@ -865,10 +866,10 @@ class ShipmentCandidateAPIService
 				.contactPhone(orderRecord.getPhone());
 
 		logger.debug("Exporting effective contactEmail={}, contactName={}, contactPhone={} from the orderId={}",
-					 orderRecord.getEMail(),
-					 orderRecord.getBPartnerName(),
-					 orderRecord.getPhone(),
-					 orderAndLineId.getOrderId());
+				orderRecord.getEMail(),
+				orderRecord.getBPartnerName(),
+				orderRecord.getPhone(),
+				orderAndLineId.getOrderId());
 
 	}
 
@@ -882,10 +883,10 @@ class ShipmentCandidateAPIService
 				.contactPhone(bPartnerLocation.getPhone());
 
 		logger.debug("Exporting effective contactEmail={}, contactName={}, contactPhone={} from the bPartnerLocationId={}",
-					 bPartnerLocation.getEmail(),
-					 bPartnerLocation.getBpartnerName(),
-					 bPartnerLocation.getPhone(),
-					 bPartnerLocation.getId());
+				bPartnerLocation.getEmail(),
+				bPartnerLocation.getBpartnerName(),
+				bPartnerLocation.getPhone(),
+				bPartnerLocation.getId());
 	}
 
 	private void setAdditionalContactFieldsForOxidOrder(

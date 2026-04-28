@@ -22,20 +22,17 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.CurrencyRepository;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class InvoiceBLRenumberTests
 {
@@ -91,11 +88,11 @@ public class InvoiceBLRenumberTests
 
 		invoiceBL.renumberLines(lines, 10);
 
-		assertThat(il1.getLine(), is(40));
-		assertThat(il2.getLine(), is(50));
-		assertThat(il3.getLine(), is(10));
-		assertThat(il4.getLine(), is(20));
-		assertThat(il5.getLine(), is(30));
+		assertThat(il1.getLine()).isEqualTo(40);
+		assertThat(il2.getLine()).isEqualTo(50);
+		assertThat(il3.getLine()).isEqualTo(10);
+		assertThat(il4.getLine()).isEqualTo(20);
+		assertThat(il5.getLine()).isEqualTo(30);
 	}
 
 }

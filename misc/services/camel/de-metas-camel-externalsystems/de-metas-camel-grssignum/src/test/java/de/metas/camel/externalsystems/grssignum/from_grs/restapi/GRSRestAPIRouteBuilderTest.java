@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -118,7 +118,7 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + GRSRestAPIRouteBuilder.ENABLE_RESOURCE_ROUTE_ID, invokeExternalSystemRequest);
 
 		// then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockAuthenticateTokenEP.called).isEqualTo(1);
 		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
@@ -156,7 +156,7 @@ public class GRSRestAPIRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + GRSRestAPIRouteBuilder.DISABLE_RESOURCE_ROUTE_ID, invokeExternalSystemRequest);
 
 		// then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExpireTokenEP.called).isEqualTo(1);
 		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 

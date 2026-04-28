@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_RemittanceAdvice_Line
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements I_C_RemittanceAdvice_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1398935408L;
+	private static final long serialVersionUID = 1030142162L;
 
     /** Standard Constructor */
-    public X_C_RemittanceAdvice_Line (final Properties ctx, final int C_RemittanceAdvice_Line_ID, final String trxName)
+    public X_C_RemittanceAdvice_Line (final Properties ctx, final int C_RemittanceAdvice_Line_ID, @Nullable final String trxName)
     {
       super (ctx, C_RemittanceAdvice_Line_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_RemittanceAdvice_Line (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_RemittanceAdvice_Line (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -35,7 +36,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setAdditionalNotes (final java.lang.String AdditionalNotes)
+	public void setAdditionalNotes (final @Nullable java.lang.String AdditionalNotes)
 	{
 		set_Value (COLUMNNAME_AdditionalNotes, AdditionalNotes);
 	}
@@ -161,7 +162,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setExternalInvoiceDocBaseType (final java.lang.String ExternalInvoiceDocBaseType)
+	public void setExternalInvoiceDocBaseType (final @Nullable java.lang.String ExternalInvoiceDocBaseType)
 	{
 		set_Value (COLUMNNAME_ExternalInvoiceDocBaseType, ExternalInvoiceDocBaseType);
 	}
@@ -173,7 +174,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setInvoiceAmt (final BigDecimal InvoiceAmt)
+	public void setInvoiceAmt (final @Nullable BigDecimal InvoiceAmt)
 	{
 		set_Value (COLUMNNAME_InvoiceAmt, InvoiceAmt);
 	}
@@ -186,7 +187,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setInvoiceAmtInREMADVCurrency (final BigDecimal InvoiceAmtInREMADVCurrency)
+	public void setInvoiceAmtInREMADVCurrency (final @Nullable BigDecimal InvoiceAmtInREMADVCurrency)
 	{
 		set_Value (COLUMNNAME_InvoiceAmtInREMADVCurrency, InvoiceAmtInREMADVCurrency);
 	}
@@ -199,7 +200,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setInvoiceDate (final java.sql.Timestamp InvoiceDate)
+	public void setInvoiceDate (final @Nullable java.sql.Timestamp InvoiceDate)
 	{
 		set_Value (COLUMNNAME_InvoiceDate, InvoiceDate);
 	}
@@ -211,7 +212,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setInvoiceGrossAmount (final BigDecimal InvoiceGrossAmount)
+	public void setInvoiceGrossAmount (final @Nullable BigDecimal InvoiceGrossAmount)
 	{
 		set_Value (COLUMNNAME_InvoiceGrossAmount, InvoiceGrossAmount);
 	}
@@ -224,7 +225,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setInvoiceIdentifier (final java.lang.String InvoiceIdentifier)
+	public void setInvoiceIdentifier (final @Nullable java.lang.String InvoiceIdentifier)
 	{
 		set_Value (COLUMNNAME_InvoiceIdentifier, InvoiceIdentifier);
 	}
@@ -332,7 +333,19 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setOverUnderAmt (final BigDecimal OverUnderAmt)
+	public void setLineIdentifier (final java.lang.String LineIdentifier)
+	{
+		set_Value (COLUMNNAME_LineIdentifier, LineIdentifier);
+	}
+
+	@Override
+	public java.lang.String getLineIdentifier() 
+	{
+		return get_ValueAsString(COLUMNNAME_LineIdentifier);
+	}
+
+	@Override
+	public void setOverUnderAmt (final @Nullable BigDecimal OverUnderAmt)
 	{
 		set_Value (COLUMNNAME_OverUnderAmt, OverUnderAmt);
 	}
@@ -345,7 +358,7 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setPaymentDiscountAmt (final BigDecimal PaymentDiscountAmt)
+	public void setPaymentDiscountAmt (final @Nullable BigDecimal PaymentDiscountAmt)
 	{
 		set_Value (COLUMNNAME_PaymentDiscountAmt, PaymentDiscountAmt);
 	}
@@ -398,6 +411,19 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setServiceFeeAmount (final @Nullable BigDecimal ServiceFeeAmount)
+	{
+		set_Value (COLUMNNAME_ServiceFeeAmount, ServiceFeeAmount);
+	}
+
+	@Override
+	public BigDecimal getServiceFeeAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ServiceFeeAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getService_Fee_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_Service_Fee_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -422,6 +448,19 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	public int getService_Fee_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Service_Fee_Invoice_ID);
+	}
+
+	@Override
+	public void setServiceFeeVatRate (final @Nullable BigDecimal ServiceFeeVatRate)
+	{
+		set_Value (COLUMNNAME_ServiceFeeVatRate, ServiceFeeVatRate);
+	}
+
+	@Override
+	public BigDecimal getServiceFeeVatRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ServiceFeeVatRate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -452,31 +491,5 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	public int getService_Tax_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Service_Tax_ID);
-	}
-
-	@Override
-	public void setServiceFeeAmount (final BigDecimal ServiceFeeAmount)
-	{
-		set_Value (COLUMNNAME_ServiceFeeAmount, ServiceFeeAmount);
-	}
-
-	@Override
-	public BigDecimal getServiceFeeAmount() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ServiceFeeAmount);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setServiceFeeVatRate (final BigDecimal ServiceFeeVatRate)
-	{
-		set_Value (COLUMNNAME_ServiceFeeVatRate, ServiceFeeVatRate);
-	}
-
-	@Override
-	public BigDecimal getServiceFeeVatRate() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ServiceFeeVatRate);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

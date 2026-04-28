@@ -5,7 +5,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
@@ -124,8 +123,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		if (getProcessInfo().isInvokedByScheduler())
 		{
 			// throw an exception so the problem is logged with the scheduler and a supervisor may be notified
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NOT_ALL_FILES_IMPORTED);
-			throw new AdempiereException(message);
+			throw new AdempiereException(MSG_NOT_ALL_FILES_IMPORTED);
 		}
 
 		// return "OK" (i.e. don't throw an exception), but notify the user

@@ -9,6 +9,7 @@ import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const DistributionStepButton = ({
+  testId,
   applicationId,
   wfProcessId,
   activityId,
@@ -27,6 +28,7 @@ const DistributionStepButton = ({
 
   return (
     <ButtonWithIndicator
+      testId={testId}
       caption={toQRCodeDisplayable(pickFromHU.qrCode)}
       completeStatus={completeStatus}
       onClick={handleClick}
@@ -37,6 +39,7 @@ const DistributionStepButton = ({
 };
 
 DistributionStepButton.propTypes = {
+  testId: PropTypes.string,
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,

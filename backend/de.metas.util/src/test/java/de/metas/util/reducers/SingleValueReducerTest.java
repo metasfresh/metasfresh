@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
 import lombok.Getter;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -95,7 +95,7 @@ public class SingleValueReducerTest
 			try
 			{
 				runnable.run();
-				Assert.fail("No exceptio was thrown");
+				Assertions.fail("No exceptio was thrown");
 			}
 			catch (final MyDistinctException ex)
 			{

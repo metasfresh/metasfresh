@@ -22,11 +22,13 @@
 
 package de.metas.workflow.interceptors;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.service.IADWorkflowBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -41,6 +43,12 @@ import org.slf4j.Logger;
 public class AD_Workflow
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_AD_Workflow.Table_Name);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_AD_Workflow workflow, final ModelChangeType changeType)

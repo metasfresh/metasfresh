@@ -29,13 +29,15 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemTestUtil;
+import de.metas.externalsystem.ExternalSystemConfigTestUtil;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
@@ -72,7 +74,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
 																			  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 																					  new DataExportAuditLogRepository(),
 																			  new DataExportAuditRepository(),
@@ -100,12 +102,12 @@ public class ExportBPartnerToRabbitMQServiceTest
 		bpartner.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		saveRecord(bpartner);
 
-		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getValue())
 				.customParentConfigId(1)
 				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(externalSystemParentConfig.getExternalSystem_Config_ID())
 				.isSyncBPartnerToRabbitMQ(true)
 				.customChildConfigId(2)
@@ -130,7 +132,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 		externalSystemParentConfig.setExternalSystem_Config_ID(1);
 		externalSystemParentConfig.setName("ParentConfig");
 		externalSystemParentConfig.setIsActive(true);
-		externalSystemParentConfig.setType(ExternalSystemType.RabbitMQ.getCode());
+		externalSystemParentConfig.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.RabbitMQ).getId().getRepoId());
 		externalSystemParentConfig.setWriteAudit(true);
 		externalSystemParentConfig.setAuditFileFolder("fileFolder");
 

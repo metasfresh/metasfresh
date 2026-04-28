@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Locked HUs can not be picked
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -49,12 +53,12 @@ Feature: Locked HUs can not be picked
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -62,7 +66,7 @@ Feature: Locked HUs can not be picked
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
+      | createdCU           | 10    | huProductTU                        | createdTU                     | newCreatedCU                  |
 
     And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -86,8 +90,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 0442101293001 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-30  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-30  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -119,8 +123,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 0184031044041 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -147,8 +151,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 01231508912441 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |

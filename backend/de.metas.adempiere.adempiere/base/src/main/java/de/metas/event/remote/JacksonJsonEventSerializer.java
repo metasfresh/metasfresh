@@ -25,9 +25,9 @@ import de.metas.util.JSONObjectMapper;
  * #L%
  */
 
-public class JacksonJsonEventSerializer implements IEventSerializer
+public class JacksonJsonEventSerializer
 {
-	public static final transient JacksonJsonEventSerializer instance = new JacksonJsonEventSerializer();
+	public static final JacksonJsonEventSerializer instance = new JacksonJsonEventSerializer();
 
 	private final JSONObjectMapper<Event> delegate;
 
@@ -36,13 +36,11 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 		delegate = JSONObjectMapper.forClass(Event.class);
 	}
 
-	@Override
 	public String toString(final Event event)
 	{
 		return delegate.writeValueAsString(event);
 	}
 
-	@Override
 	public Event fromString(final String eventStr)
 	{
 		return delegate.readValue(eventStr);

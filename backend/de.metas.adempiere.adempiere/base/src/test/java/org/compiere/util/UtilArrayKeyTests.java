@@ -22,12 +22,11 @@ package org.compiere.util;
  * #L%
  */
 
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Some noob tests that I need to gather some self-confidence using array as keys in hashset and hashmaps.
@@ -73,8 +72,8 @@ public class UtilArrayKeyTests
 	@Test
 	public void arraysKeyWithIntegerAreEqual()
 	{
-		final ArrayKey key1 = Util.mkKey(new Integer(1), new Integer(2));
-		final ArrayKey key2 = Util.mkKey(new Integer(1), new Integer(2));
+		final Util.ArrayKey key1 = Util.mkKey(new Integer(1), new Integer(2));
+		final Util.ArrayKey key2 = Util.mkKey(new Integer(1), new Integer(2));
 
 		assertTrue(key1.equals(key2));
 		assertTrue(key2.equals(key1));
@@ -85,8 +84,8 @@ public class UtilArrayKeyTests
 	@Test
 	public void arraysKeyWithIntAreEqual()
 	{
-		final ArrayKey key1 = Util.mkKey(1, 2);
-		final ArrayKey key2 = Util.mkKey(1, 2);
+		final Util.ArrayKey key1 = Util.mkKey(1, 2);
+		final Util.ArrayKey key2 = Util.mkKey(1, 2);
 
 		assertTrue(key1.equals(key2));
 		assertTrue(key2.equals(key1));
@@ -97,13 +96,13 @@ public class UtilArrayKeyTests
 	@Test
 	public void arraysKeyWithIntAreEqual2()
 	{
-		ArrayKey key1 = Util.mkKey(new Object[] { 1, 2 });
-		ArrayKey key2 = Util.mkKey(new Object[] { 1, 2 });
+		Util.ArrayKey key1 = Util.mkKey(new Object[] { 1, 2 });
+		Util.ArrayKey key2 = Util.mkKey(new Object[] { 1, 2 });
 		// Please note that if we use following code, IT WILL NOT WORK:
 		//ArrayKey key1 = MiscUtils.mkKey(new int[] { 1, 2 });
 		//ArrayKey key2 = MiscUtils.mkKey(new int[] { 1, 2 });
 
-		assertTrue(key1.hashCode() == key2.hashCode());
-		assertTrue(key1.equals(key2));
+		assertEquals(key1.hashCode(), key2.hashCode());
+		assertEquals(key1, key2);
 	}
 }

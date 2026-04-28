@@ -64,7 +64,7 @@ public class API_Audit_Config_StepDef
 			auditConfig.setIsForceProcessedAsync(isForceProcessedAsync);
 			auditConfig.setIsSynchronousAuditLoggingEnabled(isSynchronousAuditLoggingEnabled);
 			auditConfig.setIsWrapApiResponse(isWrapApiResponse);
-
+						
 			saveRecord(auditConfig);
 
 			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_API_Audit_Config.Table_Name);

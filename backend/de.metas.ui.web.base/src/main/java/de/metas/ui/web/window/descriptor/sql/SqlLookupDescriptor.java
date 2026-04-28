@@ -132,6 +132,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return filters.getDependsOnTableNames();
 	}
 
+	@NonNull
 	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
 	{
 		return lookupDataSourceFetcher.getSqlForFetchingLookupById();

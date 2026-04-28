@@ -74,11 +74,27 @@ public interface ITaxBL extends ISingletonService
 	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
-	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.
+	 * Enforces the invariant that at most one of {@link I_C_Tax#isTaxExempt()},
+	 * {@link I_C_Tax#isReverseCharge()}, {@link I_C_Tax#isWholeTax()} may be {@code Y}.
+	 *
+	 * <p>Resolution strategy when more than one is {@code Y}:
+	 * <ol>
+	 *     <li>If exactly one of the Y-flags was just changed in the current save, that flag wins (respects the user's explicit edit).</li>
+	 *     <li>Otherwise (no flag changed, or multiple changed at once), fall back to the static priority
+	 *         {@code IsWholeTax > IsReverseCharge > IsTaxExempt} — the narrowest / most configured flag wins.</li>
+	 * </ol>
+	 * The non-winner flags are silently cleared.
+	 *
+	 * <p>When the winner is {@code IsWholeTax}, the method also applies its companion invariants:
+	 * {@code Rate=100}, {@code IsTaxExempt=false}, {@code IsReverseCharge=false}, {@code IsDocumentLevel=true}.
+	 *
+	 * <p>Called from the {@code BEFORE_NEW} / {@code BEFORE_CHANGE} model interceptor; callers normally don't need to invoke this directly.
 	 */
-	void setupIfIsWholeTax(final I_C_Tax tax);
+	void enforceExclusiveFlags(@NonNull I_C_Tax tax);
 
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }

@@ -1,13 +1,17 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 @ghActions:run_on_executor3
-@ignore # postgREST-support doesn't yet work
 Feature: Historical Sales Orders via postgREST
+## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
       | Identifier    |
@@ -27,6 +31,9 @@ Feature: Historical Sales Orders via postgREST
       | bpartner_location_1 | customer1     | Y               | Y               |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via ExternalId and DataSource
     Given metasfresh contains M_Products:
       | Identifier | Value                       | REST.Context | Name                       | Description                       |
@@ -35,8 +42,8 @@ Feature: Historical Sales Orders via postgREST
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | salesPLV               | product1     | 2.00     | PCE      |
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | DocumentNo    | C_BPartner_ID | DateOrdered | POReference   | M_PricingSystem_ID | C_BPartner_Location_ID | ExternalId           | AD_InputDataSource_ID |
-      | order1     | order_ID     | true    | test_08052025 | customer1     | 2022-06-17  | test_08052025 | pricingSystem      | bpartner_location_1    | ExtHeader_08052025_1 | 540217                |
+      | Identifier | REST.Context | IsSOTrx | DocumentNo    | C_BPartner_ID | DateOrdered | POReference   | M_PricingSystem_ID | C_BPartner_Location_ID | ExternalId           | AD_InputDataSource_ID | ExternalSystem.Value |
+      | order1     | order_ID     | true    | test_08052025 | customer1     | 2022-06-17  | test_08052025 | pricingSystem      | bpartner_location_1    | ExtHeader_08052025_1 | 540217                | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | ExternalId         |
       | orderLine1 | order1     | product1     | 10         | ExtLine_08052025_1 |
@@ -60,8 +67,8 @@ Feature: Historical Sales Orders via postgREST
       "value": "ExtHeader_08052025_1"
     },
     {
-      "name": "DataSource",
-      "value": "int-Shopware"
+      "name": "ExternalSystemCode",
+      "value": "Shopware6"
     }
   ]
 }
@@ -80,6 +87,7 @@ Feature: Historical Sales Orders via postgREST
     "Partner_Value": "customerValue_08052025",
     "Partner_Name": "customerName_08052025",
     "ExternalId": "ExtHeader_08052025_1",
+    "ExternalSystemCode": "Shopware6",
     "DataSource": "int-Shopware",
     "Bill_Partner_ID": @customer_ID@,
     "Bill_Partner_Value": "customerValue_08052025",
@@ -118,6 +126,9 @@ Feature: Historical Sales Orders via postgREST
     """
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via C_Order_ID
     Given metasfresh contains M_Products:
       | Identifier | Value                         | REST.Context | Name                         | Description                         |
@@ -126,8 +137,8 @@ Feature: Historical Sales Orders via postgREST
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | salesPLV               | product1     | 2.00     | PCE      |
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | DocumentNo      | C_BPartner_ID | DateOrdered | POReference     | M_PricingSystem_ID | C_BPartner_Location_ID | ExternalId           | AD_InputDataSource_ID |
-      | order1     | order_ID     | true    | test_08052025_2 | customer1     | 2022-06-17  | test_08052025_2 | pricingSystem      | bpartner_location_1    | ExtHeader_08052025_2 | 540217                |
+      | Identifier | REST.Context | IsSOTrx | DocumentNo      | C_BPartner_ID | DateOrdered | POReference     | M_PricingSystem_ID | C_BPartner_Location_ID | ExternalId           | AD_InputDataSource_ID | ExternalSystem.Value |
+      | order1     | order_ID     | true    | test_08052025_2 | customer1     | 2022-06-17  | test_08052025_2 | pricingSystem      | bpartner_location_1    | ExtHeader_08052025_2 | 540217                | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | ExternalId         |
       | orderLine1 | order1     | product1     | 10         | ExtLine_08052025_2 |
@@ -167,6 +178,7 @@ Feature: Historical Sales Orders via postgREST
     "Partner_Value": "customerValue_08052025",
     "Partner_Name": "customerName_08052025",
     "ExternalId": "ExtHeader_08052025_2",
+    "ExternalSystemCode": "Shopware6",
     "DataSource": "int-Shopware",
     "Bill_Partner_ID": @customer_ID@,
     "Bill_Partner_Value": "customerValue_08052025",

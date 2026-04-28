@@ -7,25 +7,25 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for PP_Order_Candidate
- *  @author metasfresh (generated) 
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
+public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -1432734380L;
+	private static final long serialVersionUID = -1645678566L;
 
     /** Standard Constructor */
-    public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
-    {
-      super (ctx, PP_Order_Candidate_ID, trxName);
-    }
+	public X_PP_Order_Candidate(final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
+	{
+		super(ctx, PP_Order_Candidate_ID, trxName);
+	}
 
     /** Load Constructor */
-    public X_PP_Order_Candidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	public X_PP_Order_Candidate(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -36,14 +36,15 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setAD_Workflow_ID (final int AD_Workflow_ID)
-	{
-		throw new IllegalArgumentException ("AD_Workflow_ID is virtual column");	}
-
-	@Override
-	public int getAD_Workflow_ID() 
+	public int getAD_Workflow_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
+	}
+
+	@Override
+	public void setAD_Workflow_ID(final int AD_Workflow_ID)
+	{
+		throw new IllegalArgumentException("AD_Workflow_ID is virtual column");
 	}
 
 	@Override
@@ -59,108 +60,108 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setC_OrderLine_ID (final int C_OrderLine_ID)
-	{
-		if (C_OrderLine_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
-	}
-
-	@Override
-	public int getC_OrderLine_ID() 
+	public int getC_OrderLine_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
 
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public void setC_OrderLine_ID(final int C_OrderLine_ID)
 	{
-		if (C_UOM_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+		if (C_OrderLine_ID < 1)
+			set_Value(COLUMNNAME_C_OrderLine_ID, null);
+		else
+			set_Value(COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
-	public void setDatePromised (final java.sql.Timestamp DatePromised)
+	public void setC_UOM_ID(final int C_UOM_ID)
 	{
-		set_Value (COLUMNNAME_DatePromised, DatePromised);
+		if (C_UOM_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_C_UOM_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
-	public java.sql.Timestamp getDatePromised() 
+	public java.sql.Timestamp getDatePromised()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
 	@Override
-	public void setDateStartSchedule (final java.sql.Timestamp DateStartSchedule)
+	public void setDatePromised(final java.sql.Timestamp DatePromised)
 	{
-		set_Value (COLUMNNAME_DateStartSchedule, DateStartSchedule);
+		set_Value(COLUMNNAME_DatePromised, DatePromised);
 	}
 
 	@Override
-	public java.sql.Timestamp getDateStartSchedule() 
+	public java.sql.Timestamp getDateStartSchedule()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateStartSchedule);
 	}
 
 	@Override
-	public void setIsClosed (final boolean IsClosed)
+	public void setDateStartSchedule(final java.sql.Timestamp DateStartSchedule)
 	{
-		set_Value (COLUMNNAME_IsClosed, IsClosed);
+		set_Value(COLUMNNAME_DateStartSchedule, DateStartSchedule);
 	}
 
 	@Override
-	public boolean isClosed() 
+	public void setIsClosed(final boolean IsClosed)
+	{
+		set_Value(COLUMNNAME_IsClosed, IsClosed);
+	}
+
+	@Override
+	public boolean isClosed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
 	@Override
-	public void setIsMaturing (final boolean IsMaturing)
+	public void setIsMaturing(final boolean IsMaturing)
 	{
-		set_Value (COLUMNNAME_IsMaturing, IsMaturing);
+		set_Value(COLUMNNAME_IsMaturing, IsMaturing);
 	}
 
 	@Override
-	public boolean isMaturing() 
+	public boolean isMaturing()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMaturing);
 	}
 
 	@Override
-	public void setIsSimulated (final boolean IsSimulated)
+	public void setIsSimulated(final boolean IsSimulated)
 	{
-		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+		set_Value(COLUMNNAME_IsSimulated, IsSimulated);
 	}
 
 	@Override
-	public boolean isSimulated() 
+	public boolean isSimulated()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}
 
 	@Override
-	public void setIssue_HU_ID (final int Issue_HU_ID)
+	public int getIssue_HU_ID()
 	{
-		if (Issue_HU_ID < 1) 
-			set_Value (COLUMNNAME_Issue_HU_ID, null);
-		else 
-			set_Value (COLUMNNAME_Issue_HU_ID, Issue_HU_ID);
+		return get_ValueAsInt(COLUMNNAME_Issue_HU_ID);
 	}
 
 	@Override
-	public int getIssue_HU_ID() 
+	public void setIssue_HU_ID(final int Issue_HU_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_Issue_HU_ID);
+		if (Issue_HU_ID < 1)
+			set_Value(COLUMNNAME_Issue_HU_ID, null);
+		else
+			set_Value(COLUMNNAME_Issue_HU_ID, Issue_HU_ID);
 	}
 
 	@Override
@@ -176,33 +177,33 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
-	{
-		if (M_AttributeSetInstance_ID < 0) 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
-	}
-
-	@Override
-	public int getM_AttributeSetInstance_ID() 
+	public int getM_AttributeSetInstance_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	public void setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
 	{
-		if (M_HU_PI_Item_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+		if (M_AttributeSetInstance_ID < 0)
+			set_Value(COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else
+			set_Value(COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public int getM_HU_PI_Item_Product_ID() 
+	public int getM_HU_PI_Item_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1)
+			set_Value(COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else
+			set_Value(COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
@@ -218,18 +219,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
+	public int getM_Maturing_Configuration_ID()
 	{
-		if (M_Maturing_Configuration_ID < 1) 
-			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
+		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
 	}
 
 	@Override
-	public int getM_Maturing_Configuration_ID() 
+	public void setM_Maturing_Configuration_ID(final int M_Maturing_Configuration_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
+		if (M_Maturing_Configuration_ID < 1)
+			set_Value(COLUMNNAME_M_Maturing_Configuration_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
 	}
 
 	@Override
@@ -245,116 +246,90 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
-	{
-		if (M_Maturing_Configuration_Line_ID < 1) 
-			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
-	}
-
-	@Override
-	public int getM_Maturing_Configuration_Line_ID() 
+	public int getM_Maturing_Configuration_Line_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
+	public void setM_Maturing_Configuration_Line_ID(final int M_Maturing_Configuration_Line_ID)
 	{
-		if (M_Product_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
+		if (M_Maturing_Configuration_Line_ID < 1)
+			set_Value(COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	public void setM_Product_ID(final int M_Product_ID)
 	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+		if (M_Product_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_M_Product_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
-	public int getM_ShipmentSchedule_ID() 
+	public int getM_ShipmentSchedule_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	public void setM_ShipmentSchedule_ID(final int M_ShipmentSchedule_ID)
 	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+		if (M_ShipmentSchedule_ID < 1)
+			set_Value(COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else
+			set_Value(COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
 	@Override
-	public int getM_Warehouse_ID() 
+	public int getM_Warehouse_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
-	public void setNumberOfResources_ToProcess (final int NumberOfResources_ToProcess)
+	public void setM_Warehouse_ID(final int M_Warehouse_ID)
 	{
-		throw new IllegalArgumentException ("NumberOfResources_ToProcess is virtual column");	}
+		if (M_Warehouse_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_M_Warehouse_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
 
 	@Override
-	public int getNumberOfResources_ToProcess() 
+	public int getNumberOfResources_ToProcess()
 	{
 		return get_ValueAsInt(COLUMNNAME_NumberOfResources_ToProcess);
 	}
 
 	@Override
-	public void setPP_Order_Candidate_ID (final int PP_Order_Candidate_ID)
+	public void setNumberOfResources_ToProcess(final int NumberOfResources_ToProcess)
 	{
-		if (PP_Order_Candidate_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Candidate_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_Candidate_ID, PP_Order_Candidate_ID);
+		throw new IllegalArgumentException("NumberOfResources_ToProcess is virtual column");
 	}
 
 	@Override
-	public int getPP_Order_Candidate_ID() 
+	public int getPP_Order_Candidate_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_ID);
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate_Parent()
+	public void setPP_Order_Candidate_ID(final int PP_Order_Candidate_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class);
-	}
-
-	@Override
-	public void setPP_Order_Candidate_Parent(final org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate_Parent)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_Order_Candidate_Parent);
-	}
-
-	@Override
-	public void setPP_Order_Candidate_Parent_ID (final int PP_Order_Candidate_Parent_ID)
-	{
-		if (PP_Order_Candidate_Parent_ID < 1) 
-			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, null);
-		else 
-			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, PP_Order_Candidate_Parent_ID);
-	}
-
-	@Override
-	public int getPP_Order_Candidate_Parent_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_Parent_ID);
+		if (PP_Order_Candidate_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_PP_Order_Candidate_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_PP_Order_Candidate_ID, PP_Order_Candidate_ID);
 	}
 
 	@Override
@@ -370,96 +345,109 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setPP_Product_BOM_ID (final int PP_Product_BOM_ID)
-	{
-		if (PP_Product_BOM_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOM_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
-	}
-
-	@Override
-	public int getPP_Product_BOM_ID() 
+	public int getPP_Product_BOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
 	}
 
 	@Override
-	public void setPP_Product_Planning_ID (final int PP_Product_Planning_ID)
+	public void setPP_Product_BOM_ID(final int PP_Product_BOM_ID)
 	{
-		if (PP_Product_Planning_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, PP_Product_Planning_ID);
+		if (PP_Product_BOM_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_PP_Product_BOM_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
 	}
 
 	@Override
-	public int getPP_Product_Planning_ID() 
+	public int getPP_Product_Planning_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Product_Planning_ID);
 	}
 
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setPP_Product_Planning_ID(final int PP_Product_Planning_ID)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
+		if (PP_Product_Planning_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_PP_Product_Planning_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_PP_Product_Planning_ID, PP_Product_Planning_ID);
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override
-	public void setQtyEntered (final @Nullable BigDecimal QtyEntered)
+	public void setProcessed(final boolean Processed)
 	{
-		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
+		set_Value(COLUMNNAME_Processed, Processed);
 	}
 
 	@Override
-	public BigDecimal getQtyEntered() 
+	public BigDecimal getQtyEntered()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyProcessed (final @Nullable BigDecimal QtyProcessed)
+	public void setQtyEntered(final @Nullable BigDecimal QtyEntered)
 	{
-		set_Value (COLUMNNAME_QtyProcessed, QtyProcessed);
+		set_Value(COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
 	@Override
-	public BigDecimal getQtyProcessed() 
+	public BigDecimal getQtyProcessed()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyToProcess (final @Nullable BigDecimal QtyToProcess)
+	public void setQtyProcessed(final @Nullable BigDecimal QtyProcessed)
 	{
-		set_Value (COLUMNNAME_QtyToProcess, QtyToProcess);
+		set_Value(COLUMNNAME_QtyProcessed, QtyProcessed);
 	}
 
 	@Override
-	public BigDecimal getQtyToProcess() 
+	public BigDecimal getQtyProcessed_OnDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyProcessed_OnDate(final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value(COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyToProcess()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProcess);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setSeqNo (final int SeqNo)
+	public void setQtyToProcess(final @Nullable BigDecimal QtyToProcess)
 	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
+		set_Value(COLUMNNAME_QtyToProcess, QtyToProcess);
 	}
 
 	@Override
-	public int getSeqNo() 
+	public int getSeqNo()
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setSeqNo(final int SeqNo)
+	{
+		set_Value(COLUMNNAME_SeqNo, SeqNo);
 	}
 
 	@Override
@@ -475,18 +463,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
+	public int getS_Resource_ID()
 	{
-		if (S_Resource_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	@Override
-	public int getS_Resource_ID() 
+	public void setS_Resource_ID(final int S_Resource_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+		if (S_Resource_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_S_Resource_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_S_Resource_ID, S_Resource_ID);
 	}
 
 	@Override
@@ -502,17 +490,29 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setWorkStation_ID (final int WorkStation_ID)
+	public java.lang.String getStorageAttributesKey()
 	{
-		if (WorkStation_ID < 1) 
-			set_Value (COLUMNNAME_WorkStation_ID, null);
-		else 
-			set_Value (COLUMNNAME_WorkStation_ID, WorkStation_ID);
+		return get_ValueAsString(COLUMNNAME_StorageAttributesKey);
 	}
 
 	@Override
-	public int getWorkStation_ID() 
+	public void setStorageAttributesKey(final @Nullable java.lang.String StorageAttributesKey)
+	{
+		set_Value(COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
+	}
+
+	@Override
+	public int getWorkStation_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
+	}
+
+	@Override
+	public void setWorkStation_ID(final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1)
+			set_Value(COLUMNNAME_WorkStation_ID, null);
+		else
+			set_Value(COLUMNNAME_WorkStation_ID, WorkStation_ID);
 	}
 }

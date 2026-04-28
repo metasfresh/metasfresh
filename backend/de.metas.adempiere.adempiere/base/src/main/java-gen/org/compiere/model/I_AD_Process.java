@@ -18,7 +18,7 @@ public interface I_AD_Process
 
 
 	/**
-	 * Set Berechtigungsstufe.
+	 * Set Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -28,7 +28,7 @@ public interface I_AD_Process
 	void setAccessLevel (java.lang.String AccessLevel);
 
 	/**
-	 * Get Berechtigungsstufe.
+	 * Get Data Access Level.
 	 * Access Level required
 	 *
 	 * <br>Type: List
@@ -152,7 +152,32 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Berichts-View.
+	 * Set Relation Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_RelationType_ID (int AD_RelationType_ID);
+
+	/**
+	 * Get Relation Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_RelationType_ID();
+
+	@Nullable org.compiere.model.I_AD_RelationType getAD_RelationType();
+
+	void setAD_RelationType(@Nullable org.compiere.model.I_AD_RelationType AD_RelationType);
+
+	ModelColumn<I_AD_Process, org.compiere.model.I_AD_RelationType> COLUMN_AD_RelationType_ID = new ModelColumn<>(I_AD_Process.class, "AD_RelationType_ID", org.compiere.model.I_AD_RelationType.class);
+	String COLUMNNAME_AD_RelationType_ID = "AD_RelationType_ID";
+
+	/**
+	 * Set Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -162,7 +187,7 @@ public interface I_AD_Process
 	void setAD_ReportView_ID (int AD_ReportView_ID);
 
 	/**
-	 * Get Berichts-View.
+	 * Get Report View.
 	 * View used to generate this report
 	 *
 	 * <br>Type: TableDir
@@ -201,7 +226,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Mehrfachausführung erlaubt.
+	 * Set Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -211,7 +236,7 @@ public interface I_AD_Process
 	void setAllowProcessReRun (boolean AllowProcessReRun);
 
 	/**
-	 * Get Mehrfachausführung erlaubt.
+	 * Get Allow Process Re-Run.
 	 * Allows this process to be executed again. If enabled, the "Back" button will be displayed in process panel.
 	 *
 	 * <br>Type: YesNo
@@ -224,7 +249,7 @@ public interface I_AD_Process
 	String COLUMNNAME_AllowProcessReRun = "AllowProcessReRun";
 
 	/**
-	 * Set Java-Klasse.
+	 * Set Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -233,7 +258,7 @@ public interface I_AD_Process
 	void setClassname (@Nullable java.lang.String Classname);
 
 	/**
-	 * Get Java-Klasse.
+	 * Get Java Class.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -294,6 +319,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set CSV Field Delimiter.
+	 * To insert [Tab] character you need to copy tab-whitespace from NotePad or other text editor
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -303,6 +329,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get CSV Field Delimiter.
+	 * To insert [Tab] character you need to copy tab-whitespace from NotePad or other text editor
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -312,6 +339,29 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldDelimiter = new ModelColumn<>(I_AD_Process.class, "CSVFieldDelimiter", null);
 	String COLUMNNAME_CSVFieldDelimiter = "CSVFieldDelimiter";
+
+	/**
+	 * Set CSV Text Qualifier.
+	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCSVFieldQuote (@Nullable java.lang.String CSVFieldQuote);
+
+	/**
+	 * Get CSV Text Qualifier.
+	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCSVFieldQuote();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldQuote = new ModelColumn<>(I_AD_Process.class, "CSVFieldQuote", null);
+	String COLUMNNAME_CSVFieldQuote = "CSVFieldQuote";
 
 	/**
 	 * Set Description.
@@ -335,9 +385,8 @@ public interface I_AD_Process
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -346,9 +395,8 @@ public interface I_AD_Process
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -427,7 +475,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsApplySecuritySettings = "IsApplySecuritySettings";
 
 	/**
-	 * Set Beta-Funktionalität.
+	 * Set Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -437,7 +485,7 @@ public interface I_AD_Process
 	void setIsBetaFunctionality (boolean IsBetaFunctionality);
 
 	/**
-	 * Get Beta-Funktionalität.
+	 * Get Beta Functionality.
 	 * This functionality is considered Beta
 	 *
 	 * <br>Type: YesNo
@@ -496,7 +544,31 @@ public interface I_AD_Process
 	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
 
 	/**
+	 * Set Include CSV Header Row.
+	 * If enabled, the first row of the CSV file will contain column headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsIncludeCSVHeaderRow (boolean IsIncludeCSVHeaderRow);
+
+	/**
+	 * Get Include CSV Header Row.
+	 * If enabled, the first row of the CSV file will contain column headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isIncludeCSVHeaderRow();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsIncludeCSVHeaderRow = new ModelColumn<>(I_AD_Process.class, "IsIncludeCSVHeaderRow", null);
+	String COLUMNNAME_IsIncludeCSVHeaderRow = "IsIncludeCSVHeaderRow";
+
+	/**
 	 * Set Log Warning.
+	 * If enabled, PostgreSQL messages (RAISE NOTICE / RAISE WARNING) are logged to AD_PInstance_Log.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -506,6 +578,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Log Warning.
+	 * If enabled, PostgreSQL messages (RAISE NOTICE / RAISE WARNING) are logged to AD_PInstance_Log.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -563,7 +636,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
 
 	/**
-	 * Set Bericht.
+	 * Set Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -573,7 +646,7 @@ public interface I_AD_Process
 	void setIsReport (boolean IsReport);
 
 	/**
-	 * Get Bericht.
+	 * Get Report.
 	 * Indicates a Report record
 	 *
 	 * <br>Type: YesNo
@@ -610,7 +683,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -620,7 +693,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Translate Excel Headers.
-	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 * If checked, then metasfresh will replace the header name with a translation, if one exists in Message (AD_Message) or Element (AD_Element).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -633,6 +706,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -642,6 +716,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Update Export Date.
+	 * If ticked, the "Export date" field in the "Datev Export v2" window will be updated after a data export.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -653,7 +728,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
 
 	/**
-	 * Set IsUseBPartnerLanguage.
+	 * Set Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -662,7 +737,7 @@ public interface I_AD_Process
 	void setIsUseBPartnerLanguage (boolean IsUseBPartnerLanguage);
 
 	/**
-	 * Get IsUseBPartnerLanguage.
+	 * Get Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -720,7 +795,7 @@ public interface I_AD_Process
 	/**
 	 * Set JSON Path.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -729,7 +804,7 @@ public interface I_AD_Process
 	/**
 	 * Get JSON Path.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -895,6 +970,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set SQLStatement.
+	 * SQL statement to be executed by this process
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -904,6 +980,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get SQLStatement.
+	 * SQL statement to be executed by this process
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -915,7 +992,7 @@ public interface I_AD_Process
 	String COLUMNNAME_SQLStatement = "SQLStatement";
 
 	/**
-	 * Set Technical note.
+	 * Set TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text
@@ -925,7 +1002,7 @@ public interface I_AD_Process
 	void setTechnicalNote (@Nullable java.lang.String TechnicalNote);
 
 	/**
-	 * Get Technical note.
+	 * Get TechnicalNote.
 	 * A note that is not indended for the user documentation, but for developers, customizers etc
 	 *
 	 * <br>Type: Text

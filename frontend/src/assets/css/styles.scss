@@ -1,5 +1,6 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.scss';
+@import './layers.scss';
 @import './focus.scss';
 
 @import './board.scss';
@@ -31,22 +32,14 @@
 @import './labels.scss';
 @import './filtersitem.scss';
 @import './UserDropdown.scss';
+@import './spinner.scss';
+@import './screen-freeze.scss';
+@import './sidelist.scss';
 
 @import './intro.scss';
 
-/**
-*  IMPORTANT NOTE
-*
-* Layers
-* - 0 - default - all static elements like tables or forms
-* - < 100 - elements that are over static content (order list)
-* - 100 - header
-* - 200 - backdrop
-* - 200 < - elements that are over backdrop (header expanded)
-* - 400 - screen-freeze
-*/
 html {
-  overflow-y: scroll !important;
+  overflow-y: auto !important;
   overflow-x: auto !important;
 }
 
@@ -214,88 +207,7 @@ body {
   position: fixed;
   width: 100%;
   height: 100%;
-  z-index: 200;
-}
-
-.order-list-panel {
-  position: fixed;
-  display: none;
-  top: 96px;
-  height: calc(100% - 96px);
-  width: 472px;
-  background-color: #fff;
-  border-left: 1px solid $brand-border-color;
-  z-index: 201;
-  right: 0;
-  bottom: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
-
-@media (max-width: $breakpoint) {
-  .order-list-panel {
-    width: 100%;
-    height: calc(100% - 80px);
-  }
-}
-
-.order-list-panel-open {
-  display: block;
-}
-
-.order-list-panel-header {
-  padding-left: 10px;
-}
-
-.order-list-panel-icon {
-  margin: 12px 5px;
-}
-
-.order-list-panel-body {
-  font-size: 12px;
-}
-
-.order-list-panel-body .subheader-item,
-.order-list-panel-body .subheader-caption {
-  font-size: 14px;
-}
-
-.order-list-nav {
-  position: fixed;
-  z-index: 201;
-  width: 472px;
-  background: #fff;
-  top: 55px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  border-bottom: 1px solid $brand-light-color;
-}
-
-.order-list-btn {
-  flex: 1;
-  text-align: center;
-  font-size: 1rem;
-  padding: .5rem 0;
-  cursor: pointer;
-}
-
-.order-list-btn.active,
-.order-list-btn.active:hover {
-  color: #fff;
-  background-color: $brand-light-color;
-}
-
-.order-list-btn:hover {
-  background-color: $brand-super-light-color;
-}
-
-.order-list-btn:not(:last-child) {
-  border-right: 1px solid $brand-light-color;
-}
-
-.order-list-loader {
-  margin: 1rem;
+  z-index: $z-index-backdrop;
 }
 
 .sm {
@@ -435,78 +347,6 @@ body {
   flex: 1 1 auto;
 }
 
-.screen-freeze {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 400;
-  background-color: rgba(18, 18, 18, .7);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  pointer-events: visible;
-
-  .modal-content-wrapper {
-    z-index: 100;
-  }
-
-  .click-overlay {
-    position: absolute;
-    z-index: 50;
-    width: 100%;
-    height: 100%;
-  }
-
-  &.light {
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 500;
-    overflow-y: scroll;
-    color: $brand-font-color;
-
-    @media (min-width: $breakpoint-md) {
-      overflow-y: auto;
-    }
-
-    .overlay-field {
-      width: 100%;
-
-      .row {
-        justify-content: center;
-      }
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-    }
-
-    input {
-      text-align: center;
-      font-size: 60px;
-    }
-
-    .form-control-label {
-      font-size: 30px;
-      text-align: center;
-    }
-  }
-}
-
-.screen-freeze-behind {
-  overflow: hidden;
-}
-
-.screen-prompt-freeze {
-  background-color: transparent;
-}
-
 .rotate {
   display: inline-block;
   animation: rotation 2s linear infinite;
@@ -614,6 +454,8 @@ body {
   flex-shrink: 0;
   flex-direction: column;
   min-height: auto;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
 
   .header-element {
     width: 100%;
@@ -682,7 +524,7 @@ body {
 @media only screen and (min-width: $breakpoint-md) {
   .desktop {
     .document-list-header {
-      min-height: 68px;
+      min-height: $document-list-header-min-height;
     }
   }
 }
@@ -1068,7 +910,7 @@ body {
   display: inline-block;
   position: absolute;
   /* it has to come on top of the overlay */
-  z-index: 500;
+  z-index: $z-index-filters;
   left: 0;
   top: 31px;
   list-style: none;
@@ -1439,7 +1281,7 @@ body {
 }
 
 .raw-modal {
-  z-index: 399;
+  z-index: $z-index-modal;
 }
 
 /*
@@ -1607,26 +1449,6 @@ body {
   }
 }
 
-.spinner {
-  position: absolute;
-  background-color: rgba(255, 255, 255, 0.8);
-
-  .icon {
-    z-index: 99;
-    animation: spin 2s linear infinite;
-    opacity: 0.7;
-
-    &.spinner {
-      background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
-    }
-  }
-}
-
-.modal-spinner {
-  height: 100%;
-  width: 100%;
-  background-color: transparent !important;
-}
 
 .paypal-reservation-container {
   position: absolute;

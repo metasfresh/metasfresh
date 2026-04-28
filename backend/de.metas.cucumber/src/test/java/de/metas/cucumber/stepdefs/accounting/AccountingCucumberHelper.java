@@ -4,9 +4,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.IPostingService;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.FactAcctBalanceValidator.FactAcctBalanceValidatorBuilder;
 import de.metas.cucumber.stepdefs.accounting.FactAcctValidator.FactAcctValidatorBuilder;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,6 +23,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.acct.PostingStatus;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,9 +36,29 @@ import java.util.stream.Stream;
 @UtilityClass
 public class AccountingCucumberHelper
 {
+	public static void repost(final TableRecordReferenceSet recordRefs)
+	{
+		final IPostingService postingService = Services.get(IPostingService.class);
+
+		streamPostingInfo(recordRefs)
+				.map(AccountingCucumberHelper::toDocumentPostRequest)
+				.collect(DocumentPostMultiRequest.collect())
+				.ifPresent(postingService::postAfterCommit);
+	}
+
+	private static DocumentPostRequest toDocumentPostRequest(final PostingInfo postingInfo)
+	{
+		return DocumentPostRequest.builder()
+				.record(postingInfo.getRecordRef())
+				.clientId(postingInfo.getClientId())
+				.force(true)
+				.onErrorNotifyUserId(Env.getLoggedUserId())
+				.build();
+	}
+	
 	public static void waitUtilPosted(final TableRecordReferenceSet recordRefs) throws InterruptedException
 	{
-		waitUtilPosted(ImmutableSet.copyOf(recordRefs));
+		waitUtilPosted(recordRefs.toSet());
 	}
 
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
@@ -62,13 +88,13 @@ public class AccountingCucumberHelper
 			{
 				return true;
 			}
-			else if (postingStatus == PostingStatus.Error)
+			else if (postingStatus.isNotPosted())
 			{
-				throw new AdempiereException("Document " + recordRef + " has posting error: " + postingInfo.getStackTrace());
+				return false;
 			}
 			else
 			{
-				return false;
+				throw new AdempiereException("Document " + recordRef + " has posting error: " + postingInfo.getStackTrace());
 			}
 		});
 	}
@@ -87,7 +113,7 @@ public class AccountingCucumberHelper
 			return Stream.empty();
 		}
 
-		final ImmutableListMultimap<String, TableRecordReference> recordRefsByTableName = Multimaps.index(ImmutableSet.copyOf(recordRefs), TableRecordReference::getTableName);
+		final ImmutableListMultimap<String, TableRecordReference> recordRefsByTableName = Multimaps.index(recordRefs.toSet(), TableRecordReference::getTableName);
 
 		final StringBuilder finalSql = new StringBuilder();
 		final ArrayList<Object> finalSqlParams = new ArrayList<>();

@@ -8,17 +8,19 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_PaymentTerm;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -45,17 +47,28 @@ import static org.assertj.core.api.Assertions.*;
 public class PaymentTermGrossProfitComponentTest
 {
 	private CurrencyId currencyId;
+	private PaymentTermService paymentTermService;
 	private MoneyService moneyService;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		// the precision is crucial for the rounding, when we subtract the contract's discount
+		// the precision is crucial for the rounding when we subtract the contract's discount
 		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR, CurrencyPrecision.TWO).getId();
 
+		paymentTermService = new PaymentTermService();
 		moneyService = new MoneyService(new CurrencyRepository());
+	}
+
+	private PaymentProfitPriceActualComponent newPaymentProfitPriceActualComponent(@Nullable final PaymentTermId paymentTermId)
+	{
+		return PaymentProfitPriceActualComponent.builder()
+				.paymentTermService(paymentTermService)
+				.moneyService(moneyService)
+				.paymentTermId(paymentTermId)
+				.build();
 	}
 
 	@Test
@@ -69,7 +82,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
 
-		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(paymentTermId, moneyService);
+		final PaymentProfitPriceActualComponent component = newPaymentProfitPriceActualComponent(paymentTermId);
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
@@ -79,7 +92,7 @@ public class PaymentTermGrossProfitComponentTest
 	@Test
 	public void applyToInput_no_paymentterm()
 	{
-		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(null, moneyService);
+		final PaymentProfitPriceActualComponent component = newPaymentProfitPriceActualComponent(null);
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));

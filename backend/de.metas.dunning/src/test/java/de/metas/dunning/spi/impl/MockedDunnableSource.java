@@ -22,14 +22,13 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.dunning.api.IDunnableDoc;
+import de.metas.dunning.api.IDunningContext;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.dunning.api.IDunnableDoc;
-import de.metas.dunning.api.IDunningContext;
 
 public class MockedDunnableSource extends AbstractDunnableSource
 {
@@ -37,8 +36,6 @@ public class MockedDunnableSource extends AbstractDunnableSource
 
 	/**
 	 * Gets a live list of dunnable documents. Test writer can add the {@link IDunnableDoc}s directly to this list.
-	 * 
-	 * @return
 	 */
 	public List<IDunnableDoc> getDunnableDocList()
 	{

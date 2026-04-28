@@ -8,8 +8,10 @@ import de.metas.device.config.IDeviceConfigPool;
 import de.metas.device.config.IDeviceConfigPoolListener;
 import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -47,8 +49,8 @@ public class DummyDeviceConfigPool implements IDeviceConfigPool
 	private static final AtomicBoolean enabled = new AtomicBoolean();
 	private static final StaticStateHolder staticState = new StaticStateHolder();
 
-	private static BigDecimal responseMinValue = BigDecimal.valueOf(100);
-	private static BigDecimal responseMaxValue = BigDecimal.valueOf(900);
+	@Getter private static BigDecimal responseMinValue = BigDecimal.valueOf(100);
+	@Getter private static BigDecimal responseMaxValue = BigDecimal.valueOf(900);
 
 	public static boolean isEnabled()
 	{
@@ -66,19 +68,9 @@ public class DummyDeviceConfigPool implements IDeviceConfigPool
 		DummyDeviceConfigPool.responseMinValue = BigDecimal.valueOf(responseMinValue);
 	}
 
-	public static BigDecimal getResponseMinValue()
-	{
-		return responseMinValue;
-	}
-
 	public static void setResponseMaxValue(final int responseMaxValue)
 	{
 		DummyDeviceConfigPool.responseMaxValue = BigDecimal.valueOf(responseMaxValue);
-	}
-
-	public static BigDecimal getResponseMaxValue()
-	{
-		return responseMaxValue;
 	}
 
 	@Override
@@ -99,7 +91,7 @@ public class DummyDeviceConfigPool implements IDeviceConfigPool
 	}
 
 	@Override
-	public List<DeviceConfig> getDeviceConfigsForAttributeCode(AttributeCode attributeCode)
+	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final AttributeCode attributeCode)
 	{
 		if (!isEnabled())
 		{
@@ -173,7 +165,7 @@ public class DummyDeviceConfigPool implements IDeviceConfigPool
 			logger.info("addDevice: {} -> {}", existingDevice, device);
 		}
 
-		public synchronized DeviceConfig removeDeviceByName(@NonNull final String deviceName)
+		public synchronized @Nullable DeviceConfig removeDeviceByName(@NonNull final String deviceName)
 		{
 			final DeviceConfig existingDevice = devicesByName.remove(deviceName);
 			if (existingDevice != null)

@@ -23,6 +23,7 @@ package de.metas.bpartner.interceptor;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.LocationId;
@@ -35,12 +36,14 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
+
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -56,7 +59,7 @@ public class C_BPartner_Location
 
 	/**
 	 * Update {@link I_C_BPartner_Location#COLUMNNAME_Address} field right before new. Updating on TYPE_BEFORE_CHANGE is not needed because C_Location_ID is not changing and if user edits the address,
-	 * then {@link org.adempiere.bpartner.callout.BPartnerLocation#evalInput(GridTab)} is managing the case.
+	 * then {@link de.metas.bpartner.callout.C_BPartner_Location#updateAddressString(I_C_BPartner_Location)} is managing the case.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void updateAddressString(final I_C_BPartner_Location bpLocation)
@@ -88,7 +91,7 @@ public class C_BPartner_Location
 		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
-		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+		final LocationId oldLocationId = LocationId.ofRepoId(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
 	}
@@ -96,7 +99,8 @@ public class C_BPartner_Location
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		if (!bpLocation.isNameReadWrite())
+		final String name = bpLocation.getName();
+		if (!bpLocation.isNameReadWrite() || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 		{
 			updateBPLocationName(bpLocation);
 		}
@@ -110,15 +114,16 @@ public class C_BPartner_Location
 
 	private void updateBPLocationName(final @NonNull I_C_BPartner_Location bpLocation)
 	{
-		final int cBPartnerId = bpLocation.getC_BPartner_ID();
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpLocation.getC_BPartner_Location_ID());
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		bpLocation.setName(MakeUniqueNameCommand.builder()
+		bpLocation.setName(MakeUniqueLocationNameCommand.builder()
 								   .name(bpLocation.getName())
 								   .address(bpLocation.getC_Location())
-								   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
-								   .existingNames(MakeUniqueNameCommand.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+								   .companyName(bpartnerDAO.getBPartnerNameById(bPartnerId))
+								   .existingNames(bpartnerDAO.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId))
 								   .build()
 								   .execute());
 	}

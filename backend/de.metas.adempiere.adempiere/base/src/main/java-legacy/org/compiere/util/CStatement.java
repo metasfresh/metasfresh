@@ -32,9 +32,4 @@ public interface CStatement extends Statement
 	boolean isClosed() throws SQLException;
     
 	void commit() throws SQLException;
-
-    /**
-     * don't call this directly, invoke by finalizer thread
-     */
-	void finalize() throws Throwable;
 }

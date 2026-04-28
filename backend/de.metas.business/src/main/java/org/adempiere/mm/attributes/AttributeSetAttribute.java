@@ -23,9 +23,11 @@
 package org.adempiere.mm.attributes;
 
 import de.metas.util.OptionalBoolean;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.Attribute;
 
 /**
  * A single attribute from an attribute set. note that we don't have any values in there..this is not about an instance.
@@ -34,9 +36,11 @@ import lombok.Value;
 @Builder
 public class AttributeSetAttribute
 {
-	@NonNull AttributeId attributeId;
-	int seqNo;
+	@NonNull Attribute attribute;
+	@NonNull SeqNo seqNo;
 	@NonNull OptionalBoolean mandatoryOnReceipt;
 	@NonNull OptionalBoolean mandatoryOnPicking;
 	@NonNull OptionalBoolean mandatoryOnShipment;
+
+	public @NonNull AttributeId getAttributeId() {return attribute.getAttributeId();}
 }

@@ -20,8 +20,6 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.util.Properties;
-
 public class LocationBL implements ILocationBL
 {
 	private static final Logger logger = LogManager.getLogger(LocationBL.class);

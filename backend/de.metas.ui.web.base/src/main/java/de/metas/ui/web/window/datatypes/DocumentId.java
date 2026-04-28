@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,15 +49,15 @@ import java.util.stream.Collectors;
 // JSON
 public abstract class DocumentId implements Serializable
 {
-	private static final transient int NEW_ID = -1;
+	private static final int NEW_ID = -1;
 	/**
 	 * If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}.
 	 */
-	public static final transient String NEW_ID_STRING = "NEW";
+	public static final String NEW_ID_STRING = "NEW";
 	@SuppressWarnings("StaticInitializerReferencesSubClass")
-	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
+	public static final DocumentId NEW = new IntDocumentId(NEW_ID);
 
-	private static final transient String DOCUMENT_ID_PREFIX = "D";
+	private static final String DOCUMENT_ID_PREFIX = "D";
 
 	private static final String COMPOSED_KEY_SEPARATOR = "$";
 	private static final Splitter COMPOSED_KEY_SPLITTER = Splitter.on(COMPOSED_KEY_SEPARATOR);

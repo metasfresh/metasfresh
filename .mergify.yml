@@ -1,0 +1,203 @@
+# =============================================================================
+# ops:* Label Reference
+# =============================================================================
+# ops:auto_squash_merge      — Auto-merge using squash method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:auto_merge_commit      — Auto-merge using merge commit method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:without_review_approval — Skip the review approval requirement for auto-merge.
+#                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
+# ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
+# ops:no_auto_port           — (reserved for future use)
+# ops:allow_protected_merge  — Override the protection rule that blocks direct merges
+#                               between protected branches. Use sparingly and only when
+#                               auto-port merge/ branches are not feasible.
+#
+# Protection: PRs that merge directly from one protected branch (*_hotfix,
+# *_release, *_uat) into another are automatically closed. Use auto-port
+# merge/ branches instead — they test the merged result via CI first.
+# Set ops:allow_protected_merge label to override this for a specific PR.
+# =============================================================================
+
+# "Merge Gate" is the CI gate — a workflow_run-based commit status set by
+# merge-gate.yaml after each cicd completion. It maps the cicd workflow
+# conclusion to success/failure. Since it runs from the default branch,
+# it fires for ALL branches automatically.
+#
+# testspace-analytics fallback removed: it could succeed even when tests
+# failed (it only checks upload, not test results), allowing broken PRs
+# to merge.
+merge_protections:
+  - name: default
+    if:
+      - check-success=Merge Gate
+    success_conditions:
+      - check-success=Merge Gate
+
+queue_rules:
+  - name: squash-queue
+    merge_method: squash
+    merge_conditions:
+      - check-success=Merge Gate
+
+  - name: merge-queue
+    merge_method: merge
+    merge_conditions:
+      - check-success=Merge Gate
+
+pull_request_rules:
+
+  ############
+  # Act on PRs
+  ############
+
+  - name: After UAT-PR is integrated, add branch-label and delete the PR-branch
+    conditions:
+      - merged
+      - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
+      - or: &ALL_BASE_BRANCHES # this rule should apply to the project-branches from above
+          - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
+              # Please keep in sync with the branches at .testspace.yml
+              # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=keen_hawk_uat
+              - base=task_force_uat
+              - base=electric_light_uat
+              - base=feisty_sloth_uat
+              - base=arctic_north_uat
+              - base=blue_horizon_uat
+              - base=big_coconut_uat
+              - base=clone_wars_uat
+              - base=epic_party_uat
+              - base=gray_knight_uat
+              - base=hard_encoded_uat
+              - base=hostile_tractor_uat
+              - base=inner_silence_uat
+              - base=intensive_care_uat
+              - base=iron_plant_uat
+              - base=koala_yawn_uat
+              - base=mad_orange_uat
+              - base=majestic_kangaroo_uat
+              - base=massive_entropy_uat
+              - base=middle_ages_uat
+              - base=modified_carbon_uat
+              - base=modus_operandi_uat
+              - base=neon_underwear_uat
+              - base=new_dawn_uat
+              - base=oasis_sun_uat
+              - base=pink_rooster_uat
+              - base=release
+              - base=soft_panda_uat
+              - base=science_vessel_uat
+              - base=secondary_opinion_uat
+              - base=tasty_ham_uat
+              - base=tenacious_d_uat
+              - base=vampire_textbook_uat
+              - base=yoyo_uat
+          - or: &PROJECT_BRANCHES_HOTFIX
+              # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_hotfix
+              - base=taloned_owl_hotfix
+              - base=organic_goat_hotfix
+              - base=green_oak_hotfix
+              - base=mighty_pegasus_hotfix
+              - base=task_force_hotfix
+              - base=keen_hawk_hotfix
+              - base=game_time_hotfix
+              - base=ghost_rider_hotfix
+              - base=gray_knight_hotfix
+              - base=hard_encoded_hotfix
+              - base=epic_party_hotfix
+              - base=inner_silence_hotfix
+              - base=intensive_care_hotfix
+              - base=mad_orange_hotfix
+              - base=massive_entropy_hotfix
+              - base=memorable_shiny_hotfix
+              - base=modus_operandi_hotfix
+              - base=pink_rooster_hotfix
+              - base=science_vessel_hotfix
+              - base=secondary_opinion_hotfix
+              - base=soft_panda_hotfix
+              - base=swift_eagle_hotfix
+              - base=tasty_ham_hotfix
+              - base=vampire_textbook_hotfix
+              - base=yoyo_hotfix
+          - or: &PROJECT_BRANCHES_RELEASE
+              # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_release
+              - base=taloned_owl_release
+              - base=organic_goat_release
+              - base=green_oak_release
+              - base=mighty_pegasus_release
+              - base=task_force_release
+              - base=keen_hawk_release
+              - base=game_time_release
+              - base=ghost_rider_release
+              - base=intensive_care_release
+              - base=modus_operandi_release
+              - base=soft_panda_release
+              - base=swift_eagle_release
+              - base=vampire_textbook_release
+              - base=science_vessel_release
+              - base=memorable_shiny_release
+
+    actions:
+      label:
+        add:
+          - "branch:{{base}}"
+
+  - name: Block direct merges between protected branches (use auto-port instead)
+    conditions:
+      - -merged
+      - -closed
+      - -label=ops:allow_protected_merge
+      - or:
+          - or: *ALL_BASE_BRANCHES
+      - or:
+          - head~=_uat$
+          - head~=_hotfix$
+          - head~=_release$
+          - head=release
+      - -head~=^merge/
+      - -head~=^patch/
+    actions:
+      comment:
+        message: |
+          ⛔ **Direct merge between protected branches is not allowed.**
+
+          This PR merges `{{head}}` directly into `{{base}}`. Direct merges between
+          protected branches can cause silent content duplication — Git 3-way merge
+          adds non-overlapping changes from both sides (e.g. duplicate CI workflow
+          jobs added independently on each branch).
+
+          **What to do:** Close this PR and let
+          [auto-port](https://github.com/metasfresh/metasfresh/blob/new_dawn_uat/.github/workflows/auto-port.yml)
+          handle the merge. Auto-port creates `merge/<source>-to-<target>` branches
+          that test the merged result via CI before merging into the target branch.
+      close: {}
+
+  - name: Automatic squash-merge successful PRs into the respective base-branch
+    conditions:
+      - label=ops:auto_squash_merge
+      - or:
+          - or: *ALL_BASE_BRANCHES
+      - or:
+          - "#approved-reviews-by>=1"
+          - label=ops:without_review_approval
+    actions:
+      queue:
+        name: squash-queue
+
+  - name: Automatic merge commit (not squash) successful PRs
+    conditions:
+      - label=ops:auto_merge_commit
+      - or:
+          - or: *ALL_BASE_BRANCHES
+      - or:
+          - "#approved-reviews-by>=1"
+          - label=ops:without_review_approval
+    actions:
+      queue:
+        name: merge-queue
+
+merge_protections_settings:
+  reporting_method: check-runs

@@ -7,8 +7,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.ad.window.api.UIElementGroupId;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_UI_Element;
 
@@ -45,9 +45,9 @@ public class AD_UI_ElementGroup_AddField extends JavaProcess
 	// @Param(parameterName = "After_UI_Element_ID", mandatory = false)
 	// private UIElementId afterUIElementId;
 
-	private UIElementGroupId getAdElementGroupId()
+	private AdUIElementGroupId getAdElementGroupId()
 	{
-		return UIElementGroupId.ofRepoId(getRecord_ID());
+		return AdUIElementGroupId.ofRepoId(getRecord_ID());
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class AD_UI_ElementGroup_AddField extends JavaProcess
 
 		//
 		//
-		final UIElementGroupId uiElementGroupId = getAdElementGroupId();
+		final AdUIElementGroupId uiElementGroupId = getAdElementGroupId();
 		I_AD_UI_Element uiElement = getUIElementByTabAndFieldId(adTabId, adFieldId);
 		if (uiElement == null)
 		{
@@ -96,7 +96,7 @@ public class AD_UI_ElementGroup_AddField extends JavaProcess
 
 	private I_AD_UI_Element createUIElement(
 			@NonNull final I_AD_Field adField,
-			@NonNull final UIElementGroupId uiElementGroupId)
+			@NonNull final AdUIElementGroupId uiElementGroupId)
 	{
 		final I_AD_UI_Element uiElement = WindowUIElementsGenerator.createUIElementNoSave(uiElementGroupId, adField);
 		uiElement.setIsDisplayed(true);

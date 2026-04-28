@@ -164,4 +164,7 @@ public interface IMsgBL extends ISingletonService
 	boolean isMessageExists(AdMessageKey adMessage);
 
 	Optional<AdMessageKey> getAdMessageKeyById(AdMessageId adMessageId);
+	@Nullable
+	String getErrorCode(@NonNull final AdMessageKey messageKey);
+
 }

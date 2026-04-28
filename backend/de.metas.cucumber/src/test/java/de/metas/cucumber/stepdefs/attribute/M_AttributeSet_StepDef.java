@@ -24,19 +24,17 @@ package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetMandatoryType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSet;
 
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID;
 
@@ -67,29 +65,34 @@ public class M_AttributeSet_StepDef
 	@And("add M_AttributeSet:")
 	public void add_M_AttributeSet(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_Name);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_AttributeSet_ID)
+				.forEach(row -> {
+					final ValueAndName valueAndName = row.suggestValueAndName();
+					final String name = valueAndName.getName();
 
-			final I_M_AttributeSet attributeSet = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_M_AttributeSet.class)
-							.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
-							.create()
-							.firstOnly(I_M_AttributeSet.class),
-					() -> InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class));
+					final I_M_AttributeSet attributeSet = CoalesceUtil.coalesceSuppliers(
+							() -> queryBL.createQueryBuilder(I_M_AttributeSet.class)
+									.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
+									.addOnlyActiveRecordsFilter()
+									.create()
+									.firstOnly(I_M_AttributeSet.class),
+							() -> {
+								final I_M_AttributeSet newRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class);
+								newRecord.setMandatoryType(AttributeSetMandatoryType.NotMandatory.getCode());
+								return newRecord;
+							});
 
-			assertThat(attributeSet).isNotNull();
+					assertThat(attributeSet).isNotNull();
 
-			attributeSet.setName(name);
+					attributeSet.setName(name);
 
-			// dev-note: values for COLUMNNAME_MandatoryType should obey AD_Reference_ID=324
-			final String mandatoryType = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_MandatoryType);
-			attributeSet.setName(mandatoryType);
+					row.getAsOptionalEnum(I_M_AttributeSet.COLUMNNAME_MandatoryType, AttributeSetMandatoryType.class)
+							.ifPresent(mandatoryType -> attributeSet.setMandatoryType(mandatoryType.getCode()));
 
-			InterfaceWrapperHelper.saveRecord(attributeSet);
+					InterfaceWrapperHelper.saveRecord(attributeSet);
 
-			final String attributeSetIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
-			attributeSetTable.putOrReplace(attributeSetIdentifier, attributeSet);
-		}
+					row.getAsOptionalIdentifier().ifPresent(identifier -> attributeSetTable.putOrReplace(identifier, attributeSet));
+				});
 	}
 }

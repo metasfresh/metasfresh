@@ -22,16 +22,15 @@ package org.adempiere.util.testservice.impl;
  * #L%
  */
 
-
 import org.adempiere.util.testservice.IMockedMultitonService;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class MockedMultitonService implements IMockedMultitonService
 {
 	public static transient int NEXT_INSTANCE_NUMBER = 1;
 
-	public static final void resetNextInstanceNumber()
+	public static void resetNextInstanceNumber()
 	{
 		NEXT_INSTANCE_NUMBER = 1;
 	}
@@ -40,7 +39,6 @@ public class MockedMultitonService implements IMockedMultitonService
 
 	public MockedMultitonService()
 	{
-		super();
 		instanceNo = NEXT_INSTANCE_NUMBER;
 		NEXT_INSTANCE_NUMBER++;
 	}

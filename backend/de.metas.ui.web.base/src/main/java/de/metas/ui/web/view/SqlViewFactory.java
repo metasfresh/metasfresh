@@ -25,6 +25,7 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.DocumentFilterBuilder;
@@ -35,7 +36,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorsProvider;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
@@ -75,6 +76,8 @@ import java.util.function.Supplier;
 @Service
 public class SqlViewFactory implements IViewFactory
 {
+	public final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
+
 	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
 	private final WebuiDocumentReferencesService webuiDocumentReferencesService;
 	private final ViewLayoutFactory viewLayouts;
@@ -88,7 +91,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
-			@NonNull final Optional<List<SqlDocumentFilterConverterDecorator>> filterConverterDecorators,
+			@NonNull final SqlDocumentFilterConverterDecoratorsProvider filterConverterDecoratorsProvider,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
@@ -104,7 +107,7 @@ public class SqlViewFactory implements IViewFactory
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
 				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
-				.filterConverterDecorators(filterConverterDecorators.orElseGet(ImmutableList::of))
+				.filterConverterDecoratorsProvider(filterConverterDecoratorsProvider)
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)
 				.build();
 
@@ -174,7 +177,8 @@ public class SqlViewFactory implements IViewFactory
 						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
-				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
+				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents())
+				.setParameters(request.getParameters());
 
 		final DocumentFilterList filters = request.getFiltersUnwrapped(viewDataRepository.getViewFilterDescriptors());
 		viewBuilder.setFilters(filters);
@@ -204,11 +208,6 @@ public class SqlViewFactory implements IViewFactory
 		{
 			return null;
 		}
-		else if (referencedDocumentPath.isComposedKey())
-		{
-			// document with composed keys does not support references
-			return null;
-		}
 		else
 		{
 			return webuiDocumentReferencesService.getDocumentReferenceFilter(
@@ -216,7 +215,7 @@ public class SqlViewFactory implements IViewFactory
 							targetWindowId,
 							documentReferenceId,
 							RelatedDocumentsPermissionsFactory.allowAll())
-					.orElseThrow(() -> new AdempiereException("No related documents found")
+					.orElseThrow(() -> new AdempiereException(MSG_NO_RELATED_DOCS_FOUND)
 							.setParameter("targetWindowId", targetWindowId)
 							.setParameter("referencedDocumentPath", referencedDocumentPath)
 							.setParameter("documentReferenceId", documentReferenceId));

@@ -128,7 +128,7 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(WarehouseId::ofRepoId);
+				.idsAsSet(WarehouseId::ofRepoId);
 
 		if (warehouseIds.isEmpty())
 		{

@@ -10,9 +10,9 @@ import de.metas.email.mailboxes.SMTPConfig;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
@@ -42,14 +42,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 /**
- * This test makes a real invocation on the a mailserver. It's usually {@link Ignore}d.
+ * This test makes a real invocation on the a mailserver. It's usually {@link org.junit.jupiter.api.Disabled}d.
  */
 public class DerKurierDeliveryOrderEmailerManualTest
 {
 
 	private AttachmentEntryService attachmentEntryService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -68,7 +68,7 @@ public class DerKurierDeliveryOrderEmailerManualTest
 	}
 
 	@Test
-	@Ignore // remove the ignore to run this test manually
+	@Disabled // remove the Disabled to run this test manually
 	public void testAttachAndEmail()
 	{
 		final Mailbox mailbox = Mailbox.builder()

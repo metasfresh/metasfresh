@@ -95,7 +95,7 @@ class MaterialDispoTableRowValidator
 					validate(row, item);
 					return ProviderResult.resultWasFound(item);
 				}
-				catch (Exception | AssertionError ex)
+				catch (final Exception | AssertionError ex)
 				{
 					resultNotFoundLogs.add("Candidate " + item.getCandidateId().getRepoId() + " not valid because " + extractMessage(ex));
 				}
@@ -156,7 +156,7 @@ class MaterialDispoTableRowValidator
 		softly.assertThat(actualAttributesKeys).as("AttributeKeys").isEqualTo(expectedAttributesKey);
 	}
 
-	private void validateDistribution(@Nullable MaterialDispoTableRow.Distribution expected, @Nullable DistributionDetail actual)
+	private void validateDistribution(@Nullable final MaterialDispoTableRow.Distribution expected, @Nullable final DistributionDetail actual)
 	{
 		if (expected == null)
 		{
@@ -168,7 +168,7 @@ class MaterialDispoTableRowValidator
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private void validate_DDOrderRef(@NonNull String name, @Nullable final DDOrderRefIdentifiers expected, @Nullable final DDOrderRef actual)
+	private void validate_DDOrderRef(@NonNull final String name, @Nullable final DDOrderRefIdentifiers expected, @Nullable final DDOrderRef actual)
 	{
 		if (expected == null)
 		{
@@ -205,7 +205,7 @@ class MaterialDispoTableRowValidator
 		validate_PPOrderRef("Production", expected.getPpOrderRef(), actual != null ? actual.getPpOrderRef() : null);
 	}
 
-	private void validate_PPOrderRef(@NonNull String name, @Nullable final PPOrderRefIdentifiers expected, @Nullable final PPOrderRef actual)
+	private void validate_PPOrderRef(@NonNull final String name, @Nullable final PPOrderRefIdentifiers expected, @Nullable final PPOrderRef actual)
 	{
 		if (expected == null)
 		{
@@ -215,7 +215,7 @@ class MaterialDispoTableRowValidator
 		if (expected.getPpOrderCandidateId() != null)
 		{
 			final PPOrderCandidateId idExpected = ppOrderCandidateTable.getIdOfNullable(expected.getPpOrderCandidateId());
-			final PPOrderCandidateId idActual = actual != null ? PPOrderCandidateId.ofRepoIdOrNull(actual.getPpOrderCandidateId()) : null;
+			final PPOrderCandidateId idActual = actual != null ? actual.getPpOrderCandidateId() : null;
 			softly.assertThat(idActual).as(() -> name + " - PP_Order_Candidate_ID").isEqualTo(idExpected);
 		}
 		if (expected.getPpOrderLineCandidateId() != null)

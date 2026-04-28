@@ -65,11 +65,11 @@ public class DocumentLocation
 		}
 		if (bpartnerLocationId != null && !bpartnerLocationId.getBpartnerId().equals(bpartnerId))
 		{
-			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " shall match");
+			throw new AdempiereException("Given " + bpartnerId + " and " + bpartnerLocationId + " shall match");
 		}
 		if (contactId != null && !contactId.getBpartnerId().equals(bpartnerId))
 		{
-			throw new AdempiereException("" + bpartnerId + " and " + contactId + " shall match");
+			throw new AdempiereException("Given " + bpartnerId + " and " + contactId + " shall match");
 		}
 
 		this.bpartnerId = bpartnerId;
@@ -90,23 +90,19 @@ public class DocumentLocation
 				.build();
 	}
 
-	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
-	{
-		return builder()
-				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
-				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
-				.contactId(null)
-				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
-				.bpartnerAddress(null)
-				.build();
-	}
-
-
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
 		return !Objects.equals(this.locationId, locationId)
 				? toBuilder().locationId(locationId).build()
 				: this;
+	}
+
+	public DocumentLocation withRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation renderedAddress)
+	{
+		return toBuilder()
+				.locationId(renderedAddress.getCapturedLocationId())
+				.bpartnerAddress(renderedAddress.getRenderedAddress())
+				.build();
 	}
 
 	private DocumentLocation withoutRenderedAddress()

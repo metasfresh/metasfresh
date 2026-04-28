@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -75,7 +75,7 @@ public class PushProductsRoute extends RouteBuilder
 		from(StaticEndpointBuilders.direct(PUSH_PRODUCTS))
 				.routeId(PUSH_PRODUCTS)
 				.log("Route invoked")
-				.streamCaching()
+				.streamCache("true")
 				.process(new RetrieveProductsProcessor()).id(RETRIEVE_PRODUCTS_PROCESSOR_ID)
 
 				.to(StaticEndpointBuilders.direct(MF_GET_PRODUCTS_ROUTE_ID))

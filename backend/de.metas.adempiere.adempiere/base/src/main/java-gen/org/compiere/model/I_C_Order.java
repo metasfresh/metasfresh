@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -139,7 +138,7 @@ public interface I_C_Order
 	String COLUMNNAME_AmountRefunded = "AmountRefunded";
 
 	/**
-	 * Set AmountTendered.
+	 * Set Tendered Amount.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -148,7 +147,7 @@ public interface I_C_Order
 	void setAmountTendered (@Nullable BigDecimal AmountTendered);
 
 	/**
-	 * Get AmountTendered.
+	 * Get Tendered Amount.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -250,7 +249,7 @@ public interface I_C_Order
 	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
 
 	/**
-	 * Set Abw. Rechnungsadresse.
+	 * Set Diff. Invoice Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -259,7 +258,7 @@ public interface I_C_Order
 	void setBillToAddress (@Nullable java.lang.String BillToAddress);
 
 	/**
-	 * Get Abw. Rechnungsadresse.
+	 * Get Diff. Invoice Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -289,6 +288,29 @@ public interface I_C_Order
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBLDate (@Nullable java.sql.Timestamp BLDate);
+
+	/**
+	 * Get B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getBLDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BLDate = new ModelColumn<>(I_C_Order.class, "BLDate", null);
+	String COLUMNNAME_BLDate = "BLDate";
 
 	/**
 	 * Set Address.
@@ -558,7 +580,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Cash Journal Line.
-	 * Kassenbuch Zeile
+	 * Cash Journal Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -568,7 +590,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Cash Journal Line.
-	 * Kassenbuch Zeile
+	 * Cash Journal Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -584,8 +606,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_CashLine_ID = "C_CashLine_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -594,8 +615,7 @@ public interface I_C_Order
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -606,8 +626,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Kursart.
-	 * Currency Conversion Rate Type
+	 * Set Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -616,8 +635,7 @@ public interface I_C_Order
 	void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Kursart.
-	 * Currency Conversion Rate Type
+	 * Get Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -653,7 +671,7 @@ public interface I_C_Order
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -663,7 +681,7 @@ public interface I_C_Order
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -721,7 +739,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_FrameAgreement_Order_ID = "C_FrameAgreement_Order_ID";
 
 	/**
-	 * Set Gebühr.
+	 * Set Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -730,7 +749,8 @@ public interface I_C_Order
 	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
 
 	/**
-	 * Get Gebühr.
+	 * Get Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -767,8 +787,28 @@ public interface I_C_Order
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
-	 * Set Rabatt %.
-	 * Abschlag in Prozent
+	 * Set Commission Date From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommission_DateFrom (@Nullable java.sql.Timestamp Commission_DateFrom);
+
+	/**
+	 * Get Commission Date From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCommission_DateFrom();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Commission_DateFrom = new ModelColumn<>(I_C_Order.class, "Commission_DateFrom", null);
+	String COLUMNNAME_Commission_DateFrom = "Commission_DateFrom";
+
+	/**
+	 * Set Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -777,8 +817,7 @@ public interface I_C_Order
 	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
 
 	/**
-	 * Get Rabatt %.
-	 * Abschlag in Prozent
+	 * Get Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -790,8 +829,8 @@ public interface I_C_Order
 	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
 
 	/**
-	 * Set Copy From.
-	 * Copy From Record
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -800,8 +839,8 @@ public interface I_C_Order
 	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
-	 * Get Copy From.
-	 * Copy From Record
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -880,7 +919,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
-	 * Set POS-Terminal.
+	 * Set POS Terminal.
 	 * Point of Sales Terminal
 	 *
 	 * <br>Type: TableDir
@@ -890,7 +929,7 @@ public interface I_C_Order
 	void setC_POS_ID (int C_POS_ID);
 
 	/**
-	 * Get POS-Terminal.
+	 * Get POS Terminal.
 	 * Point of Sales Terminal
 	 *
 	 * <br>Type: TableDir
@@ -929,7 +968,8 @@ public interface I_C_Order
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Create Copy.
+	 * Set Copy/Create.
+	 * Copy existing OR create Print Format from Table
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -938,7 +978,8 @@ public interface I_C_Order
 	void setCreateCopy (@Nullable java.lang.String CreateCopy);
 
 	/**
-	 * Get Create Copy.
+	 * Get Copy/Create.
+	 * Copy existing OR create Print Format from Table
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -966,7 +1007,7 @@ public interface I_C_Order
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -975,8 +1016,8 @@ public interface I_C_Order
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Erzeuge Auftrag.
-	 * Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
+	 * Set Create Order.
+	 * Erzeugt aus dem ausgewählten Angebot einen neuen Auftrag
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -985,8 +1026,8 @@ public interface I_C_Order
 	void setCreateNewFromProposal (@Nullable java.lang.String CreateNewFromProposal);
 
 	/**
-	 * Get Erzeuge Auftrag.
-	 * Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
+	 * Get Create Order.
+	 * Erzeugt aus dem ausgewählten Angebot einen neuen Auftrag
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1111,7 +1152,7 @@ public interface I_C_Order
 	String COLUMNNAME_DeliveryInfo = "DeliveryInfo";
 
 	/**
-	 * Set Lieferart.
+	 * Set Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -1121,7 +1162,7 @@ public interface I_C_Order
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
+	 * Get Delivery Rule.
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -1199,7 +1240,7 @@ public interface I_C_Order
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Schlusstext.
+	 * Set End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1208,7 +1249,7 @@ public interface I_C_Order
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get Schlusstext.
+	 * Get End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1221,7 +1262,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1231,7 +1272,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1359,7 +1400,7 @@ public interface I_C_Order
 	/**
 	 * Set Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1368,7 +1409,7 @@ public interface I_C_Order
 	/**
 	 * Get Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1445,6 +1486,29 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETA (@Nullable java.sql.Timestamp ETA);
+
+	/**
+	 * Get ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETA();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ETA = new ModelColumn<>(I_C_Order.class, "ETA", null);
+	String COLUMNNAME_ETA = "ETA";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1489,7 +1553,28 @@ public interface I_C_Order
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
 
 	/**
-	 * Set Frachtbetrag.
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
+	 * Set Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -1499,7 +1584,7 @@ public interface I_C_Order
 	void setFreightAmt (BigDecimal FreightAmt);
 
 	/**
-	 * Get Frachtbetrag.
+	 * Get Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -1512,8 +1597,8 @@ public interface I_C_Order
 	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
-	 * Set Frachtkostenberechnung.
-	 * Methode zur Frachtkostenberechnung
+	 * Set Freight Cost Rule.
+	 * Method for charging Freight
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1522,8 +1607,8 @@ public interface I_C_Order
 	void setFreightCostRule (java.lang.String FreightCostRule);
 
 	/**
-	 * Get Frachtkostenberechnung.
-	 * Methode zur Frachtkostenberechnung
+	 * Get Freight Cost Rule.
+	 * Method for charging Freight
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1604,7 +1689,7 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_BPartner_Memo = "HandOver_BPartner_Memo";
 
 	/**
-	 * Set Übergabeadresse.
+	 * Set unloading address.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1613,7 +1698,7 @@ public interface I_C_Order
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
-	 * Get Übergabeadresse.
+	 * Get unloading address.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1689,7 +1774,7 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1699,7 +1784,7 @@ public interface I_C_Order
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1712,8 +1797,29 @@ public interface I_C_Order
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
-	 * Set Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Set Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDate (@Nullable java.sql.Timestamp InvoiceDate);
+
+	/**
+	 * Get Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getInvoiceDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InvoiceDate = new ModelColumn<>(I_C_Order.class, "InvoiceDate", null);
+	String COLUMNNAME_InvoiceDate = "InvoiceDate";
+
+	/**
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1722,8 +1828,8 @@ public interface I_C_Order
 	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
-	 * Get Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1735,7 +1841,7 @@ public interface I_C_Order
 	String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
-	 * Set Invoice Status.
+	 * Set Status Billing.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1746,7 +1852,7 @@ public interface I_C_Order
 	void setInvoiceStatus (@Nullable java.lang.String InvoiceStatus);
 
 	/**
-	 * Get Invoice Status.
+	 * Get Status Billing.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1806,7 +1912,28 @@ public interface I_C_Order
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Kredit gebilligt.
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_Order.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
+
+	/**
+	 * Set Credit Approved.
 	 * Credit  has been approved
 	 *
 	 * <br>Type: YesNo
@@ -1816,7 +1943,7 @@ public interface I_C_Order
 	void setIsCreditApproved (boolean IsCreditApproved);
 
 	/**
-	 * Get Kredit gebilligt.
+	 * Get Credit Approved.
 	 * Credit  has been approved
 	 *
 	 * <br>Type: YesNo
@@ -1829,7 +1956,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsCreditApproved = "IsCreditApproved";
 
 	/**
-	 * Set Zugestellt.
+	 * Set Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1838,7 +1965,7 @@ public interface I_C_Order
 	void setIsDelivered (boolean IsDelivered);
 
 	/**
-	 * Get Zugestellt.
+	 * Get Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1850,7 +1977,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsDelivered = "IsDelivered";
 
 	/**
-	 * Set Rabatte drucken.
+	 * Set Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1860,7 +1987,7 @@ public interface I_C_Order
 	void setIsDiscountPrinted (boolean IsDiscountPrinted);
 
 	/**
-	 * Get Rabatte drucken.
+	 * Get Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1896,8 +2023,54 @@ public interface I_C_Order
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Berechnete Menge.
-	 * Fakturiert?
+	 * Set Ship after above date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedDatePromised (boolean IsFixedDatePromised);
+
+	/**
+	 * Get Ship after above date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedDatePromised();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsFixedDatePromised = new ModelColumn<>(I_C_Order.class, "IsFixedDatePromised", null);
+	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
+
+	/**
+	 * Set Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
+
+	/**
+	 * Get Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedPreparationDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_C_Order.class, "IsFixedPreparationDate", null);
+	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
+
+	/**
+	 * Set Invoiced.
+	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1906,8 +2079,8 @@ public interface I_C_Order
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Berechnete Menge.
-	 * Fakturiert?
+	 * Get Invoiced.
+	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1919,7 +2092,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1929,7 +2102,7 @@ public interface I_C_Order
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1965,7 +2138,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsSalesPartnerRequired = "IsSalesPartnerRequired";
 
 	/**
-	 * Set Selektiert.
+	 * Set Selected.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1974,7 +2147,7 @@ public interface I_C_Order
 	void setIsSelected (boolean IsSelected);
 
 	/**
-	 * Get Selektiert.
+	 * Get Selected.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1986,7 +2159,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsSelected = "IsSelected";
 
 	/**
-	 * Set Selbstbedienung.
+	 * Set Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -1996,7 +2169,7 @@ public interface I_C_Order
 	void setIsSelfService (boolean IsSelfService);
 
 	/**
-	 * Get Selbstbedienung.
+	 * Get Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -2141,7 +2314,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsUseDeliveryToAddress = "IsUseDeliveryToAddress";
 
 	/**
-	 * Set Übergabe.
+	 * Set Handover.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2150,7 +2323,7 @@ public interface I_C_Order
 	void setIsUseHandOver_Location (boolean IsUseHandOver_Location);
 
 	/**
-	 * Get Übergabe.
+	 * Get Handover.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2162,8 +2335,29 @@ public interface I_C_Order
 	String COLUMNNAME_IsUseHandOver_Location = "IsUseHandOver_Location";
 
 	/**
-	 * Set Zugehörige Bestellung.
-	 * Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
+	 * Set Letter of Credit Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLC_Date (@Nullable java.sql.Timestamp LC_Date);
+
+	/**
+	 * Get Letter of Credit Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getLC_Date();
+
+	ModelColumn<I_C_Order, Object> COLUMN_LC_Date = new ModelColumn<>(I_C_Order.class, "LC_Date", null);
+	String COLUMNNAME_LC_Date = "LC_Date";
+
+	/**
+	 * Set Linked Order.
+	 * This field links a sales order to the purchase order that is generated from it.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2172,8 +2366,8 @@ public interface I_C_Order
 	void setLink_Order_ID (int Link_Order_ID);
 
 	/**
-	 * Get Zugehörige Bestellung.
-	 * Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
+	 * Get Linked Order.
+	 * This field links a sales order to the purchase order that is generated from it.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2189,7 +2383,7 @@ public interface I_C_Order
 	String COLUMNNAME_Link_Order_ID = "Link_Order_ID";
 
 	/**
-	 * Set Fracht-Kategorie.
+	 * Set Freight Category.
 	 * Category of the Freight
 	 *
 	 * <br>Type: TableDir
@@ -2199,7 +2393,7 @@ public interface I_C_Order
 	void setM_FreightCategory_ID (int M_FreightCategory_ID);
 
 	/**
-	 * Get Fracht-Kategorie.
+	 * Get Freight Category.
 	 * Category of the Freight
 	 *
 	 * <br>Type: TableDir
@@ -2371,7 +2565,8 @@ public interface I_C_Order
 	String COLUMNNAME_Orderline_includedTab = "Orderline_includedTab";
 
 	/**
-	 * Set OrderType.
+	 * Set Order Type.
+	 * Type of Order: MRP records grouped by source (Sales Order, Purchase Order, Distribution Order, Requisition)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2380,7 +2575,8 @@ public interface I_C_Order
 	void setOrderType (@Nullable java.lang.String OrderType);
 
 	/**
-	 * Get OrderType.
+	 * Get Order Type.
+	 * Type of Order: MRP records grouped by source (Sales Order, Purchase Order, Distribution Order, Requisition)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2393,7 +2589,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment BPartner.
-	 * Zahlungspartner
+	 * Business Partner responsible for the payment
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2403,7 +2599,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment BPartner.
-	 * Zahlungspartner
+	 * Business Partner responsible for the payment
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2416,7 +2612,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment Location.
-	 * Zahlungsanschrift
+	 * Location of the Business Partner responsible for the payment
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2426,7 +2622,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment Location.
-	 * Zahlungsanschrift
+	 * Location of the Business Partner responsible for the payment
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2592,7 +2788,7 @@ public interface I_C_Order
 	String COLUMNNAME_PRINTER_OPTS_IsPrintTotals = "PRINTER_OPTS_IsPrintTotals";
 
 	/**
-	 * Set Priorität.
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -2602,7 +2798,7 @@ public interface I_C_Order
 	void setPriorityRule (java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -2658,29 +2854,57 @@ public interface I_C_Order
 
 	/**
 	 * Set Promotion Code.
-	 * Werbecode
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPromotionCode (@Nullable java.lang.String PromotionCode);
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
 
 	/**
 	 * Get Promotion Code.
-	 * Werbecode
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPromotionCode();
+	int getC_PromotionCode_ID();
 
-	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
-	String COLUMNNAME_PromotionCode = "PromotionCode";
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
-	 * Set Menge-Schnelleingabe.
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Qty without Trading Unit.
+	 * Mengen-Schnelleingabe
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2689,7 +2913,8 @@ public interface I_C_Order
 	void setQty_FastInput (@Nullable BigDecimal Qty_FastInput);
 
 	/**
-	 * Get Menge-Schnelleingabe.
+	 * Get Qty without Trading Unit.
+	 * Mengen-Schnelleingabe
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2701,7 +2926,7 @@ public interface I_C_Order
 	String COLUMNNAME_Qty_FastInput = "Qty_FastInput";
 
 	/**
-	 * Set Eingegangen via.
+	 * Set Inbound by.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2710,7 +2935,7 @@ public interface I_C_Order
 	void setReceivedVia (@Nullable java.lang.String ReceivedVia);
 
 	/**
-	 * Get Eingegangen via.
+	 * Get Inbound by.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2722,7 +2947,7 @@ public interface I_C_Order
 	String COLUMNNAME_ReceivedVia = "ReceivedVia";
 
 	/**
-	 * Set Auftragsdatum  (Ref. Auftrag).
+	 * Set Order Date (Ref. Order).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -2733,7 +2958,7 @@ public interface I_C_Order
 	void setRef_DateOrder (@Nullable java.sql.Timestamp Ref_DateOrder);
 
 	/**
-	 * Get Auftragsdatum  (Ref. Auftrag).
+	 * Get Order Date (Ref. Order).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -2774,7 +2999,7 @@ public interface I_C_Order
 	String COLUMNNAME_Ref_Order_ID = "Ref_Order_ID";
 
 	/**
-	 * Set Referenz Angebot/Auftrag.
+	 * Set Reference Quote / Order.
 	 * Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
 	 *
 	 * <br>Type: Search
@@ -2784,7 +3009,7 @@ public interface I_C_Order
 	void setRef_Proposal_ID (int Ref_Proposal_ID);
 
 	/**
-	 * Get Referenz Angebot/Auftrag.
+	 * Get Reference Quote / Order.
 	 * Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
 	 *
 	 * <br>Type: Search
@@ -2866,7 +3091,7 @@ public interface I_C_Order
 	String COLUMNNAME_SalesRepIntern_ID = "SalesRepIntern_ID";
 
 	/**
-	 * Set E-Mail senden.
+	 * Set Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -2876,7 +3101,7 @@ public interface I_C_Order
 	void setSendEMail (boolean SendEMail);
 
 	/**
-	 * Get E-Mail senden.
+	 * Get Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -2889,7 +3114,28 @@ public interface I_C_Order
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
-	 * Set Summe Zeilen.
+	 * Set Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalGrossWeightKg (BigDecimal TotalGrossWeightKg);
+
+	/**
+	 * Get Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalGrossWeightKg();
+
+	ModelColumn<I_C_Order, Object> COLUMN_TotalGrossWeightKg = new ModelColumn<>(I_C_Order.class, "TotalGrossWeightKg", null);
+	String COLUMNNAME_TotalGrossWeightKg = "TotalGrossWeightKg";
+
+	/**
+	 * Set Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
@@ -2899,7 +3145,7 @@ public interface I_C_Order
 	void setTotalLines (BigDecimal TotalLines);
 
 	/**
-	 * Get Summe Zeilen.
+	 * Get Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
@@ -2989,6 +3235,50 @@ public interface I_C_Order
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
+	 * Set Valid Until.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidUntil (@Nullable java.sql.Timestamp ValidUntil);
+
+	/**
+	 * Get Valid Until.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidUntil();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ValidUntil = new ModelColumn<>(I_C_Order.class, "ValidUntil", null);
+	String COLUMNNAME_ValidUntil = "ValidUntil";
+
+	/**
+	 * Set Version No.
+	 * Version Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVersionNo (@Nullable java.lang.String VersionNo);
+
+	/**
+	 * Get Version No.
+	 * Version Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVersionNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_VersionNo = new ModelColumn<>(I_C_Order.class, "VersionNo", null);
+	String COLUMNNAME_VersionNo = "VersionNo";
+
+	/**
 	 * Set Volume.
 	 * Volume of a product
 	 *
@@ -3012,7 +3302,7 @@ public interface I_C_Order
 	String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Weight.
+	 * Set Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number
@@ -3022,7 +3312,7 @@ public interface I_C_Order
 	void setWeight (@Nullable BigDecimal Weight);
 
 	/**
-	 * Get Weight.
+	 * Get Net Weight.
 	 * Weight of a product
 	 *
 	 * <br>Type: Number

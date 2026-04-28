@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.exceptions;
 
 import de.metas.i18n.ITranslatableString;
@@ -26,6 +48,9 @@ import java.util.Objects;
  */
 public class DBException extends AdempiereException
 {
+
+	public static final String DB_ERROR_CODE_PREFIX = "DB-";
+
 	/**
 	 * Wraps given throwable to {@link DBException} if is not already an {@link DBException}.
 	 *
@@ -103,16 +128,16 @@ public class DBException extends AdempiereException
 	@Nullable
 	private Object[] m_params = null;
 
-	public DBException(final Throwable e)
+	public DBException(@Nullable final Throwable e)
 	{
 		super(extractMessage(e), e);
-		if (LogManager.isLevelFinest())
+		if (LogManager.isLevelFinest() && e != null)
 		{
 			e.printStackTrace();
 		}
 	}
 
-	public DBException(final Exception e,  @Nullable final CharSequence sql)
+	public DBException(final Exception e, @Nullable final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -143,6 +168,11 @@ public class DBException extends AdempiereException
 	}
 
 	public DBException(final String msg)
+	{
+		super(msg);
+	}
+
+	protected DBException(final ITranslatableString msg)
 	{
 		super(msg);
 	}
@@ -196,6 +226,14 @@ public class DBException extends AdempiereException
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode()
+	{
+		final SQLException e = getSQLException();
+		return DB_ERROR_CODE_PREFIX + (e != null ? e.getSQLState() : null);
 	}
 
 	/**

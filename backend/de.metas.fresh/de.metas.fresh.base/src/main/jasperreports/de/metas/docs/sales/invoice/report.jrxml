@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -27,30 +27,47 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="countrycode"/>
 		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
 	</field>
 	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_currency_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
 	</field>
 	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayhu"/>
 		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
 	</field>
 	<field name="iscreditmemo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
+	<field name="isfactoringpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isfactoringpartner"/>
+		<property name="com.jaspersoft.studio.field.label" value="isfactoringpartner"/>
+	</field>
+	<field name="isheaderqrhidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isheaderqrhidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="isheaderqrhidden"/>
+	</field>
 	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
 		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
 	</field>
 	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showesr_qr"/>
 		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
 	</field>
 	<background>
@@ -72,7 +89,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		</band>
 	</background>
 	<title>
-		<band height="343" splitType="Stretch">
+		<band height="287" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
@@ -90,7 +107,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="187" width="595" height="153" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
+				<reportElement key="subreport-8" x="0" y="187" width="595" height="93" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
@@ -120,6 +137,20 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="120" height="120" uuid="fef138a5-b06c-4040-8b17-103af26df602">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[ "N".equals($F{isheaderqrhidden}) && ("N".equals($F{showqrbill}) || ("Y".equals($F{showqrbill}) && !"CH".equals($F{countrycode}) && !"LI".equals($F{countrycode})))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_header_qr.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
@@ -245,6 +276,9 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="IsFactoringPartner">
+					<subreportParameterExpression><![CDATA[$F{isfactoringpartner}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
 			</subreport>
@@ -292,7 +326,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 	<summary>
 		<band height="154">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showesr_qr})]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}) && (("Y").equals($F{showesr_qr}) || ("Y").equals($F{showqrbill})))]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="3" width="595" height="150" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
@@ -312,7 +346,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="0" width="595" height="130" uuid="a94eb539-f031-4a02-863d-065b2f4347b6">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($F{iscreditmemo}) && ("CH").equals($F{countrycode})) && ("Y").equals($F{showqrbill} )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("N").equals($F{iscreditmemo}) && ("CH").equals($F{countrycode})) && ("Y").equals($F{showesr_qr} )]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>

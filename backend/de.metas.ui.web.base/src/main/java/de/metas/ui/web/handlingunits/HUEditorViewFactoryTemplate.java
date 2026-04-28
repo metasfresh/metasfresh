@@ -535,7 +535,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 						.createQueryBuilder()
 						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 						.create()
-						.listIds(HuId::ofRepoId);
+						.idsAsSet(HuId::ofRepoId);
 			}
 
 			if (huIds.isEmpty())

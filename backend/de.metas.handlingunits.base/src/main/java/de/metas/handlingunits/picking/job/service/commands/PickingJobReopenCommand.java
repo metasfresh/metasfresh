@@ -24,8 +24,6 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -37,10 +35,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -50,18 +48,19 @@ import org.adempiere.ad.trx.api.ITrxManager;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Value
 public class PickingJobReopenCommand
 {
+	// services
 	@NonNull ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull PickingJobRepository pickingJobRepository;
 	@NonNull PickingJobSlotService pickingSlotService;
-	@NonNull IHUShipmentScheduleBL huShipmentScheduleBL;
-	@NonNull IShipmentScheduleBL shipmentScheduleBL;
-	@NonNull IHandlingUnitsBL handlingUnitsBL;
-	@NonNull IHUContextFactory huContextFactory;
+	@NonNull PickingJobShipmentScheduleService shipmentScheduleService;
+	@NonNull PickingJobHUService huService;
+
 	@NonNull PickingJob jobToReopen;
 	@NonNull Map<HuId, HUWithPickOnTheFlyStatus> huIdsToPick;
 
@@ -69,19 +68,16 @@ public class PickingJobReopenCommand
 	public PickingJobReopenCommand(
 			@NonNull final PickingJobRepository pickingJobRepository,
 			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL,
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			@NonNull final IHUContextFactory huContextFactory,
+			@NonNull final PickingJobShipmentScheduleService shipmentScheduleService,
+			@NonNull final PickingJobHUService huService,
 			@NonNull final PickingJob jobToReopen,
 			@NonNull final List<HUWithPickOnTheFlyStatus> huIdsToPick)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
-		this.huShipmentScheduleBL = huShipmentScheduleBL;
-		this.shipmentScheduleBL = shipmentScheduleBL;
-		this.handlingUnitsBL = handlingUnitsBL;
-		this.huContextFactory = huContextFactory;
+		this.shipmentScheduleService = shipmentScheduleService;
+		this.huService = huService;
+
 		this.jobToReopen = jobToReopen;
 		this.huIdsToPick = huIdsToPick.stream()
 				.collect(ImmutableMap.toImmutableMap(HUWithPickOnTheFlyStatus::getHuId, Function.identity()));
@@ -136,29 +132,30 @@ public class PickingJobReopenCommand
 
 	private void reactivateStepIfNeeded(@NonNull final PickingJobStep step)
 	{
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getShipmentScheduleId());
+		final IMutableHUContext huContext = huService.createMutableHUContextForProcessing();
 
 		step.getPickFroms().getKeys()
 				.stream()
 				.map(key -> step.getPickFroms().getPickFrom(key))
 				.map(PickingJobStepPickFrom::getPickedTo)
-				.filter(pickedTo -> pickedTo != null)
+				.filter(Objects::nonNull)
 				.map(PickingJobStepPickedTo::getActualPickedHUs)
 				.flatMap(List::stream)
 				.filter(pickStepHu -> huIdsToPick.containsKey(pickStepHu.getActualPickedHU().getId()))
 				.forEach(pickStepHU -> {
-					final I_M_HU hu = handlingUnitsBL.getById(pickStepHU.getActualPickedHU().getId());
-					huShipmentScheduleBL.addQtyPickedAndUpdateHU(
-							shipmentSchedule,
-							CatchWeightHelper.extractQtys(
+					final HuId huId = pickStepHU.getActualPickedHU().getId();
+					final I_M_HU hu = huService.getById(huId);
+					shipmentScheduleService.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+							.scheduleId(step.getScheduleId())
+							.qtyPicked(CatchWeightHelper.extractQtys(
 									huContext,
 									step.getProductId(),
 									pickStepHU.getQtyPicked(),
-									hu),
-							hu,
-							huContext,
-							huIdsToPick.get(pickStepHU.getActualPickedHU().getId()).isAnonymousHuPickedOnTheFly());
+									hu))
+							.hu(hu)
+							.huContext(huContext)
+							.anonymousHuPickedOnTheFly(huIdsToPick.get(huId).isAnonymousHuPickedOnTheFly())
+							.build());
 				});
 	}
 }

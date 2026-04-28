@@ -1,6 +1,8 @@
 package de.metas.ui.web.quickinput;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.service.ISysConfigBL;
 
@@ -30,6 +32,7 @@ import org.adempiere.service.ISysConfigBL;
 public class QuickInputConstants
 {
 	private static final String SYSCONFIG_EnablePackingInstructionsField = "webui.quickinput.EnablePackingInstructionsField";
+	private static final String SYSCONFIG_EnableLUFields = "webui.quickinput.EnableLUFields";
 	private static final String SYSCONFIG_EnableBestBeforePolicy = "webui.quickinput.EnableBestBeforePolicy";
 	private static final String SYSCONFIG_EnableVatCodeField = "webui.quickinput.EnableVatCodeField";
 	private static final String SYSCONFIG_EnableContractConditionsField = "webui.quickinput.EnableContractConditionsField";
@@ -45,6 +48,11 @@ public class QuickInputConstants
 	public static boolean isEnablePackingInstructionsField()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnablePackingInstructionsField, true);
+	}
+
+	public static boolean isLUFieldsEnabled(@NonNull final SOTrx soTrx)
+	{
+		return soTrx.isPurchase() && Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableLUFields, false);
 	}
 
 	public static boolean isEnableBestBeforePolicy()

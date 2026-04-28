@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -40,7 +41,7 @@ public class PPOrder
 	/**
 	 * Can contain the {@code PP_Order_ID} of the production order document this is all about, but also note that there might not yet exist one.
 	 */
-	int ppOrderId;
+	PPOrderId ppOrderId;
 
 	DocStatus docStatus;
 
@@ -54,7 +55,7 @@ public class PPOrder
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrder(
-			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("ppOrderId") final PPOrderId ppOrderId,
 			@JsonProperty("docStatus") @Nullable final DocStatus docStatus,
 			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)

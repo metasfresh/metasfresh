@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ResourceService
 {
-	public static ResourceService newInstanceForJUnitTesting()
+	public static ResourceService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		return new ResourceService();
