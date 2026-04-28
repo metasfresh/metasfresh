@@ -628,3 +628,51 @@ UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2026-04-27 15:34:03.
 UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2026-04-27 15:34:12.239000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592429
 ;
 
+-- Tab: Produkt (OLD)(140,D) -> Labelkosten
+-- Table: M_Product_Labelcost
+-- 2026-04-27T17:25:05.072Z
+UPDATE AD_Tab SET AD_Column_ID=592425,Updated=TO_TIMESTAMP('2026-04-27 17:25:05.072000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=549163
+;
+
+-- Tab: Produkt (OLD)(140,D) -> Labelkosten
+-- Table: M_Product_Labelcost
+-- 2026-04-27T17:30:38.982Z
+UPDATE AD_Tab SET Parent_Column_ID=NULL,Updated=TO_TIMESTAMP('2026-04-27 17:30:38.982000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=549163
+;
+
+-- Tab: Produkt (OLD)(140,D) -> Labelkosten
+-- Table: M_Product_Labelcost
+-- 2026-04-27T17:31:37.498Z
+UPDATE AD_Tab SET SeqNo=191,Updated=TO_TIMESTAMP('2026-04-27 17:31:37.498000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=549163
+;
+
+-- Field: Produkt (OLD)(140,D) -> Labelkosten(549163,D) -> Währung
+-- Column: M_Product_Labelcost.C_Currency_ID
+-- 2026-04-27T17:34:29.309Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-04-27 17:34:29.309000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=777258
+;
+
+-- Field: Produkt (OLD)(140,D) -> Labelkosten(549163,D) -> Maßeinheit
+-- Column: M_Product_Labelcost.C_UOM_ID
+-- 2026-04-27T17:34:33.291Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-04-27 17:34:33.291000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=777259
+;
+
+
+
+
+----------
+
+
+-- Reference: ReportElements
+-- Value: ProductCostLabel
+-- ValueName: ProductCostLabel
+-- 2026-04-28T16:41:47.697Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541946,544225,TO_TIMESTAMP('2026-04-28 16:41:47.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.acct','Y','ProductCostLabel',TO_TIMESTAMP('2026-04-28 16:41:47.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ProductCostLabel','ProductCostLabel')
+;
+
+-- 2026-04-28T16:41:47.743Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544225 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+INSERT INTO c_doctype_reportelement (ad_client_id, ad_org_id, c_doctype_reportelement_id, created, createdby, isactive, ishidden, reportelement, updated, updatedby, c_doctype_id) VALUES (1000000, 0, 540070, '2026-04-28 18:42:56.567000 +02:00', 100, 'Y', 'Y', 'ProductCostLabel', '2026-04-28 18:43:08.261000 +02:00', 100, 540937);
