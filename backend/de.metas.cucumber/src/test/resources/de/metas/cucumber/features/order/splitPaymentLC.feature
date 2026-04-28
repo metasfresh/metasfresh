@@ -106,6 +106,11 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 20596.32 |
     And the invoice identified by lcInvoice is completed
 
+    # A completed proforma is not yet paid — IsPaid stays N until its full payment completes.
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | N      |
+
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | null          | PR     |
@@ -149,9 +154,18 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
       | lcInvoice    | 20596.32 | lcPayment    |
 
+    # Proforma-payment shape: C_Invoice_ID null (no allocation), Proforma_Invoice_ID set,
+    # IsPrepayment=Y. PayAmt = proforma.GrandTotal (full-payment guard at BEFORE_PREPARE).
     Then validate payments
-      | C_Payment_ID.Identifier | IsPrepayment | Proforma_Invoice_ID | PayAmt   |
-      | lcPayment               | Y            | lcInvoice           | 20596.32 |
+      | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt   |
+      | lcPayment               | Y            | null         | lcInvoice           | 20596.32 |
+
+    # The proforma flips to IsPaid=Y when its full payment completes — the regular
+    # allocation-driven IsPaid update doesn't fire because proforma payments have no
+    # C_AllocationLine rows; the C_Payment AFTER_COMPLETE interceptor sets the flag directly.
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | Y      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
@@ -277,6 +291,13 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
       | lcInvoice    | 20596.32 | lcPayment    |
 
+    # Proforma flips to IsPaid=Y when the full payment completes (C_Payment AFTER_COMPLETE
+    # interceptor — proforma payments have no C_AllocationLine rows, so the regular
+    # allocation-driven update doesn't fire).
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | Y      |
+
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | 20596.32      | P      |
@@ -293,11 +314,18 @@ Feature: Split-payment LC lifecycle — proforma invoice drives the LC pay-sched
     And the payment identified by lcPayment is reversed with a reversal identified by lcPaymentReversal
 
     # Reversal symmetry — AC #14: every classification field of the original is preserved
-    # on the reversal row; only PayAmt is negated; both end at DocStatus='RE'.
+    # on the reversal row (C_Invoice_ID stays null, Proforma_Invoice_ID stays set,
+    # IsPrepayment stays Y); only PayAmt is negated; both end at DocStatus='RE'.
     Then validate payments
-      | C_Payment_ID.Identifier | DocStatus | IsPrepayment | Proforma_Invoice_ID | PayAmt    |
-      | lcPayment               | RE        | Y            | lcInvoice           |  20596.32 |
-      | lcPaymentReversal       | RE        | Y            | lcInvoice           | -20596.32 |
+      | C_Payment_ID.Identifier | DocStatus | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt    |
+      | lcPayment               | RE        | Y            | null         | lcInvoice           |  20596.32 |
+      | lcPaymentReversal       | RE        | Y            | null         | lcInvoice           | -20596.32 |
+
+    # Proforma rolls back to IsPaid=N once the only completed payment is reversed
+    # (C_Payment AFTER_REVERSECORRECT interceptor — symmetric to AFTER_COMPLETE).
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | N      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |

@@ -194,9 +194,18 @@ public class C_Payment_StepDef
 		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
 				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(writeOffAmt));
 
-		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
-				.map(invoiceTable::getId)
-				.ifPresent(expectedInvoiceId -> softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId()));
+		row.getAsOptionalString(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID should not be set").isZero();
+					}
+					else
+					{
+						final InvoiceId expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue));
+						softly.assertThat(payment.getC_Invoice_ID()).as("C_Invoice_ID").isEqualTo(expectedInvoiceId.getRepoId());
+					}
+				});
 
 		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
 				.ifPresent(dateTrx -> {

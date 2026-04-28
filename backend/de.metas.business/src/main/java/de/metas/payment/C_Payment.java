@@ -173,6 +173,20 @@ public class C_Payment
 		}
 	}
 
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	public void recomputeProformaIsPaid(@NonNull final I_C_Payment payment)
+	{
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
+		{
+			return;
+		}
+		invoiceBL.scheduleUpdateIsPaid(proformaInvoiceId);
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateOrderPayScheduleStatus(final I_C_Payment payment)
 	{
@@ -187,23 +201,4 @@ public class C_Payment
 		orderPayScheduleService.markAsPaid(orderId, orderPayScheduleId);
 	}
 
-	/**
-	 * Preserve {@code IsPrepayment=Y} on every save where {@code Proforma_Invoice_ID} is set.
-	 *
-	 * <p>The legacy {@link org.compiere.model.MPayment#beforeSave} recomputes {@code IsPrepayment}
-	 * from {@code C_Order_ID / C_Invoice_ID / C_Project_ID / C_Charge_ID}, which makes proforma
-	 * payments lose their prepayment classification on reversal (where {@code C_Order_ID} and
-	 * {@code C_Invoice_ID} are cleared). This interceptor reasserts the invariant: a proforma
-	 * payment is always a prepayment, regardless of which legacy fields are populated.
-	 */
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, I_C_Payment.COLUMNNAME_IsPrepayment })
-	public void enforceIsPrepaymentOnProformaPayment(@NonNull final I_C_Payment payment)
-	{
-		if (InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID()) != null && !payment.isPrepayment())
-		{
-			payment.setIsPrepayment(true);
-		}
-	}
 }

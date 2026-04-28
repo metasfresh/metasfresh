@@ -27,10 +27,8 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -45,7 +43,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,11 +67,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	// Lazily resolved — unit tests that don't have a Spring context never call the proforma branch
-	// in createPaymentForInvoice, so they don't need this bean registered.
-	private final SpringContextHolder.Lazy<ProformaOrderAllocRepository> proformaAllocRepo
-			= SpringContextHolder.lazyBean(ProformaOrderAllocRepository.class);
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
@@ -261,21 +253,6 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
 
-		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
-		// isProforma() covers both APF (purchase) and ARF (sales) proforma invoices.
-		// Both must be tagged consistently: Proforma_Invoice_ID + IsPrepayment='Y' (auto-derived from C_Order_ID).
-		final boolean isProformaInvoice = invoiceDocBaseType.isProforma();
-
-		// For proforma payments, stamp C_Order_ID from the allocation. This:
-		// (a) surfaces the payment in the order's Related Documents panel, and
-		// (b) makes MPayment.beforeSave auto-derive IsPrepayment='Y'. Setting IsPrepayment
-		//     directly on the builder would be overridden on first save, since MPayment's
-		//     own logic recomputes the flag from (C_Charge_ID, C_Invoice_ID, C_Order_ID, C_Project_ID).
-		final OrderId proformaOrderId = isProformaInvoice
-				? proformaAllocRepo.get().findOrderIdByProformaInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-						.orElse(null)
-				: null;
-
 		return paymentBL.newBuilderOfInvoice(invoice)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
@@ -285,10 +262,6 @@ public class PaySelectionBL implements IPaySelectionBL
 				.tenderType(TenderType.DirectDeposit)
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
-				//
-				.proformaInvoiceId(isProformaInvoice ? InvoiceId.ofRepoId(invoice.getC_Invoice_ID()) : null)
-				.orderId(proformaOrderId)
-				//
 				.createAndProcess();
 	}
 

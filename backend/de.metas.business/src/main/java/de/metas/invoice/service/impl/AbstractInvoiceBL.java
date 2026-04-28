@@ -98,6 +98,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -185,6 +186,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
@@ -526,6 +528,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return false; // not changed
 		}
 
+		if (getInvoiceDocBaseType(invoice).isProforma())
+		{
+			return testProformaIsPaid(invoice);
+		}
+
 		if (!invoice.isFinancial())
 		{
 			return false;
@@ -554,6 +561,24 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				computePaymentStatus(invoiceOpenResult)
 		);
 	}    // testAllocation
+
+	/**
+	 * Recompute {@code IsPaid} on a proforma invoice. The standard allocation-based path
+	 * does not apply: proforma payments are always full and produce no {@code C_AllocationLine}
+	 * rows. The authoritative state is "is there a single CO/CL payment carrying
+	 * {@code Proforma_Invoice_ID} = this invoice?".
+	 */
+	private boolean testProformaIsPaid(@NonNull final org.compiere.model.I_C_Invoice proforma)
+	{
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoId(proforma.getC_Invoice_ID());
+		final boolean isPaid = paymentDAO.findCompletedOrClosedByProformaInvoiceId(proformaInvoiceId).isPresent();
+		if (proforma.isPaid() == isPaid)
+		{
+			return false;
+		}
+		proforma.setIsPaid(isPaid);
+		return true;
+	}
 
 	@NonNull
 	private static InvoicePaymentStatus computePaymentStatus(final InvoiceOpenResult invoiceOpenResult)
