@@ -1,11 +1,8 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.inventory.Inventory;
@@ -26,7 +23,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -69,7 +65,6 @@ public class M_Inventory
 	private final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{
@@ -98,34 +93,10 @@ public class M_Inventory
 		}
 	}
 
-	/**
-	 * Stamp {@link AttributeConstants#ATTR_DateReceived} with the inventory's {@code MovementDate} on every
-	 * assigned HU that does not yet carry a value. Skip-if-set preserves the original receipt date for HUs
-	 * that already exist in stock and are merely being re-counted; HUs newly created by the inventory (e.g.
-	 * via WebUI without import, or via {@code InventoryImportProcess} when the import record omits
-	 * {@code DateReceived}) get the inventory date as their initial value.
-	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(@NonNull final I_M_Inventory inventoryRecord)
+	public void setReceivedDateOnInventoryHUs(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		if (inventoryService.isMaterialDisposal(inventoryRecord))
-		{
-			return; // disposal removes stock — no receipt-date semantics
-		}
-
-		final Inventory inventory = inventoryService.toInventory(inventoryRecord);
-		final ImmutableSet<HuId> huIds = inventory.getHuIds();
-		if (huIds.isEmpty())
-		{
-			return;
-		}
-		huAttributesBL.updateHUAttributeRecursive(
-				huIds,
-				HUAttributeUpdateRequest.builder()
-						.attributeCode(AttributeConstants.ATTR_DateReceived)
-						.attributeValue(inventoryRecord.getMovementDate())
-						.onlyIfNotSet(true)
-						.build());
+		inventoryService.setReceivedDateOnInventoryHUs(inventoryRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
