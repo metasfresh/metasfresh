@@ -461,19 +461,32 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		partyIdCopy.setNm(Optional.ofNullable(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(bankAccount.getAccountName())))
 								  .orElseGet(() -> SepaUtils.replaceForbiddenChars(partyId.getNm())));
 
-		if (!bankAccount.isAddressComplete())
+		// Bank account is authoritative: emit any populated field verbatim. When
+		// the bank-account address is fully empty we keep the previous behaviour
+		// of leaving the creditor without a postal address element.
+		// Country is mandatory in <Ctry> and is asserted to be a valid ISO-3166
+		// alpha-2 code so a data-quality issue surfaces as a clear SEPA error.
+		if (bankAccount.isAddressEmpty())
 		{
 			return partyIdCopy;
 		}
 
-		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
+		SepaUtils.assertValidAccountCountry(bankAccount);
 
-		if (Check.isNotBlank(bankAccount.getAccountCountry()))
+		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
+		postalAddressSEPA.setCtry(bankAccount.getAccountCountry());
+
+		final String streetLine = SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet());
+		if (Check.isNotBlank(streetLine))
 		{
-			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
+			postalAddressSEPA.getAdrLine().add(streetLine);
 		}
-		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet()));
-		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountZip() + " " + bankAccount.getAccountCity()));
+
+		final String zipCityLine = SepaUtils.joinNonBlank(bankAccount.getAccountZip(), bankAccount.getAccountCity());
+		if (Check.isNotBlank(zipCityLine))
+		{
+			postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(zipCityLine));
+		}
 
 		partyIdCopy.setPstlAdr(postalAddressSEPA);
 
