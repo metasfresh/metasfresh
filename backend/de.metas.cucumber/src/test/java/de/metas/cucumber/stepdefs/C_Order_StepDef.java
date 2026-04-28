@@ -670,7 +670,8 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)
 				.ifPresent(docBaseType -> {
-					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+					final int docTypeRepoId = CoalesceUtil.firstGreaterThanZero(order.getC_DocType_ID(), order.getC_DocTypeTarget_ID());
+					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(docTypeRepoId));
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 
