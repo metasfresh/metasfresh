@@ -29,6 +29,7 @@ import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.OrderId;
 import de.metas.order.payschedule.delivery.OrderPayScheduleDeliveryService;
+import de.metas.order.payschedule.delivery.allocation.DeliveryPrepaymentAllocationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -73,20 +74,50 @@ public class C_Invoice_DeliveryStep
 {
 	@NonNull private final OrderPayScheduleDeliveryService deliveryService;
 	@NonNull private final ProformaOrderAllocRepository proformaAllocRepo;
+	@NonNull private final DeliveryPrepaymentAllocationService allocationService;
 
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	// -----------------------------------------------------------------------
-	// DocValidate handler (Task 24b)
+	// DocValidate handlers (Task 24b / Task 27c)
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Fires on AFTER_COMPLETE only.
+	 * Creates the prepayment allocation first (AC #4), then recomputes delivery steps (AC #19).
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void onComplete(@NonNull final I_C_Invoice invoice)
+	{
+		if (!isFinancialPurchaseNonCreditMemoInvoice(invoice))
+		{
+			return;
+		}
+		final OrderId orderId = findOrderIdViaMatchInv(invoice);
+		if (orderId == null)
+		{
+			return;
+		}
+		if (!proformaAllocRepo.existsByOrder(orderId))
+		{
+			return;
+		}
+		// Allocate BEFORE recompute so that the recompute can see the new allocation
+		allocationService.allocateForInvoice(invoice, orderId);
+		deliveryService.recomputeDeliverySteps(orderId);
+	}
+
+	/**
+	 * Fires on AFTER_REVERSECORRECT and AFTER_REVERSEACCRUAL.
+	 * Allocation reversal is handled automatically by the standard cascade
+	 * ({@code MAllocationHdr.reverseCorrectIt()}); only recompute delivery steps.
+	 */
 	@DocValidate(timings = {
-			ModelValidator.TIMING_AFTER_COMPLETE,
 			ModelValidator.TIMING_AFTER_REVERSECORRECT,
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL
 	})
-	public void recompute(@NonNull final I_C_Invoice invoice)
+	public void onReverse(@NonNull final I_C_Invoice invoice)
 	{
 		if (!isFinancialPurchaseNonCreditMemoInvoice(invoice))
 		{

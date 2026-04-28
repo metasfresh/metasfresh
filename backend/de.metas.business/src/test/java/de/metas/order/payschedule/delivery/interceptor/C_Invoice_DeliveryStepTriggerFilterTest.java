@@ -26,6 +26,7 @@ import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.payschedule.delivery.OrderPayScheduleDeliveryService;
+import de.metas.order.payschedule.delivery.allocation.DeliveryPrepaymentAllocationService;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -58,6 +59,7 @@ class C_Invoice_DeliveryStepTriggerFilterTest
 {
 	@Mock private OrderPayScheduleDeliveryService deliveryService;
 	@Mock private ProformaOrderAllocRepository proformaAllocRepo;
+	@Mock private DeliveryPrepaymentAllocationService allocationService;
 	@Mock private IInvoiceBL invoiceBL;
 
 	private C_Invoice_DeliveryStep interceptor;
@@ -67,7 +69,7 @@ class C_Invoice_DeliveryStepTriggerFilterTest
 	{
 		AdempiereTestHelper.get().init();
 		Services.registerService(IInvoiceBL.class, invoiceBL);
-		interceptor = new C_Invoice_DeliveryStep(deliveryService, proformaAllocRepo);
+		interceptor = new C_Invoice_DeliveryStep(deliveryService, proformaAllocRepo, allocationService);
 	}
 
 	// -----------------------------------------------------------------------
