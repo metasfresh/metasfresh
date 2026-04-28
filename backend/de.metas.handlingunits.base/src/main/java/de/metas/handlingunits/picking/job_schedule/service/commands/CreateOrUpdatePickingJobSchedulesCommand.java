@@ -1,13 +1,12 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
-import com.google.common.collect.Sets;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleCreateRepoRequest;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -25,12 +24,12 @@ import java.util.Set;
 
 public class CreateOrUpdatePickingJobSchedulesCommand
 {
-	private static final String SYSCONFIG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
+	public static final String SYSCONFIG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
 	private static final AdMessageKey ERROR_CARRIER_PRODUCT_NOT_SET = AdMessageKey.of("de.metas.handlingunits.picking.job_schedule.CarrierProductNotSet");
 
 	// Services
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleBL;
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -43,14 +42,14 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 	@Builder
 	private CreateOrUpdatePickingJobSchedulesCommand(
 			@NonNull final PickingJobScheduleRepository pickingJobScheduleRepository,
-			@NonNull final IHUShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final PickingJobShipmentScheduleService pickingJobShipmentScheduleService,
 			@NonNull final CreateOrUpdatePickingJobSchedulesRequest request)
 	{
 		this.pickingJobScheduleRepository = pickingJobScheduleRepository;
-		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleBL = pickingJobShipmentScheduleService;
 		this.request = request;
 
-		this.shipmentSchedules = shipmentScheduleBL.newLoadingCache();
+		this.shipmentSchedules = pickingJobShipmentScheduleService.newHuShipmentLoadingCache();
 	}
 
 	public void execute()
@@ -68,12 +67,12 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 			shipmentSchedules.getByIds(shipmentScheduleIds).forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
 		}
 
-		final ShipmentScheduleAndJobScheduleIdSet existingJobScheduleIds = pickingJobScheduleRepository.getIdsByShipmentScheduleIdsAndWorkplaceId(shipmentScheduleIds, workplaceId);
-		final Set<ShipmentScheduleId> shipmentScheduleIds_woJobSchedule = Sets.difference(shipmentScheduleIds, existingJobScheduleIds.getShipmentScheduleIds());
+		final Set<PickingJobScheduleId> pickingJobScheduleIds = request.getShipmentScheduleAndJobScheduleIds().getJobScheduleIds();
+		final Set<ShipmentScheduleId> shipmentScheduleIds_woJobSchedule = request.getShipmentScheduleAndJobScheduleIds().getShipmentScheduleIdsWithoutJobSchedules();
 
 		//
 		// Update existing job schedules
-		pickingJobScheduleRepository.updateByIds(existingJobScheduleIds.getJobScheduleIds(), jobSchedule -> jobSchedule.toBuilder()
+		pickingJobScheduleRepository.updateByIds(pickingJobScheduleIds, jobSchedule -> jobSchedule.toBuilder()
 				.workplaceId(workplaceId)
 				.qtyToPick(computeQtyToPick(jobSchedule))
 				.build());

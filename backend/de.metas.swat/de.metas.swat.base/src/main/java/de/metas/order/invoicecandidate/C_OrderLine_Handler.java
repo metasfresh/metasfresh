@@ -349,6 +349,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setIncoterms(ic, orderLine);
 
+		setPromotionCodes(ic, orderLine);
+
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
@@ -396,6 +398,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
 		ic.setIncotermLocation(order.getIncotermLocation());
+	}
+
+	private void setPromotionCodes(@NonNull final I_C_Invoice_Candidate ic,
+								   @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_PromotionCode_ID(order.getC_PromotionCode_ID());
+		ic.setC_PromotionCode2_ID(order.getC_PromotionCode2_ID());
 	}
 
 	private void setC_PaymentTerm(

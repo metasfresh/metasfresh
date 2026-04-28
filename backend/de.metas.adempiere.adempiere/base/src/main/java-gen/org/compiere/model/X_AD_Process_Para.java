@@ -1,56 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Process_Para
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Process_Para, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1583714777L;
+	private static final long serialVersionUID = -1722723924L;
 
     /** Standard Constructor */
-    public X_AD_Process_Para (Properties ctx, int AD_Process_Para_ID, String trxName)
+    public X_AD_Process_Para (final Properties ctx, final int AD_Process_Para_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Process_Para_ID, trxName);
-      /** if (AD_Process_Para_ID == 0)
-        {
-			setAD_Process_ID (0);
-			setAD_Process_Para_ID (0);
-			setAD_Reference_ID (0);
-			setColumnName (null);
-			setEntityType (null); // U
-			setFieldLength (0);
-			setIsCentrallyMaintained (true); // Y
-			setIsEncrypted (false); // N
-			setIsMandatory (false);
-			setIsRange (false);
-			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Process_Para WHERE AD_Process_ID=@AD_Process_ID@
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Process_Para (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Process_Para (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Element getAD_Element()
@@ -59,34 +41,24 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	public void setAD_Element(final org.compiere.model.I_AD_Element AD_Element)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
 	}
 
-	/** Set System-Element.
-		@param AD_Element_ID 
-		System Element enables the central maintenance of column description and help.
-	  */
 	@Override
-	public void setAD_Element_ID (int AD_Element_ID)
+	public void setAD_Element_ID (final int AD_Element_ID)
 	{
 		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
-	/** Get System-Element.
-		@return System Element enables the central maintenance of column description and help.
-	  */
 	@Override
-	public int getAD_Element_ID () 
+	public int getAD_Element_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
 
 	@Override
@@ -96,56 +68,39 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Process or Report
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Process or Report
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
-	/** Set Prozess-Parameter.
-		@param AD_Process_Para_ID Prozess-Parameter	  */
 	@Override
-	public void setAD_Process_Para_ID (int AD_Process_Para_ID)
+	public void setAD_Process_Para_ID (final int AD_Process_Para_ID)
 	{
 		if (AD_Process_Para_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Process_Para_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_Para_ID, Integer.valueOf(AD_Process_Para_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Process_Para_ID, AD_Process_Para_ID);
 	}
 
-	/** Get Prozess-Parameter.
-		@return Prozess-Parameter	  */
 	@Override
-	public int getAD_Process_Para_ID () 
+	public int getAD_Process_Para_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_Para_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_Para_ID);
 	}
 
 	@Override
@@ -155,34 +110,24 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference)
+	public void setAD_Reference(final org.compiere.model.I_AD_Reference AD_Reference)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class, AD_Reference);
 	}
 
-	/** Set Referenz.
-		@param AD_Reference_ID 
-		System Reference and Validation
-	  */
 	@Override
-	public void setAD_Reference_ID (int AD_Reference_ID)
+	public void setAD_Reference_ID (final int AD_Reference_ID)
 	{
 		if (AD_Reference_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_ID, Integer.valueOf(AD_Reference_ID));
+			set_Value (COLUMNNAME_AD_Reference_ID, AD_Reference_ID);
 	}
 
-	/** Get Referenz.
-		@return System Reference and Validation
-	  */
 	@Override
-	public int getAD_Reference_ID () 
+	public int getAD_Reference_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
 	}
 
 	@Override
@@ -192,34 +137,24 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value)
+	public void setAD_Reference_Value(final org.compiere.model.I_AD_Reference AD_Reference_Value)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Value);
 	}
 
-	/** Set Referenzschlüssel.
-		@param AD_Reference_Value_ID 
-		Required to specify, if data type is Table or List
-	  */
 	@Override
-	public void setAD_Reference_Value_ID (int AD_Reference_Value_ID)
+	public void setAD_Reference_Value_ID (final int AD_Reference_Value_ID)
 	{
 		if (AD_Reference_Value_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_Value_ID, Integer.valueOf(AD_Reference_Value_ID));
+			set_Value (COLUMNNAME_AD_Reference_Value_ID, AD_Reference_Value_ID);
 	}
 
-	/** Get Referenzschlüssel.
-		@return Required to specify, if data type is Table or List
-	  */
 	@Override
-	public int getAD_Reference_Value_ID () 
+	public int getAD_Reference_Value_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Value_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
 	}
 
 	@Override
@@ -229,34 +164,24 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	}
 
 	@Override
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
+	public void setAD_Val_Rule(final org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, AD_Val_Rule);
 	}
 
-	/** Set Dynamische Validierung.
-		@param AD_Val_Rule_ID 
-		Dynamic Validation Rule
-	  */
 	@Override
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID)
+	public void setAD_Val_Rule_ID (final int AD_Val_Rule_ID)
 	{
 		if (AD_Val_Rule_ID < 1) 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Val_Rule_ID, Integer.valueOf(AD_Val_Rule_ID));
+			set_Value (COLUMNNAME_AD_Val_Rule_ID, AD_Val_Rule_ID);
 	}
 
-	/** Get Dynamische Validierung.
-		@return Dynamic Validation Rule
-	  */
 	@Override
-	public int getAD_Val_Rule_ID () 
+	public int getAD_Val_Rule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Val_Rule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
 	/** 
@@ -270,113 +195,76 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	public static final String BARCODESCANNERTYPE_Barcode = "barcode";
 	/** Datamatrix = datamatrix */
 	public static final String BARCODESCANNERTYPE_Datamatrix = "datamatrix";
-	/** Set Barcode Scanner Type.
-		@param BarcodeScannerType Barcode Scanner Type	  */
 	@Override
-	public void setBarcodeScannerType (java.lang.String BarcodeScannerType)
+	public void setBarcodeScannerType (final @Nullable java.lang.String BarcodeScannerType)
 	{
-
 		set_Value (COLUMNNAME_BarcodeScannerType, BarcodeScannerType);
 	}
 
-	/** Get Barcode Scanner Type.
-		@return Barcode Scanner Type	  */
 	@Override
-	public java.lang.String getBarcodeScannerType () 
+	public java.lang.String getBarcodeScannerType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BarcodeScannerType);
+		return get_ValueAsString(COLUMNNAME_BarcodeScannerType);
 	}
 
-	/** Set Spaltenname.
-		@param ColumnName 
-		Name of the column in the database
-	  */
 	@Override
-	public void setColumnName (java.lang.String ColumnName)
+	public void setColumnName (final java.lang.String ColumnName)
 	{
 		set_Value (COLUMNNAME_ColumnName, ColumnName);
 	}
 
-	/** Get Spaltenname.
-		@return Name of the column in the database
-	  */
 	@Override
-	public java.lang.String getColumnName () 
+	public java.lang.String getColumnName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
+		return get_ValueAsString(COLUMNNAME_ColumnName);
 	}
 
-	/** Set Standardwert-Logik.
-		@param DefaultValue 
-		Default value hierarchy, separated by ;
-	  */
 	@Override
-	public void setDefaultValue (java.lang.String DefaultValue)
+	public void setDefaultValue (final @Nullable java.lang.String DefaultValue)
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
 	}
 
-	/** Get Standardwert-Logik.
-		@return Default value hierarchy, separated by ;
-	  */
 	@Override
-	public java.lang.String getDefaultValue () 
+	public java.lang.String getDefaultValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DefaultValue);
+		return get_ValueAsString(COLUMNNAME_DefaultValue);
 	}
 
-	/** Set Default Logic 2.
-		@param DefaultValue2 
-		Default value hierarchy, separated by ;
-	  */
 	@Override
-	public void setDefaultValue2 (java.lang.String DefaultValue2)
+	public void setDefaultValue2 (final @Nullable java.lang.String DefaultValue2)
 	{
 		set_Value (COLUMNNAME_DefaultValue2, DefaultValue2);
 	}
 
-	/** Get Default Logic 2.
-		@return Default value hierarchy, separated by ;
-	  */
 	@Override
-	public java.lang.String getDefaultValue2 () 
+	public java.lang.String getDefaultValue2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DefaultValue2);
+		return get_ValueAsString(COLUMNNAME_DefaultValue2);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Anzeigelogik.
-		@param DisplayLogic 
-		If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public void setDisplayLogic (java.lang.String DisplayLogic)
+	public void setDisplayLogic (final @Nullable java.lang.String DisplayLogic)
 	{
 		set_Value (COLUMNNAME_DisplayLogic, DisplayLogic);
 	}
 
-	/** Get Anzeigelogik.
-		@return If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public java.lang.String getDisplayLogic () 
+	public java.lang.String getDisplayLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DisplayLogic);
+		return get_ValueAsString(COLUMNNAME_DisplayLogic);
 	}
 
 	/** 
@@ -384,308 +272,183 @@ public class X_AD_Process_Para extends org.compiere.model.PO implements I_AD_Pro
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Länge.
-		@param FieldLength 
-		Length of the column in the database
-	  */
 	@Override
-	public void setFieldLength (int FieldLength)
+	public void setFieldLength (final int FieldLength)
 	{
-		set_Value (COLUMNNAME_FieldLength, Integer.valueOf(FieldLength));
+		set_Value (COLUMNNAME_FieldLength, FieldLength);
 	}
 
-	/** Get Länge.
-		@return Length of the column in the database
-	  */
 	@Override
-	public int getFieldLength () 
+	public int getFieldLength() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_FieldLength);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_FieldLength);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Autocomplete.
-		@param IsAutocomplete 
-		Automatic completion for textfields
-	  */
 	@Override
-	public void setIsAutocomplete (boolean IsAutocomplete)
+	public void setIsAutocomplete (final boolean IsAutocomplete)
 	{
-		set_Value (COLUMNNAME_IsAutocomplete, Boolean.valueOf(IsAutocomplete));
+		set_Value (COLUMNNAME_IsAutocomplete, IsAutocomplete);
 	}
 
-	/** Get Autocomplete.
-		@return Automatic completion for textfields
-	  */
 	@Override
-	public boolean isAutocomplete () 
+	public boolean isAutocomplete() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutocomplete);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutocomplete);
 	}
 
-	/** Set Zentral verwaltet.
-		@param IsCentrallyMaintained 
-		Information maintained in System Element table
-	  */
 	@Override
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained)
+	public void setIsCentrallyMaintained (final boolean IsCentrallyMaintained)
 	{
-		set_Value (COLUMNNAME_IsCentrallyMaintained, Boolean.valueOf(IsCentrallyMaintained));
+		set_Value (COLUMNNAME_IsCentrallyMaintained, IsCentrallyMaintained);
 	}
 
-	/** Get Zentral verwaltet.
-		@return Information maintained in System Element table
-	  */
 	@Override
-	public boolean isCentrallyMaintained () 
+	public boolean isCentrallyMaintained() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCentrallyMaintained);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCentrallyMaintained);
 	}
 
-	/** Set Encrypted.
-		@param IsEncrypted 
-		Display or Storage is encrypted
-	  */
 	@Override
-	public void setIsEncrypted (boolean IsEncrypted)
+	public void setIsEncrypted (final boolean IsEncrypted)
 	{
-		set_Value (COLUMNNAME_IsEncrypted, Boolean.valueOf(IsEncrypted));
+		set_Value (COLUMNNAME_IsEncrypted, IsEncrypted);
 	}
 
-	/** Get Encrypted.
-		@return Display or Storage is encrypted
-	  */
 	@Override
-	public boolean isEncrypted () 
+	public boolean isEncrypted() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEncrypted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEncrypted);
 	}
 
-	/** Set Pflichtangabe.
-		@param IsMandatory 
-		Data entry is required in this column
-	  */
 	@Override
-	public void setIsMandatory (boolean IsMandatory)
+	public void setIsMandatory (final boolean IsMandatory)
 	{
-		set_Value (COLUMNNAME_IsMandatory, Boolean.valueOf(IsMandatory));
+		set_Value (COLUMNNAME_IsMandatory, IsMandatory);
 	}
 
-	/** Get Pflichtangabe.
-		@return Data entry is required in this column
-	  */
 	@Override
-	public boolean isMandatory () 
+	public boolean isMandatory() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsMandatory);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsMandatory);
 	}
 
-	/** Set Range.
-		@param IsRange 
-		The parameter is a range of values
-	  */
 	@Override
-	public void setIsRange (boolean IsRange)
+	public void setIsRange (final boolean IsRange)
 	{
-		set_Value (COLUMNNAME_IsRange, Boolean.valueOf(IsRange));
+		set_Value (COLUMNNAME_IsRange, IsRange);
 	}
 
-	/** Get Range.
-		@return The parameter is a range of values
-	  */
 	@Override
-	public boolean isRange () 
+	public boolean isRange() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRange);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsRange);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Read Only Logic.
-		@param ReadOnlyLogic 
-		Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public void setReadOnlyLogic (java.lang.String ReadOnlyLogic)
+	public void setReadOnlyLogic (final @Nullable java.lang.String ReadOnlyLogic)
 	{
 		set_Value (COLUMNNAME_ReadOnlyLogic, ReadOnlyLogic);
 	}
 
-	/** Get Read Only Logic.
-		@return Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public java.lang.String getReadOnlyLogic () 
+	public java.lang.String getReadOnlyLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReadOnlyLogic);
+		return get_ValueAsString(COLUMNNAME_ReadOnlyLogic);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Max. Wert.
-		@param ValueMax 
-		Maximum Value for a field
-	  */
 	@Override
-	public void setValueMax (java.lang.String ValueMax)
+	public void setShowInactiveValues (final boolean ShowInactiveValues)
+	{
+		set_Value (COLUMNNAME_ShowInactiveValues, ShowInactiveValues);
+	}
+
+	@Override
+	public boolean isShowInactiveValues() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ShowInactiveValues);
+	}
+
+	@Override
+	public void setValueMax (final @Nullable java.lang.String ValueMax)
 	{
 		set_Value (COLUMNNAME_ValueMax, ValueMax);
 	}
 
-	/** Get Max. Wert.
-		@return Maximum Value for a field
-	  */
 	@Override
-	public java.lang.String getValueMax () 
+	public java.lang.String getValueMax() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueMax);
+		return get_ValueAsString(COLUMNNAME_ValueMax);
 	}
 
-	/** Set Min. Wert.
-		@param ValueMin 
-		Minimum Value for a field
-	  */
 	@Override
-	public void setValueMin (java.lang.String ValueMin)
+	public void setValueMin (final @Nullable java.lang.String ValueMin)
 	{
 		set_Value (COLUMNNAME_ValueMin, ValueMin);
 	}
 
-	/** Get Min. Wert.
-		@return Minimum Value for a field
-	  */
 	@Override
-	public java.lang.String getValueMin () 
+	public java.lang.String getValueMin() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueMin);
+		return get_ValueAsString(COLUMNNAME_ValueMin);
 	}
 
-	/** Set Value Format.
-		@param VFormat 
-		Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
-	  */
 	@Override
-	public void setVFormat (java.lang.String VFormat)
+	public void setVFormat (final @Nullable java.lang.String VFormat)
 	{
 		set_Value (COLUMNNAME_VFormat, VFormat);
 	}
 
-	/** Get Value Format.
-		@return Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
-	  */
 	@Override
-	public java.lang.String getVFormat () 
+	public java.lang.String getVFormat() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VFormat);
+		return get_ValueAsString(COLUMNNAME_VFormat);
 	}
 }

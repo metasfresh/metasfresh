@@ -1,10 +1,12 @@
 package de.metas.bpartner;
 
-import javax.annotation.Nullable;
-
 import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Setter;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -28,15 +30,12 @@ import lombok.NonNull;
  * #L%
  */
 
-@Data(staticConstructor = "of")
+@Data
+@Builder
 public class BPGroup
 {
-	@NonNull
-	private final OrgId orgId;
-
-	@Nullable
-	private final BPGroupId id;
-
-	@NonNull
-	private String name;
+	private final @NonNull OrgId orgId;
+	private final @Nullable BPGroupId id;
+	private @Setter @NonNull String name;
+	private final @NonNull String value;
 }

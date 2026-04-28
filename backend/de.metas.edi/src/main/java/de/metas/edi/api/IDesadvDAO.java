@@ -71,6 +71,7 @@ public interface IDesadvDAO extends ISingletonService
 	/**
 	 * @return all <code>M_InOut</code>s (incl inactive ones) that reference the given <code>desadv</code>.
 	 */
+	@NonNull
 	List<I_M_InOut> retrieveAllInOuts(I_EDI_Desadv desadv);
 
 	/**

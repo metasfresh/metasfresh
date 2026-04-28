@@ -22,9 +22,10 @@
 
 package de.metas.edi.model.validator;
 
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -34,12 +35,17 @@ import javax.annotation.Nonnull;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 @Component
+@RequiredArgsConstructor
 public class M_ShipmentSchedule
 {
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override)
+	@NonNull private final DesadvBL desadvBL;
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+	})
 	public void updateQtyOrdered_Override(@Nonnull final I_M_ShipmentSchedule schedule)
 	{
-		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 		desadvBL.updateQtyOrdered_OverrideFromShipSchedAndSave(schedule);
 	}
 }

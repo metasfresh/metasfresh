@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.hu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -81,7 +82,6 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
@@ -110,9 +110,11 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_InventoryLine;
 import org.compiere.util.DB;
 import org.jetbrains.annotations.NotNull;
 
@@ -121,6 +123,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -358,16 +361,57 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
-	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
-			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		// Group rows by inventory line identifier to handle multiple HUs per line
+		final ImmutableListMultimap<StepDefDataIdentifier, DataTableRow> rowsByInventoryLine = DataTableRows.of(dataTable)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(row -> row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID), Function.identity()));
 
-			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
+		// Process each inventory line and its associated rows
+		for (final StepDefDataIdentifier inventoryLineIdentifier : rowsByInventoryLine.keySet())
+		{
+			final List<DataTableRow> rows = rowsByInventoryLine.get(inventoryLineIdentifier);
+			final InventoryLineId inventoryLineId = inventoryLineTable.getId(inventoryLineIdentifier);
+			final I_M_InventoryLine inventoryLine = inventoryLineTable.get(inventoryLineIdentifier);
 			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-			assertThat(huId).as("inventory line has HU set").isNotNull();
+			if (Objects.equals(inventoryLine.getHUAggregationType(), X_M_InventoryLine.HUAGGREGATIONTYPE_SINGLE_HU) && rows.size() == 1)
+			{
+				findSingleHUForInventoryLine(timeoutSec, rows.get(0), inventoryLineId);
+			}
+			else
+			{
+				// Get all assigned HU IDs for this inventory line via the M_InventoryLine_HU table
+				findMultipleHUsForInventoryLine(timeoutSec, inventoryLineIdentifier, inventoryLineId, rows);
+			}
+		}
+	}
+
+	private void findMultipleHUsForInventoryLine(final int timeoutSec, final StepDefDataIdentifier inventoryLineIdentifier, final InventoryLineId inventoryLineId, final List<DataTableRow> rows) throws InterruptedException
+	{
+		final Set<HuId> assignedHuIds = StepDefUtil.tryAndWaitForItem(
+				timeoutSec,
+				500,
+				() -> {
+					final Set<HuId> huIds = inventoryService.getAssignedHUIds(inventoryLineId);
+					// Wait until we have the expected number of HUs
+					return huIds.size() >= rows.size() ? Optional.of(huIds) : Optional.empty();
+				}
+		);
+
+		assertThat(assignedHuIds)
+				.as("Expected at least %d HU(s) for inventory line %s", rows.size(), inventoryLineIdentifier)
+				.hasSizeGreaterThanOrEqualTo(rows.size());
+
+		// Convert Set to List for indexed access
+		final List<HuId> huIdsList = assignedHuIds.stream().sorted().collect(Collectors.toList());
+
+		// Map each row to an HU ID and load the HU
+		for (int i = 0; i < rows.size(); i++)
+		{
+			final DataTableRow row = rows.get(i);
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+			final HuId huId = huIdsList.get(i);
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
 					.huId(huId)
@@ -375,7 +419,20 @@ public class M_HU_StepDef
 					.build()));
 
 			restTestContext.setIdVariableFromRow(row, huId);
-		});
+		}
+	}
+
+	private void findSingleHUForInventoryLine(final int timeoutSec, final DataTableRow row, final InventoryLineId inventoryLineId) throws InterruptedException
+	{
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryDAO.getLineById(inventoryLineId, de.metas.handlingunits.model.I_M_InventoryLine.class).getM_HU_ID());
+		assertThat(huId).as("inventory line has HU set").isNotNull();
+		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
+				.huId(huId)
+				.huIdentifier(huIdentifier)
+				.build()));
+
+		restTestContext.setIdVariableFromRow(row, huId);
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")
@@ -897,11 +954,12 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void validateHUStorage(@NonNull final DataTableRow row)
+	private void validateHUStorage(final DataTableRow row)
 	{
-		final HuId huId = huTable.getId(row.getAsIdentifier(COLUMNNAME_M_HU_ID));
-		final I_M_Product productRecord = productTable.get(row.getAsIdentifier(COLUMNNAME_M_Product_ID));
-
+		final HuId huId = row.getAsIdentifier(COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+		assertThat(huId).isNotNull();
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
+		assertThat(productRecord).isNotNull();
 		final Optional<I_M_HU_Storage> huStorageRecord = getSingleHUStorageRecord(huId);
 
 		final String qty = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Qty);

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -12,6 +34,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.order.paymentschedule.service.OrderPayScheduleService;
@@ -37,28 +60,6 @@ import org.junit.jupiter.api.Test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class OrderTest
 {
 	public static final String PARTNER_NAME_1 = "PartnerName1";
@@ -72,6 +73,7 @@ public class OrderTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
@@ -83,6 +85,7 @@ public class OrderTest
 
 		defaultIncoterm = newInstance(I_C_Incoterms.class);
 		defaultIncoterm.setName("System Default Incoterm");
+		defaultIncoterm.setValue("System Default Incoterm");
 		defaultIncoterm.setIsDefault(true);
 		defaultIncoterm.setAD_Org_ID(TEST_ORG_ID);
 		defaultIncoterm.setDefaultLocation("Default City");
@@ -153,6 +156,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -214,11 +218,19 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
+
+		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
+		incoterms.setName("Incoterm");
+		incoterms.setValue("Incoterm");
+		incoterms.setAD_Org_ID(TEST_ORG_ID);
+		incoterms.setDefaultLocation("Location");
+		save(incoterms);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setName("PartnerWithIncoterms");
-		bpartner.setC_Incoterms_Customer_ID(100);
+		bpartner.setC_Incoterms_Customer_ID(incoterms.getC_Incoterms_ID());
 		bpartner.setIncotermLocation("City");
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
@@ -229,7 +241,7 @@ public class OrderTest
 
 		save(order);
 
-		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals(incoterms.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("City", order.getIncotermLocation());
 	}
 
@@ -238,11 +250,19 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
+
+		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
+		incoterms.setName("Incoterm");
+		incoterms.setValue("Incoterm");
+		incoterms.setAD_Org_ID(TEST_ORG_ID);
+		incoterms.setDefaultLocation("Location");
+		save(incoterms);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setName("PartnerWithIncoterms");
-		bpartner.setC_Incoterms_Vendor_ID(100);
+		bpartner.setC_Incoterms_Vendor_ID(incoterms.getC_Incoterms_ID());
 		bpartner.setPO_IncotermLocation("City");
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
@@ -253,7 +273,7 @@ public class OrderTest
 
 		save(order);
 
-		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals(incoterms.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("City", order.getIncotermLocation());
 	}
 
@@ -262,6 +282,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
@@ -286,6 +307,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);

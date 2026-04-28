@@ -28,7 +28,7 @@ import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierService;
-import de.metas.inoutcandidate.CarrierShipmentScheduleServiceRepository;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
 import de.metas.shipping.ShipperId;
 import io.cucumber.datatable.DataTable;
@@ -45,7 +45,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.asser
 public class Carrier_Service_StepDef
 {
 	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
-	@NonNull private final CarrierShipmentScheduleServiceRepository carrierShipmentScheduleServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentScheduleServiceRepository.class);
+	@NonNull private final ShipmentScheduleCarrierServiceRepository shipmentScheduleCarrierServiceRepository = SpringContextHolder.instance.getBean(ShipmentScheduleCarrierServiceRepository.class);
 
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
@@ -73,7 +73,7 @@ public class Carrier_Service_StepDef
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
 			final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
-			assertThat(carrierShipmentScheduleServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId)).isEmpty();
+			assertThat(shipmentScheduleCarrierServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId)).isEmpty();
 		});
 	}
 }

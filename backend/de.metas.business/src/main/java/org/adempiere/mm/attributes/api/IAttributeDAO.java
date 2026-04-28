@@ -172,4 +172,6 @@ public interface IAttributeDAO extends ISingletonService
 	}
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
+
+	boolean isStorageRelevant(@NonNull AttributeCode attributeCode);
 }

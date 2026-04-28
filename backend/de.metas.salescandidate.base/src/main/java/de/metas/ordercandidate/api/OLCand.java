@@ -31,6 +31,7 @@ import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.incoterms.IncotermsId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -351,6 +352,12 @@ public final class OLCand implements IProductPriceAware
 
 	public boolean isAutoInvoice() { return olCandRecord.isAutoInvoice(); }
 
+	@Nullable
+	public IncotermsId getIncotermsId() {return IncotermsId.ofRepoIdOrNull(olCandRecord.getC_Incoterms_ID());}
+
+	@Nullable
+	public String getIncotermLocation() {return olCandRecord.getIncotermLocation();}
+
 	// FIXME hardcoded (08691)
 	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
@@ -387,6 +394,10 @@ public final class OLCand implements IProductPriceAware
 				return getPhone();
 			case I_C_OLCand.COLUMNNAME_IsAutoInvoice:
 				return isAutoInvoice();
+			case I_C_OLCand.COLUMNNAME_C_Incoterms_ID:
+				return getIncotermsId();
+			case I_C_OLCand.COLUMNNAME_IncotermLocation:
+				return getIncotermLocation();
 			default:
 				return InterfaceWrapperHelper.getValueByColumnId(olCandRecord, column.getAdColumnId());
 		}

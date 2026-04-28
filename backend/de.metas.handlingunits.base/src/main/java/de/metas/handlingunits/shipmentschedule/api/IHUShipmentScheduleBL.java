@@ -13,6 +13,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -24,6 +25,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -141,4 +143,13 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
+
+	/**
+	 * Extracts a common projectId from the given shipment schedules. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	@Nullable
+	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
 }

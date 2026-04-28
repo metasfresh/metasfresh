@@ -127,7 +127,9 @@ const DistributionStepScreen = () => {
     : trl('activities.distribution.scanHU');
   const pickFromHUStatus = isPickedFrom ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
-  const dropToLocatorCaption = isDroppedToLocator ? dropToLocator.caption : trl('activities.distribution.scanLocator');
+  const dropToLocatorCaption = isDroppedToLocator
+    ? dropToLocator.caption
+    : trl('activities.distribution.scanDropToLocator');
   const dropToLocatorStatus = isDroppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
   return (

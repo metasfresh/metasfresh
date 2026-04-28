@@ -49,7 +49,9 @@ public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
-	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
+	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
+
+	<T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
 	PPOrderQuantities getQuantities(
 			@NonNull I_PP_Order ppOrder,
@@ -73,9 +75,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	I_C_UOM getBOMLineUOM(I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
+	@NonNull
+	UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
+	@NonNull
+	UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
 
 	OrderBOMLineQuantities getQuantities(I_PP_Order_BOMLine orderBOMLine);
 
@@ -152,4 +156,17 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(PPOrderId ppOrderId);
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
+
+	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
+
+	/**
+	 * Updates the issuing tolerance specification for a BOM line.
+	 * This method does NOT save the BOM line - caller is responsible for saving.
+	 *
+	 * @param orderBOMLine the BOM line to update
+	 * @param toleranceSpec the tolerance specification to apply, or null to clear tolerance
+	 */
+	void updateIssuingToleranceSpec(
+			@NonNull I_PP_Order_BOMLine orderBOMLine,
+			@javax.annotation.Nullable de.metas.product.IssuingToleranceSpec toleranceSpec);
 }

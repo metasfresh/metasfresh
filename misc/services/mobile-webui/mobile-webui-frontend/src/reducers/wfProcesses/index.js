@@ -89,11 +89,6 @@ export const getStepsArrayFromLine = (line) => {
   return Object.values(stepsById);
 };
 
-export const getSteps = (state, wfProcessId, activityId, lineId) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  return getStepsArrayFromLine(line);
-};
-
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
   return getStepByIdFromLine(line, stepId);
@@ -125,12 +120,6 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
     ];
   }
   return reasons;
-};
-
-export const computeQtyToPickRemaining = ({ line }) => {
-  const stepsArray = getStepsArrayFromLine(line);
-  const qtyPicked = stepsArray.reduce((sum, step) => sum + (step.qtyPicked || 0), 0);
-  return Math.max(line.qtyToMove - qtyPicked, 0);
 };
 
 export const getScaleDeviceFromActivity = (activity) => {

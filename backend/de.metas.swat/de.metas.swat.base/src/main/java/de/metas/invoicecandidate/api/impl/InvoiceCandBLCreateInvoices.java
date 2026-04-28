@@ -48,6 +48,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -268,6 +269,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			if (!allCands.isEmpty())
 			{
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
+				invoiceCandBL.extractCommonProjectId(allCands)
+						.ifPresent(projectId -> invoice.setC_Project_ID(projectId.getRepoId()));
 			}
 
 			if (getInvoicingParams().isCompleteInvoices())
@@ -351,6 +354,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final String trxName)
 		{
 			final I_C_Invoice invoice;
+			final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 
 			//
 			// Case: our invoice is linked to an order
@@ -385,7 +389,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(PaymentTermId.toRepoId(invoiceHeader.getPaymentTermId()));
 
-				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
@@ -394,6 +397,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
+
+			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
@@ -426,6 +431,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
+			invoice.setC_PromotionCode_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCodeId()));
+			invoice.setC_PromotionCode2_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCode2Id()));
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 			invoice.setExternalSystem_ID(ExternalSystemId.toRepoId(invoiceHeader.getExternalSystemId()));
 			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
@@ -946,8 +953,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
 				.build();
 	}
 

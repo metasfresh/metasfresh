@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
@@ -44,7 +45,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_TaxCategory;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -103,19 +103,21 @@ public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull
-	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
-	@NonNull
-	private final TaxCategoryDAO taxCategoryDAO;
-	@NonNull
-	private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final TaxCategoryDAO taxCategoryDAO;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 
 	@VisibleForTesting
 	public static ExternalSystemConfigRepo newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO(),
-				ExternalSystemRepository.newInstanceForUnitTesting());
+		return new ExternalSystemConfigRepo(
+				new TaxCategoryDAO(),
+				ExternalSystemRepository.newInstanceForUnitTesting(),
+				new ExternalSystemOtherConfigRepository(),
+				ExternalSystemScriptedExportConversionRepository.newInstanceForUnitTesting()
+				);
 	}
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
@@ -452,7 +454,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemAlbertaConfig buildExternalSystemAlbertaConfig(final @NonNull I_ExternalSystem_Config_Alberta config,
+	private ExternalSystemAlbertaConfig buildExternalSystemAlbertaConfig(@NonNull final I_ExternalSystem_Config_Alberta config,
 																		 @NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
 		return ExternalSystemAlbertaConfig.builder()
@@ -1011,9 +1013,7 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemScriptedExportConversionConfigId id)
 	{
-		final I_ExternalSystem_Config_ScriptedExportConversion config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ScriptedExportConversion.class);
-
-		return getExternalSystemParentConfig(config);
+		return getExternalSystemParentConfig(id);
 	}
 
 	@NonNull
@@ -1025,13 +1025,10 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final ExternalSystemScriptedExportConversionConfigId id)
 	{
-		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
-
-		final ExternalSystemScriptedExportConversionConfig child = ExternalSystemScriptedExportConversionRepository.fromRecord(config, parentConfigId);
-
-		return getById(parentConfigId)
+		final ExternalSystemScriptedExportConversionConfig child = externalSystemScriptedExportConversionRepository.getById(id);
+		return getById(child.getParentId())
 				.childConfig(child)
 				.build();
 	}
@@ -1093,6 +1090,10 @@ public class ExternalSystemConfigRepo
 				.scriptIdentifier(config.getScriptIdentifier())
 				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
 				.description(config.getDescription())
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoIdOrNull(config.getExternalSystem_Endpoint_ID() > 0 ? config.getExternalSystem_Endpoint_ID() : null))
+				.sftpPollingIntervalMs(config.getSftpPollingIntervalMs() > 0 ? config.getSftpPollingIntervalMs() : null)
+				.sftpProcessedDirectory(config.getSftpProcessedDirectory())
+				.sftpErrorDirectory(config.getSftpErrorDirectory())
 				.build();
 	}
 

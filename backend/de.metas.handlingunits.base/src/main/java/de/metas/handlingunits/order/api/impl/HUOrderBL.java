@@ -22,44 +22,71 @@ package de.metas.handlingunits.order.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
-import java.util.function.Consumer;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.handlingunits.reservation.HUReservation;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Date;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 public class HUOrderBL implements IHUOrderBL
 {
-	private static final transient Logger logger = LogManager.getLogger(HUOrderBL.class);
+	private static final Logger logger = LogManager.getLogger(HUOrderBL.class);
+
+	private static final String SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI =
+			"de.metas.handlingunits.order.CopyStorageRelevantAttributesToOrderLineASI";
+
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
+	private final ProjectRepository projectRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@Override
 	public void updateOrderLine(final de.metas.interfaces.I_C_OrderLine olPO, final String columnName)
@@ -86,7 +113,7 @@ public class HUOrderBL implements IHUOrderBL
 		final boolean isCounterDoc = ol.getRef_OrderLine_ID() > 0;
 
 		// in case the order line already has a packing instruction, it should be kept as is, excepting the lines of counter documents
-		if (pip != null && !isCounterDoc && !isProductChanged(olPO,columnName))
+		if (pip != null && !isCounterDoc && !isProductChanged(olPO, columnName))
 		{
 			// nothing to do. Keep the old packing instructions
 		}
@@ -153,9 +180,7 @@ public class HUOrderBL implements IHUOrderBL
 				Check.assume(qtyCap.signum() != 0, "Zero capacity for M_HU_PI_Item_Product {}", pip.getM_HU_PI_Item_Product_ID());
 			}
 			final String description = pip.getDescription();
-			final StringBuilder packDescription = new StringBuilder();
-			packDescription.append(Check.isEmpty(description, true) ? "" : description);
-			ol.setPackDescription(packDescription.toString());
+			ol.setPackDescription((Check.isEmpty(description, true) ? "" : description));
 
 			// 05131 : Changed column from virtual to real.
 			if (!ol.isManualQtyItemCapacity())
@@ -197,15 +222,14 @@ public class HUOrderBL implements IHUOrderBL
 
 		final boolean allowInfiniteCapacity = true;
 
-		I_M_HU_PI_Item_Product newPIIP;
+		final I_M_HU_PI_Item_Product newPIIP;
 
 		// FRESH-351: maybe the order line was copied with *all* its columns and then the M_Product_ID was changed
 		// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
 
 		// check if the ol has a packaging order line whose product is inconsistent with the ol's PIIP
-		final boolean packagingProductMightBeInconsistent = true
-				// here we just avoid NPEs and check if the ol actually has a packaging line with a product
-				&& ol.getC_PackingMaterial_OrderLine_ID() > 0
+		// here we just avoid NPEs and check if the ol actually has a packaging line with a product
+		final boolean packagingProductMightBeInconsistent = ol.getC_PackingMaterial_OrderLine_ID() > 0
 				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() > 0;
 
 		final boolean inconsistentProduct =
@@ -272,8 +296,8 @@ public class HUOrderBL implements IHUOrderBL
 				if (newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
 				{
 					logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
-							+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
-							+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
+									+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
+									+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
 							ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
 							olPip,
 							newPIIP);
@@ -389,7 +413,7 @@ public class HUOrderBL implements IHUOrderBL
 		{
 			final BigDecimal capacity = huPIP.getQty();
 
-			order.setQty_FastInput_TU(qtyCU.divide(capacity, 0, BigDecimal.ROUND_UP));
+			order.setQty_FastInput_TU(qtyCU.divide(capacity, 0, RoundingMode.UP));
 		}
 
 		// qty TU was modified
@@ -410,7 +434,6 @@ public class HUOrderBL implements IHUOrderBL
 		if (huPIP.isInfiniteCapacity())
 		{
 			// nothing to do. The qty CU shall remain as it was manually set by the user
-			return;
 		}
 		else if (I_C_Order.COLUMNNAME_M_HU_PI_Item_Product_ID.equals(columnname))
 		{
@@ -428,18 +451,15 @@ public class HUOrderBL implements IHUOrderBL
 				}
 			}
 
-			return;
 		}
 		else if (I_C_Order.COLUMNNAME_Qty_FastInput_TU.equals(columnname))
 		{
 
 			updateQtyCU(order);
-			return;
 		}
 		else if (de.metas.adempiere.model.I_C_Order.COLUMNNAME_Qty_FastInput.equals(columnname))
 		{
 			updateQtyTU(order);
-			return;
 		}
 	}
 
@@ -511,17 +531,59 @@ public class HUOrderBL implements IHUOrderBL
 		if (pip == null)
 		{
 			// nothing to do, product is not included in any Transport Units
-			return;
 		}
 
 		else if (pip.isAllowAnyProduct())
 		{
-			return;
 		}
 		else
 		{
 			pipConsumer.accept(pip);
 		}
+	}
+
+	@Override
+	public void updateOrderLineFromReservations(@NonNull final OrderAndLineId orderLineId)
+	{
+		final ImmutableSet<HuId> huIds = huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId), ImmutableSet.of())
+				.map(HUReservation::getVhuIds)
+				.orElse(ImmutableSet.of());
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		if (huIds.isEmpty())
+		{
+			final ProjectId orderLineProjectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+			if (orderLineProjectId != null && attributeSetInstanceBL.isStorageRelevant(AttributeConstants.ATTR_Project))
+			{
+				// if there's a project ID assigned to the order line, we need to create an ASI containing it as an attribute and assign it to the order line regardless of what the sysconfig says
+				// otherwise we will be allowed to pick HUs with any project ID
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID())).getM_AttributeSetInstance_ID());
+				attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, ProjectId.toRepoId(orderLineProjectId));
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+			}
+			else
+			{
+				orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(null));
+			}
+			orderDAO.save(orderLine);
+			return;
+		}
+		final Optional<String> projectAttrValue = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project);
+		final ProjectId projectId = projectAttrValue
+				.map(projectRepo::getIdByValueOrNull)
+				.orElse(null);
+
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_COPY_STORAGE_RELEVANT_ATTRS_TO_ORDER_LINE_ASI, false))
+		{
+			// ASIs are considered immutable, so always create a new one
+			final ImmutableAttributeSet commonStorageRelevantAttributes = huAttributesBL.extractCommonStorageRelevantAttributeSet(huIds);
+			final AttributeSetInstanceId asiId = commonStorageRelevantAttributes.isEmpty()
+					? AttributeSetInstanceId.NONE
+					: AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(commonStorageRelevantAttributes).getM_AttributeSetInstance_ID());
+			orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(asiId));
+		}
+
+		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
+		orderDAO.save(orderLine);
 	}
 
 }

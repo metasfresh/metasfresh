@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_Column
  *  @author metasfresh (generated) 
@@ -844,7 +845,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -854,7 +855,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1023,6 +1024,27 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsSelectionColumn = new ModelColumn<>(I_AD_Column.class, "IsSelectionColumn", null);
 	String COLUMNNAME_IsSelectionColumn = "IsSelectionColumn";
+
+	/**
+	 * Set Show inactive values in filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowFilterInactiveValues (boolean IsShowFilterInactiveValues);
+
+	/**
+	 * Get Show inactive values in filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowFilterInactiveValues();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsShowFilterInactiveValues = new ModelColumn<>(I_AD_Column.class, "IsShowFilterInactiveValues", null);
+	String COLUMNNAME_IsShowFilterInactiveValues = "IsShowFilterInactiveValues";
 
 	/**
 	 * Set Filter +/- buttons.

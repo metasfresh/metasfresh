@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl.pack;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -48,6 +49,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -66,6 +69,14 @@ public class EDIDesadvPackRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+
+	@VisibleForTesting
+	public static EDIDesadvPackRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(EDIDesadvPackRepository.class, EDIDesadvPackRepository::new);
+	}
 
 	@NonNull
 	public EDIDesadvPack createDesadvPack(@NonNull final CreateEDIDesadvPackRequest createEDIDesadvPackRequest)

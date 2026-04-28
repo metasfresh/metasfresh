@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 @ghActions:run_on_executor3
 Feature: EDI INVOIC export via postgREST
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -22,6 +26,9 @@ Feature: EDI INVOIC export via postgREST
 
   @Id:S0467_010
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: create an invoice and export it to JSON
     Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
@@ -178,6 +185,9 @@ Feature: EDI INVOIC export via postgREST
     """
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   @Id:S0481_010
   Scenario: create an invoice and export it to JSON taking into consideration the BPartner of the Warehouse as Supplier
     Given metasfresh contains C_BPartners without locations:

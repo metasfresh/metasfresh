@@ -25,11 +25,6 @@ package de.metas.handlingunits.inout.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocSubType;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
-import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -55,7 +50,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inout.IInOutDAO;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
@@ -63,6 +58,7 @@ import de.metas.material.MovementType;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -78,7 +74,6 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -92,39 +87,39 @@ public class HUInOutBL implements IHUInOutBL
 {
 	private static final Logger logger = LogManager.getLogger(HUInOutBL.class);
 
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
-		return inOutDAO.getById(inoutId, de.metas.handlingunits.model.I_M_InOut.class);
+		return inOutBL.getById(inoutId, de.metas.handlingunits.model.I_M_InOut.class);
 	}
 
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> type)
 	{
-		return inOutDAO.getById(inoutId, type);
+		return inOutBL.getById(inoutId, type);
 	}
 
 	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
-		return inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+		return inOutBL.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
 	public <T extends org.compiere.model.I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut, final Class<T> inoutLineClass)
 	{
-		return inOutDAO.retrieveLines(inOut, inoutLineClass);
+		return inOutBL.retrieveLines(inOut, inoutLineClass);
 	}
 
 	@Override
@@ -140,7 +135,9 @@ public class HUInOutBL implements IHUInOutBL
 		final BigDecimal qtyEntered = candidate.getQty();
 		final BigDecimal qty = candidate.getQtyInStockingUOM();
 		final I_M_Material_Tracking materialTracking = candidate.getM_MaterialTracking();
+		final ProjectId projectId = candidate.getUniqueProjectIdOrNull();
 
+		inoutLineHU.setC_Project_ID(ProjectId.toRepoId(projectId));
 		inoutLineHU.setM_Material_Tracking(materialTracking); // task 07734
 		inoutLineHU.setM_Product_ID(productId);
 		inoutLineHU.setC_UOM_ID(uom.getC_UOM_ID());
@@ -154,6 +151,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		// NOTE: packing material lines shall have no order line set (07969). This will prevent generating ICs.
 		inoutLineHU.setC_OrderLine(null);
+
 
 		InterfaceWrapperHelper.save(inoutLineHU);
 	}
@@ -328,43 +326,19 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-				.docSubTypeAny()
-				.isSOTrx(true)
-				.build();
-
-		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+		return inOutBL.isCustomerReturn(inOut);
 	}
 
 	@Override
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-				.isSOTrx(false)
-				.build();
-
-		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+		return inOutBL.isVendorReturn(inOut);
 	}
 
 	@Override
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
-		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(DocBaseType.MaterialReceipt)
-				.docSubType(DocSubType.EmptiesReceipt)
-				.build();
-
-		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
-	}
-
-	private DocTypeQueryBuilder createDocTypeQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
-	{
-		return DocTypeQuery.builder()
-				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-				.adClientId(inOut.getAD_Client_ID())
-				.adOrgId(inOut.getAD_Org_ID());
+		return inOutBL.isEmptiesReturn(inOut);
 	}
 
 	@Override
@@ -388,7 +362,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public void copyAssignmentsToReversal(@NonNull final org.compiere.model.I_M_InOut inOutRecord)
 	{
-		final List<I_M_InOutLine> lineRecords = inOutDAO.retrieveLines(inOutRecord, I_M_InOutLine.class);
+		final List<I_M_InOutLine> lineRecords = inOutBL.retrieveLines(inOutRecord, I_M_InOutLine.class);
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
@@ -426,7 +400,7 @@ public class HUInOutBL implements IHUInOutBL
 			return ImmutableSet.of();
 		}
 
-		final ImmutableSet<InOutLineId> inoutLineIds = inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+		final ImmutableSet<InOutLineId> inoutLineIds = inOutBL.retrieveActiveLineIdsByInOutIds(inoutIds);
 		final ImmutableSetMultimap<InOutLineId, HuId> huIds = getHUIdsByInOutLineIds(inoutLineIds);
 		return ImmutableSet.copyOf(huIds.values());
 	}
@@ -489,4 +463,22 @@ public class HUInOutBL implements IHUInOutBL
 		}
 	}
 
+	@Override
+	public boolean isReversal(final I_M_InOut inout)
+	{
+		return inOutBL.isReversal(inout);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
+	{
+		return huInOutDAO.retrieveHandlingUnits(inOut);
+	}
+
+	@Override
+	public @NonNull
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(final Set<InOutLineId> shipmentLineIds)
+	{
+		return huInOutDAO.retrieveShippedHUsByShipmentLineId(shipmentLineIds);
+	}
 }

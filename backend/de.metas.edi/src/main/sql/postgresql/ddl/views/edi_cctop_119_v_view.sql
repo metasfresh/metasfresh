@@ -7,7 +7,7 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID       AS EDI_Cctop_INVOIC_v_ID,
        lookup.M_InOut_ID,
        pl.C_BPartner_Location_ID,
-       REGEXP_REPLACE(pl.GLN, '\s+$', '') AS GLN,
+       COALESCE(lookup.GLN_Override, REGEXP_REPLACE(pl.GLN, '\s+$', '')) AS GLN,
        pl.Phone,
        pl.Fax,
        p.Name,
@@ -49,6 +49,7 @@ FROM (
                                   NULL::TEXT   AS Vendor_ReferenceNo,
                                   pl_cust.bpartnername AS SiteName,
                                   pl_cust.Setup_Place_No,
+                                  NULL::TEXT   AS GLN_Override,
                                   i.CreatedBy
                   FROM C_Invoice i
                            LEFT JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -72,6 +73,7 @@ FROM (
                          COALESCE(p_wh.ReferenceNo, p_vend.ReferenceNo)                         AS Vendor_ReferenceNo,
                          COALESCE(pl_wh.bpartnername, pl_vend.bpartnername)                     AS SiteName,
                          COALESCE(pl_wh.Setup_Place_No, pl_vend.Setup_Place_No)                 AS Setup_Place_No,
+                         COALESCE(NULLIF(REGEXP_REPLACE(pl_wh.GLN, '\s+$', ''), ''), NULLIF(REGEXP_REPLACE(pl_vend.GLN, '\s+$', ''), '')) AS GLN_Override,
                          i.CreatedBy
                   FROM C_Invoice i
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
@@ -91,6 +93,7 @@ FROM (
                                   NULL::TEXT   AS Vendor_ReferenceNo,
                                   pl_ship.bpartnername AS SiteName,
                                   pl_ship.Setup_Place_No,
+                                  NULL::TEXT   AS GLN_Override,
                                   i.CreatedBy
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -126,6 +129,7 @@ FROM (
                          NULL::TEXT   AS Vendor_ReferenceNo,
                          pl_bill.bpartnername AS SiteName,
                          pl_bill.Setup_Place_No,
+                         NULL::TEXT   AS GLN_Override,
                          i.CreatedBy
                   FROM C_Invoice i
                            LEFT JOIN C_BPartner_Location pl_bill ON pl_bill.C_BPartner_Location_ID = i.C_BPartner_Location_ID
@@ -140,6 +144,7 @@ FROM (
                                   NULL::TEXT   AS Vendor_ReferenceNo,
                                   pl_snum.bpartnername AS SiteName,
                                   pl_snum.Setup_Place_No,
+                                  NULL::TEXT   AS GLN_Override,
                                   i.CreatedBy
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID

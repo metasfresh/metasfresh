@@ -40,6 +40,7 @@
         <metasfresh.version>10.0.0</metasfresh.version>
         <testcontainers.version>1.21.3</testcontainers.version>
         <external.libs.path></external.libs.path>
+        <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
     </properties>
 
     <dependencyManagement>
@@ -182,6 +183,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Allure reporting for Cucumber tests -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-cucumber7-jvm</artifactId>
+            <version>2.25.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -233,6 +242,7 @@
                     <properties>
                         <configurationParameters>
                             cucumber.junit-platform.naming-strategy=surefire
+                            cucumber.filter.tags=${cucumber.filter.tags}
                         </configurationParameters>
                     </properties>
                     <additionalClasspathElements>

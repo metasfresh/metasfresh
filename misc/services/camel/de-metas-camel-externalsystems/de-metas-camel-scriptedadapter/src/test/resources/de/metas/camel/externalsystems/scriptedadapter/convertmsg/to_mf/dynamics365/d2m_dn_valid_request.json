@@ -1,0 +1,83 @@
+{
+  "d2m_dn": [
+    {
+      "orgCode": "orgCode",
+      "deliveryNoteNumber": "DeliveryNote1",
+      "poReference": "poReference1",
+      "dateShip": "2025-11-24",
+      "partnerIdentifier": "partnerIdentifier1",
+      "partnerValue": "11111",
+      "partnerName": "partnerName1",
+      "orderNumber": "externalOrderId",
+      "lines": [
+        {
+          "externalLineId": "externalLineId1",
+          "productIdentifier": "productIdentifier1",
+          "uom": "EA",
+          "qty": "11",
+          "ShippingItem": [
+            {
+              "Serial number": 11111111111111
+            },
+            {
+              "Serial number": 22222222222222
+            }
+          ]
+        },
+        {
+          "externalLineId": "externalLineId",
+          "productIdentifier": "productIdentifier2",
+          "uom": "EA",
+          "qty": "2",
+          "ShippingItem": [
+            {
+              "Serial number": 33333333333333
+            },
+            {
+              "Serial number": 44444444444444
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "orgCode": "DE06",
+      "deliveryNoteNumber": "DeliveryNote2",
+      "poReference": "poReference2",
+      "dateShip": "2025-11-24",
+      "partnerIdentifier": "DT01",
+      "partnerValue": "11111",
+      "partnerName": "partnerName2",
+      "lines": [
+        {
+          "poLineId": "1",
+          "productIdentifier": "productIdentifier3",
+          "uom": "EA",
+          "qty": "11",
+          "ShippingItem": [
+            {
+              "Serial number": 55555555555555
+            },
+            {
+              "Serial number": 66666666666666
+            }
+          ]
+        },
+        {
+          "poLineId": "2",
+          "productIdentifier": "productIdentifier4",
+          "uom": "EA",
+          "qty": "2",
+          "ShippingItem": [
+            {
+              "Serial number": 77777777777777
+            },
+            {
+              "Serial number": 88888888888888
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

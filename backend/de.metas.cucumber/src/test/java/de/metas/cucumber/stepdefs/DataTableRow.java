@@ -91,7 +91,7 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, final String value)
+		public DataTableRowBuilder value(final String name, @Nullable final String value)
 		{
 			return _value(name, value);
 		}
@@ -153,6 +153,17 @@ public class DataTableRow
 					.setParameter("row", this);
 		}
 		return string;
+	}
+
+	@NonNull
+	public Optional<List<String>> getAsOptionalCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(getAsCommaSeparatedString(columnName));
 	}
 
 	@NonNull
@@ -313,8 +324,42 @@ public class DataTableRow
 						.setParameter("row", map));
 	}
 
+	@Nullable
+	public StepDefDataIdentifier getAsIdentifierOrNull(@NonNull final String columnName)
+	{
+		return getAsOptionalIdentifier(columnName)
+				.orElse(null);
+	}
+
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(StepDefDataIdentifier.ofString(string));
+	}
+
+	@NonNull
+	public ImmutableList<StepDefDataIdentifier> getAsIdentifierList(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return ImmutableList.of();
+		}
+		return StepDefUtil.extractIdentifiers(string);
+	}
+
+	/**
+	 * Not to be used directly, but extracts the common logic identifier lookup
+	 */
+	private String getAsOptionalIdentifierString(final @NonNull String columnName)
 	{
 		String string = null;
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
@@ -338,13 +383,7 @@ public class DataTableRow
 		{
 			string = map.get(columnName);
 		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		return string;
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)

@@ -39,6 +39,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
@@ -69,7 +70,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	@NonNull String productNo;
 	@Nullable GS1ProductCodes gs1ProductCodes;
 	@NonNull ProductCategoryId productCategoryId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
@@ -106,7 +107,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final String productNo,
 			@Nullable final GS1ProductCodes gs1ProductCodes,
 			@NonNull final ProductCategoryId productCategoryId,
-			@NonNull final ITranslatableString productName,
+			@NonNull final ProductValueAndName productValueAndName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
@@ -127,7 +128,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.productNo = productNo;
 		this.gs1ProductCodes = gs1ProductCodes;
 		this.productCategoryId = productCategoryId;
-		this.productName = productName;
+		this.productValueAndName = productValueAndName;
 		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
@@ -231,7 +232,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				.salesOrderAndLineId(salesOrderAndLineId)
 				.scheduleId(scheduleId)
 				.productId(productId)
-				.productName(productName)
+				.productValueAndName(productValueAndName)
 				.qtyToPick(request.getQtyToPick())
 				.pickFroms(PickingJobStepPickFromMap.ofList(ImmutableList.of(
 						PickingJobStepPickFrom.builder()
@@ -303,4 +304,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	}
 
 	public boolean isFullyPicked() {return qtyRemainingToPick.signum() <= 0;}
+
+	public boolean isFullyPickedExcludingRejectedQty()
+	{
+		return qtyToPick.subtract(qtyPicked).signum() <= 0;
+	}
 }

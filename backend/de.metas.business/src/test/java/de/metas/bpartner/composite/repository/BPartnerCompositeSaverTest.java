@@ -84,6 +84,7 @@ public class BPartnerCompositeSaverTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(GROUP_ID);
 		bpGroupRecord.setName("BP_GROUP_RECORD_NAME");
+		bpGroupRecord.setValue("BP_GROUP_RECORD_NAME");
 		saveRecord(bpGroupRecord);
 
 		createLocationData();

@@ -167,6 +167,7 @@ class OLCandOrderFactoryTest
 	{
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		bpGroup.setName("bpGroup");
+		bpGroup.setValue("bpGroupValue");
 		InterfaceWrapperHelper.saveRecord(bpGroup);
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);

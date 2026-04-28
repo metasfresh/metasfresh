@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.attribute;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
@@ -30,12 +31,12 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 public interface IHUAttributesBL extends ISingletonService
 {
@@ -75,7 +76,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
-
 	void updateHUAttribute(@NonNull final IHUContext huContext, @NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
 	/**
@@ -104,8 +104,17 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 
+	Optional<String> extractCommonAttributeValue(ImmutableSet<HuId> huIds, AttributeCode attributeCode);
+
+	/**
+	 * For each storage-relevant attribute (i.e. {@code M_Attribute.isStorageRelevant=true}) that all given HUs share a common value for,
+	 * returns an {@link ImmutableAttributeSet} containing those common values. Missing attributes are treated as "common".
+	 * Attributes where the HUs have different values, or which are not storage-relevant, are excluded.
+	 */
+	ImmutableAttributeSet extractCommonStorageRelevantAttributeSet(ImmutableSet<HuId> huIds);
+
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
-			@NonNull ProductId productId);
+												   @NonNull ProductId productId);
 
 	void transferAttributesForSingleProductHUs(@NonNull I_M_HU huFrom, @NonNull I_M_HU huTo);
 
@@ -116,4 +125,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	@Nullable
 	IAttributeValue getAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+
+	Optional<IAttributeValue> getAttributeValueIfExists(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
 }

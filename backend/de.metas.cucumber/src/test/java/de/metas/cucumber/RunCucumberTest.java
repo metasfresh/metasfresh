@@ -40,8 +40,10 @@ import org.junit.platform.suite.api.Suite;
 @IncludeEngines("cucumber")
 @SelectPackages("de.metas.cucumber")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "de.metas.cucumber.stepdefs")
-@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
-@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message")
+// NOTE: cucumber.filter.tags moved to pom.xml <configurationParameters> (default: "not @ignore")
+// so it can be overridden via -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @ignore"
+// @ConfigurationParameter for FILTER_TAGS has highest JUnit5 priority and cannot be overridden!
+@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
 public class RunCucumberTest
 {
 }

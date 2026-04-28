@@ -1715,12 +1715,14 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		return asLocalTime(obj, null);
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1753,6 +1755,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)

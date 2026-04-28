@@ -1,9 +1,11 @@
 package de.metas.costing.methods;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
@@ -166,6 +168,11 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
+	}
+
 	public CostDetail getSingleCostDetail(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsService.firstOnly(query)
@@ -256,4 +263,10 @@ public class CostingMethodHandlerUtils
 						request.getClientId(),
 						request.getOrgId()));
 	}
+
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetailsService.toAggregatedCostAmount(costDetails);
+	}
+
 }

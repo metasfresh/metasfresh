@@ -404,6 +404,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return String.valueOf(recordId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_DocType getDocTypeOrNull(final Object model)
 	{

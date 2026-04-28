@@ -573,6 +573,27 @@ public interface I_AD_User
 	String COLUMNNAME_DelDate = "DelDate";
 
 	/**
+	 * Set Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepartment (@Nullable java.lang.String Department);
+
+	/**
+	 * Get Department.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepartment();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Department = new ModelColumn<>(I_AD_User.class, "Department", null);
+	String COLUMNNAME_Department = "Department";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String

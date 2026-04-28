@@ -1457,4 +1457,58 @@ public interface I_Fact_Acct_Transactions_View
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_VATCode = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "VATCode", null);
 	String COLUMNNAME_VATCode = "VATCode";
+
+	/**
+	 * Set Cost Classification Category.
+	 * Groups cost classifications into higher-level analytical categories to support structured and aggregated controlling reports.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CostClassification_Category_ID (int C_CostClassification_Category_ID);
+
+	/**
+	 * Get Cost Classification Category.
+	 * Groups cost classifications into higher-level analytical categories to support structured and aggregated controlling reports.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CostClassification_Category_ID();
+
+	@Nullable org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category();
+
+	void setC_CostClassification_Category(@Nullable org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_CostClassification_Category> COLUMN_C_CostClassification_Category_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_CostClassification_Category_ID", org.compiere.model.I_C_CostClassification_Category.class);
+	String COLUMNNAME_C_CostClassification_Category_ID = "C_CostClassification_Category_ID";
+
+	/**
+	 * Set Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CostClassification_ID (int C_CostClassification_ID);
+
+	/**
+	 * Get Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CostClassification_ID();
+
+	@Nullable org.compiere.model.I_C_CostClassification getC_CostClassification();
+
+	void setC_CostClassification(@Nullable org.compiere.model.I_C_CostClassification C_CostClassification);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_CostClassification> COLUMN_C_CostClassification_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_CostClassification_ID", org.compiere.model.I_C_CostClassification.class);
+	String COLUMNNAME_C_CostClassification_ID = "C_CostClassification_ID";
 }

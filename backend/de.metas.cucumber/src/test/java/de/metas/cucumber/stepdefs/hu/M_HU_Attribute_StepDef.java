@@ -81,10 +81,7 @@ public class M_HU_Attribute_StepDef
 	@And("M_HU_Attribute is changed")
 	public void m_hu_attribute_is_changed(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			changeHUAttribute(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::changeHUAttribute);
 	}
 
 	@And("M_HU_Attribute is validated")
@@ -159,10 +156,10 @@ public class M_HU_Attribute_StepDef
 		{
 			SharedTestContext.put("huIdentifier", huIdentifier);
 
-			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
+			final HuId huId = huIdentifier.lookupIdIn(huTable);
 			SharedTestContext.put("huId", huId);
 
-			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 			assertThat(huRecord).isNotNull();
 
 			final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
@@ -209,14 +206,13 @@ public class M_HU_Attribute_StepDef
 				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
-	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)
+	private void changeHUAttribute(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huID = huTable.getOptional(huIdentifier)
+		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID);
+		final I_M_HU huRecord = huTable.getOptional(huIdentifier)
 				.map(I_M_HU::getM_HU_ID)
-				.orElseGet(() -> Integer.parseInt(huIdentifier));
-
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huID, I_M_HU.class);
+				.map(huId -> InterfaceWrapperHelper.load(huId, I_M_HU.class))
+				.orElseGet(() -> InterfaceWrapperHelper.load(huIdentifier.getAsInt(), I_M_HU.class));
 		assertThat(huRecord).isNotNull();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -225,17 +221,16 @@ public class M_HU_Attribute_StepDef
 		final IAttributeStorage attributesStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 		attributesStorage.setSaveOnChange(true);
 
-		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+		final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
 		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
 
 		final I_M_Attribute attributeRecord = attributesStorage.getAttributeByValueKeyOrNull(attributeCode);
 		assertThat(attributeRecord).isNotNull();
 
-		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		if (valueNumber != null)
-		{
-			attributesStorage.setValue(attributeRecord, valueNumber);
-		}
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
+				.ifPresent(value -> attributesStorage.setValue(attributeRecord, value));
 	}
 }

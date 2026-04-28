@@ -216,6 +216,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<ProductId> getStoredProducts(final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		return getStorageFactory().streamHUProductStorages(hus)
+				.map(IHUProductStorage::getProductId)
+				.collect(Collectors.toSet());
+	}
+
+	@Override
 	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
 
 	@Override
@@ -1371,6 +1380,58 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
 				.forEach(includedHU -> setClearanceStatusRecursively(HuId.ofRepoId(includedHU.getM_HU_ID()), clearanceStatusInfo));
 	}
+
+	@Override
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
+		if (reserved)
+		{
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
+		}
+
+		// If validation passes (or unreserving), proceed with reservation
+		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
+	}
+
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
+	{
+		if (hu.isReserved())
+		{
+			return false;
+		}
+
+		// Recursively validate all children
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
+	}
+
+	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursivelyWithoutValidation(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
 
 	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)

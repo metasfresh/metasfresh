@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5020
 @topic:stock
 @ghActions:run_on_executor7
 Feature: stock changes accordingly
+## F5020: Stock
   As a user
   I want stock to be updated properly if inventory is changed
   So that the QTY is always correct

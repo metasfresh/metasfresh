@@ -83,10 +83,9 @@ public class M_InOut_Selection_Export_JSON extends JavaProcess implements IProce
 				return ProcessPreconditionsResolution.rejectWithInternalReason("No invoice selected");
 			}
 			final I_M_InOut inOutRecord = inOutDAO.getById(inoutId, I_M_InOut.class);
-			final boolean singleInvoiceCanBeEdiSent = DocStatus.ofCode(inOutRecord.getDocStatus()).isCompleted()
-					&& inOutRecord.isEdiEnabled()
+			final boolean singleShipmentCanBeEdiSent = DocStatus.ofCode(inOutRecord.getDocStatus()).isCompleted()
 					&& EDIExportStatus.ofCode(inOutRecord.getEDI_ExportStatus()).isPending();
-			if (!singleInvoiceCanBeEdiSent)
+			if (!singleShipmentCanBeEdiSent)
 			{
 				return ProcessPreconditionsResolution.reject(notReadyInfo);
 			}
@@ -161,8 +160,7 @@ public class M_InOut_Selection_Export_JSON extends JavaProcess implements IProce
 		return createSelectedInvoicesQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
-				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus, I_M_InOut.DOCSTATUS_Completed)
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
+				.addInArrayFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus, I_M_InOut.DOCSTATUS_Completed, I_M_InOut.DOCSTATUS_Closed)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, I_EDI_Document.EDI_EXPORTSTATUS_Pending)
 				.create()
 				.iterateAndStreamIds(InOutId::ofRepoId);

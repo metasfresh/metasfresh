@@ -62,6 +62,7 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String VISITORS_ADDRESS_DEFAULT  = "visitorsAddressDefault";
 
 	public static final String SETUP_PLACE_NO = "setupPlaceNo";
 	public static final String HANDOVER_LOCATION = "handoverLocation";
@@ -144,6 +145,9 @@ public class JsonResponseLocation
 	boolean visitorsAddress;
 
 	@ApiModelProperty
+	boolean visitorsAddressDefault;
+
+	@ApiModelProperty
 	boolean handoverLocation;
 
 	@ApiModelProperty
@@ -182,6 +186,7 @@ public class JsonResponseLocation
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
 			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
 			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
+			@JsonProperty(VISITORS_ADDRESS_DEFAULT) final boolean visitorsAddressDefault,
 
 			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
 			@JsonProperty(HANDOVER_LOCATION)  final boolean handoverLocation,
@@ -220,6 +225,7 @@ public class JsonResponseLocation
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
 		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressDefault = visitorsAddressDefault;
 
 		this.setupPlaceNo = setupPlaceNo;
 		this.remitTo = remitTo;

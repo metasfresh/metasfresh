@@ -6,8 +6,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 /**
- * @implNote This is a copy-past of de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode,
- * because we don't have access to that class from here.
+ * @implNote This is a copy-paste of de.metas.global_qrcodes.JsonDisplayableQRCode, because we don't have access to that class from here.
  */
 @Value
 @Builder

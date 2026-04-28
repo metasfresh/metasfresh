@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
@@ -40,6 +41,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -57,10 +59,14 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -94,6 +100,9 @@ public class AllocatePayments_StepDef
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_AllocationHdr_StepDefData allocationHdrTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("^apply (.*) to invoices$")
 	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
@@ -152,6 +161,55 @@ public class AllocatePayments_StepDef
 		final PaymentAllocationResult result = paymentAllocationBuilder.build();
 
 		DataTableRows.of(table).forEach(row -> updateServiceInvoiceIdentifier(row, result));
+	}
+
+	/**
+	 * Registers the {@link I_C_AllocationHdr} generated for a completed {@link I_C_Payment}
+	 * into {@link C_AllocationHdr_StepDefData} so later steps can reference it by identifier.
+	 * Intended for scenarios where the allocation is built indirectly via
+	 * {@link PaymentAllocationBuilder} (path P) and no allocation identifier is otherwise
+	 * known. Looks up the C_AllocationHdr via the C_AllocationLine that carries this payment.
+	 *
+	 * <p><b>Required columns</b>:
+	 * <ul>
+	 *     <li>{@code C_Payment_ID} — identifier of a previously registered payment</li>
+	 *     <li>{@code C_AllocationHdr_ID} — identifier under which the looked-up allocation hdr is registered</li>
+	 * </ul>
+	 *
+	 * <p><b>Gherkin usage example</b>:
+	 * <pre>{@code
+	 * And register C_AllocationHdr from C_Payment:
+	 *   | C_Payment_ID | C_AllocationHdr_ID |
+	 *   | payment      | alloc              |
+	 * }</pre>
+	 */
+	@And("register C_AllocationHdr from C_Payment:")
+	public void registerAllocationHdrFromPayment(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final StepDefDataIdentifier allocIdentifier = row.getAsIdentifier("C_AllocationHdr_ID");
+			final I_C_Payment payment = paymentTable.get(row.getAsIdentifier(COLUMNNAME_C_Payment_ID));
+
+			final List<I_C_AllocationLine> allocLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
+					.addOnlyActiveRecordsFilter()
+					.orderBy(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID)
+					.create()
+					.list();
+
+			final ImmutableSet<Integer> distinctHdrIds = allocLines.stream()
+					.map(I_C_AllocationLine::getC_AllocationHdr_ID)
+					.collect(ImmutableSet.toImmutableSet());
+
+			assertThat(distinctHdrIds)
+					.as("Expected exactly one C_AllocationHdr linked to payment C_Payment_ID=%s via its C_AllocationLine(s). "
+							+ "Found %s distinct hdr id(s) across %s allocation line(s): %s",
+							payment.getC_Payment_ID(), distinctHdrIds.size(), allocLines.size(), distinctHdrIds)
+					.hasSize(1);
+
+			final I_C_AllocationHdr hdr = InterfaceWrapperHelper.load(distinctHdrIds.iterator().next(), I_C_AllocationHdr.class);
+			allocationHdrTable.putOrReplace(allocIdentifier, hdr);
+		});
 	}
 
 	private void updateServiceInvoiceIdentifier(final DataTableRow row, final PaymentAllocationResult result)
@@ -282,6 +340,7 @@ public class AllocatePayments_StepDef
 				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
 				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
 				.date(invoiceToAllocate.getDateInvoiced())
+				.dateAcct(invoiceToAllocate.getDateAcct())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
@@ -328,6 +387,7 @@ public class AllocatePayments_StepDef
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(paymentToAllocate.getDateTrx())
+				.dateAcct(paymentToAllocate.getDateAcct())
 				.clientAndOrgId(paymentToAllocate.getClientAndOrgId())
 				.paymentCurrencyContext(paymentToAllocate.getPaymentCurrencyContext())
 				.build();

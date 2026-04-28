@@ -84,6 +84,11 @@ public final class ExplainedOptional<T>
 		return explanation != null ? explanation : TranslatableStrings.empty();
 	}
 
+	public String getExplanationAsString()
+	{
+		return explanation != null ? explanation.getDefaultValue() : null;
+	}
+
 	@Nullable
 	public T orElse(@Nullable final T other)
 	{

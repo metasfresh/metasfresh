@@ -64,6 +64,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
 };
 
 const BarcodeScannerComponent = ({
+  testId,
   isShowInputText: isShowInputTextParam,
   isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
@@ -120,9 +121,7 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (!isInputTextReadonly) {
-        inputTextRef?.current?.focus();
-      }
+      inputTextRef?.current?.focus();
     } /* no deps, call it on each render */
   );
 
@@ -179,7 +178,7 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -221,8 +220,6 @@ const BarcodeScannerComponent = ({
   );
 
   const handleInputTextChanged = (e) => {
-    if (isInputTextReadonly) return;
-
     const scannedBarcode = e.target.value;
 
     if (
@@ -239,8 +236,6 @@ const BarcodeScannerComponent = ({
   }, [textChangedDebounceMillis]);
 
   const handleInputTextKeyPress = (e) => {
-    if (isInputTextReadonly) return;
-
     if (e.key === 'Enter') {
       const scannedBarcode = e.target.value;
 
@@ -261,28 +256,37 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      {/* IMPORTANT: Always use type="text" — never type="hidden".
+          When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
+          instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
+          type="hidden" inputs cannot receive focus, so Android InputConnection is never established
+          and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
+          IME-compatible while remaining invisible to the user. (me03#28834) */}
+      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
+          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
       {!isProcessing && (
         <input
           id="input-text"
           key="input-text"
           ref={inputTextRef}
-          className="input-text"
-          type={isShowInputText ? 'text' : 'hidden'}
+          className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
+          type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          readOnly={isInputTextReadonly}
+          inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
-          data-testid="qrCode-input"
+          data-testid={testId ?? 'qrCode-input'}
         />
       )}
+      <video key="video" ref={videoRef} width="100%" height="100%" />
     </div>
   );
 };
 
 BarcodeScannerComponent.propTypes = {
+  testId: PropTypes.string,
   isShowInputText: PropTypes.bool,
   isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,

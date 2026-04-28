@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
 @ghActions:run_on_executor6
 Feature: Production dispo scenarios with BOMs whose components have their own BOMs in turn.
+## F8033: Production
 
   Background:
     Given infrastructure and metasfresh are running
@@ -20,6 +24,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
   @Id:S0460_10
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario:  There is a BOM with two components. One of those components' product is the main-product of its own BOM.
   We expect manufacturing candidates to be created for all involed BOMs' main-products,
   then the sales order is re-opened and the ordered quantity is increased,
@@ -103,6 +110,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
   @Id:S0460_20
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Like S0460_20, but now PP_Product_Planning.IsCreatePlan=true and we expect PP_Orders to be created and completed right away. Void PP_Order for parent product.
 
     Given metasfresh contains M_Products:
@@ -188,6 +198,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     And the PP_Order ppo_1_S0460_20 is voided
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, PP_Orders are found
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
       | ppo_1_S0460_20 | product_1_1_S0460_20 | bom_1_S0460_20    | ppln_1_1_S0460_20      | resource_S0460 | 0 PCE      | 0          | customer_S0460_20 | 2024-09-22T21:00:00Z | VO        |
@@ -211,6 +223,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 ############################################################
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Auto-create PP_Order from candidate. Void PP_Order for parent product. Re-open sales order and increase qty. PP_Order is created for entire parent qty. PP_order is created for the sub-product, but only for the difference.
 
     Given metasfresh contains M_Products:
@@ -351,6 +366,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 ############################################################
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Auto-create PP_Order from candidate. Void PP_Order for parent product. Re-open sales order and decrease qty. PP_Order_Candidate is updated for parent qty. No change to child PP_Order_Candidate/PP_Order
 
     Given metasfresh contains M_Products:
@@ -488,6 +506,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 ##################################################
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: There is a BOM with two components. One of those components' product is the main-product of its own BOM. We expect manufacturing candidates to be created for all involved BOMs' main-products, then the sales order is re-opened and the ordered quantity is decreased, resulting in an update of the manufacturing candidates to reflect the decreased demand.
 
     Given metasfresh contains M_Products:

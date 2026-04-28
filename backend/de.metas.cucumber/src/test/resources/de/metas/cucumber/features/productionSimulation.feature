@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
 @ghActions:run_on_executor7
 Feature: create production simulation
+## F8034: Production Simulation
   As a user
   I want to simulate the production of a Sales Order's line
 
@@ -21,6 +25,9 @@ Feature: create production simulation
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario:  The simulation for qty 100 is created, with duration to produce 1 qty set to 1 day, having a stock of 99 after demand date and before 'finished production' date
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
@@ -121,8 +128,8 @@ Feature: create production simulation
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | Qty_AvailableToPromise | M_AttributeSetInstance_ID | simulated |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-14T00:00:00Z | -100 | -100                   | olASI                     | true      |
-      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-15T08:00:00Z | 1    | -99                    | productPlanningASI        | true      |
-      | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1   | -1                     | bomLineASI                | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-15T00:00:00Z | 1    | -99                    | productPlanningASI        | true      |
+      | c_l_1      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T00:00:00Z | -1   | -1                     | bomLineASI                | true      |
       | c_3        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                     | false     |
       | c_4        | INVENTORY_UP      |                           | p_1          | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                     | false     |
 
@@ -133,6 +140,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   @Id:S0171.100
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
@@ -239,8 +249,8 @@ Feature: create production simulation
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-15T00:00:00Z | -14 | -9                     | olASI                     | true      |
       | c_6        | INVENTORY_UP      |                           | p_1          | 2021-04-16T00:00:00Z | 5   | 10                     | olASI                     | false     |
       | c_3        | INVENTORY_DOWN    |                           | p_1          | 2021-04-16T00:00:00Z | -8  | 2                      | olASI                     | false     |
-      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI        | true      |
-      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                | true      |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-23T00:00:00Z | 9   | 11                     | productPlanningASI        | true      |
+      | c_l_3      | DEMAND            | PRODUCTION                | p_2          | 2021-04-14T00:00:00Z | -1  | -1                     | bomLineASI                | true      |
 
     And after not more than 60s, PP_Order_Candidate found for orderLine ol_2
       | Identifier |
@@ -250,6 +260,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario:  The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having some stock before demand date, but not enough
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID.Identifier |
@@ -355,6 +368,9 @@ Feature: create production simulation
 
 
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8034_Manufacturing_Workflow_Activity_Material_Receipt
+@F8034
   Scenario: The simulation for qty 5 is created with duration to produce 1 qty set to 1 day, having enough stock before 'production finished' date
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID.Identifier |

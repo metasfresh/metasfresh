@@ -19,6 +19,7 @@ public class JsonCreateHURequest
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
+	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;
 	@Nullable String lotNo;
 	@Nullable String bestBeforeDate;
@@ -26,4 +27,7 @@ public class JsonCreateHURequest
 
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
+
+	@JsonIgnore
+	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
 }

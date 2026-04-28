@@ -60,6 +60,7 @@ public class InOutPackageRepository
 		mPackage.setShipDate(null);
 		mPackage.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		mPackage.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
+		mPackage.setAD_User_ID(inOut.getAD_User_ID());
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mPackage.setPOReference(inOut.getPOReference());
 		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());

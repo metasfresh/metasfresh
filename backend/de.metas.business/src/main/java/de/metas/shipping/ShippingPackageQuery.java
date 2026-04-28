@@ -35,13 +35,6 @@ import java.util.Collection;
 @Builder
 public class ShippingPackageQuery
 {
-	private static final ShippingPackageQuery ANY = builder().build();
-
 	@NonNull @Singular Collection<OrderId> orderIds;
 	@NonNull @Singular Collection<OrderLineId> orderLineIds;
-
-	public boolean isAny()
-	{
-		return this.equals(ANY);
-	}
 }

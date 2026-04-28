@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
 Feature: import bank statement in camt53 import format
+## F01100: Bank Statement
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,6 +39,9 @@ Feature: import bank statement in camt53 import format
       | l_1        | 0203111111111 | bpartner_1               | true                | true         |
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0203_100
   Scenario: Import bank statement, identify org-account by IBAN and link one statement-line to a payment for a sales invoice that is matched via documentNo
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
@@ -208,6 +215,9 @@ Feature: import bank statement in camt53 import format
 
 
   @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   @Id:S0203_200
   Scenario: Import one statement, identify org-account by IBAN and link two invoices one of which is matched via ESR-Reference
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
@@ -388,6 +398,9 @@ Feature: import bank statement in camt53 import format
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
    @from:cucumber
+@allure.label.epic:E0220_Financial
+@allure.label.feature:F01100_Statistik_nach_Mengen_Gesamt
+@F01100
   Scenario: Import one statement, identify org-account by IBAN and link two invoices, but in 2 different bank statements; so the expectation is to have created 2 bank statements
     Given set sys config boolean value true for sys config de.metas.payment.esr.Enabled
     And load C_DataImport:

@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.externalservice;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +44,8 @@ import de.metas.externalsystem.externalservice.status.ExternalSystemStatusReposi
 import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -66,6 +69,18 @@ public class ExternalServices
 		this.serviceInstanceRepo = serviceInstanceRepo;
 		this.statusRepo = statusRepo;
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
+	}
+
+	@VisibleForTesting
+	public static ExternalServices newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalServices.class, () -> new ExternalServices(
+				ExternalSystemServiceRepository.newInstanceForUnitTesting(),
+				ExternalSystemServiceInstanceRepository.newInstanceForUnitTesting(),
+				new ExternalSystemStatusRepository(),
+				ExternalSystemConfigRepo.newInstanceForUnitTesting()));
 	}
 
 	public void handleStatusUpdateIfRequired(@NonNull final ExternalSystemParentConfigId configId, @NonNull final String command)

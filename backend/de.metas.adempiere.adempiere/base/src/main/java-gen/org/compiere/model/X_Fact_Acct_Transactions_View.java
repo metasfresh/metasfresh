@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Transactions_View, I_Persistent
 {
 
-	private static final long serialVersionUID = 1697106602L;
+	private static final long serialVersionUID = 1098006545L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Transactions_View(final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
@@ -1155,5 +1155,59 @@ public class X_Fact_Acct_Transactions_View extends PO implements I_Fact_Acct_Tra
 	public String getVATCode()
 	{
 		return get_ValueAsString(COLUMNNAME_VATCode);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class);
+	}
+
+	@Override
+	public void setC_CostClassification_Category(final org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_Category_ID, org.compiere.model.I_C_CostClassification_Category.class, C_CostClassification_Category);
+	}
+
+	@Override
+	public void setC_CostClassification_Category_ID (final int C_CostClassification_Category_ID)
+	{
+		if (C_CostClassification_Category_ID < 1)
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, null);
+		else
+			set_Value (COLUMNNAME_C_CostClassification_Category_ID, C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_Category_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_Category_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_CostClassification getC_CostClassification()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class);
+	}
+
+	@Override
+	public void setC_CostClassification(final org.compiere.model.I_C_CostClassification C_CostClassification)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CostClassification_ID, org.compiere.model.I_C_CostClassification.class, C_CostClassification);
+	}
+
+	@Override
+	public void setC_CostClassification_ID (final int C_CostClassification_ID)
+	{
+		if (C_CostClassification_ID < 1)
+			set_Value (COLUMNNAME_C_CostClassification_ID, null);
+		else
+			set_Value (COLUMNNAME_C_CostClassification_ID, C_CostClassification_ID);
+	}
+
+	@Override
+	public int getC_CostClassification_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CostClassification_ID);
 	}
 }

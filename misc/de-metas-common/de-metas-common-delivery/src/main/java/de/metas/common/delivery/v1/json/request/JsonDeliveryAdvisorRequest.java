@@ -42,6 +42,7 @@ public class JsonDeliveryAdvisorRequest
 	@Builder.Default
 	@NonNull String id = UUID.randomUUID().toString();
 	@NonNull JsonAddress pickupAddress;
+	@Nullable JsonContact pickupContact;
 	@NonNull String pickupDate;
 	@NonNull String pickupTimeFrom;
 	@Nullable String pickupTimeTo;
@@ -51,6 +52,8 @@ public class JsonDeliveryAdvisorRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
+	@Nullable String incotermsValue;
+	@Nullable String externalSystemValue;
 	@NonNull JsonDeliveryAdvisorRequestItem item;
 	@NonNull JsonShipperConfig shipperConfig;
 }

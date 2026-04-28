@@ -41,6 +41,11 @@ public class PickingFiltersList
 {
 	public static final PickingFiltersList EMPTY = new PickingFiltersList(ImmutableList.of());
 
+	public static final PickingFiltersList DEFAULT = new PickingFiltersList(ImmutableList.of(
+			PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
+			PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)
+	));
+
 	@NonNull @Getter private final ImmutableList<PickingJobFacetGroup> groupsInOrder;
 	@NonNull private final ImmutableMap<PickingJobFacetGroup, PickingFilter> filtersByGroup;
 

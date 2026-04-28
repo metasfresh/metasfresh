@@ -1,7 +1,10 @@
 package de.metas.ui.web.pattribute;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.CCache;
+import de.metas.ui.web.pattribute.callout.sql.SQLBasedASICallout;
+import de.metas.ui.web.pattribute.callout.sql.SQLCalloutFunctionsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -19,14 +22,16 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
@@ -82,9 +87,15 @@ public class ASIDescriptorFactory
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
 
-	@VisibleForTesting
-	ASIDescriptorFactory()
+	private final SQLBasedASICallout sqlBasedCallout;
+
+	ASIDescriptorFactory(
+			@NonNull final SQLCalloutFunctionsRepository sqlCalloutFunctionsRepository)
 	{
+		this.sqlBasedCallout = SQLBasedASICallout.builder()
+				.jsonObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper())
+				.sqlCalloutFunctionsRepository(sqlCalloutFunctionsRepository)
+				.build();
 	}
 
 	private ASIDataBindingDescriptorBuilder getASIBindingsBuilder()
@@ -126,6 +137,8 @@ public class ASIDescriptorFactory
 				.entityDescriptor(entityDescriptor)
 				.layout(layout)
 				.contextDocumentPath(info.getContextDocumentPath())
+				.contextTableName(info.getCallerTableName())
+				.contextColumnName(info.getCallerColumnName())
 				.build();
 	}
 
@@ -146,7 +159,7 @@ public class ASIDescriptorFactory
 				.setCaption(name)
 				.setDescription(description)
 				.setDataBinding(getASIBindingsBuilder())
-				.disableCallouts()
+				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(null)
 				//
@@ -263,10 +276,18 @@ public class ASIDescriptorFactory
 				.setReadonlyLogic(readonlyLogic)
 				.setDisplayLogic(displayLogic)
 				.setMandatoryLogic(mandatoryLogic)
+				.addCallout(sqlBasedCallout)
 				//
 				.addCharacteristic(Characteristic.PublicField)
 				//
-				.setDataBinding(new ASIAttributeFieldBinding(attribute.getAttributeId(), fieldName, attribute.isMandatory(), readMethod, writeMethod))
+				.setDataBinding(ASIAttributeFieldBinding.builder()
+						.attributeId(attribute.getAttributeId())
+						.attributeCode(attribute.getAttributeCode())
+						.fieldName(fieldName)
+						.mandatory(attribute.isMandatory())
+						.readMethod(readMethod)
+						.writeMethod(writeMethod)
+						.build())
 				//
 				;
 	}
@@ -326,37 +347,34 @@ public class ASIDescriptorFactory
 
 	public static final class ASIAttributeFieldBinding implements DocumentFieldDataBindingDescriptor
 	{
-		private final AttributeId attributeId;
-		private final String attributeName;
+		@Getter private final AttributeId attributeId;
+		@Getter private final AttributeCode attributeCode;
+		private final String fieldName;
 		private final boolean mandatory;
 		private final Function<I_M_AttributeInstance, Object> readMethod;
 		private final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
 
+		@Builder
 		private ASIAttributeFieldBinding(
 				@NonNull final AttributeId attributeId,
-				final String attributeName,
+				@NonNull final AttributeCode attributeCode,
+				@NonNull final String fieldName,
 				final boolean mandatory,
-				final Function<I_M_AttributeInstance, Object> readMethod,
-				final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod)
+				@NonNull final Function<I_M_AttributeInstance, Object> readMethod,
+				@NonNull final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod)
 		{
 			this.attributeId = attributeId;
-
-			Check.assumeNotEmpty(attributeName, "attributeName is not empty");
-			this.attributeName = attributeName;
-
+			this.attributeCode = attributeCode;
+			this.fieldName = fieldName;
 			this.mandatory = mandatory;
-
-			Check.assumeNotNull(readMethod, "Parameter readMethod is not null");
 			this.readMethod = readMethod;
-
-			Check.assumeNotNull(writeMethod, "Parameter writeMethod is not null");
 			this.writeMethod = writeMethod;
 		}
 
 		@Override
 		public String getColumnName()
 		{
-			return attributeName;
+			return fieldName;
 		}
 
 		@Override

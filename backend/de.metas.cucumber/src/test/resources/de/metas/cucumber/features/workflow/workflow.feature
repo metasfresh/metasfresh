@@ -1,5 +1,8 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 Feature: workflow tests
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +12,8 @@ Feature: workflow tests
 
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0302_100
   Scenario: create and clone manufacturing workflow
     Given load AD_WF_Node:

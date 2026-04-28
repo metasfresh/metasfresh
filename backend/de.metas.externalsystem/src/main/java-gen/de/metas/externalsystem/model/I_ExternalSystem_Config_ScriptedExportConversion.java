@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_ScriptedExportConversion
  *  @author metasfresh (generated) 
@@ -128,7 +127,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -137,7 +136,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -150,7 +149,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType (@Nullable String DocBaseType);
+	void setDocBaseType (@Nullable java.lang.String DocBaseType);
 
 	/**
 	 * Get Document Base Type.
@@ -160,7 +159,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDocBaseType();
+	@Nullable java.lang.String getDocBaseType();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_DocBaseType = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "DocBaseType", null);
 	String COLUMNNAME_DocBaseType = "DocBaseType";
@@ -183,7 +182,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 */
 	int getExternalSystem_Config_ID();
 
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Config_ID", I_ExternalSystem_Config.class);
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
@@ -208,25 +207,25 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID = "ExternalSystem_Config_ScriptedExportConversion_ID";
 
 	/**
-	 * Set Externer System-Ausgangsendpunkt.
+	 * Set External System Endpoint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem_Outbound_Endpoint_ID (int ExternalSystem_Outbound_Endpoint_ID);
+	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
 
 	/**
-	 * Get Externer System-Ausgangsendpunkt.
+	 * Get External System Endpoint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getExternalSystem_Outbound_Endpoint_ID();
+	int getExternalSystem_Endpoint_ID();
 
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, I_ExternalSystem_Outbound_Endpoint> COLUMN_ExternalSystem_Outbound_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Outbound_Endpoint_ID", I_ExternalSystem_Outbound_Endpoint.class);
-	String COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID = "ExternalSystem_Outbound_Endpoint_ID";
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, de.metas.externalsystem.model.I_ExternalSystem_Endpoint> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Endpoint_ID", de.metas.externalsystem.model.I_ExternalSystem_Endpoint.class);
+	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
 
 	/**
 	 * Set Value.
@@ -235,7 +234,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (String ExternalSystemValue);
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
 
 	/**
 	 * Get Value.
@@ -244,7 +243,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getExternalSystemValue();
+	java.lang.String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
@@ -273,6 +272,29 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Auto on Doc Complete.
+	 * Runs the process after the document is completed, if conditions are met.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTriggerOnComplete (boolean IsTriggerOnComplete);
+
+	/**
+	 * Get Auto on Doc Complete.
+	 * Runs the process after the document is completed, if conditions are met.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTriggerOnComplete();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_IsTriggerOnComplete = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "IsTriggerOnComplete", null);
+	String COLUMNNAME_IsTriggerOnComplete = "IsTriggerOnComplete";
+
+	/**
 	 * Set Script Identifier.
 	 * Name of the JavaScript-file that shall be executed by External Systems
 	 *
@@ -280,7 +302,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setScriptIdentifier (String ScriptIdentifier);
+	void setScriptIdentifier (java.lang.String ScriptIdentifier);
 
 	/**
 	 * Get Script Identifier.
@@ -290,35 +312,10 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getScriptIdentifier();
+	java.lang.String getScriptIdentifier();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_ScriptIdentifier = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ScriptIdentifier", null);
 	String COLUMNNAME_ScriptIdentifier = "ScriptIdentifier";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_SeqNo = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.
@@ -353,7 +350,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setWhereClause (String WhereClause);
+	void setWhereClause (java.lang.String WhereClause);
 
 	/**
 	 * Get SQL WHERE.
@@ -363,7 +360,7 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getWhereClause();
+	java.lang.String getWhereClause();
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_WhereClause = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "WhereClause", null);
 	String COLUMNNAME_WhereClause = "WhereClause";

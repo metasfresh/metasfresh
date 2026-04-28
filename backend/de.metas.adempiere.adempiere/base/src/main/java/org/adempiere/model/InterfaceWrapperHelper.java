@@ -1040,6 +1040,14 @@ public class InterfaceWrapperHelper
 				.orElse(-1);
 	}
 
+	@NonNull
+	public static AdTableId getTableIdOfModel(@Nullable final Object model)
+	{
+		final String modelTableName = getModelTableName(model);
+		return TableIdsCache.instance.getTableId(modelTableName)
+				.orElseThrow(() -> new AdempiereException("Cannot get TableId from TableNa,e: " + modelTableName));
+	}
+
 	/**
 	 * Get TableName of wrapped model. If model is null or is not supported, an exception will be thrown.
 	 *

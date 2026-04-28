@@ -9,7 +9,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetDescriptor;
@@ -63,13 +65,15 @@ public final class ASIEditingInfo
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId,
 			final String callerTableName,
-			final int callerColumnId,
+			final String callerColumnName,
+			final AdColumnId callerColumnId,
 			final SOTrx soTrx)
 	{
 		return builder()
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.callerTableName(callerTableName)
+				.callerColumnName(callerColumnName)
 				.callerColumnId(callerColumnId)
 				.soTrx(soTrx)
 				.build();
@@ -87,12 +91,13 @@ public final class ASIEditingInfo
 		Regular, ProductWindow, ProcessParameter, Pricing, StrictASIAttributes
 	}
 
-	private final WindowType _type;
-	private final ProductId _productId;
-	private final AttributeSetInstanceId _attributeSetInstanceId;
-	private final String _callerTableName;
-	private final int _calledColumnId;
-	private final SOTrx _soTrx;
+	@NonNull @Getter private final WindowType windowType;
+	@Nullable @Getter private final ProductId productId;
+	@Nullable @Getter private final AttributeSetInstanceId attributeSetInstanceId;
+	@Nullable @Getter private final String callerTableName;
+	@Nullable @Getter private final String callerColumnName;
+	@Nullable @Getter private final AdColumnId callerColumnId;
+	@NonNull @Getter private final SOTrx soTrx;
 
 	// Deducted values
 	private final AttributeSetDescriptor _attributeSet;
@@ -105,20 +110,22 @@ public final class ASIEditingInfo
 
 	@Builder
 	private ASIEditingInfo(
-			final WindowType type,
-			final ProductId productId,
-			final AttributeSetInstanceId attributeSetInstanceId,
-			final String callerTableName,
-			final int callerColumnId,
+			@Nullable final WindowType type,
+			@Nullable final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@Nullable final String callerTableName,
+			@Nullable final String callerColumnName,
+			@Nullable final AdColumnId callerColumnId,
 			@NonNull final SOTrx soTrx)
 	{
 		// Parameters, must be set first
-		_type = type != null ? type : extractType(callerTableName, callerColumnId);
-		_productId = productId;
-		_attributeSetInstanceId = attributeSetInstanceId;
-		_callerTableName = callerTableName;
-		_calledColumnId = callerColumnId;
-		_soTrx = soTrx;
+		this.windowType = type != null ? type : extractType(callerTableName, callerColumnId);
+		this.productId = productId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.callerTableName = callerTableName;
+		this.callerColumnName = callerColumnName;
+		this.callerColumnId = callerColumnId;
+		this.soTrx = soTrx;
 
 		// Deducted values, we assume params are set
 		_attributeSet = retrieveAttributeSetOrNull();
@@ -133,11 +140,12 @@ public final class ASIEditingInfo
 
 		//
 		// Flags
-		_allowSelectExistingASI = _type == WindowType.Regular;
+		_allowSelectExistingASI = windowType == WindowType.Regular;
 
 	}
 
-	private static WindowType extractType(final String callerTableName, final int callerColumnId)
+	@NonNull
+	private static WindowType extractType(final String callerTableName, final AdColumnId callerColumnId)
 	{
 		if (I_M_Product.Table_Name.equals(callerTableName)) // FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID's AD_Column_ID = 8418
 		{
@@ -162,45 +170,15 @@ public final class ASIEditingInfo
 		return _allowSelectExistingASI;
 	}
 
-	public WindowType getWindowType()
-	{
-		return _type;
-	}
-
-	public ProductId getProductId()
-	{
-		return _productId;
-	}
-
-	public AttributeSetInstanceId getAttributeSetInstanceId()
-	{
-		return _attributeSetInstanceId;
-	}
-
 	@Nullable
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return _attributeSetInstance;
 	}
 
-	public String getCallerTableName()
-	{
-		return _callerTableName;
-	}
-
-	public int getCallerColumnId()
-	{
-		return _calledColumnId;
-	}
-
-	public SOTrx getSOTrx()
-	{
-		return _soTrx;
-	}
-
 	public boolean isSOTrx()
 	{
-		return getSOTrx().toBoolean();
+		return getSoTrx().toBoolean();
 	}
 
 	@Nullable
@@ -330,7 +308,7 @@ public final class ASIEditingInfo
 		// Exclude if it was configured to be excluded
 		if (!attributeSetId.isNone())
 		{
-			final I_M_AttributeSetExclude asExclude = attributeExcludeBL.getAttributeSetExclude(attributeSetId, getCallerColumnId(), getSOTrx());
+			final I_M_AttributeSetExclude asExclude = attributeExcludeBL.getAttributeSetExclude(attributeSetId, AdColumnId.toRepoId(getCallerColumnId()), getSoTrx());
 			final boolean exclude = asExclude != null && attributeExcludeBL.isFullExclude(asExclude);
 			if (exclude)
 			{
@@ -385,8 +363,8 @@ public final class ASIEditingInfo
 		final WindowType type = getWindowType();
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId();
 		final AttributeSetId attributeSetId = getAttributeSetId();
-		final SOTrx soTrx = getSOTrx();
-		final int callerColumnId = getCallerColumnId();
+		final SOTrx soTrx = getSoTrx();
+		final AdColumnId callerColumnId = getCallerColumnId();
 
 		final Stream<Attribute> attributes;
 		switch (type)
@@ -433,7 +411,7 @@ public final class ASIEditingInfo
 		}
 
 		return attributes
-				.filter(attribute -> attributeSetId.isNone() || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSetId, callerColumnId, soTrx))
+				.filter(attribute -> attributeSetId.isNone() || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSetId, AdColumnId.toRepoId(callerColumnId), soTrx))
 				.collect(ImmutableList.toImmutableList());
 	}
 

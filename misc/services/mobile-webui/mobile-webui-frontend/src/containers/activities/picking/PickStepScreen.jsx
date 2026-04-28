@@ -4,7 +4,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-import { postStepPicked, postStepUnPicked } from '../../../api/picking';
+import { postStepUnPicked } from '../../../api/picking';
 import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
@@ -16,6 +16,7 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
+import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 const PickStepScreen = () => {
   const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileLocation();
@@ -65,18 +66,18 @@ const PickStepScreen = () => {
   };
 
   const handleNotFound = () => {
-    const qtyRejected = qtyToPick;
-
-    postStepPicked({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      qtyPicked: 0,
-      qtyRejected,
-      qtyRejectedReasonCode: 'N',
-      huQRCode: toQRCodeString(pickFrom.huQRCode),
-    }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
+    return dispatch(
+      postStepPickedThunk({
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        qtyPicked: 0,
+        qtyRejected: qtyToPick,
+        qtyRejectedReasonCode: 'N',
+        huQRCode: toQRCodeString(pickFrom.huQRCode),
+      })
+    );
   };
 
   const onScanButtonClick = () =>

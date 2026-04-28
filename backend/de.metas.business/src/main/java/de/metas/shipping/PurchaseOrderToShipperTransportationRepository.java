@@ -1,6 +1,7 @@
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderAndLineId;
@@ -18,6 +19,7 @@ import de.metas.sscc18.SSCC18;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -76,6 +78,10 @@ public class PurchaseOrderToShipperTransportationRepository
 		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		mpackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		mpackage.setIPA_SSCC18(SSCC18.toString(request.getSscc()));
+		if (request.getGrossWeightInKg() != null)
+		{
+			mpackage.setPackageWeight(request.getGrossWeightInKg());
+		}
 		save(mpackage);
 
 		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, mpackage);
@@ -87,7 +93,33 @@ public class PurchaseOrderToShipperTransportationRepository
 		shippingPackage.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		shippingPackage.setIsToBeFetched(true);
 		shippingPackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
+		shippingPackage.setQtyLU(request.getLuQty());
+		if (request.getTuQty() != null)
+		{
+			shippingPackage.setQtyTU(request.getTuQty());
+		}
+		if (request.getGrossWeightInKg() != null)
+		{
+			shippingPackage.setPackageWeight(request.getGrossWeightInKg());
+		}
 		save(shippingPackage);
+	}
+
+	public void updateShippingPackageAndPackage(
+			@NonNull final I_M_ShippingPackage shippingPackage,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
+			@NonNull final java.sql.Timestamp datePromised)
+	{
+		shippingPackage.setC_BPartner_ID(bPartnerId.getRepoId());
+		shippingPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+		save(shippingPackage);
+
+		final I_M_Package mPackage = load(shippingPackage.getM_Package_ID(), I_M_Package.class);
+		mPackage.setShipDate(datePromised);
+		mPackage.setC_BPartner_ID(bPartnerId.getRepoId());
+		mPackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bPartnerLocationId));
+		save(mPackage);
 	}
 
 	public void deleteFromShipperTransportation(@NonNull final Collection<PackageId> packageIdsToDelete)
@@ -186,6 +218,12 @@ public class PurchaseOrderToShipperTransportationRepository
 
 	private IQueryBuilder<I_M_ShippingPackage> toShippingPackageQueryBuilder(final @NonNull ShippingPackageQuery query)
 	{
+		if (query.getOrderIds().isEmpty() && query.getOrderLineIds().isEmpty())
+		{
+			return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.filter(ConstantQueryFilter.of(false));
+		}
+
 		final IQueryBuilder<I_M_ShippingPackage> builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter();
 

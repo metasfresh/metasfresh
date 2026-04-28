@@ -2,9 +2,9 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,7 +20,7 @@ class AddQtyPickedRequest
 	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 	@Nullable I_M_ShipmentSchedule cachedShipmentSchedule;
 	@NonNull StockQtyAndUOMQty qtyPicked;
-	@NonNull I_M_HU tuOrVHU;
+	@NonNull I_M_HU hu;
 	@NonNull IHUContext huContext;
 	/**
 	 * true if the HU was picked on the fly for the shipment process

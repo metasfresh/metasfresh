@@ -292,6 +292,10 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		{
 			return false;
 		}
+		if (DataTableUtil.extractBooleanForColumnNameOr(row, "ConfigIDOnly", false))
+		{
+			return true;
+		}
 
 		final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (isMatchingESRequestBasedOnHU(huIdentifier, externalSystemRequest))

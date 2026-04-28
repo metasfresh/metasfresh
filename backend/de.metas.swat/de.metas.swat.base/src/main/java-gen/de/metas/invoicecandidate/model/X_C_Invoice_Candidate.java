@@ -488,9 +488,63 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public int getC_Incoterms_ID() 
+	public int getC_Incoterms_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
+	}
+
+	@Override
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
+	{
+		if (C_PromotionCode_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
 	}
 
 	@Override
@@ -1429,30 +1483,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isDeliveryClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
-	}
-
-	@Override
-	public void setIsEdiEnabled (final boolean IsEdiEnabled)
-	{
-		set_Value (COLUMNNAME_IsEdiEnabled, IsEdiEnabled);
-	}
-
-	@Override
-	public boolean isEdiEnabled() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
-	}
-
-	@Override
-	public void setIsEdiInvoicRecipient (final boolean IsEdiInvoicRecipient)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsEdiInvoicRecipient, IsEdiInvoicRecipient);
-	}
-
-	@Override
-	public boolean isEdiInvoicRecipient() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiInvoicRecipient);
 	}
 
 	@Override
@@ -2699,5 +2729,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
+	}
+
+	@Override
+	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
+	{
+		throw new IllegalArgumentException ("GrandTotal is virtual column");	}
+
+	@Override
+	public BigDecimal getGrandTotal()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

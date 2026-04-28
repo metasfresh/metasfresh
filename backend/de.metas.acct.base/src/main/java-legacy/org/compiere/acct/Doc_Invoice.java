@@ -30,7 +30,6 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -69,7 +68,7 @@ import java.util.Set;
  *
  * <pre>
  *  Table:              C_Invoice (318)
- *  Document Types:     ARI, ARC, ARF, API, APC
+ *  Document Types:     ARI, ARC, ARF, API, APC, APF
  * </pre>
  *
  * @author Jorg Janke
@@ -82,7 +81,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final MatchInvoiceService matchInvoiceService;
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
@@ -315,26 +313,29 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** ARI, ARF
 		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.SalesInvoice.equals(docBaseType)
-				|| DocBaseType.SalesProformaInvoice.equals(docBaseType))
+		if(!docBaseType.isFinancial())
+		{
+			return ImmutableList.of();
+		}
+		else if (docBaseType.isSalesInvoice())
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DocBaseType.SalesCreditMemo.equals(docBaseType))
+		else if (docBaseType.isSalesCreditMemo())
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DocBaseType.PurchaseInvoice.equals(docBaseType)
+		else if (docBaseType.isPurchaseInvoice()
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.PurchaseCreditMemo.equals(docBaseType))
+		else if (docBaseType.isPurchaseCreditMemo())
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}
@@ -386,21 +387,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-
 		//
 		// TaxDue CR
 		for (final DocTax docTax : getTaxes())
 		{
-			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null && taxAmt.signum() != 0)
-			{
-				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-						getCurrencyId(), null, taxAmt);
-				if (tl != null)
-				{
-					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
-				}
-			}
+			final FactLine tl = fact.createLine()
+					.setDocLine(null)
+					.setAccount(docTax.getTaxDueAcct(as))
+					.setAmtSource(getCurrencyId(), null, docTax.getTaxAmt())
+					.alsoAddZeroLine()
+					.buildAndAddNotNull();
+			tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 		}
 
 		// Revenue CR
@@ -510,22 +507,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-
 		//
 		// TaxDue DR
 		for (final DocTax docTax : getTaxes())
 		{
-			final BigDecimal taxAmt = docTax.getTaxAmt();
-			if (taxAmt != null)
-			{
-				fact.createLine()
-						.setDocLine(null)
-						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(getCurrencyId(), taxAmt, null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.alsoAddZeroLine()
-						.buildAndAdd();
-			}
+			fact.createLine()
+					.setDocLine(null)
+					.setAccount(docTax.getTaxDueAcct(as))
+					.setAmtSource(getCurrencyId(), docTax.getTaxAmt(), null)
+					.setC_Tax_ID(docTax.getTaxId())
+					.alsoAddZeroLine()
+					.buildAndAdd();
 		}
 		// Revenue CR
 		for (final DocLine_Invoice line : getDocLines())
@@ -705,22 +697,35 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//
 		// TaxCredit DR
+		final ImmutableList.Builder<Fact> rcFacts = ImmutableList.builder();
 		for (final DocTax docTax : taxes)
 		{
 			if (docTax.isReverseCharge())
 			{
-				fact.createLine()
+				// Reverse charge: VSt DR + USt CR in a SEPARATE Fact instance
+				// to avoid FactTrxStrategy pairing conflict (2 DR + 2 CR in same Fact).
+				// VATCode is resolved per-leg: T_Credit (input, KZ 67) uses IsSOTrx=N,
+				// T_Due (output §13b, KZ 84/85) uses IsSOTrx=Y — see §13b UStG + UStVA.
+				final Fact rcFact = newFact(as);
+				// VSt (Vorsteuer / input tax) — debit the tax receivable
+				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
-				fact.createLine()
+				// USt (Umsatzsteuer / output tax) — credit the tax payable
+				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
-						.setC_Tax_ID(docTax.getTaxId())
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				rcFact.forEach(fl -> {
+					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
+					fl.setLocationFromOrg(fl.getOrgId(), false);
+				});
+				rcFacts.add(rcFact);
 			}
 			else
 			{
@@ -772,7 +777,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return ImmutableList.of(fact);
+		return ImmutableList.<Fact>builder().add(fact).addAll(rcFacts.build()).build();
 	}
 
 	/**
@@ -875,22 +880,34 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//
 		// TaxCredit CR
+		final ImmutableList.Builder<Fact> rcFacts = ImmutableList.builder();
 		for (final DocTax docTax : taxes)
 		{
 			if (docTax.isReverseCharge())
 			{
-				fact.createLine()
+				// Reverse charge: VSt CR + USt DR in a SEPARATE Fact instance.
+				// Per-leg VATCode: T_Credit (§13b input, UStVA KZ 67)    → IsSOTrx=N.
+				// Per-leg VATCode: T_Due    (§13b output, UStVA KZ 84/85) → IsSOTrx=Y.
+				final Fact rcFact = newFact(as);
+				// VSt (Vorsteuer / input tax) — credit to reverse the original VSt debit
+				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
-				fact.createLine()
+				// USt (Umsatzsteuer / output tax) — debit to reverse the original USt credit
+				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
-						.setC_Tax_ID(docTax.getTaxId())
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				rcFact.forEach(fl -> {
+					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
+					fl.setLocationFromOrg(fl.getOrgId(), false);
+				});
+				rcFacts.add(rcFact);
 			}
 			else
 			{
@@ -941,7 +958,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return ImmutableList.of(fact);
+		return ImmutableList.<Fact>builder().add(fact).addAll(rcFacts.build()).build();
 	}
 
 	private DocTaxesList applyUserChangesAndRecomputeTaxes(@NonNull final Fact fact)

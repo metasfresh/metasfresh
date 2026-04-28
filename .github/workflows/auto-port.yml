@@ -1,0 +1,432 @@
+# ===========================================================================
+# Auto-port to new_dawn_uat chain
+# ===========================================================================
+# Automatically creates merge PRs to propagate changes through the branch
+# chain: *_hotfix → *_release → new_dawn_uat.
+#
+# Trigger: workflow_run (after cicd completes successfully on a _hotfix or
+# _release branch). This approach only requires the file on the DEFAULT
+# branch — no need to propagate auto-port.yml to every branch.
+#
+# Previous approach (pull_request: closed) failed because the workflow file
+# must exist on the PR's base branch, which it never did for non-default
+# branches.
+#
+# cicd trigger: GITHUB_TOKEN pushes are blocked by GitHub's anti-recursion
+# protection and will NOT trigger the cicd workflow on the merge branch.
+# Without cicd, the Merge Gate check never appears, and Mergify cannot
+# auto-merge the PR. To work around this, after pushing the merge branch
+# (with GITHUB_TOKEN, which has push access), we explicitly dispatch the
+# cicd workflow via `gh workflow run` using the CICD_TRIGGER_DISPATCH PAT.
+# The PAT cannot be used for the push itself — it belongs to a service
+# account without push access to this repo.
+# ===========================================================================
+
+name: Auto-port to new_dawn_uat chain
+
+on:
+  workflow_run:
+    workflows: ["cicd"]
+    types: [completed]
+
+permissions:
+  contents: write      # git push of merge branch
+  pull-requests: write # gh pr create + gh pr list
+
+env:
+  # Groups to ALWAYS exclude (independent branch lines, never port to new_dawn_uat)
+  FORCE_EXCLUDE: "inner_silence temporary_test202412"
+  # Groups to ALWAYS include (have _uat on remote but should still port to new_dawn_uat)
+  FORCE_INCLUDE: "science_vessel"
+
+  # NOTE: For auto-merge to work, the target branch must be listed in .mergify.yml
+  # under *ALL_BASE_BRANCHES (UAT, HOTFIX, or RELEASE lists). If you onboard a new
+  # group with a _release branch, add it to PROJECT_BRANCHES_RELEASE in .mergify.yml.
+
+jobs:
+  auto-port:
+    # Only run when cicd succeeded on a _hotfix or _release branch
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
+       endsWith(github.event.workflow_run.head_branch, '_release'))
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Use default GITHUB_TOKEN for checkout/push. It has push access
+          # to the repo but won't trigger downstream workflows (anti-recursion).
+          # The separate "Dispatch cicd" step handles triggering cicd via PAT.
+
+      - name: Determine target branch
+        id: target
+        env:
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          echo "Triggered by successful cicd on $BRANCH"
+
+          # Extract group name and suffix
+          if [[ "$BRANCH" =~ ^(.+)_(hotfix|release)$ ]]; then
+            GROUP="${BASH_REMATCH[1]}"
+            SUFFIX="${BASH_REMATCH[2]}"
+          else
+            echo "::notice::Branch $BRANCH doesn't match *_hotfix or *_release pattern, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "group=$GROUP" >> "$GITHUB_OUTPUT"
+          echo "suffix=$SUFFIX" >> "$GITHUB_OUTPUT"
+
+          # Check force-exclude
+          if echo " $FORCE_EXCLUDE " | grep -q " $GROUP "; then
+            echo "::notice::Group $GROUP is force-excluded, skipping auto-port"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "## Auto-port: Skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "Group \`$GROUP\` is in FORCE_EXCLUDE list." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Check force-include flag
+          FORCE_INCLUDED=false
+          if echo " $FORCE_INCLUDE " | grep -q " $GROUP "; then
+            FORCE_INCLUDED=true
+          fi
+
+          # Dynamic UAT detection (skip groups with their own _uat)
+          if [[ "$FORCE_INCLUDED" != "true" ]]; then
+            if git ls-remote --exit-code --heads origin "${GROUP}_uat" &>/dev/null; then
+              echo "::notice::Group $GROUP has its own _uat branch, skipping auto-port"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "## Auto-port: Skipped" >> "$GITHUB_STEP_SUMMARY"
+              echo "Group \`$GROUP\` has its own \`${GROUP}_uat\` branch." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          fi
+
+          # Determine target
+          if [[ "$SUFFIX" == "release" ]]; then
+            TARGET="new_dawn_uat"
+          elif [[ "$SUFFIX" == "hotfix" ]]; then
+            if git ls-remote --exit-code --heads origin "${GROUP}_release" &>/dev/null; then
+              TARGET="${GROUP}_release"
+            else
+              TARGET="new_dawn_uat"
+            fi
+          fi
+
+          echo "source=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Porting: $BRANCH → $TARGET"
+
+          # Step summary
+          {
+            echo "## Auto-port: Determine target"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Source branch | \`$BRANCH\` |"
+            echo "| Group | \`$GROUP\` |"
+            echo "| Suffix | \`$SUFFIX\` |"
+            echo "| Target | \`$TARGET\` |"
+            if [[ "$FORCE_INCLUDED" == "true" ]]; then
+              echo "| Force-included | yes |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check for existing merge PR
+        id: check
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+        run: |
+          MERGE_BRANCH="merge/${SOURCE}-to-${TARGET}"
+
+          EXISTING=$(gh pr list \
+            --base "$TARGET" \
+            --head "$MERGE_BRANCH" \
+            --state open \
+            --json number --jq '.[0].number // empty')
+
+          echo "merge_branch=$MERGE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "existing_pr=$EXISTING" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$EXISTING" ]]; then
+            echo "PR #$EXISTING already exists, will update merge branch"
+          fi
+
+      - name: Create or update merge branch and PR
+        id: merge
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          MERGE_BRANCH: ${{ steps.check.outputs.merge_branch }}
+          EXISTING_PR: ${{ steps.check.outputs.existing_pr }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # -----------------------------------------------------------
+          # Helper: detect DDL reference file changes in the merge diff.
+          # Sets HAS_DDL=true and DDL_FILES if files under */ddl/*
+          # (CREATE/ALTER TABLE/VIEW definitions) are part of the diff.
+          # When DDL changes are present, auto-merge labels are omitted
+          # because a human must verify schema changes are correct for
+          # the target branch. Regular migration scripts (under system/)
+          # are safe to auto-merge.
+          # -----------------------------------------------------------
+          detect_ddl_changes() {
+            DDL_FILES=$(git diff --name-only "origin/$TARGET"..HEAD -- \
+              ':(glob)**/sql/postgresql/ddl/**' \
+            | head -50)
+            if [[ -n "$DDL_FILES" ]]; then
+              HAS_DDL=true
+              DDL_COUNT=$(echo "$DDL_FILES" | wc -l)
+              echo "::warning::Found $DDL_COUNT DDL/migration file(s) — auto-merge disabled, human review required"
+            else
+              HAS_DDL=false
+            fi
+          }
+
+          if [[ -n "$EXISTING_PR" ]]; then
+            # Fetch current remote state of merge branch for force-with-lease protection
+            git fetch origin "$MERGE_BRANCH" || true
+
+            # Update existing merge branch: start from target, merge source
+            git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
+            if git merge "origin/$SOURCE" --no-edit; then
+              git push --force-with-lease origin "$MERGE_BRANCH"
+
+              detect_ddl_changes
+
+              gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
+
+              if [[ "$HAS_DDL" == "true" ]]; then
+                # DDL changes: remove auto-merge labels (may exist from previous non-DDL update)
+                gh pr edit "$EXISTING_PR" \
+                  --remove-label "ops:auto_merge_commit" \
+                  --remove-label "ops:without_review_approval" \
+                  --add-label "ops:auto_ported" 2>/dev/null || true
+
+                # Post/update review comment
+                DDL_COMMENT="## ⚠️ DDL/migration changes detected — manual review required"
+                DDL_COMMENT="${DDL_COMMENT}"$'\n\n'"This auto-port merge contains SQL migration scripts or DDL reference file changes."
+                DDL_COMMENT="${DDL_COMMENT}"$'\n'"Auto-merge has been **disabled**. A developer must verify that the migration scripts are correct for \`${TARGET}\`'s database schema before merging."
+                DDL_COMMENT="${DDL_COMMENT}"$'\n\n'"<details><summary>Changed DDL/migration files</summary>"$'\n\n'"\`\`\`"$'\n'"${DDL_FILES}"$'\n'"\`\`\`"$'\n'"</details>"
+                gh pr comment "$EXISTING_PR" --body "$DDL_COMMENT"
+
+                echo "Removed auto-merge labels and posted DDL review comment on PR #$EXISTING_PR"
+                LABEL_INFO="\`ops:auto_ported\` only (DDL review needed)"
+              else
+                gh pr edit "$EXISTING_PR" \
+                  --add-label "ops:auto_merge_commit" \
+                  --add-label "ops:without_review_approval" \
+                  --add-label "ops:auto_ported"
+                echo "Updated merge branch and labels for existing PR #$EXISTING_PR"
+                LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
+              fi
+
+              # Outputs for traceability step
+              {
+                echo "result=updated"
+                echo "merge_pr_url=https://github.com/${{ github.repository }}/pull/$EXISTING_PR"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
+              # Step summary
+              {
+                echo "## Auto-port: Updated existing PR"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| Existing PR | #$EXISTING_PR |"
+                echo "| Labels | $LABEL_INFO |"
+                if [[ "$HAS_DDL" == "true" ]]; then
+                  echo "| ⚠️ DDL changes | $DDL_COUNT file(s) — auto-merge disabled |"
+                fi
+              } >> "$GITHUB_STEP_SUMMARY"
+            else
+              git merge --abort
+              echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
+              {
+                echo "## Auto-port: Merge conflict"
+                echo ""
+                echo "**Manual resolution needed.**"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| Existing PR | #$EXISTING_PR |"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+          else
+            # Create new merge branch: start from target, merge source
+            git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
+            if git merge "origin/$SOURCE" --no-edit; then
+              # Use --force in case branch exists from a previous failed run
+              # (branch was pushed but PR creation failed)
+              git push --force origin "$MERGE_BRANCH"
+
+              detect_ddl_changes
+
+              gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
+
+              if [[ "$HAS_DDL" == "true" ]]; then
+                # DDL changes: create PR WITHOUT auto-merge labels
+                PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
+                PR_BODY="${PR_BODY}"$'\n\n'"⚠️ **DDL/migration changes detected** — auto-merge disabled."
+                PR_BODY="${PR_BODY}"$'\n'"A developer must verify that the migration scripts are correct for \`${TARGET}\`'s database schema before merging."
+                PR_BODY="${PR_BODY}"$'\n\n'"<details><summary>Changed DDL/migration files</summary>"$'\n\n'"\`\`\`"$'\n'"${DDL_FILES}"$'\n'"\`\`\`"$'\n'"</details>"
+                PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
+
+                PR_URL=$(gh pr create \
+                  --base "$TARGET" \
+                  --head "$MERGE_BRANCH" \
+                  --title "merge/${SOURCE}-to-${TARGET}" \
+                  --label "ops:auto_ported" \
+                  --body "$PR_BODY")
+
+                LABEL_INFO="\`ops:auto_ported\` only (DDL review needed)"
+              else
+                # No DDL changes: create PR with auto-merge labels
+                PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
+                PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
+
+                PR_URL=$(gh pr create \
+                  --base "$TARGET" \
+                  --head "$MERGE_BRANCH" \
+                  --title "merge/${SOURCE}-to-${TARGET}" \
+                  --label "ops:auto_merge_commit" \
+                  --label "ops:without_review_approval" \
+                  --label "ops:auto_ported" \
+                  --body "$PR_BODY")
+
+                LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
+              fi
+
+              echo "Created merge PR: $MERGE_BRANCH → $TARGET"
+
+              # Outputs for traceability step
+              {
+                echo "result=created"
+                echo "merge_pr_url=$PR_URL"
+                echo "has_ddl=$HAS_DDL"
+              } >> "$GITHUB_OUTPUT"
+
+              # Step summary
+              {
+                echo "## Auto-port: Created merge PR"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| PR | $PR_URL |"
+                echo "| Labels | $LABEL_INFO |"
+                if [[ "$HAS_DDL" == "true" ]]; then
+                  echo "| ⚠️ DDL changes | $DDL_COUNT file(s) — auto-merge disabled |"
+                fi
+              } >> "$GITHUB_STEP_SUMMARY"
+            else
+              git merge --abort
+              echo "::error::Merge conflict: $SOURCE → $TARGET. Manual resolution needed."
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
+              {
+                echo "## Auto-port: Merge conflict"
+                echo ""
+                echo "**Manual resolution needed.**"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+          fi
+
+      # ---------------------------------------------------------------
+      # GITHUB_TOKEN pushes do NOT trigger downstream workflows (GitHub
+      # anti-recursion). Explicitly dispatch cicd so that the merge
+      # branch gets built, Merge Gate appears, and Mergify can auto-merge.
+      # We cannot use the PAT for the push itself because it lacks the
+      # `workflows` permission needed to push workflow file changes.
+      # ---------------------------------------------------------------
+      - name: Dispatch cicd for merge branch
+        if: success() && steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          DISPATCH_TOKEN: ${{ secrets.CICD_TRIGGER_DISPATCH }}
+          MERGE_BRANCH: ${{ steps.check.outputs.merge_branch }}
+        run: |
+          if [[ -z "$DISPATCH_TOKEN" ]]; then
+            echo "::warning::CICD_TRIGGER_DISPATCH not configured — cannot dispatch cicd. Merge Gate will not appear and auto-merge will not work."
+            exit 0
+          fi
+          echo "Dispatching cicd workflow for: $MERGE_BRANCH"
+          GH_TOKEN="$DISPATCH_TOKEN" gh workflow run cicd.yaml --ref "$MERGE_BRANCH"
+          echo "cicd dispatched for $MERGE_BRANCH"
+
+      # ---------------------------------------------------------------
+      # Post a traceability comment on the source PR(s) that triggered
+      # this auto-port. This lets the developer see the result directly
+      # on their merged PR without hunting through workflow runs.
+      # Runs even on merge conflict (always()) so failures are visible.
+      # ---------------------------------------------------------------
+      - name: Post traceability on source PRs
+        if: always() && steps.target.outputs.skip != 'true' && steps.merge.outputs.result != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          RESULT: ${{ steps.merge.outputs.result }}
+          MERGE_PR_URL: ${{ steps.merge.outputs.merge_pr_url }}
+          HAS_DDL: ${{ steps.merge.outputs.has_ddl }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Build comment body based on result
+          case "$RESULT" in
+            created|updated)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: $RESULT $MERGE_PR_URL"
+              if [[ "$HAS_DDL" == "true" ]]; then
+                COMMENT="$COMMENT"$'\n'"⚠️ DDL/migration changes detected — auto-merge disabled, human review required"
+              fi
+              ;;
+            conflict)
+              COMMENT="**Auto-port** \`$SOURCE\` → \`$TARGET\`: merge conflict — manual resolution needed ([workflow run]($RUN_URL))"
+              ;;
+            *)
+              echo "Unknown result: $RESULT, skipping traceability"
+              exit 0
+              ;;
+          esac
+
+          # Find source PRs associated with the triggering cicd commit
+          SOURCE_PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null)] | .[].number' 2>/dev/null || true)
+
+          if [[ -z "$SOURCE_PRS" ]]; then
+            echo "No source PRs found for commit $HEAD_SHA, skipping traceability"
+            exit 0
+          fi
+
+          # Post comment on each source PR
+          for PR_NUM in $SOURCE_PRS; do
+            echo "Posting traceability comment on PR #$PR_NUM"
+            gh pr comment "$PR_NUM" --body "$COMMENT" || true
+          done

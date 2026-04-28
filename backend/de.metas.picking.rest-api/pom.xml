@@ -31,6 +31,11 @@
         </dependency>
         <dependency>
             <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
             <artifactId>de.metas.handlingunits.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>tests</classifier>

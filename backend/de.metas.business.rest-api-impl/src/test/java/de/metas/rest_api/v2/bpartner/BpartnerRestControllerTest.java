@@ -25,8 +25,6 @@ package de.metas.rest_api.v2.bpartner;
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -37,6 +35,7 @@ import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -67,17 +66,10 @@ import de.metas.common.util.time.TimeSource;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.greeting.GreetingRepository;
-import de.metas.job.JobRepository;
-import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -153,29 +145,16 @@ class BpartnerRestControllerTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
-
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
-
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		currencyRepository = new CurrencyRepository();
-		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
-				new JsonRequestConsolidateService(),
-				new BPartnerQueryService(),
-				bpartnerCompositeRepository,
-				bpGroupRepository,
-				new BPGroupService(bpGroupRepository),
-				new GreetingRepository(),
-				new TitleRepository(),
-				currencyRepository,
-				new JobRepository(),
-				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
+				new MockLogEntriesRepository(),
+				Mockito.mock(AlbertaBPartnerCompositeService.class)
+		);
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -185,6 +164,7 @@ class BpartnerRestControllerTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
 @ghActions:run_on_executor3
 Feature: ASI support in Product BOM rest-api
+## F00500: Product BOM
   Add ProductBOM and ProductBOMLine with ASI via rest-api
   Using default ad_orgId 1000000
 
@@ -41,6 +44,8 @@ Feature: ASI support in Product BOM rest-api
       | 540075         | 0        |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with different ASI, on complete no production candidate is found
     Given metasfresh contains M_Products:
       | Identifier   | Value             | Name              | OPT.M_Product_Category_ID.Identifier |
@@ -170,6 +175,8 @@ Feature: ASI support in Product BOM rest-api
       | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |
@@ -289,6 +296,8 @@ Feature: ASI support in Product BOM rest-api
       | c_222      | SUPPLY            | PRODUCTION                    | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with the same ASI, on complete production candidate is found having the same ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |
@@ -460,6 +469,8 @@ Feature: ASI support in Product BOM rest-api
       | c_222      | SUPPLY            | PRODUCTION                    | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with ASI (country-M_Attribute 1000001), on complete production candidate is found having the same ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |

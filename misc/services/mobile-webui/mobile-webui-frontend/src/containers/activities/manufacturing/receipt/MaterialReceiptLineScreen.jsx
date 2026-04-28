@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
-import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
+import { postManufacturingReceiveEventThunk } from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
 import {
@@ -96,7 +96,7 @@ const MaterialReceiptLineScreen = () => {
 
     setShowSpinner(true);
     dispatch(
-      updateManufacturingReceiptQty({
+      postManufacturingReceiveEventThunk({
         wfProcessId,
         activityId,
         lineId,

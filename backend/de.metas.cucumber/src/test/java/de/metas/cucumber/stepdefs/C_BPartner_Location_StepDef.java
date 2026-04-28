@@ -61,9 +61,9 @@ public class C_BPartner_Location_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
-	
+
 	private final TestContext restTestContext;
-	
+
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -146,11 +146,14 @@ public class C_BPartner_Location_StepDef
 
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(countryId.getRepoId());
-			
+
 			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_City).ifPresent(locationRecord::setCity);
 			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Postal).ifPresent(locationRecord::setPostal);
 			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address1).ifPresent(locationRecord::setAddress1);
-			
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address2).ifPresent(locationRecord::setAddress2);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address3).ifPresent(locationRecord::setAddress3);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address4).ifPresent(locationRecord::setAddress4);
+
 			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
@@ -190,7 +193,7 @@ public class C_BPartner_Location_StepDef
 
 		tableRow.getAsOptionalIdentifier("REST.Context.C_BPartner_Location_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerLocationRecord.getC_BPartner_Location_ID()));
-		
+
 		bPartnerLocationTable.putOrReplace(tableRow.getAsIdentifier(), bPartnerLocationRecord);
 	}
 

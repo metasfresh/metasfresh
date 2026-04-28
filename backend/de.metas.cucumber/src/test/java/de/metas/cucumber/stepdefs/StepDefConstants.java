@@ -65,4 +65,6 @@ public class StepDefConstants
 	public static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
 
+	public static int DEFAULT_timeOutSec = 30;
+
 }

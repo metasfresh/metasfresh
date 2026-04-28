@@ -25,8 +25,6 @@ package de.metas.cucumber.stepdefs.purchasecandidate.v2;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.Multimaps;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
@@ -41,10 +39,10 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.api.APIResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -64,12 +62,13 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreatePurchaseCandidate_StepDef
 {
@@ -203,6 +202,7 @@ public class CreatePurchaseCandidate_StepDef
 	@NonNull
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder mapPurchaseCandidate(@NonNull final Map<String, String> dataTableEntries)
 	{
+		final String externalSystemCode = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalSystemCode");
 		final String externalHeaderId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalHeaderId");
 		final String externalLineId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalLineId");
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableEntries, "POReference");
@@ -234,6 +234,7 @@ public class CreatePurchaseCandidate_StepDef
 
 		return JsonPurchaseCandidateCreateItem.builder()
 				.orgCode(orgCode)
+				.externalSystemCode(externalSystemCode)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
 				.poReference(poReference)
@@ -259,19 +260,15 @@ public class CreatePurchaseCandidate_StepDef
 		assertThat(persistedResult.getPurchaseDatePromised()).isEqualTo(candidate.getPurchaseDatePromised());
 	}
 
+	@NonNull
 	private Collection<JsonPurchaseCandidateReference> mapEnqueueRequest(final List<Map<String, String>> dataTable)
 	{
-		final Map<JsonExternalId, Collection<JsonExternalId>> jsonExternalIdCollectionMap = dataTable.stream()
-				.collect(Multimaps.toMultimap(
-						dataRecord -> JsonExternalId.of(DataTableUtil.extractStringForColumnName(dataRecord, "ExternalHeaderId")),
-						dataRecord -> JsonExternalId.ofOrNull(DataTableUtil.extractStringOrNullForColumnName(dataRecord, "ExternalLineId")),
-						MultimapBuilder.hashKeys().arrayListValues()::build))
-				.asMap();
-		return jsonExternalIdCollectionMap.entrySet()
+		return dataTable
 				.stream()
 				.map(entry -> JsonPurchaseCandidateReference.builder()
-						.externalHeaderId(entry.getKey())
-						.externalLineIds(entry.getValue())
+						.externalSystemCode(DataTableUtil.extractStringForColumnName(entry, "ExternalSystemCode"))
+						.externalHeaderId(JsonExternalId.of(DataTableUtil.extractStringForColumnName(entry, "ExternalHeaderId")))
+						.externalLineIds(Collections.singleton(JsonExternalId.ofOrNull(DataTableUtil.extractStringOrNullForColumnName(entry, "ExternalLineId"))))
 						.build())
 				.collect(Collectors.toList());
 	}

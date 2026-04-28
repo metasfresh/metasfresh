@@ -308,6 +308,12 @@ public class OLCandRepository
 		olCandPO.setDescription(request.getDescription());
 		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		if (request.getIncotermsId() != null)
+		{
+            olCandPO.setC_Incoterms_ID(request.getIncotermsId().getRepoId());
+			olCandPO.setIncotermLocation(request.getIncotermsLocation());
+		}
+
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
 		{

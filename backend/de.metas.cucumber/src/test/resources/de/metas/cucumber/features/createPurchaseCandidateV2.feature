@@ -1,16 +1,20 @@
 @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00635_Purchase_Order_Candidate
+@F00635
 @ghActions:run_on_executor5
 Feature: create or update Purchase Candidate
+## F00635: Purchase Order Candidate
   As a user
   I want create a Purchase Candidate record
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     Given the user adds a purchase candidate
-      | ExternalLineId | ExternalHeaderId | POReference | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised  | OPT.purchaseDateOrdered | OPT.ExternalPurchaseOrderURL |
-      | L1             | H1               | poRef1      | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              | 2025-03-28T00:00:00+01:00 | 2022-02-28T00:00:00+01:00    | www.ExternalReferenceURL.com |
+      | ExternalSystemCode | ExternalLineId | ExternalHeaderId | POReference | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised  | OPT.purchaseDateOrdered   | OPT.ExternalPurchaseOrderURL |
+      | Other              | L1             | H1               | poRef1      | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              | 2025-03-28T00:00:00+01:00 | 2022-02-28T00:00:00+01:00 | www.ExternalReferenceURL.com |
 
     And the user adds a purchase candidate price
       | value | OPT.currencyCode | OPT.priceUomCode |
@@ -20,10 +24,13 @@ Feature: create or update Purchase Candidate
       | attributeName | attributeCode | valueStr | valueNumber | valueDate |
       |               |               |          |             |           |
     And the user adds a purchase candidate enqueue request
-      | ExternalHeaderId | ExternalLineId |
-      | H1               | L1             |
+      | ExternalSystemCode | ExternalHeaderId | ExternalLineId |
+      | Other              | H1               | L1             |
 
   @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00635_Purchase_Order_Candidate
+@F00635
   Scenario:  The purchase candidate request is set in context, enqueued and validated
     And the purchase candidate request is set in context
     When the metasfresh REST-API endpoint path 'api/v2/order/purchase/createCandidates' receives a 'POST' request with the payload from context and responds with '200' status code

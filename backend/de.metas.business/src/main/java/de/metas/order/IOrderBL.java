@@ -111,8 +111,11 @@ public interface IOrderBL extends ISingletonService
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
-	@Nullable
+	@NonNull
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
+
+	@Nullable
+	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
@@ -263,6 +266,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isSalesOrder(@NonNull I_C_Order order);
 
+	boolean isSalesOrder(@NonNull OrderId orderId);
+
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
@@ -376,4 +381,6 @@ public interface IOrderBL extends ISingletonService
 	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+
+	void updateASIFromProjectId(@NonNull de.metas.interfaces.I_C_OrderLine orderLine);
 }

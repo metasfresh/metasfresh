@@ -3,12 +3,12 @@ import { useWebsocket } from './useWebsocket';
 import { userSessionUpdate } from '../actions/AppActions';
 import { initNumeralLocales, setCurrentActiveLocale } from '../utils/locale';
 
-export const useSessionWebsocket = ({ isLoggedIn }) => {
+export const useSessionWebsocket = () => {
   const dispatch = useDispatch();
   const topic = useSelector((state) => state.appHandler.me.websocketEndpoint);
 
   useWebsocket({
-    topic: isLoggedIn ? topic : null,
+    topic: topic,
     onMessage: ({ event }) => onSessionChangedEvent({ event, dispatch }),
   });
 };

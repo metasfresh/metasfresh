@@ -186,7 +186,6 @@ public class PP_Order extends CalloutEngine
 				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()))
-				.includeWithNullProductId(false)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
 		final ProductPlanning productPlanningOrig = productPlanningDAO.find(query).orElse(null);
@@ -196,8 +195,8 @@ public class PP_Order extends CalloutEngine
 		{
 			builder = ProductPlanning.builder()
 					.orgId(OrgId.ofRepoId(ppOrderWithProductId.getAD_Org_ID()))
-					.warehouseId(WarehouseId.ofRepoId(ppOrderWithProductId.getM_Warehouse_ID()))
-					.plantId(ResourceId.ofRepoId(ppOrderWithProductId.getS_Resource_ID()))
+					.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
+					.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
 					.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()));
 		}
 		else

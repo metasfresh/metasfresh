@@ -36,6 +36,9 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -56,6 +59,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
@@ -69,8 +73,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/picking")
 @RestController
 @Profile(Profiles.PROFILE_App)
@@ -226,12 +232,12 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
-	@GetMapping("/hu/byScannedCode")
-	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("scannedCode") @NonNull final String scannedCodeStr)
+	@PostMapping("/hu/byScannedCode")
+	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestBody @NonNull final JsonGetHUInfoByScannedCodeRequest request)
 	{
 		assertApplicationAccess();
 
-		final ScannedCode scannedCode = ScannedCode.ofString(scannedCodeStr);
+		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedCode());
 		final HUQRCode qrCode = toHUQRCode(scannedCode);
 
 		final List<JsonHU> hus = handlingUnitsService.getHUsByQrCode(
@@ -250,12 +256,34 @@ public class PickingRestController
 		}
 		final JsonHU hu = hus.get(0);
 
-		return JsonHUInfo.builder()
+		final JsonHUInfo.JsonHUInfoBuilder builder = JsonHUInfo.builder()
 				.id(hu.getId())
 				.unitType(hu.getUnitType())
 				.qtyTUs(hu.getQtyTUs())
-				.huQRCode(hu.getQrCode())
-				.build();
+				.huQRCode(hu.getQrCode());
+
+		// Return product info for overdelivery detection (see PickLineScanScreen)
+		final String productNo = request.getProductNo();
+		if (productNo != null)
+		{
+			hu.getProducts().stream()
+					.filter(p -> productNo.equals(p.getProductValue()))
+					.findFirst()
+					.ifPresent(p -> {
+						builder.productNo(p.getProductValue());
+						try
+						{
+							builder.productQty(new BigDecimal(p.getQty()));
+						}
+						catch (final NumberFormatException e)
+						{
+							log.warn("Cannot parse HU product qty '{}' for product {}. Overdelivery prompt will not fire.", p.getQty(), productNo, e);
+						}
+						builder.productUom(p.getUom());
+					});
+		}
+
+		return builder.build();
 	}
 
 	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)
@@ -273,6 +301,13 @@ public class PickingRestController
 		}
 	}
 
+	@PostMapping("/nextEligibleLineToPack")
+	public JsonGetNextEligibleLineResponse getNextEligibleLineToPack(@RequestBody @NonNull final JsonGetNextEligibleLineRequest request)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
 	@PostMapping("/job/{wfProcessId}/pickAll")
 	public WFProcess pickAllAndComplete(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
@@ -288,5 +323,12 @@ public class PickingRestController
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobQtyAvailable qtyAvailable = pickingMobileApplication.getQtyAvailable(wfProcessId, getLoggedUserId());
 		return JsonPickingJobQtyAvailable.of(qtyAvailable);
+	}
+
+	@PostMapping("/job/{wfProcessId}/complete")
+	public WFProcess complete(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 }

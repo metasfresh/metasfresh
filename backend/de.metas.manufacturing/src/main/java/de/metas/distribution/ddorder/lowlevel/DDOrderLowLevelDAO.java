@@ -346,6 +346,13 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// only DD_Order_IDs
+		if (query.getOnlyDDOrderIds() != null && !query.getOnlyDDOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, query.getOnlyDDOrderIds());
+		}
+
+		//
 		// Line level filters
 		{
 			final ExtendedMemorizingSupplier<IQueryBuilder<I_DD_OrderLine>> lineQueryBuilderHolder = ExtendedMemorizingSupplier.of(() -> queryBL.createQueryBuilder(I_DD_OrderLine.class));

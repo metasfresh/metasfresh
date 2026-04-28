@@ -39,9 +39,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
@@ -51,6 +53,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -113,7 +116,15 @@ public class CreateProductCommand
 
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
-		productRecord.setName(value);
+
+		// Allow custom name separate from value (max 600 chars - very generous)
+		final String customName = org.apache.commons.lang3.StringUtils.trimToNull(request.getName());
+		if (customName != null && customName.length() > 600)
+		{
+			throw new AdempiereException("product name must not exceed 600 characters (got: " + customName.length() + ")");
+		}
+		final String name = customName != null ? customName : value;
+		productRecord.setName(name);
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
@@ -122,6 +133,26 @@ public class CreateProductCommand
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);
+
+		// Set M_AttributeSet_ID if attributeSetName is provided
+		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
+		if (attributeSetName != null)
+		{
+			final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+					.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnly(I_M_AttributeSet.class);
+
+			if (attributeSet == null)
+			{
+				throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
+			}
+
+			productRecord.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
+		}
+
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -132,6 +163,18 @@ public class CreateProductCommand
 
 	private String generateValue()
 	{
+		// Use custom value if provided (no timestamp, max 255 chars)
+		final String customValue = org.apache.commons.lang3.StringUtils.trimToNull(request.getValue());
+		if (customValue != null)
+		{
+			if (customValue.length() > 255)
+			{
+				throw new AdempiereException("product value must not exceed 255 characters (got: " + customValue.length() + ")");
+			}
+			return customValue;
+		}
+
+		// or Use valuePrefix with timestamp
 		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
 		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
 		if (valuePrefix != null && randomValueSpec != null)
@@ -149,6 +192,7 @@ public class CreateProductCommand
 		}
 		else
 		{
+			// or use Default timestamp-based
 			return identifier.toUniqueString();
 		}
 	}
@@ -363,6 +407,13 @@ public class CreateProductCommand
 		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
 
+		// Optionally set Issue Method if provided by test data (e.g., IssueOnlyForReceived)
+		final BOMComponentIssueMethod issueMethod = line.getIssueMethod();
+		if (issueMethod != null)
+		{
+			lineRecord.setIssueMethod(issueMethod.getCode());
+		}
+
 		if (line.isPercentage())
 		{
 			lineRecord.setIsQtyPercentage(true);
@@ -372,6 +423,18 @@ public class CreateProductCommand
 		{
 			lineRecord.setIsQtyPercentage(false);
 			lineRecord.setQtyBOM(line.getQty());
+		}
+
+		if (line.getPickingInstruction() != null)
+		{
+			lineRecord.setPickingInstruction(line.getPickingInstruction());
+		}
+
+		if (line.getIssuingTolerancePerc() != null)
+		{
+			lineRecord.setIsEnforceIssuingTolerance(true);
+			lineRecord.setIssuingTolerance_ValueType(X_PP_Product_BOMLine.ISSUINGTOLERANCE_VALUETYPE_Percentage);
+			lineRecord.setIssuingTolerance_Perc(line.getIssuingTolerancePerc());
 		}
 
 		saveRecord(lineRecord);

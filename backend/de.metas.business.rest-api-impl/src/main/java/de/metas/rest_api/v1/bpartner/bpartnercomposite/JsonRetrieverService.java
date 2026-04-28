@@ -430,7 +430,7 @@ public class JsonRetrieverService
 					.remitTo(location.isRemitTo())
 					.handoverLocation(location.isHandOverLocation())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
-					.visitorsAddress(location.isVisitorsAddress())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)

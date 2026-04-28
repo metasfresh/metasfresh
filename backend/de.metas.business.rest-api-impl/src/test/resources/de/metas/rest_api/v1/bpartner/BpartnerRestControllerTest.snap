@@ -181,6 +181,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -219,14 +220,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "l1_poBox",
         "postal": "l1_postal",
         "region": "l1_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -265,14 +266,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "l2_poBox",
         "postal": "l2_postal",
         "region": "l2_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -420,6 +421,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -459,14 +461,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -576,6 +578,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -615,14 +618,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -732,6 +735,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -771,14 +775,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10
@@ -888,6 +892,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -927,14 +932,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       },
       {
         "active": true,
@@ -973,14 +978,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "newLocation-_poBox",
         "postal": "newLocation-_postal",
         "region": "newLocation-_region",
         "remitTo": false,
-        "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "replicationLookupDefault": false
       }
     ],
     "orgId": 10

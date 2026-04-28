@@ -39,26 +39,35 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.composite.SalesRepContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.CreditLimitType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
+import de.metas.common.bpartner.v2.response.JsonResponseBPGroup;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCreditLimit;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitType;
+import de.metas.common.bpartner.v2.response.JsonResponseIncoterms;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.bpartner.v2.response.JsonResponsePaymentTerm;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
+import de.metas.common.bpartner.v2.response.JsonResponseSalesRepContact;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
@@ -79,6 +88,8 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
 import de.metas.job.JobRepository;
@@ -86,6 +97,8 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -136,6 +149,7 @@ public class JsonRetrieverService
 			.put(BPartner.EXTERNAL_ID, JsonResponseBPartner.EXTERNAL_ID)
 			.put(BPartner.ACTIVE, JsonResponseBPartner.ACTIVE)
 			.put(BPartner.GROUP_ID, JsonResponseBPartner.GROUP_NAME)
+			.put(BPartner.BPGROUPID, JsonResponseBPartner.BPGROUP)
 			.put(BPartner.LANGUAGE, JsonResponseBPartner.LANGUAGE)
 			.put(BPartner.ID, JsonResponseBPartner.METASFRESH_ID)
 			.put(BPartner.NAME, JsonResponseBPartner.NAME)
@@ -152,11 +166,17 @@ public class JsonRetrieverService
 			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
 			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
+			.put(BPartner.SALESTREPID, JsonResponseSalesRepContact.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
+			.put(BPartner.EORI, JsonResponseBPartner.EORI)
+			.put(BPartner.E_INVOICE_BUYER_REFERENCE, JsonResponseBPartner.E_INVOICE_BUYER_REFERENCE)
 			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
 			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
+			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM)
+			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM)
+			.put(BPartner.CUSTOMER_INCOTERMS, JsonResponseBPartner.CUSTOMER_INCOTERMS)
 			.build();
 
 	/**
@@ -188,6 +208,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.TITLE, JsonResponseContact.TITLE)
 			.put(BPartnerContact.PHONE2, JsonResponseContact.PHONE2)
 			.put(BPartnerContact.JOB_ID, JsonResponseContact.POSITION)
+			.put(BPartnerContact.DEPARTMENT, JsonResponseContact.DEPARTMENT)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -228,6 +249,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
+			.put(BPartnerLocationType.VISITORS_ADDRESS_DEFAULT, JsonResponseLocation.VISITORS_ADDRESS_DEFAULT)
 			.put(BPartnerLocation.HANDOVER_LOCATION, JsonResponseLocation.HANDOVER_LOCATION)
 			.put(BPartnerLocation.REMIT_TO, JsonResponseLocation.REMIT_TO)
 			.put(BPartnerLocation.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
@@ -261,6 +283,8 @@ public class JsonRetrieverService
 	private final JobRepository jobRepository;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final PaymentTermService paymentTermService;
+	private final IncotermsRepository incotermsRepository;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -274,7 +298,9 @@ public class JsonRetrieverService
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final JobRepository jobRepository,
-			final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final PaymentTermService paymentTermService,
+			@NonNull final IncotermsRepository incotermsRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -283,6 +309,8 @@ public class JsonRetrieverService
 		this.greetingRepository = greetingRepository;
 		this.titleRepository = titleRepository;
 		this.jobRepository = jobRepository;
+		this.paymentTermService = paymentTermService;
+		this.incotermsRepository = incotermsRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -352,6 +380,13 @@ public class JsonRetrieverService
 			{
 				result.bankAccount(toJson(bankAccount));
 			}
+
+			// credit limit
+			for (final BPartnerCreditLimit creditLimit : bpartnerComposite.getCreditLimits())
+			{
+				result.creditLimit(toJson(creditLimit));
+			}
+
 			return result.build();
 		}
 	}
@@ -362,12 +397,33 @@ public class JsonRetrieverService
 
 		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getId());
 
+		PaymentTerm customerPaymentTerm = null;
+		if (bpartner.getCustomerPaymentTermId() != null)
+		{
+			customerPaymentTerm = paymentTermService.getById(bpartner.getCustomerPaymentTermId());
+		}
+
+		PaymentTerm vendorPaymentTerm = null;
+		if (bpartner.getVendorPaymentTermId() != null)
+		{
+			vendorPaymentTerm = paymentTermService.getById(bpartner.getVendorPaymentTermId());
+		}
+
+		Incoterms customerIncoterms = null;
+		if (bpartner.getCustomerIncotermsId() != null)
+		{
+			customerIncoterms = incotermsRepository.getById(bpartner.getCustomerIncotermsId());
+		}
+
+		final JsonResponseBPGroup jsonBPGroup = toJson(bpartner.getGroupId());
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
 				.globalId(bpartner.getGlobalId())
 				.companyName(bpartner.getCompanyName())
-				.group(convertIdToGroupName(bpartner.getGroupId()))
+				.group(jsonBPGroup != null ? jsonBPGroup.getName() : null)
+				.bpGroup(jsonBPGroup)
 				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
 				.metasfreshId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getId())))
 				.name(bpartner.getName())
@@ -383,12 +439,18 @@ public class JsonRetrieverService
 				.company(bpartner.isCompany())
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
+				.salesRepContact(toJson(bpartner.getSalesRepContact()))
 				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
 						.map(PaymentRule::getCode)
 						.map(JSONPaymentRule::ofCode)
 						.orElse(null))
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
+				.eori(bpartner.getEori())
+				.eInvoiceBuyerReference(bpartner.getEInvoiceBuyerReference())
+				.customerPaymentTerm(toJson(customerPaymentTerm))
+				.vendorPaymentTerm(toJson(vendorPaymentTerm))
+				.customerIncoterms(toJson(customerIncoterms))
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
@@ -431,16 +493,20 @@ public class JsonRetrieverService
 		return jsonChangeInfo.build();
 	}
 
+
 	@Nullable
-	private String convertIdToGroupName(@Nullable final BPGroupId bpGroupId)
+	private JsonResponseBPGroup toJson(@Nullable final BPGroupId bpGroupId)
 	{
 		if (bpGroupId == null)
 		{
 			return null;
 		}
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
-		final String groupName = bpGroup.getName();
-		return groupName;
+		return JsonResponseBPGroup.builder()
+				.metasfreshId(JsonMetasfreshId.of(bpGroupId.getRepoId()))
+				.value(bpGroup.getValue())
+				.name(bpGroup.getName())
+				.build();
 	}
 
 	private JsonResponseContact toJson(
@@ -519,6 +585,7 @@ public class JsonRetrieverService
 					.title(contact.getTitle())
 					.phone2(contact.getPhone2())
 					.position(toJson(job))
+					.department(contact.getDepartment())
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -560,13 +627,13 @@ public class JsonRetrieverService
 					.remitTo(location.isRemitTo())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
 					.handoverLocation(location.isHandOverLocation())
-					.visitorsAddress(location.isVisitorsAddress())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
+					.visitorsAddressDefault(locationType.getIsVisitorsAddressDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
 					.vatId(VATIdentifier.toString(location.getVatTaxId()))
-					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -897,6 +964,26 @@ public class JsonRetrieverService
 	}
 
 	@Nullable
+	private JsonResponseSalesRepContact toJson(@Nullable final SalesRepContact salesRepContact)
+	{
+		if (salesRepContact == null)
+		{
+			return null;
+		}
+
+		return JsonResponseSalesRepContact.builder()
+				.salesRepId(JsonMetasfreshId.of(salesRepContact.getId().getRepoId()))
+				.email(salesRepContact.getEmail())
+				.name(salesRepContact.getName())
+				.firstName(salesRepContact.getFirstName())
+				.lastName(salesRepContact.getLastName())
+				.salesRepValue(salesRepContact.getValue())
+				.phone(salesRepContact.getPhone())
+				.build();
+
+	}
+
+	@Nullable
 	private static JsonResponseContactPosition toJson(@Nullable final Job job)
 	{
 		if (job == null)
@@ -908,6 +995,69 @@ public class JsonRetrieverService
 				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
 				.name(job.getName())
 				.active(job.isActive())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponsePaymentTerm toJson(@Nullable final PaymentTerm paymentTerm)
+	{
+		if (paymentTerm == null)
+		{
+			return null;
+		}
+
+		return JsonResponsePaymentTerm.builder()
+				.metasfreshId(JsonMetasfreshId.of(paymentTerm.getId().getRepoId()))
+				.name(paymentTerm.getName())
+				.value(paymentTerm.getValue())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseCreditLimitType toJson(@Nullable final CreditLimitType creditLimitType)
+	{
+		if (creditLimitType == null)
+		{
+			return null;
+		}
+
+		return JsonResponseCreditLimitType.builder()
+				.metasfreshId(JsonMetasfreshId.of(creditLimitType.getCreditLimitTypeId().getRepoId()))
+				.name(creditLimitType.getName())
+				.autoApproval(creditLimitType.isAutoApproval())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseBPartnerCreditLimit toJson(@Nullable final BPartnerCreditLimit bpartnerCreditLimit)
+	{
+		if (bpartnerCreditLimit == null || bpartnerCreditLimit.getId() == null)
+		{
+			return null;
+		}
+		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bpartnerCreditLimit.getId().getBpartnerId().getRepoId());
+
+		return JsonResponseBPartnerCreditLimit.builder()
+				.metasfreshId(JsonMetasfreshId.of(bpartnerCreditLimit.getId().getRepoId()))
+				.metasfreshBPartnerId(metasfreshBPartnerId)
+				.dateFrom(bpartnerCreditLimit.getDateFrom())
+				.amount(bpartnerCreditLimit.getAmount())
+				.creditLimitType(toJson(bpartnerCreditLimit.getCreditLimitType()))
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseIncoterms toJson(@Nullable final Incoterms incoterms)
+	{
+		if (incoterms == null)
+		{
+			return null;
+		}
+
+		return JsonResponseIncoterms.builder()
+				.metasfreshId(JsonMetasfreshId.of(incoterms.getId().getRepoId()))
+				.name(incoterms.getName())
+				.value(incoterms.getValue())
 				.build();
 	}
 

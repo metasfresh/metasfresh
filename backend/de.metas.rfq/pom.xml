@@ -13,7 +13,6 @@
 	<artifactId>de.metas.rfq</artifactId>
 
 	<properties>
-		<migration-sql-basedir>43-de.metas.rfq</migration-sql-basedir>
 		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 

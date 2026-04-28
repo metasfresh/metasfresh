@@ -149,6 +149,8 @@ public class ManufacturingRestService
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					// Manual issues from mobile UI shall fail for IssueOnlyForReceived lines
+					.failIfIssueOnlyForReceived(true)
 					.build());
 		}
 		else if (event.getReceiveFrom() != null)
@@ -160,6 +162,14 @@ public class ManufacturingRestService
 		{
 			throw new AdempiereException("Cannot handle: " + event);
 		}
+	}
+
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCode)
+	{
+		return manufacturingJobService.createOnTheFlyIssueSchedule(ppOrderId, callerId, huQRCode);
 	}
 
 	public QueryLimit getLaunchersLimit()

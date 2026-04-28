@@ -46,7 +46,6 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -256,13 +255,13 @@ class PPOrderIssueServiceProductCommand
 			// The original HU will also be replaced.
 			for (int i = 1; i <= huQty; i++)
 			{
-				final I_M_HU extractedHU = CollectionUtils.singleElement(
-						HUTransformService.newInstance(huContext)
-								.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
-										.sourceHU(hu)
-										.productId(finishedGoodProductId)
-										.qtyCU(Quantity.of(1, uomEach))
-										.build()));
+				final I_M_HU extractedHU = HUTransformService.newInstance(huContext)
+						.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+								.sourceHU(hu)
+								.productId(finishedGoodProductId)
+								.qtyCU(Quantity.of(1, uomEach))
+								.build())
+						.singleCU();
 
 				singleItemHUs.add(extractedHU);
 

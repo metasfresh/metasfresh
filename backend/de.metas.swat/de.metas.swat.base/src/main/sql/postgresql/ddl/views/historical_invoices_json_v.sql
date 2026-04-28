@@ -2,43 +2,52 @@ DROP VIEW IF EXISTS historical_invoices_json_v
 ;
 
 CREATE OR REPLACE VIEW historical_invoices_json_v AS
-SELECT invoic_v.c_invoice_id               AS "Invoice_ID",
-       invoic_v.ReceiverGLN                AS "Invoice_Receiver_Tec_GLN",
-       invoic_v.SenderGLN                  AS "Invoice_Sender_Tec_GLN",
-       invoic_v.CountryCode                AS "Invoice_Sender_CountryCode",
-       invoic_v.VATaxId                    AS "Invoice_Sender_VATaxId",
-       invoic_v.Invoice_DocumentNo         AS "Invoice_DocumentNo",
-       invoic_v.DateInvoiced               AS "Invoice_Date",
-       invoic_v.DateAcct                   AS "Invoice_Acct_Date",
-       invoic_v.docbasetype                AS "DocType_Base",
-       invoic_v.docsubtype                 AS "DocType_Sub",
-       invoic_v.CreditMemoReason           AS "CreditMemo_Reason",
-       invoic_v.CreditMemoReasonText       AS "CreditMemo_ReasonText",
-       invoic_v.POReference                AS "Order_POReference",
-       invoic_v.DateOrdered                AS "Order_Date",
-       invoic_v.MovementDate               AS "Shipment_Date",
-       invoic_v.Shipment_DocumentNo        AS "Shipment_DocumentNo",
-       invoic_v.EDIDesadvDocumentNo        AS "DESADV_DocumentNo",
-       invoic_v.ISO_Code                   AS "Invoice_Currency_Code",
-       invoic_v.GrandTotal                 AS "Invoice_GrandTotal",
-       invoic_v.TotalLines                 AS "Invoice_TotalLines",
-       invoic_v.TotalVAT                   AS "Invoice_TotalVAT",
-       invoic_v.TotalTaxBaseAmt            AS "Invoice_TotalVATBaseAmt",
-       invoic_v.SurchargeAmt               AS "Invoice_SurchargeAmt",
-       invoic_v.TotalLinesWithSurchargeAmt AS "Invoice_TotalLinesWithSurchargeAmt",
-       invoic_v.TotalVatWithSurchargeAmt   AS "Invoice_TotalVATWithSurchargeAmt",
-       invoic_v.GrandTotalWithSurchargeAmt AS "Invoice_GrandTotalWithSurchargeAmt",
-       invoic_v.updated::timestamp         AS "Updated",
-       invoic_v.ExternalId                 AS "ExternalId",
-       invoic_v.ExternalSystemCode         AS "ExternalSystemCode",
-       COALESCE(invoic_v.DataSource, '')   AS "DataSource",
-       invoic_v.DocStatus                  AS "DocStatus",
-       edi_119_v.json_data                 AS "Partners",
-       edi_120_v.json_data                 AS "PaymentTerms",
-       edi_140_v.json_data                 AS "PaymentDiscounts",
-       edi_500_v.json_data                 AS "Lines",
-       edi_901_991_v.json_data             AS "Sums"
+SELECT invoic_v.c_invoice_id                       AS "Invoice_ID",
+       invoic_v.C_Order_ID                         AS "Order_ID",
+       bpartner.value                              AS "BPartnerValue",
+       bPartnerExternalReference.externalreference AS "BPartnerExternalReference",
+       bPartnerExternalSystem.value                AS "BPartnerExternalSystemValue",
+       invoic_v.ReceiverGLN                        AS "Invoice_Receiver_Tec_GLN",
+       invoic_v.SenderGLN                          AS "Invoice_Sender_Tec_GLN",
+       invoic_v.CountryCode                        AS "Invoice_Sender_CountryCode",
+       invoic_v.VATaxId                            AS "Invoice_Sender_VATaxId",
+       invoic_v.Invoice_DocumentNo                 AS "Invoice_DocumentNo",
+       invoic_v.DateInvoiced                       AS "Invoice_Date",
+       invoic_v.DateAcct                           AS "Invoice_Acct_Date",
+       invoic_v.docbasetype                        AS "DocType_Base",
+       invoic_v.docsubtype                         AS "DocType_Sub",
+       invoic_v.CreditMemoReason                   AS "CreditMemo_Reason",
+       invoic_v.CreditMemoReasonText               AS "CreditMemo_ReasonText",
+       invoic_v.POReference                        AS "Order_POReference",
+       invoic_v.DateOrdered                        AS "Order_Date",
+       invoic_v.MovementDate                       AS "Shipment_Date",
+       invoic_v.Shipment_DocumentNo                AS "Shipment_DocumentNo",
+       invoic_v.EDIDesadvDocumentNo                AS "DESADV_DocumentNo",
+       invoic_v.ISO_Code                           AS "Invoice_Currency_Code",
+       invoic_v.GrandTotal                         AS "Invoice_GrandTotal",
+       invoic_v.TotalLines                         AS "Invoice_TotalLines",
+       invoic_v.TotalVAT                           AS "Invoice_TotalVAT",
+       invoic_v.TotalTaxBaseAmt                    AS "Invoice_TotalVATBaseAmt",
+       invoic_v.SurchargeAmt                       AS "Invoice_SurchargeAmt",
+       invoic_v.TotalLinesWithSurchargeAmt         AS "Invoice_TotalLinesWithSurchargeAmt",
+       invoic_v.TotalVatWithSurchargeAmt           AS "Invoice_TotalVATWithSurchargeAmt",
+       invoic_v.GrandTotalWithSurchargeAmt         AS "Invoice_GrandTotalWithSurchargeAmt",
+       invoic_v.updated::timestamp                 AS "Updated",
+       invoic_v.ExternalId                         AS "ExternalId",
+       invoic_v.ExternalSystemCode                 AS "ExternalSystemCode",
+       COALESCE(invoic_v.DataSource, '')           AS "DataSource",
+       invoic_v.DocStatus                          AS "DocStatus",
+       edi_119_v.json_data                         AS "Partners",
+       edi_120_v.json_data                         AS "PaymentTerms",
+       edi_140_v.json_data                         AS "PaymentDiscounts",
+       edi_500_v.json_data                         AS "Lines",
+       edi_901_991_v.json_data                     AS "Sums"
 FROM edi_cctop_invoic_v invoic_v
+         LEFT JOIN c_bpartner bpartner ON bpartner.c_bpartner_id = invoic_v.C_BPartner_ID
+         LEFT JOIN s_externalreference bPartnerExternalReference ON bPartnerExternalReference.record_id = bpartner.c_bpartner_id
+    AND bPartnerExternalReference.type = 'BPartner'
+    AND bPartnerExternalReference.isactive = 'Y'
+         LEFT JOIN externalsystem bPartnerExternalSystem ON bPartnerExternalSystem.externalsystem_id = bPartnerExternalReference.externalsystem_id
          LEFT JOIN (SELECT c_invoice_id,
                            JSON_AGG(JSON_BUILD_OBJECT(
                                    'EANCOM_LocationType', eancom_locationtype,
@@ -135,5 +144,5 @@ FROM edi_cctop_invoic_v invoic_v
                                         ) ORDER BY rate DESC) AS json_data
                     FROM edi_cctop_901_991_v
                     GROUP BY c_invoice_id) edi_901_991_v ON edi_901_991_v.c_invoice_id = invoic_v.c_invoice_id
-ORDER BY invoic_v.updated, invoic_v.c_invoice_id
+ORDER BY invoic_v.dateinvoiced DESC, invoic_v.updated DESC, invoic_v.c_invoice_id DESC
 ;

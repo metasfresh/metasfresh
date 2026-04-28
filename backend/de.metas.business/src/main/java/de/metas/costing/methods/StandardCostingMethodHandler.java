@@ -116,7 +116,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	protected MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
 		if (costElement == null)

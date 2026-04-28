@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
 @ghActions:run_on_executor5
 Feature: invoice rules
+## F00703: Invoice Rule
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +13,9 @@ Feature: invoice rules
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after delivery
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -65,6 +72,9 @@ Feature: invoice rules
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after pick
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -124,6 +134,9 @@ Feature: invoice rules
       | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -193,6 +206,9 @@ Feature: invoice rules
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can double-invoice a sales order with invoice rule after pick, if we pick some quantity and then override the qty to deliver to be equal to qty ordered
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:

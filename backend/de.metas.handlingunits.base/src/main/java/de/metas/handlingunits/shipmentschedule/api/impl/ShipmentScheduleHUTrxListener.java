@@ -10,8 +10,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.IProductBL;
@@ -108,12 +108,13 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 						qtyPicked,
 						vhu,
 						trxLine))
-				.tuOrVHU(vhu)
+				.hu(vhu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
 	}
 
+	@Nullable
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
 	{
 		//
@@ -128,14 +129,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Get the shipment schedule from VHU (if any)
 		final I_M_ShipmentSchedule shipmentSchedule_FromVHU = getM_ShipmentScheduleFromVHU(trxLine);
-		if (shipmentSchedule_FromVHU != null)
-		{
-			return shipmentSchedule_FromVHU;
-		}
-
-		//
-		// No shipment schedule was found
-		return null;
+		return shipmentSchedule_FromVHU;
 	}
 
 	/**

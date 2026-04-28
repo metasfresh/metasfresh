@@ -148,9 +148,7 @@ describe('SelectionDropdown component', () => {
     const spyEnter = jest.spyOn(wrapper.instance(), 'handleMouseEnter');
     const spyDown = jest.spyOn(wrapper.instance(), 'handleMouseDown');
 
-    const optionEl = wrapper.find(
-      `[data-test-id="${newOption.key}${newOption.caption}"]`
-    );
+    const optionEl = wrapper.find(`[data-testid="option-${newOption.key}"]`);
     optionEl.prop('onMouseEnter')();
 
     expect(spyEnter).toHaveBeenCalled();

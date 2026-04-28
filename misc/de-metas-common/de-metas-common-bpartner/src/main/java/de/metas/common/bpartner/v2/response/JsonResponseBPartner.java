@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
+	public static final String BPGROUP = "bpGroup";
 	public static final String URL = "url";
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
@@ -62,6 +63,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER = "customer";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
+	public static final String SALESTREPID = "salesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
@@ -69,6 +71,11 @@ public class JsonResponseBPartner
 	public static final String METASFRESH_URL = "metasfreshUrl";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
+	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
+	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -153,10 +160,18 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String url3;
 
-	@ApiModelProperty(value = "Name of the business partner's group")
+	@Deprecated
+	@ApiModelProperty(value = "Name of the business partner's group",
+			notes = "DEPRECATED: This field is deprecated. Please use 'bpGroup' instead.")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
+
+	@ApiModelProperty(value = "Business partner's group")
+	@JsonProperty(BPGROUP)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseBPGroup bpGroup;
+
 
 	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
@@ -175,6 +190,12 @@ public class JsonResponseBPartner
 	@JsonProperty(SALES_PARTNER)
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseSalesRep responseSalesRep;
+
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.SalesRep_ID`")
+	@JsonProperty(SALESTREPID)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseSalesRepContact salesRepContact;
 
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
@@ -207,6 +228,37 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.EORI` ")
+	@JsonProperty(EORI)
+	@JsonInclude(Include.NON_NULL)
+	String eori;
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.EInvoice_BuyerReference` ")
+	@JsonProperty(E_INVOICE_BUYER_REFERENCE)
+	@JsonInclude(Include.NON_NULL)
+	String eInvoiceBuyerReference;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Sales payment term for this business partner.")
+	@JsonProperty(CUSTOMER_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm customerPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.PO_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Purchase payment term for this business partner.")
+	@JsonProperty(VENDOR_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm vendorPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_Incoterms_Customer_ID` (lookup to C_Incoterms).\n"
+					+ "Customer incoterms for this business partner.")
+	@JsonProperty(CUSTOMER_INCOTERMS)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseIncoterms customerIncoterms;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -231,10 +283,12 @@ public class JsonResponseBPartner
 			@JsonProperty(URL_2) @Nullable final String url2,
 			@JsonProperty(URL_3) @Nullable final String url3,
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
+			@JsonProperty(BPGROUP) @Nullable final JsonResponseBPGroup bpGroup,
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
+			@JsonProperty(SALESTREPID) @Nullable final JsonResponseSalesRepContact salesRepContact,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
@@ -242,6 +296,11 @@ public class JsonResponseBPartner
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
 			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
+			@JsonProperty(EORI) @Nullable final String eori,
+			@JsonProperty(E_INVOICE_BUYER_REFERENCE) @Nullable final String eInvoiceBuyerReference,
+			@JsonProperty(CUSTOMER_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm customerPaymentTerm,
+			@JsonProperty(VENDOR_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm vendorPaymentTerm,
+			@JsonProperty(CUSTOMER_INCOTERMS) @Nullable final JsonResponseIncoterms customerIncoterms,
 
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
@@ -268,11 +327,13 @@ public class JsonResponseBPartner
 		this.url3 = url3;
 
 		this.group = group;
+		this.bpGroup = bpGroup;
 
 		this.vendor = vendor;
 		this.customer = customer;
 		this.salesPartnerCode = salesPartnerCode;
 		this.responseSalesRep = responseSalesRep;
+		this.salesRepContact = salesRepContact;
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.company = company;
@@ -283,6 +344,12 @@ public class JsonResponseBPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
+		this.customerPaymentTerm = customerPaymentTerm;
+		this.vendorPaymentTerm = vendorPaymentTerm;
+		this.customerIncoterms = customerIncoterms;
 
 		this.changeInfo = changeInfo;
 	}

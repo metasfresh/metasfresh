@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_DD_CaptionItem extends org.compiere.model.PO implements I_MobileUI_UserProfile_DD_CaptionItem, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1865878798L;
+	private static final long serialVersionUID = -889789439L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_DD_CaptionItem (final Properties ctx, final int MobileUI_UserProfile_DD_CaptionItem_ID, @Nullable final String trxName)
@@ -61,6 +61,8 @@ public class X_MobileUI_UserProfile_DD_CaptionItem extends org.compiere.model.PO
 	public static final String FIELDNAME_Qty = "Qty";
 	/** Priority = Priority */
 	public static final String FIELDNAME_Priority = "Priority";
+	/** PickingInstruction = PickingInstruction */
+	public static final String FIELDNAME_PickingInstruction = "PickingInstruction";
 	@Override
 	public void setFieldName (final java.lang.String FieldName)
 	{

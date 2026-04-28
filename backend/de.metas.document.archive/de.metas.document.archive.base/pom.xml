@@ -18,7 +18,6 @@
 	</developers>
 
 	<properties>
-		<migration-sql-basedir>50-de.metas.document.document-archive</migration-sql-basedir>
 	</properties>
 
 	<dependencies>

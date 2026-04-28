@@ -1,5 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -36,6 +37,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -46,7 +49,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.util.Check.assume;
@@ -82,6 +85,14 @@ public class HURepository
 	private static final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	@VisibleForTesting
+	public static HURepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(HURepository.class, HURepository::new);
+	}
 
 	public HU getById(@NonNull final HuId id)
 	{
@@ -217,18 +228,31 @@ public class HURepository
 				}
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
 
-				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
-				childBuilder.productQtysInStockUOM(productsAndQuantitiesPerHU);
+				final ImmutableMap<ProductId, List<Quantity>> spreadProductQuantities = productsAndQuantities.entrySet().stream()
+						.collect(ImmutableMap.toImmutableMap(
+								Map.Entry::getKey,
+								entry -> entry.getValue().spreadEqually(logicalNumberOfTUs)));
 
 				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
-				final Optional<Quantity> weightNetPerHU = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
-						.map(weightNet -> weightNet.divide(logicalNumberOfTUs));
-
-				childBuilder.weightNet(weightNetPerHU.orElse(null));
+				final List<Quantity> spreadWeights = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
+						.map(weightNet -> weightNet.spreadEqually(logicalNumberOfTUs))
+						.orElse(null);
 
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
-					final HU currentChild = childBuilder.build();
+					final int index = i;
+					final ImmutableMap<ProductId, Quantity> qtysForThisChild = productsAndQuantities.keySet().stream()
+							.collect(ImmutableMap.toImmutableMap(
+									productId -> productId,
+									productId -> spreadProductQuantities.get(productId).get(index)));
+
+					final Quantity weightForThisChild = spreadWeights != null ? spreadWeights.get(index) : null;
+
+					final HU currentChild = childBuilder.build()
+							.toBuilder()
+							.productQtysInStockUOM(qtysForThisChild)
+							.weightNet(weightForThisChild)
+							.build();
 					parentBuilderOrNull.childHU(currentChild);
 				}
 			}
@@ -270,20 +294,6 @@ public class HURepository
 			{
 				return null;
 			}
-		}
-
-		private ImmutableMap<ProductId, Quantity> divideQuantities(
-				@NonNull final ImmutableMap<ProductId, Quantity> productsAndQuantities,
-				final int divisor)
-		{
-			final ImmutableSet<Entry<ProductId, Quantity>> entrySet = productsAndQuantities.entrySet();
-			final BigDecimal divisorBD = new BigDecimal(divisor);
-			return entrySet
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							Entry::getKey,
-							e -> e.getValue().divide(divisorBD)));
-
 		}
 
 		@Nullable

@@ -47,6 +47,7 @@ import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -143,6 +144,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
@@ -185,7 +187,21 @@ public class C_Invoice_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
+	private final C_PromotionCode_StepDefData promotionCodeTable;
 
+	/**
+	 * Validates {@code C_Invoice} records against expected values.
+	 * <p>
+	 * gh#28565: Added validation for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 * <p>
+	 * me03#29366: Added validation for {@code DueDate} — the persisted due date populated
+	 * on completion. Pin tests directly on this column so a regression surfaces at the
+	 * invoice step, not three steps later in dunning.
+	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
 	{
@@ -217,6 +233,19 @@ public class C_Invoice_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	@And("^the reversal of invoice (.*) is identified by (.*)$")
+	public void identify_reversal_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String reversalIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+		final int reversalId = invoice.getReversal_ID();
+		Check.assume(reversalId > 0, "Invoice {} must have a reversal", invoiceIdentifier);
+		final I_C_Invoice reversal = InterfaceWrapperHelper.load(reversalId, I_C_Invoice.class);
+		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
 	}
 
 	@And("load C_Invoice:")
@@ -408,6 +437,17 @@ public class C_Invoice_StepDef
 		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
 				.ifPresent(paymentRule -> softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule.getCode()));
 
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(invoice.getC_PromotionCode_ID())
+						.as("C_PromotionCode_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(invoice.getC_PromotionCode2_ID())
+						.as("C_PromotionCode2_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+
 		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
 				.ifPresent(internalName -> {
 					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
@@ -454,6 +494,15 @@ public class C_Invoice_StepDef
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
+				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DueDate)
+				.ifPresent(dueDate -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDueDate(), zoneId))
+							.as("DueDate for Identifier=%s", identifierStr)
+							.isEqualTo(dueDate);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)

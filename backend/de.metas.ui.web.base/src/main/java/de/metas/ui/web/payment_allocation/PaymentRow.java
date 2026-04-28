@@ -25,6 +25,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Set;
@@ -91,6 +93,9 @@ public class PaymentRow implements IViewRow
 	@Getter
 	private final PaymentCurrencyContext paymentCurrencyContext;
 
+	@Getter
+	private final LocalDate dateAcct;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
 	private static final AdMessageKey MSG_NO_PAYMENTS_AVAILABLE = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentRow.NoPaymentsAvailable");
@@ -115,6 +120,7 @@ public class PaymentRow implements IViewRow
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
+			@Nullable final LocalDate dateAcct,
 			@NonNull final LookupValue bpartner,
 			@NonNull final PaymentAmtMultiplier paymentAmtMultiplier,
 			@NonNull final Amount payAmt,
@@ -125,6 +131,7 @@ public class PaymentRow implements IViewRow
 		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
+		this.dateAcct = dateAcct != null ? dateAcct : dateTrx;
 		this.bpartner = bpartner;
 		this.paymentAmtMultiplier = paymentAmtMultiplier;
 		this.payAmt = payAmt;

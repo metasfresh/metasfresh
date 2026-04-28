@@ -16,6 +16,7 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -124,4 +125,11 @@ public interface IHUInOutBL extends ISingletonService
 	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
 
 	void validateMandatoryOnShipmentAttributes(I_M_InOut shipment);
+
+	boolean isReversal(I_M_InOut inout);
+
+	List<I_M_HU> retrieveHandlingUnits(I_M_InOut inOut);
+
+	@NonNull
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
 }

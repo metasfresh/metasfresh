@@ -5,7 +5,7 @@
     <module name="metasfresh-dist-serverRoot" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ServerBoot" />
-    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$/metasfresh.properties -DTraceFile=true -Xms256M -Xmx736M -Drun-headless=false -DdevelopmentWorkspaceDir=$ProjectFileDir$/metasfresh/backend" />
+    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$/metasfresh.properties -DTraceFile=true -Xms256M -Xmx736M -Drun-headless=false -DdevelopmentWorkspaceDir=$ProjectFileDir$/metasfresh/backend -Dfrontend.testing=true -Dde.metas.adempiere.debug=true" />
     <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
     <extension name="coverage">
       <pattern>

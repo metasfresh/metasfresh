@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonPurchaseCandidatesRequestTest
 {
@@ -52,8 +52,15 @@ class JsonPurchaseCandidatesRequestTest
 	@Test
 	public void jsonOutOfStockNoticeResponse() throws Exception
 	{
-		final JsonPurchaseCandidateReference reference1 = JsonPurchaseCandidateReference.builder().externalHeaderId(JsonExternalId.of("abc")).build();
-		final JsonPurchaseCandidateReference reference2 = JsonPurchaseCandidateReference.builder().externalHeaderId(JsonExternalId.of("123")).externalLineId(JsonExternalId.of("456")).build();
+		final JsonPurchaseCandidateReference reference1 = JsonPurchaseCandidateReference.builder()
+				.externalSystemCode("externalSystemCode")
+				.externalHeaderId(JsonExternalId.of("abc"))
+				.build();
+		final JsonPurchaseCandidateReference reference2 = JsonPurchaseCandidateReference.builder()
+				.externalSystemCode("externalSystemCode")
+				.externalHeaderId(JsonExternalId.of("123"))
+				.externalLineId(JsonExternalId.of("456"))
+				.build();
 
 		final JsonPurchaseCandidatesRequest jsonPurchaseCandidatesRequest = JsonPurchaseCandidatesRequest.builder()
 				.purchaseCandidate(reference1)

@@ -66,6 +66,12 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
+	{
+		return params.getParameterAsBool(PARA_IsDeliveryDateAsInvoiceDate);
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return params.getParameterAsLocalDate(PARA_DateInvoiced);
@@ -81,6 +87,12 @@ public class InvoicingParams implements IInvoicingParams
 	public String getPOReference()
 	{
 		return params.getParameterAsString(PARA_POReference);
+	}
+
+	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		return params.getParameterAsLocalDate(PARA_OverrideDueDate);
 	}
 
 	@Override

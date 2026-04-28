@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
@@ -17,6 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
+import de.metas.shipping.ShipperId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -50,6 +52,7 @@ public class SalesOrderCreateCommand
 
 	@NonNull private final JsonSalesOrderCreateRequest request;
 	@NonNull private final MasterdataContext context;
+	@NonNull private final Identifier identifier;
 
 	//
 	// State
@@ -89,9 +92,22 @@ public class SalesOrderCreateCommand
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised());
+
+		if (request.getShipper() != null)
+		{
+			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
+		}
 		request.getLines().forEach(this::createOrderLine);
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
+
+		// Store order line IDs in context so manufacturing orders can reference them
+		for (int i = 0; i < lineCreateRequestAndBuilders.size(); i++)
+		{
+			final LineCreateRequestAndBuilder lineRequestAndBuilder = lineCreateRequestAndBuilders.get(i);
+			final Identifier lineIdentifier = Identifier.ofString(identifier.getAsString() + "_line" + (i + 1));
+			context.putIdentifier(lineIdentifier, lineRequestAndBuilder.getOrderLineId());
+		}
 
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))

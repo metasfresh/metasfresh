@@ -1,11 +1,15 @@
 package de.metas.purchasecandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,6 +18,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -41,6 +46,9 @@ import javax.annotation.Nullable;
 @Builder
 class PurchaseCandidateImmutableFields
 {
+	@Nullable
+	ExternalSystemId externalSystemId;
+	
 	@Nullable
 	ExternalId externalHeaderId;
 
@@ -86,4 +94,21 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable
 	String externalPurchaseOrderUrl;
+
+	@Nullable
+	HUPIItemProductId huPIItemProductId;
+
+	@Nullable
+	BigDecimal qtyEnteredTU;
+
+	boolean isDropShip;
+
+	@Nullable
+	BPartnerId dropShipBPartnerId;
+
+	@Nullable
+	BPartnerLocationId dropShipLocationId;
+
+	@Nullable
+	UserId dropShipUserId;
 }

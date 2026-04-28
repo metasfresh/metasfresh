@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
 @ghActions:run_on_executor3
 Feature: Production dispo scenarios
+## F8033: Production
 
   Background:
     Given infrastructure and metasfresh are running
@@ -25,6 +29,9 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_140
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -43,6 +50,9 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_160
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed (S0129.2_160)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -58,6 +68,9 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_180
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed (S0129.2_180)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -85,6 +98,9 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_190
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed (S0129.2_190)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -110,9 +126,11 @@ Feature: Production dispo scenarios
       | PP_Order_Candidate_ID.Identifier | QtyEntered |
       | oc_1                             | 2          |
 
-  @flaky
   @Id:S0129.2_190
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario: Reactivate and reduce QTY for order with negative ATP and PreparationDate in the past. Ensure correct qty is used on new PP_Order_Candidate.
     When metasfresh has date and time 2025-02-25T07:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
@@ -159,27 +177,29 @@ Feature: Production dispo scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 250 PCE    | 250 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 250 PCE    | 250 PCE      | 0 PCE        | 2025-02-25T00:00:00Z | 2025-02-25T00:00:00Z | false        | false         |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
       | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
       | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 50   | -250  | warehouseStd   |                       |
-      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 250  | 0     | warehouseStd   | oc_1                  |
-      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2500 | -2500 | warehouseStd   | oc_1                  |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T00:00:00Z | 250  | 0     | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T00:00:00Z | 2500 | -2500 | warehouseStd   | oc_1                  |
 
     And the order identified by o_2 is reactivated
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T00:00:00Z | 2025-02-25T00:00:00Z | false        | false         |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
       | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
       | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 0    | -200  | warehouseStd   |                       |
-      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | 0     | warehouseStd   | oc_1                  |
-      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T00:00:00Z | 200  | 0     | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T00:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
@@ -191,14 +211,14 @@ Feature: Production dispo scenarios
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
-      | oc_2       | p_1          | bom_1             | ppln_1                 | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2025-02-25T07:00:00Z | 2025-02-25T07:00:00Z | false        | false         |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T00:00:00Z | 2025-02-25T00:00:00Z | false        | false         |
+      | oc_2       | p_1          | bom_1             | ppln_1                 | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2025-02-25T00:00:00Z | 2025-02-25T00:00:00Z | false        | false         |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
       | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
       | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 30   | -230  | warehouseStd   |                       |
-      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | -30   | warehouseStd   | oc_1                  |
-      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
-      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T07:00:00Z | 30   | -0    | warehouseStd   | oc_2                  |
-      | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T07:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T00:00:00Z | 200  | -30   | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T00:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
+      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T00:00:00Z | 30   | -0    | warehouseStd   | oc_2                  |
+      | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T00:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |

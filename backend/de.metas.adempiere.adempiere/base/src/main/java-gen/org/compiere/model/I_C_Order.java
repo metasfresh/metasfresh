@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -2877,52 +2854,53 @@ public interface I_C_Order
 
 	/**
 	 * Set Promotion Code.
-	 * User entered promotion code at sales time
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPromotionCode (@Nullable java.lang.String PromotionCode);
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
 
 	/**
 	 * Get Promotion Code.
-	 * User entered promotion code at sales time
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPromotionCode();
+	int getC_PromotionCode_ID();
 
-	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
-	String COLUMNNAME_PromotionCode = "PromotionCode";
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
 
-	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setPurchaser_User_ID (int Purchaser_User_ID);
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
+	 * Set Promotion Code 2.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	int getPurchaser_User_ID();
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
 
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
 
 	/**
 	 * Set Qty without Trading Unit.
@@ -3134,6 +3112,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_SendEMail = new ModelColumn<>(I_C_Order.class, "SendEMail", null);
 	String COLUMNNAME_SendEMail = "SendEMail";
+
+	/**
+	 * Set Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalGrossWeightKg (BigDecimal TotalGrossWeightKg);
+
+	/**
+	 * Get Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalGrossWeightKg();
+
+	ModelColumn<I_C_Order, Object> COLUMN_TotalGrossWeightKg = new ModelColumn<>(I_C_Order.class, "TotalGrossWeightKg", null);
+	String COLUMNNAME_TotalGrossWeightKg = "TotalGrossWeightKg";
 
 	/**
 	 * Set Total Lines.

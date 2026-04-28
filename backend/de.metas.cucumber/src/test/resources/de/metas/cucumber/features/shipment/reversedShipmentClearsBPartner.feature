@@ -741,11 +741,6 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | hu_1               | S        | Y        | endcustomer_B | loc_B                  |
 
   @from:cucumber
-  @ignore
-  # IGNORED on oasis_sun_hotfix: depends on Return_Origin_InOut_ID column and conditional
-  # generateHUsForCustomerReturn (SysConfig CustomerReturnsInOut.FailIfNoHUsAssigned) which
-  # only exist on keen_hawk_hotfix. Cherry-picked from #22332 without adapting for model
-  # differences. Remove @ignore when merging to new_dawn_uat where these features exist.
   Scenario: customer return reversal destroys auto-created HUs (PR 22317 coverage)
     # Tests the customer return flow from PR #22317:
     # 1. Customer return WITHOUT HUs is created from a completed shipment

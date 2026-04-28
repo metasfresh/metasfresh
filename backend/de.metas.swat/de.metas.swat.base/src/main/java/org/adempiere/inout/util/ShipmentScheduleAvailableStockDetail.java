@@ -49,34 +49,24 @@ import java.util.List;
 @ToString
 public class ShipmentScheduleAvailableStockDetail
 {
-	@Getter(AccessLevel.PACKAGE)
-	private final ProductId productId;
+	@NonNull @Getter(AccessLevel.PACKAGE) private final StockMatchingKey stockMatchingKey;
+	@NonNull private BigDecimal qtyOnHand;
+	@NonNull private final ShipmentScheduleReservations qtyReservations;
 
-	@Getter(AccessLevel.PACKAGE)
-	private final WarehouseId warehouseId;
-
-	@Getter(AccessLevel.PACKAGE)
-	private final AttributesKey storageAttributesKey;
-
-	private BigDecimal qtyOnHand;
-
-	private final QtyCalculationsBOM pickingBOM;
-	private final ImmutableListMultimap<ProductId, ShipmentScheduleAvailableStockDetail> componentStockDetails;
+	@Nullable private final QtyCalculationsBOM pickingBOM;
+	@NonNull private final ImmutableListMultimap<ProductId, ShipmentScheduleAvailableStockDetail> componentStockDetails;
 
 	@Builder
 	private ShipmentScheduleAvailableStockDetail(
-			@NonNull final ProductId productId,
-			@NonNull final WarehouseId warehouseId,
-			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final StockMatchingKey stockMatchingKey,
 			@NonNull final BigDecimal qtyOnHand,
-			//
+			@Nullable final ShipmentScheduleReservations qtyReservations,
 			@Nullable final QtyCalculationsBOM pickingBOM,
 			@Nullable @Singular final List<ShipmentScheduleAvailableStockDetail> componentStockDetails)
 	{
-		this.productId = productId;
-		this.warehouseId = warehouseId;
-		this.storageAttributesKey = storageAttributesKey;
+		this.stockMatchingKey = stockMatchingKey;
 		this.qtyOnHand = qtyOnHand;
+		this.qtyReservations = qtyReservations != null ? qtyReservations : ShipmentScheduleReservations.EMPTY;
 
 		this.pickingBOM = pickingBOM;
 		this.componentStockDetails = componentStockDetails != null && !componentStockDetails.isEmpty()
@@ -84,9 +74,21 @@ public class ShipmentScheduleAvailableStockDetail
 				: ImmutableListMultimap.of();
 	}
 
-	public BigDecimal getQtyAvailable()
+	ProductId getProductId() {return stockMatchingKey.getProductId();}
+
+	WarehouseId getWarehouseId() {return stockMatchingKey.getWarehouseId();}
+
+	public AttributesKey getStorageAttributesKey() {return stockMatchingKey.getAttributesKey();}
+
+	public BigDecimal getQtyAvailable(@NonNull final ReservationKey reservationKey)
 	{
 		BigDecimal qtyOnHand = this.qtyOnHand;
+
+		final Quantity qtyReserved = qtyReservations.getReservedQtyForOthersThan(reservationKey).orElse(null);
+		if (qtyReserved != null)
+		{
+			qtyOnHand = qtyOnHand.subtract(qtyReserved.toBigDecimal());
+		}
 
 		final Quantity qtyAvailableToPick = computeQtyAvailableToPick();
 		if (qtyAvailableToPick != null && !qtyAvailableToPick.isZero())
@@ -156,7 +158,7 @@ public class ShipmentScheduleAvailableStockDetail
 	{
 		return componentStockDetails.get(componentId)
 				.stream()
-				.map(ShipmentScheduleAvailableStockDetail::getQtyAvailable)
+				.map(detail -> detail.getQtyAvailable(ReservationKey.NO_KEY))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
@@ -211,7 +213,7 @@ public class ShipmentScheduleAvailableStockDetail
 				break;
 			}
 
-			final BigDecimal componentQtyToRemoveEffective = qtyToRemoveRemaining.min(componentStockDetail.getQtyAvailable());
+			final BigDecimal componentQtyToRemoveEffective = qtyToRemoveRemaining.min(componentStockDetail.getQtyAvailable(ReservationKey.NO_KEY));
 			componentStockDetail.subtractQtyOnHand(componentQtyToRemoveEffective);
 
 			qtyToRemoveRemaining = qtyToRemoveRemaining.subtract(componentQtyToRemoveEffective);

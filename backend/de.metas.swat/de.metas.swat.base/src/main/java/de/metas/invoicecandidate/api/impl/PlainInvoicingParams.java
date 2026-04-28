@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -45,9 +46,12 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean dateAcctSet = false;
 	@Nullable private String poReference;
 	private boolean poReferenceSet = false;
+	@Nullable private LocalDate overrideDueDate;
+	private boolean overrideDueDateSet = false;
 	@Setter private BigDecimal check_NetAmtToInvoice = null;
-	private boolean updateLocationAndContactForInvoice = false;
+	@Setter @Getter private boolean updateLocationAndContactForInvoice = false;
 	private boolean completeInvoices = true; // default=true for backwards-compantibility
+	@Setter private Boolean deliveryDateAsInvoiceDate; // default=true for backwards-compantibility
 
 	public PlainInvoicingParams()
 	{
@@ -201,6 +205,30 @@ public class PlainInvoicingParams implements IInvoicingParams
 		poReferenceSet = true;
 	}
 
+	@Nullable
+	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		if (overrideDueDateSet)
+		{
+			return overrideDueDate;
+		}
+		else if (defaults != null)
+		{
+			return defaults.getOverrideDueDate();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		this.overrideDueDate = overrideDueDate;
+		overrideDueDateSet = true;
+	}
+
 
 	@Nullable
 	@Override
@@ -264,14 +292,21 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return this;
 	}
 
-	public boolean isUpdateLocationAndContactForInvoice()
+	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
 	{
-		return updateLocationAndContactForInvoice;
-	}
-
-	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice)
-	{
-		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+		if (deliveryDateAsInvoiceDate != null)
+		{
+			return deliveryDateAsInvoiceDate;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isDeliveryDateAsInvoiceDate();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public PlainInvoicingParams setCompleteInvoices(final boolean completeInvoices)
@@ -279,7 +314,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.completeInvoices = completeInvoices;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isCompleteInvoices()
 	{

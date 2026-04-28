@@ -89,6 +89,7 @@ public class DocTypePrintOptionsRepository
 				.sourceName("DocType options: C_DocType_ID=" + record.getC_DocType_ID() + ", flavor=" + DocumentReportFlavor.ofNullableCode(record.getDocumentFlavor()))
 				.option(DocumentPrintOptions.OPTION_IsPrintLogo, record.isPRINTER_OPTS_IsPrintLogo())
 				.option(DocumentPrintOptions.OPTION_IsPrintTotals, record.isPRINTER_OPTS_IsPrintTotals())
+				.option(DocumentPrintOptions.OPTION_IsPrintPrices, record.isPRINTER_OPTS_IsPrintPrices())
 				.build();
 	}
 

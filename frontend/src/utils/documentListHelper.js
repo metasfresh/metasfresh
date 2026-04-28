@@ -11,7 +11,7 @@ import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
-const DEFAULT_PAGE_LENGTH = 20;
+const DEFAULT_PAGE_LENGTH = 15;
 
 /**
  * @typedef {object} Props Component props

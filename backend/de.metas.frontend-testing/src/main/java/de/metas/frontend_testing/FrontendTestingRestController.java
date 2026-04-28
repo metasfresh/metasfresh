@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -76,7 +77,7 @@ public class FrontendTestingRestController
 		}
 	}
 
-	private <T> T callInContext(Supplier<T> callable)
+	private <T> T callInContext(@NonNull final Supplier<T> callable)
 	{
 		assertEnabled();
 
@@ -112,5 +113,17 @@ public class FrontendTestingRestController
 				.expectations(jsonExpectations)
 				.build()
 				.execute();
+	}
+
+	@PostMapping("setSysconfigs")
+	public void setSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> sysconfigs)
+	{
+		callInContext(() -> {
+			SysconfigCommand.builder()
+					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
 	}
 }

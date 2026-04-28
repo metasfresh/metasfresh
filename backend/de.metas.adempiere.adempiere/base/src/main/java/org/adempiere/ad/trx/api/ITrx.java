@@ -77,6 +77,8 @@ public interface ITrx
 	 * @return true if transaction active (e.g. not already committed/closed)
 	 */
 	boolean isActive();
+	
+	boolean isCommittedOK();
 
 	/**
 	 * Then this trx obtains a connection, it will check and invoke {@link Connection#setAutoCommit(boolean)} if necessary.

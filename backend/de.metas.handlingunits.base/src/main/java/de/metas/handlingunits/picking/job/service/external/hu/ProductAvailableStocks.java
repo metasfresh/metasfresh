@@ -106,6 +106,8 @@ public class ProductAvailableStocks
 
 	private Stream<IHUProductStorage> streamHUProductStorages(final Set<ProductId> productIds)
 	{
+		if(productIds.isEmpty()) { return Stream.empty(); }
+		
 		final List<I_M_HU> hus = handlingUnitsBL.createHUQueryBuilder()
 				.onlyContextClient(false) // fails when running from non-context threads like websockets value producers
 				.addOnlyWithProductIds(productIds)
@@ -114,7 +116,8 @@ public class ProductAvailableStocks
 				.list();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		return storageFactory.streamHUProductStorages(hus);
+		return storageFactory.streamHUProductStorages(hus)
+				.filter(huStorageProduct -> productIds.contains(huStorageProduct.getProductId()));
 
 	}
 }

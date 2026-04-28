@@ -1,10 +1,8 @@
-package de.metas.acct.gljournal.impl;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.acct.gljournal.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.acct.gljournal.impl;
 
 import de.metas.acct.Account;
 import de.metas.acct.gljournal.GLJournalLineSide;
@@ -136,12 +136,22 @@ public class GLJournalLineBL implements IGLJournalLineBL
 			final boolean hasDebit  = glJournalLine.getAmtSourceDr().signum() != 0;
 			final boolean hasCredit = glJournalLine.getAmtSourceCr().signum() != 0;
 
-			allowAccountDr = hasDebit;
-			allowAccountCr = hasCredit;
-
-			// Split transaction: no, it's not a split transaction because we are just starting a new group.
-			// User would be able to enable it if he wants
-			isSplitAcctTrx = !hasDebit || !hasCredit;
+			// In setGroupNoAndFlags(), the "group == null" branch:
+			if (!hasDebit && !hasCredit)
+			{
+				// New empty line — allow editing both sides
+				allowAccountDr = true;
+				allowAccountCr = true;
+				isSplitAcctTrx = false;
+			}
+			else
+			{
+				allowAccountDr = hasDebit;
+				allowAccountCr = hasCredit;
+				// Split transaction: no, it's not a split transaction because we are just starting a new group.
+				// User would be able to enable it if he wants
+				isSplitAcctTrx = !hasDebit || !hasCredit;
+			}
 		}
 		//
 		// Case: we found an unbalanced group, so this new journal line shall be part of that.

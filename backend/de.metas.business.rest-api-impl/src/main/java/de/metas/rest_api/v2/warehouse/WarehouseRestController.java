@@ -28,6 +28,7 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsert;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorRequest;
 import de.metas.rest_api.v2.warehouse.json.JsonResolveLocatorResponse;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Loggables;
@@ -42,18 +43,17 @@ import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/warehouses" })
 @RestController
@@ -101,14 +101,14 @@ public class WarehouseRestController
 		return ResponseEntity.ok(responseUpsert);
 	}
 
-	@GetMapping("/resolveLocator")
+	@PostMapping("/resolveLocator")
 	@NonNull
 	public JsonResolveLocatorResponse resolveLocatorScannedCode(
-			@RequestParam("scannedBarcode") final String scannedBarcode)
+			@RequestBody @NonNull final JsonResolveLocatorRequest request)
 	{
 		try
 		{
-			return JsonResolveLocatorResponse.ok(warehouseRestService.resolveLocatorScannedCode(ScannedCode.ofString(scannedBarcode)));
+			return JsonResolveLocatorResponse.ok(warehouseRestService.resolveLocatorScannedCode(ScannedCode.ofString(request.getScannedBarcode())));
 		}
 		catch (final Exception ex)
 		{

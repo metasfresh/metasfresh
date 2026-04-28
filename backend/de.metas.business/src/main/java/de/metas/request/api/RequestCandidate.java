@@ -1,9 +1,17 @@
 package de.metas.request.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.inout.QualityNoteId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.request.RequestConfidentialType;
+import de.metas.request.RequestPriority;
+import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -40,26 +48,27 @@ import java.time.ZonedDateTime;
 @Builder
 public class RequestCandidate
 {
-	@NonNull
-	RequestTypeId requestTypeId;
+	@NonNull RequestTypeId requestTypeId;
+	@NonNull OrgId orgId;
+	@Nullable ProductId productId;
+	@Nullable BPartnerId partnerId;
+	@Nullable UserId userId;
+	@Nullable TableRecordReference recordRef;
+	@Nullable ZonedDateTime dateDelivered;
+	@NonNull RequestConfidentialType confidentialType;
+	@NonNull String summary;
+	@Nullable QualityNoteId qualityNoteId;
+	@Nullable String performanceType;
+	@Nullable RequestStatusId statusId;
+	@Nullable RequestPriority priority;
+	@Nullable ZonedDateTime dateTrx;
+	@Nullable ZonedDateTime reminderDate;
 
-	@NonNull
-	OrgId orgId;
-	ProductId productId;
-	BPartnerId partnerId;
-	UserId userId;
-
-	TableRecordReference recordRef;
-
-	@NonNull
-	ZonedDateTime dateDelivered;
-	@NonNull
-	String confidentialType;
-	@NonNull
-	String summary;
-
-	@Nullable
-	QualityNoteId qualityNoteId;
-	@Nullable
-	String performanceType;
+	@Nullable BPartnerId vendorId;
+	@Nullable UserId salesRepId;
+	@Nullable ProjectId projectId;
+	@Nullable InOutId inOutId;
+	@Nullable OrderId orderId;
+	@Nullable PaymentId paymentId;
+	@Nullable InvoiceId invoiceId;
 }

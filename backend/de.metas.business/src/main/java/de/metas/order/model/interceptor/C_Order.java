@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -37,6 +38,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -49,6 +51,7 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -82,6 +85,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -90,6 +94,7 @@ import java.util.Optional;
 
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
+@Component
 public class C_Order
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -239,8 +244,25 @@ public class C_Order
 		{
 			return; // nothing to do yet
 		}
+		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		{
+			return; // prevent updating value from OLCand
+		}
 
 		orderBL.setIncoterms(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_PromotionCode_ID, I_C_Order.COLUMNNAME_C_PromotionCode2_ID })
+	public void validateNoDuplicatePromotionCode(@NonNull final I_C_Order order)
+	{
+		final PromotionCodeId code1 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode_ID());
+		final PromotionCodeId code2 = PromotionCodeId.ofRepoIdOrNull(order.getC_PromotionCode2_ID());
+		if (code1 != null && code2 != null && code1.equals(code2))
+		{
+			throw new AdempiereException("@C_PromotionCode_DuplicateError@")
+					.markAsUserValidationError();
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -357,12 +379,29 @@ public class C_Order
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void deleteShippingPackageIfPossible(final I_C_Order order)
+	public void blockReactivationIfProcessedTransportationOrder(final I_C_Order order)
 	{
-		if (!purchaseOrderToShipperTransportationService.deleteShippingPackagesForOrderIfPossible(OrderId.ofRepoId(order.getC_Order_ID())))
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
+		// Block reactivation when the transport order is already processed,
+		// but do NOT delete shipping packages — they must be preserved so the
+		// transport order link on receipt schedules (virtual column via M_ShippingPackage) survives.
+		if (purchaseOrderToShipperTransportationService.hasProcessedShipperTransportation(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
 			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void syncShippingPackagesFromOrder(final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return; // only for purchase orders
+		}
+		purchaseOrderToShipperTransportationService.syncShippingPackagesFromOrder(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
@@ -495,7 +534,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -506,8 +545,68 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
+	public void updateShipper(@NonNull final I_C_Order order)
+	{
+		if(InterfaceWrapperHelper.isCopying(order))
+		{
+			return;
+		}
+
+		if(BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
+		{
+			return;
+		}
 
 		orderBL.setShipperId(order);
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)
+	public void onDropShipLocationCallout(final I_C_Order order)
+	{
+		// NOTE: this method also fires on C_BPartner_Location_ID changes (see @ModelChange above),
+		// but the guard below ensures we only proceed when DropShip_Location_ID is actually set.
+		if (order.getDropShip_Location_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		// Auto-fill DropShip_BPartner_ID from C_BPartner_ID when location is set but BPartner is empty.
+		// This supports the quick-input flow where the user creates a one-time address
+		// from DropShip_Location_ID without first selecting a DropShip BPartner.
+		// Skip during copy — the copied order may have a different DropShip_BPartner_ID that hasn't been applied yet.
+		if (order.getDropShip_BPartner_ID() <= 0
+				&& order.getC_BPartner_ID() > 0
+				&& !InterfaceWrapperHelper.isCopying(order))
+		{
+			order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_HandOver_Location_ID
+	})
+	public void onHandOverLocation(final I_C_Order order)
+	{
+		if (order.getHandOver_Location_ID() <= 0)
+		{
+			return;
+		}
+
+		// Auto-fill HandOver_Partner_ID from C_BPartner_ID when location is set but partner is empty.
+		// Skip during copy — the copied order may have a different HandOver_Partner_ID that hasn't been applied yet.
+		if (order.getHandOver_Partner_ID() <= 0
+				&& order.getC_BPartner_ID() > 0
+				&& !InterfaceWrapperHelper.isCopying(order))
+		{
+			order.setHandOver_Partner_ID(order.getC_BPartner_ID());
+		}
 	}
 
 	@ModelChange(timings = {

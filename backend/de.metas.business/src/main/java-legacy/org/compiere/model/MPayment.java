@@ -248,6 +248,10 @@ public final class MPayment extends X_C_Payment
 			{
 				setTenderType(TenderType.Cash.getCode());
 			}
+			else
+			{
+				setTenderType(TenderType.DirectDeposit.getCode());
+			}
 		}
 
 		// We have a charge

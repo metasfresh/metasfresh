@@ -61,7 +61,7 @@ class PickingWorkflowLaunchersProviderTest
 
 	// TODO improve or delete!
 	@Nested
-	class considerOnlyIfQtyAvailableAtPickingLocator
+	class considerOnlyIfQtyAvailableAtPickingTrolley
 	{
 		private final AtomicInteger nextPackageableIndex = new AtomicInteger(1);
 		private UserId userId;

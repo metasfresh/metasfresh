@@ -47,8 +47,10 @@ public interface IInvoicingParams
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
-	
-	
+	String PARA_IsDeliveryDateAsInvoiceDate = "IsDeliveryDateAsInvoiceDate";
+	String PARA_OverrideDueDate = "OverrideDueDate";
+
+
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
 	 */
@@ -78,6 +80,11 @@ public interface IInvoicingParams
 	 * @return POReference to be set to all invoice candidates, right before enqueueing them.
 	 */
 	String getPOReference();
+
+	/**
+	 * @return override due date to be used for the invoice (when the payment term allows overriding).
+	 */
+	LocalDate getOverrideDueDate();
 
 	/**
 	 * Gets total net amount to invoice checksum (i.e. sum of all IC's let net amount to invoice, without considering the currency).
@@ -111,6 +118,11 @@ public interface IInvoicingParams
 	boolean isUpdateLocationAndContactForInvoice();
 
 	/**
+	 * @return {@code true} if the delivery date shall be used as invoice date.
+	 */
+	boolean isDeliveryDateAsInvoiceDate();
+
+	/**
 	 *  When this parameter is set on true, the newly generated invoices are directly completed.
 	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
 	 */
@@ -136,12 +148,17 @@ public interface IInvoicingParams
 		{
 			result.put(InvoicingParams.PARA_POReference, getPOReference());
 		}
+		if (getOverrideDueDate() != null)
+		{
+			result.put(InvoicingParams.PARA_OverrideDueDate, getOverrideDueDate());
+		}
 
 		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
 		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
+		result.put(InvoicingParams.PARA_IsDeliveryDateAsInvoiceDate, isDeliveryDateAsInvoiceDate());
 
 		return result.build();
 	}

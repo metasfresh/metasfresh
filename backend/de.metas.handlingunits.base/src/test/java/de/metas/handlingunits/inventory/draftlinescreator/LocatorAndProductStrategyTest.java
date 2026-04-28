@@ -79,7 +79,7 @@ public class LocatorAndProductStrategyTest
 		productId = BusinessTestHelper.createProductId("product", uomEach);
 
 		final I_M_Warehouse warehouse = BusinessTestHelper.createWarehouse("WH");
-		I_M_Locator locator = BusinessTestHelper.createLocator("locator", warehouse);
+		final I_M_Locator locator = BusinessTestHelper.createLocator("locator", warehouse);
 		locatorId = LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID());
 
 		//
@@ -102,7 +102,7 @@ public class LocatorAndProductStrategyTest
 				helper.huDefVirtual,
 				productId,
 				Quantity.of(1, uomEach));
-		I_M_HU vhu = CollectionUtils.singleElement(vhus);
+		final I_M_HU vhu = CollectionUtils.singleElement(vhus);
 
 		vhu.setM_Locator_ID(locatorId.getRepoId());
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -134,12 +134,12 @@ public class LocatorAndProductStrategyTest
 
 		if (!Check.isBlank(lotNumber))
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_LotNumber, lotNumber);
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_LotNumber, lotNumber);
 		}
 
 		if (bestBeforeDate != null)
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 		}
 
 		System.out.println("Created " + asiId + " with BestBeforeDate=" + bestBeforeDate + ", LotNumber=" + lotNumber);

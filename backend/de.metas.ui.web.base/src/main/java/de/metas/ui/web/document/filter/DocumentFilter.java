@@ -380,6 +380,11 @@ public final class DocumentFilter
 			return parameter(parameter);
 		}
 
+		public DocumentFilterBuilder addParameterEquals(@NonNull final String fieldName, @Nullable final Object value)
+		{
+			return addParameter(DocumentFilterParam.equals(fieldName, value));
+		}
+
 		public DocumentFilterBuilder addInternalParameter(@NonNull final DocumentFilterParam parameter)
 		{
 			parameter(parameter);

@@ -20,7 +20,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 Incoterms         character varying,
                 incotermlocation  character varying,
                 additionaltext    text,
-                isoffer           character
+                isoffer           character,
+                taxnote           text
             )
 AS
 $$
@@ -32,8 +33,8 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
        (CASE
             WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
         END)                                                  AS discount2,
-       TO_CHAR((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
-       TO_CHAR((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
        c.cursymbol,
        COALESCE(NULLIF(dtt.documentnote, ''),
                 NULLIF(dt.documentnote, ''))                  AS documentnote,
@@ -47,7 +48,8 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
            WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
                THEN 'Y'
                ELSE 'N'
-       END                                       AS isoffer
+       END                                       AS isoffer,
+       report.TaxNote(p_Order_ID, NULL, p_Language)                                                 AS taxnote
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID

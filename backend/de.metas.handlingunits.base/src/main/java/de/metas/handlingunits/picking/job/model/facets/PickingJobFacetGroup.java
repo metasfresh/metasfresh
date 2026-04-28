@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.picking.job.model.facets;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -58,6 +60,7 @@ public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 	}
 
 	@NonNull
+	@JsonCreator
 	public static PickingJobFacetGroup ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
@@ -70,4 +73,7 @@ public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 	}
 
 	public static boolean equals(@Nullable PickingJobFacetGroup group1, @Nullable PickingJobFacetGroup group2) {return Objects.equals(group1, group2);}
+
+	@JsonValue
+	public String toJson() {return getCode();}
 }

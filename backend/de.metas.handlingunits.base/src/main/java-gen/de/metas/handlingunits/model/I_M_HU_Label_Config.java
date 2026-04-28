@@ -1,8 +1,7 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Label_Config
  *  @author metasfresh (generated) 
@@ -21,7 +20,7 @@ public interface I_M_HU_Label_Config
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -52,7 +51,7 @@ public interface I_M_HU_Label_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Copies to Print Directly.
+	 * Set Copies to print immediately.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -61,7 +60,7 @@ public interface I_M_HU_Label_Config
 	void setAutoPrintCopies (int AutoPrintCopies);
 
 	/**
-	 * Get Copies to Print Directly.
+	 * Get Copies to print immediately.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -246,8 +245,8 @@ public interface I_M_HU_Label_Config
 	String COLUMNNAME_IsApplyToTUs = "IsApplyToTUs";
 
 	/**
-	 * Set Print directly.
-	 * Print directly when the HU becomes Active
+	 * Set Print immediately.
+	 * Print immediately when the HU becomes Active
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -256,8 +255,8 @@ public interface I_M_HU_Label_Config
 	void setIsAutoPrint (boolean IsAutoPrint);
 
 	/**
-	 * Get Print directly.
-	 * Print directly when the HU becomes Active
+	 * Get Print immediately.
+	 * Print immediately when the HU becomes Active
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -285,10 +284,6 @@ public interface I_M_HU_Label_Config
 	 * <br>Virtual Column: false
 	 */
 	int getLabelReport_Process_ID();
-
-	org.compiere.model.I_AD_Process getLabelReport_Process();
-
-	void setLabelReport_Process(org.compiere.model.I_AD_Process LabelReport_Process);
 
 	ModelColumn<I_M_HU_Label_Config, org.compiere.model.I_AD_Process> COLUMN_LabelReport_Process_ID = new ModelColumn<>(I_M_HU_Label_Config.class, "LabelReport_Process_ID", org.compiere.model.I_AD_Process.class);
 	String COLUMNNAME_LabelReport_Process_ID = "LabelReport_Process_ID";

@@ -44,6 +44,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
@@ -57,6 +58,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -440,4 +442,17 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
 	 */
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+
+	/**
+	 * Extracts a common projectId from the given invoice candidates. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	Optional<ProjectId> extractCommonProjectId(Collection<I_C_Invoice_Candidate> invoiceCandidates);
+
+	/**
+	 * Updates C_Project_ID on all unprocessed invoice candidates for the given order line.
+	 */
+	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
 }

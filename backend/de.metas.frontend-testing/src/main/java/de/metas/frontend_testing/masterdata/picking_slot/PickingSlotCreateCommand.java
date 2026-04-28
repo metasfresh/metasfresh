@@ -28,7 +28,7 @@ public class PickingSlotCreateCommand
 				? context.getId(request.getLocator(), LocatorId.class)
 				: context.getIdOfType(LocatorId.class);
 		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocation() != null
-				? context.getId(request.getBpartnerLocation(), BPartnerLocationId.class)
+				? context.getBPartnerLocationId(request.getBpartnerLocation())
 				: null;
 
 		final PickingSlotIdAndCaption pickingSlot = pickingSlotDAO.createPickingSlot(PickingSlotCreateRequest.builder()

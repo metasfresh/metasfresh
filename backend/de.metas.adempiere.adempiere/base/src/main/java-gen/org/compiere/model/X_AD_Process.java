@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1946797104L;
+	private static final long serialVersionUID = 1041533436L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -133,6 +133,33 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public org.compiere.model.I_AD_RelationType getAD_RelationType()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_RelationType_ID, org.compiere.model.I_AD_RelationType.class);
+	}
+
+	@Override
+	public void setAD_RelationType(final org.compiere.model.I_AD_RelationType AD_RelationType)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_RelationType_ID, org.compiere.model.I_AD_RelationType.class, AD_RelationType);
+	}
+
+	@Override
+	public void setAD_RelationType_ID (final int AD_RelationType_ID)
+	{
+		if (AD_RelationType_ID < 1) 
+			set_Value (COLUMNNAME_AD_RelationType_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_RelationType_ID, AD_RelationType_ID);
+	}
+
+	@Override
+	public int getAD_RelationType_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_RelationType_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_AD_ReportView getAD_ReportView()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class);
@@ -223,6 +250,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setCSVFieldQuote (final @Nullable java.lang.String CSVFieldQuote)
+	{
+		set_Value (COLUMNNAME_CSVFieldQuote, CSVFieldQuote);
+	}
+
+	@Override
+	public java.lang.String getCSVFieldQuote() 
+	{
+		return get_ValueAsString(COLUMNNAME_CSVFieldQuote);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -306,9 +345,21 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isFormatExcelFile()
+	public boolean isFormatExcelFile() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
+	}
+
+	@Override
+	public void setIsIncludeCSVHeaderRow (final boolean IsIncludeCSVHeaderRow)
+	{
+		set_Value (COLUMNNAME_IsIncludeCSVHeaderRow, IsIncludeCSVHeaderRow);
+	}
+
+	@Override
+	public boolean isIncludeCSVHeaderRow()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsIncludeCSVHeaderRow);
 	}
 
 	@Override
@@ -318,7 +369,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isLogWarning()
+	public boolean isLogWarning() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
 	}
@@ -390,7 +441,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isUpdateExportDate()
+	public boolean isUpdateExportDate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
 	}
@@ -597,6 +648,8 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_JasperReportsJSON = "JasperReportsJSON";
 	/** PostgREST = PostgREST */
 	public static final String TYPE_PostgREST = "PostgREST";
+	/** RelationTypeInOverlay = RelationTypeInOverlay */
+	public static final String TYPE_RelationTypeInOverlay = "RelationTypeInOverlay";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

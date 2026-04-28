@@ -153,8 +153,8 @@ public class OrderLineBL implements IOrderLineBL
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	@NonNull private final ITaxDAO taxDAO =Services.get(ITaxDAO.class);
-	@NonNull private final IWarehouseAdvisor warehouseAdvisor =	Services.get(IWarehouseAdvisor.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private IOrderBL orderBL()
@@ -170,6 +170,12 @@ public class OrderLineBL implements IOrderLineBL
 
 	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderLineId)
 	{
 		return orderDAO.getOrderLineById(orderLineId);
 	}
@@ -219,6 +225,16 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		return getQtyToDeliver(orderLine);
+	}
+
+	@Override
+	public Quantity getQtyDelivered(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyDelivered, uom);
 	}
 
 	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
@@ -810,7 +826,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -1045,7 +1061,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine  orderLine)
+	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order orderRecord = orderBL().getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -1067,7 +1083,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
 			// Only set if TRUE - otherwise leave null (don't filter)
-			isTaxExempt = billBPartnerRecord.isTaxExempt() ?  Boolean.TRUE : null;
+			isTaxExempt = billBPartnerRecord.isTaxExempt() ? Boolean.TRUE : null;
 		}
 		else
 		{
@@ -1100,5 +1116,25 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		orderLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
+	}
+
+	@Override
+	public void setGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qtyOrdered = Quantitys.of(orderLine.getQtyOrdered(), stockUomId);
+
+		final Quantity grossWeight = productBL.computeGrossWeight(productId, qtyOrdered).orElse(null);
+
+		if (grossWeight == null)
+		{
+			orderLine.setGrossWeightKg(BigDecimal.ZERO);
+		}
+		else
+		{
+			final Quantity grossWeightInKg = uomConversionBL.convertToKilogram(grossWeight, productId);
+			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
+		}
 	}
 }

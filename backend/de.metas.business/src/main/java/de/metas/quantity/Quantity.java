@@ -32,14 +32,16 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
- * Immutable Quantity.
+ * Immutable Quantity (value + UOM).
  * <p>
- * Besides quantity value ({@link #getQty()}) and it's uom ({@link #getUOM()} this object contains also source quantity/uom.
+ * Besides quantity value ({@link #getQty()}) and its UOM ({@link #getUOM()}) this object contains also source quantity/uom.
  * <p>
  * The actual meaning of source quantity/uom depends on who constructs the {@link Quantity} object but the general meaning is: the quantity/uom in some source or internal UOM.
  * <p>
  * e.g. when you ask a storage to allocate a quantity/uom that method could return a quantity object containing how much was allocated (in requested UOM), but the source quantity/uom is the quantity
  * in storage's UOM.
+ * <p>
+ * To create instances, use the factory methods in {@link Quantitys}.
  *
  * @author tsa
  */
@@ -582,6 +584,11 @@ public final class Quantity implements Comparable<Quantity>
 		return signum() > 0;
 	}
 
+	public boolean isZeroOrNegative()
+	{
+		return signum() <= 0;
+	}
+
 	/**
 	 * Adds given quantity and returns the result.
 	 * Assumes that the UOMs are equal.
@@ -665,6 +672,10 @@ public final class Quantity implements Comparable<Quantity>
 		return add(of(qtyToAdd, uom));
 	}
 
+	/**
+	 * Precision used is {@code max(UOM.StdPrecision, qty.scale())} to avoid
+	 * truncating significant digits when the value has more decimals than the UOM declares.
+	 */
 	public Quantity add(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
@@ -673,12 +684,13 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				percent.addToBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.addToBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 
+	/** @see #add(Percent) */
 	public Quantity subtract(@NonNull final Percent percent)
 	{
 		if (percent.isZero())
@@ -687,9 +699,9 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(
-				percent.subtractFromBase(this.qty, this.uom.getStdPrecision()),
+				percent.subtractFromBase(this.qty, Math.max(this.uom.getStdPrecision(), this.qty.scale())),
 				this.uom,
-				percent.subtractFromBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				percent.subtractFromBase(this.sourceQty, Math.max(this.sourceUom.getStdPrecision(), this.sourceQty.scale())),
 				this.sourceUom);
 	}
 
@@ -749,10 +761,13 @@ public final class Quantity implements Comparable<Quantity>
 		return diff.signum();
 	}
 
-	public boolean isGreaterThan(@NonNull final Quantity other)
-	{
-		return this.compareTo(other) > 0;
-	}
+	public boolean isGreaterThan(@NonNull final Quantity other) {return this.compareTo(other) > 0;}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) >= 0;}
+
+	public boolean isLessThan(@NonNull final Quantity other) {return this.compareTo(other) < 0;}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) <= 0;}
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{

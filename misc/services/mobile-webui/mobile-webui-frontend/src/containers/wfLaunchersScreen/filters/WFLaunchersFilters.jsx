@@ -103,7 +103,13 @@ const WFLaunchersFilters = ({ applicationId, onDone }) => {
         />
       )}
       {groups?.map((group) => (
-        <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
+        <FacetGroup
+          key={group.groupId}
+          groupId={group.groupId}
+          caption={group.caption}
+          facets={group.facets}
+          onClick={onFacetClicked}
+        />
       ))}
       {groupsLoading && (
         <div className="loading">

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_ScriptedExportConversion
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compiere.model.PO implements I_ExternalSystem_Config_ScriptedExportConversion, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1371891330L;
+	private static final long serialVersionUID = 2016930087L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_ScriptedExportConversion (final Properties ctx, final int ExternalSystem_Config_ScriptedExportConversion_ID, @Nullable final String trxName)
@@ -65,13 +65,13 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	}
 
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription() 
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -164,13 +164,13 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	/** AnalysisReport = QMA */
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	@Override
-	public void setDocBaseType (final @Nullable String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
 	@Override
-	public String getDocBaseType() 
+	public java.lang.String getDocBaseType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
@@ -206,64 +206,64 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	}
 
 	@Override
-	public void setExternalSystem_Outbound_Endpoint_ID (final int ExternalSystem_Outbound_Endpoint_ID)
+	public void setExternalSystem_Endpoint_ID (final int ExternalSystem_Endpoint_ID)
 	{
-		if (ExternalSystem_Outbound_Endpoint_ID < 1) 
-			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, null);
-		else 
-			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, ExternalSystem_Outbound_Endpoint_ID);
+		if (ExternalSystem_Endpoint_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Endpoint_ID, ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Outbound_Endpoint_ID() 
+	public int getExternalSystem_Endpoint_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Endpoint_ID);
 	}
 
 	@Override
-	public void setExternalSystemValue (final String ExternalSystemValue)
+	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
 
 	@Override
-	public String getExternalSystemValue() 
+	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
 
 	@Override
-	public void setScriptIdentifier (final String ScriptIdentifier)
+	public void setIsTriggerOnComplete (final boolean IsTriggerOnComplete)
+	{
+		set_Value (COLUMNNAME_IsTriggerOnComplete, IsTriggerOnComplete);
+	}
+
+	@Override
+	public boolean isTriggerOnComplete() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTriggerOnComplete);
+	}
+
+	@Override
+	public void setScriptIdentifier (final java.lang.String ScriptIdentifier)
 	{
 		set_Value (COLUMNNAME_ScriptIdentifier, ScriptIdentifier);
 	}
 
 	@Override
-	public String getScriptIdentifier() 
+	public java.lang.String getScriptIdentifier() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScriptIdentifier);
 	}
 
 	@Override
-	public void setSeqNo (final int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
-	}
-
-	@Override
-	public int getSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
-	}
-
-	@Override
-	public void setWhereClause (final String WhereClause)
+	public void setWhereClause (final java.lang.String WhereClause)
 	{
 		set_Value (COLUMNNAME_WhereClause, WhereClause);
 	}
 
 	@Override
-	public String getWhereClause() 
+	public java.lang.String getWhereClause() 
 	{
 		return get_ValueAsString(COLUMNNAME_WhereClause);
 	}

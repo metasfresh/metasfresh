@@ -1,7 +1,11 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 @ghActions:run_on_executor7
 Feature: Shipment schedule export rest-api
+## F00105: Shipment Schedule
   Mostly covering the "shipBPartner"."contact" info differences when exporting oxid vs non-oxid (shopware) shipment candidates.
 
   Background:
@@ -52,7 +56,6 @@ Feature: Shipment schedule export rest-api
       | shipUser_ref                      | Shopware6      | UserID  | shipUser_reference    | shipUser                  |                             |
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
-
 
   @Id:S0150_210
   Scenario: Export oxid shipment candidate
@@ -118,6 +121,8 @@ Feature: Shipment schedule export rest-api
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -212,6 +217,8 @@ Feature: Shipment schedule export rest-api
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |

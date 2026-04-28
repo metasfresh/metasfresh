@@ -468,6 +468,7 @@ public class PaymentAllocationServiceTest
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
+				.dateAcct(LocalDate.now())
 				.build();
 	}
 
@@ -546,6 +547,7 @@ public class PaymentAllocationServiceTest
 			payment.setC_BPartner_ID(bpartnerId.getRepoId());
 			payment.setC_Currency_ID(euroCurrencyId.getRepoId());
 			payment.setDateTrx(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+			payment.setDateAcct(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
 			payment.setAD_Org_ID(adOrgId.getRepoId());
 			payment.setPayAmt(payAmt);
 			payment.setIsReceipt(isReceiptOptional.orElseTrue());

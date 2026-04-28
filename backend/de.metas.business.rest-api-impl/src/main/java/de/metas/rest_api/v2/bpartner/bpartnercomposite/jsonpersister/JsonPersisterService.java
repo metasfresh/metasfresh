@@ -303,9 +303,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
-		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = contactQuery
-				.flatMap(bpartnerCompositeRepository::getByContact);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = getBPartnerCompositeByContactIdentifier(contactIdentifier);
 
 		final BPartnerContact contact;
 		final BPartnerComposite bpartnerComposite;
@@ -365,6 +363,12 @@ public class JsonPersisterService
 		}
 
 		return responseUpsertItem;
+	}
+
+	public @NonNull Optional<BPartnerCompositeAndContactId> getBPartnerCompositeByContactIdentifier(final @NonNull ExternalIdentifier contactIdentifier)
+	{
+		return createContactQuery(contactIdentifier)
+				.flatMap(bpartnerCompositeRepository::getByContact);
 	}
 
 	private void handleExternalReference(
@@ -1819,6 +1823,18 @@ public class JsonPersisterService
 			else
 			{
 				locationType.visitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
+			}
+		}
+
+		if (jsonBPartnerLocation.isVisitorsAddressDefaultSet())
+		{
+			if (jsonBPartnerLocation.getVisitorsAddressDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"visitorsAddressDefault\" : null ");
+			}
+			else
+			{
+				locationType.visitorsAddressDefault(jsonBPartnerLocation.getVisitorsAddressDefault());
 			}
 		}
 

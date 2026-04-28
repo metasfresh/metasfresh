@@ -1,6 +1,10 @@
 @from:cucumber
 @ghActions:run_on_executor7
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00150
 Feature: reversed shipment
+
+  ## F00150: Sales Shipment
 
   Background:
     Given infrastructure and metasfresh are running

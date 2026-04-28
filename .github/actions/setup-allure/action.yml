@@ -1,0 +1,22 @@
+name: 'Setup Allure CLI'
+description: 'Install Allure command-line tool for report generation'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Allure CLI
+      shell: bash
+      run: |
+        # Extract version from package.json (single source of truth)
+        ALLURE_VERSION=$(jq -r '.devDependencies["allure-commandline"] | sub("^\\^"; "")' e2e/mobile-webui/package.json)
+
+        if [ -z "$ALLURE_VERSION" ] || [ "$ALLURE_VERSION" = "null" ]; then
+          echo "::error::Could not extract allure-commandline version from e2e/mobile-webui/package.json"
+          exit 1
+        fi
+
+        echo "Installing Allure CLI v${ALLURE_VERSION} (from e2e/mobile-webui/package.json)..."
+        wget -q "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" -O /tmp/allure.tgz
+        sudo tar -xzf /tmp/allure.tgz -C /opt/
+        sudo ln -sf "/opt/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+        allure --version
+        echo "✓ Allure CLI installed successfully"

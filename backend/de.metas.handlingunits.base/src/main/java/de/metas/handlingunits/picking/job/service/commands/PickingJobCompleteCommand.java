@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGRAIValidator;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.i18n.AdMessageKey;
@@ -67,6 +68,12 @@ public class PickingJobCompleteCommand
 
 	public PickingJob execute()
 	{
+		// do nothing if already completed 
+		if (initialPickingJob0.getDocStatus().isCompleted())
+		{
+			return initialPickingJob0;
+		}
+
 		validateJob();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
@@ -98,16 +105,24 @@ public class PickingJobCompleteCommand
 
 	private void validateJob()
 	{
-		initialPickingJob0.assertNotProcessed();
-		if (initialPickingJob0.isNothingPicked())
+		final PickingJob pickingJob = initialPickingJob0;
+
+		pickingJob.assertNotProcessed();
+		if (pickingJob.isNothingPicked())
 		{
 			throw new AdempiereException(NOTHING_HAS_BEEN_PICKED);
 		}
 
-		final PickingJobOptions options = configService.getPickingJobOptions(initialPickingJob0.getCustomerId());
-		if (!options.isAllowCompletingPartialPickingJob() && !initialPickingJob0.getProgress().isDone())
+		final PickingJobOptions options = configService.getPickingJobOptions(pickingJob.getCustomerId());
+		if (!options.isAllowCompletingPartialPickingJob() && !pickingJob.getProgress().isDone())
 		{
 			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
+
+		PickingJobGRAIValidator.builder()
+				.huService(huService)
+				.pickingJob(pickingJob)
+				.build()
+				.validate();
 	}
 }

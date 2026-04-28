@@ -7,7 +7,7 @@ const WFLaunchersFilterButton = ({ filters, facets, onClick }) => {
   return (
     <ButtonWithIndicator
       id="filter-button"
-      additionalCssClass="filter-button"
+      additionalCssClass="action-button"
       caption={computeCaption({ filters, facets })}
       typeFASIconName="fa-filter"
       disabled={false}

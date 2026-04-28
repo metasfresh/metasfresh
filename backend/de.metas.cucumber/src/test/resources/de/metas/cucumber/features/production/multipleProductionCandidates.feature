@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
 @ghActions:run_on_executor6
 Feature: create multiple production candidates
+## F8033: Production
   As a user
   I want to create multiple production candidates for the same Sales Order
 
@@ -80,7 +84,9 @@ Feature: create multiple production candidates
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber
-  @flaky
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand.
@@ -102,6 +108,7 @@ Feature: create multiple production candidates
     #
     # Complete the sales order and expected the PP_Order_Candidate to be generated.
     When the order identified by o_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -124,6 +131,7 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     And the order identified by o_1 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -147,6 +155,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID |
       | oc_1                  |
       | oc_2                  |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppo_1      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12         | endcustomer_2 | 2021-04-16T21:00:00Z | DR        |
@@ -188,6 +197,9 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.200
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
@@ -247,8 +259,10 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
-  @flaky
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.300
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
@@ -284,6 +298,7 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
@@ -343,6 +358,9 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8033_Manufacturing_Workflow_Activity_Raw_Materials_Issue_per_single_product
+@F8033
   @Id:S0212.400
   Scenario: Production candidates will be manufactured taking into account the SeqNo.
   _Given two PP_Product_Plannings for different products (P1&P2)

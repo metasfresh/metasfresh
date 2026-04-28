@@ -1,32 +1,10 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -35,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1818204438L;
+	private static final long serialVersionUID = 761250792L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -2023,26 +2001,57 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setPromotionCode (final @Nullable java.lang.String PromotionCode)
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
 	{
-		set_Value (COLUMNNAME_PromotionCode, PromotionCode);
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
 	}
 
 	@Override
-	public java.lang.String getPromotionCode() 
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
 	{
-		return get_ValueAsString(COLUMNNAME_PromotionCode);
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
 	}
 
 	@Override
-	public void setPurchaser_User_ID (final int Purchaser_User_ID)
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
 	{
-		throw new IllegalArgumentException ("Purchaser_User_ID is virtual column");	}
+		if (C_PromotionCode_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
 
 	@Override
-	public int getPurchaser_User_ID() 
+	public int getC_PromotionCode_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
 	}
 
 	@Override
@@ -2204,6 +2213,19 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setTotalGrossWeightKg (final BigDecimal TotalGrossWeightKg)
+	{
+		set_Value (COLUMNNAME_TotalGrossWeightKg, TotalGrossWeightKg);
+	}
+
+	@Override
+	public BigDecimal getTotalGrossWeightKg() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalGrossWeightKg);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

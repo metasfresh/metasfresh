@@ -294,6 +294,9 @@ class TableQuickInput extends PureComponent {
   handleOnClick = () => this.setState({ hasFocus: true });
 
   render() {
+    // IMPORTANT: The <form> element is crucial for RawLookup.focusNextFieldInForm()
+    // to work. It finds the next focusable input by querying the parent <form>.
+    // Do NOT replace <form> with <div> or focus advance after Enter will break.
     return (
       <form
         onSubmit={this.onSubmit}

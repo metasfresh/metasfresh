@@ -12,7 +12,6 @@
 	<artifactId>de.metas.purchasecandidate.base</artifactId>
 
 	<properties>
-		<migration-sql-basedir>45-de.metas.purchasecandidate</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

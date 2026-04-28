@@ -22,11 +22,11 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.payment.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -58,7 +58,11 @@ public interface IPaymentDocument
 
 	void addAllocatedAmt(Money allocatedPayAmtToAdd);
 
+	void addAllocatedAmt(AllocationAmounts amount);
+
 	LocalDate getDate();
+
+	LocalDate getDateAcct();
 
 	ClientAndOrgId getClientAndOrgId();
 

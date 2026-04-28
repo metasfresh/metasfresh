@@ -96,6 +96,7 @@ class JsonDeliveryRequestTest {
                 .id("REQ-1")
                 .deliveryOrderId(456)
                 .pickupAddress(aPickupAddress())
+				.pickupContact(JsonContact.builder().name("John").language("en").build())
                 .pickupDate("2025-10-01")
 				.timeFrom("10:00")
 				.timeTo("18:00")

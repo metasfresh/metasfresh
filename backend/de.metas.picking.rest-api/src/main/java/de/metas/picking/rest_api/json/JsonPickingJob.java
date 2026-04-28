@@ -61,6 +61,7 @@ public class JsonPickingJob
 	@Builder.Default Set<PickAttribute> readAttributes = PickAttributesConfig.DEFAULT.getAttributesToReadSet();
 	boolean showPromptWhenOverPicking;
 	boolean anonymousPickHUsOnTheFly;
+	boolean completeJobAutomatically;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{

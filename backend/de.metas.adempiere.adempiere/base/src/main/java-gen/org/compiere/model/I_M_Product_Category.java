@@ -645,4 +645,25 @@ public interface I_M_Product_Category
     public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromForecast (boolean IsExcludeFromForecast);
+
+	/**
+	 * Get Exclude from Forecast.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromForecast();
+
+	org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_IsExcludeFromForecast = new org.adempiere.model.ModelColumn<>(I_M_Product_Category.class, "IsExcludeFromForecast", null);
+	String COLUMNNAME_IsExcludeFromForecast = "IsExcludeFromForecast";
 }

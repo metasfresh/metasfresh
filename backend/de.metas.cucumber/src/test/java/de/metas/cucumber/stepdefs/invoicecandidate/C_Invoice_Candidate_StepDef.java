@@ -25,11 +25,10 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -41,6 +40,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
@@ -58,6 +59,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -88,11 +90,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
@@ -100,6 +104,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +116,10 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFound;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_DateInvoiced;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
@@ -154,7 +162,6 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -167,6 +174,8 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final M_InOut_StepDefData shipmentTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -178,7 +187,9 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
-			@NonNull final M_InOut_StepDefData shipmentTable)
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_PromotionCode_StepDefData promotionCodeTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -190,6 +201,8 @@ public class C_Invoice_Candidate_StepDef
 		this.taxTable = taxTable;
 		this.inoutLineTable = inoutLineTable;
 		this.shipmentTable = shipmentTable;
+		this.projectTable = projectTable;
+		this.promotionCodeTable = promotionCodeTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -216,6 +229,15 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * Finds and validates {@code C_Invoice_Candidate} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code validation columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
@@ -275,20 +297,18 @@ public class C_Invoice_Candidate_StepDef
 	@And("update C_Invoice_Candidate:")
 	public void update_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Invoice_Candidate_ID)
+				.forEach(row -> {
+					final StepDefDataIdentifier invoiceCandIdentifier = row.getAsIdentifier();
+					final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 
-			final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override);
-			if (qtyToInvoiceOverride != null)
-			{
-				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-			}
+					row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
+							.ifPresent(invoiceCandidate::setQtyToInvoice_Override);
 
-			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
-		}
+					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
+				});
 	}
 
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
@@ -360,7 +380,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
-					final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier invoiceCandidateIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID);
 					final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
 					final int maxSecondsToWait = 120;
@@ -465,6 +485,18 @@ public class C_Invoice_Candidate_StepDef
 						{
 							assertThat(updatedInvoiceCandidate.getQtyWithIssues_Effective()).isEqualTo(qtyWithIssuesEffective);
 						}
+
+						final I_C_Invoice_Candidate icForPromoCodeCheck = updatedInvoiceCandidate;
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode_ID()).as("C_PromotionCode_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_PromotionCode2_ID)
+								.map(promotionCodeTable::get)
+								.ifPresent(promoCode -> assertThat(icForPromoCodeCheck.getC_PromotionCode2_ID()).as("C_PromotionCode2_ID").isEqualTo(promoCode.getC_PromotionCode_ID()));
+
+						final LocalDate deliveryDate = TimeUtil.asLocalDate(updatedInvoiceCandidate.getDeliveryDate());
+						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+								.ifPresent(rowDeliveryDate -> assertThat(deliveryDate).isEqualTo(rowDeliveryDate));
 					}
 					catch (final Throwable e)
 					{
@@ -478,7 +510,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
-					final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier invoiceCandidateIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID);
 					final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
 					final int maxSecondsToWait = 120;
@@ -581,6 +613,14 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalBoolean(COLUMNNAME_IsToClear)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isToClear()).isEqualTo(expected));
+
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID)
+								.ifPresent(projectIdentifier -> {
+									final I_C_Project project = projectTable.get(projectIdentifier);
+									softly.assertThat(finalInvoiceCandidate.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+								});
+
+						softly.assertAll();
 					}
 					catch (final Throwable e)
 					{
@@ -649,11 +689,8 @@ public class C_Invoice_Candidate_StepDef
 	@And("^after not more than (.*)s locate invoice candidates by order id:$")
 	public void locate_invoice_candidate_by_order_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			findInvoiceCandidateByOrderId(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(row -> findInvoiceCandidateByOrderId(timeoutSec, row));
 	}
 
 	@And("^after not more than (.*)s, locate C_Invoice_Candidates by externalHeaderId$")
@@ -722,6 +759,9 @@ public class C_Invoice_Candidate_StepDef
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 					invoicingParams.setIgnoreInvoiceSchedule(false);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
+					row.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
+					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
+					row.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
 
 					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
@@ -747,6 +787,85 @@ public class C_Invoice_Candidate_StepDef
 
 					DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
 				});
+	}
+
+	@And("^process invoice candidates together and wait (.*)s for C_Invoice_Candidate to be processed$")
+	public void process_invoice_cand_together(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+
+		if (rows.isEmpty())
+		{
+			return;
+		}
+
+		// Collect all invoice candidate IDs
+		final ImmutableList.Builder<InvoiceCandidateId> invoiceCandidateIdsBuilder = ImmutableList.builder();
+		final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
+
+		for (final DataTableRow row : rows)
+		{
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			invoiceCandidates.add(invoiceCandidate);
+			invoiceCandidateIdsBuilder.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+		}
+
+		final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidateIdsBuilder.build();
+
+		// Use the first row to extract common invoicing parameters
+		final DataTableRow firstRow = rows.get(0);
+		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
+		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
+		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
+		firstRow.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
+
+		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
+		invoicingParams.setCompleteInvoices(completeInvoices);
+
+		// Wait for all candidates to not be marked as to recompute
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
+		}
+
+		// Create selection with all invoice candidate IDs
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(
+				invoiceCandidateIds.stream()
+						.map(InvoiceCandidateId::getRepoId)
+						.collect(ImmutableList.toImmutableList()),
+				Trx.TRXNAME_None);
+
+		try
+		{
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(invoicingParams)
+					.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+		}
+		catch (final AdempiereException adempiereException)
+		{
+			for (int i = 0; i < invoiceCandidates.size(); i++)
+			{
+				logCurrentContext(invoiceCandidates.get(i), rows.get(i));
+			}
+			throw adempiereException;
+		}
+
+		// Wait for all invoices to be created
+		for (int i = 0; i < invoiceCandidates.size(); i++)
+		{
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.get(i);
+			final DataTableRow row = rows.get(i);
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate, row), () -> logCurrentContext(invoiceCandidate, row));
+		}
+
+		DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
 	}
 
 	@And("^there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: (.*)$")
@@ -831,21 +950,21 @@ public class C_Invoice_Candidate_StepDef
 		invoiceCandTable.put(invoiceCandidateIdentifier, invoiceCandidates.get(0));
 	}
 
-	private void findInvoiceCandidateByOrderId(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
+	private void findInvoiceCandidateByOrderId(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final String invoiceCandidateIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final ImmutableList<String> invoiceCandidateIdentifiers = StepDefUtil.extractIdentifiers(invoiceCandidateIdentifierCandidate);
+		final ImmutableList<StepDefDataIdentifier> invoiceCandidateIdentifiers = row.getAsIdentifierList(COLUMNNAME_C_Invoice_Candidate_ID);
 
 		if (invoiceCandidateIdentifiers.isEmpty())
 		{
 			throw new RuntimeException("No invoice candidate identifier present for column: " + COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 		}
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID);
 
-		final Integer orderId = orderTable.getOptional(orderIdentifier)
+		final OrderId orderId = orderTable.getOptional(orderIdentifier)
 				.map(I_C_Order::getC_Order_ID)
-				.orElseGet(() -> Integer.parseInt(orderIdentifier));
+				.map(OrderId::ofRepoId)
+				.orElseGet(() -> orderIdentifier.getAsId(OrderId.class));
 
 		final Supplier<ImmutableList<I_C_Invoice_Candidate>> candidatesSupplier = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -871,7 +990,7 @@ public class C_Invoice_Candidate_StepDef
 
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final ImmutableList<String> invoiceCandidateIdentifiers = StepDefUtil.extractIdentifiers(invoiceCandidateIdentifier);
+		final ImmutableList<StepDefDataIdentifier> invoiceCandidateIdentifiers = StepDefUtil.extractIdentifiers(invoiceCandidateIdentifier);
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -900,16 +1019,18 @@ public class C_Invoice_Candidate_StepDef
 	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
 	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
+		DataTableRows.of(dataTable)
+				.forEach(row ->
+						{
+							final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
 
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
-					() -> retrieveInvoiceCandidate(candidatesQuery));
+							final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+									() -> retrieveInvoiceCandidate(candidatesQuery));
 
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
-		}
+							final StepDefDataIdentifier invoiceCandIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID);
+							invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
+						}
+				);
 	}
 
 	public void manuallyRecomputeInvoiceCandidate(
@@ -955,7 +1076,7 @@ public class C_Invoice_Candidate_StepDef
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
 		}
-		catch (InterruptedException e)
+		catch (final InterruptedException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.setParameter("invoiceCandidateIds", invoiceCandidateIds);
@@ -977,10 +1098,11 @@ public class C_Invoice_Candidate_StepDef
 		return resultWasFound(invoiceCandidate);
 	}
 
-	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidateQuery(final @NonNull Map<String, String> row)
+	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidateQuery(final @NonNull DataTableRow row)
 	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		final I_C_OrderLine orderLine = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID)
+				.lookupIn(orderLineTable);
+		Check.assumeNotNull(orderLine, "orderLine not null");
 
 		final IQueryBuilder<I_C_Invoice_Candidate> candQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderLine.getC_Order_ID())
@@ -1202,7 +1324,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private void logCurrentContext(
 			@NonNull final Supplier<ImmutableList<I_C_Invoice_Candidate>> candidatesSupplier,
-			@NonNull final Integer orderId)
+			@NonNull final OrderId orderId)
 	{
 		final StringBuilder message = new StringBuilder();
 
@@ -1228,7 +1350,7 @@ public class C_Invoice_Candidate_StepDef
 	private void wrapInvoiceCandidateRelatedException(
 			@NonNull final Throwable e,
 			@NonNull final I_C_Invoice_Candidate invCandidate,
-			@NonNull final String invoiceCandidateIdentifier)
+			@NonNull final StepDefDataIdentifier invoiceCandidateIdentifier)
 	{
 		final BigDecimal orderLineQtyDelivered = Optional
 				.of(TableRecordReference.of(invCandidate.getAD_Table_ID(), invCandidate.getRecord_ID()))
@@ -1253,7 +1375,7 @@ public class C_Invoice_Candidate_StepDef
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
 				new ArrayList<>(),
-				(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+				(resultSet) -> getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		//query by id
 		final String invCandDetails = invCandidateDetailList.get(0);
@@ -1269,7 +1391,7 @@ public class C_Invoice_Candidate_StepDef
 	private static String getInvoiceCandidateExceptionDetails(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final ResultSet resultSet,
-			@NonNull final String invoiceCandIdentifier) throws SQLException
+			@NonNull final StepDefDataIdentifier invoiceCandIdentifier) throws SQLException
 	{
 		return "["
 				+ "C_Invoice_Candidate_ID:" + invoiceCandidate.getC_Invoice_Candidate_ID() + " - Identifier->" + invoiceCandIdentifier

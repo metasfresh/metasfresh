@@ -11,7 +11,6 @@ import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.warehouse.LocatorId;
@@ -26,7 +25,7 @@ import java.util.Set;
 @Builder
 public class DDOrderQuery
 {
-	@NonNull @Singular ImmutableList<OrderBy> orderBys;
+	@NonNull ImmutableList<OrderBy> orderBys;
 
 	@Nullable DocStatus docStatus;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
@@ -39,6 +38,7 @@ public class DDOrderQuery
 	@Nullable Set<ProductId> productIds;
 	@Nullable Set<Quantity> qtysEntered;
 	@Nullable Set<ResourceId> plantIds;
+	@Nullable Set<DDOrderId> onlyDDOrderIds;
 
 	//
 	//

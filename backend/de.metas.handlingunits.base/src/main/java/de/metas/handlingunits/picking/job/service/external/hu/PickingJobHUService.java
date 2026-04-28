@@ -18,6 +18,9 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -26,11 +29,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -43,6 +48,9 @@ import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
@@ -58,6 +66,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -77,10 +86,23 @@ public class PickingJobHUService
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
+	@NonNull private final PickingJobProductService productService;
 	@NonNull @Getter private final HUQRCodesService huQRCodesService;
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUGraiService huGraiService;
+
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	{
+		return huGraiService.getSnapshots(huIds);
+	}
+
+	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
+	{
+		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
+	}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{
@@ -130,6 +152,11 @@ public class PickingJobHUService
 		return huAttributesBL.getAttributeValue(hu, attributeCode);
 	}
 
+	public Optional<IAttributeValue> getAttributeValueIfExists(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return huAttributesBL.getAttributeValueIfExists(hu, attributeCode);
+	}
+
 	public boolean isLoadingUnit(final I_M_HU hu) {return handlingUnitsBL.isLoadingUnit(hu);}
 
 	public boolean isTransportUnit(final I_M_HU hu) {return handlingUnitsBL.isTransportUnit(hu);}
@@ -175,7 +202,24 @@ public class PickingJobHUService
 		return huPIItemProductBL.getById(huPIItemProductId);
 	}
 
-	public IHUQRCode parse(final ScannedCode pickFromQRCode) {return huQRCodesService.parse(pickFromQRCode);}
+	public IHUQRCode parsePickFromScannedCode(final ScannedCode pickFromScannedCode) {return huQRCodesService.parse(pickFromScannedCode);}
+
+	public ExplainedOptional<HUInfo> resolvePickFromHUQRCode(
+			@Nullable final IHUQRCode pickFromHUQRCode,
+			@NonNull final ProductId productId,
+			@NonNull final BPartnerId customerId,
+			@NonNull final WarehouseId warehouseId)
+	{
+		return PickFromHUQRCodeResolveCommand.builder()
+				.huService(this)
+				.productService(productService)
+				.pickFromHUQRCode(pickFromHUQRCode)
+				.productId(productId)
+				.customerId(customerId)
+				.warehouseId(warehouseId)
+				//
+				.build().execute();
+	}
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
 
@@ -226,6 +270,15 @@ public class PickingJobHUService
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToPick)
 	{
+		return extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, ImmutableSet.of());
+	}
+
+	public HuId extractTopLevelCUIfNeeded(
+			@NonNull final HuId pickFromHUId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
 		// Not a top level CU
@@ -245,13 +298,17 @@ public class PickingJobHUService
 			return pickFromHUId;
 		}
 
-		final I_M_HU extractedCU = HUTransformService.newInstance()
+		final I_M_HU extractedCU = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHU(pickFromHU)
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
@@ -292,6 +349,11 @@ public class PickingJobHUService
 		huReservationService.deleteReservationsByDocumentRefs(reservationDocRefs);
 	}
 
+	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	{
+		return huReservationService.getVHUIdsByDocumentRef(documentRef);
+	}
+
 	@Nullable
 	public ProductAvailableStocks newAvailableStocksProvider(@NonNull final Workplace workplace)
 	{
@@ -307,4 +369,19 @@ public class PickingJobHUService
 				.build();
 	}
 
+	public boolean containsProduct(@NonNull final HuId huId, @NonNull ProductId productId)
+	{
+		return getHUProductStorage(huId, productId)
+				.map(IHUProductStorage::getQty)
+				.map(Quantity::isPositive)
+				.orElse(false);
+	}
+
+	private Optional<IHUProductStorage> getHUProductStorage(final @NotNull HuId huId, final @NotNull ProductId productId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return Optional.ofNullable(storageFactory.getStorage(hu).getProductStorageOrNull(productId));
+	}
 }

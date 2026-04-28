@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
 @ghActions:run_on_executor5
 Feature: Delivery rules with and without quantity in stock
+## F00104: Delivery Rules
 
   Background:
     Given infrastructure and metasfresh are running
@@ -18,6 +21,8 @@ Feature: Delivery rules with and without quantity in stock
       | plv_1      | pl_1                      | SalesOrder-PLV | 2022-08-01 |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_10
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` but has no available stock
   _Given M_Product.IsStocked = true
@@ -57,6 +62,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_20
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` and has no available stock
   _Given M_Product.IsStocked = false
@@ -102,6 +109,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_30
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` and has available stock
   _Given M_Product.IsStocked = true
@@ -159,6 +168,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_40
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` but has available stock
   _Given M_Product.IsStocked = false
@@ -219,6 +230,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_50
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` and has no available stock
   _Given M_Product.IsStocked = false
@@ -262,6 +275,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_60
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` but has no available stock
   _Given M_Product.IsStocked = true
@@ -305,6 +320,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_70
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` but has available stock
   _Given M_Product.IsStocked = false
@@ -365,6 +382,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_A_80
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` and has available stock
   _Given M_Product.IsStocked = true
@@ -422,6 +441,8 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_B_10
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
@@ -492,8 +513,9 @@ Feature: Delivery rules with and without quantity in stock
       | shipmentScheduleQtyPicked_2                | 5         | true      | true                        | hu_fifo_second        |
       | shipmentScheduleQtyPicked_3                | 5         | true      | true                        | hu_fifo_third         |
 
-  @flaky
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00104
   @Id:S0159_B_20
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
@@ -524,6 +546,7 @@ Feature: Delivery rules with and without quantity in stock
     And the inventory identified by inventory_FIFO2_1 is completed
     And the inventory identified by inventory_FIFO2_2 is completed
     And the inventory identified by inventory_FIFO2_3 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_2          | 20        |

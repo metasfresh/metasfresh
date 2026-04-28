@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Physical Inventory and disposal - Production dispo scenarios
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -27,6 +30,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0124_150
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:
@@ -136,6 +141,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: Two manufacturing candidates are created, because the component in the first BOM is manufactured
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
@@ -213,6 +220,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0129.1_130
   Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
   Partial stock for main product, enough stock for component
@@ -305,6 +314,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
   @ignore # supply for components changed, needs to be checked
   @Id:S0196_100
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0129.2_110
   Scenario: Close production candidate
     Given metasfresh contains M_Products:
@@ -417,6 +428,8 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
   @ignore # supply for components changed, needs to be checked
   @Id:S0196_200
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0129.2_120
 
   Scenario: Production candidate is closed after it has been processed

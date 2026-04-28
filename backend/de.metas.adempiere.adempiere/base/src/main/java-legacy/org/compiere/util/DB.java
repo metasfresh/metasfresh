@@ -907,6 +907,8 @@ public class DB
 			DB.close(cs);
 		}
 
+		// PostgreSQL RAISE NOTICE messages are delivered as SQLWarnings by the JDBC driver.
+		// Extract them here so callers (e.g. ExecuteUpdateSQL) can log them to AD_PInstance_Log.
 		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
 
 		return SQLUpdateResult.builder()
@@ -1232,6 +1234,66 @@ public class DB
 		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName, sql, params);
 
 		return result.getReturnedValue();
+	}
+
+	// --- @SQL= default value resolution utilities ---
+
+	public static final String SQL_DEFAULT_VALUE_PREFIX = "@SQL=";
+
+	/**
+	 * Returns {@code true} if the given default value string starts with the {@code @SQL=} prefix,
+	 * indicating it should be resolved by executing the embedded SQL query.
+	 */
+	public static boolean isSqlDefaultValue(@Nullable final String defaultValue)
+	{
+		return defaultValue != null && defaultValue.startsWith(SQL_DEFAULT_VALUE_PREFIX);
+	}
+
+	/**
+	 * Resolves a default value that may start with {@code @SQL=}.
+	 * <ul>
+	 * <li>If it starts with {@code @SQL=}: strips the prefix, resolves any {@code @Variable@} or
+	 * {@code @Variable/default@} context placeholders using the global context ({@link Env#getCtx()}),
+	 * executes the SQL, and returns the first column of the first row as a String.</li>
+	 * <li>If it does NOT start with {@code @SQL=}: returns the value as-is (passthrough).</li>
+	 * <li>On parse or SQL error: logs a warning and returns {@code null}.</li>
+	 * </ul>
+	 * <p>
+	 * For callers that have a specific window or document context for {@code @Variable@} resolution
+	 * (e.g., {@link org.compiere.model.GridField}), resolve the variables first using
+	 * {@link Env#parseContext} and then call {@link #getSQLValueStringEx} directly.
+	 *
+	 * @see de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory
+	 * for the deferred-evaluation variant used by WebUI document fields
+	 * (compiles SQL into IStringExpression, evaluates with live document context at render time)
+	 */
+	@Nullable
+	public static String resolveSqlDefaultValue(@Nullable final String defaultValue)
+	{
+		if (!isSqlDefaultValue(defaultValue))
+		{
+			return defaultValue;
+		}
+
+		final String sqlTemplate = defaultValue.substring(SQL_DEFAULT_VALUE_PREFIX.length());
+
+		// Resolve @Variable@ and @Variable/default@ placeholders using global context
+		final String sql = Env.parseContext(Env.getCtx(), Env.WINDOW_MAIN, sqlTemplate, false, false);
+		if (Check.isBlank(sql))
+		{
+			log.warn("@SQL= default value: variable parse failed: {}", defaultValue);
+			return null;
+		}
+
+		try
+		{
+			return getSQLValueStringEx(ITrx.TRXNAME_None, sql);
+		}
+		catch (final Exception ex)
+		{
+			log.warn("Failed to resolve @SQL= default value: {}", defaultValue, ex);
+			return null;
+		}
 	}
 
 	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
@@ -2777,6 +2839,18 @@ public class DB
 		{
 			close(rs, pstmt);
 		}
+	}
+
+	/**
+	 * Get names of database functions in the current schema whose names match a SQL LIKE pattern (case-insensitive).
+	 * Results are ordered alphabetically.
+	 *
+	 * @param namePattern SQL LIKE pattern (e.g. {@code "%MaterialCockpit_SelectForOrderLine"})
+	 * @return matching function names (lowercase), never null
+	 */
+	public List<String> getFunctionsLike(@NonNull final String namePattern)
+	{
+		return CConnection.get().getDatabase().getFunctionsLike(namePattern);
 	}
 
 	@FunctionalInterface

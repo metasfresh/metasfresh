@@ -1,6 +1,10 @@
 @report
 @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
 Feature: Jasper Report Tests
+## F00400: Report
 
   Background:
     Given infrastructure and metasfresh are running
@@ -54,6 +58,9 @@ Feature: Jasper Report Tests
 
   @S0471_100
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
@@ -116,6 +123,9 @@ Feature: Jasper Report Tests
 
   @S0471_200
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Sales Report and Dunning Report Test
     And metasfresh contains C_Dunning:
       | Identifier        |
@@ -179,6 +189,9 @@ Feature: Jasper Report Tests
       | C_DunningDoc | dunningDoc_1 |
 
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Deactivate StoreArchiveOnFileSystem
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |

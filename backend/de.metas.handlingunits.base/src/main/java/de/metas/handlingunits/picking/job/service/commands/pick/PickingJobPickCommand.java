@@ -118,7 +118,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobHUService huService;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final PickFromHUQRCodeResolver pickFromHUQRCodeResolver;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
 
 	//
@@ -185,10 +184,6 @@ public class PickingJobPickCommand
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
-		this.pickFromHUQRCodeResolver = PickFromHUQRCodeResolver.builder()
-				.productService(productService)
-				.huService(huService)
-				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.build();
@@ -197,7 +192,7 @@ public class PickingJobPickCommand
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
-		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parse(pickFromQRCode) : null;
+		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
@@ -530,6 +525,21 @@ public class PickingJobPickCommand
 		return Optional.ofNullable(this._stepId);
 	}
 
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return getReservationDocRef()
+				.map(huService::getVHUIdsByDocumentRef)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	private Optional<HUReservationDocRef> getReservationDocRef()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getStepIdIfExists().map(HUReservationDocRef::ofPickingJobStepId),
+				() -> getShipmentScheduleInfo().getSalesOrderLineId().map(HUReservationDocRef::ofSalesOrderLineId)
+		);
+	}
+
 	private PickingJobStepId createStep()
 	{
 		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
@@ -628,7 +638,8 @@ public class PickingJobPickCommand
 			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
+			return huService.resolvePickFromHUQRCode(pickFromHUQRCode, productId, customerId, warehouseId)
+					.orElseThrow();
 		}
 	}
 
@@ -790,7 +801,7 @@ public class PickingJobPickCommand
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
-				.tuOrVHU(hu)
+				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
@@ -886,7 +897,9 @@ public class PickingJobPickCommand
 			@NonNull final I_M_HU pickFromHU,
 			@NonNull final QtyTU qtyToPickTUs)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
+				.build();
 
 		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		final LUTUResult result;
@@ -984,6 +997,7 @@ public class PickingJobPickCommand
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
+						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.build()
 		);
 	}

@@ -21,7 +21,7 @@ export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) =>
       stepId,
       altStepId,
     });
-    // console.log(`useMobileNavigation: goTo ${locationEff}`);
+    // console.error(`*** useMobileNavigation: goTo ${locationEff}`);
     history.replace(locationEff);
   };
 

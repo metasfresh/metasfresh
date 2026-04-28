@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -207925167L;
+	private static final long serialVersionUID = 884988273L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -225,6 +225,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isCatchWeightTUPickingEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeightTUPickingEnabled);
+	}
+
+	@Override
+	public void setIsCompleteJobAutomatically (final boolean IsCompleteJobAutomatically)
+	{
+		set_Value (COLUMNNAME_IsCompleteJobAutomatically, IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public boolean isCompleteJobAutomatically() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompleteJobAutomatically);
 	}
 
 	@Override

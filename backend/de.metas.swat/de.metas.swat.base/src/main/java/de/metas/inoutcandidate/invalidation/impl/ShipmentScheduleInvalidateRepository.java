@@ -117,6 +117,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(
+						I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
+						shipmentScheduleIds)
+				.create()
+				.noneMatch();
+	}
+
+	@Override
 	public void invalidateForProduct(@NonNull final ProductId productId)
 	{
 		final String chunkUUID = UUID.randomUUID().toString();

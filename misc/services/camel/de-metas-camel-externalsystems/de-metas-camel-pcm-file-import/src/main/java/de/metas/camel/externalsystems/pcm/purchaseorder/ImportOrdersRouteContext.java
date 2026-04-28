@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.pcm.purchaseorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.util.Check;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -35,6 +36,8 @@ public class ImportOrdersRouteContext
 {
 	boolean errorInUnknownRow = false;
 
+	String externalSystemCode;
+	
 	/**
 	 * Using Linked hash set to preserve order
 	 */
@@ -55,6 +58,11 @@ public class ImportOrdersRouteContext
 		if (other.errorInUnknownRow)
 		{
 			errorInUnknownRow = true;
+		}
+		
+		if (Check.isBlank(externalSystemCode))
+		{
+			externalSystemCode = other.getExternalSystemCode();
 		}
 	}
 

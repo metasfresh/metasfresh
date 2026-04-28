@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
@@ -53,6 +54,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -161,6 +163,11 @@ public final class DefaultView implements IEditableView
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
 	//
+	// Parameters
+	@Getter
+	private final ImmutableMap<String, Object> parameters;
+
+	//
 	// View refreshing on change events
 	private final boolean refreshViewOnChangeEvents;
 	private final ChangedRowIdsCollector changedRowIdsToCheck = new ChangedRowIdsCollector();
@@ -178,6 +185,10 @@ public final class DefaultView implements IEditableView
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
+
+		//
+		// Parameters
+		parameters = builder.getParameters();
 
 		//
 		// Filters
@@ -525,10 +536,17 @@ public final class DefaultView implements IEditableView
 	{
 		assertNotClosed();
 
-		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
+		Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId))
+				.toEvaluatee();
 
-		return viewFilterDescriptors.getByFilterId(filterId)
-				.getParameterByName(filterParameterName)
+		final DocumentFilterParamDescriptor paramDescriptor = viewFilterDescriptors.getByFilterId(filterId).getParameterByName(filterParameterName);
+		if (paramDescriptor.isShowInactiveValues())
+		{
+			ctxEffective = Evaluatees.ofSingleton(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName(), SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes)
+					.andComposeWith(ctxEffective);
+		}
+		
+		return paramDescriptor
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctxEffective, query);
@@ -894,6 +912,8 @@ public final class DefaultView implements IEditableView
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
+		private LinkedHashMap<String, Object> parameters;
+
 		private boolean applySecurityRestrictions = true;
 
 		private Builder(@NonNull final SqlViewDataRepository viewDataRepository)
@@ -1090,6 +1110,36 @@ public final class DefaultView implements IEditableView
 		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
 		{
 			return viewInvalidationAdvisor;
+		}
+
+		public Builder setParameters(@NonNull final ImmutableMap<String, Object> parameters)
+		{
+			if (parameters.isEmpty())
+			{
+				this.parameters = null;
+			}
+			else
+			{
+				this.parameters = new LinkedHashMap<>(parameters);
+			}
+			return this;
+		}
+
+		private ImmutableMap<String, Object> getParameters()
+		{
+			if (parameters == null || parameters.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+			parameters.forEach((key, value) -> {
+				if (value != null)
+				{
+					builder.put(key, value);
+				}
+			});
+			return builder.build();
 		}
 
 		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)

@@ -174,10 +174,18 @@ Indicators.propTypes = {
 //
 //
 
-const Indicator = ({ testId, indicator, completeStatus }) => {
+const Indicator = ({ testId: testIdParam, indicator, completeStatus }) => {
+  let testId = testIdParam;
   let className = null;
   if (indicator) {
     switch (indicator) {
+      case 'none':
+      case '-':
+        className = 'indicator-box';
+        // in case of placeholder element we are not setting the "data-testid",
+        // because that would be matched in playwright tests as an existing indicator.
+        testId = undefined;
+        break;
       case WorkflowLauncherIndicator.JOB_ALREADY_STARTED:
         className = 'indicator-box fas fa-lock';
         break;

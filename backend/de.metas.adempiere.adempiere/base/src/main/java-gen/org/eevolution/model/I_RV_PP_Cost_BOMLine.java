@@ -106,28 +106,6 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Component Type.
 	 * Component Type for a Bill of Material or Formula
 	 *
@@ -151,7 +129,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_ComponentType = "ComponentType";
 
 	/**
-	 * Set Kosten.
+	 * Set Cost.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -161,7 +139,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setCost (@Nullable BigDecimal Cost);
 
 	/**
-	 * Get Kosten.
+	 * Get Cost.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -174,7 +152,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_Cost = "Cost";
 
 	/**
-	 * Set Kostenrechnungsmethode.
+	 * Set Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -184,7 +162,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setCostingMethod (@Nullable java.lang.String CostingMethod);
 
 	/**
-	 * Get Kostenrechnungsmethode.
+	 * Get Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -197,7 +175,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_CostingMethod = "CostingMethod";
 
 	/**
-	 * Set Standardkosten.
+	 * Set Standard Cost.
 	 * Standard Costs
 	 *
 	 * <br>Type: CostPrice
@@ -207,7 +185,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setCostStandard (@Nullable BigDecimal CostStandard);
 
 	/**
-	 * Get Standardkosten.
+	 * Get Standard Cost.
 	 * Standard Costs
 	 *
 	 * <br>Type: CostPrice
@@ -245,8 +223,30 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Gegenwärtiger Kostenpreis.
-	 * Der gegenwärtig verwendete Kostenpreis
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Current Cost Price.
+	 * The currently used cost price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -255,8 +255,8 @@ public interface I_RV_PP_Cost_BOMLine
 	void setCurrentCostPrice (@Nullable BigDecimal CurrentCostPrice);
 
 	/**
-	 * Get Gegenwärtiger Kostenpreis.
-	 * Der gegenwärtig verwendete Kostenpreis
+	 * Get Current Cost Price.
+	 * The currently used cost price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -268,7 +268,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_CurrentCostPrice = "CurrentCostPrice";
 
 	/**
-	 * Set Current Cost Price Lower Level.
+	 * Set Current Cost Price LL.
 	 * Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	 *
 	 * <br>Type: CostPrice
@@ -278,7 +278,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setCurrentCostPriceLL (@Nullable BigDecimal CurrentCostPriceLL);
 
 	/**
-	 * Get Current Cost Price Lower Level.
+	 * Get Current Cost Price LL.
 	 * Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	 *
 	 * <br>Type: CostPrice
@@ -312,7 +312,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Zukünftiger Kostenpreis.
+	 * Set Future Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -321,7 +321,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setFutureCostPrice (@Nullable BigDecimal FutureCostPrice);
 
 	/**
-	 * Get Zukünftiger Kostenpreis.
+	 * Get Future Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -333,7 +333,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_FutureCostPrice = "FutureCostPrice";
 
 	/**
-	 * Set Future Cost Price Lower Level.
+	 * Set Future Cost Price LL.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -342,7 +342,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setFutureCostPriceLL (@Nullable BigDecimal FutureCostPriceLL);
 
 	/**
-	 * Get Future Cost Price Lower Level.
+	 * Get Future Cost Price LL.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -401,6 +401,7 @@ public interface I_RV_PP_Cost_BOMLine
 
 	/**
 	 * Set Cost Frozen.
+	 * Indicated that the Standard Cost is frozen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -410,6 +411,7 @@ public interface I_RV_PP_Cost_BOMLine
 
 	/**
 	 * Get Cost Frozen.
+	 * Indicated that the Standard Cost is frozen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -444,7 +446,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
-	 * Set Is Qty Percentage.
+	 * Set Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: Quantity
@@ -454,7 +456,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setIsQtyPercentage (@Nullable BigDecimal IsQtyPercentage);
 
 	/**
-	 * Get Is Qty Percentage.
+	 * Get Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: Quantity
@@ -580,7 +582,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Kostenart.
+	 * Set Cost Element.
 	 * Product Cost Element
 	 *
 	 * <br>Type: TableDir
@@ -590,7 +592,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setM_CostElement_ID (int M_CostElement_ID);
 
 	/**
-	 * Get Kostenart.
+	 * Get Cost Element.
 	 * Product Cost Element
 	 *
 	 * <br>Type: TableDir
@@ -607,7 +609,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
-	 * Set Kostenkategorie.
+	 * Set Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -617,7 +619,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setM_CostType_ID (int M_CostType_ID);
 
 	/**
-	 * Get Kostenkategorie.
+	 * Get Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -710,7 +712,7 @@ public interface I_RV_PP_Cost_BOMLine
 	String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -720,7 +722,7 @@ public interface I_RV_PP_Cost_BOMLine
 	void setQtyBOM (@Nullable BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -734,7 +736,7 @@ public interface I_RV_PP_Cost_BOMLine
 
 	/**
 	 * Set % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -744,7 +746,7 @@ public interface I_RV_PP_Cost_BOMLine
 
 	/**
 	 * Get % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false

@@ -14,12 +14,20 @@ public class MobileUIManufacturingConfig
 {
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
+	@Nullable ReceiveUnitType receiveUnitType;
+
+	@NonNull
+	public ReceiveUnitType getReceiveUnitTypeEffective()
+	{
+		return receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
+				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
 				.build();
 		if (result.equals(this))
 		{

@@ -7,22 +7,33 @@ import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
+import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
-import de.metas.logging.LogManager;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -31,18 +42,20 @@ import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ScaleDevice;
-import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
-import de.metas.manufacturing.job.service.commands.ReceiveGoodsRequest;
-import de.metas.manufacturing.job.service.commands.ReceiveGoodsResult;
-import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
+import de.metas.manufacturing.job.service.commands.issue.IssueRawMaterialsCommand;
+import de.metas.manufacturing.job.service.commands.issue.IssueRawMaterialsCommand.IssueRawMaterialsCommandBuilder;
+import de.metas.manufacturing.job.service.commands.issue_what_was_received.IssueWhatWasReceivedCommand;
+import de.metas.manufacturing.job.service.commands.issue_what_was_received.IssueWhatWasReceivedCommand.IssueWhatWasReceivedCommandBuilder;
+import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand;
+import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand.ReceiveGoodsCommandBuilder;
+import de.metas.manufacturing.job.service.commands.receive.SelectedReceivingTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.organization.IOrgDAO;
-import de.metas.product.IProductBL;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -50,6 +63,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.lang.SeqNo;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.service.Constants;
@@ -58,84 +72,78 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
-import org.slf4j.Logger;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ManufacturingJobService
 {
-	@NonNull private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IHUPPOrderBL ppOrderBL;
-	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PPOrderSourceHUService ppOrderSourceHUService;
+	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	@NonNull private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
-	public ManufacturingJobService(
-			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			final @NonNull HUReservationService huReservationService,
-			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
-			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
-			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
-			final @NonNull HUQRCodesService huQRCodeService,
-			final @NonNull MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository)
+	public static ManufacturingJobService newInstanceForUnitTesting()
 	{
-		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
-		this.huReservationService = huReservationService;
-		this.ppOrderSourceHUService = ppOrderSourceHUService;
-		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
-		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
-		this.mobileUIManufacturingConfigRepository = mobileUIManufacturingConfigRepository;
-
-		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
-				.orgDAO(Services.get(IOrgDAO.class))
-				.warehouseBL(Services.get(IWarehouseBL.class))
-				.productBL(Services.get(IProductBL.class))
-				.asiBL(Services.get(IAttributeSetInstanceBL.class))
-				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
-				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
-				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
-				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
-				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.huQRCodeService(huQRCodeService)
-				.sourceHUService(ppOrderSourceHUService)
-				.build();
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				ManufacturingJobService.class,
+				() -> new ManufacturingJobService(
+						PPOrderIssueScheduleService.newInstanceForUnitTesting(),
+						new HUReservationService(new HUReservationRepository()),
+						PPOrderSourceHUService.newInstanceForUnitTesting(),
+						SourceHUsService.get(),
+						new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
+						new DeviceWebsocketNamingStrategy("/test/"),
+						ManufacturingJobLoaderAndSaverSupportingServices.newInstanceForUnitTesting(),
+						new MobileUIManufacturingConfigRepository(),
+						SpringContextHolder.instance.getBean(HUQRCodesService.class)
+				)
+		);
 	}
 
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
@@ -281,8 +289,8 @@ public class ManufacturingJobService
 			@NonNull final ManufacturingJobReferenceQuery query,
 			@NonNull final ManufacturingOrderCollector<T> collector)
 	{
-		final @NonNull UserId responsibleId = query.getResponsibleId();
-		final @NonNull QueryLimit suggestedLimit = query.getSuggestedLimit();
+		@NonNull final UserId responsibleId = query.getResponsibleId();
+		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
 
 		//
 		// Already started jobs
@@ -299,7 +307,7 @@ public class ManufacturingJobService
 		}
 	}
 
-	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
+	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(@NonNull final UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
@@ -400,13 +408,13 @@ public class ManufacturingJobService
 		unassignFromResponsible(ppOrderId, responsibleId);
 	}
 
-	private void unassignFromResponsible(final @NonNull PPOrderId ppOrderId, final @NonNull UserId responsibleId)
+	private void unassignFromResponsible(@NonNull final PPOrderId ppOrderId, @NonNull final UserId responsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
 		unassignFromResponsible(ppOrder, responsibleId);
 	}
 
-	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder, final @NonNull UserId expectedResponsibleId)
+	private void unassignFromResponsible(@NonNull final I_PP_Order ppOrder, @NonNull final UserId expectedResponsibleId)
 	{
 		final UserId currentResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 
@@ -426,7 +434,7 @@ public class ManufacturingJobService
 		}
 	}
 
-	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder)
+	private void unassignFromResponsible(@NonNull final I_PP_Order ppOrder)
 	{
 		ppOrder.setAD_User_Responsible_ID(-1);
 		ppOrderBL.save(ppOrder);
@@ -480,39 +488,20 @@ public class ManufacturingJobService
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> issueRawMaterialsInTrx(job, request));
+		return newIssueRawMaterialsCommand()
+				//
+				.job(job)
+				.request(request)
+				//
+				.build().execute();
 	}
 
-	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
+	private IssueRawMaterialsCommandBuilder newIssueRawMaterialsCommand()
 	{
-		final AtomicBoolean processed = new AtomicBoolean();
-
-		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(
-				request.getActivityId(),
-				request.getIssueScheduleId(),
-				(step) -> {
-					if (processed.getAndSet(true))
-					{
-						// shall not happen
-						logger.warn("Ignoring request because was already processed: request={}, step={}", request, step);
-						return step;
-					}
-
-					step.assertNotIssued();
-					final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
-					return step.withIssued(issueSchedule.getIssued());
-				});
-
-		if (!processed.get())
-		{
-			throw new AdempiereException("Failed fulfilling issue request")
-					.setParameter("request", request)
-					.setParameter("job", job);
-		}
-
-		saveActivityStatuses(changedJob);
-
-		return changedJob;
+		return IssueRawMaterialsCommand.builder()
+				.trxManager(trxManager)
+				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices);
 	}
 
 	public ManufacturingJob receiveGoods(
@@ -520,40 +509,41 @@ public class ManufacturingJobService
 			@NonNull final ManufacturingJob job,
 			@NonNull final ZonedDateTime date)
 	{
-		final SelectedReceivingTarget receivingTarget = SelectedReceivingTarget.builder()
-				.luReceivingTarget(receiveFrom.getAggregateToLU())
-				.tuReceivingTarget(receiveFrom.getAggregateToTU())
-				.build();
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		@NonNull final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
 
-		final ManufacturingJob changedJob = job.withChangedReceiveLine(receiveFrom.getFinishedGoodsReceiveLineId(), line -> {
-			final ReceiveGoodsResult result = trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
-					.handlingUnitsBL(handlingUnitsBL)
-					.ppOrderBL(ppOrderBL)
-					.ppOrderBOMBL(ppOrderBOMBL)
-					.uomConversionBL(uomConversionBL)
-					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
-					//
-					.request(ReceiveGoodsRequest.builder()
-							.ppOrderId(job.getPpOrderId())
-							.coProductBOMLineId(line.getCoProductBOMLineId())
-							.receivingTarget(receivingTarget)
-							.qtyToReceiveBD(receiveFrom.getQtyReceived())
-							.date(date)
-							.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
-							.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
-							.lotNo(receiveFrom.getLotNo())
-							.catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
-							.barcode(receiveFrom.getBarcode())
-							.build())
-					//
-					.build().execute());
-			return line.withQtyReceived(result.getTotalQtyReceived())
-					.withReceivingTarget(result.getReceivingTarget());
-		});
+		final FinishedGoodsReceiveLine receiveLine = job.getFinishedGoodsReceiveLineById(receiveFrom.getFinishedGoodsReceiveLineId());
 
-		saveActivityStatuses(changedJob);
+		return newReceiveGoodsCommand()
+				.job(job)
+				.finishedGoodsReceiveLineId(receiveFrom.getFinishedGoodsReceiveLineId())
+				.receivingTarget(SelectedReceivingTarget.builder()
+						.luReceivingTarget(receiveFrom.getAggregateToLU())
+						.tuReceivingTarget(receiveFrom.getAggregateToTU())
+						.build())
+				.qtyToReceiveBD(receiveFrom.getQtyReceived())
+				.date(date)
+				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
+				.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
+				.lotNo(receiveFrom.getLotNo())
+				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
+				.barcode(receiveFrom.getBarcode())
+				.receiveUnitType(receiveUnitType)
+				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
+				.build().execute();
+	}
 
-		return changedJob;
+	private ReceiveGoodsCommandBuilder newReceiveGoodsCommand()
+	{
+		return ReceiveGoodsCommand.builder()
+				.trxManager(trxManager)
+				.handlingUnitsBL(handlingUnitsBL)
+				.huStatusBL(huStatusBL)
+				.ppOrderBL(ppOrderBL)
+				.ppOrderBOMBL(ppOrderBOMBL)
+				.uomConversionBL(uomConversionBL)
+				.jobService(this)
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices);
 	}
 
 	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
@@ -645,10 +635,10 @@ public class ManufacturingJobService
 	}
 
 	@NonNull
-	public ManufacturingJob recomputeQtyToIssueForSteps(final @NonNull PPOrderId ppOrderId)
+	public ManufacturingJob recomputeQtyToIssueForSteps(@NonNull final PPOrderId ppOrderId)
 	{
 		final ManufacturingJob job = getJobById(ppOrderId);
-		final ManufacturingJob changedJob = job.withChangedRawMaterialIssue(
+		final ManufacturingJob changedJob = job.withChangedRawMaterialIssues(
 				rawMaterialsIssue -> rawMaterialsIssue.withChangedLines(this::recomputeQtyToIssueForSteps));
 
 		if (!changedJob.equals(job))
@@ -660,7 +650,7 @@ public class ManufacturingJobService
 	}
 
 	@NonNull
-	private RawMaterialsIssueLine recomputeQtyToIssueForSteps(final @NonNull RawMaterialsIssueLine line)
+	private RawMaterialsIssueLine recomputeQtyToIssueForSteps(@NonNull final RawMaterialsIssueLine line)
 	{
 		Quantity qtyLeftToBeIssued = line.getQtyLeftToIssue().toZeroIfNegative();
 		final ImmutableList.Builder<RawMaterialsIssueStep> updatedStepsListBuilder = ImmutableList.builder();
@@ -688,7 +678,7 @@ public class ManufacturingJobService
 	}
 
 	@NonNull
-	private Optional<Quantity> getTargetCatchWeight(@NonNull final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom)
+	private Optional<Quantity> extractTargetCatchWeight(@NonNull final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom)
 	{
 		if (receiveFrom.getCatchWeight() == null || Check.isBlank(receiveFrom.getCatchWeightUomSymbol()))
 		{
@@ -705,6 +695,147 @@ public class ManufacturingJobService
 		return limitInt == -100
 				? Constants.DEFAULT_LaunchersLimit
 				: QueryLimit.ofInt(limitInt);
+	}
+
+	public ManufacturingJob createOnTheFlyIssueSchedule(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> createOnTheFlyIssueScheduleInTrx(ppOrderId, callerId, huQRCodeString));
+	}
+
+	private ManufacturingJob createOnTheFlyIssueScheduleInTrx(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final UserId callerId,
+			@NonNull final String huQRCodeString)
+	{
+		// Validate IsAllowIssuingAnyHU=Y using the PP_Order's client
+		final de.metas.handlingunits.model.I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(callerId, clientId);
+		if (!config.getIsAllowIssuingAnyHU().isTrue())
+		{
+			throw new AdempiereException("On-the-fly issue schedule creation is only allowed when IsAllowIssuingAnyHU=Y")
+					.markAsUserValidationError();
+		}
+
+		// Resolve HU from QR code
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(huQRCodeString);
+		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+
+		// Get top-level HU
+		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
+		final HuId topLevelHUId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
+
+		// Validate HU status — only Active HUs can be issued
+		if (!huStatusBL.isStatusActive(topLevelHU))
+		{
+			throw new AdempiereException("HU is not active and cannot be issued")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("huStatus", topLevelHU.getHUStatus())
+					.markAsUserValidationError();
+		}
+
+		// Validate HU has a locator
+		final int locatorRepoId = topLevelHU.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			throw new AdempiereException("HU has no locator assigned")
+					.setParameter("huId", topLevelHUId)
+					.markAsUserValidationError();
+		}
+
+		// Get all products stored in the HU
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final List<IHUProductStorage> productStorages = storageFactory.getProductStorages(topLevelHU);
+
+		// Find a BOM line that matches one of the HU's products
+		final List<I_PP_Order_BOMLine> bomLines = ppOrderBOMBL.getOrderBOMLines(ppOrderId);
+		IHUProductStorage matchingStorage = null;
+		PPOrderBOMLineId matchingBomLineId = null;
+		ProductId matchingProductId = null;
+
+		for (final I_PP_Order_BOMLine bomLine : bomLines)
+		{
+			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+			matchingStorage = productStorages.stream()
+					.filter(ps -> ProductId.equals(ps.getProductId(), bomLineProductId))
+					.findFirst()
+					.orElse(null);
+			if (matchingStorage != null)
+			{
+				matchingBomLineId = PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID());
+				matchingProductId = bomLineProductId;
+				break;
+			}
+		}
+
+		if (matchingStorage == null)
+		{
+			throw new AdempiereException("HU does not contain any product matching the BOM lines")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("ppOrderId", ppOrderId)
+					.markAsUserValidationError();
+		}
+
+		// Validate qty
+		final Quantity qtyToIssue = matchingStorage.getQty();
+		if (qtyToIssue.isZero())
+		{
+			throw new AdempiereException("HU has zero quantity for the matching product")
+					.setParameter("huId", topLevelHUId)
+					.setParameter("productId", matchingProductId)
+					.markAsUserValidationError();
+		}
+
+		// Determine next seqNo
+		final ImmutableList<PPOrderIssueSchedule> existingSchedules = ppOrderIssueScheduleService.getByOrderId(ppOrderId);
+		final int maxSeqNo = existingSchedules.stream()
+				.mapToInt(s -> s.getSeqNo().toInt())
+				.max()
+				.orElse(0);
+		final SeqNo nextSeqNo = SeqNo.ofInt(maxSeqNo + 10);
+
+		// Get locator
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final WarehouseId warehouseIdForLocator = warehouseDAO.getWarehouseIdByLocatorRepoId(locatorRepoId);
+		final LocatorId locatorId = LocatorId.ofRepoId(warehouseIdForLocator, locatorRepoId);
+
+		// Create schedule
+		ppOrderIssueScheduleService.createSchedule(
+				PPOrderIssueScheduleCreateRequest.builder()
+						.ppOrderId(ppOrderId)
+						.ppOrderBOMLineId(matchingBomLineId)
+						.seqNo(nextSeqNo)
+						.productId(matchingProductId)
+						.qtyToIssue(qtyToIssue)
+						.issueFromHUId(topLevelHUId)
+						.issueFromLocatorId(locatorId)
+						.isAlternativeIssue(false)
+						.build());
+
+		// Reload and return the updated job
+		return getJobById(ppOrderId);
+	}
+
+	public ManufacturingJob autoIssueWhatWasReceived(
+			@NonNull final ManufacturingJob job,
+			@NonNull final RawMaterialsIssueStrategy issueStrategy)
+	{
+		return newIssueWhatWasReceivedCommand()
+				.job(job)
+				.issueStrategy(issueStrategy)
+				.build().execute();
+	}
+
+	public IssueWhatWasReceivedCommandBuilder newIssueWhatWasReceivedCommand()
+	{
+		return IssueWhatWasReceivedCommand.builder()
+				.issueScheduleService(ppOrderIssueScheduleService)
+				.jobService(this)
+				.ppOrderSourceHUService(ppOrderSourceHUService)
+				.sourceHUsService(sourceHUsService);
 	}
 
 }

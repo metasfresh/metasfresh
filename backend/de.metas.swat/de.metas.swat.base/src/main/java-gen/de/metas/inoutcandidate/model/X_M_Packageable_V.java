@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1759313928L;
+	private static final long serialVersionUID = -913012400L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -766,6 +766,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getProductName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
+	}
+
+	@Override
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
+	{
+		set_ValueNoCheck (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	@Override
+	public java.lang.String getProductValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductValue);
 	}
 
 	@Override

@@ -45,7 +45,7 @@ public interface ILocationDAO extends ISingletonService
 
 	CountryId getCountryIdByLocationId(LocationId id);
 
-	LocationId createLocation(LocationCreateRequest request);
+	LocationId createOrReuseLocation(@NonNull LocationCreateRequest request0);
 
 	Stream<GeographicalCoordinatesWithLocationId> streamGeoCoordinatesByIds(Set<LocationId> locationIds);
 }

@@ -49,6 +49,7 @@ import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.D
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.EUROPE_BERLIN;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.LOCAL_DATE_TIME_FORMATTER;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_CURRENT_CSV_ROW;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_EXTERNAL_SYSTEM_CODE;
 
 @Value
 @Builder
@@ -60,6 +61,8 @@ public class UpsertPurchaseCandidateProcessor implements Processor
 	@Override
 	public void process(@NonNull final Exchange exchange) throws Exception
 	{
+		exchange.setProperty(PROPERTY_EXTERNAL_SYSTEM_CODE, externalSystemRequest.getExternalSystemName().getName());
+		
 		final PurchaseOrderRow poRow = exchange.getIn().getBody(PurchaseOrderRow.class);
 		exchange.setProperty(PROPERTY_CURRENT_CSV_ROW, poRow); // needed in case of problems
 
@@ -87,6 +90,7 @@ public class UpsertPurchaseCandidateProcessor implements Processor
 
 		final JsonPurchaseCandidateCreateItem requestItem = JsonPurchaseCandidateCreateItem.builder()
 				.orgCode(externalSystemRequest.getOrgCode())
+				.externalSystemCode(externalSystemRequest.getExternalSystemName().getName())
 				.productIdentifier(ExternalId.ofId(purchaseOrderRow.getProductIdentifier()).toExternalIdentifierString())
 				.warehouseIdentifier(ExternalId.ofId(purchaseOrderRow.getWarehouseIdentifier()).toExternalIdentifierString())
 				.vendor(JsonVendor.builder()

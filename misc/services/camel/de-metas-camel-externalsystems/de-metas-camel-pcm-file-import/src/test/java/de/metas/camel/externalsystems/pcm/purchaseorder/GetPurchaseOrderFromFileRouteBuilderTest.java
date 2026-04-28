@@ -42,15 +42,21 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.TestUtil.loadJSON;
@@ -81,6 +87,51 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 
 	private final LocalFilePurchaseOrderSyncServicePCMRouteBuilder purchaseOrderServiceRouteBuilder =
 			new LocalFilePurchaseOrderSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
+
+	@TempDir
+	Path tempDir;
+
+	/**
+	 * Copies test resources from the classpath to a temporary directory.
+	 * This prevents tests from modifying the source tree (creating errorDirectory/processedDirectory).
+	 *
+	 * @param resourceSubDir the subdirectory under the test resources path (e.g., "csvFileWithError", "masterDataFileExists")
+	 * @return the path to the temp directory containing the copied resources
+	 */
+	private Path copyTestResourcesToTempDir(@NonNull final String resourceSubDir) throws IOException, URISyntaxException
+	{
+		final String resourceBasePath = "/de/metas/camel/externalsystems/pcm/purchaseorder/" + resourceSubDir;
+		final Path targetDir = tempDir.resolve(resourceSubDir);
+		Files.createDirectories(targetDir);
+
+		// Get the source directory from classpath
+		final java.net.URL resourceUrl = getClass().getResource(resourceBasePath);
+		if (resourceUrl == null)
+		{
+			throw new IllegalArgumentException("Resource not found: " + resourceBasePath);
+		}
+
+		final Path sourceDir = Paths.get(resourceUrl.toURI());
+
+		// Copy all files from source to target
+		try (Stream<Path> files = Files.walk(sourceDir, 1))
+		{
+			files.filter(Files::isRegularFile)
+					.forEach(source -> {
+						try
+						{
+							final Path target = targetDir.resolve(source.getFileName());
+							Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+						}
+						catch (final IOException e)
+						{
+							throw new RuntimeException("Failed to copy " + source, e);
+						}
+					});
+		}
+
+		return targetDir;
+	}
 
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
@@ -155,18 +206,19 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	/**
 	 * Tests mostly {@link StallWhileMasterdataFilesExistPolicy}, to make sure that it ignores an order-file if there are still master data file lying around
 	 * <p>
-	 * Note: actually lets the route under test read the input file from disk    
+	 * Note: actually lets the route under test read the input file from disk.
+	 * Uses temp directory to avoid modifying source tree with errorDirectory/processedDirectory.
 	 */
 	@Test
 	public void masterDataFileExists_SyncPurchaseOrders_LocalFile() throws Exception
 	{
-		// ...assuming that we run within the de-metas-camel-pcm-file-import folder
-		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/masterDataFileExists";
-		final Path path = Paths.get(rootFolderStr);
+		// Copy test resources to temp directory to avoid modifying source tree
+		final Path path = copyTestResourcesToTempDir("masterDataFileExists");
+		final String rootFolderStr = path.toString();
 
 		final MockEndpoint errorMockEndpoint = getMockEndpoint(MOCK_ERROR_CONSUMER);
 		errorMockEndpoint.expectedMessageCount(0);
-		
+
 		test_NothingCreated(path);
 
 		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();
@@ -184,19 +236,20 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	
 	/**
 	 * Note: actually lets the route under test read the input file from disk.
+	 * Uses temp directory to avoid modifying source tree with errorDirectory/processedDirectory.
 	 */
 	@Test
 	public void csvFileWithError_SyncPurchaseOrders_LocalFile() throws Exception
 	{
-		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
-		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/csvFileWithError";
-		final Path path = Paths.get(rootFolderStr);
+		// Copy test resources to temp directory to avoid modifying source tree
+		final Path path = copyTestResourcesToTempDir("csvFileWithError");
+		final String rootFolderStr = path.toString();
 
 		final MockEndpoint errorMockEndpoint = getMockEndpoint(MOCK_ERROR_CONSUMER);
 		errorMockEndpoint.expectedMessageCount(1);
 
 		test_NothingCreated(path);
-		
+
 		MockEndpoint.assertIsSatisfied(context);
 		assertThat(new File(rootFolderStr + "/errorDirectory")).isNotEmptyDirectory();
 		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();

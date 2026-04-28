@@ -75,6 +75,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
+import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
 import de.metas.request.api.IRequestTypeDAO;
@@ -91,7 +92,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -783,7 +783,7 @@ public class OrgChangeCommand
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.confidentialType(RequestConfidentialType.PartnerConfidential)
 				.orgId(orgId)
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)

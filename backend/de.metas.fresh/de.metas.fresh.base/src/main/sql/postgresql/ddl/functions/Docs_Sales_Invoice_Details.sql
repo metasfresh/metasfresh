@@ -31,7 +31,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 UOM                        character varying(10),
                 PriceUOM                   character varying(10),
                 StdPrecision               numeric(10, 1),
-                QtyPattern                 character varying,
                 linenetamt                 numeric,
                 rate                       numeric,
                 isdiscountprinted          character,
@@ -48,6 +47,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 isprintwhenpackingmaterial character,
                 PricePattern               text,
                 AmountPattern              text,
+                QtyPattern                 text,
+                PriceQtyPattern            text,
                 catchweight                numeric,
                 weight_uom                 character varying(10),
                 customs_number             text
@@ -79,9 +80,9 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        piip.name                                              AS HUName,
 
        CASE
-         WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
                il.QtyInvoicedInPriceUOM
-       END as QtyInvoicedInPriceUOM,
+       END                                                    AS QtyInvoicedInPriceUOM,
        CASE
            WHEN il.QtyEntered > 0
                THEN il.QtyEntered
@@ -99,10 +100,9 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'UOMSymbol') = 'N' THEN
                COALESCE(puomt.UOMSymbol, puom.UOMSymbol)
-       END AS PriceUOM,
+       END                                                    AS PriceUOM,
 
        puom.StdPrecision,
-       report.getQtyPattern(puom.StdPrecision)                AS QtyPattern,
        il.linenetamt,
        t.rate,
        i.isDiscountPrinted,
@@ -120,6 +120,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                 AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                AS PriceQtyPattern,
        w.catchweight,
        w.weight_uom,
        pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number

@@ -167,6 +167,7 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	@NonNull
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
 		return createAllInOutsQuery(desadv)

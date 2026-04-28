@@ -41,6 +41,9 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
@@ -59,6 +62,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -137,6 +141,13 @@ public class PickingJobService implements PickingSlotListener
 				.request(request)
 				//
 				.build().execute();
+	}
+
+	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+		return complete(pickingJob);
 	}
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
@@ -225,7 +236,27 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull
 	public Stream<Packageable> streamPackageable(@NonNull final PickingJobQuery query)
 	{
-		return shipmentScheduleService.stream(query.toPackageableQuery());
+		final Set<ShipmentScheduleId> onlyShipmentScheduleIds;
+		if (query.isScheduledForWorkplaceOnly())
+		{
+			final PickingJobScheduleCollection jobSchedules = pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
+			if (jobSchedules.isEmpty())
+			{
+				return Stream.of();
+			}
+
+			onlyShipmentScheduleIds = jobSchedules.getShipmentScheduleIds();
+		}
+		else
+		{
+			onlyShipmentScheduleIds = null;
+		}
+
+		return shipmentScheduleService.stream(
+				query.toPackageableQueryBuilder()
+						.onlyShipmentScheduleIds(onlyShipmentScheduleIds)
+						.build()
+		);
 	}
 
 	public ADRefList getQtyRejectedReasons()
@@ -713,6 +744,16 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)
 				//
+				.build().execute();
+	}
+
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(@NonNull GetNextEligibleLineToPackRequest request)
+	{
+		return GetNextEligibleLineToPackCommand.builder()
+				.pickingJobService(this)
+				.huService(huService)
+				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
+				.request(request)
 				.build().execute();
 	}
 }

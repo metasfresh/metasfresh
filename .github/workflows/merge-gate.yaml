@@ -1,0 +1,71 @@
+# ===========================================================================
+# Merge Gate — sets a commit status based on the cicd workflow result
+# ===========================================================================
+# This workflow triggers AFTER the cicd workflow completes (on any branch)
+# and creates a commit status named "Merge Gate" that Mergify uses as its
+# merge condition (`check-success=Merge Gate`).
+#
+# Why a separate workflow?
+#   - The cicd.yaml differs between branches (different jobs, different names).
+#     An in-workflow gate with hardcoded `needs:` would break on branches that
+#     lack certain jobs. This workflow uses the overall workflow conclusion
+#     instead — no job names to maintain.
+#   - workflow_run files only need to exist on the DEFAULT branch to fire for
+#     ALL branches. One file, zero per-branch maintenance.
+#
+# How it works:
+#   1. cicd workflow finishes (success, failure, cancelled, etc.)
+#   2. This workflow fires via `workflow_run: completed`
+#   3. It reads `github.event.workflow_run.conclusion`
+#   4. It creates a commit status on the cicd run's HEAD SHA
+#   5. Mergify sees `check-success=Merge Gate` → satisfied (or not)
+# ===========================================================================
+
+name: Merge Gate
+
+on:
+  workflow_run:
+    workflows: ["cicd"]
+    types: [completed]
+
+permissions:
+  statuses: write
+
+jobs:
+  gate:
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    steps:
+      - name: Set Merge Gate commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          echo "cicd workflow on branch '$BRANCH' finished with conclusion: $CONCLUSION"
+          echo "Setting commit status on SHA: $SHA"
+
+          if [ "$CONCLUSION" = "success" ]; then
+            STATE="success"
+            DESC="All cicd jobs passed"
+          else
+            STATE="failure"
+            DESC="cicd workflow finished with: $CONCLUSION"
+          fi
+
+          gh api "repos/$REPO/statuses/$SHA" \
+            -f state="$STATE" \
+            -f context="Merge Gate" \
+            -f description="$DESC" \
+            -f target_url="$RUN_URL"
+
+          echo "Merge Gate status set to **$STATE** for $SHA" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | $BRANCH |" >> $GITHUB_STEP_SUMMARY
+          echo "| Conclusion | $CONCLUSION |" >> $GITHUB_STEP_SUMMARY
+          echo "| SHA | \`${SHA:0:12}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| cicd run | [View]($RUN_URL) |" >> $GITHUB_STEP_SUMMARY

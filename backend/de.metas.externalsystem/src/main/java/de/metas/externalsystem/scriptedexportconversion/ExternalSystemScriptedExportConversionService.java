@@ -24,10 +24,17 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointRepository;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -38,6 +45,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
@@ -52,16 +60,23 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
+import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_Record_ID;
+import static org.compiere.util.Env.getCtx;
 
 @Service
 @RequiredArgsConstructor
@@ -72,36 +87,28 @@ public class ExternalSystemScriptedExportConversionService
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	@NonNull
-	private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
-	@NonNull
-	private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
+	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
+	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 
-	@NonNull
-	public Stream<ExternalSystemScriptedExportConversionConfig> retrieveActiveConfigs()
+	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
-		return externalSystemScriptedExportConversionRepository.retrieveActiveConfigs();
+		externalSystemScriptedExportConversionRepository.addCacheResetListener(listener);
 	}
 
 	@NonNull
-	public Optional<ExternalSystemScriptedExportConversionConfig> retrieveBestMatchingConfig(
-			@NonNull final AdTableAndClientId tableAndClientId,
-			@NonNull final Integer recordId)
+	public ImmutableSet<AdTableAndClientId> getTriggerOnCompleteDistinctTableAndClientIds()
 	{
-		return externalSystemScriptedExportConversionRepository.retrieveActiveBy(tableAndClientId)
+		return externalSystemScriptedExportConversionRepository.getTriggerOnCompleteDistinctTableAndClientIds();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemScriptedExportConversionConfig> getMatchingTriggerOnCompleteConfigsByTableAndClientId(@NonNull final AdTableAndClientId tableAndClientId, @NonNull final Integer recordId)
+	{
+		return externalSystemScriptedExportConversionRepository.getTriggerOnCompleteConfigsByTableAndClientIds(tableAndClientId).stream()
 				.filter(config -> isConfigMatchingRecord(config, recordId))
-				.findAny();
-	}
-
-	public boolean existsActive(@NonNull final AdTableAndClientId tableAndClientId)
-	{
-		return externalSystemScriptedExportConversionRepository.existsActive(tableAndClientId);
-	}
-
-	public boolean existsActiveOutOfTrx(@NonNull final AdTableAndClientId tableAndClientId)
-	{
-		return externalSystemScriptedExportConversionRepository.existsActiveOutOfTrx(tableAndClientId);
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -110,8 +117,18 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
+		return getParameters(config, context, outboundDataProcessRecordId, null);
+	}
 
-		final ExternalSystemOutboundEndpoint endpoint = externalSystemOutboundEndpointRepository.getById(config.getExternalSystemOutboundEndpointId());
+	@NonNull
+	public Map<String, String> getParameters(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			@NonNull final Properties context,
+			@NonNull final String outboundDataProcessRecordId,
+			@Nullable final String errorContext)
+	{
+
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 		final String outboundEndpointData = toJson(endpoint);
 
 		final Map<String, String> parameters = new HashMap<>();
@@ -119,13 +136,40 @@ public class ExternalSystemScriptedExportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, outboundEndpointData);
-		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getAdTableId()));
+		final String tableName = tableDAO.retrieveTableName(config.getTableId());
+		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableName);
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
+
+		final String documentNo = retrieveDocumentNo(tableName, outboundDataProcessRecordId);
+		if (documentNo != null)
+		{
+			parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO, documentNo);
+		}
+
+		if (errorContext != null)
+		{
+			parameters.put(PARAM_ERROR_CONTEXT, errorContext);
+		}
 
 		return parameters;
 	}
 
-	private String toJson(@NonNull final ExternalSystemOutboundEndpoint endpoint)
+	@Nullable
+	private String retrieveDocumentNo(@NonNull final String tableName, @NonNull final String recordId)
+	{
+		try
+		{
+			final int adTableId = tableDAO.retrieveTableId(tableName);
+			return Services.get(IDocumentBL.class).getDocumentNo(getCtx(), adTableId, Integer.parseInt(recordId));
+		}
+		catch (final Exception e)
+		{
+			// Table may not have a DocumentNo column — that's fine, just return null
+			return null;
+		}
+	}
+
+	private String toJson(@NonNull final ExternalSystemEndpoint endpoint)
 	{
 		try
 		{
@@ -168,7 +212,7 @@ public class ExternalSystemScriptedExportConversionService
 	@NonNull
 	private String getSqlWithWhereClauseAndDocBaseTypeIfPresent(@NonNull final ExternalSystemScriptedExportConversionConfig config)
 	{
-		final String rootTableName = tableDAO.retrieveTableName(config.getAdTableId());
+		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
 		return Optional.ofNullable(config.getDocBaseType())
@@ -193,12 +237,12 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
-		final String rootTableName = tableDAO.retrieveTableName(config.getAdTableId());
+		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(context)
-				.setRecord(TableRecordReference.of(config.getAdTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
+				.setRecord(TableRecordReference.of(config.getTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
 				.setAD_Process_ID(config.getOutboundDataProcessId())
 				.addParameter(rootKeyColumnName, outboundDataProcessRecordId)
 				.buildAndPrepareExecution()
@@ -223,5 +267,62 @@ public class ExternalSystemScriptedExportConversionService
 		{
 			throw new AdempiereException("Failed to read process output Resource", ex);
 		}
+	}
+
+	public void executeInvokeScriptedExportConversionActionAfterCommit(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId)
+	{
+		trxManager.runAfterCommit(() -> executeInvokeScriptedExportConversionAction(config, recordId));
+	}
+
+	public List<Exception> executeInvokeScriptedExportConversionAction(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId)
+	{
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+	}
+
+	@NonNull
+	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId,
+			@Nullable final ExternalSystemErrorContext errorContext)
+	{
+		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
+		try
+		{
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setRecord(configTableId, config.getId().getRepoId())
+					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
+					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
+					.addParameter(PARAM_Record_ID, recordId);
+
+			if (errorContext != null)
+			{
+				processInfoBuilder.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
+			}
+
+			final ProcessInfo processInfo = processInfoBuilder.buildAndPrepareExecution().executeSync().getProcessInfo();
+
+			return ExternalSystemInvocationResult.success(processInfo.getPinstanceId());
+		}
+		catch (final Exception e)
+		{
+			log.warn("{} process failed for Config ID {}, Record ID: {}",
+					InvokeScriptedExportConversionAction.class.getName(),
+					config.getId(), recordId, e);
+			return ExternalSystemInvocationResult.error(e);
+		}
+	}
+
+	public List<ExternalSystemScriptedExportConversionConfig> getByParentConfigIdAndTableAndClientId(@NonNull final ExternalSystemParentConfigId parentConfigId,
+																									 @NonNull final AdTableAndClientId tableAndClientId)
+	{
+		return externalSystemScriptedExportConversionRepository.getByParentConfigId(parentConfigId).stream()
+				.filter(config -> config.isMatching(tableAndClientId))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -22,13 +22,16 @@
 
 package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.job.JobRepository;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -37,6 +40,8 @@ import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -52,8 +57,34 @@ public class JsonServiceFactory
 	private final @NonNull TitleRepository titleRepository;
 	private final @NonNull CurrencyRepository currencyRepository;
 	private final @NonNull JobRepository jobRepository;
+	private final @NonNull PaymentTermService paymentTermService;
+	private final @NonNull IncotermsRepository incotermsRepository;
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceService;
 	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+
+	@VisibleForTesting
+	public static JsonServiceFactory newInstanceForUnitTesting(
+			@NonNull final LogEntriesRepository logEntriesRepository,
+			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+	{
+		Adempiere.assertUnitTestMode();
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		return new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				BPartnerCompositeRepository.newInstanceForUnitTesting(logEntriesRepository),
+		        bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
+				new GreetingRepository(),
+				new TitleRepository(),
+				new CurrencyRepository(),
+				new JobRepository(),
+				new PaymentTermService(),
+				IncotermsRepository.newInstanceForUnitTesting(),
+				ExternalReferenceRestControllerService.newInstanceForUnitTesting(),
+				albertaBPartnerCompositeService
+		);
+	}
 
 	public JsonPersisterService createPersister()
 	{
@@ -68,7 +99,8 @@ public class JsonServiceFactory
 				bpGroupService,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
@@ -86,6 +118,8 @@ public class JsonServiceFactory
 				greetingRepository,
 				titleRepository,
 				jobRepository,
+				paymentTermService,
+				incotermsRepository,
 				externalReferenceService,
 				identifier);
 	}

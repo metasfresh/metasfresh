@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 208495014L;
+	private static final long serialVersionUID = -328045422L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -83,6 +83,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setBPartnerName2 (final @Nullable java.lang.String BPartnerName2)
+	{
+		set_Value (COLUMNNAME_BPartnerName2, BPartnerName2);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName2() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName2);
 	}
 
 	@Override
@@ -287,6 +299,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isCommissionToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCommissionToDefault);
+	}
+
+	@Override
+	public void setIsDefaultVisitorAddress(final boolean IsDefaultVisitorAddress)
+	{
+		set_Value (COLUMNNAME_IsDefaultVisitorAddress, IsDefaultVisitorAddress);
+	}
+
+	@Override
+	public boolean isDefaultVisitorAddress()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDefaultVisitorAddress);
 	}
 
 	@Override

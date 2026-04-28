@@ -1,14 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.repository.HuTraceEventToDbRecordUtil;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
@@ -16,6 +7,14 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public class HUTraceRepository
 					"Expected only one M_HU_Trace record for the given query, but found {}; query={}, M_HU_Trace records={}",
 					existingDbRecords.size(), query, existingDbRecords);
 
-			HUTraceEvent existingHuTraceEvent = existingDbRecords.get(0);
+			final HUTraceEvent existingHuTraceEvent = existingDbRecords.get(0);
 			logger.debug("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId().getAsInt(), query);
 		}
 
@@ -89,7 +88,7 @@ public class HUTraceRepository
 	}
 
 	/**
-	 * Similar to {@link #query(HUTraceEventQuery)}, but returns an ID that can be used with {@link IQueryBuilder#setOnlySelection(int)} to retrieve the query result.
+	 * Similar to {@link #query(HUTraceEventQuery)}, but returns an ID that can be used with {@link IQueryBuilder#setOnlySelection(PInstanceId)}  to retrieve the query result.
 	 */
 	public PInstanceId queryToSelection(@NonNull final HUTraceEventQuery query)
 	{

@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -83,7 +84,8 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				referenceGenerator,
-				dimensionService);
+				dimensionService,
+				new ExternalSystemRepository());
 
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
