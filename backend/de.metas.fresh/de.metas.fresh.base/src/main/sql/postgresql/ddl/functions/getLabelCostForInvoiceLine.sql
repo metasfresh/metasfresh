@@ -28,10 +28,10 @@ SELECT base.C_InvoiceLine_ID,
 FROM (SELECT il.C_InvoiceLine_ID,
              il.M_Product_ID,
              pcl.label,
-             pcl.amount                                                                       AS labelAmount,
-             u.UOMSymbol                                                                      AS labelUOM,
-             c.CurSymbol                                                                      AS currencyLabel,
-             uomConvert(il.M_Product_ID, il.C_UOM_ID, pcl.c_uom_id, il.qtyinvoicedinpriceuom) AS qty
+             pcl.amount                                                                                                           AS labelAmount,
+             u.UOMSymbol                                                                                                          AS labelUOM,
+             c.CurSymbol                                                                                                          AS currencyLabel,
+             COALESCE(uomConvert(il.M_Product_ID, il.C_UOM_ID, pcl.c_uom_id, il.qtyinvoicedinpriceuom), il.qtyinvoicedinpriceuom) AS qty
       FROM c_invoiceline il
                JOIN M_Product_Labelcost pcl ON il.M_Product_ID = pcl.M_Product_ID
                JOIN C_UOM u ON pcl.C_UOM_ID = u.C_UOM_ID
