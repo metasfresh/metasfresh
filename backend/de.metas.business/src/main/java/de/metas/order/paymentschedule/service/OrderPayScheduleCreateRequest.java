@@ -48,6 +48,12 @@ public class OrderPayScheduleCreateRequest
 		@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
 		@NonNull LocalDate dueDate;
 		@NonNull Money dueAmount;
+		/**
+		 * Base amount for this schedule line.
+		 * For LC / initial OD rows this equals the order GrandTotal.
+		 * For iter-3 Delivery sub-rows it equals the receipt with-tax value.
+		 */
+		@NonNull Money baseAmount;
 
 		int offsetDays;
 	}

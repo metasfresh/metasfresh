@@ -97,6 +97,7 @@ class OrderPayScheduleCreateCommand
 		return OrderPayScheduleCreateRequest.Line.builder()
 				.dueDate(result.getDueDate())
 				.dueAmount(dueAmount)
+				.baseAmount(context.getGrandTotal()) // for LC/OD rows: BaseAmt = order GrandTotal
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())
 				.percent(termBreak.getPercent())
