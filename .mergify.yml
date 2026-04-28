@@ -142,7 +142,6 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
-      delete_head_branch: {}
 
   - name: Block direct merges between protected branches (use auto-port instead)
     conditions:
@@ -198,3 +197,5 @@ pull_request_rules:
       queue:
         name: merge-queue
 
+merge_protections_settings:
+  reporting_method: check-runs
