@@ -32,6 +32,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
@@ -40,10 +41,13 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.TimeUtil;
@@ -290,6 +294,7 @@ public class DeliveryPrepaymentAllocationService
 	 *
 	 * <p>Steps:
 	 * <ol>
+	 *   <li>Look up the LC% for the order's payment term.
 	 *   <li>Look up the iter-2 proforma-prepayment payment for the order.
 	 *   <li>Get its remaining available amount ({@code IPaymentDAO.getAvailableAmount}).
 	 *   <li>Compute the matched receipt value via {@code M_MatchInv} traversal.
@@ -312,21 +317,22 @@ public class DeliveryPrepaymentAllocationService
 	 *
 	 * @param invoice  the completing financial AP invoice
 	 * @param orderId  order linked to the invoice (resolved by the caller via {@code M_MatchInv})
-	 * @param lcPercent LC percentage for this order's payment term (e.g. {@code Percent.of(30)})
 	 */
 	public void allocateForInvoice(
 			@NonNull final I_C_Invoice invoice,
-			@NonNull final OrderId orderId,
-			@NonNull final Percent lcPercent)
+			@NonNull final OrderId orderId)
 	{
-		// 1. Find the proforma-prepayment payment
+		// 1. Look up the LC% for this order's payment term
+		final Percent lcPercent = lookupLcPercent(orderId);
+
+		// 2. Find the proforma-prepayment payment
 		final PaymentId prepayPaymentId = lookupProformaPrepaymentPayment(orderId);
 		if (prepayPaymentId == null)
 		{
 			return;
 		}
 
-		// 2. Get remaining available amount on the payment
+		// 3. Get remaining available amount on the payment
 		final I_C_Payment prepayPayment = paymentDAO.getById(prepayPaymentId);
 		final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(prepayPayment.getC_Currency_ID());
 		final BigDecimal availableAmtBD = paymentDAO.getAvailableAmount(prepayPaymentId);
@@ -338,10 +344,10 @@ public class DeliveryPrepaymentAllocationService
 			return;
 		}
 
-		// 3. Compute matched receipt value via M_MatchInv
+		// 4. Compute matched receipt value via M_MatchInv
 		final Money receiptWithTax = computeMatchedReceiptValueWithTax(invoice);
 
-		// 4. Compute the allocation amount per the §3.3 rule
+		// 5. Compute the allocation amount per the §3.3 rule
 		final IsPartialInvoiceFlag flag = IsPartialInvoiceFlag.fromBoolean(invoice.isPartialInvoice());
 		final Money allocAmt = computeAllocation(receiptWithTax, flag, remainingPrepay, lcPercent);
 
@@ -350,7 +356,7 @@ public class DeliveryPrepaymentAllocationService
 			return;
 		}
 
-		// 5. Create and complete the allocation (explicit amount — NEVER autoAllocate)
+		// 6. Create and complete the allocation (explicit amount — NEVER autoAllocate)
 		final Timestamp dateAcct = TimeUtil.asTimestamp(invoice.getDateAcct());
 		final Timestamp dateTrx = TimeUtil.asTimestamp(invoice.getDateInvoiced());
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -374,5 +380,37 @@ public class DeliveryPrepaymentAllocationService
 						//
 						.createAndComplete()
 		);
+	}
+
+	// -----------------------------------------------------------------------
+	// Private helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Looks up the LC% for the given order's payment term.
+	 * Returns {@link Percent#ZERO} when no LC break is found (defensive default).
+	 *
+	 * <p>The LC break row has {@code ReferenceDateType = 'LC'}
+	 * ({@link de.metas.payment.paymentterm.ReferenceDateType#LetterOfCreditDate}).
+	 */
+	@NonNull
+	private Percent lookupLcPercent(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.load(orderId, I_C_Order.class);
+		final int paymentTermId = order.getC_PaymentTerm_ID();
+
+		final I_C_PaymentTerm_Break lcBreak = queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
+				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate.getCode())
+				.create()
+				.firstOnly(I_C_PaymentTerm_Break.class);
+
+		if (lcBreak == null)
+		{
+			return Percent.ZERO;
+		}
+
+		return Percent.of(BigDecimal.valueOf(lcBreak.getPercent()));
 	}
 }
