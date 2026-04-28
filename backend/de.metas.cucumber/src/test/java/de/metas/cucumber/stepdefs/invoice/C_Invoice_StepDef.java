@@ -857,6 +857,11 @@ public class C_Invoice_StepDef
 		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
 				.ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 
+		// iter-3 (split-payment): allow the feature file to set IsPartialInvoice directly on a draft invoice.
+		// When omitted, the default ('Y' = Partial) from C_DocType is retained.
+		row.getAsOptionalBoolean(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(invoice::setIsPartialInvoice);
+
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
