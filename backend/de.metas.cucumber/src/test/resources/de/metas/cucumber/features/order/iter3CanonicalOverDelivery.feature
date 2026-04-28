@@ -85,7 +85,6 @@ Feature: Split-payment iter-3 TC1 — canonical over-delivery (Partial → Final
 
   @from:cucumber
   @ghActions:run_on_executor1
-  @Id:S29369_TC1
   Scenario: TC1 — canonical over-delivery: Partial (INV1) → Final (INV2); remainder row deleted
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
