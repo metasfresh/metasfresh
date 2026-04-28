@@ -1,6 +1,6 @@
 -- 2026-04-28 https://github.com/metasfresh/me03/issues/29369
 -- Iter 3: AD_Column for BaseAmt, M_InOut_ID, C_Invoice_ID on C_OrderPaySchedule (AD_Table_ID=542539).
--- The physical DDL columns were added by 5400030 / 5400040.
+-- The physical DDL columns were added by 5800150 / 5800160.
 -- All three columns are system-managed; IsUpdateable='Y' to allow the authority function to write,
 -- but the UI enforces read-only via AD_Field.IsReadOnly='Y'.
 
