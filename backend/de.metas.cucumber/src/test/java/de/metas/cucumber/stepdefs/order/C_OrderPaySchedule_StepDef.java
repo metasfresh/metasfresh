@@ -177,6 +177,10 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
+		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(expected));
+		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
 
 		softly.assertAll();
 
@@ -200,6 +204,10 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
+		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(expected));
+		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
 
 		// DueAmt_Actual: "null" in the feature means assert NULL; a numeric value asserts equality.
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
