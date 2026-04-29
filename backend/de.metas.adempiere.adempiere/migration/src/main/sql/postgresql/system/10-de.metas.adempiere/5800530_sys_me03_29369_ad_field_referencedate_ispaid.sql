@@ -18,4 +18,4 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsA
      AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl WHERE AD_Field_ID = f.AD_Field_ID AND AD_Language = l.AD_Language);
 
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584813);
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584814);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(1402); -- existing IsPaid element

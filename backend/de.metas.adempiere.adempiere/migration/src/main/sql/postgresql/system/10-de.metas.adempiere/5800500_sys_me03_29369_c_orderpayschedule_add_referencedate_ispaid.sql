@@ -9,7 +9,10 @@
 --         columns for SQL filtering and reporting.
 
 /* DDL */ SELECT public.db_alter_table('C_OrderPaySchedule','ALTER TABLE C_OrderPaySchedule ADD COLUMN ReferenceDate date DEFAULT NULL');
-/* DDL */ SELECT public.db_alter_table('C_OrderPaySchedule','ALTER TABLE C_OrderPaySchedule ADD COLUMN IsPaid char(1) DEFAULT ''N''');
+-- Add IsPaid as NOT NULL DEFAULT 'N' directly (PostgreSQL 11+ handles constant defaults efficiently).
+-- Using NOT NULL + DEFAULT at ADD COLUMN time avoids the "pending trigger events" error
+-- that occurs when SET NOT NULL is called after DML in the same single-transaction psql run.
+/* DDL */ SELECT public.db_alter_table('C_OrderPaySchedule','ALTER TABLE C_OrderPaySchedule ADD COLUMN IsPaid char(1) NOT NULL DEFAULT ''N''');
 /* DDL */ SELECT public.db_alter_table('C_OrderPaySchedule','ALTER TABLE C_OrderPaySchedule ADD CONSTRAINT IsPaid_check CHECK (IsPaid IN (''Y'',''N''))');
 
 SELECT backup_table('c_orderpayschedule', '_iter3_referencedate_ispaid_bkp');
@@ -20,9 +23,8 @@ UPDATE C_OrderPaySchedule
    SET ReferenceDate = DueDate - (OffsetDays * INTERVAL '1 day')
  WHERE Status <> 'PR';
 
--- Backfill IsPaid: 'Y' iff Status='P' (Paid).
+-- Backfill IsPaid: 'Y' iff Status='P' (Paid). (All rows already have 'N' from DEFAULT;
+-- only Paid rows need updating to 'Y'.)
 UPDATE C_OrderPaySchedule
-   SET IsPaid = CASE WHEN Status = 'P' THEN 'Y' ELSE 'N' END;
-
--- Make IsPaid NOT NULL after backfill.
-/* DDL */ SELECT public.db_alter_table('C_OrderPaySchedule','ALTER TABLE C_OrderPaySchedule ALTER COLUMN IsPaid SET NOT NULL');
+   SET IsPaid = 'Y'
+ WHERE Status = 'P';
