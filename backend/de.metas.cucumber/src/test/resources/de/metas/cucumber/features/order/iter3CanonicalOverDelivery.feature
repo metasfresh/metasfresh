@@ -121,7 +121,7 @@ Feature: Split-payment iter-3 TC1 — canonical over-delivery (Partial → Final
     # AC #1 — after LC Paid: 1 Delivery remainder row, LC row Paid
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 21000.00 | 21000.00      | P      | N      |
+      | LC                | 21000.00 | 21000.00      | P      | Y      |
       | OD                | 49000.00 | null          | WP     | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
     And the order identified by lcOrder has following delivery sub-rows:

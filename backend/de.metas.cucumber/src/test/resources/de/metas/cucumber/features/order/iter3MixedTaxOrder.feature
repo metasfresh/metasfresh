@@ -102,7 +102,7 @@ Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #2
     # LC 30% = 6,900; OD 70% = 16,100
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 6900.00  | null          | PR     | Y      |
+      | LC                | 6900.00  | null          | PR     | N      |
       | OD                | 16100.00 | null          | WP     | N      |
 
     # ── Iter-2: proforma (6,900 EUR) + payment → LC Paid ──
