@@ -41,7 +41,7 @@ public class PurchaseErrorItem implements PurchaseItem
 		return (PurchaseErrorItem)purchaseItem;
 	}
 
-	@NonNull PurchaseItemId purchaseItemId;
+	@Nullable PurchaseItemId purchaseItemId;
 
 	@Nullable ITableRecordReference transactionReference;
 
@@ -55,7 +55,7 @@ public class PurchaseErrorItem implements PurchaseItem
 
 	@Builder
 	private PurchaseErrorItem(
-			@NonNull final PurchaseItemId purchaseItemId,
+			@Nullable final PurchaseItemId purchaseItemId,
 			@Nullable final Throwable throwable,
 			@Nullable final AdIssueId adIssueId,
 			@NonNull final PurchaseCandidateId purchaseCandidateId,
