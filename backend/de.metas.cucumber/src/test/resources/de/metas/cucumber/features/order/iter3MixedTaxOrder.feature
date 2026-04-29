@@ -109,9 +109,11 @@ Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #2
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
       | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    # Proforma must equal LC portion = 6,900 EUR GROSS. Price list is tax-exclusive
+    # and productA carries 20% tax → set net price to 5,750 so 5750 × 1.20 = 6900 gross.
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   |
-      | lcInvoiceL1 | lcInvoice    | productA     | 1 PCE       | 6900.00 |
+      | lcInvoiceL1 | lcInvoice    | productA     | 1 PCE       | 5750.00 |
     And the invoice identified by lcInvoice is completed
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
     And metasfresh contains Pay Selection
