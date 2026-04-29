@@ -14,9 +14,9 @@ VALUES (0, 0, 'Y',
         'D',
         545676 /*From ID Server*/);
 
--- Set ErrorCode (required for MsgType='E')
+-- Set ErrorCode (required for MsgType='E') — must fit AD_Message.ErrorCode varchar(40)
 UPDATE AD_Message
-SET ErrorCode = 'ORDER_REACTIVATE_BLOCKED_BY_PAYSCHEDULE_ACTIVITY'
+SET ErrorCode = 'ORDER_REACTIVATE_BLOCKED_BY_PAYSCHED'
 WHERE AD_Message_ID = 545676;
 
 -- AD_Message_Trl: de_DE
