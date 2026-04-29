@@ -14,7 +14,7 @@ VALUES (584794 /*From ID Server*/, 0, 0, 'Y', '2026-04-28 21:30', 0, '2026-04-28
         || 'wie der Anzahlungsbetrag zugeordnet wird: '
         || 'Teilrechnung (Y) → MIN(Wareneingang × LC%, verbleibende Anzahlung); '
         || 'Endrechnung (N) → verbleibende Anzahlung vollständig verbrauchen. '
-        || 'Standard Y (Teilrechnung) auf Beleargt-Ebene; pro Rechnung überschreibbar, '
+        || 'Standard Y (Teilrechnung) auf Belegart-Ebene; pro Rechnung überschreibbar, '
         || 'solange der Belegstatus Entwurf (DR) oder In Bearbeitung (IP) ist.',
         'D');
 
@@ -42,7 +42,7 @@ SET Name        = 'Teilrechnung',
                   || 'wie der Anzahlungsbetrag zugeordnet wird: '
                   || 'Teilrechnung (Y) → MIN(Wareneingang × LC%, verbleibende Anzahlung); '
                   || 'Endrechnung (N) → verbleibende Anzahlung vollständig verbrauchen. '
-                  || 'Standard Y (Teilrechnung) auf Beleargt-Ebene; pro Rechnung überschreibbar, '
+                  || 'Standard Y (Teilrechnung) auf Belegart-Ebene; pro Rechnung überschreibbar, '
                   || 'solange der Belegstatus Entwurf (DR) oder In Bearbeitung (IP) ist.',
     IsTranslated = 'N',
     Updated     = '2026-04-28 21:30',
@@ -71,7 +71,7 @@ SET Name        = 'Partial invoice',
     PrintName   = 'Partial invoice',
     Description = 'When checked, this invoice is a partial invoice.',
     Help        = 'On a financial purchase invoice for a proforma''d purchase order, '
-                  || 'the iter-3 prepayment allocation rule treats Partial invoices as '
+                  || 'the prepayment allocation rule treats Partial invoices as '
                   || 'MIN(receipt × LC%, remaining_prepay) and Final (unchecked) invoices as '
                   || 'remaining_prepay (consumes all remaining prepay). '
                   || 'Default Y (Partial) at doctype level; per-invoice override is editable '
