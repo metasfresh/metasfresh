@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -277796288L;
+	private static final long serialVersionUID = 600447516L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -71,6 +71,18 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmtSource);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setBP_Account_Place (final @Nullable java.lang.String BP_Account_Place)
+	{
+		set_ValueNoCheck (COLUMNNAME_BP_Account_Place, BP_Account_Place);
+	}
+
+	@Override
+	public java.lang.String getBP_Account_Place() 
+	{
+		return get_ValueAsString(COLUMNNAME_BP_Account_Place);
 	}
 
 	@Override
@@ -361,8 +373,8 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -379,6 +391,12 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	/** BOM & Formula = BOM */
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** AnalysisReport = QMA */
+	public static final String DOCBASETYPE_AnalysisReport = "QMA";
+	/** APProFormaInvoice = APF */
+	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{

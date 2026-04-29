@@ -18,7 +18,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 
 
 	/**
-	 * Set activityname.
+	 * Set Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	void setActivityName (@Nullable java.lang.String ActivityName);
 
 	/**
-	 * Get activityname.
+	 * Get Activity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -117,6 +117,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 
 	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_AmtSource = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "AmtSource", null);
 	String COLUMNNAME_AmtSource = "AmtSource";
+
+	/**
+	 * Set Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBP_Account_Place (@Nullable java.lang.String BP_Account_Place);
+
+	/**
+	 * Get Debit/Credit indicator.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBP_Account_Place();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_BP_Account_Place = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "BP_Account_Place", null);
+	String COLUMNNAME_BP_Account_Place = "BP_Account_Place";
 
 	/**
 	 * Set Name.
@@ -524,7 +545,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	 * Set Due Date.
 	 * Date when the payment is due
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -534,7 +555,7 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	 * Get Due Date.
 	 * Date when the payment is due
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
