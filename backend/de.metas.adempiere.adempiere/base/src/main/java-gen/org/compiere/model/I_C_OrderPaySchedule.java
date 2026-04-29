@@ -324,6 +324,29 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Paid.
+	 * When checked, this pay-schedule line is paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPaid (boolean IsPaid);
+
+	/**
+	 * Get Paid.
+	 * When checked, this pay-schedule line is paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPaid();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_OrderPaySchedule.class, "IsPaid", null);
+	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -389,6 +412,29 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Percent = new ModelColumn<>(I_C_OrderPaySchedule.class, "Percent", null);
 	String COLUMNNAME_Percent = "Percent";
+
+	/**
+	 * Set Reference date.
+	 * Date the due date is computed from (DueDate = ReferenceDate + OffsetDays).
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferenceDate (@Nullable java.sql.Timestamp ReferenceDate);
+
+	/**
+	 * Get Reference date.
+	 * Date the due date is computed from (DueDate = ReferenceDate + OffsetDays).
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getReferenceDate();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_ReferenceDate = new ModelColumn<>(I_C_OrderPaySchedule.class, "ReferenceDate", null);
+	String COLUMNNAME_ReferenceDate = "ReferenceDate";
 
 	/**
 	 * Set Reference Date Type.

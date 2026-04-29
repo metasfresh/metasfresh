@@ -171,9 +171,21 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public java.sql.Timestamp getDueDate() 
+	public java.sql.Timestamp getDueDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setIsPaid (final boolean IsPaid)
+	{
+		set_Value (COLUMNNAME_IsPaid, Boolean.valueOf(IsPaid));
+	}
+
+	@Override
+	public boolean isPaid()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
 	}
 
 	@Override
@@ -215,7 +227,19 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 		return get_ValueAsInt(COLUMNNAME_Percent);
 	}
 
-	/** 
+	@Override
+	public void setReferenceDate (final @Nullable java.sql.Timestamp ReferenceDate)
+	{
+		set_Value (COLUMNNAME_ReferenceDate, ReferenceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getReferenceDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ReferenceDate);
+	}
+
+	/**
 	 * ReferenceDateType AD_Reference_ID=541989
 	 * Reference name: ReferenceDateType
 	 */
