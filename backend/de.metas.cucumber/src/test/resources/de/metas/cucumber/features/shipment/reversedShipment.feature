@@ -13,6 +13,7 @@ Feature: reversed shipment
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
+  @Id:S29561_10
   Scenario: we can create and complete a shipment, then reserve/correct it and check the hu's status
     Given metasfresh has date and time 2021-12-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
