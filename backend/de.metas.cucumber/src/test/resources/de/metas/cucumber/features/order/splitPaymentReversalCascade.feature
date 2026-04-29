@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#18/#25)
+Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
   # Domain: covers the four reversal cascades documented in §3.6 of the iter-3 requirements.
   # Each scenario starts from TC1's step-5 state (INV1 Partial + INV2 Final both completed,
   # prepay drained to 0) and reverses one element to assert the cascade behaviour.
@@ -162,7 +162,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
   @from:cucumber
   @Id:S29369_TC5a
-  Scenario: TC5a — reverse INV1 (Partial): iter-3 alloc auto-reverses; R1 sub-row Status → Pending (AC #16)
+  Scenario: Reverse INV1 (Partial): alloc auto-reverses; R1 sub-row Status → Pending (AC #16)
 
     # ── Reverse INV1 only ──
     And the invoice identified by inv1 is reversed
@@ -188,7 +188,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
   @from:cucumber
   @Id:S29369_TC5b
-  Scenario: TC5b — reverse R1 after first reversing INV1 (recommended sequence): R1 sub-row dropped (AC #17)
+  Scenario: Reverse R1 after first reversing INV1 (recommended sequence): R1 sub-row dropped (AC #17)
 
     # ── Step 1: reverse INV1 (per recommended sequence: invoice first, then receipt) ──
     And the invoice identified by inv1 is reversed
@@ -212,7 +212,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
   @from:cucumber
   @Id:S29369_TC5c
-  Scenario: TC5c — reverse the prepayment payment: cascade reverses ALL iter-3 allocs; LC → Awaiting_Pay (AC #18)
+  Scenario: Reverse the prepayment payment: cascade reverses ALL allocs; LC → Awaiting_Pay (AC #18)
 
     # ── Reverse the iter-2 prepayment payment ──
     And the payment identified by lcPayment is reversed
@@ -244,7 +244,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
   @from:cucumber
   @Id:S29369_TC5d
-  Scenario: TC5d — reverse INV1 (Partial) AFTER INV2 (Final) has completed: stranded prepay (AC #25)
+  Scenario: Reverse INV1 (Partial) AFTER INV2 (Final) has completed: stranded prepay (AC #25)
 
     # ── Reverse INV1 only (INV2 stays completed) ──
     And the invoice identified by inv1 is reversed

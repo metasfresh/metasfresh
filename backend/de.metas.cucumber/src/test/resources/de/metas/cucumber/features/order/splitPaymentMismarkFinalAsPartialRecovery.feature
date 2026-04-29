@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC4 — mismarked Final-as-Partial + correction by reverse-and-reissue (AC #13)
+Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-and-reissue (AC #13)
   # Domain: proves the documented correction path when the user mismarks INV1 as Final
   # (IsPartialInvoice='N') instead of Partial. The Final rule consumes the full prepay,
   # leaving INV1.OpenAmt too low. The customer detects the mistake, reverses INV1, and
@@ -86,7 +86,7 @@ Feature: Split-payment iter-3 TC4 — mismarked Final-as-Partial + correction by
 
   @from:cucumber
   @Id:S29369_TC4
-  Scenario: TC4 — INV1 mismarked Final → reverse → reissue as Partial → end-state = TC1 step 3 (AC #13)
+  Scenario: INV1 mismarked Final → reverse → reissue as Partial → end-state = canonical step 3 (AC #13)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
     And metasfresh contains C_Orders:

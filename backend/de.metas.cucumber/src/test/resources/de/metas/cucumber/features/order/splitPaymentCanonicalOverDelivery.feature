@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC1 — canonical over-delivery (Partial → Final)
+Feature: Split-payment — canonical over-delivery (Partial → Final)
   # Domain: a purchase order with LC (30%) + Delivery (70%) payment term.
   # Iter-2 produced the LC-Paid state machine. Iter-3 splits the Delivery row per receipt
   # and allocates the prepayment proportionally to each financial invoice.
@@ -86,7 +86,7 @@ Feature: Split-payment iter-3 TC1 — canonical over-delivery (Partial → Final
   @from:cucumber
   @ghActions:run_on_executor1
   @Id:S29369_TC1
-  Scenario: TC1 — canonical over-delivery: Partial (INV1) → Final (INV2); remainder row deleted
+  Scenario: Canonical over-delivery: Partial (INV1) → Final (INV2); remainder row deleted
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
     And metasfresh contains C_Orders:
@@ -120,9 +120,9 @@ Feature: Split-payment iter-3 TC1 — canonical over-delivery (Partial → Final
 
     # AC #1 — after LC Paid: 1 Delivery remainder row, LC row Paid
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 21000.00 | 21000.00      | P      | Y      |
-      | OD                | 49000.00 | null          | WP     | N      |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
+      | LC                | 21000.00 | 21000.00      | P      | 2026-04-24    | Y      |
+      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
     And the order identified by lcOrder has following delivery sub-rows:
       | M_InOut_ID | BaseAmt  | DueAmt   | Status |

@@ -2,26 +2,25 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC9 — three partial invoices, Final consumes remainder (AC #24)
-  # Domain: proves that three sequential partial invoices each consume their proportional share
-  # of the prepay, and the Final invoice consumes all remaining prepay (AC #24).
+Feature: Split-payment — pure under-delivery (Final invoice consumes remaining prepay)
+  # Domain: proves the Partial vs Final allocation rules diverge as designed.
   #
   # Scenario:
   #   - PO GrandTotal = 70,000 EUR (700 PCE @ 100 EUR/PCE, tax-inclusive).
-  #   - LC 30% = 21,000 EUR prepayment.
+  #   - LC 30 % = 21,000 EUR prepayment; Delivery 70 % = 49,000 EUR.
   #   - Iter-2 cycle: proforma allocated + paid → LC step Paid; prepay.AvailableAmt = 21,000.
-  #   - R1 = 200 PCE @ 100 EUR = 20,000 with-tax.
-  #   - INV1 (Partial, matched to R1): alloc = MIN(20,000 × 30%, 21,000) = 6,000 EUR.
-  #     Remaining prepay = 15,000 EUR.
-  #   - R2 = 200 PCE @ 100 EUR = 20,000 with-tax.
-  #   - INV2 (Partial, matched to R2): alloc = MIN(20,000 × 30%, 15,000) = 6,000 EUR.
-  #     Remaining prepay = 9,000 EUR.
-  #   - R3 = 200 PCE @ 100 EUR = 20,000 with-tax. R1+R2+R3 = 60,000 < 70,000 (under-delivery).
-  #   - INV3 (Final, matched to R3): alloc = 9,000 EUR (remaining — Final rule).
-  #     NOT 6,000 EUR (= 20,000 × 30%) — Final rule consumes the remainder entirely.
+  #   - R1 = 200 PCE @ 100 EUR = 20,000 with-tax (under-delivery).
+  #   - INV1 (Partial, matched to R1): alloc = MIN(20,000 × 30 %, 21,000) = 6,000 EUR.
+  #     Remaining prepay = 15,000 EUR; INV1.OpenAmt = 14,000 EUR.
+  #   - R2 = 300 PCE @ 100 EUR = 30,000 with-tax. R1+R2 = 50,000 < 70,000 (under-delivery).
+  #     Remainder row persists with BaseAmt = 20,000.
+  #   - INV2 (Final, matched to R2): alloc = 15,000 EUR (remaining_prepay — Final rule).
+  #     NOT 9,000 EUR (= 30,000 × 30 %) — the Final rule consumes the remainder, no stranding.
+  #     Prepay.AvailableAmt = 0; INV2.OpenAmt = 15,000 EUR.
   #
-  # Key assertion (AC #24): INV3 alloc = 9,000 (not 6,000), proving Final rule is independent
-  # of the partial-invoice proportional calculation.
+  # Key assertion (AC #10):
+  #   The Final rule allocates remaining_prepay (15,000), NOT MIN(R2.with_tax × LC%, remaining).
+  #   Proves the Partial and Final rules diverge.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -77,8 +76,8 @@ Feature: Split-payment iter-3 TC9 — three partial invoices, Final consumes rem
 
 
   @from:cucumber
-  @Id:S29369_TC9
-  Scenario: TC9 — three partial invoices: each consumes proportional share; Final consumes remainder (AC #24)
+  @Id:S29369_TC2
+  Scenario: Pure under-delivery: Final invoice consumes remaining prepay (AC #10)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
     And metasfresh contains C_Orders:
@@ -133,75 +132,44 @@ Feature: Split-payment iter-3 TC9 — three partial invoices, Final consumes rem
       | inv1L1           | r1         | 200 |
     And the invoice identified by inv1 is completed
 
-    # INV1 alloc = MIN(20,000 × 30%, 21,000) = 6,000
+    # INV1 alloc = MIN(20,000 × 30 %, 21,000) = 6,000
     Then validate C_AllocationLines for invoice inv1
       | Amount  |
       | 6000.00 |
     Then the payment 'lcPayment' has AvailableAmt 15000.00
 
-    # ── R2: 200 PCE → R2.with_tax = 20,000 ──
+    # ── R2: 300 PCE → R2.with_tax = 30,000. R1+R2 = 50,000 < 70,000 (under-delivery) ──
     When iter3 purchase receipt 'r2' is created and completed:
       | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
+      | lcOrder    | lcOrderL1      | 300         |
 
+    # Remainder still exists with BaseAmt = 20,000 (under-delivery)
     Then the order identified by lcOrder has exactly 3 delivery sub-rows
     And the order identified by lcOrder has following delivery sub-rows:
       | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
       | r1         | 20000.00 | 14000.00 | WP     | inv1         |
-      | r2         | 20000.00 | 14000.00 | PR     | null         |
-      | null       | 30000.00 | 21000.00 | PR     | null         |
+      | r2         | 30000.00 | 21000.00 | PR     | null         |
+      | null       | 20000.00 | 14000.00 | PR     | null         |
 
-    # ── INV2: Partial, matched to R2 ──
+    # ── INV2: Final, matched to R2 ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv2L1     | inv2         | product      | 200 PCE     | 100.00 | lcOrderL1      |
+      | inv2L1     | inv2         | product      | 300 PCE     | 100.00 | lcOrderL1      |
     And iter3 M_MatchInv is created:
       | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 200 |
+      | inv2L1           | r2         | 300 |
     And the invoice identified by inv2 is completed
 
-    # INV2 alloc = MIN(20,000 × 30%, 15,000) = 6,000
+    # AC #10 — INV2 alloc = 15,000 (remaining prepay — Final rule), NOT 9,000 (= 30,000 × 30 %)
     Then validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 6000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 9000.00
-
-    # ── R3: 200 PCE → R3.with_tax = 20,000. R1+R2+R3 = 60,000 < 70,000 (under-delivery) ──
-    When iter3 purchase receipt 'r3' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
-
-    # Remainder still exists with BaseAmt = 10,000 (under-delivery)
-    Then the order identified by lcOrder has exactly 4 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 20000.00 | 14000.00 | WP     | inv1         |
-      | r2         | 20000.00 | 14000.00 | WP     | inv2         |
-      | r3         | 20000.00 | 14000.00 | PR     | null         |
-      | null       | 10000.00 | 7000.00  | PR     | null         |
-
-    # ── INV3: Final, matched to R3 ──
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv3       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv3L1     | inv3         | product      | 200 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv3L1           | r3         | 200 |
-    And the invoice identified by inv3 is completed
-
-    # AC #24 — INV3 alloc = 9,000 (remaining prepay — Final rule), NOT 6,000 (= 20,000 × 30%)
-    Then validate C_AllocationLines for invoice inv3
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | 15000.00 |
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
-    # INV3.OpenAmt = 20,000 − 9,000 = 11,000
+    # INV2.OpenAmt = 30,000 − 15,000 = 15,000
     Then validate created invoices
       | Identifier | OpenAmt  |
-      | inv3       | 11000.00 |
+      | inv2       | 15000.00 |

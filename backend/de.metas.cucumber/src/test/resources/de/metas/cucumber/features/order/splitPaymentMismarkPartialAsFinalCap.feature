@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC3 — mismarked Partial-as-Final cap (AC #12)
+Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
   # Domain: proves the MIN cap on the Partial allocation rule prevents over-allocation
   # when the user mismarks the FINAL invoice as Partial (IsPartialInvoice='Y').
   #
@@ -82,7 +82,7 @@ Feature: Split-payment iter-3 TC3 — mismarked Partial-as-Final cap (AC #12)
 
   @from:cucumber
   @Id:S29369_TC3
-  Scenario: TC3 — INV2 mismarked Partial: MIN cap clamps allocation at remaining_prepay (AC #12)
+  Scenario: INV2 mismarked Partial: MIN cap clamps allocation at remaining_prepay (AC #12)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
     And metasfresh contains C_Orders:

@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dormant)
+Feature: Split-payment — non-proforma order regression (split-payment dormant)
   # Domain: a purchase order with the same LC+OD payment term but WITHOUT a proforma
   # allocation. Proves AC #22: iter-3 services are dormant unless a proforma-allocated
   # prepayment payment exists for the order.
@@ -67,7 +67,7 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
   @from:cucumber
   @Id:S29369_TC8
-  Scenario: TC8 — no proforma allocation → iter-3 dormant; delivery schedule unchanged by receipt + invoice
+  Scenario: No proforma allocation → split-payment dormant; delivery schedule unchanged by receipt + invoice
 
     # ── Order completed — LC row Pending, OD row Awaiting_Pay (iter-2 behaviour) ──
     And metasfresh contains C_Orders:
@@ -79,9 +79,9 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 21000.00 | null          | PR     | N      |
-      | OD                | 49000.00 | null          | WP     | N      |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
+      | LC                | 21000.00 | null          | PR     | null          | N      |
+      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
 
     # ── R1: 400 PCE received — no proforma, so recomputeDeliverySteps is dormant ──
     When iter3 purchase receipt 'r1' is created and completed:
@@ -90,9 +90,9 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
     # AC #22 — schedule unchanged: still exactly 2 iter-2 rows (LC + OD), no delivery sub-rows
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 21000.00 | null          | PR     | N      |
-      | OD                | 49000.00 | null          | WP     | N      |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
+      | LC                | 21000.00 | null          | PR     | null          | N      |
+      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
 
     # ── INV1: financial purchase invoice, matched to R1 ──
@@ -114,7 +114,7 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
     # AC #22 — delivery schedule still unchanged after invoice completion
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 21000.00 | null          | PR     | N      |
-      | OD                | 49000.00 | null          | WP     | N      |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
+      | LC                | 21000.00 | null          | PR     | null          | N      |
+      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows

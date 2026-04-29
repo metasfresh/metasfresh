@@ -2,7 +2,7 @@
 @allure.label.epic:E0130_Payment
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
-Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #21)
+Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
   # Domain: proves that ReceiptTaxCalculator applies tax per order line (AC #21).
   #
   # Scenario:
@@ -86,7 +86,7 @@ Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #2
 
   @from:cucumber
   @Id:S29369_TC7
-  Scenario: TC7 — mixed-tax order: R1.BaseAmt uses productA's 20% rate, not the order-average rate (AC #21)
+  Scenario: Mixed-tax order: R1.BaseAmt uses productA's 20% rate, not the order-average rate (AC #21)
 
     # ── Order: 2 lines, different tax rates ──
     And metasfresh contains C_Orders:
@@ -101,9 +101,9 @@ Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #2
     # GrandTotal = 12,000 (productA: 200×50×1.20) + 11,000 (productB: 200×50×1.10) = 23,000
     # LC 30% = 6,900; OD 70% = 16,100
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 6900.00  | null          | PR     | N      |
-      | OD                | 16100.00 | null          | WP     | N      |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
+      | LC                | 6900.00  | null          | PR     | null          | N      |
+      | OD                | 16100.00 | null          | WP     | 2026-04-24    | N      |
 
     # ── Iter-2: proforma (6,900 EUR) + payment → LC Paid ──
     And metasfresh contains C_Invoice:
