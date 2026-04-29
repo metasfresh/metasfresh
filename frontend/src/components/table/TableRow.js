@@ -513,6 +513,7 @@ class TableRow extends PureComponent {
       changeListenOnFalse,
       fieldsByName,
       isShowComments,
+      columnWidths,
     } = this.props;
     const {
       edited,
@@ -561,6 +562,11 @@ class TableRow extends PureComponent {
               widgetData
             );
 
+            const columnWidth =
+              columnWidths && columnWidths[property]
+                ? columnWidths[property]
+                : null;
+
             return (
               <TableCell
                 {...{
@@ -596,6 +602,7 @@ class TableRow extends PureComponent {
                   tableCellData,
                   description,
                   updateHeight,
+                  columnWidth,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -787,6 +794,7 @@ TableRow.propTypes = {
   navigationActive: PropTypes.bool,
   isModal: PropTypes.bool,
   isShowComments: PropTypes.bool,
+  columnWidths: PropTypes.object,
 };
 
 export default TableRow;
