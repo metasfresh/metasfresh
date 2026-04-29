@@ -60,6 +60,17 @@ public class OrderPayScheduleLine
 	 * Actual amount due — written exclusively by {@code OrderPayScheduleLCService} for the LC step. NULL on all non-LC rows.
 	 */
 	@Nullable Money dueAmtActual;
+	/**
+	 * Date used to compute {@link #dueDate}: {@code dueDate = referenceDate + offsetDays}.
+	 * NULL while the line is {@link OrderPayScheduleStatus#Pending}; populated once a real reference date becomes available.
+	 * Derived in {@link #applyAndProcess} from (status, dueDate, offsetDays) — never written by callers.
+	 */
+	@Nullable LocalDate referenceDate;
+	/**
+	 * {@code true} iff {@link #status} is {@link OrderPayScheduleStatus#Paid}.
+	 * Derived in {@link #applyAndProcess} from status — never written by callers.
+	 */
+	boolean isPaid;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 
@@ -85,5 +96,7 @@ public class OrderPayScheduleLine
 		{
 			this.dueAmtActual = context.getDueAmtActual();
 		}
+		this.referenceDate = nextStatus.isPending() ? null : this.dueDate.minusDays(this.offsetDays);
+		this.isPaid = (nextStatus == OrderPayScheduleStatus.Paid);
 	}
 }
