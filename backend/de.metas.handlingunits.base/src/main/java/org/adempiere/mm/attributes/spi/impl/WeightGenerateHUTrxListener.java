@@ -191,7 +191,16 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		// Calculate transaction's deltas (per-CU × qty).
 		final Quantity netDelta = productNet.multiply(qty);
-		final Quantity tareDelta = productGrossInNetUOM.subtract(productNet).multiply(qty);
+
+		// Per-CU packaging delta: only meaningful when gross > net. A misconfigured product
+		// with gross <= net would produce a non-positive delta — same skip semantic as
+		// WeightTareAttributeValueCallout.calculateProductPackagingDelta and
+		// WeightTareDeltaTransferStrategy.computePerCUDelta, so the incremental and
+		// recompute paths stay consistent.
+		final Quantity productGrossNetDiff = productGrossInNetUOM.subtract(productNet);
+		final Quantity tareDelta = productGrossNetDiff.signum() > 0
+				? productGrossNetDiff.multiply(qty)
+				: productGrossNetDiff.toZero();
 
 		return Optional.of(new TrxWeightDeltas(netDelta, tareDelta));
 	}
