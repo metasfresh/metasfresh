@@ -81,6 +81,7 @@ Feature: Split-payment iter-3 TC3 — mismarked Partial-as-Final cap (AC #12)
 
 
   @from:cucumber
+  @Id:S29369_TC3
   Scenario: TC3 — INV2 mismarked Partial: MIN cap clamps allocation at remaining_prepay (AC #12)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──

@@ -76,6 +76,7 @@ Feature: Split-payment iter-3 TC2 — pure under-delivery (Final invoice consume
 
 
   @from:cucumber
+  @Id:S29369_TC2
   Scenario: TC2 — pure under-delivery: Final invoice consumes remaining prepay (AC #10)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──

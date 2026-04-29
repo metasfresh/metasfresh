@@ -85,6 +85,7 @@ Feature: Split-payment iter-3 TC4 — mismarked Final-as-Partial + correction by
 
 
   @from:cucumber
+  @Id:S29369_TC4
   Scenario: TC4 — INV1 mismarked Final → reverse → reissue as Partial → end-state = TC1 step 3 (AC #13)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──

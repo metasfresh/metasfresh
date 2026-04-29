@@ -66,6 +66,7 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
 
   @from:cucumber
+  @Id:S29369_TC8
   Scenario: TC8 — no proforma allocation → iter-3 dormant; delivery schedule unchanged by receipt + invoice
 
     # ── Order completed — LC row Pending, OD row Awaiting_Pay (iter-2 behaviour) ──

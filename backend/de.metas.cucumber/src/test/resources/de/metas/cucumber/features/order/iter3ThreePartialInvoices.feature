@@ -77,6 +77,7 @@ Feature: Split-payment iter-3 TC9 — three partial invoices, Final consumes rem
 
 
   @from:cucumber
+  @Id:S29369_TC9
   Scenario: TC9 — three partial invoices: each consumes proportional share; Final consumes remainder (AC #24)
 
     # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──

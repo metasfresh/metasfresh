@@ -161,6 +161,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
 
   @from:cucumber
+  @Id:S29369_TC5a
   Scenario: TC5a — reverse INV1 (Partial): iter-3 alloc auto-reverses; R1 sub-row Status → Pending (AC #16)
 
     # ── Reverse INV1 only ──
@@ -186,6 +187,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
 
   @from:cucumber
+  @Id:S29369_TC5b
   Scenario: TC5b — reverse R1 after first reversing INV1 (recommended sequence): R1 sub-row dropped (AC #17)
 
     # ── Step 1: reverse INV1 (per recommended sequence: invoice first, then receipt) ──
@@ -209,6 +211,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
 
   @from:cucumber
+  @Id:S29369_TC5c
   Scenario: TC5c — reverse the prepayment payment: cascade reverses ALL iter-3 allocs; LC → Awaiting_Pay (AC #18)
 
     # ── Reverse the iter-2 prepayment payment ──
@@ -240,6 +243,7 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
 
 
   @from:cucumber
+  @Id:S29369_TC5d
   Scenario: TC5d — reverse INV1 (Partial) AFTER INV2 (Final) has completed: stranded prepay (AC #25)
 
     # ── Reverse INV1 only (INV2 stays completed) ──

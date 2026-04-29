@@ -85,6 +85,7 @@ Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #2
 
 
   @from:cucumber
+  @Id:S29369_TC7
   Scenario: TC7 — mixed-tax order: R1.BaseAmt uses productA's 20% rate, not the order-average rate (AC #21)
 
     # ── Order: 2 lines, different tax rates ──
