@@ -232,8 +232,8 @@ Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#
     # AC #18 — LC step Paid → Awaiting_Pay (iter-2 contract).
     # Delivery sub-rows are unchanged (still tied to invoices) — only the allocation cascade reversed.
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | Status |
-      | LC                | WP     |
+      | ReferenceDateType | Status | IsPaid |
+      | LC                | WP     | N      |
     # Delivery sub-rows: still 2 rows (R1 + R2), still pointing at the invoices, no remainder (over-delivery preserved)
     And the order identified by lcOrder has exactly 2 delivery sub-rows
     And the order identified by lcOrder has following delivery sub-rows:

@@ -79,9 +79,9 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 21000.00 | null          | PR     |
-      | OD                | 49000.00 | null          | WP     |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
+      | LC                | 21000.00 | null          | PR     | Y      |
+      | OD                | 49000.00 | null          | WP     | N      |
 
     # ── R1: 400 PCE received — no proforma, so recomputeDeliverySteps is dormant ──
     When iter3 purchase receipt 'r1' is created and completed:
@@ -90,9 +90,9 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
     # AC #22 — schedule unchanged: still exactly 2 iter-2 rows (LC + OD), no delivery sub-rows
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 21000.00 | null          | PR     |
-      | OD                | 49000.00 | null          | WP     |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
+      | LC                | 21000.00 | null          | PR     | Y      |
+      | OD                | 49000.00 | null          | WP     | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
 
     # ── INV1: financial purchase invoice, matched to R1 ──
@@ -114,7 +114,7 @@ Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dorm
 
     # AC #22 — delivery schedule still unchanged after invoice completion
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 21000.00 | null          | PR     |
-      | OD                | 49000.00 | null          | WP     |
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
+      | LC                | 21000.00 | null          | PR     | Y      |
+      | OD                | 49000.00 | null          | WP     | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
