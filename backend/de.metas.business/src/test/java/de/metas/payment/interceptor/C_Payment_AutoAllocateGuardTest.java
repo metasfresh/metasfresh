@@ -22,12 +22,16 @@
 
 package de.metas.payment.interceptor;
 
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.proforma.ProformaOrderAllocService;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Payment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -61,6 +65,25 @@ class C_Payment_AutoAllocateGuardTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// Register the interceptor under test. {@link C_Payment_AutoAllocateGuard} is a Spring
+		// {@code @Component} in production; in this in-memory POJO test we wire it manually via
+		// {@link POJOLookupMap#addModelValidator(Object)} so {@link InterfaceWrapperHelper#save}
+		// fires its {@code @ModelChange} hook. Mirrors the pattern used in
+		// {@code PP_Product_PlanningTest} (de.metas.manufacturing).
+		//
+		// The {@link ProformaOrderAllocService} dependency is mocked: the only test that needs
+		// it to return {@code true} is {@link #rejectFlipToY_onProformaPrepayment()}, and any
+		// {@link InvoiceId} the guard might pass through (the stand-in {@code PROFORMA_INVOICE_ID})
+		// must trigger the rejection branch. Returning {@code true} unconditionally is safe
+		// because the regular-payment test never reaches the {@code hasAllocations} call (its
+		// {@code Proforma_Invoice_ID} stays at 0, so the guard short-circuits earlier) and the
+		// keep-N test never throws either (the guard returns on the {@code !isAutoAllocateAvailableAmt}
+		// check before reaching the service).
+		final ProformaOrderAllocService proformaOrderAllocService = Mockito.mock(ProformaOrderAllocService.class);
+		Mockito.when(proformaOrderAllocService.hasAllocations(Mockito.any(InvoiceId.class))).thenReturn(true);
+
+		POJOLookupMap.get().addModelValidator(new C_Payment_AutoAllocateGuard(proformaOrderAllocService));
 	}
 
 	// -------------------------------------------------------------------------
