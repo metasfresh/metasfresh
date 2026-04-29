@@ -125,6 +125,35 @@ const devServer = new WebpackDevServer(
     },
     hot: true,
     historyApiFallback: true,
+    // Proxy is opt-in: set API_PROXY_TARGET to enable proxying /rest and /stomp
+    // to a local backend (e.g., API_PROXY_TARGET=http://localhost:8080).
+    // Without this, config.js determines the backend URL (default for human devs).
+    ...(process.env.API_PROXY_TARGET
+      ? {
+          proxy: [
+            {
+              context: ['/rest', '/stomp'],
+              target: process.env.API_PROXY_TARGET,
+              changeOrigin: false,
+              ws: true,
+              cookieDomainRewrite: '',
+              cookiePathRewrite: '/',
+              onProxyRes: function (proxyRes) {
+                var setCookie = proxyRes.headers['set-cookie'];
+                if (setCookie) {
+                  proxyRes.headers['set-cookie'] = setCookie.map(function (
+                    cookie
+                  ) {
+                    return cookie
+                      .replace(/;\s*SameSite=[^;]*/gi, '')
+                      .replace(/;\s*Secure/gi, '');
+                  });
+                }
+              },
+            },
+          ],
+        }
+      : {}),
 
     // Enhanced dev middleware options
     devMiddleware: {
