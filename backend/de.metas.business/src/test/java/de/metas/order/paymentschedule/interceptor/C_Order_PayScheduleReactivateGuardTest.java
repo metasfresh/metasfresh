@@ -51,26 +51,16 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * RED TDD test for the {@code C_Order_PayScheduleReactivateGuard} interceptor (TODO-1 of iter-3
- * https://github.com/metasfresh/me03/issues/29369).
+ * Test for {@code C_Order_PayScheduleReactivateGuard} (https://github.com/metasfresh/me03/issues/29369).
  *
  * <p>The guard rejects a {@code C_Order} reactivation when its {@link OrderPaySchedule} contains
- * any line whose {@link OrderPayScheduleStatus} is no longer {@code Pending} (i.e.
- * {@code Awaiting_Pay} or {@code Paid}). Reason: metasfresh's standard re-activate flow drops
- * {@code C_OrderPaySchedule} rows; iter-3 stores meaningful per-receipt state on those rows
- * (Status, BaseAmt, {@code C_Invoice_ID} link, allocations) — re-completing recreates rows from
- * scratch and silently destroys iter-3 state.
- *
- * <p>Reactivation IS allowed when ALL rows are still {@code Pending} (nothing has happened yet —
- * receipts/invoices/payments not landed; safe to drop and rebuild) and when the order has no
- * pay-schedule rows at all (regression guard for non-iter-2 orders, mirrors AC #22 dormancy).
+ * any line whose {@link OrderPayScheduleStatus} is no longer {@code Pending}. Reactivation IS
+ * allowed when ALL rows are still {@code Pending} or when the order has no pay-schedule rows.
  *
  * <p>Fixture: in-memory POJO models via {@link AdempiereTestHelper}; the {@link OrderPayScheduleService}
- * dependency is mocked. The interceptor is invoked directly (no {@code ModelValidationEngine}
- * round-trip) — this is a focused unit test on the guard's logic, mirroring the pattern in
- * {@code C_Payment_AutoAllocateGuardTest} but adapted to {@code @DocValidate} (the
- * {@link org.adempiere.ad.wrapper.POJOLookupMap} fires {@code @ModelChange} hooks on save but
- * does not dispatch {@code @DocValidate} — direct invocation is the simplest path).
+ * dependency is mocked. The interceptor is invoked directly because
+ * {@link org.adempiere.ad.wrapper.POJOLookupMap} fires {@code @ModelChange} hooks on save but does
+ * not dispatch {@code @DocValidate}.
  */
 class C_Order_PayScheduleReactivateGuardTest
 {
@@ -92,15 +82,6 @@ class C_Order_PayScheduleReactivateGuardTest
 		this.guard = new C_Order_PayScheduleReactivateGuard(orderPayScheduleService);
 	}
 
-	// -------------------------------------------------------------------------
-	// TODO-1 — block reactivation when any pay-schedule row is no longer Pending
-	// -------------------------------------------------------------------------
-
-	/**
-	 * All schedule lines are {@code Pending} — nothing has happened yet on this order; reactivation
-	 * is safe (the standard flow drops the schedule and the post-complete re-creation will rebuild
-	 * it from scratch with no state loss).
-	 */
 	@Test
 	void allowReactivate_whenAllSchedulesPending()
 	{
@@ -112,11 +93,6 @@ class C_Order_PayScheduleReactivateGuardTest
 				.doesNotThrowAnyException();
 	}
 
-	/**
-	 * At least one schedule line has advanced to {@code Awaiting_Pay} — a receipt or proforma
-	 * payment cycle has started. Reactivation must be rejected to prevent silent loss of iter-3
-	 * state.
-	 */
 	@Test
 	void rejectReactivate_whenAnyScheduleAwaitingPay()
 	{
@@ -129,10 +105,6 @@ class C_Order_PayScheduleReactivateGuardTest
 				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
-	/**
-	 * At least one schedule line has reached {@code Paid} — the LC step (or a delivery sub-row)
-	 * has been settled. Reactivation must be rejected.
-	 */
 	@Test
 	void rejectReactivate_whenAnyScheduleStatusPaid()
 	{
@@ -145,13 +117,6 @@ class C_Order_PayScheduleReactivateGuardTest
 				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
-	/**
-	 * Order has no {@link OrderPaySchedule} at all (non-iter-2 / non-complex payment-term order) —
-	 * the guard must remain dormant; reactivation proceeds unchanged.
-	 *
-	 * <p>This mirrors the AC #22 dormancy contract from the iter-3 EPIC: any iter-3 component
-	 * that touches a non-iter-2 order is a bug.
-	 */
 	@Test
 	void allowReactivate_whenNoSchedules()
 	{

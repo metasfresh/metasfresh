@@ -40,38 +40,27 @@ import org.springframework.stereotype.Component;
  * {@link de.metas.order.paymentschedule.OrderPayScheduleStatus} is no longer {@code Pending}
  * (i.e. {@code Awaiting_Pay} or {@code Paid}).
  *
- * <p>Rationale (TODO-1 of iter-3 https://github.com/metasfresh/me03/issues/29369): the standard
- * metasfresh re-activate flow drops {@code C_OrderPaySchedule} rows. Iter-3 stores meaningful
- * per-receipt state on those rows (Status, BaseAmt, {@code C_Invoice_ID} link, allocations); a
- * subsequent re-completion would recreate them from scratch and silently destroy that state.
+ * <p>Rationale: the standard metasfresh re-activate flow drops {@code C_OrderPaySchedule} rows,
+ * but those rows carry meaningful per-receipt state (Status, BaseAmt, {@code C_Invoice_ID} link,
+ * allocations); a subsequent re-completion would recreate them from scratch and silently destroy
+ * that state.
  *
- * <p>Reactivation is allowed when:
- * <ul>
- *   <li>ALL pay-schedule lines are still {@code Pending} — nothing has happened yet (no receipts,
- *       proforma payment cycle not started); the standard drop-and-rebuild path is safe.</li>
- *   <li>The order has no pay-schedule at all — non-iter-2 / non-complex-payment-term order; the
- *       guard is dormant in that case (mirrors the iter-3 AC #22 dormancy contract: any iter-3
- *       component that touches a non-iter-2 order is a bug).</li>
- * </ul>
- *
- * <p>Lives in the iter-3 package {@code de.metas.order.paymentschedule.interceptor} (next to
- * {@link C_Payment_LCStep}) rather than in {@code de.metas.order.model.interceptor.C_Order} —
- * keeps iter-3 concerns scoped to the iter-3 package boundary.
+ * <p>Reactivation is allowed when ALL pay-schedule lines are still {@code Pending} (nothing has
+ * happened yet — the standard drop-and-rebuild path is safe), or when the order has no
+ * pay-schedule at all.
  */
 @Interceptor(I_C_Order.class)
 @Component
 @RequiredArgsConstructor
 public class C_Order_PayScheduleReactivateGuard
 {
-	private static final AdMessageKey MSG_OrderReactivateBlocked =
-			AdMessageKey.of("Order_Reactivate_Blocked_By_PaySchedule_Activity");
+	private static final AdMessageKey MSG_OrderReactivateBlocked = AdMessageKey.of("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void blockReactivateWhenScheduleNotPending(@NonNull final I_C_Order order)
 	{
-		// RepoIdAware boundary: wrap the raw int once at the entry point (java-general.md §6).
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		orderPayScheduleService.getByOrderId(orderId)
@@ -82,12 +71,6 @@ public class C_Order_PayScheduleReactivateGuard
 				});
 	}
 
-	/**
-	 * Returns {@code true} when the schedule has at least one line whose status is not
-	 * {@code Pending}. Uses {@link de.metas.order.paymentschedule.OrderPayScheduleStatus#isPending()}
-	 * — the same predicate used by {@link OrderPaySchedule#updateStatusFromContext} to gate
-	 * status-update side effects, keeping the two paths in lockstep.
-	 */
 	private boolean hasAnyNonPendingLine(@NonNull final OrderPaySchedule schedule)
 	{
 		return schedule.getLines().stream()
