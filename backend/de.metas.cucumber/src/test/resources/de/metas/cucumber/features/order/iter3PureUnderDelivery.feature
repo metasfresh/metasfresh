@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00126_Prepayment_Order_Management
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment iter-3 TC2 — pure under-delivery (Final invoice consumes remaining prepay)
   # Domain: proves the Partial vs Final allocation rules diverge as designed.

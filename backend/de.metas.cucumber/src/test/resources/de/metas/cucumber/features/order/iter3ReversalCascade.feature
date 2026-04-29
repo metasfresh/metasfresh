@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00126_Prepayment_Order_Management
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment iter-3 TC5 — reversal cascade (TC5a/b/c/d, AC #16/#17/#18/#25)
   # Domain: covers the four reversal cascades documented in §3.6 of the iter-3 requirements.

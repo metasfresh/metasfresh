@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00126_Prepayment_Order_Management
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment iter-3 TC8 — non-proforma order regression (iter-3 dormant)
   # Domain: a purchase order with the same LC+OD payment term but WITHOUT a proforma

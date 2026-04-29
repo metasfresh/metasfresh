@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00126_Prepayment_Order_Management
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment iter-3 TC7 — mixed-tax order (per-order-line tax, AC #21)
   # Domain: proves that ReceiptTaxCalculator applies tax per order line (AC #21).

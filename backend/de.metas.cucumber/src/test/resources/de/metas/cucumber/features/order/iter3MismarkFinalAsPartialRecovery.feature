@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00126_Prepayment_Order_Management
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment iter-3 TC4 — mismarked Final-as-Partial + correction by reverse-and-reissue (AC #13)
   # Domain: proves the documented correction path when the user mismarks INV1 as Final
