@@ -90,4 +90,15 @@ public class ProformaOrderAllocService
 		repository.deleteById(alloc.getId());
 		orderPayScheduleLCService.recomputeLCStep(orderId);
 	}
+
+	/**
+	 * Removes every active allocation linked to the given proforma invoice. Each row goes through
+	 * {@link #deallocate(ProformaOrderAlloc)}, which guards against deallocating when a
+	 * completed/closed proforma payment still references the invoice and recomputes the LC step
+	 * for the order. No-op when the invoice has zero active allocations.
+	 */
+	public void deallocateAll(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		repository.getByInvoiceId(proformaInvoiceId).forEach(this::deallocate);
+	}
 }
