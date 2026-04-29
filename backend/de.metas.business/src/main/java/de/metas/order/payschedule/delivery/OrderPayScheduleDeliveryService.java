@@ -22,6 +22,7 @@
 
 package de.metas.order.payschedule.delivery;
 
+import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -165,13 +166,13 @@ public class OrderPayScheduleDeliveryService
 			@Nullable final Money invoiceOpenAmt)
 	{
 		if (invoiceDocStatus == null
-				|| "DR".equals(invoiceDocStatus)
-				|| "RE".equals(invoiceDocStatus))
+				|| IDocument.STATUS_Drafted.equals(invoiceDocStatus)
+				|| IDocument.STATUS_Reversed.equals(invoiceDocStatus))
 		{
 			return X_C_OrderPaySchedule.STATUS_Pending_Ref;
 		}
 
-		if ("CO".equals(invoiceDocStatus) || "CL".equals(invoiceDocStatus))
+		if (IDocument.STATUS_Completed.equals(invoiceDocStatus) || IDocument.STATUS_Closed.equals(invoiceDocStatus))
 		{
 			final boolean fullyPaid = invoiceOpenAmt != null
 					&& invoiceOpenAmt.toBigDecimal().compareTo(BigDecimal.ZERO) == 0;
@@ -199,7 +200,7 @@ public class OrderPayScheduleDeliveryService
 			return null;
 		}
 		// DR and RE: do not store invoice ID on the sub-row
-		if ("DR".equals(invoiceDocStatus) || "RE".equals(invoiceDocStatus))
+		if (IDocument.STATUS_Drafted.equals(invoiceDocStatus) || IDocument.STATUS_Reversed.equals(invoiceDocStatus))
 		{
 			return null;
 		}
