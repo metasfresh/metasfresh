@@ -63,9 +63,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
-	/** AC #14: error key for the readonly-after-Complete guard on IsPartialInvoice. */
-	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete =
-			AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+	/** Error key for the readonly-after-Complete guard on IsPartialInvoice. */
+	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
 
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -83,17 +82,15 @@ public class C_Invoice // 03771
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	// ==========================================================================
-	// AC #11 — default IsPartialInvoice from C_DocType on BEFORE_NEW
+	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
 	// ==========================================================================
 
 	/**
 	 * Defaults {@code IsPartialInvoice} on a new invoice from its document type.
 	 * <p>
-	 * AC #11: a user creating a financial purchase invoice without touching the flag gets
-	 * Partial behaviour (the doctype default is 'Y'). The default direction prevents silent
-	 * over-allocation: forgetting to mark Final only strands prepay (visible, recoverable);
-	 * forgetting to mark Partial on the wrong default would silently consume all prepay on
-	 * the first invoice.
+	 * The safe-default direction is Partial: forgetting to mark Final only strands prepay
+	 * (visible, recoverable); forgetting to mark Partial on the wrong default would silently
+	 * consume all prepay on the first invoice.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void defaultIsPartialInvoiceFromDocType_interceptor(@NonNull final I_C_Invoice invoice)
@@ -106,7 +103,7 @@ public class C_Invoice // 03771
 	 * Copies {@code IsPartialInvoice} from the invoice's current document type to the invoice.
 	 * Falls back to {@code true} (Partial) when no doctype is set.
 	 */
-	static void defaultIsPartialInvoiceFromDocType(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	static void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
 	{
 		final int docTypeId = invoice.getC_DocType_ID();
 		if (docTypeId > 0)
@@ -121,17 +118,18 @@ public class C_Invoice // 03771
 	}
 
 	// ==========================================================================
-	// AC #14 — IsPartialInvoice readonly after Complete
+	// IsPartialInvoice readonly after Complete
 	// ==========================================================================
 
 	/**
 	 * Rejects changes to {@code IsPartialInvoice} once the invoice is no longer in
 	 * Drafted ({@code DR}) or In-Progress ({@code IP}) state.
 	 * <p>
-	 * AC #14: the field is editable while {@code DocStatus IN ('DR','IP')}; readonly otherwise.
+	 * The field is editable while {@code DocStatus IN ('DR','IP')}; readonly otherwise.
 	 * Server-side guard complements the AD_Field ReadOnlyLogic that controls the UI.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			// FQ required: COLUMNNAME_IsPartialInvoice on org.compiere base, simple name shadowed by de.metas extension
 			ifColumnsChanged = org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice)
 	public void rejectIsPartialInvoiceChangeAfterComplete_interceptor(@NonNull final I_C_Invoice invoice)
 	{
