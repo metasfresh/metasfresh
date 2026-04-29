@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUItemType;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -1500,6 +1501,18 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
 	{
 		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu, final HUItemType type)
+	{
+		return handlingUnitsRepo.retrieveItems(hu, type);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
 	}
 
 	@Override
