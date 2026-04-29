@@ -179,7 +179,7 @@ public class PurchaseItemRepository
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
-		final ITableRecordReference transactionReference = TableRecordReference.ofReferencedOrNull(record);
+		final ITableRecordReference transactionReference = TableRecordReference.ofOrNull(record.getAD_Table_ID(), record.getRecord_ID());
 
 		if (record.getAD_Issue_ID() <= 0)
 		{
