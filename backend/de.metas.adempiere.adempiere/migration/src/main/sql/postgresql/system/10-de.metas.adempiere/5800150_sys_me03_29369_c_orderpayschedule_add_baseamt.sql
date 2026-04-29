@@ -11,6 +11,9 @@
 
 -- Backfill: BaseAmt = order.GrandTotal for every existing row (iter-2 single-Delivery semantics).
 -- Pre-iter-3 audit confirmed 0/98 drift (ai-work/29369/pending-questions.md "Pre-iter-3 audit").
+
+SELECT backup_table('c_orderpayschedule', '_iter3_baseamt_bkp');
+
 UPDATE C_OrderPaySchedule ops
 SET BaseAmt = o.GrandTotal
 FROM C_Order o
