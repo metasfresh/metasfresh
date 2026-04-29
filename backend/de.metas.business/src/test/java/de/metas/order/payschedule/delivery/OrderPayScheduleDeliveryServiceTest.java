@@ -41,6 +41,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -172,6 +173,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.build();
 	}
@@ -181,6 +183,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.matchedInvoiceId(INV1_ID)
 				.invoiceDocStatus("CO")
@@ -193,6 +196,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.matchedInvoiceId(INV1_ID)
 				.invoiceDocStatus("CO")
@@ -205,6 +209,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.matchedInvoiceId(INV1_ID)
 				.invoiceDocStatus("CL")
@@ -217,6 +222,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.matchedInvoiceId(INV1_ID)
 				.invoiceDocStatus("DR")
@@ -229,6 +235,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R1_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R1_VALUE)
 				.matchedInvoiceId(INV1_ID)
 				.invoiceDocStatus("RE")
@@ -240,6 +247,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R2_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R2_VALUE)
 				.build();
 	}
@@ -249,6 +257,7 @@ class OrderPayScheduleDeliveryServiceTest
 	{
 		return DeliveryStepInputs.ReceiptInfo.builder()
 				.mInOutId(R2_ID)
+				.movementDate(LocalDate.of(2026, 4, 24))
 				.withTaxValue(R2_VALUE)
 				.matchedInvoiceId(INV2_ID)
 				.invoiceDocStatus("CO")
@@ -548,6 +557,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithPartialCOInvoicePaid())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(R2_VALUE)
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("CO")
@@ -655,6 +665,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV1_ID)
 								.invoiceDocStatus("CO")
@@ -662,6 +673,7 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("30000.00", EUR))
 								.build())
 						.build())
@@ -743,6 +755,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1NoInvoice())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("36846.40", EUR))  // R1 + R2 = 68654.40 exactly
 								.build())
 						.build())
@@ -802,6 +815,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithReversedInvoice())   // INV1 reversed
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(R2_VALUE)
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("CO")
@@ -834,6 +848,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithPartialCOInvoicePaid())  // R1 fully paid
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(R2_VALUE)
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("RE")   // INV2 reversed
@@ -866,6 +881,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithReversedInvoice())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(R2_VALUE)
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("RE")
@@ -898,10 +914,12 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("30000.00", EUR))
 								.build())
 						.build())
@@ -939,14 +957,17 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R3_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.build())
 						.build())
@@ -990,6 +1011,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV1_ID)
 								.invoiceDocStatus("CO")
@@ -997,6 +1019,7 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("CO")
@@ -1004,6 +1027,7 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R3_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV3_ID)
 								.invoiceDocStatus("CO")
@@ -1049,6 +1073,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV1_ID)
 								.invoiceDocStatus("CO")
@@ -1056,6 +1081,7 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R2_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV2_ID)
 								.invoiceDocStatus("RE")   // reversed
@@ -1063,6 +1089,7 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R3_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("20000.00", EUR))
 								.matchedInvoiceId(INV3_ID)
 								.invoiceDocStatus("CO")
@@ -1108,6 +1135,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(ORDER_GRAND_TOTAL)
 								.build())
 						.build())
@@ -1157,6 +1185,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs()
 						.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 								.mInOutId(R1_ID)
+								.movementDate(LocalDate.of(2026, 4, 24))
 								.withTaxValue(Money.of("70000.00", EUR))  // > 68654.40
 								.build())
 						.build())

@@ -26,6 +26,7 @@ import de.metas.inout.InOutId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import java.time.LocalDate;
 import de.metas.order.payschedule.delivery.OrderPayScheduleDeliveryRepository.DesiredDeliveryRow;
 import de.metas.payment.PaymentId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -120,6 +121,7 @@ class OrderPayScheduleDeliveryServiceDormancyTest
 				.deliveryPercent(new BigDecimal("70"))
 				.completedReceipt(DeliveryStepInputs.ReceiptInfo.builder()
 						.mInOutId(RECEIPT_ID)
+						.movementDate(LocalDate.of(2026, 4, 24))
 						.withTaxValue(Money.of("31808.00", EUR))
 						.build())
 				.proformaPrepaymentPaymentId(null)  // no proforma

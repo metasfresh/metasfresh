@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,6 +121,7 @@ public class OrderPayScheduleDeliveryService
 					.status(status)
 					.mInOutId(receipt.getMInOutId())
 					.cInvoiceId(cInvoiceId)
+					.dueDate(receipt.getMovementDate())  // delivery-step reference date = receipt MovementDate
 					.build());
 		}
 
@@ -133,6 +135,8 @@ public class OrderPayScheduleDeliveryService
 					.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 					.mInOutId(null)
 					.cInvoiceId(null)
+					// remainder row is Pending — no real DueDate yet (sentinel from OrderPayScheduleLineContext)
+					.dueDate(LocalDate.of(9999, 12, 1))
 					.build());
 		}
 

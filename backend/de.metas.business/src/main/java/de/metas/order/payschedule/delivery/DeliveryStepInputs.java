@@ -34,6 +34,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -96,6 +97,13 @@ public class DeliveryStepInputs
 	{
 		/** M_InOut primary key. */
 		@NonNull InOutId mInOutId;
+
+		/**
+		 * The receipt's {@code MovementDate} — used as the delivery-step DueDate reference.
+		 * Per iter-3 design: {@code dueDate = movementDate} for sub-rows (offset = 0).
+		 * Populated by {@link OrderPayScheduleDeliveryRepository#loadInputs(OrderId)}.
+		 */
+		@NonNull LocalDate movementDate;
 
 		/**
 		 * Value of this receipt including tax, computed per order-line tax rate via

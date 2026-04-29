@@ -49,10 +49,12 @@ import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_C_PaymentTerm_Break;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -156,6 +158,7 @@ public class OrderPayScheduleDeliveryRepository
 			row.setStatus(d.getStatus());
 			row.setM_InOut_ID(d.getMInOutId() != null ? d.getMInOutId().getRepoId() : 0);
 			row.setC_Invoice_ID(d.getCInvoiceId() != null ? d.getCInvoiceId().getRepoId() : 0);
+			row.setDueDate(TimeUtil.asTimestamp(d.getDueDate()));
 
 			InterfaceWrapperHelper.save(row);
 		}
@@ -194,7 +197,7 @@ public class OrderPayScheduleDeliveryRepository
 			newRow.setC_PaymentTerm_ID(sibling.getC_PaymentTerm_ID());
 			newRow.setC_PaymentTerm_Break_ID(sibling.getC_PaymentTerm_Break_ID());
 			newRow.setC_Currency_ID(sibling.getC_Currency_ID());
-			newRow.setDueDate(sibling.getDueDate());
+			// DueDate is set by writeDeliveryRows from DesiredDeliveryRow.dueDate (caller-provided)
 			newRow.setPercent(sibling.getPercent());
 			newRow.setOffsetDays(sibling.getOffsetDays());
 			newRow.setSeqNo(sibling.getSeqNo());
@@ -210,7 +213,7 @@ public class OrderPayScheduleDeliveryRepository
 				newRow.setC_PaymentTerm_ID(deliveryBreak.getC_PaymentTerm_ID());
 				newRow.setC_PaymentTerm_Break_ID(deliveryBreak.getC_PaymentTerm_Break_ID());
 				newRow.setC_Currency_ID(order.getC_Currency_ID());
-				newRow.setDueDate(new java.sql.Timestamp(System.currentTimeMillis()));
+				// DueDate is set by writeDeliveryRows from DesiredDeliveryRow.dueDate (caller-provided)
 				newRow.setPercent(deliveryBreak.getPercent());
 				newRow.setOffsetDays(deliveryBreak.getOffsetDays());
 				newRow.setSeqNo(10);
@@ -221,7 +224,7 @@ public class OrderPayScheduleDeliveryRepository
 				// Last resort — bare context; callers should always have a sibling or a break
 				newRow.setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
 				newRow.setC_Currency_ID(order.getC_Currency_ID());
-				newRow.setDueDate(new java.sql.Timestamp(System.currentTimeMillis()));
+				// DueDate is set by writeDeliveryRows from DesiredDeliveryRow.dueDate (caller-provided)
 				newRow.setOffsetDays(0);
 				newRow.setPercent(0);
 				newRow.setSeqNo(10);
@@ -313,6 +316,7 @@ public class OrderPayScheduleDeliveryRepository
 
 			receiptInfos.add(DeliveryStepInputs.ReceiptInfo.builder()
 					.mInOutId(inOutId)
+					.movementDate(TimeUtil.asLocalDate(receipt.getMovementDate()))
 					.withTaxValue(withTaxValue)
 					.matchedInvoiceId(matchedInvoiceId)
 					.invoiceDocStatus(invoiceDocStatus)
@@ -485,5 +489,15 @@ public class OrderPayScheduleDeliveryRepository
 		 * {@code null} until then.
 		 */
 		@Nullable InvoiceId cInvoiceId;
+
+		/**
+		 * The DueDate to persist on {@code C_OrderPaySchedule.DueDate}.
+		 * For receipt sub-rows: the receipt's {@code MovementDate} (delivery-step reference date).
+		 * For the remainder row: {@code 9999-12-01} sentinel (Pending row, no real DueDate yet).
+		 *
+		 * <p>Provided by the caller ({@link OrderPayScheduleDeliveryService#computeDesired})
+		 * so the repository never calls {@code System.currentTimeMillis()} (architecture §8).
+		 */
+		@NonNull LocalDate dueDate;
 	}
 }
