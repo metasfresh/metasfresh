@@ -52,15 +52,15 @@ import java.util.Set;
  * Drives {@link OrderPayScheduleDeliveryService#recomputeDeliverySteps} from the
  * {@code C_Invoice} doc-action lifecycle.
  *
- * <p>Only fires for invoices that pass all four trigger filters (AC #26):
+ * <p>Only fires for invoices that pass all four trigger filters:
  * <ol>
  *   <li>Financial: {@code IsFinancial = 'Y'} — excludes proforma invoices.
  *   <li>Purchase: {@code IsSOTrx = 'N'} — excludes sales invoices.
  *   <li>Not a credit memo (APC guard): {@code DocBaseType != 'APC'} — AP credit memos
  *       (debit notes) do not drive the delivery step.
  *   <li>Matched to at least one purchase receipt that belongs to an order with an active
- *       proforma-order allocation ({@code C_Proforma_Order_Alloc}) — ensures iter-3 only
- *       activates on proforma'd orders (dormancy guard AC #22).
+ *       proforma-order allocation ({@code C_Proforma_Order_Alloc}) — dormancy guard
+ *       restricts the recompute to proforma'd orders.
  * </ol>
  *
  * <p>The service is idempotent; duplicate fires produce no additional change.
@@ -80,12 +80,12 @@ public class C_Invoice_DeliveryStep
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	// -----------------------------------------------------------------------
-	// DocValidate handlers (Task 24b / Task 27c)
+	// DocValidate handlers
 	// -----------------------------------------------------------------------
 
 	/**
 	 * Fires on AFTER_COMPLETE only.
-	 * Creates the prepayment allocation first (AC #4), then recomputes delivery steps (AC #19).
+	 * Creates the prepayment allocation first, then recomputes delivery steps.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onComplete(@NonNull final I_C_Invoice invoice)
@@ -136,7 +136,7 @@ public class C_Invoice_DeliveryStep
 	}
 
 	// -----------------------------------------------------------------------
-	// Trigger filters (Task 24a)
+	// Trigger filters
 	// -----------------------------------------------------------------------
 
 	/**
@@ -164,7 +164,7 @@ public class C_Invoice_DeliveryStep
 		{
 			return false;
 		}
-		// APC guard (AC #26): purchase credit memos do not drive the delivery step
+		// APC guard: purchase credit memos do not drive the delivery step
 		final InvoiceDocBaseType docBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
 		if (docBaseType.isVendorCreditMemo())
 		{

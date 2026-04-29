@@ -62,8 +62,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
- * Computes and creates the prepayment allocation for a completed financial purchase invoice
- * (iter-3, AC #4, #6, #8, #10, #12, #15).
+ * Computes and creates the prepayment allocation for a completed financial purchase invoice.
  *
  * <h2>Allocation rule (REQUIREMENTS.md §3.3)</h2>
  * <table>
@@ -72,12 +71,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *   <tr><td>FINAL</td><td>{@code remainingPrepay} (consumes all remaining prepay)</td></tr>
  * </table>
  *
- * <p>Edge: {@code remainingPrepay <= 0} → no allocation, no error (AC #15).
+ * <p>Edge: {@code remainingPrepay <= 0} → no allocation, no error.
  *
- * <p><strong>CRITICAL (R12 / AC #15):</strong> never delegate to
+ * <p><strong>CRITICAL:</strong> never delegate to
  * {@code IAllocationBL.autoAllocateAvailablePayments(invoice)} — it is greedy and
- * would consume the full prepay on the first invoice, violating AC #6.
- * Always use {@code IAllocationBL.newBuilder()} with an explicit amount.
+ * would consume the full prepay on the first invoice. Always use
+ * {@code IAllocationBL.newBuilder()} with an explicit amount.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
  */
@@ -102,7 +101,7 @@ public class DeliveryPrepaymentAllocationService
 			SpringContextHolder.instance.lazyBean(ProformaOrderAllocRepository.class);
 
 	// -----------------------------------------------------------------------
-	// Task 26 — pure computation function
+	// Pure computation function
 	// -----------------------------------------------------------------------
 
 	/**
@@ -149,11 +148,11 @@ public class DeliveryPrepaymentAllocationService
 	}
 
 	// -----------------------------------------------------------------------
-	// Task 27a — proforma-prepayment payment lookup
+	// Proforma-prepayment payment lookup
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Finds the iter-2 proforma-prepayment payment for the given order:
+	 * Finds the proforma-prepayment payment for the given order:
 	 * {@code C_Order → C_Proforma_Order_Alloc → C_Invoice (proforma) → C_Payment(Proforma_Invoice_ID=thatInvoice)}.
 	 *
 	 * <p>Returns {@code null} when:
@@ -188,7 +187,7 @@ public class DeliveryPrepaymentAllocationService
 	}
 
 	// -----------------------------------------------------------------------
-	// Task 27b — matched receipt value via M_MatchInv traversal
+	// Matched receipt value via M_MatchInv traversal
 	// -----------------------------------------------------------------------
 
 	/**
@@ -286,7 +285,7 @@ public class DeliveryPrepaymentAllocationService
 	}
 
 	// -----------------------------------------------------------------------
-	// Task 27c — orchestrator: allocateForInvoice
+	// Orchestrator: allocateForInvoice
 	// -----------------------------------------------------------------------
 
 	/**
@@ -340,7 +339,7 @@ public class DeliveryPrepaymentAllocationService
 
 		if (remainingPrepay.signum() <= 0)
 		{
-			// AC #15: no prepay left — do nothing
+			// no prepay left — do nothing
 			return;
 		}
 
