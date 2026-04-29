@@ -48,6 +48,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_PaymentTerm_Break;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.TimeUtil;
@@ -379,6 +383,103 @@ public class DeliveryPrepaymentAllocationService
 						//
 						.createAndComplete()
 		);
+	}
+
+	// -----------------------------------------------------------------------
+	// Retro-allocation when LC payment completes after invoices already arrived
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Retro-allocates the proforma prepayment to any CO/CL financial-purchase invoice for
+	 * this order that is not yet linked to the prepayment via {@code C_AllocationLine}.
+	 *
+	 * <p><b>Trigger</b>: invoked from {@code C_Payment_LCStep.onPaymentCompleted} after the LC
+	 * payment completes. Real-life docs come in any order — when a financial invoice was
+	 * completed before the LC payment, forward-mode allocation was a no-op (the prepayment
+	 * was not yet completed). This method picks up those orphans.
+	 *
+	 * <p><b>Idempotency</b>: a per-invoice query-level filter (active C_AllocationLine linking
+	 * the invoice to the prepayment with an active C_AllocationHdr) excludes invoices already
+	 * allocated. We do NOT rely solely on {@link #allocateForInvoice}'s
+	 * {@code availableAmt &lt;= 0} early-exit because it cannot detect "already allocated to
+	 * this same invoice" — the early-exit only fires once the prepayment is fully consumed.
+	 * The query-level filter keeps the audit trail clean: every entry into
+	 * {@code allocateForInvoice} represents a real allocation attempt, not a no-op probe.
+	 *
+	 * <p><b>Order</b>: FIFO by {@code C_Invoice.DateInvoiced}, with {@code DocumentNo} as
+	 * tiebreaker — same order as forward-mode allocation; mismarked Partial/Final cases
+	 * recover via the same R11 reverse-and-reissue path.
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a> Phase 5.5
+	 */
+	public void retroAllocateUnallocatedInvoices(@NonNull final OrderId orderId)
+	{
+		final PaymentId prepayPaymentId = lookupProformaPrepaymentPayment(orderId);
+		if (prepayPaymentId == null)
+		{
+			return;
+		}
+
+		final List<I_C_Invoice> candidateInvoices = findFinancialPurchaseInvoicesForOrder(orderId);
+		for (final I_C_Invoice invoice : candidateInvoices)
+		{
+			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+			if (hasActiveAllocationBetween(invoiceId, prepayPaymentId))
+			{
+				continue;
+			}
+			allocateForInvoice(invoice, orderId);
+		}
+	}
+
+	/**
+	 * All CO/CL financial-purchase invoices linked to this order via {@code M_MatchInv → M_InOutLine → M_InOut.C_Order_ID},
+	 * sorted FIFO by {@code DateInvoiced}, {@code DocumentNo}.
+	 */
+	@NonNull
+	private List<I_C_Invoice> findFinancialPurchaseInvoicesForOrder(@NonNull final OrderId orderId)
+	{
+		final IQuery<I_M_InOutLine> orderReceiptLines = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
+				.addOnlyActiveRecordsFilter()
+				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
+				.create();
+
+		final IQuery<I_M_MatchInv> matchInvForOrder = queryBL.createQueryBuilder(I_M_MatchInv.class)
+				.addInSubQueryFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, orderReceiptLines)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_M_MatchInv.COLUMNNAME_C_Invoice_ID, matchInvForOrder)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, "CO", "CL")
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, false)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsFinancial, true)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Invoice.COLUMNNAME_DateInvoiced)
+				.orderBy(I_C_Invoice.COLUMNNAME_DocumentNo)
+				.create()
+				.list();
+	}
+
+	/**
+	 * {@code true} iff there is at least one active {@code C_AllocationLine} linking this
+	 * invoice to this payment under an active {@code C_AllocationHdr} (DocStatus CO/CL).
+	 */
+	private boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId prepayPaymentId)
+	{
+		final IQuery<I_C_AllocationHdr> activeHdrs = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_DocStatus, "CO", "CL")
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, prepayPaymentId)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, activeHdrs)
+				.create()
+				.anyMatch();
 	}
 
 	// -----------------------------------------------------------------------
