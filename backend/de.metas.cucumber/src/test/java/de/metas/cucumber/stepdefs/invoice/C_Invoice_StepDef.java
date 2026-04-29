@@ -854,6 +854,9 @@ public class C_Invoice_StepDef
 
 		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
+		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
+				.ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
+
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));

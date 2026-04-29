@@ -599,6 +599,37 @@ public class DocumentCollection
 		}
 	}
 
+	/**
+	 * Decides whether the cached root document should be evicted when one of its children gets
+	 * invalidated.
+	 *
+	 * <p>Historically this was gated purely on {@link DocumentToInvalidate#isInvalidateDocument()},
+	 * which the dispatcher only sets for whole-table invalidations. For a specific child-record
+	 * invalidation (the common case when a single child row is inserted/updated/deleted
+	 * externally), the gate stays false and the cached parent keeps its in-memory state.
+	 *
+	 * <p>That is fine for a happy-path parent — the child collection is flagged stale and the
+	 * frontend refreshes it on its own. It is NOT fine when the cached parent is in error state,
+	 * because a child-state change is a strong signal that the condition that produced the error
+	 * may now be gone. Without this escape hatch, the sticky error (and its potentially huge
+	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
+	 * reset with {@code forgetNotSavedDocuments=true}.
+	 *
+	 * <p>Pure boolean signature on purpose so it can be unit-tested without needing to mock
+	 * {@link Document} (which is final and has a non-trivial constructor).
+	 */
+	static boolean shouldInvalidateRootOnChildInvalidation(
+			final boolean callerRequestedFullInvalidation,
+			final boolean rootHasSaveError,
+			final boolean rootValidStatusIsValid)
+	{
+		if (callerRequestedFullInvalidation)
+		{
+			return true;
+		}
+		return rootHasSaveError || !rootValidStatusIsValid;
+	}
+
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -649,7 +680,11 @@ public class DocumentCollection
 				// Invalidate the root document
 				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
 				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
-				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
+				if (shouldInvalidateRootOnChildInvalidation(
+						documentToInvalidate.isInvalidateDocument(),
+						rootDocument.getSaveStatus().isError(),
+						rootDocument.getValidStatus().isValid())
+						&& !rootDocument.isNew())
 				{
 					rootDocuments.invalidate(rootDocumentKey);
 				}

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,10 +20,19 @@
  * #L%
  */
 
-package de.metas.banking.payment;
+package de.metas.invoice.proforma;
 
-public enum PaySelectionLineType
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Builder
+@Value
+public class ProformaOrderAlloc
 {
-	Order,
-	Invoice
+	@NonNull ProformaOrderAllocId id;
+	@NonNull OrderId orderId;
+	@NonNull InvoiceId invoiceId;
 }

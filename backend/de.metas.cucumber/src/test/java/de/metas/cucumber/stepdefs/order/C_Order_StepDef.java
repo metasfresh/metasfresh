@@ -116,6 +116,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -917,6 +918,25 @@ public class C_Order_StepDef
 				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", order.getC_Order_ID());
 			}
 		}
+
+		// LC_Date: "null" in the feature means assert NULL; a date string (yyyy-MM-dd) asserts exact equality.
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_LC_Date)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(order.getLC_Date())
+								.as("LC_Date should be NULL for Identifier=%s", identifierStr)
+								.isNull();
+					}
+					else
+					{
+						final LocalDate expectedDate = LocalDate.parse(rawValue);
+						final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date(), zoneId))
+								.as("LC_Date for Identifier=%s", identifierStr)
+								.isEqualTo(expectedDate);
+					}
+				});
 
 		softly.assertAll();
 	}
