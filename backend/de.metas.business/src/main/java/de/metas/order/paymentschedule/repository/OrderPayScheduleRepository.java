@@ -79,6 +79,12 @@ public class OrderPayScheduleRepository
 		record.setOffsetDays(request.getOffsetDays());
 		record.setSeqNo(seqNo.toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(request.getOrderPayScheduleStatus()));
+		// Iter-3: derived aliases of (Status, DueDate, OffsetDays). Same derivation as
+		// OrderPayScheduleLine.applyAndProcess — keeps initial-state and post-transition writes consistent.
+		final OrderPayScheduleStatus initialStatus = request.getOrderPayScheduleStatus();
+		final boolean initialPending = initialStatus == null || initialStatus.isPending();
+		record.setReferenceDate(initialPending ? null : TimeUtil.asTimestamp(request.getDueDate().minusDays(request.getOffsetDays())));
+		record.setIsPaid(initialStatus == OrderPayScheduleStatus.Paid);
 		saveRecord(record);
 	}
 
