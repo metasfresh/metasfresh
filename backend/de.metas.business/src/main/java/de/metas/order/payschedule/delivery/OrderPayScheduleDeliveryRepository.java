@@ -114,9 +114,9 @@ public class OrderPayScheduleDeliveryRepository
 	public List<I_C_OrderPaySchedule> getDeliveryRowsByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate.getCode())
+				.addNotEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate)
 				.create()
 				.list();
 	}
@@ -239,7 +239,7 @@ public class OrderPayScheduleDeliveryRepository
 		return queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
 				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate.getCode())
+				.addNotEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate)
 				.create()
 				.firstOnly(I_C_PaymentTerm_Break.class);
 	}
@@ -280,7 +280,7 @@ public class OrderPayScheduleDeliveryRepository
 
 		// 3. Completed, non-reversed purchase receipts for the order
 		final List<I_M_InOut> receipts = queryBL.createQueryBuilder(I_M_InOut.class)
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, false)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL")
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, 0)

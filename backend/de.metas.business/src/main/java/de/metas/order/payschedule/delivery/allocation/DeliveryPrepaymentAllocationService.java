@@ -219,7 +219,7 @@ public class DeliveryPrepaymentAllocationService
 
 		// Retrieve all M_MatchInv rows for this invoice (one per invoice-line × receipt-line pair)
 		final List<I_M_MatchInv> matchRows = queryBL.createQueryBuilder(I_M_MatchInv.class)
-				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, invoiceId.getRepoId())
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
@@ -402,7 +402,7 @@ public class DeliveryPrepaymentAllocationService
 		final I_C_PaymentTerm_Break lcBreak = queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
 				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate.getCode())
+				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate)
 				.create()
 				.firstOnly(I_C_PaymentTerm_Break.class);
 

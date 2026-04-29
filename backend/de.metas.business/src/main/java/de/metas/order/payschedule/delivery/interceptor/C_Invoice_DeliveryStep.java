@@ -193,7 +193,7 @@ public class C_Invoice_DeliveryStep
 
 		// Step 1: collect all M_InOut_IDs matched to this invoice
 		final List<I_M_MatchInv> matchRows = queryBL.createQueryBuilder(I_M_MatchInv.class)
-				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, invoiceId.getRepoId())
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
