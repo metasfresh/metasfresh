@@ -25,6 +25,7 @@ package de.metas.order.paymentschedule.interceptor;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.order.OrderId;
+import de.metas.order.payschedule.delivery.allocation.DeliveryPrepaymentAllocationService;
 import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +83,7 @@ public class C_Payment_LCStep
 {
 	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository;
 	@NonNull private final OrderPayScheduleLCService lcService;
+	@NonNull private final DeliveryPrepaymentAllocationService deliveryPrepayService;
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onPaymentCompleted(@NonNull final I_C_Payment payment)
@@ -102,6 +104,10 @@ public class C_Payment_LCStep
 			return;
 		}
 		lcService.recomputeLCStepAfterPaymentCompleted(orderId, payment);
+		// Phase 5.5: retro-allocate any CO/CL financial-purchase invoices for this order that
+		// completed BEFORE the LC payment (real-life docs come in any order). Idempotent —
+		// the service skips invoices already allocated to this prepayment.
+		deliveryPrepayService.retroAllocateUnallocatedInvoices(orderId);
 	}
 
 	@DocValidate(timings = {
