@@ -26,6 +26,7 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -115,7 +116,7 @@ public class InvoicingParams implements IInvoicingParams
 	{
 		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
 	}
-	
+
 	/**
 	 * Always returns {@code false}.
 	 */
@@ -123,5 +124,12 @@ public class InvoicingParams implements IInvoicingParams
 	public boolean isStoreInvoicesInResult()
 	{
 		return false;
+	}
+
+	@Nullable
+	@Override
+	public Boolean getIsPartialInvoice()
+	{
+		return params.getParameterAsBoolean(PARA_IsPartialInvoice);
 	}
 }

@@ -52,6 +52,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	@Setter @Getter private boolean updateLocationAndContactForInvoice = false;
 	private boolean completeInvoices = true; // default=true for backwards-compantibility
 	@Setter private Boolean deliveryDateAsInvoiceDate; // default=true for backwards-compantibility
+	@Nullable private Boolean isPartialInvoice = null;
 
 	public PlainInvoicingParams()
 	{
@@ -319,5 +320,28 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public boolean isCompleteInvoices()
 	{
 		return completeInvoices;
+	}
+
+	@Nullable
+	@Override
+	public Boolean getIsPartialInvoice()
+	{
+		if (isPartialInvoice != null)
+		{
+			return isPartialInvoice;
+		}
+		else if (defaults != null)
+		{
+			return defaults.getIsPartialInvoice();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public void setIsPartialInvoice(@Nullable final Boolean isPartialInvoice)
+	{
+		this.isPartialInvoice = isPartialInvoice;
 	}
 }
