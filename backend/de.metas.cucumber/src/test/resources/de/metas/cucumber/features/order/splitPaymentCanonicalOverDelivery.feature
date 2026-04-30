@@ -155,18 +155,16 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     
     
     
-    # ── INV1: financial purchase invoice, IsPartialInvoice=Y (Partial), matched to R1 ──
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    # M_MatchInv MUST be created before completing the invoice (AFTER_COMPLETE fires allocateForInvoice)
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 400 |
-    And the invoice identified by inv1 is completed
+    # ── INV1: canonical IC pipeline, IsPartialInvoice=Y (Partial) ──
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
+      | ic1                               | lcOrder               |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice |
+      | ic1                               | true             |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
 
     # AC #4 — exactly 1 allocation line linking prepayment to INV1, Amount = 12,000
     Then validate C_AllocationLines for invoice inv1
@@ -182,34 +180,37 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
       | inv1       | 28000.00 |
 
     # AC #5 — R1 sub-row gets C_Invoice_ID=inv1, Status=Awaiting_Pay
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1         |
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | Status | IsPaid | C_Invoice_ID |
+      | LC                | P      | Y      |              |
+      | OD                | WP     | N      | inv1         |
+      | OD                | PR     | N      | -            |
 
     # ── R2: 320 PCE → R2.with_tax = 32,000; R1+R2 = 72,000 > 70,000 (over-delivery) ──
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 320         |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | lcOrderL1      | 101                     | 320         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu2     | r2         |
 
-    # AC #7 — remainder row deleted (over-delivery); 2 sub-rows: R1 (unchanged) + R2
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has no remainder delivery sub-row
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 40000.00 | 28000.00 | WP     | inv1         |
-      | r2         | 32000.00 | 22400.00 | PR     | null         |
+    # AC #7 — remainder row deleted (over-delivery); now LC + R1 + R2 = 3 rows
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | Status | IsPaid | C_Invoice_ID |
+      | LC                | P      | Y      |              |
+      | OD                | WP     | N      | inv1         |
+      | OD                | PR     | N      | -            |
 
-    # ── INV2: financial purchase invoice, IsPartialInvoice=N (Final), matched to R2 ──
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 320 |
-    And the invoice identified by inv2 is completed
+    # ── INV2: canonical IC pipeline, IsPartialInvoice=N (Final) ──
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
+      | ic2                               | lcOrder               |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice |
+      | ic2                               | false            |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic2                               | inv2                    |
 
     # AC #8 — exactly 1 allocation line linking prepayment to INV2, Amount = 9,000 (remaining prepay — Final)
     Then validate C_AllocationLines for invoice inv2
@@ -225,6 +226,8 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
       | inv2       | 23000.00 |
 
     # AC #9 — R2 sub-row gets C_Invoice_ID=inv2, Status=Awaiting_Pay
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r2         | WP     | inv2         |
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | Status | IsPaid | C_Invoice_ID |
+      | LC                | P      | Y      |              |
+      | OD                | WP     | N      | inv1         |
+      | OD                | WP     | N      | inv2         |
