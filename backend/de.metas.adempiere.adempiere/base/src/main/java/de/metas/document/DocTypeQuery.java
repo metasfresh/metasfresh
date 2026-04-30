@@ -63,6 +63,9 @@ public class DocTypeQuery
 	Boolean defaultDocType;
 
 	@Nullable
+	Boolean isPartialInvoice;
+
+	@Nullable
 	String name;
 
 	//
