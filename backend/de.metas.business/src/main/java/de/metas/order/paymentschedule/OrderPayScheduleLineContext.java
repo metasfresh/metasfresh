@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 @Value
-@Builder
 public class OrderPayScheduleLineContext
 {
 	/**
@@ -28,52 +27,71 @@ public class OrderPayScheduleLineContext
 	private static final OrderPayScheduleLineContext PENDING = OrderPayScheduleLineContext.builder()
 			.status(OrderPayScheduleStatus.Pending)
 			.dueDate(INFINITE_FUTURE_DATE)
-			.setDueAmtActual(true).dueAmtActual(null)
+			.dueAmtActual(null) // set
 			.build();
 
-	@NonNull LocalDate dueDate;
 	@NonNull OrderPayScheduleStatus status;
+
+	boolean referenceDateSet;
+	@Nullable LocalDate referenceDate;
+
+	@NonNull LocalDate dueDate;
+
+	boolean dueAmtActualSet;
 	@Nullable Money dueAmtActual;
-	boolean setDueAmtActual;
+
+	@Builder
+	private OrderPayScheduleLineContext(
+			@NonNull final OrderPayScheduleStatus status,
+			final boolean referenceDateSet,
+			@Nullable final LocalDate referenceDate,
+			@NonNull final LocalDate dueDate,
+			final boolean dueAmtActualSet,
+			@Nullable final Money dueAmtActual)
+	{
+		if (status.equals(OrderPayScheduleStatus.Awaiting_Pay) && !dueDate.isBefore(INFINITE_FUTURE_DATE))
+		{
+			throw new AdempiereException("DueDate is mandatory when status is " + OrderPayScheduleStatus.Awaiting_Pay);
+		}
+
+		this.status = status;
+		this.referenceDateSet = referenceDateSet;
+		this.referenceDate = referenceDate;
+		this.dueDate = dueDate;
+		this.dueAmtActualSet = dueAmtActualSet;
+		this.dueAmtActual = dueAmtActual;
+	}
+
+	public static class OrderPayScheduleLineContextBuilder
+	{
+		public OrderPayScheduleLineContextBuilder referenceDate(@Nullable final LocalDate referenceDate)
+		{
+			this.referenceDate = referenceDate;
+			this.referenceDateSet = true;
+			return this;
+		}
+
+		public OrderPayScheduleLineContextBuilder dueAmtActual(@Nullable final Money dueAmtActual)
+		{
+			this.dueAmtActual = dueAmtActual;
+			this.dueAmtActualSet = true;
+			return this;
+		}
+	}
 
 	public static OrderPayScheduleLineContext pending()
 	{
 		return PENDING;
 	}
 
-	public static OrderPayScheduleLineContext awaitingPayment(@NonNull final LocalDate dueDate)
+	public static OrderPayScheduleLineContextBuilder awaitingPayment()
 	{
-		return awaitingPayment(dueDate, null);
+		return OrderPayScheduleLineContext.builder().status(OrderPayScheduleStatus.Awaiting_Pay);
 	}
 
-	public static OrderPayScheduleLineContext awaitingPayment(@NonNull final LocalDate dueDate, @Nullable final Money dueAmtActual)
+	public static OrderPayScheduleLineContextBuilder paid()
 	{
-		if (!dueDate.isBefore(INFINITE_FUTURE_DATE))
-		{
-			throw new AdempiereException("DueDate is mandatory when status is " + OrderPayScheduleStatus.Awaiting_Pay);
-		}
-
-		return OrderPayScheduleLineContext.builder()
-				.status(OrderPayScheduleStatus.Awaiting_Pay)
-				.dueDate(dueDate)
-				.setDueAmtActual(dueAmtActual != null)
-				.dueAmtActual(dueAmtActual)
-				.build();
-	}
-
-	public static OrderPayScheduleLineContext paid(@NonNull final LocalDate dueDate)
-	{
-		return paid(dueDate, null);
-	}
-
-	public static OrderPayScheduleLineContext paid(@NonNull final LocalDate dueDate, @Nullable Money dueAmtActual)
-	{
-		return OrderPayScheduleLineContext.builder()
-				.status(OrderPayScheduleStatus.Paid)
-				.dueDate(dueDate)
-				.setDueAmtActual(dueAmtActual != null)
-				.dueAmtActual(dueAmtActual)
-				.build();
+		return OrderPayScheduleLineContext.builder().status(OrderPayScheduleStatus.Paid);
 	}
 
 }

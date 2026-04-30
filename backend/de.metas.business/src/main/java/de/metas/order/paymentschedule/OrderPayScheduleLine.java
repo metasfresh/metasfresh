@@ -22,6 +22,7 @@
 
 package de.metas.order.paymentschedule;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
@@ -44,33 +45,24 @@ import java.time.LocalDate;
 @Builder
 public class OrderPayScheduleLine
 {
-	final @NonNull OrderPayScheduleId id;
-	final @NonNull OrderId orderId;
-	final @NonNull SeqNo seqNo;
+	@NonNull final OrderPayScheduleId id;
+	@NonNull final OrderId orderId;
+	@NonNull final SeqNo seqNo;
 
-	final @NonNull PaymentTermBreakId paymentTermBreakId;
-	final @NonNull ReferenceDateType referenceDateType;
-	final @NonNull Percent percent;
+	@NonNull final PaymentTermBreakId paymentTermBreakId;
+	@NonNull final ReferenceDateType referenceDateType;
+	@NonNull final Percent percent;
 	final int offsetDays;
 
 	@NonNull OrderPayScheduleStatus status;
-	@NonNull LocalDate dueDate;
-	@NonNull final Money dueAmount;
-	/**
-	 * Actual amount due — written exclusively by {@code OrderPayScheduleLCService} for the LC step. NULL on all non-LC rows.
-	 */
-	@Nullable Money dueAmtActual;
-	/**
-	 * Date used to compute {@link #dueDate}: {@code dueDate = referenceDate + offsetDays}.
-	 * NULL while the line is {@link OrderPayScheduleStatus#Pending}; populated once a real reference date becomes available.
-	 * Derived in {@link #applyAndProcess} from (status, dueDate, offsetDays) — never written by callers.
-	 */
-	@Nullable LocalDate referenceDate;
-	/**
-	 * {@code true} iff {@link #status} is {@link OrderPayScheduleStatus#Paid}.
-	 * Derived in {@link #applyAndProcess} from status — never written by callers.
-	 */
 	boolean isPaid;
+	@Nullable LocalDate referenceDate;
+	@NonNull LocalDate dueDate;
+	@Nullable final Money baseAmount;
+	@NonNull final Money dueAmount;
+	@Nullable Money dueAmtActual;
+
+	@Nullable InvoiceId invoiceId;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 
@@ -91,12 +83,16 @@ public class OrderPayScheduleLine
 		}
 
 		this.status = nextStatus;
+		this.isPaid = nextStatus.isPaid();
 		this.dueDate = context.getDueDate();
-		if (context.isSetDueAmtActual())
+
+		if (context.isReferenceDateSet())
+		{
+			this.referenceDate = context.getReferenceDate();
+		}
+		if (context.isDueAmtActualSet())
 		{
 			this.dueAmtActual = context.getDueAmtActual();
 		}
-		this.referenceDate = nextStatus.isPending() ? null : this.dueDate.minusDays(this.offsetDays);
-		this.isPaid = (nextStatus == OrderPayScheduleStatus.Paid);
 	}
 }

@@ -49,13 +49,16 @@ public class OrderSchedulingContext
 	@NonNull CurrencyPrecision precision;
 	@NonNull PaymentTerm paymentTerm;
 
-	public OrderPayScheduleLineContext computeDueDate(@NonNull final PaymentTermBreak termBreak)
+	public OrderPayScheduleLineContext computeLineContext(@NonNull final PaymentTermBreak termBreak)
 	{
 		final LocalDate referenceDate = getAvailableReferenceDate(termBreak.getReferenceDateType());
 		if (referenceDate != null)
 		{
 			final LocalDate dueDate = referenceDate.plusDays(termBreak.getOffsetDays());
-			return OrderPayScheduleLineContext.awaitingPayment(dueDate);
+			return OrderPayScheduleLineContext.awaitingPayment()
+					.referenceDate(referenceDate)
+					.dueDate(dueDate)
+					.build();
 		}
 		else
 		{
@@ -64,7 +67,7 @@ public class OrderSchedulingContext
 	}
 
 	@Nullable
-	private LocalDate getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
+	public LocalDate getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
 	{
 		switch (referenceDateType)
 		{

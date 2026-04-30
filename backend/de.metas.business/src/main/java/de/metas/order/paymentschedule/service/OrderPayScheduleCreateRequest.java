@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 @Value
@@ -45,7 +46,8 @@ public class OrderPayScheduleCreateRequest
 		@NonNull ReferenceDateType referenceDateType;
 		@NonNull Percent percent;
 
-		@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
+		@NonNull OrderPayScheduleStatus status;
+		@Nullable LocalDate referenceDate;
 		@NonNull LocalDate dueDate;
 		@NonNull Money dueAmount;
 		/**
@@ -56,5 +58,7 @@ public class OrderPayScheduleCreateRequest
 		@NonNull Money baseAmount;
 
 		int offsetDays;
+
+		public boolean isPaid() {return status.isPaid();}
 	}
 }

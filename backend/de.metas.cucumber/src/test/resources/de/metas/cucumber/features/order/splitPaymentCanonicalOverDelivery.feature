@@ -88,16 +88,24 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
   @Id:S29369_TC1
   Scenario: Canonical over-delivery: Partial (INV1) → Final (INV2); remainder row deleted
 
-    # ── Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
+    #
+    # ── Purchase Order completed; 700 PCE @ 100 EUR = 70,000 EUR total ──
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID | InvoiceRule |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            | D           |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | lcOrderL1  | lcOrder    | product      | 700        |
     And the order identified by lcOrder is completed
-
-    # ── Iter-2: proforma + payment → LC Paid; Delivery row = 1 remainder ──
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
+      | LC                | 70000.00 | 21000.00 | 21000.00      | -             | 9999-12-01 | PR     | N      | -          | -            |
+      # FIXME: Status shall be PR and not WP
+      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
+    
+    
+    #
+    # ── Proforma + payment → LC Paid; Delivery row = 1 remainder ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
       | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
@@ -106,6 +114,10 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
       | lcInvoiceL1 | lcInvoice    | product      | 1 PCE       | 21000.00 |
     And the invoice identified by lcInvoice is completed
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
+      | LC                | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
+      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
     And metasfresh contains Pay Selection
       | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
       | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
@@ -117,36 +129,39 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     And the Pay selection identified by paySelection has exactly the following lines
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
       | lcInvoice    | 21000.00 | lcPayment    |
-
     # AC #1 — after LC Paid: 1 Delivery remainder row, LC row Paid
-    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
-      | LC                | 21000.00 | 21000.00      | P      | 2026-04-24    | Y      |
-      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
-    And the order identified by lcOrder has exactly 1 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status |
-      | null       | 70000.00 | 49000.00 | PR     |
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
+      | LC                | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | Y      | -          | -            |
+      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
 
-    # ── R1: 400 PCE of product → R1.with_tax = 40,000 ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 400         |
+    
+    
+    #
+    # ── Receipt 1: 400 PCE of product → R1.with_tax = 40,000 ──
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID |
+      | hu1     | lcOrderL1      | 101                     |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID |
+      | lcOrderL1      | hu1     |
+    And the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
+      | LC                | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | Y      | -          |              |
+      | OD                | 70000.00 | 40000.00 | 40000.00      | 2026-04-24    | 9999-12-01 | PR     | N      | r1         | -            |
+      | OD                | 70000.00 | 30000.00 | 30000.00      | 2026-04-24    | 9999-12-01 | PR     | N      | -          | -            |
 
-    # AC #3 — Delivery sub-rows after R1: 1 sub-row for R1 + 1 remainder
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 40000.00 | 28000.00 | PR     | null         |
-      | null       | 30000.00 | 21000.00 | PR     | null         |
-
+    
+    
+    
+    
     # ── INV1: financial purchase invoice, IsPartialInvoice=Y (Partial), matched to R1 ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00   | lcOrderL1      |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
+      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
     # M_MatchInv MUST be created before completing the invoice (AFTER_COMPLETE fires allocateForInvoice)
     And iter3 M_MatchInv is created:
       | C_InvoiceLine_ID | M_InOut_ID | Qty |

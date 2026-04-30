@@ -29,7 +29,6 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.order.paymentschedule.OrderSchedulingContext;
 import de.metas.order.paymentschedule.repository.OrderPayScheduleRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -120,11 +119,6 @@ public class OrderPayScheduleService
 
 					orderPaySchedule.updateStatusFromContext(context);
 				});
-	}
-
-	public void markAsPaid(@NonNull final OrderId orderId, @NonNull final OrderPayScheduleId orderPayScheduleId)
-	{
-		orderPayScheduleRepository.updateById(orderId, orderPaySchedule -> orderPaySchedule.markAsPaid(orderPayScheduleId));
 	}
 
 	@NonNull

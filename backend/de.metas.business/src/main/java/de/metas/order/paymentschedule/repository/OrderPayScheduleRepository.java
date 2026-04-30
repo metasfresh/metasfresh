@@ -24,8 +24,8 @@ package de.metas.order.paymentschedule.repository;
 
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
-import de.metas.order.paymentschedule.service.OrderPayScheduleCreateRequest;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.service.OrderPayScheduleCreateRequest;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
@@ -66,6 +66,7 @@ public class OrderPayScheduleRepository
 
 	private static void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull final OrderId orderId, @NonNull final SeqNo seqNo)
 	{
+
 		final I_C_OrderPaySchedule record = newInstance(I_C_OrderPaySchedule.class);
 		record.setC_Order_ID(orderId.getRepoId());
 		record.setC_PaymentTerm_ID(request.getPaymentTermBreakId().getPaymentTermId().getRepoId());
@@ -73,18 +74,14 @@ public class OrderPayScheduleRepository
 		record.setDueAmt(request.getDueAmount().toBigDecimal());
 		record.setBaseAmt(request.getBaseAmount().toBigDecimal());
 		record.setC_Currency_ID(request.getDueAmount().getCurrencyId().getRepoId());
+		record.setReferenceDate(TimeUtil.asTimestamp(request.getReferenceDate()));
 		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
 		record.setPercent(request.getPercent().toInt());
 		record.setReferenceDateType(request.getReferenceDateType().getCode());
 		record.setOffsetDays(request.getOffsetDays());
 		record.setSeqNo(seqNo.toInt());
-		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(request.getOrderPayScheduleStatus()));
-		// Iter-3: derived aliases of (Status, DueDate, OffsetDays). Same derivation as
-		// OrderPayScheduleLine.applyAndProcess — keeps initial-state and post-transition writes consistent.
-		final OrderPayScheduleStatus initialStatus = request.getOrderPayScheduleStatus();
-		final boolean initialPending = initialStatus == null || initialStatus.isPending();
-		record.setReferenceDate(initialPending ? null : TimeUtil.asTimestamp(request.getDueDate().minusDays(request.getOffsetDays())));
-		record.setIsPaid(initialStatus == OrderPayScheduleStatus.Paid);
+		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(request.getStatus()));
+		record.setIsPaid(request.isPaid());
 		saveRecord(record);
 	}
 

@@ -71,13 +71,20 @@ class OrderPayScheduleLineTest
 				.build();
 	}
 
+	private static OrderPayScheduleLineContext awaitingPayment()
+	{
+		return OrderPayScheduleLineContext.awaitingPayment()
+				.dueDate(DUE_DATE)
+				.build();
+	}
+
 	@Test
 	void pending_setsReferenceDateNullAndIsPaidFalse()
 	{
 		final OrderPayScheduleLine line = newPendingLine();
 		// Force a Pending → Pending no-op write through applyAndProcess by transitioning
 		// Pending → Awaiting_Pay → Pending. The Pending→Pending direct call returns early.
-		line.applyAndProcess(OrderPayScheduleLineContext.awaitingPayment(DUE_DATE));
+		line.applyAndProcess(awaitingPayment());
 		line.applyAndProcess(OrderPayScheduleLineContext.pending());
 
 		assertThat(line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
@@ -90,7 +97,7 @@ class OrderPayScheduleLineTest
 	{
 		final OrderPayScheduleLine line = newPendingLine();
 
-		line.applyAndProcess(OrderPayScheduleLineContext.awaitingPayment(DUE_DATE));
+		line.applyAndProcess(awaitingPayment());
 
 		assertThat(line.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
 		assertThat(line.getReferenceDate()).isEqualTo(REFERENCE_DATE);
@@ -102,8 +109,8 @@ class OrderPayScheduleLineTest
 	{
 		final OrderPayScheduleLine line = newPendingLine();
 
-		line.applyAndProcess(OrderPayScheduleLineContext.awaitingPayment(DUE_DATE));
-		line.applyAndProcess(OrderPayScheduleLineContext.paid(DUE_DATE));
+		line.applyAndProcess(awaitingPayment());
+		line.applyAndProcess(OrderPayScheduleLineContext.paid().dueDate(DUE_DATE).build());
 
 		assertThat(line.getStatus()).isEqualTo(OrderPayScheduleStatus.Paid);
 		assertThat(line.getReferenceDate()).isEqualTo(REFERENCE_DATE);

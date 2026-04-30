@@ -2,7 +2,6 @@ package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
-import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
@@ -14,7 +13,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
@@ -76,7 +74,7 @@ public class OrderPaySchedule
 			if (line.getStatus().isPending())
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
-				final OrderPayScheduleLineContext dueDateAndStatus = context.computeDueDate(termBreak);
+				final OrderPayScheduleLineContext dueDateAndStatus = context.computeLineContext(termBreak);
 				line.applyAndProcess(dueDateAndStatus);
 			}
 		}
@@ -91,17 +89,6 @@ public class OrderPaySchedule
 	public void markAsPending(final OrderPayScheduleId lineId)
 	{
 		applyAndProcess(lineId, OrderPayScheduleLineContext.pending());
-	}
-
-	public void markAsAwaitingPayment(final OrderPayScheduleId lineId, @NonNull final LocalDate dueDate, @NonNull final Money dueAmtActual)
-	{
-		applyAndProcess(lineId, OrderPayScheduleLineContext.awaitingPayment(dueDate, dueAmtActual));
-	}
-
-	public void markAsPaid(final OrderPayScheduleId lineId)
-	{
-		final OrderPayScheduleLine line = getLineById(lineId);
-		applyAndProcess(lineId, OrderPayScheduleLineContext.paid(line.getDueDate()));
 	}
 
 	public Optional<OrderPayScheduleLine> getSingleLCLine()

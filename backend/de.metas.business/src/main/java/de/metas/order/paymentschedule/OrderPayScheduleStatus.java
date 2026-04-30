@@ -73,4 +73,6 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 	{
 		return allowedTransitions.containsEntry(this, nextStatus);
 	}
+
+	public boolean isPaid() {return this == Paid;}
 }

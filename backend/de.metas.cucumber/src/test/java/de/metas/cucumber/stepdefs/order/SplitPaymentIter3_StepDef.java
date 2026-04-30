@@ -26,8 +26,8 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -40,18 +40,18 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
@@ -61,7 +61,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -83,6 +82,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
  */
+// TODO delete me
+@Deprecated
 @RequiredArgsConstructor
 public class SplitPaymentIter3_StepDef
 {
@@ -116,12 +117,10 @@ public class SplitPaymentIter3_StepDef
 	 * which calls {@code OrderPayScheduleDeliveryService.recomputeDeliverySteps(orderId)}.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_Order_ID</b> — (required, identifier-ref) the purchase order<br>
-	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the order line to receive<br>
-	 *   <b>MovementQty</b> — (required) quantity received (units, no UOM conversion)<br>
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.columns <b>C_Order_ID</b> — (required, identifier-ref) the purchase order<br>
+	 * <b>C_OrderLine_ID</b> — (required, identifier-ref) the order line to receive<br>
+	 * <b>MovementQty</b> — (required) quantity received (units, no UOM conversion)<br>
+	 * @cucumber.example <pre>
 	 * When iter3 purchase receipt 'r1' is created and completed:
 	 *   | C_Order_ID | C_OrderLine_ID | MovementQty |
 	 *   | lcOrder    | lcOrderL1      | 400         |
@@ -200,12 +199,10 @@ public class SplitPaymentIter3_StepDef
 	 * can traverse the M_MatchInv chain on AFTER_COMPLETE.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_InvoiceLine_ID</b> — (required, identifier-ref) the invoice line<br>
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the receipt whose first line is matched<br>
-	 *   <b>Qty</b> — (required) matched quantity<br>
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.columns <b>C_InvoiceLine_ID</b> — (required, identifier-ref) the invoice line<br>
+	 * <b>M_InOut_ID</b> — (required, identifier-ref) the receipt whose first line is matched<br>
+	 * <b>Qty</b> — (required) matched quantity<br>
+	 * @cucumber.example <pre>
 	 * And iter3 M_MatchInv is created:
 	 *   | C_InvoiceLine_ID | M_InOut_ID | Qty |
 	 *   | inv1L1           | r1         | 400 |
@@ -257,8 +254,7 @@ public class SplitPaymentIter3_StepDef
 	 * <p>AvailableAmt = PayAmt − Σ allocated (via active C_AllocationLine rows).
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * Then the payment 'lcPayment' has AvailableAmt 11053.92
 	 * </pre>
 	 */
@@ -289,14 +285,12 @@ public class SplitPaymentIter3_StepDef
 	 * {@link #assertDeliveryRowCount(String, int)} for that.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required) receipt identifier-ref or literal {@code null} for the remainder row<br>
-	 *   <b>BaseAmt</b> — (optional) expected base amount<br>
-	 *   <b>DueAmt</b> — (optional) expected due amount<br>
-	 *   <b>Status</b> — (optional) expected status code: PR=Pending, WP=Awaiting_Pay, P=Paid<br>
-	 *   <b>C_Invoice_ID</b> — (optional) expected matched invoice (identifier-ref) or literal {@code null}<br>
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required) receipt identifier-ref or literal {@code null} for the remainder row<br>
+	 * <b>BaseAmt</b> — (optional) expected base amount<br>
+	 * <b>DueAmt</b> — (optional) expected due amount<br>
+	 * <b>Status</b> — (optional) expected status code: PR=Pending, WP=Awaiting_Pay, P=Paid<br>
+	 * <b>C_Invoice_ID</b> — (optional) expected matched invoice (identifier-ref) or literal {@code null}<br>
+	 * @cucumber.example <pre>
 	 * Then the order identified by lcOrder has following delivery sub-rows:
 	 *   | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
 	 *   | r1         | 31808.00 | 22265.60 | WP     | inv1         |
@@ -387,8 +381,7 @@ public class SplitPaymentIter3_StepDef
 	 * Asserts the exact count of delivery sub-rows (including remainder row) for the given order.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * Then the order identified by lcOrder has exactly 3 delivery sub-rows
 	 * </pre>
 	 */
@@ -409,8 +402,7 @@ public class SplitPaymentIter3_StepDef
 	 * (over-delivery scenario where Σ receipt.with_tax ≥ order.GrandTotal).
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
+	 * @cucumber.example <pre>
 	 * Then the order identified by lcOrder has no remainder delivery sub-row
 	 * </pre>
 	 */

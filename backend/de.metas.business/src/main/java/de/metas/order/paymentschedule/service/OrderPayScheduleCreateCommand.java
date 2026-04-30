@@ -38,8 +38,7 @@ class OrderPayScheduleCreateCommand
 			return; // Nothing to schedule
 		}
 
-
-		if (!context.getPaymentTerm().isComplex() )
+		if (!context.getPaymentTerm().isComplex())
 		{
 			return; // Nothing to schedule
 		}
@@ -92,16 +91,17 @@ class OrderPayScheduleCreateCommand
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final Money dueAmount)
 	{
-		final OrderPayScheduleLineContext result = context.computeDueDate(termBreak);
+		final OrderPayScheduleLineContext lineContext = context.computeLineContext(termBreak);
 
 		return OrderPayScheduleCreateRequest.Line.builder()
-				.dueDate(result.getDueDate())
+				.referenceDate(lineContext.getReferenceDate())
+				.dueDate(lineContext.getDueDate())
 				.dueAmount(dueAmount)
 				.baseAmount(context.getGrandTotal()) // for LC/OD rows: BaseAmt = order GrandTotal
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())
 				.percent(termBreak.getPercent())
-				.orderPayScheduleStatus(result.getStatus())
+				.status(lineContext.getStatus())
 				.offsetDays(termBreak.getOffsetDays())
 				.build();
 	}

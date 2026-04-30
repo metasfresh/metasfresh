@@ -40,7 +40,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -138,19 +137,34 @@ public class OrderPayScheduleLCService
 		if (prepayment != null)
 		{
 			// Payment completed → Paid
-			schedule.applyAndProcess(lcStep.getId(), OrderPayScheduleLineContext.paid(proforma.getDueDate(), proforma.getGrandTotal()));
+			schedule.applyAndProcess(
+					lcStep.getId(),
+					OrderPayScheduleLineContext.paid()
+							.referenceDate(proforma.getDateInvoiced())
+							.dueDate(proforma.getDueDate())
+							.dueAmtActual(proforma.getGrandTotal())
+							.build()
+			);
 		}
 		else
 		{
 			// Payment absent, drafted, or reversed → Awaiting_Pay
-			schedule.markAsAwaitingPayment(lcStep.getId(), proforma.getDueDate(), proforma.getGrandTotal());
+			schedule.applyAndProcess(
+					lcStep.getId(),
+					OrderPayScheduleLineContext.awaitingPayment()
+							.referenceDate(proforma.getDateInvoiced())
+							.dueDate(proforma.getDueDate())
+							.dueAmtActual(proforma.getGrandTotal())
+							.build()
+			);
 		}
+
 		orderPayScheduleService.save(schedule);
 		stampLCDateOnOrder(orderId, proforma);
 	}
 
 	@NonNull
-	private ProformaInvoice getProformaInvoiceById(final InvoiceId proformaInvoiceId)
+	private ProformaInvoice getProformaInvoiceById(@NonNull final InvoiceId proformaInvoiceId)
 	{
 		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
 		final CurrencyId proformaCurrencyId = CurrencyId.ofRepoId(proforma.getC_Currency_ID());
@@ -164,7 +178,7 @@ public class OrderPayScheduleLCService
 	}
 
 	@NonNull
-	private @NotNull Optional<Prepayment> getPrepayment(
+	private Optional<Prepayment> getPrepayment(
 			@NonNull final InvoiceId proformaInvoiceId,
 			@Nullable final I_C_Payment trustedCompletingPayment)
 	{

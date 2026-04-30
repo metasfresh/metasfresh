@@ -22,13 +22,13 @@
 
 package de.metas.cucumber.stepdefs.order;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
-import de.metas.money.Money;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
@@ -44,14 +44,12 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderPaySchedule;
-import org.compiere.model.I_C_PaymentTerm_Break;
+import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for {@code C_OrderPaySchedule} / {@link OrderPayScheduleLine} assertions.
@@ -62,6 +60,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class C_OrderPaySchedule_StepDef
 {
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final C_OrderPaySchedule_StepDefData orderPayScheduleTable;
@@ -90,21 +89,20 @@ public class C_OrderPaySchedule_StepDef
 	@And("^the order identified by (.*) has following pay schedules$")
 	public void verifyOrderPaySchedules(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
-		final OrderId orderId = orderTable.getId(orderIdentifier);
-		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
+		final DataTableRows rows = DataTableRows.of(dataTable);
 
-		final HashSet<OrderPayScheduleId> expectedIds = new HashSet<>();
+		final OrderPaySchedule paySchedule = getOrderPaySchedule(orderIdentifier);
+		assertThat(paySchedule.getLines()).hasSize(rows.size());
 
-		DataTableRows.of(dataTable)
-				.forEach(row -> {
-					final PaymentTermBreakId paymentTermBreakId = row.getAsIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID).lookupNotNullIdIn(paymentTermBreakTable);
-					final OrderPayScheduleLine payScheduleLine = paySchedule.getLineByPaymentTermBreakId(paymentTermBreakId);
-					verifyOrderPaySchedule(row, payScheduleLine);
-					expectedIds.add(payScheduleLine.getId());
-				});
+		final HashSet<OrderPayScheduleId> matchedIds = new HashSet<>();
 
-		final ImmutableSet<OrderPayScheduleId> actualIds = paySchedule.getLines().stream().map(OrderPayScheduleLine::getId).collect(ImmutableSet.toImmutableSet());
-		assertThat(actualIds).as("actual pay schedule IDs").isEqualTo(expectedIds);
+		rows.forEach(row -> {
+			final OrderPayScheduleLine payScheduleLine = findMatchingLine(paySchedule, row, matchedIds);
+			verifyOrderPaySchedule(row, payScheduleLine);
+			row.getAsOptionalIdentifier().ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
+
+			matchedIds.add(payScheduleLine.getId());
+		});
 	}
 
 	/**
@@ -133,36 +131,59 @@ public class C_OrderPaySchedule_StepDef
 	 * }</pre>
 	 */
 	@And("^the order identified by (.*) has following pay schedule lines by ReferenceDateType$")
+	@Deprecated
 	public void verifyOrderPaySchedulesByRefDateType(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
+		verifyOrderPaySchedules(orderIdentifier, dataTable);
+	}
+
+	private OrderPayScheduleLine findMatchingLine(
+			@NonNull final OrderPaySchedule paySchedule,
+			@NonNull final DataTableRow row,
+			@NonNull final HashSet<OrderPayScheduleId> alreadyMatchedIds)
+	{
+		return paySchedule.getLines().stream()
+				.filter(line -> !alreadyMatchedIds.contains(line.getId())) // not already matched
+				.filter(extractMatchingLinePredicate(row))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No pay schedule line matching" + row + " in orderId=" + paySchedule.getOrderId()));
+	}
+
+	private Predicate<OrderPayScheduleLine> extractMatchingLinePredicate(final DataTableRow row)
+	{
+		Predicate<OrderPayScheduleLine> resultingPredicate = null;
+
+		final PaymentTermBreakId paymentTermBreakId = row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_PaymentTerm_Break_ID)
+				.map(paymentTermBreakTable::getId)
+				.orElse(null);
+
+		if (paymentTermBreakId != null)
+		{
+			final Predicate<OrderPayScheduleLine> predicate = (line) -> PaymentTermBreakId.equals(line.getPaymentTermBreakId(), paymentTermBreakId);
+			//noinspection ConstantValue
+			resultingPredicate = resultingPredicate == null ? predicate : resultingPredicate.and(predicate);
+		}
+
+		final ReferenceDateType referenceDateType = row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.class).orElse(null);
+		if (referenceDateType != null)
+		{
+			final Predicate<OrderPayScheduleLine> predicate = (line) -> line.getReferenceDateType() == referenceDateType;
+			resultingPredicate = resultingPredicate == null ? predicate : resultingPredicate.and(predicate);
+		}
+
+		if (resultingPredicate == null)
+		{
+			throw new AdempiereException("No matching line predicate found for " + row);
+		}
+
+		return resultingPredicate;
+	}
+
+	private @NotNull OrderPaySchedule getOrderPaySchedule(final @NotNull String orderIdentifier)
+	{
 		final OrderId orderId = orderTable.getId(orderIdentifier);
-		// Reload from the service each time to get the latest DB state (Status, DueAmt_Actual, etc.)
-		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId)
+		return orderPayScheduleService.getByOrderId(orderId)
 				.orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
-
-		DataTableRows.of(dataTable).forEach(row -> {
-			final ReferenceDateType referenceDateType = row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.class)
-					.orElseThrow(() -> new AdempiereException("Column 'ReferenceDateType' is required"));
-
-			final List<OrderPayScheduleLine> matchingLines = paySchedule.getLines().stream()
-					.filter(line -> line.getReferenceDateType() == referenceDateType)
-					.collect(Collectors.toList());
-
-			if (matchingLines.isEmpty())
-			{
-				throw new AdempiereException("No pay schedule line found for ReferenceDateType=" + referenceDateType + " in orderId=" + orderId);
-			}
-			if (matchingLines.size() > 1)
-			{
-				throw new AdempiereException("Multiple pay schedule lines found for ReferenceDateType=" + referenceDateType + " in orderId=" + orderId);
-			}
-
-			final OrderPayScheduleLine payScheduleLine = matchingLines.get(0);
-			verifyOrderPayScheduleExtended(row, payScheduleLine);
-
-			row.getAsOptionalIdentifier()
-					.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
-		});
 	}
 
 	private void verifyOrderPaySchedule(@NonNull final DataTableRow row, @NonNull final OrderPayScheduleLine payScheduleLine)
@@ -171,83 +192,56 @@ public class C_OrderPaySchedule_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
+		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_BaseAmt)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getBaseAmount() != null ? payScheduleLine.getBaseAmount().toBigDecimal() : null)
+						.as("BaseAmt")
+						.isEqualByComparingTo(expected));
 		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
-		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
-		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
-		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
-				.ifPresent(rawValue -> {
-					if (DataTableUtil.isNullPlaceholder(rawValue))
-					{
-						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isNull();
-					}
-					else
-					{
-						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(java.time.LocalDate.parse(rawValue));
-					}
-				});
-		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
-
-		softly.assertAll();
-
-		row.getAsOptionalIdentifier()
-				.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
-	}
-
-	/**
-	 * Extended verification that additionally supports {@code DueAmt_Actual} (nullable) and
-	 * {@code ReferenceDateType} columns.  Used by {@link #verifyOrderPaySchedulesByRefDateType}.
-	 */
-	private void verifyOrderPayScheduleExtended(@NonNull final DataTableRow row, @NonNull final OrderPayScheduleLine payScheduleLine)
-	{
-		SharedTestContext.put("payScheduleLine", payScheduleLine);
-
-		final SoftAssertions softly = new SoftAssertions();
-
-		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
-		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
-		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
-		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
-				.ifPresent(rawValue -> {
-					if (DataTableUtil.isNullPlaceholder(rawValue))
-					{
-						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isNull();
-					}
-					else
-					{
-						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(java.time.LocalDate.parse(rawValue));
-					}
-				});
-		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
-
-		// DueAmt_Actual: "null" in the feature means assert NULL; a numeric value asserts equality.
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
 				.ifPresent(rawValue -> {
 					final Money actual = payScheduleLine.getDueAmtActual();
 					if (DataTableUtil.isNullPlaceholder(rawValue))
 					{
-						softly.assertThat(actual == null || actual.isZero())
-								.as("DueAmt_Actual should be null/zero but was: " + actual)
-								.isTrue();
+						softly.assertThat(actual).as("DueAmt_Actual should be null").isNull();
 					}
 					else
 					{
-						final BigDecimal expected = new BigDecimal(rawValue);
-						softly.assertThat(actual).as("DueAmt_Actual").isNotNull();
-						if (actual != null)
-						{
-							softly.assertThat(actual.toBigDecimal()).as("DueAmt_Actual").isEqualByComparingTo(expected);
-						}
+						softly.assertThat(actual != null ? actual.toBigDecimal() : null).as("DueAmt_Actual").isEqualByComparingTo(rawValue);
+					}
+				});
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isNull();
+					}
+					else
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(rawValue);
+					}
+				});
+		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
+		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
+		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
+		row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(identifier -> {
+					if (identifier.isNullPlaceholder())
+					{
+						softly.assertThat(payScheduleLine.getInvoiceId()).as("C_Invoice_ID").isNull();
+					}
+					else
+					{
+						softly.assertThat(payScheduleLine.getInvoiceId()).as("C_Invoice_ID").isEqualTo(invoiceTable.getId(identifier));
 					}
 				});
 
 		softly.assertAll();
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
 	}
 }

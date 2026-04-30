@@ -24,10 +24,9 @@ package de.metas.order.paymentschedule.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-
-import java.math.BigDecimal;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
@@ -49,6 +48,7 @@ import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,21 +131,26 @@ public class OrderPayScheduleLoaderAndSaver
 	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final BigDecimal dueAmtActualBD = record.getDueAmt_Actual();
+		final BigDecimal dueAmtActualBD = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
 		return OrderPayScheduleLine.builder()
 				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
+				//
 				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), currencyId))
-				.dueDate(TimeUtil.asLocalDate(record.getDueDate()))
+				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.percent(Percent.of(record.getPercent()))
 				.offsetDays(record.getOffsetDays())
-				.seqNo(SeqNo.ofInt(record.getSeqNo()))
-				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
+				//
 				.status(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.dueAmtActual(dueAmtActualBD != null ? Money.of(dueAmtActualBD, currencyId) : null)
-				.referenceDate(TimeUtil.asLocalDate(record.getReferenceDate()))
 				.isPaid(record.isPaid())
+				.referenceDate(TimeUtil.asLocalDate(record.getReferenceDate()))
+				.dueDate(TimeUtil.asLocalDate(record.getDueDate()))
+				.baseAmount(Money.of(record.getBaseAmt(), currencyId))
+				.dueAmount(Money.of(record.getDueAmt(), currencyId))
+				.dueAmtActual(dueAmtActualBD != null ? Money.of(dueAmtActualBD, currencyId) : null)
+				//
+				.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
 				.build();
 	}
 
@@ -207,7 +212,7 @@ public class OrderPayScheduleLoaderAndSaver
 	public void updateByIds(@NonNull final Set<OrderId> orderIds, @NonNull final Consumer<OrderPaySchedule> updater)
 	{
 		if (orderIds.isEmpty()) {return;}
-		
+
 		trxManager.runInThreadInheritedTrx(() -> {
 			warmUpByOrderIds(orderIds);
 			orderIds.forEach(orderId -> updateById0(orderId, updater));
