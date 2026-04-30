@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E2300_Attributes
-@allure.label.feature:F67043_Weight_calculation
+@allure.label.feature:F67043_Weight_Calculation
 @ghActions:run_on_executor7
 Feature: HU weight attributes are derived from product master Net + Gross
 
