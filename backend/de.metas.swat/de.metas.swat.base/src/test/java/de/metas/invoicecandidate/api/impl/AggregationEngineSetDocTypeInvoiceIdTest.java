@@ -60,10 +60,7 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 	@Test
 	void setDocTypeInvoiceId_whenPartialInvoiceNull_doesNotSwap()
 	{
-		// given
-		final I_C_DocType normalDocType = mockDocType(false);
-		when(docTypeBLMock.getById(DOC_TYPE_ID_NORMAL)).thenReturn(normalDocType);
-
+		// given — no docTypeBL stubs needed: partialInvoice=null skips the swap block entirely
 		final AggregationEngine engine = buildEngine(null /* partialInvoice */);
 		final InvoiceHeaderImpl header = buildHeader(DOC_TYPE_ID_NORMAL);
 

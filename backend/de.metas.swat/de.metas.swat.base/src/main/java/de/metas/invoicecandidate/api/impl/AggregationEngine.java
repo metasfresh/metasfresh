@@ -143,8 +143,7 @@ public final class AggregationEngine
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	private final boolean deliveryDateAsInvoiceDate;
-	@Nullable
-	private final Boolean partialInvoice;
+	@Nullable private final Boolean partialInvoice;
 
 	private final AdTableId inoutLineTableId;
 	/**
