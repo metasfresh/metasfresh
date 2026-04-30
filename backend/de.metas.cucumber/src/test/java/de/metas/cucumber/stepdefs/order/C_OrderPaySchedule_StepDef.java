@@ -177,8 +177,17 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
-		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(expected));
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isNull();
+					}
+					else
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(java.time.LocalDate.parse(rawValue));
+					}
+				});
 		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
 
@@ -204,8 +213,17 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
-		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(expected));
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDate)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isNull();
+					}
+					else
+					{
+						softly.assertThat(payScheduleLine.getReferenceDate()).as("ReferenceDate").isEqualTo(java.time.LocalDate.parse(rawValue));
+					}
+				});
 		row.getAsOptionalBoolean(I_C_OrderPaySchedule.COLUMNNAME_IsPaid)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.isPaid()).as("IsPaid").isEqualTo(expected));
 
