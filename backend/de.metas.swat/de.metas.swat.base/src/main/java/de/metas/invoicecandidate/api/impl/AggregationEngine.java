@@ -21,7 +21,9 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -141,6 +143,8 @@ public final class AggregationEngine
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	private final boolean deliveryDateAsInvoiceDate;
+	@Nullable
+	private final Boolean partialInvoice;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -158,7 +162,8 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
-			final boolean deliveryDateAsInvoiceDate)
+			final boolean deliveryDateAsInvoiceDate,
+			@Nullable final Boolean partialInvoice)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
@@ -177,6 +182,7 @@ public final class AggregationEngine
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
 		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
+		this.partialInvoice = partialInvoice;
 	}
 
 	@Override
@@ -866,7 +872,8 @@ public final class AggregationEngine
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 
-	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	@VisibleForTesting
+	void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
@@ -895,7 +902,36 @@ public final class AggregationEngine
 			docTypeIdToBeUsed = null;
 		}
 
-		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
+		// If a specific isPartialInvoice flavor is required and a doctype was resolved,
+		// swap to a sibling doctype that matches the required isPartialInvoice flag.
+		DocTypeId docTypeIdFinal = docTypeIdToBeUsed;
+		if (partialInvoice != null && docTypeIdToBeUsed != null)
+		{
+			final I_C_DocType resolvedDocType = docTypeBL.getById(docTypeIdToBeUsed);
+			if (resolvedDocType.isPartialInvoice() != partialInvoice)
+			{
+				final DocTypeQuery query = DocTypeQuery.builder()
+						.docBaseType(DocBaseType.ofCode(resolvedDocType.getDocBaseType()))
+						.adClientId(resolvedDocType.getAD_Client_ID())
+						.adOrgId(resolvedDocType.getAD_Org_ID())
+						.isSOTrx(resolvedDocType.isSOTrx())
+						.isPartialInvoice(partialInvoice)
+						.build();
+				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(query);
+				if (alternativeDocTypeId == null)
+				{
+					throw new AdempiereException("No matching doctype found for isPartialInvoice=" + partialInvoice)
+							.appendParametersToMessage()
+							.setParameter("resolvedDocType", resolvedDocType.getName())
+							.setParameter("docBaseType", resolvedDocType.getDocBaseType())
+							.setParameter("isSOTrx", resolvedDocType.isSOTrx())
+							.setParameter("adClientId", resolvedDocType.getAD_Client_ID())
+							.setParameter("adOrgId", resolvedDocType.getAD_Org_ID());
+				}
+				docTypeIdFinal = alternativeDocTypeId;
+			}
+		}
+		invoiceHeader.setDocTypeInvoiceId(docTypeIdFinal);
 	}
 
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
