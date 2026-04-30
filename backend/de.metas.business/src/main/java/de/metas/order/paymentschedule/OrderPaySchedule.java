@@ -5,7 +5,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -47,14 +46,6 @@ public class OrderPaySchedule
 			final OrderId orderId = lines.get(0).getOrderId();
 			return Optional.of(new OrderPaySchedule(orderId, lines));
 		});
-	}
-
-	public OrderPayScheduleLine getLineByPaymentTermBreakId(@NonNull final PaymentTermBreakId paymentTermBreakId)
-	{
-		return lines.stream()
-				.filter(line -> PaymentTermBreakId.equals(line.getPaymentTermBreakId(), paymentTermBreakId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No line found for " + paymentTermBreakId));
 	}
 
 	public OrderPayScheduleLine getLineById(@NonNull final OrderPayScheduleId payScheduleLineId)
