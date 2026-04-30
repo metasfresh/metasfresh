@@ -90,6 +90,14 @@ public class OrderPayScheduleLine
 		{
 			this.referenceDate = context.getReferenceDate();
 		}
+		else if (nextStatus == OrderPayScheduleStatus.Pending)
+		{
+			this.referenceDate = null;
+		}
+		else
+		{
+			this.referenceDate = this.dueDate.minusDays(offsetDays);
+		}
 		if (context.isDueAmtActualSet())
 		{
 			this.dueAmtActual = context.getDueAmtActual();

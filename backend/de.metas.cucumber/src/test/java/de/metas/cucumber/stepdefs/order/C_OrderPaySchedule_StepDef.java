@@ -99,7 +99,6 @@ public class C_OrderPaySchedule_StepDef
 		rows.forEach(row -> {
 			final OrderPayScheduleLine payScheduleLine = findMatchingLine(paySchedule, row, matchedIds);
 			verifyOrderPaySchedule(row, payScheduleLine);
-			row.getAsOptionalIdentifier().ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
 
 			matchedIds.add(payScheduleLine.getId());
 		});
@@ -242,6 +241,6 @@ public class C_OrderPaySchedule_StepDef
 		softly.assertAll();
 
 		row.getAsOptionalIdentifier()
-				.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
+				.ifPresent(identifier -> orderPayScheduleTable.putOrReplace(identifier, payScheduleLine));
 	}
 }

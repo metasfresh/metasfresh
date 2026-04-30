@@ -131,7 +131,7 @@ public class OrderPayScheduleLoaderAndSaver
 	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final BigDecimal dueAmtActualBD = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
+		final BigDecimal dueAmtActualBD = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual);
 		return OrderPayScheduleLine.builder()
 				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))

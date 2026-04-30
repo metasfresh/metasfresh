@@ -32,6 +32,10 @@ import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.InOutId;
@@ -88,6 +92,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SplitPaymentIter3_StepDef
 {
 	// Services (field-level, matches metasfresh convention)
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -152,6 +157,13 @@ public class SplitPaymentIter3_StepDef
 		inOut.setM_Warehouse_ID(warehouseId.getRepoId());
 		inOut.setIsSOTrx(false);
 		inOut.setMovementType("V+"); // Vendor receipt / goods in
+		final DocTypeId receiptDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.isSOTrx(false)
+				.adClientId(order.getAD_Client_ID())
+				.adOrgId(order.getAD_Org_ID())
+				.build());
+		inOut.setC_DocType_ID(receiptDocTypeId.getRepoId());
 		inOut.setMovementDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		inOut.setDateAcct(de.metas.common.util.time.SystemTime.asTimestamp());
 		inOut.setDeliveryRule("A");       // Availability
