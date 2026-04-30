@@ -957,6 +957,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
+				.partialInvoice(invoicingParams != null ? invoicingParams.getIsPartialInvoice() : null)
 				.build();
 	}
 
