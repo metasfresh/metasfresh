@@ -18,7 +18,6 @@ import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -126,10 +125,7 @@ import java.util.Set;
 	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
-				.orderLineByProductAndUom(
-						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(orderFactory::newOrderLine)
+				.newOrderLine()
 				.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
