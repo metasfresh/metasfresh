@@ -28,13 +28,13 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
@@ -56,19 +56,23 @@ public final class WeightTareDeltaTransferStrategy implements IHUAttributeTransf
 {
 	public static final WeightTareDeltaTransferStrategy instance = new WeightTareDeltaTransferStrategy();
 
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 	private WeightTareDeltaTransferStrategy()
 	{
-		super();
 	}
 
 	@Override
 	public void transferAttribute(@NonNull final IHUAttributeTransferRequest request, @NonNull final I_M_Attribute attribute)
 	{
-		final BigDecimal perCUDeltaForMovedQtyBD = computePerCUDelta(request);
-		if (perCUDeltaForMovedQtyBD.signum() == 0)
+		final Quantity perCUDeltaForMovedQty = computePerCUDelta(request);
+		if (perCUDeltaForMovedQty == null || perCUDeltaForMovedQty.isZero())
 		{
 			return;
 		}
+
+		final BigDecimal perCUDeltaForMovedQtyBD = perCUDeltaForMovedQty.toBigDecimal();
 
 		final BigDecimal sourceOldBD = request.getAttributesFrom().getValueAsBigDecimal(attribute);
 		request.getAttributesFrom().setValue(attribute, sourceOldBD.subtract(perCUDeltaForMovedQtyBD));
@@ -83,51 +87,47 @@ public final class WeightTareDeltaTransferStrategy implements IHUAttributeTransf
 		return request.isVHUTransfer();
 	}
 
-	private static BigDecimal computePerCUDelta(@NonNull final IHUAttributeTransferRequest request)
+	@Nullable
+	private Quantity computePerCUDelta(@NonNull final IHUAttributeTransferRequest request)
 	{
 		final ProductId productId = request.getProductId();
-		final BigDecimal qty = request.getQty();
+		final BigDecimal qtyBD = request.getQty();
 		final I_C_UOM requestUOM = request.getC_UOM();
-		// HU-to-HU transfers carry a positive qty (the amount being moved). A non-positive qty
-		// has no per-CU delta to move — return ZERO so the strategy short-circuits without writing.
-		// This is not a directional reversal: the upstream caller never produces negative qty here.
-		if (productId == null || qty == null || qty.signum() <= 0 || requestUOM == null)
+		if (productId == null || qtyBD == null || requestUOM == null)
 		{
-			return BigDecimal.ZERO;
+			return null;
 		}
 
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		// HU-to-HU transfers carry a positive qty (the amount being moved). A non-positive qty
+		// has no per-CU delta to move — return null so the strategy short-circuits without writing.
+		// This is not a directional reversal: the upstream caller never produces negative qty here.
+		final Quantity qty = Quantity.of(qtyBD, requestUOM);
+		if (!qty.isPositive())
+		{
+			return null;
+		}
 
 		final Quantity productGross = productBL.getGrossWeight(productId, requestUOM).orElse(null);
-		if (productGross == null || productGross.signum() <= 0)
+		if (productGross == null || !productGross.isPositive())
 		{
-			return BigDecimal.ZERO;
+			return null;
 		}
 
 		final I_M_Product product = productBL.getById(productId);
 		final Quantity productNet = productBL.getNetWeight(product, requestUOM).orElse(null);
-		if (productNet == null || productNet.signum() <= 0)
+		if (productNet == null || !productNet.isPositive())
 		{
-			return BigDecimal.ZERO;
+			return null;
 		}
 
-		final Quantity productGrossInNetUOM = UomId.equals(productGross.getUomId(), productNet.getUomId())
-				? productGross
-				: uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
+		final Quantity productGrossInNetUOM = uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
 
-		final BigDecimal perUnitDeltaBD = productGrossInNetUOM.toBigDecimal().subtract(productNet.toBigDecimal());
-		if (perUnitDeltaBD.signum() <= 0)
+		final Quantity perUnitDelta = productGrossInNetUOM.subtract(productNet);
+		if (!perUnitDelta.isPositive())
 		{
-			return BigDecimal.ZERO;
+			return null;
 		}
 
-		return perUnitDeltaBD.multiply(qty);
-	}
-
-	@Override
-	public String toString()
-	{
-		return "WeightTareDeltaTransferStrategy []";
+		return perUnitDelta.multiply(qty.toBigDecimal());
 	}
 }

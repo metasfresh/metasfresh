@@ -41,19 +41,20 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
 
 public class WeightTareAttributeValueCallout
 		extends AbstractWeightAttributeValueCallout
@@ -111,7 +112,7 @@ public class WeightTareAttributeValueCallout
 					.retrieveItems(hu, HUItemType.PackingMaterial).stream()
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> packingMaterialDAO.retrieveHUPackingMaterialOrNull(item))
+					.map(packingMaterialDAO::retrieveHUPackingMaterialOrNull)
 					.filter(Objects::nonNull)
 
 					// multiply their M_HU_PackingMaterial's weight
@@ -130,16 +131,17 @@ public class WeightTareAttributeValueCallout
 		// contribution from the product master (M_Product.GrossWeight − M_Product.Weight) × storage qty.
 		// Mirrors the incremental write done by WeightGenerateHUTrxListener so recompute paths
 		// (AggregateHUTrxListener, AbstractProducerDestination#loadFinished, attribute seed) stay consistent.
-		return weightTare.add(calculateProductPackagingDelta(hu));
+		return weightTare.add(Quantitys.toBigDecimalOrZero(calculateProductPackagingDelta(hu)));
 	}
 
 	/**
 	 * Sums the per-CU packaging contribution {@code (gross − net) × qty} across the HU's product
-	 * storages, expressed in the net-weight UOM (KG). Returns 0 when the HU has no storage,
+	 * storages, expressed in the net-weight UOM (KG). Returns null when the HU has no storage,
 	 * when no product on the storage maintains a real net weight (default 0), or when gross/net
-	 * are equal.
+	 * are equal — i.e. there is nothing to add to the tare.
 	 */
-	private static BigDecimal calculateProductPackagingDelta(final I_M_HU hu)
+	@Nullable
+	private static Quantity calculateProductPackagingDelta(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -147,11 +149,11 @@ public class WeightTareAttributeValueCallout
 
 		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 
-		BigDecimal total = BigDecimal.ZERO;
+		Quantity total = null;
 		for (final IHUProductStorage productStorage : huStorage.getProductStorages())
 		{
 			final Quantity storageQty = productStorage.getQty();
-			if (storageQty.signum() <= 0)
+			if (!storageQty.isPositive())
 			{
 				continue;
 			}
@@ -161,30 +163,31 @@ public class WeightTareAttributeValueCallout
 
 			// Per-CU gross/net weights, scaled to the storage UOM.
 			final Quantity productGross = productBL.getGrossWeight(productId, storageUOM).orElse(null);
-			if (productGross == null || productGross.signum() <= 0)
+			if (productGross == null || !productGross.isPositive())
 			{
 				continue;
 			}
 
 			final I_M_Product product = productBL.getById(productId);
 			final Quantity productNet = productBL.getNetWeight(product, storageUOM).orElse(null);
-			if (productNet == null || productNet.signum() <= 0)
+			if (productNet == null || !productNet.isPositive())
 			{
 				continue;
 			}
 
 			// Convert gross to net's UOM before subtracting (net is hardcoded KG; gross may be e.g. grams).
-			final Quantity productGrossInNetUOM = UomId.equals(productGross.getUomId(), productNet.getUomId())
-					? productGross
-					: uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
+			// IUOMConversionBL.convertQuantityTo no-ops when source and target UOM already match.
+			final Quantity productGrossInNetUOM = uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
 
-			final BigDecimal perUnitDeltaBD = productGrossInNetUOM.toBigDecimal().subtract(productNet.toBigDecimal());
-			if (perUnitDeltaBD.signum() <= 0)
+			final Quantity perUnitDelta = productGrossInNetUOM.subtract(productNet);
+			if (!perUnitDelta.isPositive())
 			{
 				continue;
 			}
 
-			total = total.add(perUnitDeltaBD.multiply(storageQty.toBigDecimal()));
+			final Quantity contribution = perUnitDelta.multiply(storageQty.toBigDecimal());
+			// Same UOM (productNet's UOM) across all contributions, so no conversion context needed.
+			total = Quantitys.addNullSafe(null, total, contribution);
 		}
 		return total;
 	}

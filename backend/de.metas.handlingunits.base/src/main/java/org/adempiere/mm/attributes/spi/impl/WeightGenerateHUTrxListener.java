@@ -37,14 +37,13 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Value;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 /**
  * Aim: in case we are transferring quantity between a document and a HU and we are dealing with a weightable or non weightable product we need to use it's standard weight.
@@ -59,6 +58,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
@@ -71,8 +71,8 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 			return;
 		}
 
-		final TrxWeightDeltas deltas = calculateTrxWeightDeltasIfApplies(trxLine).orElse(null);
-		if (deltas == null || deltas.netDelta.signum() == 0)
+		final TrxWeightDeltas deltas = calculateTrxWeightDeltasIfApplies(trxLine);
+		if (deltas == null || deltas.getNetDelta().isZero())
 		{
 			return;
 		}
@@ -88,8 +88,11 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 			return;
 		}
 
+		final ProductId productId = ProductId.ofRepoIdOrNull(trxLine.getM_Product_ID());
+		final I_C_UOM weightNetUOM = weightable.getWeightNetUOM();
+
 		// Update WeightNet by adding the converted netDelta.
-		final Quantity netDeltaConv = convertQuantityTo(deltas.netDelta, weightable.getWeightNetUOM(), trxLine);
+		final Quantity netDeltaConv = uomConversionBL.convertQuantityTo(deltas.getNetDelta(), productId, weightNetUOM);
 		final BigDecimal weightNetOld = weightable.getWeightNet();
 		final BigDecimal weightNetNew = weightNetOld.add(netDeltaConv.toBigDecimal());
 		weightable.setWeightNet(weightNetNew);
@@ -99,9 +102,9 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		// (i.e. product master gross == net, or only one of them is set).
 		// IWeightable does not expose setWeightTare by design (Tare is structural / seeded);
 		// follow AggregateHUTrxListener and write via the attribute storage directly.
-		if (deltas.tareDelta.signum() != 0 && weightable.hasWeightTare())
+		if (!deltas.getTareDelta().isZero() && weightable.hasWeightTare())
 		{
-			final Quantity tareDeltaConv = convertQuantityTo(deltas.tareDelta, weightable.getWeightNetUOM(), trxLine);
+			final Quantity tareDeltaConv = uomConversionBL.convertQuantityTo(deltas.getTareDelta(), productId, weightNetUOM);
 			final BigDecimal weightTareOld = weightable.getWeightTare();
 			final BigDecimal weightTareNew = weightTareOld.add(tareDeltaConv.toBigDecimal());
 			attributeStorage.setValue(weightable.getWeightTareAttribute(), weightTareNew);
@@ -109,88 +112,73 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		}
 	}
 
-	private static Quantity convertQuantityTo(final Quantity qty, final I_C_UOM targetUOM, final I_M_HU_Trx_Line trxLine)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final ProductId productId = IHUTrxBL.extractProductId(trxLine);
-		return uomConversionBL.convertQuantityTo(qty, productId, targetUOM);
-	}
-
 	/**
 	 * Net + Tare deltas to apply on a VHU after a trx line was processed.
-	 * <p>
-	 * - {@code netDelta}: amount to add to {@code WeightNet}
-	 * - {@code tareDelta}: amount to add to {@code WeightTare}
-	 * <p>
 	 * Both are expressed in the trx UOM; the caller converts to the weight UOM.
 	 */
-	private static final class TrxWeightDeltas
+	@Value
+	private static class TrxWeightDeltas
 	{
-		final Quantity netDelta;
-		final Quantity tareDelta;
-
-		TrxWeightDeltas(final Quantity netDelta, final Quantity tareDelta)
-		{
-			this.netDelta = netDelta;
-			this.tareDelta = tareDelta;
-		}
+		Quantity netDelta;
+		Quantity tareDelta;
 	}
 
 	/**
 	 * Calculates the net and tare deltas for the trx line, derived from the product's
-	 * master-data weights. Returns empty when no derivation is possible (no qty,
+	 * master-data weights. Returns null when no derivation is possible (no qty,
 	 * no product, no UOM, or no gross weight on the product master).
 	 */
-	private Optional<TrxWeightDeltas> calculateTrxWeightDeltasIfApplies(final I_M_HU_Trx_Line trxLine)
+	@Nullable
+	private TrxWeightDeltas calculateTrxWeightDeltasIfApplies(final I_M_HU_Trx_Line trxLine)
 	{
-		// Get transaction Qty.
-		final BigDecimal qty = trxLine.getQty();
-		if (qty.signum() == 0)
+		// Get transaction UOM (NOT the weight UOM!)
+		final I_C_UOM qtyUOM = IHUTrxBL.extractUOMOrNull(trxLine);
+		if (qtyUOM == null)
 		{
-			return Optional.empty();
+			return null;
+		}
+
+		// Get transaction Qty.
+		final Quantity qty = Quantity.of(trxLine.getQty(), qtyUOM);
+		if (qty.isZero())
+		{
+			return null;
 		}
 
 		// Get transaction Product.
 		final I_M_Product product = IHUTrxBL.extractProductOrNull(trxLine);
 		if (product == null)
 		{
-			return Optional.empty();
+			return null;
 		}
 
-		// Get transaction UOM (NOT the weight UOM!)
-		final I_C_UOM qtyUOM = IHUTrxBL.extractUOMOrNull(trxLine);
-		if (qtyUOM == null)
-		{
-			return Optional.empty();
-		}
-
-		// Get Product's gross weight (per-CU). Empty when neither gross nor net is on the master
+		// Get Product's gross weight (per-CU). Returns null when neither gross nor net is on the master
 		// (IProductBL.getGrossWeight already falls back to net internally).
 		final Quantity productGross = productBL.getGrossWeight(product, qtyUOM).orElse(null);
-		if (productGross == null || productGross.signum() <= 0)
+		if (productGross == null || !productGross.isPositive())
 		{
-			return Optional.empty();
+			return null;
 		}
 
-		// Get Product's net weight (per-CU). Strict: empty when M_Product.Weight is the default 0,
+		// Get Product's net weight (per-CU). Strict: returns null when M_Product.Weight is the default 0,
 		// i.e. no real net weight has been maintained. In that case the listener does not derive
 		// WeightNet — the same as pre-2025 behaviour, consistent with how the rest of the system reads
 		// IProductBL.getNetWeight.
 		final Quantity productNet = productBL.getNetWeight(product, qtyUOM).orElse(null);
-		if (productNet == null || productNet.signum() <= 0)
+		if (productNet == null || !productNet.isPositive())
 		{
-			return Optional.empty();
+			return null;
 		}
 
 		// Net and gross may carry different UOMs: net is hardcoded to KG (see IProductBL),
 		// gross uses M_Product.GrossWeight_UOM_ID and may be e.g. grams. Normalise gross
 		// to the net's UOM before subtracting so the per-CU tare delta is correct.
-		final Quantity productGrossInNetUOM = UomId.equals(productGross.getUomId(), productNet.getUomId())
-				? productGross
-				: convertQuantityTo(productGross, productNet.getUOM(), trxLine);
+		// IUOMConversionBL.convertQuantityTo no-ops when source and target UOM already match.
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final Quantity productGrossInNetUOM = uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
 
 		// Calculate transaction's deltas (per-CU × qty).
-		final Quantity netDelta = productNet.multiply(qty);
+		final Quantity netDelta = productNet.multiply(qty.toBigDecimal());
 
 		// Per-CU packaging delta: only meaningful when gross > net. A misconfigured product
 		// with gross <= net would produce a non-positive delta — same skip semantic as
@@ -198,11 +186,11 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		// WeightTareDeltaTransferStrategy.computePerCUDelta, so the incremental and
 		// recompute paths stay consistent.
 		final Quantity productGrossNetDiff = productGrossInNetUOM.subtract(productNet);
-		final Quantity tareDelta = productGrossNetDiff.signum() > 0
-				? productGrossNetDiff.multiply(qty)
+		final Quantity tareDelta = productGrossNetDiff.isPositive()
+				? productGrossNetDiff.multiply(qty.toBigDecimal())
 				: productGrossNetDiff.toZero();
 
-		return Optional.of(new TrxWeightDeltas(netDelta, tareDelta));
+		return new TrxWeightDeltas(netDelta, tareDelta);
 	}
 
 	@Nullable

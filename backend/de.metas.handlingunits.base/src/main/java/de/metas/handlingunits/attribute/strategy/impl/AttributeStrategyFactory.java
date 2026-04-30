@@ -55,6 +55,7 @@ public class AttributeStrategyFactory implements IAttributeStrategyFactory
 		classname2strategy.put(SkipHUAttributeTransferStrategy.class.getName(), SkipHUAttributeTransferStrategy.instance);
 		classname2strategy.put(CopyHUAttributeTransferStrategy.class.getName(), CopyHUAttributeTransferStrategy.instance);
 		classname2strategy.put(RedistributeQtyHUAttributeTransferStrategy.class.getName(), RedistributeQtyHUAttributeTransferStrategy.instance);
+		classname2strategy.put(WeightTareDeltaTransferStrategy.class.getName(), WeightTareDeltaTransferStrategy.instance);
 
 		defaultStrategies.put(IAttributeAggregationStrategy.class, NullAggregationStrategy.instance);
 		defaultStrategies.put(IAttributeSplitterStrategy.class, NullSplitterStrategy.instance);
