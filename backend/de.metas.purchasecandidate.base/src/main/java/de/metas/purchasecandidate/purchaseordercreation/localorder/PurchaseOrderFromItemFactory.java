@@ -122,6 +122,12 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
+	/**
+	 * Adds {@code purchaseOrderItem} as a new, independent order line.
+	 * Each call creates a fresh {@link OrderLineBuilder} — candidates are never merged,
+	 * preserving the invariant required by
+	 * {@code UC_C_PurchaseCandidate_Alloc_C_OrderLinePO_ID}: one purchase candidate per PO line.
+	 */
 	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory

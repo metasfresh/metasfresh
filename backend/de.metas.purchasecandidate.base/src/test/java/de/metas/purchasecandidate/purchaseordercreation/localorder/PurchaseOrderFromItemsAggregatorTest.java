@@ -61,6 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /*
  * #%L
@@ -257,11 +258,11 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final List<I_C_OrderLine> lines = Services.get(IOrderDAO.class)
 				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
 
-		assertThat(lines).hasSize(2);
-		assertThat(lines).extracting(I_C_OrderLine::getM_AttributeSetInstance_ID)
-				.containsExactlyInAnyOrder(41, 42);
-		assertThat(lines).extracting(I_C_OrderLine::getQtyEntered)
-				.containsExactly(TEN.toBigDecimal(), TEN.toBigDecimal());
+		assertThat(lines)
+				.extracting(I_C_OrderLine::getM_AttributeSetInstance_ID, I_C_OrderLine::getQtyEntered)
+				.containsExactlyInAnyOrder(
+						tuple(41, TEN.toBigDecimal()),
+						tuple(42, TEN.toBigDecimal()));
 	}
 
 	@Test
@@ -298,6 +299,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
 
 		assertThat(lines).hasSize(2);
+		assertThat(lines).extracting(I_C_OrderLine::getM_AttributeSetInstance_ID)
+				.containsExactlyInAnyOrder(40, 40);
 	}
 
 	@Test
@@ -351,8 +354,11 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final ProductAndCategoryAndManufacturerId product =
 				ProductAndCategoryAndManufacturerId.of(productRecord.getM_Product_ID(), 30, 35);
 
+		// Two forecast-driven candidates with NO SO link, all other dimensions identical
+		// (same product, same UOM, same ASI). Each must still produce its own PO line —
+		// confirms Approach B's structural invariant for the forecast path.
 		final PurchaseCandidate candA = buildCandidate(vendor, productRecord, product, 40, /*salesOrderAndLineId=*/ null, now);
-		final PurchaseCandidate candB = buildCandidate(vendor, productRecord, product, 41, /*salesOrderAndLineId=*/ null, now);
+		final PurchaseCandidate candB = buildCandidate(vendor, productRecord, product, 40, /*salesOrderAndLineId=*/ null, now);
 
 		final I_C_Order purchaseOrder = runAggregator(ImmutableList.of(candA, candB));
 
@@ -360,6 +366,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
 
 		assertThat(lines).hasSize(2);
+		assertThat(lines).extracting(I_C_OrderLine::getM_AttributeSetInstance_ID)
+				.containsExactlyInAnyOrder(40, 40);
 	}
 
 	private PurchaseCandidate buildCandidate(
