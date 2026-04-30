@@ -264,6 +264,104 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.containsExactly(TEN.toBigDecimal(), TEN.toBigDecimal());
 	}
 
+	@Test
+	public void sameAsi_differentSoLines_yieldsTwoOrderLines()
+	{
+		final ZonedDateTime now = SystemTime.asZonedDateTime();
+
+		final I_C_Order salesOrder = newInstance(I_C_Order.class);
+		save(salesOrder);
+
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setValue("Vendor");
+		vendor.setName("Vendor");
+		save(vendor);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(EACH.getC_UOM_ID());
+		saveRecord(productRecord);
+		final ProductAndCategoryAndManufacturerId product =
+				ProductAndCategoryAndManufacturerId.of(productRecord.getM_Product_ID(), 30, 35);
+
+		final PurchaseCandidate candA = buildCandidate(vendor, productRecord, product,
+				/*asiRepoId=*/ 40,
+				OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50),
+				now);
+		final PurchaseCandidate candB = buildCandidate(vendor, productRecord, product,
+				/*asiRepoId=*/ 40,
+				OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 51),
+				now);
+
+		final I_C_Order purchaseOrder = runAggregator(ImmutableList.of(candA, candB));
+
+		final List<I_C_OrderLine> lines = Services.get(IOrderDAO.class)
+				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
+
+		assertThat(lines).hasSize(2);
+	}
+
+	@Test
+	public void sameAsi_sameSoLine_stillYieldsTwoOrderLines()
+	{
+		final ZonedDateTime now = SystemTime.asZonedDateTime();
+
+		final I_C_Order salesOrder = newInstance(I_C_Order.class);
+		save(salesOrder);
+
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setValue("Vendor");
+		vendor.setName("Vendor");
+		save(vendor);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(EACH.getC_UOM_ID());
+		saveRecord(productRecord);
+		final ProductAndCategoryAndManufacturerId product =
+				ProductAndCategoryAndManufacturerId.of(productRecord.getM_Product_ID(), 30, 35);
+
+		final OrderAndLineId soLine = OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50);
+		final PurchaseCandidate candA = buildCandidate(vendor, productRecord, product, 40, soLine, now);
+		final PurchaseCandidate candB = buildCandidate(vendor, productRecord, product, 40, soLine, now);
+
+		final I_C_Order purchaseOrder = runAggregator(ImmutableList.of(candA, candB));
+
+		final List<I_C_OrderLine> lines = Services.get(IOrderDAO.class)
+				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
+
+		// The unique constraint UC_C_PurchaseCandidate_Alloc_C_OrderLinePO_ID demands one PCand per PO line.
+		// Approach B preserves this invariant even for the edge case "two PCands referencing the same SO line".
+		assertThat(lines).hasSize(2);
+	}
+
+	@Test
+	public void forecastDriven_nullSoLine_yieldsTwoOrderLines()
+	{
+		final ZonedDateTime now = SystemTime.asZonedDateTime();
+
+		// no salesOrder needed — forecast-driven candidates have no SO link
+
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setValue("Vendor");
+		vendor.setName("Vendor");
+		save(vendor);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(EACH.getC_UOM_ID());
+		saveRecord(productRecord);
+		final ProductAndCategoryAndManufacturerId product =
+				ProductAndCategoryAndManufacturerId.of(productRecord.getM_Product_ID(), 30, 35);
+
+		final PurchaseCandidate candA = buildCandidate(vendor, productRecord, product, 40, /*salesOrderAndLineId=*/ null, now);
+		final PurchaseCandidate candB = buildCandidate(vendor, productRecord, product, 41, /*salesOrderAndLineId=*/ null, now);
+
+		final I_C_Order purchaseOrder = runAggregator(ImmutableList.of(candA, candB));
+
+		final List<I_C_OrderLine> lines = Services.get(IOrderDAO.class)
+				.retrieveOrderLines(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
+
+		assertThat(lines).hasSize(2);
+	}
+
 	private PurchaseCandidate buildCandidate(
 			@NonNull final I_C_BPartner vendor,
 			@NonNull final I_M_Product productRecord,
