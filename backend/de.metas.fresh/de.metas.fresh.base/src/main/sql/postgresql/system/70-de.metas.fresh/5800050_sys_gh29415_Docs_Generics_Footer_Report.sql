@@ -1,3 +1,7 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric, character(1))
+;
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric,
                                                                                        character(1),
                                                                                        IN p_ad_language character varying)
