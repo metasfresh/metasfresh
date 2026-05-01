@@ -102,9 +102,20 @@ public class C_Invoice // 03771
 	 * Package-private static helper — testable without Spring context.
 	 * Copies {@code IsPartialInvoice} from the invoice's current document type to the invoice.
 	 * Falls back to {@code true} (Partial) when no doctype is set.
+	 *
+	 * <p>Skips the defaulting when the caller already set {@code IsPartialInvoice} explicitly
+	 * (detected via {@link InterfaceWrapperHelper#isValueChanged}). This lets callers — e.g.
+	 * the IC pipeline or Cucumber step defs — set a specific flag without it being silently
+	 * overwritten by the BEFORE_NEW interceptor.
 	 */
 	static void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
 	{
+		// Skip if already explicitly set by the caller before the first save
+		if (InterfaceWrapperHelper.isValueChanged(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice))
+		{
+			return;
+		}
+
 		final int docTypeId = invoice.getC_DocType_ID();
 		if (docTypeId > 0)
 		{

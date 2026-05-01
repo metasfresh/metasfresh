@@ -97,6 +97,32 @@ class C_Invoice_IsPartialInvoiceTest
 		assertThat(invoice.isPartialInvoice()).isFalse();
 	}
 
+	/**
+	 * When the caller already set {@code IsPartialInvoice} explicitly (simulated by calling the
+	 * setter before invoking the helper), the helper must NOT overwrite it — even if the doctype
+	 * says something different.
+	 *
+	 * <p>Real-life case: Cucumber step def sets {@code IsPartialInvoice=true} and then calls
+	 * {@code invoiceDAO.save()} which triggers BEFORE_NEW. Without this guard the BEFORE_NEW
+	 * interceptor would overwrite the flag with the doctype's value ("Eingangsrechnung" = false).
+	 */
+	@Test
+	void newInvoice_doesNotOverride_whenExplicitlySet()
+	{
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+		docType.setIsPartialInvoice(false); // doctype says "Final"
+		InterfaceWrapperHelper.saveRecord(docType);
+
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setIsPartialInvoice(true); // caller explicitly set to "Partial"
+
+		C_Invoice.defaultIsPartialInvoiceFromDocType(invoice);
+
+		// must remain true (caller wins, doctype is ignored)
+		assertThat(invoice.isPartialInvoice()).isTrue();
+	}
+
 	// -------------------------------------------------------------------------
 	// AC #14 — IsPartialInvoice is editable while DR/IP, readonly otherwise
 	// -------------------------------------------------------------------------
