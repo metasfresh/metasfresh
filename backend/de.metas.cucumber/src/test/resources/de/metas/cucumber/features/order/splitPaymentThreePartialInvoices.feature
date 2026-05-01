@@ -135,8 +135,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
 
     # INV1 alloc = MIN(20,000 × 30%, 21,000) = 6,000
     Then validate C_AllocationLines for invoice inv1
-      | Amount  |
-      | 6000.00 |
+      | Amount   |
+      | -6000.00 |
     Then the payment 'lcPayment' has AvailableAmt 15000.00
 
     # ── R2: 200 PCE → R2.with_tax = 20,000 ──
@@ -165,8 +165,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
 
     # INV2 alloc = MIN(20,000 × 30%, 15,000) = 6,000
     Then validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 6000.00 |
+      | Amount   |
+      | -6000.00 |
     Then the payment 'lcPayment' has AvailableAmt 9000.00
 
     # ── R3: 200 PCE → R3.with_tax = 20,000. R1+R2+R3 = 60,000 < 70,000 (under-delivery) ──
@@ -197,8 +197,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
 
     # AC #24 — INV3 alloc = 9,000 (remaining prepay — Final rule), NOT 6,000 (= 20,000 × 30%)
     Then validate C_AllocationLines for invoice inv3
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | -9000.00 |
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
     # INV3.OpenAmt = 20,000 − 9,000 = 11,000

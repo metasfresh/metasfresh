@@ -134,8 +134,8 @@ Feature: Split-payment — pure under-delivery (Final invoice consumes remaining
 
     # INV1 alloc = MIN(20,000 × 30 %, 21,000) = 6,000
     Then validate C_AllocationLines for invoice inv1
-      | Amount  |
-      | 6000.00 |
+      | Amount   |
+      | -6000.00 |
     Then the payment 'lcPayment' has AvailableAmt 15000.00
 
     # ── R2: 300 PCE → R2.with_tax = 30,000. R1+R2 = 50,000 < 70,000 (under-delivery) ──
@@ -165,8 +165,8 @@ Feature: Split-payment — pure under-delivery (Final invoice consumes remaining
 
     # AC #10 — INV2 alloc = 15,000 (remaining prepay — Final rule), NOT 9,000 (= 30,000 × 30 %)
     Then validate C_AllocationLines for invoice inv2
-      | Amount   |
-      | 15000.00 |
+      | Amount    |
+      | -15000.00 |
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
     # INV2.OpenAmt = 30,000 − 15,000 = 15,000

@@ -149,11 +149,11 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # Sanity: TC1 step-5 state baseline
     Then the payment 'lcPayment' has AvailableAmt 0.00
     And validate C_AllocationLines for invoice inv1
-      | Amount   |
-      | 12000.00 |
+      | Amount    |
+      | -12000.00 |
     And validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | -9000.00 |
     And validate created invoices
       | Identifier | OpenAmt  |
       | inv1       | 28000.00 |
@@ -260,8 +260,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
 
     # AC #25 — INV2's alloc unchanged (still 9,000 against INV2)
     And validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | -9000.00 |
 
     # AC #25 — stranded amount: prepay.AvailableAmt = 12,000 (the freed INV1 alloc)
     # Iter-3 does NOT auto-re-allocate; the 12,000 sits available until either INV2 is also

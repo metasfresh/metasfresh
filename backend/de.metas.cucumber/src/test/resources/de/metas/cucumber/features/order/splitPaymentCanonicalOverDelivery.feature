@@ -168,8 +168,8 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
 
     # AC #4 — exactly 1 allocation line linking prepayment to INV1, Amount = 12,000
     Then validate C_AllocationLines for invoice inv1
-      | Amount   |
-      | 12000.00 |
+      | Amount    |
+      | -12000.00 |
 
     # prepayment AvailableAmt = 21,000 − 12,000 = 9,000
     Then the payment 'lcPayment' has AvailableAmt 9000.00
@@ -214,8 +214,8 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
 
     # AC #8 — exactly 1 allocation line linking prepayment to INV2, Amount = 9,000 (remaining prepay — Final)
     Then validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | -9000.00 |
 
     # prepayment AvailableAmt = 0 (fully consumed)
     Then the payment 'lcPayment' has AvailableAmt 0.00

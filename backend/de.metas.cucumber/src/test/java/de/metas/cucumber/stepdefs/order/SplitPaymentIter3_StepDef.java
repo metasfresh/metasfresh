@@ -59,6 +59,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_M_InOut;
@@ -277,7 +278,11 @@ public class SplitPaymentIter3_StepDef
 	{
 		final PaymentId paymentId = paymentTable.getId(paymentIdentifier);
 		final BigDecimal expected = new BigDecimal(expectedAvailableAmtStr);
-		final BigDecimal actual = paymentDAO.getAvailableAmount(paymentId);
+		final BigDecimal rawActual = paymentDAO.getAvailableAmount(paymentId);
+		// paymentAvailable() returns negative for AP (C_Payment_v negates PayAmt for AP).
+		// Negate for AP to compare as a positive "available capacity" value.
+		final I_C_Payment payment = paymentDAO.getById(paymentId);
+		final BigDecimal actual = payment.isReceipt() ? rawActual : rawActual.negate();
 		assertThat(actual)
 				.as("AvailableAmt for payment '" + paymentIdentifier + "'")
 				.isEqualByComparingTo(expected);

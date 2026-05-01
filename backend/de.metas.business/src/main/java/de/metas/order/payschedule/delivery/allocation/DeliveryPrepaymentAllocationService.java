@@ -338,8 +338,11 @@ public class DeliveryPrepaymentAllocationService
 		// 3. Get remaining available amount on the payment
 		final I_C_Payment prepayPayment = paymentDAO.getById(prepayPaymentId);
 		final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(prepayPayment.getC_Currency_ID());
-		final BigDecimal availableAmtBD = paymentDAO.getAvailableAmount(prepayPaymentId);
-		final Money remainingPrepay = Money.of(availableAmtBD, paymentCurrencyId);
+		final BigDecimal rawAvailableAmt = paymentDAO.getAvailableAmount(prepayPaymentId);
+		// paymentAvailable() uses C_Payment_v.PayAmt which is negated for AP (IsReceipt='N').
+		// Negate for AP to get a positive "remaining capacity" value; AR stays positive.
+		final BigDecimal normalizedAvailableAmt = prepayPayment.isReceipt() ? rawAvailableAmt : rawAvailableAmt.negate();
+		final Money remainingPrepay = Money.of(normalizedAvailableAmt, paymentCurrencyId);
 
 		if (remainingPrepay.signum() <= 0)
 		{
@@ -366,6 +369,10 @@ public class DeliveryPrepaymentAllocationService
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
+		// C_AllocationLine.Amount sign convention: negative for AP, positive for AR
+		// (matches MPayment.allocateInvoice which calls allocationAmt.negate() for AP).
+		final BigDecimal signedAllocAmt = prepayPayment.isReceipt() ? allocAmt.toBigDecimal() : allocAmt.toBigDecimal().negate();
+
 		trxManager.runInThreadInheritedTrx(() ->
 				allocationBL.newBuilder()
 						.orgId(orgId)
@@ -378,7 +385,7 @@ public class DeliveryPrepaymentAllocationService
 						.bpartnerId(bpartnerId)
 						.invoiceId(invoiceId)
 						.paymentId(prepayPaymentId)
-						.amount(allocAmt.toBigDecimal())
+						.amount(signedAllocAmt)
 						.lineDone()
 						//
 						.createAndComplete()

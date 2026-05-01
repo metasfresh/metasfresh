@@ -137,8 +137,8 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
 
     # Final rule: alloc = remaining_prepay = 21,000 (full prepay drained at first invoice)
     Then validate C_AllocationLines for invoice inv1bad
-      | Amount   |
-      | 21000.00 |
+      | Amount    |
+      | -21000.00 |
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
     # INV1bad.OpenAmt = 40,000 − 21,000 = 19,000 (visibly too low → user detects)
@@ -171,8 +171,8 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
     # AC #13 — end-state matches TC1 step 3:
     #   alloc = MIN(40,000 × 30 %, 21,000) = 12,000; prepay = 9,000; INV1.OpenAmt = 28,000
     Then validate C_AllocationLines for invoice inv1
-      | Amount   |
-      | 12000.00 |
+      | Amount    |
+      | -12000.00 |
     Then the payment 'lcPayment' has AvailableAmt 9000.00
     Then validate created invoices
       | Identifier | OpenAmt  |

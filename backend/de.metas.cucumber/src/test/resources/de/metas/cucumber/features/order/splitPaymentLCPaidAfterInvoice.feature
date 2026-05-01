@@ -152,8 +152,8 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
     # C_Payment_LCStep.onPaymentCompleted, picks up INV1, calls allocateForInvoice.
     # Expected allocation: MIN(receipt 10000 × 30%, prepay 3000) = MIN(3000, 3000) = 3000.
     Then validate C_AllocationLines for invoice inv1
-      | Amount  |
-      | 3000.00 |
+      | Amount   |
+      | -3000.00 |
 
     # LC pay-schedule line: Status=P (Paid), IsPaid=Y, ReferenceDate=proforma.DateInvoiced.
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType

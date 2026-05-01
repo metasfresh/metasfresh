@@ -154,8 +154,8 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
 
     # INV1 alloc = MIN(12,000 × 30%, 6,900) = MIN(3,600, 6,900) = 3,600
     Then validate C_AllocationLines for invoice inv1
-      | Amount  |
-      | 3600.00 |
+      | Amount   |
+      | -3600.00 |
     Then the payment 'lcPayment' has AvailableAmt 3300.00
 
     # ── R2: 200 PCE of productB → BaseAmt = 11,000 (200 × 50 × 1.10, 10% per-line rate) ──
@@ -185,8 +185,8 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
 
     # INV2 alloc = 3,300 (remaining prepay — Final rule)
     Then validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 3300.00 |
+      | Amount   |
+      | -3300.00 |
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
     # INV2.OpenAmt = 11,000 (gross with 10% tax) − 3,300 (allocated) = 7,700

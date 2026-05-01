@@ -133,8 +133,8 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
 
     # INV1 alloc = MIN(40,000 × 30 %, 21,000) = 12,000; prepay → 9,000
     Then validate C_AllocationLines for invoice inv1
-      | Amount   |
-      | 12000.00 |
+      | Amount    |
+      | -12000.00 |
     Then the payment 'lcPayment' has AvailableAmt 9000.00
 
     # ── R2: 320 PCE → R2.with_tax = 32,000; over-delivery (R1+R2 = 72,000 > 70,000) ──
@@ -156,8 +156,8 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
 
     # AC #12 — the MIN cap clamps INV2 alloc at remaining_prepay (9,000), NOT 9,600 (= 32,000 × 30 %)
     Then validate C_AllocationLines for invoice inv2
-      | Amount  |
-      | 9000.00 |
+      | Amount   |
+      | -9000.00 |
     # End-state Σ = 12,000 + 9,000 = 21,000 = full prepay; no over-allocation
     Then the payment 'lcPayment' has AvailableAmt 0.00
 
