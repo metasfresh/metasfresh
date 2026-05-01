@@ -281,12 +281,15 @@ public class OrderPayScheduleDeliveryRepository
 		// 2. Iter-2 proforma-prepayment payment (null if LC step not yet paid)
 		final PaymentId proformaPrepaymentPaymentId = loadProformaPrepaymentPaymentId(orderId);
 
-		// 3. Completed, non-reversed purchase receipts for the order
+		// 3. Completed, non-reversal purchase receipts for the order.
+		// Reversal_ID IS NULL: the receipt is not a reversal document itself.
+		// X_M_InOut.setReversal_ID stores NULL for values < 1, so we must use IS NULL (not = 0).
+		// DocStatus IN (CO,CL) already excludes the reversed original.
 		final List<I_M_InOut> receipts = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, false)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL")
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, 0)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, null)
 				.create()
 				.list();
 

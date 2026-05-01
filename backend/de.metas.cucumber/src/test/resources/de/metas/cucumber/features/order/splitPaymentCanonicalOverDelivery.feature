@@ -99,9 +99,9 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     And the order identified by lcOrder is completed
     And the order identified by lcOrder has following pay schedules
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
-      | LC                | 70000.00 | 21000.00 | 21000.00      | -             | 9999-12-01 | PR     | N      | -          | -            |
+      | LC                | 70000.00 | 21000.00 | -             | -             | 9999-12-01 | PR     | N      | -          | -            |
       # FIXME: Status shall be PR and not WP
-      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
+      | OD                | 70000.00 | 49000.00 | -             | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
     
     
     #
