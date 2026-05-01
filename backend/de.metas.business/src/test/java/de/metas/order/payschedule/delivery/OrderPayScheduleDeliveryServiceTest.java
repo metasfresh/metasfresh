@@ -53,8 +53,14 @@ import java.util.stream.Stream;
  * Each test cell provides {@link DeliveryStepInputs} and asserts the resulting
  * set of {@link DesiredDeliveryRow} objects computed by the service.
  *
- * <p><strong>RED state</strong>: {@link OrderPayScheduleDeliveryService} does not exist yet —
- * this file will fail to compile until Task 21/22 implement it.
+ * <p><strong>Formula (per REQUIREMENTS.md §3.1):</strong>
+ * <ul>
+ *   <li>{@code BaseAmt = orderGrandTotal} for ALL rows (receipt sub-rows and remainder).
+ *   <li>Receipt sub-row {@code DueAmt = min(receipt.withTaxValue, max(0, orderGrandTotal − sumPreviousReceipts))}.
+ *   <li>Remainder {@code DueAmt = max(0, orderGrandTotal − sumAllReceipts)}.
+ *   <li>{@code deliveryPercent} is NOT used in DueAmt computation (it determines the LC vs Delivery split
+ *       at a higher level; the Delivery sub-rows track actual receipt values, not scaled amounts).
+ * </ul>
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
  */
@@ -73,7 +79,7 @@ class OrderPayScheduleDeliveryServiceTest
 	/** LC percentage: 30 %. */
 	private static final BigDecimal LC_PERCENT = new BigDecimal("30");
 
-	/** Delivery percentage: 70 %. */
+	/** Delivery percentage: 70 %. (Passed to inputs builder; not used in DueAmt computation.) */
 	private static final BigDecimal DELIVERY_PERCENT = new BigDecimal("70");
 
 	/** R1 with-tax value from the customer spreadsheet. */
@@ -85,14 +91,8 @@ class OrderPayScheduleDeliveryServiceTest
 	/** R2 value in a pure-under-delivery scenario (R1 + R2 = 50,000 < 68,654.40). */
 	private static final Money R2_UNDER_VALUE = Money.of("30000.00", EUR);
 
-	/** Remainder when only R1 received: 68654.40 − 31808 = 36846.40. */
-	private static final Money REMAINDER_AFTER_R1_BASE = Money.of("36846.40", EUR);
-
-	/** R1 DueAmt = 31808.00 × 70 % = 22265.60. */
-	private static final Money R1_DUE = Money.of("22265.60", EUR);
-
-	/** Remainder DueAmt after R1 = 36846.40 × 70 % = 25792.48. */
-	private static final Money REMAINDER_DUE_AFTER_R1 = Money.of("25792.48", EUR);
+	/** Remainder DueAmt after R1 = 68654.40 − 31808.00 = 36846.40. */
+	private static final Money REMAINDER_DUE_AFTER_R1 = Money.of("36846.40", EUR);
 
 	// -----------------------------------------------------------------------
 	// Service under test
@@ -104,7 +104,6 @@ class OrderPayScheduleDeliveryServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		// OrderPayScheduleDeliveryService does not exist yet — this line causes RED compile
 		service = new OrderPayScheduleDeliveryService(new OrderPayScheduleDeliveryRepository());
 	}
 
@@ -266,7 +265,9 @@ class OrderPayScheduleDeliveryServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Matrix cells — 3 starter cells (Task 19a)
+	// Matrix cells
+	// DueAmt formula: min(receiptValue, max(0, orderGrandTotal − sumPreviousReceipts))
+	// BaseAmt formula: orderGrandTotal for ALL rows
 	// -----------------------------------------------------------------------
 
 	static Stream<TestCase> matrixCells()
@@ -275,7 +276,8 @@ class OrderPayScheduleDeliveryServiceTest
 
 		// ----------------------------------------------------------------
 		// Cell 1 — noReceipts
-		// AC #1: no receipts → 1 remainder row only, BaseAmt = order.GrandTotal, Pending
+		// AC #1: no receipts → 1 remainder row only, BaseAmt = orderGrandTotal, Pending
+		// DueAmt = orderGrandTotal = 68654.40 (no receipts absorbed any capacity)
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("noReceipts")
@@ -283,7 +285,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.build())
 				.expectedRow(ExpectedRow.builder()
 						.baseAmt(new BigDecimal("68654.40"))
-						.dueAmt(new BigDecimal("48058.08"))   // 68654.40 × 70 %
+						.dueAmt(new BigDecimal("68654.40"))   // full orderGrandTotal (no receipts)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -293,6 +295,8 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 2 — R1_only_noInvoice
 		// AC #3: 1 receipt, no invoice → 1 sub-row (Pending) + 1 remainder row (Pending)
+		// R1 DueAmt = min(31808, 68654.40) = 31808
+		// Remainder DueAmt = 68654.40 − 31808 = 36846.40
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("R1_only_noInvoice")
@@ -300,15 +304,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1NoInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))   // 31808 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))   // 68654.40 − 31808
-						.dueAmt(new BigDecimal("25792.48"))    // 36846.40 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // 68654.40 − 31808
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -325,15 +329,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithPartialCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -354,15 +358,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithDraftedInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)  // DR invoice not reflected
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -378,15 +382,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithPartialCOInvoicePaid())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -402,15 +406,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithInvoiceClosed())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -427,15 +431,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithReversedInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)  // RE → C_Invoice_ID cleared
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -445,6 +449,9 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 8 — R1R2_bothNoInvoice (2 receipts, no invoices)
 		// Both sub-rows Pending; no remainder (over-delivery R1+R2=70000 > 68654.40)
+		// R1 DueAmt = min(31808, 68654.40) = 31808
+		// R2 DueAmt = min(38192, 68654.40 − 31808) = min(38192, 36846.40) = 36846.40
+		// Remainder = 68654.40 − 70000 < 0 → omitted
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("R1R2_bothNoInvoice_overDelivery")
@@ -453,20 +460,20 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2NoInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))   // 38192 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
 						.build())
-				// no remainder row — over-delivery, remainder BaseAmt ≤ 0
+				// no remainder row — over-delivery, remainder DueAmt ≤ 0
 				.build());
 
 		// ----------------------------------------------------------------
@@ -480,15 +487,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2NoInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
@@ -506,15 +513,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2WithFinalCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -532,15 +539,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2WithFinalCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -565,15 +572,15 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -590,15 +597,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2NoInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)  // DR ignored
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
@@ -615,15 +622,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2WithFinalCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)  // RE → C_Invoice_ID cleared
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -641,15 +648,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1NoInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -659,6 +666,9 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 16 — R1R2_underDelivery_remainderPresent_R1CO_R2noInvoice
 		// R1 (20,000) + R2_under (30,000) = 50,000 < 68,654.40 → remainder present
+		// R1 DueAmt = min(20000, 68654.40) = 20000
+		// R2 DueAmt = min(30000, 68654.40 − 20000) = min(30000, 48654.40) = 30000
+		// Remainder DueAmt = 68654.40 − 50000 = 18654.40
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("R1R2_underDelivery_remainderPresent")
@@ -678,22 +688,22 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))   // 20000 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))   // min(20000, 68654.40) = 20000
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("30000.00"))
-						.dueAmt(new BigDecimal("21000.00"))   // 30000 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("30000.00"))   // min(30000, 48654.40) = 30000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("18654.40"))   // 68654.40 − 20000 − 30000
-						.dueAmt(new BigDecimal("13058.08"))    // 18654.40 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("18654.40"))   // 68654.40 − 20000 − 30000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -709,7 +719,7 @@ class OrderPayScheduleDeliveryServiceTest
 				.inputs(baseInputs().build())
 				.expectedRow(ExpectedRow.builder()
 						.baseAmt(new BigDecimal("68654.40"))
-						.dueAmt(new BigDecimal("48058.08"))
+						.dueAmt(new BigDecimal("68654.40"))   // full orderGrandTotal
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -725,15 +735,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithInvoiceClosed())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -746,8 +756,9 @@ class OrderPayScheduleDeliveryServiceTest
 
 		// ----------------------------------------------------------------
 		// Cell 19 — exactDelivery (R1 + R2_under = order.GrandTotal exactly)
-		// Remainder BaseAmt = 0 → remainder row absent
+		// Remainder DueAmt = 0 → remainder row absent
 		// Use: 31808 + 36846.40 = 68654.40 exactly
+		// R2 DueAmt = min(36846.40, 68654.40 − 31808) = min(36846.40, 36846.40) = 36846.40
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("exactDelivery_noRemainderRow")
@@ -760,20 +771,20 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // exact = remaining capacity
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
 						.build())
-				// no remainder row — exact delivery → BaseAmt of remainder = 0
+				// no remainder row — exact delivery → DueAmt of remainder = 0
 				.build());
 
 		// ----------------------------------------------------------------
@@ -788,15 +799,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r2WithFinalCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -823,15 +834,15 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)   // RE → C_Invoice_ID cleared
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
@@ -856,15 +867,15 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Paid)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)   // RE → cleared
@@ -889,15 +900,15 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("38192.00"))
-						.dueAmt(new BigDecimal("26734.40"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))   // capped: min(38192, 36846.40)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
@@ -924,22 +935,22 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))   // min(20000, 68654.40) = 20000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("30000.00"))
-						.dueAmt(new BigDecimal("21000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("30000.00"))   // min(30000, 48654.40) = 30000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("18654.40"))
-						.dueAmt(new BigDecimal("13058.08"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("18654.40"))   // 68654.40 − 20000 − 30000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -949,7 +960,7 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 25 — 3partials_R1R2R3_allPending (TC9 setup)
 		// Three receipts, no invoices yet → 3 sub-rows, remainder if under-delivery
-		// R1=20000, R2=20000, R3=20000 → total=60000 < 68654.40; remainder=8654.40
+		// R1=20000, R2=20000, R3=20000 → total=60000 < 68654.40; remainder DueAmt=8654.40
 		// ----------------------------------------------------------------
 		final InOutId R3_ID = InOutId.ofRepoId(103);
 		cells.add(TestCase.builder()
@@ -972,29 +983,29 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))   // min(20000, 68654.40) = 20000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))   // min(20000, 48654.40) = 20000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))   // min(20000, 28654.40) = 20000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R3_ID)
 						.cInvoiceId(null)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("8654.40"))   // 68654.40 − 60000
-						.dueAmt(new BigDecimal("6058.08"))    // 8654.40 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("8654.40"))    // 68654.40 − 60000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -1035,29 +1046,29 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R2_ID)
 						.cInvoiceId(INV2_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R3_ID)
 						.cInvoiceId(INV3_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("8654.40"))
-						.dueAmt(new BigDecimal("6058.08"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("8654.40"))    // 68654.40 − 60000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -1097,29 +1108,29 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)   // RE → Pending
 						.mInOutId(R2_ID)
 						.cInvoiceId(null)   // RE → cleared
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("20000.00"))
-						.dueAmt(new BigDecimal("14000.00"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("20000.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R3_ID)
 						.cInvoiceId(INV3_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("8654.40"))
-						.dueAmt(new BigDecimal("6058.08"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("8654.40"))    // 68654.40 − 60000
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -1129,6 +1140,7 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 28 — singleLargeReceipt_exactlyOrderTotal_noRemainderRow
 		// One single receipt = order.GrandTotal exactly → no remainder
+		// DueAmt = min(68654.40, 68654.40) = 68654.40
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("singleReceipt_exactlyOrderTotal_noRemainderRow")
@@ -1141,7 +1153,7 @@ class OrderPayScheduleDeliveryServiceTest
 						.build())
 				.expectedRow(ExpectedRow.builder()
 						.baseAmt(new BigDecimal("68654.40"))
-						.dueAmt(new BigDecimal("48058.08"))
+						.dueAmt(new BigDecimal("68654.40"))   // = orderGrandTotal (exact delivery)
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
@@ -1152,7 +1164,7 @@ class OrderPayScheduleDeliveryServiceTest
 		// ----------------------------------------------------------------
 		// Cell 29 — idempotence_sameInputTwice
 		// Calling computeDesired with the same inputs twice yields same result.
-		// This cell just verifies the basic no-receipt case is consistent;
+		// This cell just verifies the basic R1+CO case is consistent;
 		// idempotence at the service level is asserted separately.
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
@@ -1161,15 +1173,15 @@ class OrderPayScheduleDeliveryServiceTest
 						.completedReceipt(r1WithPartialCOInvoice())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("31808.00"))
-						.dueAmt(new BigDecimal("22265.60"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("31808.00"))
 						.status(X_C_OrderPaySchedule.STATUS_Awaiting_Pay)
 						.mInOutId(R1_ID)
 						.cInvoiceId(INV1_ID)
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("36846.40"))
-						.dueAmt(new BigDecimal("25792.48"))
+						.baseAmt(new BigDecimal("68654.40"))
+						.dueAmt(new BigDecimal("36846.40"))
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(null)
 						.cInvoiceId(null)
@@ -1178,7 +1190,8 @@ class OrderPayScheduleDeliveryServiceTest
 
 		// ----------------------------------------------------------------
 		// Cell 30 — overDelivery_singleReceipt_noRemainder
-		// Single receipt > order.GrandTotal → no remainder row
+		// Single receipt > order.GrandTotal → DueAmt capped at orderGrandTotal, no remainder row
+		// DueAmt = min(70000, 68654.40) = 68654.40
 		// ----------------------------------------------------------------
 		cells.add(TestCase.builder()
 				.name("overDelivery_singleReceipt_noRemainderRow")
@@ -1190,13 +1203,13 @@ class OrderPayScheduleDeliveryServiceTest
 								.build())
 						.build())
 				.expectedRow(ExpectedRow.builder()
-						.baseAmt(new BigDecimal("70000.00"))
-						.dueAmt(new BigDecimal("49000.00"))   // 70000 × 70 %
+						.baseAmt(new BigDecimal("68654.40"))    // always = orderGrandTotal
+						.dueAmt(new BigDecimal("68654.40"))     // min(70000, 68654.40) = 68654.40
 						.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 						.mInOutId(R1_ID)
 						.cInvoiceId(null)
 						.build())
-				// no remainder row — over-delivery → BaseAmt remainder = 68654.40 − 70000 < 0
+				// no remainder row — over-delivery → DueAmt of remainder = 68654.40 − 70000 < 0
 				.build());
 
 		return cells.stream();
@@ -1210,7 +1223,6 @@ class OrderPayScheduleDeliveryServiceTest
 	@MethodSource("matrixCells")
 	void computeDesired_matchesTruthTable(@NonNull final TestCase tc)
 	{
-		// OrderPayScheduleDeliveryService.computeDesired does not exist yet → RED compile
 		final List<DesiredDeliveryRow> actual = service.computeDesired(tc.getInputs());
 
 		final SoftAssertions sa = new SoftAssertions();

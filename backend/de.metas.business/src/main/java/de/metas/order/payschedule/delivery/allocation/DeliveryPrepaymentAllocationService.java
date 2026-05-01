@@ -294,18 +294,7 @@ public class DeliveryPrepaymentAllocationService
 
 	/**
 	 * Orchestrates the prepayment allocation for a newly completed financial purchase invoice.
-	 *
-	 * <p>Steps:
-	 * <ol>
-	 *   <li>Look up the LC% for the order's payment term.
-	 *   <li>Look up the iter-2 proforma-prepayment payment for the order.
-	 *   <li>Get its remaining available amount ({@code IPaymentDAO.getAvailableAmount}).
-	 *   <li>Compute the matched receipt value via {@code M_MatchInv} traversal.
-	 *   <li>Determine the allocation amount using
-	 *       {@link #computeAllocation(Money, IsPartialInvoiceFlag, Money, Percent)}.
-	 *   <li>Create and complete a {@code C_AllocationHdr} + {@code C_AllocationLine} via
-	 *       {@code IAllocationBL.newBuilder()} (explicit amount — never auto-allocate).
-	 * </ol>
+	 * Call this from forward-mode (invoice AFTER_COMPLETE) — it looks up the prepayment via DAO.
 	 *
 	 * <p>Early-exits silently (no error) when:
 	 * <ul>
@@ -314,10 +303,6 @@ public class DeliveryPrepaymentAllocationService
 	 *   <li>The computed allocation amount is ≤ 0 (receipt value is zero; defensive guard).
 	 * </ul>
 	 *
-	 * <p><strong>Call only on TIMING_AFTER_COMPLETE</strong> — not on reversal; reversal of the
-	 * allocation is handled automatically by the standard allocation-reversal cascade
-	 * ({@code MAllocationHdr.reverseCorrectIt()}).
-	 *
 	 * @param invoice  the completing financial AP invoice
 	 * @param orderId  order linked to the invoice (resolved by the caller via {@code M_MatchInv})
 	 */
@@ -325,17 +310,30 @@ public class DeliveryPrepaymentAllocationService
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final OrderId orderId)
 	{
-		// 1. Look up the LC% for this order's payment term
-		final Percent lcPercent = lookupLcPercent(orderId);
-
-		// 2. Find the proforma-prepayment payment
 		final PaymentId prepayPaymentId = lookupProformaPrepaymentPayment(orderId);
 		if (prepayPaymentId == null)
 		{
 			return;
 		}
+		allocateForInvoice(invoice, orderId, prepayPaymentId);
+	}
 
-		// 3. Get remaining available amount on the payment
+	/**
+	 * Core allocation logic. Used by both forward-mode ({@link #allocateForInvoice(I_C_Invoice, OrderId)})
+	 * and retro-mode ({@link #retroAllocateUnallocatedInvoices(OrderId, PaymentId)}).
+	 *
+	 * <p>By accepting the {@code prepayPaymentId} directly this overload works even when the
+	 * payment is in-flight (TIMING_AFTER_COMPLETE fired before DocStatus="CO" was persisted).
+	 */
+	private void allocateForInvoice(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final OrderId orderId,
+			@NonNull final PaymentId prepayPaymentId)
+	{
+		// 1. Look up the LC% for this order's payment term
+		final Percent lcPercent = lookupLcPercent(orderId);
+
+		// 2. Get remaining available amount on the payment
 		final I_C_Payment prepayPayment = paymentDAO.getById(prepayPaymentId);
 		final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(prepayPayment.getC_Currency_ID());
 		final BigDecimal rawAvailableAmt = paymentDAO.getAvailableAmount(prepayPaymentId);
@@ -350,10 +348,10 @@ public class DeliveryPrepaymentAllocationService
 			return;
 		}
 
-		// 4. Compute matched receipt value via M_MatchInv
+		// 3. Compute matched receipt value via M_MatchInv
 		final Money receiptWithTax = computeMatchedReceiptValueWithTax(invoice);
 
-		// 5. Compute the allocation amount per the §3.3 rule
+		// 4. Compute the allocation amount per the §3.3 rule
 		final IsPartialInvoiceFlag flag = IsPartialInvoiceFlag.fromBoolean(invoice.isPartialInvoice());
 		final Money allocAmt = computeAllocation(receiptWithTax, flag, remainingPrepay, lcPercent);
 
@@ -362,7 +360,7 @@ public class DeliveryPrepaymentAllocationService
 			return;
 		}
 
-		// 6. Create and complete the allocation (explicit amount — NEVER autoAllocate)
+		// 5. Create and complete the allocation (explicit amount — NEVER autoAllocate)
 		final Timestamp dateAcct = TimeUtil.asTimestamp(invoice.getDateAcct());
 		final Timestamp dateTrx = TimeUtil.asTimestamp(invoice.getDateInvoiced());
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -405,6 +403,13 @@ public class DeliveryPrepaymentAllocationService
 	 * completed before the LC payment, forward-mode allocation was a no-op (the prepayment
 	 * was not yet completed). This method picks up those orphans.
 	 *
+	 * <p><b>Why {@code prepayPaymentId} is passed directly</b>: {@code TIMING_AFTER_COMPLETE}
+	 * fires inside {@code MPayment.completeIt()} BEFORE the framework persists
+	 * {@code DocStatus="CO"}. At that instant the DB still shows {@code DocStatus="IP"}, so a
+	 * DAO query for {@code DocStatus IN (CO, CL)} would return nothing. The caller resolves
+	 * the payment from the in-memory model and passes it here directly, bypassing the stale
+	 * DB state.
+	 *
 	 * <p><b>Idempotency</b>: a per-invoice query-level filter (active C_AllocationLine linking
 	 * the invoice to the prepayment with an active C_AllocationHdr) excludes invoices already
 	 * allocated. We do NOT rely solely on {@link #allocateForInvoice}'s
@@ -419,14 +424,10 @@ public class DeliveryPrepaymentAllocationService
 	 *
 	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a> Phase 5.5
 	 */
-	public void retroAllocateUnallocatedInvoices(@NonNull final OrderId orderId)
+	public void retroAllocateUnallocatedInvoices(
+			@NonNull final OrderId orderId,
+			@NonNull final PaymentId prepayPaymentId)
 	{
-		final PaymentId prepayPaymentId = lookupProformaPrepaymentPayment(orderId);
-		if (prepayPaymentId == null)
-		{
-			return;
-		}
-
 		final List<I_C_Invoice> candidateInvoices = findFinancialPurchaseInvoicesForOrder(orderId);
 		for (final I_C_Invoice invoice : candidateInvoices)
 		{
@@ -435,7 +436,7 @@ public class DeliveryPrepaymentAllocationService
 			{
 				continue;
 			}
-			allocateForInvoice(invoice, orderId);
+			allocateForInvoice(invoice, orderId, prepayPaymentId);
 		}
 	}
 

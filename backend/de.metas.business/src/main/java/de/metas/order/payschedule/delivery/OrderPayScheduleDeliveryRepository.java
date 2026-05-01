@@ -155,6 +155,7 @@ public class OrderPayScheduleDeliveryRepository
 
 			row.setBaseAmt(d.getBaseAmt());
 			row.setDueAmt(d.getDueAmt());
+			row.setDueAmt_Actual(d.getDueAmt());
 			row.setStatus(d.getStatus());
 			row.setM_InOut_ID(d.getMInOutId() != null ? d.getMInOutId().getRepoId() : 0);
 			row.setC_Invoice_ID(d.getCInvoiceId() != null ? d.getCInvoiceId().getRepoId() : 0);

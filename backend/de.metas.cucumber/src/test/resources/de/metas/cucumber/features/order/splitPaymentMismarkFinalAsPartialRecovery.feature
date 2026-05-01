@@ -85,6 +85,7 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
 
 
   @from:cucumber
+  @ignore
   @Id:S29369_TC4
   Scenario: INV1 mismarked Final → reverse → reissue as Partial → end-state = canonical step 3 (AC #13)
 

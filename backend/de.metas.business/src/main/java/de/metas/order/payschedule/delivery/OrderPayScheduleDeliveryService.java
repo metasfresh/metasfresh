@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,20 +86,23 @@ public class OrderPayScheduleDeliveryService
 	 * <p>Rules (REQUIREMENTS.md §3.1 + §3.2 + AC #1, #3, #5, #7, #10, #19):
 	 * <ul>
 	 *   <li>One sub-row per completed receipt ({@code ReceiptInfo.mInOutId}).
-	 *   <li>One remainder row ({@code mInOutId = null}) with
-	 *       {@code BaseAmt = max(0, orderGrandTotal − Σ receipt.withTaxValue)}. Omitted if
-	 *       {@code BaseAmt ≤ 0} (over-delivery).
+	 *   <li>One remainder row ({@code mInOutId = null}). Omitted when
+	 *       {@code Σ receipt.withTaxValue ≥ orderGrandTotal} (over-delivery).
+	 *   <li>{@code BaseAmt = orderGrandTotal} for every row (receipt sub-row and remainder).
+	 *   <li>{@code DueAmt} for a receipt sub-row = {@code min(receipt.withTaxValue, remaining)}
+	 *       where {@code remaining = max(0, orderGrandTotal − Σ previousReceipts)}.
+	 *       In the over-delivery case the last receipt's DueAmt is capped at the remaining
+	 *       capacity; we still accumulate the full {@code receipt.withTaxValue} into the
+	 *       running sum so the remainder row is correctly suppressed.
+	 *   <li>{@code DueAmt} for the remainder row = {@code max(0, orderGrandTotal − Σ receipts)}.
 	 *   <li>Status derivation per receipt: if no matched invoice (or DR/RE) → Pending;
 	 *       if CO/CL with {@code OpenAmt > 0} → Awaiting_Pay; if CO/CL with
 	 *       {@code OpenAmt = 0} → Paid.
 	 *   <li>Reversed invoice (RE) → C_Invoice_ID cleared on the sub-row, Status = Pending.
 	 * </ul>
-	 *
-	 * <p>{@code DueAmt = round(BaseAmt × deliveryPercent / 100, 2)} (HALF_UP).
 	 */
 	public List<DesiredDeliveryRow> computeDesired(@NonNull final DeliveryStepInputs inputs)
 	{
-		final BigDecimal deliveryPercent = inputs.getDeliveryPercent();
 		final BigDecimal orderGrandTotal = inputs.getOrderGrandTotal().toBigDecimal();
 
 		final List<DesiredDeliveryRow> result = new ArrayList<>();
@@ -108,15 +110,20 @@ public class OrderPayScheduleDeliveryService
 
 		for (final DeliveryStepInputs.ReceiptInfo receipt : inputs.getCompletedReceipts())
 		{
-			final BigDecimal baseAmt = receipt.getWithTaxValue().toBigDecimal();
-			sumReceiptValues = sumReceiptValues.add(baseAmt);
+			final BigDecimal receiptValue = receipt.getWithTaxValue().toBigDecimal();
 
-			final BigDecimal dueAmt = computeDueAmt(baseAmt, deliveryPercent);
+			// Cap DueAmt at remaining order capacity (handles over-delivery: last receipt may exceed total)
+			final BigDecimal remaining = orderGrandTotal.subtract(sumReceiptValues).max(BigDecimal.ZERO);
+			final BigDecimal dueAmt = receiptValue.min(remaining);
+
+			// Accumulate full receipt value (not the capped dueAmt) so the remainder calculation is correct
+			sumReceiptValues = sumReceiptValues.add(receiptValue);
+
 			final String status = deriveStatus(receipt.getInvoiceDocStatus(), receipt.getInvoiceOpenAmt());
 			final InvoiceId cInvoiceId = resolveInvoiceId(receipt.getMatchedInvoiceId(), receipt.getInvoiceDocStatus());
 
 			result.add(DesiredDeliveryRow.builder()
-					.baseAmt(baseAmt)
+					.baseAmt(orderGrandTotal)
 					.dueAmt(dueAmt)
 					.status(status)
 					.mInOutId(receipt.getMInOutId())
@@ -125,13 +132,13 @@ public class OrderPayScheduleDeliveryService
 					.build());
 		}
 
-		// Remainder row: max(0, orderGrandTotal − Σ receipts); omit if ≤ 0
-		final BigDecimal remainderBase = orderGrandTotal.subtract(sumReceiptValues);
-		if (remainderBase.compareTo(BigDecimal.ZERO) > 0)
+		// Remainder row: max(0, orderGrandTotal − Σ receipts); omit if ≤ 0 (over-delivery)
+		final BigDecimal remainderDue = orderGrandTotal.subtract(sumReceiptValues);
+		if (remainderDue.compareTo(BigDecimal.ZERO) > 0)
 		{
 			result.add(DesiredDeliveryRow.builder()
-					.baseAmt(remainderBase)
-					.dueAmt(computeDueAmt(remainderBase, deliveryPercent))
+					.baseAmt(orderGrandTotal)
+					.dueAmt(remainderDue)
 					.status(X_C_OrderPaySchedule.STATUS_Pending_Ref)
 					.mInOutId(null)
 					.cInvoiceId(null)
@@ -146,15 +153,6 @@ public class OrderPayScheduleDeliveryService
 	// -----------------------------------------------------------------------
 	// Private helpers
 	// -----------------------------------------------------------------------
-
-	private static BigDecimal computeDueAmt(
-			@NonNull final BigDecimal baseAmt,
-			@NonNull final BigDecimal deliveryPercent)
-	{
-		return baseAmt
-				.multiply(deliveryPercent)
-				.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-	}
 
 	/**
 	 * Derives the sub-row status from the invoice's DocStatus and open amount.

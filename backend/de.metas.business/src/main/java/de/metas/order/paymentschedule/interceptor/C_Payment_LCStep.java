@@ -27,6 +27,7 @@ import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.order.OrderId;
 import de.metas.order.payschedule.delivery.allocation.DeliveryPrepaymentAllocationService;
 import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
+import de.metas.payment.PaymentId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -107,7 +108,9 @@ public class C_Payment_LCStep
 		// Phase 5.5: retro-allocate any CO/CL financial-purchase invoices for this order that
 		// completed BEFORE the LC payment (real-life docs come in any order). Idempotent —
 		// the service skips invoices already allocated to this prepayment.
-		deliveryPrepayService.retroAllocateUnallocatedInvoices(orderId);
+		// Pass PaymentId directly: TIMING_AFTER_COMPLETE fires before DocStatus="CO" is persisted
+		// to the DB, so a DAO query for CO/CL would miss this in-flight payment.
+		deliveryPrepayService.retroAllocateUnallocatedInvoices(orderId, PaymentId.ofRepoId(payment.getC_Payment_ID()));
 	}
 
 	@DocValidate(timings = {

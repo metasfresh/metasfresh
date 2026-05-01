@@ -117,7 +117,7 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     And the order identified by lcOrder has following pay schedules
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
       | LC                | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
-      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
+      | OD                | 70000.00 | 49000.00 | -             | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
     And metasfresh contains Pay Selection
       | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
       | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
@@ -133,7 +133,7 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     And the order identified by lcOrder has following pay schedules
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid | M_InOut_ID | C_Invoice_ID |
       | LC                | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | Y      | -          | -            |
-      | OD                | 70000.00 | 49000.00 | 49000.00      | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
+      | OD                | 70000.00 | 49000.00 | -             | 2026-04-24    | 2026-04-24 | WP     | N      | -          | -            |
 
     
     
