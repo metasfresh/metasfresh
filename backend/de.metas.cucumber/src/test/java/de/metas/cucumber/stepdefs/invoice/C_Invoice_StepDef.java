@@ -144,6 +144,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
@@ -196,6 +197,10 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 * </ul>
+	 * <p>
+	 * me03#29366: Added validation for {@code DueDate} — the persisted due date populated
+	 * on completion. Pin tests directly on this column so a regression surfaces at the
+	 * invoice step, not three steps later in dunning.
 	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -228,6 +233,19 @@ public class C_Invoice_StepDef
 						.appendParametersToMessage()
 						.setParameter("action:", action);
 		}
+	}
+
+	@And("^the reversal of invoice (.*) is identified by (.*)$")
+	public void identify_reversal_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final String reversalIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+		final int reversalId = invoice.getReversal_ID();
+		Check.assume(reversalId > 0, "Invoice {} must have a reversal", invoiceIdentifier);
+		final I_C_Invoice reversal = InterfaceWrapperHelper.load(reversalId, I_C_Invoice.class);
+		invoiceTable.putOrReplace(StepDefDataIdentifier.ofString(reversalIdentifier), reversal);
 	}
 
 	@And("load C_Invoice:")
@@ -476,6 +494,15 @@ public class C_Invoice_StepDef
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
+				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DueDate)
+				.ifPresent(dueDate -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDueDate(), zoneId))
+							.as("DueDate for Identifier=%s", identifierStr)
+							.isEqualTo(dueDate);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_ExternalId)
@@ -826,6 +853,9 @@ public class C_Invoice_StepDef
 				.ifPresent(dataSourceId -> invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId()));
 
 		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+
+		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
+				.ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 
 		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
 				.ifPresent(externalSystemValue -> {

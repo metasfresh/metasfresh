@@ -1134,8 +1134,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// ARC (or ARC reversal): DR to clear receivable
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// ARC (or ARC reversal): DR to clear the CM's receivable (CR on invoice side).
+				// allocatedAmt is negative for the original CM and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 			else
 			{
@@ -1148,13 +1150,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// APC (or APC reversal): CR to clear liability
-				factLineBuilder.setAmtSource(null, allocatedAmt.negate());
+				// APC (or APC reversal): CR to clear the CM's liability (DR on invoice side).
+				// allocatedAmt is positive for the original CM and negative for the reversal,
+				// so we use it directly (without negate) to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(null, allocatedAmt);
 			}
 			else
 			{
-				// API: DR to clear liability
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// API (or API reversal): DR to clear the invoice's liability (CR on invoice side).
+				// allocatedAmt is negative for the original invoice and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 		}
 
@@ -1546,7 +1552,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1555,7 +1561,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1568,7 +1574,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1577,7 +1583,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1606,7 +1612,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1616,7 +1622,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1629,7 +1635,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1639,7 +1645,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
 
@@ -1669,7 +1675,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(taxAmtAdjustment, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 
@@ -1678,7 +1684,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(null, taxAmtAdjustment)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1701,7 +1707,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(amountCMAdjusted, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1711,7 +1717,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
 					}

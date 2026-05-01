@@ -208,6 +208,29 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_DueAmt = "DueAmt";
 
 	/**
+	 * Set Actual due amount.
+	 * Actual amount allocated to this pay-schedule step
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDueAmt_Actual (@javax.annotation.Nullable BigDecimal DueAmt_Actual);
+
+	/**
+	 * Get Actual due amount.
+	 * Actual amount allocated to this pay-schedule step
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@javax.annotation.Nullable BigDecimal getDueAmt_Actual();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_DueAmt_Actual = new ModelColumn<>(I_C_OrderPaySchedule.class, "DueAmt_Actual", null);
+	String COLUMNNAME_DueAmt_Actual = "DueAmt_Actual";
+
+	/**
 	 * Set Due Date.
 	 * Date when the payment is due
 	 *

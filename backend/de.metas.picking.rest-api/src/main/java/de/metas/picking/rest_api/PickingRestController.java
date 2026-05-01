@@ -59,6 +59,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
@@ -72,8 +73,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/picking")
 @RestController
 @Profile(Profiles.PROFILE_App)
@@ -253,12 +256,34 @@ public class PickingRestController
 		}
 		final JsonHU hu = hus.get(0);
 
-		return JsonHUInfo.builder()
+		final JsonHUInfo.JsonHUInfoBuilder builder = JsonHUInfo.builder()
 				.id(hu.getId())
 				.unitType(hu.getUnitType())
 				.qtyTUs(hu.getQtyTUs())
-				.huQRCode(hu.getQrCode())
-				.build();
+				.huQRCode(hu.getQrCode());
+
+		// Return product info for overdelivery detection (see PickLineScanScreen)
+		final String productNo = request.getProductNo();
+		if (productNo != null)
+		{
+			hu.getProducts().stream()
+					.filter(p -> productNo.equals(p.getProductValue()))
+					.findFirst()
+					.ifPresent(p -> {
+						builder.productNo(p.getProductValue());
+						try
+						{
+							builder.productQty(new BigDecimal(p.getQty()));
+						}
+						catch (final NumberFormatException e)
+						{
+							log.warn("Cannot parse HU product qty '{}' for product {}. Overdelivery prompt will not fire.", p.getQty(), productNo, e);
+						}
+						builder.productUom(p.getUom());
+					});
+		}
+
+		return builder.build();
 	}
 
 	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)

@@ -697,22 +697,35 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//
 		// TaxCredit DR
+		final ImmutableList.Builder<Fact> rcFacts = ImmutableList.builder();
 		for (final DocTax docTax : taxes)
 		{
 			if (docTax.isReverseCharge())
 			{
-				fact.createLine()
+				// Reverse charge: VSt DR + USt CR in a SEPARATE Fact instance
+				// to avoid FactTrxStrategy pairing conflict (2 DR + 2 CR in same Fact).
+				// VATCode is resolved per-leg: T_Credit (input, KZ 67) uses IsSOTrx=N,
+				// T_Due (output §13b, KZ 84/85) uses IsSOTrx=Y — see §13b UStG + UStVA.
+				final Fact rcFact = newFact(as);
+				// VSt (Vorsteuer / input tax) — debit the tax receivable
+				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
-				fact.createLine()
+				// USt (Umsatzsteuer / output tax) — credit the tax payable
+				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
-						.setC_Tax_ID(docTax.getTaxId())
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				rcFact.forEach(fl -> {
+					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
+					fl.setLocationFromOrg(fl.getOrgId(), false);
+				});
+				rcFacts.add(rcFact);
 			}
 			else
 			{
@@ -764,7 +777,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return ImmutableList.of(fact);
+		return ImmutableList.<Fact>builder().add(fact).addAll(rcFacts.build()).build();
 	}
 
 	/**
@@ -867,22 +880,34 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		//
 		// TaxCredit CR
+		final ImmutableList.Builder<Fact> rcFacts = ImmutableList.builder();
 		for (final DocTax docTax : taxes)
 		{
 			if (docTax.isReverseCharge())
 			{
-				fact.createLine()
+				// Reverse charge: VSt CR + USt DR in a SEPARATE Fact instance.
+				// Per-leg VATCode: T_Credit (§13b input, UStVA KZ 67)    → IsSOTrx=N.
+				// Per-leg VATCode: T_Due    (§13b output, UStVA KZ 84/85) → IsSOTrx=Y.
+				final Fact rcFact = newFact(as);
+				// VSt (Vorsteuer / input tax) — credit to reverse the original VSt debit
+				rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
-				fact.createLine()
+				// USt (Umsatzsteuer / output tax) — debit to reverse the original USt credit
+				rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
-						.setC_Tax_ID(docTax.getTaxId())
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
+						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				rcFact.forEach(fl -> {
+					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
+					fl.setLocationFromOrg(fl.getOrgId(), false);
+				});
+				rcFacts.add(rcFact);
 			}
 			else
 			{
@@ -933,7 +958,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return ImmutableList.of(fact);
+		return ImmutableList.<Fact>builder().add(fact).addAll(rcFacts.build()).build();
 	}
 
 	private DocTaxesList applyUserChangesAndRecomputeTaxes(@NonNull final Fact fact)

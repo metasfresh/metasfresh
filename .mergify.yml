@@ -97,7 +97,6 @@ pull_request_rules:
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
-              - base=temporary_test202412_hotfix
               - base=green_oak_hotfix
               - base=mighty_pegasus_hotfix
               - base=task_force_hotfix
@@ -117,6 +116,7 @@ pull_request_rules:
               - base=science_vessel_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
+              - base=swift_eagle_hotfix
               - base=tasty_ham_hotfix
               - base=vampire_textbook_hotfix
               - base=yoyo_hotfix
@@ -124,7 +124,6 @@ pull_request_rules:
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=taloned_owl_release
               - base=organic_goat_release
-              - base=temporary_test202412_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
@@ -134,6 +133,7 @@ pull_request_rules:
               - base=intensive_care_release
               - base=modus_operandi_release
               - base=soft_panda_release
+              - base=swift_eagle_release
               - base=vampire_textbook_release
               - base=science_vessel_release
               - base=memorable_shiny_release
@@ -142,7 +142,6 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
-      delete_head_branch: {}
 
   - name: Block direct merges between protected branches (use auto-port instead)
     conditions:
@@ -198,3 +197,5 @@ pull_request_rules:
       queue:
         name: merge-queue
 
+merge_protections_settings:
+  reporting_method: check-runs

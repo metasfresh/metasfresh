@@ -157,7 +157,9 @@ public class ShipmentScheduleWithHUService
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
-		Adempiere.enableUnitTestMode();
+		Adempiere.assertUnitTestMode();
+		// Spring context returns non-null in unit test mode even though static analysis can't prove it
+		// noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(
@@ -180,8 +182,9 @@ public class ShipmentScheduleWithHUService
 		 */
 		@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
 		@NonNull @Builder.Default QtyToDeliverMap qtyToDeliverOverrides = QtyToDeliverMap.EMPTY;
-		@Builder.Default boolean isFailIfNoPickedHUs = true;
+		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
 
+		@Nullable
 		public StockQtyAndUOMQty getQtyToDeliverOverride(@NonNull final ShipmentScheduleId shipmentScheduleId)
 		{
 			return qtyToDeliverOverrides.getQtyToDeliver(shipmentScheduleId);
@@ -216,14 +219,27 @@ public class ShipmentScheduleWithHUService
 		@Nullable StockQtyAndUOMQty quantityToDeliverOverride;
 
 		/**
-		 * Fails if no picked HUs were found.
+		 * When {@code true}, throws an exception if no picked HUs are found.
+		 * <p>
+		 * Behavior:
+		 * <ul>
+		 * <li><b>Single-schedule mode</b> ({@code isBatchProcessing()=false}): Exception is thrown when {@code true}</li>
+		 * <li><b>Batch mode</b> ({@code isBatchProcessing()=true}): Always skips with warning (this flag is ignored)</li>
+		 * </ul>
 		 * Applies only when <code>quantityType</code> is PickedQty.
 		 */
-		@Builder.Default boolean isFailIfNoPickedHUs = true;
+		@Builder.Default boolean failOnSingleScheduleWithNoPickedHUs = true;
+
+		/**
+		 * Whether this request is part of a batch (determined by the caller from countUnprocessed()).
+		 * Must remain stable across all schedules in one batch.
+		 */
+		@Builder.Default boolean isBatchProcessing = false;
 
 		public static PrepareForSingleShipmentScheduleRequestBuilder builderFrom(
 				@NonNull final ShipmentScheduleAndJobSchedules schedule,
-				@NonNull final PrepareForShipmentSchedulesRequest request)
+				@NonNull final PrepareForShipmentSchedulesRequest request,
+				final boolean isBatchProcessing)
 		{
 			final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
 
@@ -233,8 +249,9 @@ public class ShipmentScheduleWithHUService
 					.quantityType(request.getQuantityTypeToUse())
 					.onlyLUIds(request.getOnlyLUIds())
 					.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
-					.isFailIfNoPickedHUs(request.isFailIfNoPickedHUs())
+					.failOnSingleScheduleWithNoPickedHUs(request.isFailOnSingleScheduleWithNoPickedHUs())
 					.quantityToDeliverOverride(request.getQtyToDeliverOverride(shipmentScheduleId))
+					.isBatchProcessing(isBatchProcessing)
 					;
 		}
 
@@ -257,6 +274,13 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
+		// Compute batch mode once at the beginning based on unprocessed count.
+		// Must be computed here (not in PrepareForSingleShipmentScheduleRequest) to:
+		// 1. Prevent manual override via builder
+		// 2. Ensure same value used for all schedules in this batch (stable throughout the loop)
+		// 3. Base decision on actual unprocessed count at batch start time
+		final boolean isBatchProcessing = request.getSchedules().countUnprocessed() > 1;
+
 		for (final ShipmentScheduleAndJobSchedules schedule : request.getSchedules())
 		{
 			// Skip already processed candidates
@@ -268,7 +292,7 @@ public class ShipmentScheduleWithHUService
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentSchedule(schedule.getShipmentSchedule()))
 			{
 				final ImmutableList<ShipmentScheduleWithHU> candidates = prepareShipmentSchedulesWithHU(
-						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request)
+						PrepareForSingleShipmentScheduleRequest.builderFrom(schedule, request, isBatchProcessing)
 								.huContext(huContext)
 								.alreadyUsedSourceHuIds(alreadyUsedSourceHuIds)
 								.build()
@@ -757,20 +781,32 @@ public class ShipmentScheduleWithHUService
 	{
 		final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = prepareShipmentScheduleWithHUForPick(request);
 
-		if (request.isFailIfNoPickedHUs() && candidatesForPick.isEmpty())
+		if (candidatesForPick.isEmpty())
 		{
-			// the parameter insists that we use qtyPicked records, but there is none
-			// => nothing to do, basically
+			final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 
 			// If we got no qty picked records just because they were already delivered,
 			// don't fail this workpackage but just log the issue (task 09048)
-			final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 			final boolean wereDelivered = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsQuery(shipmentScheduleId).create().anyMatch();
 			if (wereDelivered)
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", shipmentScheduleId);
 				return Collections.emptyList();
 			}
+
+			// In batch mode: always log warning and skip (failOnSingleScheduleWithNoPickedHUs is ignored)
+			// In single mode: check failOnSingleScheduleWithNoPickedHUs flag
+			if (request.isBatchProcessing() || !request.isFailOnSingleScheduleWithNoPickedHUs())
+			{
+				final String logMessage = request.isBatchProcessing()
+						? "Skipping shipment schedule {} in batch processing - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs)."
+						: "Skipping shipment schedule {} - no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs).";
+
+				Loggables.withLogger(logger, Level.WARN).addLog(logMessage, shipmentScheduleId);
+				return Collections.emptyList();
+			}
+
+			// Single schedule mode with failOnSingleScheduleWithNoPickedHUs=true: throw exception
 			Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", shipmentScheduleId);
 			throw new AdempiereException(MSG_NoQtyPicked);
 		}

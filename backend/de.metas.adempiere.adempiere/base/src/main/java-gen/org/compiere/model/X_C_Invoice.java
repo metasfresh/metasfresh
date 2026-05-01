@@ -843,9 +843,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.sql.Timestamp getDunningGrace() 
+	public java.sql.Timestamp getDunningGrace()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DunningGrace);
+	}
+
+	@Override
+	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
+	{
+		set_Value (COLUMNNAME_DueDate, DueDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDueDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
 	}
 
 	@Override

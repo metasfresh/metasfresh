@@ -177,7 +177,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean onTheFlyPickToPackingInstructions = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
 		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
-		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
+		final boolean failOnSingleScheduleWithNoPickedHUs = !isCloseShipmentSchedules;
 
 		return shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
@@ -186,7 +186,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 						.quantityTypeToUse(quantityTypeToUse)
 						.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 						.qtyToDeliverOverrides(scheduleId2QtyToDeliverOverride)
-						.isFailIfNoPickedHUs(isFailIfNoPickedHUs)
+						.failOnSingleScheduleWithNoPickedHUs(failOnSingleScheduleWithNoPickedHUs)
 						.build()
 		);
 	}

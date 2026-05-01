@@ -58,6 +58,7 @@ public class DeliveryOrder
 	@Nullable CustomDeliveryData customDeliveryData;
 	@Nullable OrderStatus orderStatus;
 	@NonNull Address pickupAddress;
+	@Nullable ContactPerson pickupContact;
 	@NonNull PickupDate pickupDate;
 	/**
 	 * Not received from anywhere (in DraftDeliveryOrderCreator)

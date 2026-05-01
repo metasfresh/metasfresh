@@ -5,12 +5,18 @@ import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 
 /*
  * #%L
@@ -76,5 +82,24 @@ public class PaymentTermService
 	{
 		paymentTermRepository.newLoaderAndSaver()
 				.syncStateToDatabase(ImmutableSet.copyOf(paymentTermIds));
+	}
+
+	public LocalDate computeDueDateFromPaymentTerm(@NonNull final PaymentTermId paymentTermId, @NonNull final LocalDate dateInvoiced)
+	{
+		final Timestamp dueDateTS = DB.getSQLValueTSEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT paymentTermDueDate(?,?)",
+				paymentTermId, TimeUtil.asTimestamp(dateInvoiced)
+		);
+
+		return TimeUtil.asLocalDate(dueDateTS);
+	}
+
+	public int computeDueDays(
+			@NonNull final PaymentTermId paymentTermId,
+			final Date dateInvoiced,
+			final Date date)
+	{
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
 	}
 }

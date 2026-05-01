@@ -27,6 +27,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DeliveryMappingConstants
 {
+	// keep in sync with de.metas.shipper.gateway.commons.mapping.AttributeValue
+
 	// attributeTypes
 	public static final String ATTRIBUTE_TYPE_SENDER_ATTENTION = "SenderAttention";
 	public static final String ATTRIBUTE_TYPE_RECEIVER_ATTENTION = "ReceiverAttention";
@@ -58,10 +60,26 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_SHIPPED_QUANTITY = "ShippedQuantity";
 	public static final String ATTRIBUTE_VALUE_UOM_CODE = "UomCode";
 	public static final String ATTRIBUTE_VALUE_PRODUCT_NAME = "ProductName";
+	public static final String ATTRIBUTE_VALUE_PRODUCT_VALUE = "ProductValue";
+	public static final String ATTRIBUTE_VALUE_CUSTOMS_TARIFF = "CustomsTariff";
 	public static final String ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID = "ShipmentOrderItemId";
 	public static final String ATTRIBUTE_VALUE_UNIT_PRICE = "UnitPrice";
 	public static final String ATTRIBUTE_VALUE_TOTAL_VALUE = "TotalValue";
 	public static final String ATTRIBUTE_VALUE_CURRENCY_CODE = "CurrencyCode";
+	public static final String ATTRIBUTE_VALUE_UNIT_WEIGHT_KG = "UnitWeightKg";
+	public static final String ATTRIBUTE_VALUE_UNIT_WEIGHT_G = "UnitWeightG";
+	public static final String ATTRIBUTE_VALUE_TOTAL_WEIGHT_KG = "TotalWeightKg";
+	public static final String ATTRIBUTE_VALUE_TOTAL_WEIGHT_G = "TotalWeightG";
+
+	// attributeValuesParcel
+	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_KG = "GrossWeightKg";
+	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_G = "GrossWeightG";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM = "PackageLengthCm";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_LENGTH_MM = "PackageLengthMm";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_WIDTH_CM = "PackageWidthCm";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_WIDTH_MM = "PackageWidthMm";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_HEIGHT_CM = "PackageHeightCm";
+	public static final String ATTRIBUTE_VALUE_PACKAGE_HEIGHT_MM = "PackageHeightMm";
 
 	// mappingRules
 	public static final String MAPPING_RULE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";
