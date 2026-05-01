@@ -285,10 +285,14 @@ public class OrderPayScheduleDeliveryRepository
 		// Reversal_ID IS NULL: the receipt is not a reversal document itself.
 		// X_M_InOut.setReversal_ID stores NULL for values < 1, so we must use IS NULL (not = 0).
 		// DocStatus IN (CO,CL) already excludes the reversed original.
+		// "IP" (In Progress) is included because TIMING_AFTER_COMPLETE fires inside
+		// MInOut.completeIt() BEFORE DocumentEngine sets DocStatus = CO. At that moment
+		// the completing receipt still has DocStatus = IP in the DB, so omitting IP would
+		// miss it and produce only the remainder row instead of the expected receipt + remainder.
 		final List<I_M_InOut> receipts = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, false)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL")
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL", "IP")
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, null)
 				.create()
 				.list();
