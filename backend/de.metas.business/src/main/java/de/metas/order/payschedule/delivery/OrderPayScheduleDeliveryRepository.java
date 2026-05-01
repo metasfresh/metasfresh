@@ -55,6 +55,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -266,11 +267,29 @@ public class OrderPayScheduleDeliveryRepository
 
 	/**
 	 * Loads the full {@link DeliveryStepInputs} snapshot for the given order.
+	 *
+	 * <p>Delegates to {@link #loadInputs(OrderId, InOutId)} with {@code null} for the
+	 * completing receipt (used by non-receipt triggers and tests).
+	 */
+	public DeliveryStepInputs loadInputs(@NonNull final OrderId orderId)
+	{
+		return loadInputs(orderId, null);
+	}
+
+	/**
+	 * Loads the full {@link DeliveryStepInputs} snapshot for the given order.
 	 * Assembles order grand total, LC%/Delivery%, completed receipts (with per-receipt
 	 * tax via {@link ReceiptTaxCalculator}), matched invoices (via {@code M_MatchInv}),
 	 * and the iter-2 proforma-prepayment payment.
+	 *
+	 * @param completingReceiptId when called from {@code M_InOut TIMING_AFTER_COMPLETE},
+	 *        the ID of the receipt currently being completed. Its {@code DocStatus} in the
+	 *        DB is still {@code "DR"} at that point (saved before {@code processEx}) —
+	 *        {@code DocumentEngine.prepareIt()} sets {@code "IP"} only in memory, never in the DB.
+	 *        Passing the ID here guarantees the receipt is included even though the
+	 *        {@code DocStatus IN (CO, CL)} filter would miss it.
 	 */
-	public DeliveryStepInputs loadInputs(@NonNull final OrderId orderId)
+	public DeliveryStepInputs loadInputs(@NonNull final OrderId orderId, @Nullable final InOutId completingReceiptId)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.load(orderId, I_C_Order.class);
 		final CurrencyId currencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
@@ -282,21 +301,41 @@ public class OrderPayScheduleDeliveryRepository
 		// 2. Iter-2 proforma-prepayment payment (null if LC step not yet paid)
 		final PaymentId proformaPrepaymentPaymentId = loadProformaPrepaymentPaymentId(orderId);
 
-		// 3. Completed, non-reversal purchase receipts for the order.
+		// 3. Completed / closed, non-reversal purchase receipts for the order.
 		// Reversal_ID IS NULL: the receipt is not a reversal document itself.
 		// X_M_InOut.setReversal_ID stores NULL for values < 1, so we must use IS NULL (not = 0).
-		// DocStatus IN (CO,CL) already excludes the reversed original.
-		// "IP" (In Progress) is included because TIMING_AFTER_COMPLETE fires inside
-		// MInOut.completeIt() BEFORE DocumentEngine sets DocStatus = CO. At that moment
-		// the completing receipt still has DocStatus = IP in the DB, so omitting IP would
-		// miss it and produce only the remainder row instead of the expected receipt + remainder.
-		final List<I_M_InOut> receipts = queryBL.createQueryBuilder(I_M_InOut.class)
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, false)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL", "IP")
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, null)
-				.create()
-				.list();
+		// DocStatus IN (CO, CL) excludes the reversed original.
+		// NOTE: "IP" is intentionally NOT included. When TIMING_AFTER_COMPLETE fires inside
+		// MInOut.completeIt(), DocumentEngine.prepareIt() sets DocStatus="IP" only in memory —
+		// the DB still holds the status from the initial save (typically "DR"). Filtering on
+		// "IP" would therefore never match the completing receipt; use completingReceiptId instead.
+		final List<I_M_InOut> receipts = new ArrayList<>(
+				queryBL.createQueryBuilder(I_M_InOut.class)
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, false)
+						.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, "CO", "CL")
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, null)
+						.create()
+						.list());
+
+		// If a completing receipt was supplied (TIMING_AFTER_COMPLETE path) and is not already
+		// in the CO/CL result set, load it explicitly by ID. Apply the same non-reversal and
+		// purchase-only guards as the main query.
+		if (completingReceiptId != null)
+		{
+			final boolean alreadyFound = receipts.stream()
+					.anyMatch(r -> r.getM_InOut_ID() == completingReceiptId.getRepoId());
+			if (!alreadyFound)
+			{
+				final I_M_InOut completingReceipt = InterfaceWrapperHelper.load(completingReceiptId, I_M_InOut.class);
+				if (completingReceipt != null
+						&& !completingReceipt.isSOTrx()
+						&& completingReceipt.getReversal_ID() <= 0)
+				{
+					receipts.add(completingReceipt);
+				}
+			}
+		}
 
 		// 4. Build ReceiptInfo per receipt
 		final ImmutableList.Builder<DeliveryStepInputs.ReceiptInfo> receiptInfos = ImmutableList.builder();

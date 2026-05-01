@@ -43,6 +43,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -96,7 +98,7 @@ class OrderPayScheduleDeliveryServiceDormancyTest
 				.deliveryPercent(new BigDecimal("70"))
 				.proformaPrepaymentPaymentId(null)  // no proforma
 				.build();
-		when(repo.loadInputs(ORDER_ID)).thenReturn(inputs);
+		when(repo.loadInputs(eq(ORDER_ID), isNull())).thenReturn(inputs);
 
 		// when
 		service.recomputeDeliverySteps(ORDER_ID);
@@ -126,7 +128,7 @@ class OrderPayScheduleDeliveryServiceDormancyTest
 						.build())
 				.proformaPrepaymentPaymentId(null)  // no proforma
 				.build();
-		when(repo.loadInputs(ORDER_ID)).thenReturn(inputs);
+		when(repo.loadInputs(eq(ORDER_ID), isNull())).thenReturn(inputs);
 
 		// when
 		service.recomputeDeliverySteps(ORDER_ID);
@@ -153,7 +155,7 @@ class OrderPayScheduleDeliveryServiceDormancyTest
 				.deliveryPercent(new BigDecimal("70"))
 				.proformaPrepaymentPaymentId(PaymentId.ofRepoId(5001))  // proforma present
 				.build();
-		when(repo.loadInputs(ORDER_ID)).thenReturn(inputs);
+		when(repo.loadInputs(eq(ORDER_ID), isNull())).thenReturn(inputs);
 
 		// when
 		service.recomputeDeliverySteps(ORDER_ID);

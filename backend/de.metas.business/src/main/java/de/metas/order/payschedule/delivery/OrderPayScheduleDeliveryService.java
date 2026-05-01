@@ -23,6 +23,7 @@
 package de.metas.order.payschedule.delivery;
 
 import de.metas.document.engine.IDocument;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -65,10 +66,24 @@ public class OrderPayScheduleDeliveryService
 	 * <p><b>Dormancy guard (R13 / AC #22)</b>: iter-3 only acts on orders with an active
 	 * proforma prepayment allocation (iter-2 LC step). Without that allocation the schedule
 	 * splitting makes no sense — leave any existing single Delivery row untouched.
+	 *
+	 * <p>Use this overload from non-receipt triggers (invoice completion/reversal, tests).
+	 * For receipt-completion triggers, prefer {@link #recomputeDeliverySteps(OrderId, InOutId)}.
 	 */
 	public void recomputeDeliverySteps(@NonNull final OrderId orderId)
 	{
-		final DeliveryStepInputs inputs = repo.loadInputs(orderId);
+		recomputeDeliverySteps(orderId, null);
+	}
+
+	/**
+	 * Overload for {@code M_InOut} {@code TIMING_AFTER_COMPLETE}: passes the completing
+	 * receipt's ID so that {@link OrderPayScheduleDeliveryRepository#loadInputs(OrderId, InOutId)}
+	 * can include it even though its {@code DocStatus} in the DB is still {@code "DR"} at
+	 * the time the interceptor fires (see {@code DocumentEngine.prepareIt} — in-memory only).
+	 */
+	public void recomputeDeliverySteps(@NonNull final OrderId orderId, @Nullable final InOutId completingReceiptId)
+	{
+		final DeliveryStepInputs inputs = repo.loadInputs(orderId, completingReceiptId);
 		// Dormancy guard (R13 / AC #22): iter-3 dormant for non-proforma orders.
 		// Without an iter-2 prepayment there is nothing to allocate; splitting the
 		// Delivery row would produce rows with no proforma context.

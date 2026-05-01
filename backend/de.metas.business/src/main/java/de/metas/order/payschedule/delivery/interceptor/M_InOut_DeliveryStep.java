@@ -22,6 +22,7 @@
 
 package de.metas.order.payschedule.delivery.interceptor;
 
+import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.order.payschedule.delivery.OrderPayScheduleDeliveryService;
 import lombok.NonNull;
@@ -80,6 +81,12 @@ public class M_InOut_DeliveryStep
 		{
 			return;
 		}
-		deliveryService.recomputeDeliverySteps(OrderId.ofRepoId(inout.getC_Order_ID()));
+		// Pass the completing receipt's ID so loadInputs can include it regardless of its
+		// DB DocStatus (which is still "DR" when TIMING_AFTER_COMPLETE fires — see
+		// DocumentEngine.prepareIt() which sets "IP" in memory only, never saves to DB).
+		final InOutId completingReceiptId = inout.getM_InOut_ID() > 0
+				? InOutId.ofRepoId(inout.getM_InOut_ID())
+				: null;
+		deliveryService.recomputeDeliverySteps(OrderId.ofRepoId(inout.getC_Order_ID()), completingReceiptId);
 	}
 }
