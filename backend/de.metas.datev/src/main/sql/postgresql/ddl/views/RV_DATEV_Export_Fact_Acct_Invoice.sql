@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice;
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
+;
 
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1),
@@ -20,7 +21,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
             (
                 dr_account                           varchar,
                 cr_account                           varchar,
-                BP_Account_Place                     char(1),
+                BP_Account_Place                     text,
                 Amt                                  numeric,
                 Currency                             char(3),
                 AmtSource                            numeric,
@@ -30,7 +31,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
                 vatcode                              varchar,
                 dateacct                             timestamp,
                 datetrx                              timestamp,
-                documentno                           varchar,
+                documentno                           text,
                 c_doctype_id                         numeric,
                 c_doctype_name                       varchar,
                 IsSOTrx                              char(1),
@@ -215,7 +216,7 @@ BEGIN
 
     RETURN QUERY SELECT t.dr_account,
                         t.cr_account,
-                        t.BP_Account_Place,
+                        t.BP_Account_Place::text,
                         t.Amt,
                         t.Currency,
                         t.AmtSource,

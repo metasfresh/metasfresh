@@ -88,6 +88,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DATEVCsvExporter.builder()
 				.exportFormat(exportFormat)
+				.datevExport(datevExport)
 				.dataSource(dataSource)
 				.build()
 				.export(out);

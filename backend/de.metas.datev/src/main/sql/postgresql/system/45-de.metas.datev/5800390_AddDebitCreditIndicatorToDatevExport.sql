@@ -136,3 +136,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE public.DATEV_ExportLine ADD COLUMN DueDate TIMESTAMP WITHOUT TIME ZONE')
 ;
 
+
+-- Value: DATEV_CreateExportLines
+-- Classname: de.metas.datev.process.DATEV_CreateExportLines
+-- 2026-05-01T05:50:17.816Z
+UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2026-05-01 05:50:17.814000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=540923
+;
+
