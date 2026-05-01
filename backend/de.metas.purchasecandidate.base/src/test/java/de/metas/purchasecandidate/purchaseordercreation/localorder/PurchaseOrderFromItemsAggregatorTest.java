@@ -12,6 +12,7 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.IOrderDAO;
@@ -40,7 +41,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
-import de.metas.interfaces.I_C_OrderLine;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -176,8 +176,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(PricingConditions.builder()
-										   .validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
-										   .build())
+						.validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
+						.build())
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
