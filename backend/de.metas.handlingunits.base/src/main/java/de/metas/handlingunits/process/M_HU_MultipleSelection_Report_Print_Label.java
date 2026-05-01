@@ -141,9 +141,13 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 	private void previewLabels(@NonNull final List<HUToReport> topLevelHus)
 	{
 		final MergePdfByteArrays merger = new MergePdfByteArrays();
+		// Render each HU once, then add the resulting PDF bytes N times to the merger.
+		// Kopien=N is a printer-routing concept (PARAM_PrintCopies → C_Printing_Queue.copies)
+		// and the Jasper itself doesn't replicate pages for it. So we replicate at the merger
+		// to make the preview PDF match what the printer will produce.
+		final int copies = Math.max(1, p_PrintCopies);
 		final HUReportExecutor executor = HUReportExecutor.newInstance()
-				.printPreview(true) // suppress physical-printer routing — preview returns the PDF only
-				.numberOfCopies(PrintCopies.ofIntOrOne(p_PrintCopies));
+				.printPreview(true); // suppress physical-printer routing — preview returns the PDF only
 
 		flattenForRendering(topLevelHus).forEach(hu -> {
 			final ReportResultData reportData = executor.executeNow(p_AD_Process_ID, ImmutableList.of(hu)).getReportData();
@@ -151,7 +155,11 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 			{
 				return; // skip HUs for which the Jasper produced no report data
 			}
-			merger.add(reportData.getReportDataByteArray());
+			final byte[] pdf = reportData.getReportDataByteArray();
+			for (int i = 0; i < copies; i++)
+			{
+				merger.add(pdf);
+			}
 		});
 
 		final byte[] merged = merger.getMergedPdfByteArray();
@@ -164,12 +172,21 @@ public class M_HU_MultipleSelection_Report_Print_Label extends JavaProcess imple
 
 	private void printLabels(@NonNull final List<HUToReport> topLevelHus)
 	{
-		flattenForRendering(topLevelHus).forEach(hu ->
+		// Loop in Java for Kopien — N separate printNow calls per HU. This guarantees that
+		// the printer produces N labels per HU regardless of whether the printing queue
+		// actually honors PARAM_PrintCopies on a single queue item (it does not, in practice
+		// for HU label processes), and matches the per-HU page count in the preview PDF.
+		final int copies = Math.max(1, p_PrintCopies);
+		flattenForRendering(topLevelHus).forEach(hu -> {
+			for (int i = 0; i < copies; i++)
+			{
 				labelService.printNow(HULabelDirectPrintRequest.builder()
 						.onlyOneHUPerPrint(true)
-						.printCopies(PrintCopies.ofIntOrOne(p_PrintCopies))
+						.printCopies(PrintCopies.ONE)
 						.printFormatProcessId(p_AD_Process_ID)
 						.hu(hu)
-						.build()));
+						.build());
+			}
+		});
 	}
 }
