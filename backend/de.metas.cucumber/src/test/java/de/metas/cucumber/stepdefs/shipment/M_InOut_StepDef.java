@@ -723,6 +723,20 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
+	/** Update fields on an existing M_InOut record (e.g. MovementDate before completion). */
+	@And("update M_InOut:")
+	public void update_M_InOut(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_InOut inOut = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+
+			row.getAsOptionalLocalDateTimestamp(I_M_InOut.COLUMNNAME_MovementDate)
+					.ifPresent(inOut::setMovementDate);
+
+			InterfaceWrapperHelper.saveRecord(inOut);
+		});
+	}
+
 	/**
 	 * Manually create M_InOut records (shipment/receipt). Primarily used for testing doc actions on manually created documents.
 	 * Uses legacy DataTableUtil (not DataTableRow). Stores created record in M_InOut_StepDefData.
