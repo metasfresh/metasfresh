@@ -50,6 +50,9 @@ WITH qty_data AS (SELECT candidate.m_product_id,
                   GROUP BY candidate.m_product_id,
                            candidate.m_warehouse_id),
      stock_data AS (SELECT m_product_id, m_warehouse_id, SUM(qtyonhand) AS QuantityOnHand FROM md_stock GROUP BY m_product_id, m_warehouse_id),
+     atp_data AS (SELECT M_Product_ID, M_Warehouse_ID, SUM(Qty) AS QtyATP
+                  FROM de_metas_material.retrieve_atp_at_date(now())
+                  GROUP BY M_Product_ID, M_Warehouse_ID),
      replenish_data AS (SELECT m_product_id, m_warehouse_id, level_min, level_max
                         FROM m_replenish
                         WHERE isactive = 'Y'),
@@ -58,6 +61,9 @@ WITH qty_data AS (SELECT candidate.m_product_id,
                                         UNION
                                         SELECT DISTINCT m_product_id, m_warehouse_id
                                         FROM stock_data
+                                        UNION
+                                        SELECT DISTINCT m_product_id, m_warehouse_id
+                                        FROM atp_data
                                         UNION
                                         SELECT DISTINCT m_product_id, m_warehouse_id
                                         FROM replenish_data),
@@ -74,6 +80,7 @@ SELECT COALESCE(demand.Total_Qty_One_Week_Ago, 0)            AS Total_Qty_One_We
        COALESCE(demand.Total_Qty_Six_Weeks_Ago, 0)           AS Total_Qty_Six_Weeks_Ago,
        COALESCE(demand.Average_Qty_Last_Six_Weeks, 0)        AS Average_Qty_Last_Six_Weeks,
        COALESCE(stock.QuantityOnHand, 0)                     AS QuantityOnHand,
+       COALESCE(atp.QtyATP, 0)                               AS QtyATP,
        COALESCE(replenish.level_min, 0)                      AS Level_Min,
        COALESCE(replenish.level_max, replenish.level_min, 0) AS Level_Max,
        product.m_product_category_id                         AS M_Product_Category_ID,
@@ -99,6 +106,8 @@ FROM m_product product
     AND demand.m_warehouse_id = wc.m_warehouse_id
          LEFT JOIN stock_data stock ON stock.m_product_id = wc.m_product_id
     AND stock.m_warehouse_id = wc.m_warehouse_id
+         LEFT JOIN atp_data atp ON atp.m_product_id = wc.m_product_id
+    AND atp.m_warehouse_id = wc.m_warehouse_id
          LEFT JOIN product_hupi hupi ON hupi.m_product_id = product.m_product_id
 WHERE product.isactive = 'Y'
   AND product.isstocked = 'Y'
