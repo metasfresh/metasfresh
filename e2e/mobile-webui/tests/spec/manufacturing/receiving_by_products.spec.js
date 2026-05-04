@@ -123,8 +123,8 @@ test('Receive By-Products from 2 manufacturing orders into same HU', async ({ pa
 // noinspection JSUnusedLocalSymbols
 test('Infinite-capacity TU is hidden for non-catch-weight by-product', async ({ page }) => {
     allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
-    allure.tag('F8030');
+    allure.tag('F8034: Manufacturing Workflow Activity - Material Receipt');
+    allure.tag('F8034');
     allure.story('Infinite-capacity TU is gated to catch-weight lines only');
     allure.severity('normal');
 

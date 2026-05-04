@@ -127,8 +127,8 @@ test('Receive several by-products using L+M codes to a new TU', async ({ page })
 // noinspection JSUnusedLocalSymbols
 test('Receive a by-product into an infinite-capacity TU using catch weight', async ({ page }) => {
     allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
-    allure.tag('F8030');
+    allure.tag('F8034: Manufacturing Workflow Activity - Material Receipt');
+    allure.tag('F8034');
     allure.story('Infinite-capacity TU is selectable for catch-weight by-products');
     allure.severity('normal');
 
