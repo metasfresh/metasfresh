@@ -16,9 +16,8 @@ test.describe('Replenishment window — QtyATP column (gh28902)', () => {
   // German and English labels.
   //
   test('German label "Verfügbare Menge" is shown in the grid', async ({ page }) => {
-    // TODO ask dev for correct Allure epic + feature ID before merge
-    allure.epic('TODO: confirm with dev');
-    allure.tag('TODO: confirm with dev');
+    allure.epic('Material Disposition');
+    allure.tag('Material Disposition');
     allure.story('gh28902: Show ATP in Replenishment window');
     allure.severity('normal');
 
@@ -48,9 +47,8 @@ test.describe('Replenishment window — QtyATP column (gh28902)', () => {
   });
 
   test('English label "Available Qty" is shown in the grid', async ({ page }) => {
-    // TODO ask dev for correct Allure epic + feature ID before merge
-    allure.epic('TODO: confirm with dev');
-    allure.tag('TODO: confirm with dev');
+    allure.epic('Material Disposition');
+    allure.tag('Material Disposition');
     allure.story('gh28902: Show ATP in Replenishment window');
     allure.severity('normal');
 
