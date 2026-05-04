@@ -42,6 +42,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
 
 UPDATE AD_Element_Trl
    SET Name='Available Qty', PrintName='Available Qty',
+       IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-05-04 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=0
 WHERE AD_Element_ID=584821 AND AD_Language='en_US'
 ;
@@ -248,11 +249,11 @@ SELECT AD_Element_Link_Create_Missing_Field(778036)
 
 -- Set en_US labels on Column_Trl and Field_Trl. The propagation function does
 -- not overwrite trl rows that match the base name, so we set them explicitly.
-UPDATE AD_Column_Trl SET Name='Available Qty',
+UPDATE AD_Column_Trl SET Name='Available Qty', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-05-04 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=0
 WHERE AD_Column_ID=592461 AND AD_Language='en_US'
 ;
-UPDATE AD_Field_Trl SET Name='Available Qty',
+UPDATE AD_Field_Trl SET Name='Available Qty', IsTranslated='Y',
        Updated=TO_TIMESTAMP('2026-05-04 12:00','YYYY-MM-DD HH24:MI'), UpdatedBy=0
 WHERE AD_Field_ID=778036 AND AD_Language='en_US'
 ;
