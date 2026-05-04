@@ -7,7 +7,11 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ byProductInfinite = false } = {}) => {
+    const byProductPI = byProductInfinite
+        ? { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT" }
+        : { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT", qtyCUsPerTU: 4 };
+
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -36,7 +40,7 @@ const createMasterdata = async () => {
             },
             packingInstructions: {
                 "BOM_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
-                "BY_PRODUCT_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT", qtyCUsPerTU: 4 },
+                "BY_PRODUCT_PI": byProductPI,
             },
             handlingUnits: {
                 "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 1000 },
@@ -116,6 +120,35 @@ test('Receive several by-products using L+M codes to a new TU', async ({ page })
         expectGoBackToJob: false
     });
     await MaterialReceiptLineScreen.goBack();
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Receive a by-product into an infinite-capacity TU using catch weight', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Infinite-capacity TU is selectable for catch-weight by-products');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ byProductInfinite: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product
+    // The infinite-capacity TU (no qtyCUsPerTU on the PI) appears here only because the line is catch-weight.
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BY_PRODUCT_PI.tuPIItemProductTestId });
+    await MaterialReceiptLineScreen.receiveQty({
+        switchToManualInput: true,
+        qtyEntered: 9,
+        catchWeight: 0.987,
+        expectGoBackToJob: true,
+    });
 
     await ManufacturingJobScreen.complete();
 });
