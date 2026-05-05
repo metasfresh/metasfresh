@@ -22,7 +22,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -188,8 +188,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				//	CreditAvailable
 				if (isSOTrx)
 				{
-
-					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+					final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 					final Date dateInvoiced = mTab.get_ValueAsDate("DateInvoiced", SystemTime.asDate());
 					final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID.intValue(), TimeUtil.asTimestamp(dateInvoiced));
 					if (CreditLimit.signum() > 0)

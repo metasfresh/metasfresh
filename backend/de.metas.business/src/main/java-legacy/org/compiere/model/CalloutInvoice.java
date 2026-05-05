@@ -35,7 +35,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxDAO;
@@ -50,7 +49,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -228,7 +226,7 @@ public class CalloutInvoice extends CalloutEngine
 				// CreditAvailable
 				if (isSOTrx)
 				{
-					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+					final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 					final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerID, invoice.getDateInvoiced());
 					if (CreditLimit.signum() > 0)
 					{
