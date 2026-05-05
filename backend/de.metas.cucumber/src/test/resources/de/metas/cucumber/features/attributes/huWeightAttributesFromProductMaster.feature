@@ -267,3 +267,72 @@ Feature: HU weight attributes are derived from product master Net + Gross
       | lu      | WeightNet            | 18.000      |
       | lu      | WeightTare           | 0.450       |
       | lu      | WeightGross          | 18.450      |
+
+
+  Scenario: Splitting a VHU redistributes WeightNet and WeightTare proportionally to the moved qty
+    # WeightTareDeltaTransferStrategy moves the per-CU packaging delta with the qty during a real
+    # VHU-to-VHU split; RedistributeQtyHUAttributeTransferStrategy does the same for WeightNet.
+    # Source starts at 20 PCE / WeightNet 4.000 / WeightTare 0.100 (20 × (0.205 - 0.200)). Splitting
+    # 8 PCE off leaves the source at 12 PCE / 2.400 / 0.060 and produces a new TU whose VHU carries
+    # 8 PCE / 1.600 / 0.040 — both the moved portion and the residue must add up to the originals.
+    Given metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inventory      | 2026-04-29   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory      | line1              | product_1    | 0       | 20       | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory'
+    # The HU stored on the inventory line is the VHU itself.
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | line1              | vhuPre  |
+
+    Then M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | ValueNumber |
+      | vhuPre  | WeightNet            | 4.000       |
+      | vhuPre  | WeightTare           | 0.100       |
+      | vhuPre  | WeightGross          | 4.100       |
+
+    # Split 8 PCE off; resultedNewTUs captures the new TU(s), resultedNewCUs captures the inner VHU(s).
+    When transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
+      | vhuPre              | 8     | TUx100_product_1                   | tuNew                         | vhuNew                        |
+
+    # Source VHU carries the residue (12 PCE) and the new TU's VHU carries the moved portion (8 PCE).
+    Then M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | ValueNumber |
+      | vhuPre  | WeightNet            | 2.400       |
+      | vhuPre  | WeightTare           | 0.060       |
+      | vhuPre  | WeightGross          | 2.460       |
+      | vhuNew  | WeightNet            | 1.600       |
+      | vhuNew  | WeightTare           | 0.040       |
+      | vhuNew  | WeightGross          | 1.640       |
+
+
+  Scenario: Product master with WeightNet but no WeightGross — listener writes WeightNet only and skips WeightTare
+    # When the product carries a NetWeight but no GrossWeight, the per-CU packaging delta is zero
+    # (productGrossNetDiff <= 0), so WeightGenerateHUTrxListener writes WeightNet but skips the
+    # WeightTare branch. Useful guard for catchweight-style products without master gross weight.
+    Given metasfresh contains M_Products:
+      | Identifier     | X12DE355 | WeightNet |
+      | productNetOnly | PCE      | 0.040 KGM |
+
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID   | Qty | ValidFrom  |
+      | TUx100_productNetOnly   | TU              | productNetOnly | 100 | 2000-01-01 |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inventory      | 2026-04-29   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID   | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory      | line1              | productNetOnly | 0       | 20       | PCE          |
+    And complete inventory with inventoryIdentifier 'inventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | line1              | hu_1    |
+
+    Then M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | ValueNumber |
+      | hu_1    | WeightNet            | 0.800       |
+      | hu_1    | WeightTare           | 0.000       |
