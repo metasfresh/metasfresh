@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1384928017L;
+	private static final long serialVersionUID = 1622097502L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -45,6 +45,18 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public java.lang.String getActivityName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ActivityName);
+	}
+
+	@Override
+	public void setAdditionalDescription (final @Nullable java.lang.String AdditionalDescription)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdditionalDescription, AdditionalDescription);
+	}
+
+	@Override
+	public java.lang.String getAdditionalDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdditionalDescription);
 	}
 
 	@Override

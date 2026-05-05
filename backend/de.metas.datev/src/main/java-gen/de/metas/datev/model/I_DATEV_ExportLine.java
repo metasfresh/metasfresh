@@ -51,6 +51,27 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalDescription (@Nullable java.lang.String AdditionalDescription);
+
+	/**
+	 * Get Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditionalDescription();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_DATEV_ExportLine.class, "AdditionalDescription", null);
+	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *

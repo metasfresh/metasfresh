@@ -51,6 +51,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalDescription (@Nullable java.lang.String AdditionalDescription);
+
+	/**
+	 * Get Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditionalDescription();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "AdditionalDescription", null);
+	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *

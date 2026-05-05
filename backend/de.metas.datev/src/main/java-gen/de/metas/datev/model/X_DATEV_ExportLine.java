@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 777405964L;
+	private static final long serialVersionUID = -1802147736L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -45,6 +45,18 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getActivityName() 
 	{
 		return get_ValueAsString(COLUMNNAME_ActivityName);
+	}
+
+	@Override
+	public void setAdditionalDescription (final @Nullable java.lang.String AdditionalDescription)
+	{
+		set_Value (COLUMNNAME_AdditionalDescription, AdditionalDescription);
+	}
+
+	@Override
+	public java.lang.String getAdditionalDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdditionalDescription);
 	}
 
 	@Override

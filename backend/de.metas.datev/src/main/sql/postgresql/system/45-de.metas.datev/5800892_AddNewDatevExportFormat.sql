@@ -315,7 +315,7 @@ UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=559152,Updated=TO_TIMESTAMP('20
 ;
 
 -- 2026-05-05T12:42:35.744Z
-UPDATE DATEV_ExportFormatColumn SET FormatPattern='dd.MM,yyyy',Updated=TO_TIMESTAMP('2026-05-05 12:42:35.739000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormatColumn_ID=540059
+UPDATE DATEV_ExportFormatColumn SET FormatPattern='dd.MM.yyyy',Updated=TO_TIMESTAMP('2026-05-05 12:42:35.739000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormatColumn_ID=540059
 ;
 
 -- 2026-05-05T12:42:57.456Z
@@ -324,5 +324,9 @@ UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=589426,Updated=TO_TIMESTAMP('20
 
 -- 2026-05-05T12:49:54.399Z
 UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=592477,Updated=TO_TIMESTAMP('2026-05-05 12:49:54.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormatColumn_ID=540086
+;
+
+-- 2026-05-05T13:37:44.029Z
+UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=592478,Updated=TO_TIMESTAMP('2026-05-05 13:37:44.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormatColumn_ID=540063
 ;
 

@@ -45,8 +45,6 @@ WHERE fa.counterpart_fact_acct_id IS NULL
 AND (fa2.counterpart_fact_acct_id IS NOT NULL OR ((fa2.amtacctcr!= 0) OR (fa2.amtacctdr!= 0)))
 ;
 
-
-
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
 ;
 
@@ -90,6 +88,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
                 BPValue                              varchar,
                 BPName                               varchar,
                 description                          text,
+                AdditionalDescription                text,
                 c_acctschema_id                      numeric,
                 postingtype                          char(1),
                 c_invoice_id                         numeric,
@@ -134,36 +133,97 @@ BEGIN
            fa.c_bpartner_id,
            bp.Value                                                                             AS BPValue,
            bp.Name                                                                              AS BPName,
+           STRING_AGG(DISTINCT fa.description, ', ')                                            AS description,
            COALESCE(
                    SUBSTRING(bp.name FROM 1 FOR 60),
                    'Beleg ' || REGEXP_REPLACE(fa.documentno, '^.*-', '')
-           )                                                                                    AS description,
+           )                                                                                   AS AdditionalDescription,
            fa.c_acctschema_id,
            fa.postingtype,
            fa.c_invoice_id,
            i.poreference                                                                        AS poreference,
-           paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
+           paymentTermDueDate
+           (
+                   i
+                       .
+                       c_paymentterm_id,
+                   i
+                       .
+                       dateinvoiced
+                       ::
+                       TIMESTAMP
+                           WITH
+                           TIME
+                           ZONE
+           )                                                                                    AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,
            a.name                                                                               AS ActivityName,
-           MIN(fa.id)                                                                           AS rv_datev_export_fact_acct_invoice_id,
-           NULLIF(TRIM(bp.debtorid::varchar), '')                                               AS BP_debtorId,
-           NULLIF(TRIM(bp.creditorid::varchar), '')                                             AS BP_creditorId
+           MIN
+           (
+                   fa
+                       .
+                       id
+           )                                                                                    AS rv_datev_export_fact_acct_invoice_id,
+           NULLIF
+           (
+                   TRIM
+                   (
+                           bp
+                               .
+                               debtorid
+                               ::
+                               VARCHAR
+                   ), '')                                                                       AS BP_debtorId,
+           NULLIF
+           (
+                   TRIM
+                   (
+                           bp
+                               .
+                               creditorid
+                               ::
+                               VARCHAR
+                   ), '')                                                                       AS BP_creditorId
     FROM (SELECT
               --
               -- DR/CR Accounts:
-              fa.dr_account_id,
-              fa.cr_account_id,
+              fa
+                  .
+                  dr_account_id,
+              fa
+                  .
+                  cr_account_id,
               --
               -- Amounts:
-              fa.amt                                                                                                                                                    AS Amt,
-              fa.c_currency_id                                                                                                                                          AS C_Currency_ID,
-              fa.amtsource                                                                                                                                              AS AmtSource,
-              fa.CurrencyRate,
+              fa
+                  .
+                  amt                           AS
+                                                   Amt,
+              fa
+                  .
+                  c_currency_id                 AS
+                                                   C_Currency_ID,
+              fa
+                  .
+                  amtsource                     AS
+                                                   AmtSource,
+              fa
+                  .
+                  CurrencyRate,
               --
               -- Tax Amounts
-              (SELECT SUM(il.TaxAmtInfo) FROM c_invoiceline il WHERE il.c_invoice_id = fa.record_id AND il.c_invoiceline_id = fa.line_id AND il.c_tax_id = fa.c_tax_id) AS TaxAmtSource,
+              (SELECT SUM
+                      (
+                              il
+                                  .
+                                  TaxAmtInfo
+                      )
+               FROM c_invoiceline il
+               WHERE il.c_invoice_id = fa.record_id
+                 AND il.c_invoiceline_id = fa.line_id
+                 AND il.c_tax_id = fa.c_tax_id) AS TaxAmtSource,
               fa.c_tax_id,
               fa.vatcode,
 
@@ -171,7 +231,14 @@ BEGIN
               -- Document Info
               fa.dateacct,
               fa.datetrx,
-              REGEXP_REPLACE(fa.documentno, '^.*-', '')                                                                                                                 AS documentno,
+              REGEXP_REPLACE
+              (
+                      fa
+                          .
+                          documentno,
+                      '^.*-',
+                      ''
+              )                                 AS documentno,
               fa.c_doctype_id,
               fa.docbasetype,
               fa.c_bpartner_id,
@@ -183,7 +250,7 @@ BEGIN
               --
               -- Document ref
               -- fa.ad_table_id,
-              fa.record_id                                                                                                                                              AS c_invoice_id,
+              fa.record_id                      AS c_invoice_id,
               fa.line_id,
               fa.ad_client_id,
               fa.ad_org_id,
@@ -193,18 +260,53 @@ BEGIN
           WHERE TRUE
             AND fa.ad_table_id = 318 -- C_Invoice
             -- If not p_IsOneLinePerInvoiceTax then skip tax account bookings because taxamt is already incorporated in the other lines
-            AND (p_IsOneLinePerInvoiceTax = 'N'
-              OR NOT (fa.line_id IS NULL AND fa.c_tax_id IS NOT NULL)
+            AND (
+              p_IsOneLinePerInvoiceTax =
+              'N'
+                  OR
+              NOT
+                  (
+                      fa
+                          .
+                          line_id IS NULL
+                          AND
+                      fa
+                          .
+                          c_tax_id IS NOT NULL
+                      )
               )
              --
          ) fa
-             LEFT OUTER JOIN C_ElementValue ev_dr ON (ev_dr.C_ElementValue_ID = fa.DR_Account_ID)
-             LEFT OUTER JOIN C_ElementValue ev_cr ON (ev_cr.C_ElementValue_ID = fa.CR_Account_ID)
-             LEFT OUTER JOIN C_Tax tax ON tax.C_Tax_ID = fa.C_Tax_ID
-             LEFT OUTER JOIN C_Activity a ON a.c_activity_id = fa.c_activity_id
-             LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = fa.C_BPartner_ID
-             LEFT OUTER JOIN C_DocType dt ON dt.C_DocType_ID = fa.C_DocType_ID
-             LEFT OUTER JOIN C_Invoice i ON i.C_Invoice_ID = fa.C_Invoice_ID
+             LEFT OUTER JOIN C_ElementValue ev_dr ON
+        (
+            ev_dr
+                .
+                C_ElementValue_ID =
+            fa
+                .
+                DR_Account_ID
+            )
+             LEFT OUTER JOIN C_ElementValue ev_cr
+                             ON
+                                 (
+                                     ev_cr
+                                         .
+                                         C_ElementValue_ID =
+                                     fa
+                                         .
+                                         CR_Account_ID
+                                     )
+             LEFT OUTER JOIN C_Tax tax
+                             ON tax.
+                                    C_Tax_ID = fa.C_Tax_ID
+             LEFT OUTER JOIN C_Activity a ON a.
+                                                 c_activity_id = fa.c_activity_id
+             LEFT OUTER JOIN C_BPartner bp ON bp.
+                                                  C_BPartner_ID = fa.C_BPartner_ID
+             LEFT OUTER JOIN C_DocType dt ON dt.
+                                                 C_DocType_ID = fa.C_DocType_ID
+             LEFT OUTER JOIN C_Invoice i ON i.
+                                                C_Invoice_ID = fa.C_Invoice_ID
     WHERE (p_IsSOTrx IS NULL OR (p_IsSOTrx = dt.issotrx))
     GROUP BY fa.dr_account_id, ev_dr.value, ev_dr.name,
              fa.cr_account_id, ev_cr.value, ev_cr.name,
