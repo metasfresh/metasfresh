@@ -433,6 +433,27 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_Currency = "Currency";
 
 	/**
+	 * Set Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
+
+	/**
+	 * Get Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCurrencyRate();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_DATEV_ExportLine.class, "CurrencyRate", null);
+	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -680,6 +701,29 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DATEV_ExportLine.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Null Columns.
+	 * Columns with NULL value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNullColumns (@Nullable java.lang.String NullColumns);
+
+	/**
+	 * Get Null Columns.
+	 * Columns with NULL value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNullColumns();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_NullColumns = new ModelColumn<>(I_DATEV_ExportLine.class, "NullColumns", null);
+	String COLUMNNAME_NullColumns = "NullColumns";
 
 	/**
 	 * Set Order Reference.

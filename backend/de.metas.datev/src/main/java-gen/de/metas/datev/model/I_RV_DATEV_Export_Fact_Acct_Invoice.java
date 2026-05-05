@@ -408,6 +408,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	String COLUMNNAME_Currency = "Currency";
 
 	/**
+	 * Set Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
+
+	/**
+	 * Get Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCurrencyRate();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "CurrencyRate", null);
+	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *

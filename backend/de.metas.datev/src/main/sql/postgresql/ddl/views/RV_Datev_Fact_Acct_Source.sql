@@ -12,6 +12,7 @@ SELECT
     (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtacctcr ELSE fa2.amtacctdr END)                                                               AS amt,
     (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.c_currency_id END)                                                            AS c_currency_id,
     (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtsourcecr ELSE fa2.amtsourcedr END) END) AS amtsource,
+    fa.CurrencyRate,
     --
     -- Document Info
     fa.dateacct,

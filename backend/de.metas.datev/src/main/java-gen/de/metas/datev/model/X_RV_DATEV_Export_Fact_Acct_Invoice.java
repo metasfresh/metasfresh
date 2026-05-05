@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 600447516L;
+	private static final long serialVersionUID = -1384928017L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -270,6 +270,19 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public java.lang.String getCurrency() 
 	{
 		return get_ValueAsString(COLUMNNAME_Currency);
+	}
+
+	@Override
+	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
+	{
+		set_ValueNoCheck (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getCurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
