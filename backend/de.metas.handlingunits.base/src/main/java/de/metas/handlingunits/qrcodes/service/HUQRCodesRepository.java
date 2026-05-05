@@ -138,6 +138,24 @@ public class HUQRCodesRepository
 		removeAssignment(existingRecord, huIdsToRemove);
 	}
 
+	/**
+	 * Soft-delete: set {@code IsActive='N'} on every active {@code M_HU_QRCode_Assignment} row pointing at
+	 * the given HU, preserving the row for audit/traceability. All scan-time lookup paths already filter on
+	 * {@code IsActive='Y'} via {@code addOnlyActiveRecordsFilter()}, so deactivated rows stop resolving.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.stream()
+				.forEach(assignment -> {
+					assignment.setIsActive(false);
+					InterfaceWrapperHelper.save(assignment);
+				});
+	}
+
 	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		return getHUAssignmentByQRCode(qrCode)
