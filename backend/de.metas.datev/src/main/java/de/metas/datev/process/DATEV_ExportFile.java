@@ -57,6 +57,9 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 	@Param(parameterName = I_DATEV_ExportFormat.COLUMNNAME_DATEV_ExportFormat_ID, mandatory = true)
 	private int datevExportFormatId;
 
+	@Param(parameterName = "ExportEXTF", mandatory = true)
+	private boolean isExportEXTF;
+
 	public DATEV_ExportFile()
 	{
 		SpringContextHolder.instance.autowire(this);
@@ -88,7 +91,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DATEVCsvExporter.builder()
 				.exportFormat(exportFormat)
-				.datevExport(datevExport)
+				.datevExport(isExportEXTF ? datevExport : null)
 				.dataSource(dataSource)
 				.build()
 				.export(out);
