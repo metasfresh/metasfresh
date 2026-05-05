@@ -222,3 +222,97 @@ UPDATE AD_UI_Element SET SeqNo=130,Updated=TO_TIMESTAMP('2026-05-05 13:32:16.385
 UPDATE AD_UI_Element SET SeqNo=140,Updated=TO_TIMESTAMP('2026-05-05 13:32:24.711000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648889
 ;
 
+-- Element: ProductName
+-- 2026-05-05T14:30:44.794Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2026-05-05 14:30:44.793000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=2659 AND AD_Language='de_DE'
+;
+
+-- 2026-05-05T14:30:44.852Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-05T14:30:54.401Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2659,'de_DE')
+;
+
+-- 2026-05-05T14:30:54.459Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2659,'de_DE')
+;
+
+-- Element: ProductNo
+-- 2026-05-05T14:32:26.928Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produktnummer', PrintName='Produktnummer',Updated=TO_TIMESTAMP('2026-05-05 14:32:26.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=542219 AND AD_Language='de_DE'
+;
+
+-- 2026-05-05T14:32:26.988Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-05T14:32:33.744Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542219,'de_DE')
+;
+
+-- 2026-05-05T14:32:33.801Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542219,'de_DE')
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Produktname
+-- Column: M_Product_ASI_Data.ProductName
+-- 2026-05-05T14:48:38.384Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,775500,0,549097,555026,650492,'F',TO_TIMESTAMP('2026-05-05 14:48:37.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Name des Produktes','Y','N','N','Y','N','N','N',0,'Produktname',22,0,0,TO_TIMESTAMP('2026-05-05 14:48:37.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Produktnummer
+-- Column: M_Product_ASI_Data.ProductNo
+-- 2026-05-05T14:49:03.149Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,775501,0,549097,555026,650493,'F',TO_TIMESTAMP('2026-05-05 14:49:02.684000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Produktnummer',24,0,0,TO_TIMESTAMP('2026-05-05 14:49:02.684000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Produktname
+-- Column: M_Product_ASI_Data.ProductName
+-- 2026-05-05T14:49:19.850Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2026-05-05 14:49:19.850000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=650492
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Produktnummer
+-- Column: M_Product_ASI_Data.ProductNo
+-- 2026-05-05T14:49:20.191Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2026-05-05 14:49:20.191000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=650493
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Merkmale
+-- Column: M_Product_ASI_Data.M_AttributeSetInstance_ID
+-- 2026-05-05T14:49:20.545Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2026-05-05 14:49:20.545000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648885
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.CU-EAN
+-- Column: M_Product_ASI_Data.EAN_CU
+-- 2026-05-05T14:49:20.891Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2026-05-05 14:49:20.891000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648890
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.GTIN
+-- Column: M_Product_ASI_Data.GTIN
+-- 2026-05-05T14:49:21.241Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2026-05-05 14:49:21.241000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648886
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Produktkategorie
+-- Column: M_Product_ASI_Data.ProductCategory
+-- 2026-05-05T14:49:21.584Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2026-05-05 14:49:21.584000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=1000524
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Aktiv
+-- Column: M_Product_ASI_Data.IsActive
+-- 2026-05-05T14:49:21.929Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2026-05-05 14:49:21.929000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648887
+;
+
+-- UI Element: Produkt_OLD(140,D) -> Merkmalsdaten(549097,D) -> main -> 10 -> default.Sektion
+-- Column: M_Product_ASI_Data.AD_Org_ID
+-- 2026-05-05T14:49:22.279Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2026-05-05 14:49:22.279000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=648889
+;
+
