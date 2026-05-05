@@ -28,22 +28,25 @@ import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
 @Validator(I_DATEV_Export.class)
 public class DATEV_Export
 {
-	private DATEVExportConfigRepository exportConfigRepo;
+	private final DATEVExportConfigRepository exportConfigRepo =
+			SpringContextHolder.instance.getBean(DATEVExportConfigRepository.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void validate(final I_DATEV_Export datevExport)
+	public void setDatevExportConfig(final I_DATEV_Export datevExport)
 	{
 		final DATEVExportConfig exportConfig = exportConfigRepo.getByOrgId(OrgId.ofRepoId(datevExport.getAD_Org_ID()));
 		if (exportConfig != null)
 		{
 			datevExport.setDATEV_Export_Config_ID(exportConfig.getId());
 			datevExport.setAdvisorNumber(exportConfig.getAdvisorNumber());
-			datevExport.setClientNumber(exportConfig.getChartOfAccounts());
+			datevExport.setClientNumber(exportConfig.getClientNumber());
+			datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
 			datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
 		}
 	}

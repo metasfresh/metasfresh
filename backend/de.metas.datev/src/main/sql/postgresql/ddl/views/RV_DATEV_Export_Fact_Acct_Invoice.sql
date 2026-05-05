@@ -60,7 +60,7 @@ BEGIN
 
     DROP TABLE IF EXISTS tmp_DATEV_Export_Fact_Acct_Invoice;
 
-    CREATE TABLE tmp_DATEV_Export_Fact_Acct_Invoice AS
+    CREATE TEMPORARY TABLE tmp_DATEV_Export_Fact_Acct_Invoice AS
 
     SELECT ev_dr.value                                                                          AS dr_account,
            ev_cr.value                                                                          AS cr_account,
