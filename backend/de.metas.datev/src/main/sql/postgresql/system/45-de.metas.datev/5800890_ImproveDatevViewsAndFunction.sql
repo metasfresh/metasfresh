@@ -45,6 +45,8 @@ WHERE fa.counterpart_fact_acct_id IS NULL
 AND (fa2.counterpart_fact_acct_id IS NOT NULL OR ((fa2.amtacctcr!= 0) OR (fa2.amtacctdr!= 0)))
 ;
 
+
+
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
 ;
 
@@ -114,6 +116,7 @@ BEGIN
            (CASE
                 WHEN fa.docbasetype IN ('ARI', 'APC') THEN 'DR'
                 WHEN fa.docbasetype IN ('API', 'ARC') THEN 'CR'
+                ELSE ''
             END)                                                                                AS BP_Account_Place,
            COALESCE(SUM(fa.Amt), 0)                                                             AS Amt,
            (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id) AS Currency,
