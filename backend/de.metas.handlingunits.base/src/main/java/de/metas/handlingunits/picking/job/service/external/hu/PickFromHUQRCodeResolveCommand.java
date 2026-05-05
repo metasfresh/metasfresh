@@ -32,6 +32,7 @@ class PickFromHUQRCodeResolveCommand
 	private final static AdMessageKey ERR_LMQ_LotNoNotFound = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey ERR_NoLotNoFoundForQRCode = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
 	public final static AdMessageKey ERR_QR_ProductNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	public final static AdMessageKey ERR_QR_HU_Destroyed = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_HU_DESTROYED_ERROR_MSG");
 
 	// services
 	@NonNull private final PickingJobProductService productService;
@@ -54,6 +55,11 @@ class PickFromHUQRCodeResolveCommand
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			// Destroyed HUs have empty storage, so containsProduct below would give a misleading "product not matching" error.
+			if (huService.isDestroyed(huId))
+			{
+				return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
+			}
 			if (!huService.containsProduct(huId, productId))
 			{
 				return ExplainedOptional.emptyBecause(ERR_QR_ProductNotMatching);
