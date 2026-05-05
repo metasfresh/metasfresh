@@ -948,4 +948,21 @@ public final class CollectionUtils
 		return list.size() == result.size() ? list : result;
 	}
 
+	@Nullable
+	public static <T> T removeFirst(@NonNull final ArrayList<T> list, @NonNull final Predicate<T> predicate)
+	{
+		final Iterator<T> it = list.iterator();
+		while (it.hasNext())
+		{
+			final T item = it.next();
+			if (predicate.test(item))
+			{
+				it.remove();
+				return item;
+			}
+		}
+
+		return null;
+	}
+
 }

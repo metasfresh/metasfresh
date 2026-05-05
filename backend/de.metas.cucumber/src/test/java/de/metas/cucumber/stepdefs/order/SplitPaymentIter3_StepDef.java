@@ -39,6 +39,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -59,9 +60,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderPaySchedule;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -348,21 +349,40 @@ public class SplitPaymentIter3_StepDef
 						.as("Status for " + context)
 						.isEqualTo(expected));
 
-		// C_Invoice_ID: "null" means assert 0; any other value resolves via invoiceTable
-		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_C_Invoice_ID)
-				.ifPresent(rawValue -> {
-					if (DataTableUtil.isNullPlaceholder(rawValue))
+		row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(identifier -> {
+					final InvoiceId actualInvoiceId = InvoiceId.ofRepoIdOrNull(matchedRow.getC_Invoice_ID());
+
+					if (identifier.isNullPlaceholder())
 					{
-						softly.assertThat(matchedRow.getC_Invoice_ID())
-								.as("C_Invoice_ID should be 0 for " + context)
-								.isEqualTo(0);
+						softly.assertThat(actualInvoiceId)
+								.as("C_Invoice_ID should be not set for " + context)
+								.isNull();
 					}
 					else
 					{
-						final int expectedInvoiceId = invoiceTable.getId(StepDefDataIdentifier.ofString(rawValue)).getRepoId();
-						softly.assertThat(matchedRow.getC_Invoice_ID())
+						final InvoiceId expectedInvoiceId = invoiceTable.getId(identifier);
+						softly.assertThat(actualInvoiceId)
 								.as("C_Invoice_ID for " + context)
 								.isEqualTo(expectedInvoiceId);
+					}
+				});
+
+		row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_M_InOut_ID)
+				.ifPresent(identifier -> {
+					final InOutId actualInOutId = InOutId.ofRepoIdOrNull(matchedRow.getM_InOut_ID());
+					if (identifier.isNullPlaceholder())
+					{
+						softly.assertThat(actualInOutId)
+								.as("M_InOut_ID should be not set for " + context)
+								.isNull();
+					}
+					else
+					{
+						final InOutId expectedInOutId = inOutTable.getId(identifier);
+						softly.assertThat(actualInOutId)
+								.as("M_InOut_ID for " + context)
+								.isEqualTo(expectedInOutId);
 					}
 				});
 
@@ -396,11 +416,6 @@ public class SplitPaymentIter3_StepDef
 
 	/**
 	 * Asserts the exact count of delivery sub-rows (including remainder row) for the given order.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example <pre>
-	 * Then the order identified by lcOrder has exactly 3 delivery sub-rows
-	 * </pre>
 	 */
 	@Then("^the order identified by (.*) has exactly (\\d+) delivery sub-rows$")
 	public void assertDeliveryRowCount(
@@ -418,10 +433,6 @@ public class SplitPaymentIter3_StepDef
 	 * Asserts that no remainder row (M_InOut_ID=0) exists for the given order's delivery schedule
 	 * (over-delivery scenario where Σ receipt.with_tax ≥ order.GrandTotal).
 	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example <pre>
-	 * Then the order identified by lcOrder has no remainder delivery sub-row
-	 * </pre>
 	 */
 	@Then("^the order identified by (.*) has no remainder delivery sub-row$")
 	public void assertNoRemainderRow(@NonNull final String orderIdentifier)

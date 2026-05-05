@@ -25,8 +25,7 @@ package de.metas.invoice.proforma;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
@@ -81,10 +80,8 @@ class ProformaOrderAllocServiceTest
 		when(orderBL.getById(any(OrderId.class))).thenReturn(stubOrder);
 		Services.registerService(IOrderBL.class, orderBL);
 
-		repository = new ProformaOrderAllocRepository();
-		final OrderPayScheduleLCService lcService = new OrderPayScheduleLCService(
-				OrderPayScheduleService.newInstanceForUnitTesting(),
-				repository);
+		repository = ProformaOrderAllocRepository.newInstanceForUnitTesting();
+		final OrderPayScheduleLCStepService lcService = OrderPayScheduleLCStepService.newInstanceForUnitTesting();
 		service = new ProformaOrderAllocService(
 				repository,
 				new PaymentTermService(),

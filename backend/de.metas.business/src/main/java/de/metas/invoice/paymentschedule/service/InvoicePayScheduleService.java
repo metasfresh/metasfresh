@@ -30,7 +30,7 @@ import de.metas.invoice.paymentschedule.InvoicePaySchedule;
 import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.NonNull;

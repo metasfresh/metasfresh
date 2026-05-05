@@ -1137,4 +1137,13 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
 		}
 	}
+
+	@Override
+	public Money getLineGrossAmt(@NonNull final I_C_OrderLine orderLine)
+	{
+		final BigDecimal lineGrossAmt = orderLine.getLineNetAmt().add(orderLine.getTaxAmtInfo());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		return Money.of(lineGrossAmt, currencyId);
+
+	}
 }

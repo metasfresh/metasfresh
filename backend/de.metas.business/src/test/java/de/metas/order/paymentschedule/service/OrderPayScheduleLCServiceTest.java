@@ -22,9 +22,8 @@
 
 package de.metas.order.paymentschedule.service;
 
-import de.metas.invoice.proforma.ProformaOrderAllocRepository;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Invoice;
@@ -49,7 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Property-based JUnit for {@link OrderPayScheduleLCService}.
+ * Property-based JUnit for {@link OrderPayScheduleLCStepService}.
  * <p>
  * Covers the truth table from REQUIREMENTS.md §3:
  * {@code (allocation ∈ {NONE, PRESENT}) × (payment ∈ {ABSENT, DRAFTED, COMPLETED, REVERSED})}
@@ -57,20 +56,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29368">me03 #29368 Split-Payment Iter 2</a>
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 class OrderPayScheduleLCServiceTest
 {
-	/** Proforma GrandTotal used in every test scenario */
+	/**
+	 * Proforma GrandTotal used in every test scenario
+	 */
 	private static final BigDecimal PROFORMA_GRAND_TOTAL = new BigDecimal("20596.32");
 
-	private OrderPayScheduleLCService service;
+	private OrderPayScheduleLCStepService service;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		service = new OrderPayScheduleLCService(
-				OrderPayScheduleService.newInstanceForUnitTesting(),
-				new ProformaOrderAllocRepository());
+		service = OrderPayScheduleLCStepService.newInstanceForUnitTesting();
 	}
 
 	// -----------------------------------------------------------------------
@@ -332,8 +332,6 @@ class OrderPayScheduleLCServiceTest
 	// Fixture helpers
 	// -----------------------------------------------------------------------
 
-	private static int ORDER_ID_COUNTER = 1000;
-	private static int INVOICE_ID_COUNTER = 2000;
 	private static int PAYMENT_TERM_ID_COUNTER = 3000;
 
 	private OrderId createOrder()

@@ -154,7 +154,7 @@ Feature: Split-payment — canonical over-delivery (Partial → Final)
     
     
     
-    
+    # FIXME we shall generate the invoice from invoice candidates
     # ── INV1: canonical IC pipeline, IsPartialInvoice=Y (Partial) ──
     And after not more than 60s locate invoice candidates by order id:
       | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |

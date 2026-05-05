@@ -1435,6 +1435,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		return getPaymentTermId(orderRecord);
+	}
+
+	@Override
 	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
 	{
 		return PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());

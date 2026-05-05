@@ -30,11 +30,11 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPaySchedule;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
-import de.metas.order.paymentschedule.OrderPayScheduleLine;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.OrderPaySchedule;
+import de.metas.order.paymentschedule.core.OrderPayScheduleId;
+import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
+import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import io.cucumber.datatable.DataTable;
@@ -92,7 +92,7 @@ public class C_OrderPaySchedule_StepDef
 		final DataTableRows rows = DataTableRows.of(dataTable);
 
 		final OrderPaySchedule paySchedule = getOrderPaySchedule(orderIdentifier);
-		assertThat(paySchedule.getLines()).hasSize(rows.size());
+		assertThat(paySchedule.getLines()).hasSameSizeAs(rows);
 
 		final HashSet<OrderPayScheduleId> matchedIds = new HashSet<>();
 
@@ -100,7 +100,7 @@ public class C_OrderPaySchedule_StepDef
 			final OrderPayScheduleLine payScheduleLine = findMatchingLine(paySchedule, row, matchedIds);
 			verifyOrderPaySchedule(row, payScheduleLine);
 
-			matchedIds.add(payScheduleLine.getId());
+			matchedIds.add(payScheduleLine.getIdNotNull());
 		});
 	}
 
@@ -141,8 +141,8 @@ public class C_OrderPaySchedule_StepDef
 			@NonNull final DataTableRow row,
 			@NonNull final HashSet<OrderPayScheduleId> alreadyMatchedIds)
 	{
-		return paySchedule.getLines().stream()
-				.filter(line -> !alreadyMatchedIds.contains(line.getId())) // not already matched
+		return paySchedule.streamLines()
+				.filter(line -> !alreadyMatchedIds.contains(line.getIdNotNull())) // not already matched
 				.filter(extractMatchingLinePredicate(row))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No pay schedule line matching" + row + " in orderId=" + paySchedule.getOrderId()));
@@ -199,7 +199,7 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
 				.ifPresent(rawValue -> {
-					final Money actual = payScheduleLine.getDueAmtActual();
+					final Money actual = payScheduleLine.getDueAmountActual();
 					if (DataTableUtil.isNullPlaceholder(rawValue))
 					{
 						softly.assertThat(actual).as("DueAmt_Actual should be null").isNull();

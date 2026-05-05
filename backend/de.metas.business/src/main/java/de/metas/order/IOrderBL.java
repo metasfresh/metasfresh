@@ -370,6 +370,8 @@ public interface IOrderBL extends ISingletonService
 		return luQty != null && luQty.signum() > 0;
 	}
 
+	PaymentTermId getPaymentTermId(@NonNull OrderId orderId);
+
 	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
 
 	Money getGrandTotal(@NonNull I_C_Order order);

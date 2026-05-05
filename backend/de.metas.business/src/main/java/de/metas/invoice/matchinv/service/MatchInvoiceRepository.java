@@ -7,6 +7,7 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvQuery;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Repository
 public class MatchInvoiceRepository
@@ -134,12 +136,16 @@ public class MatchInvoiceRepository
 		return MatchInvoiceRepository.fromRecord(record);
 	}
 
-	public ImmutableList<MatchInv> list(@NonNull final MatchInvQuery query)
+	public MatchInvCollection list(@NonNull final MatchInvQuery query)
+	{
+		return stream(query).collect(MatchInvCollection.collect());
+	}
+
+	public Stream<MatchInv> stream(@NonNull final MatchInvQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
-				.map(MatchInvoiceRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.map(MatchInvoiceRepository::fromRecord);
 	}
 
 	public boolean anyMatch(@NonNull final MatchInvQuery query)
@@ -183,9 +189,9 @@ public class MatchInvoiceRepository
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, query.getInvoiceAndLineId());
 		}
-		if (query.getInoutId() != null)
+		if (query.getInoutIds() != null && !query.getInoutIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, query.getInoutId());
+			sqlQueryBuilder.addInArrayFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, query.getInoutIds());
 		}
 		if (query.getInoutLineId() != null)
 		{

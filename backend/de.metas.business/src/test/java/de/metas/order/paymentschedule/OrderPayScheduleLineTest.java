@@ -25,10 +25,13 @@ package de.metas.order.paymentschedule;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.core.OrderPayScheduleId;
+import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
+import de.metas.order.paymentschedule.core.OrderPayScheduleLineContext;
+import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.SeqNo;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -60,7 +63,6 @@ class OrderPayScheduleLineTest
 		return OrderPayScheduleLine.builder()
 				.id(LINE_ID)
 				.orderId(ORDER_ID)
-				.seqNo(SeqNo.ofInt(10))
 				.paymentTermBreakId(BREAK_ID)
 				.referenceDateType(ReferenceDateType.OrderDate)
 				.percent(Percent.of(100))

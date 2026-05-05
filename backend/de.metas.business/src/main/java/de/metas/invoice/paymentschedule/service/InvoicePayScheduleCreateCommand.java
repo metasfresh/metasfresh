@@ -8,8 +8,8 @@ import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPaySchedule;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.OrderPaySchedule;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaySchedule;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -80,8 +80,7 @@ class InvoicePayScheduleCreateCommand
 		return Optional.of(
 				InvoicePayScheduleCreateRequest.builder()
 						.invoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
-						.lines(orderPaySchedule.getLines()
-								.stream()
+						.lines(orderPaySchedule.streamLines()
 								.map(line -> InvoicePayScheduleCreateRequest.Line.builder()
 										.dueDate(line.getDueDate())
 										.dueAmount(line.getDueAmount())
