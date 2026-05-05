@@ -291,6 +291,15 @@ public class HUQRCodesService
 		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
 	}
 
+	/**
+	 * Read-only counterpart of {@link #getQRCodesByHuId(HuId)} — never auto-generates a QR code.
+	 * Use from cleanup paths (e.g. on HU destroy) where creating a new QR code would be wrong.
+	 */
+	public List<HUQRCode> getExistingQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return huQRCodesRepository.getQRCodesByHuId(huId);
+	}
+
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
 	{
 		if (isGenerateQRCodesIfMissing)
