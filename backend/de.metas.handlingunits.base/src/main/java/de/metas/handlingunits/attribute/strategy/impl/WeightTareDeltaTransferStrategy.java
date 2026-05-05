@@ -84,7 +84,17 @@ public final class WeightTareDeltaTransferStrategy implements IHUAttributeTransf
 	@Override
 	public boolean isTransferable(@NonNull final IHUAttributeTransferRequest request, @NonNull final I_M_Attribute attribute)
 	{
-		return request.isVHUTransfer();
+		if (!request.isVHUTransfer())
+		{
+			return false;
+		}
+		// Only redistribute when the source actually carries tare. On an initial fill (non-HU source
+		// → VHU) HULoader.transferAttributes(useVHU=true) still invokes us because the destination
+		// is a VHU, but the source carries 0 tare and there is nothing to redistribute — the per-CU
+		// packaging contribution is added once by WeightGenerateHUTrxListener.trxLineProcessed for
+		// the same trx-line. Skipping here keeps that contribution single-counted.
+		final java.math.BigDecimal sourceTare = request.getAttributesFrom().getValueAsBigDecimal(attribute);
+		return sourceTare != null && sourceTare.signum() > 0;
 	}
 
 	@Nullable
