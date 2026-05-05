@@ -81,7 +81,7 @@ public class DATEVCsvExporter extends AbstractExporter
 	protected CSVWriter createDataDestination(final OutputStream out) throws IOException
 	{
 		// 1. Write EXTF line (line 1) if a datevExport record was provided
-		if (datevExport != null)
+		if (datevExport != null && datevExport.getDATEV_Export_Config_ID() > 0)
 		{
 			final String extfLine = buildExtfLine(datevExport, exportFormat);
 			out.write(extfLine.getBytes(exportFormat.getCsvEncoding()));
@@ -194,10 +194,8 @@ public class DATEVCsvExporter extends AbstractExporter
 		// TODO: get fiscal year start from C_Period/C_Year based on accounting schema and period
 		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).getYear());
 
-		// TODO: add DATEV_Beraternr + DATEV_Mandantennr columns to I_DATEV_Export
-		//       and replace the hardcoded values below
-		final String beraternr   = "179155";
-		final String mandantennr = "131";
+		final String advisorNumber   = datevExport.getAdvisorNumber();
+		final String clientNumber = datevExport.getClientNumber();
 
 		return "EXTF;510;21;"
 				+ formatName
@@ -205,8 +203,8 @@ public class DATEVCsvExporter extends AbstractExporter
 				+ ts + "313"
 				+ ";;"          // imported / exported (empty on export)
 				+ ";FR;B.L;"    // source, initials, reserved
-				+ ";" + beraternr
-				+ ";" + mandantennr
+				+ ";" + advisorNumber
+				+ ";" + clientNumber
 				+ ";" + fiscalYearStart
 				+ ";4"
 				+ ";" + dateFrom

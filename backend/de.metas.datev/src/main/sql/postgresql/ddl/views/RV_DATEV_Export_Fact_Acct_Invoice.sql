@@ -67,7 +67,7 @@ BEGIN
            (CASE
                 WHEN fa.docbasetype IN ('ARI', 'APC') THEN 'DR'
                 WHEN fa.docbasetype IN ('API', 'ARC') THEN 'CR'
-                ELSE ''
+                                                      ELSE ''
             END)                                                                                AS BP_Account_Place,
            COALESCE(SUM(fa.Amt), 0)                                                             AS Amt,
            (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id) AS Currency,
@@ -91,7 +91,7 @@ BEGIN
            COALESCE(
                    SUBSTRING(bp.name FROM 1 FOR 60),
                    'Beleg ' || REGEXP_REPLACE(fa.documentno, '^.*-', '')
-           )                                                                                   AS AdditionalDescription,
+           )                                                                                    AS AdditionalDescription,
            fa.c_acctschema_id,
            fa.postingtype,
            fa.c_invoice_id,
@@ -324,6 +324,7 @@ BEGIN
     SET BP_Account_Place = (CASE
                                 WHEN t.BP_Account_Place = 'DR' THEN 'S'
                                 WHEN t.BP_Account_Place = 'CR' THEN 'H'
+                                                               ELSE ''
                             END);
 
     RETURN QUERY SELECT t.dr_account,
@@ -348,6 +349,7 @@ BEGIN
                         t.BPValue,
                         t.BPName,
                         t.description,
+                        t.AdditionalDescription,
                         t.c_acctschema_id,
                         t.postingtype,
                         t.c_invoice_id,

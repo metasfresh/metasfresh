@@ -1,5 +1,6 @@
 package de.metas.datev.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -49,6 +50,96 @@ public interface I_DATEV_Export
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Beraternummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdvisorNumber (@Nullable java.lang.String AdvisorNumber);
+
+	/**
+	 * Get Beraternummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdvisorNumber();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_AdvisorNumber = new ModelColumn<>(I_DATEV_Export.class, "AdvisorNumber", null);
+	String COLUMNNAME_AdvisorNumber = "AdvisorNumber";
+
+	/**
+	 * Set Sachkontenrahmen.
+	 * Sachkontenrahmen, der für die Bewegungsdaten verwendet wurde
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChartOfAccounts (@Nullable java.lang.String ChartOfAccounts);
+
+	/**
+	 * Get Sachkontenrahmen.
+	 * Sachkontenrahmen, der für die Bewegungsdaten verwendet wurde
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getChartOfAccounts();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_ChartOfAccounts = new ModelColumn<>(I_DATEV_Export.class, "ChartOfAccounts", null);
+	String COLUMNNAME_ChartOfAccounts = "ChartOfAccounts";
+
+	/**
+	 * Set Sachkontenlänge.
+	 * Nummernlänge der Sachkonten. Wert muss beim Import mit der Konfiguration des Mandats in der DATEV App übereinstimmen.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChartOfAccountsNumberLength (@Nullable BigDecimal ChartOfAccountsNumberLength);
+
+	/**
+	 * Get Sachkontenlänge.
+	 * Nummernlänge der Sachkonten. Wert muss beim Import mit der Konfiguration des Mandats in der DATEV App übereinstimmen.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChartOfAccountsNumberLength();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_ChartOfAccountsNumberLength = new ModelColumn<>(I_DATEV_Export.class, "ChartOfAccountsNumberLength", null);
+	String COLUMNNAME_ChartOfAccountsNumberLength = "ChartOfAccountsNumberLength";
+
+	/**
+	 * Set ClientNumber.
+	 * Bereich 1-99999
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClientNumber (@Nullable java.lang.String ClientNumber);
+
+	/**
+	 * Get ClientNumber.
+	 * Bereich 1-99999
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClientNumber();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_ClientNumber = new ModelColumn<>(I_DATEV_Export.class, "ClientNumber", null);
+	String COLUMNNAME_ClientNumber = "ClientNumber";
 
 	/**
 	 * Get Created.
@@ -116,6 +207,31 @@ public interface I_DATEV_Export
 
 	ModelColumn<I_DATEV_Export, Object> COLUMN_DateAcctTo = new ModelColumn<>(I_DATEV_Export.class, "DateAcctTo", null);
 	String COLUMNNAME_DateAcctTo = "DateAcctTo";
+
+	/**
+	 * Set DATEV Export Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDATEV_Export_Config_ID (int DATEV_Export_Config_ID);
+
+	/**
+	 * Get DATEV Export Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDATEV_Export_Config_ID();
+
+	@Nullable de.metas.datev.model.I_DATEV_Export_Config getDATEV_Export_Config();
+
+	void setDATEV_Export_Config(@Nullable de.metas.datev.model.I_DATEV_Export_Config DATEV_Export_Config);
+
+	ModelColumn<I_DATEV_Export, de.metas.datev.model.I_DATEV_Export_Config> COLUMN_DATEV_Export_Config_ID = new ModelColumn<>(I_DATEV_Export.class, "DATEV_Export_Config_ID", de.metas.datev.model.I_DATEV_Export_Config.class);
+	String COLUMNNAME_DATEV_Export_Config_ID = "DATEV_Export_Config_ID";
 
 	/**
 	 * Set DATEV Export.

@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.datev.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -281004886L;
+	private static final long serialVersionUID = -1980595858L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -32,6 +33,55 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAdvisorNumber (final @Nullable java.lang.String AdvisorNumber)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdvisorNumber, AdvisorNumber);
+	}
+
+	@Override
+	public java.lang.String getAdvisorNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdvisorNumber);
+	}
+
+	@Override
+	public void setChartOfAccounts (final @Nullable java.lang.String ChartOfAccounts)
+	{
+		set_ValueNoCheck (COLUMNNAME_ChartOfAccounts, ChartOfAccounts);
+	}
+
+	@Override
+	public java.lang.String getChartOfAccounts() 
+	{
+		return get_ValueAsString(COLUMNNAME_ChartOfAccounts);
+	}
+
+	@Override
+	public void setChartOfAccountsNumberLength (final @Nullable BigDecimal ChartOfAccountsNumberLength)
+	{
+		set_Value (COLUMNNAME_ChartOfAccountsNumberLength, ChartOfAccountsNumberLength);
+	}
+
+	@Override
+	public BigDecimal getChartOfAccountsNumberLength() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChartOfAccountsNumberLength);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setClientNumber (final @Nullable java.lang.String ClientNumber)
+	{
+		set_ValueNoCheck (COLUMNNAME_ClientNumber, ClientNumber);
+	}
+
+	@Override
+	public java.lang.String getClientNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_ClientNumber);
 	}
 
 	@Override
@@ -56,6 +106,33 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	public java.sql.Timestamp getDateAcctTo() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateAcctTo);
+	}
+
+	@Override
+	public de.metas.datev.model.I_DATEV_Export_Config getDATEV_Export_Config()
+	{
+		return get_ValueAsPO(COLUMNNAME_DATEV_Export_Config_ID, de.metas.datev.model.I_DATEV_Export_Config.class);
+	}
+
+	@Override
+	public void setDATEV_Export_Config(final de.metas.datev.model.I_DATEV_Export_Config DATEV_Export_Config)
+	{
+		set_ValueFromPO(COLUMNNAME_DATEV_Export_Config_ID, de.metas.datev.model.I_DATEV_Export_Config.class, DATEV_Export_Config);
+	}
+
+	@Override
+	public void setDATEV_Export_Config_ID (final int DATEV_Export_Config_ID)
+	{
+		if (DATEV_Export_Config_ID < 1) 
+			set_Value (COLUMNNAME_DATEV_Export_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_DATEV_Export_Config_ID, DATEV_Export_Config_ID);
+	}
+
+	@Override
+	public int getDATEV_Export_Config_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DATEV_Export_Config_ID);
 	}
 
 	@Override
