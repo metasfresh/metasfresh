@@ -292,12 +292,12 @@ public class HUQRCodesService
 	}
 
 	/**
-	 * Read-only counterpart of {@link #getQRCodesByHuId(HuId)} — never auto-generates a QR code.
-	 * Use from cleanup paths (e.g. on HU destroy) where creating a new QR code would be wrong.
+	 * Soft-delete every active {@code M_HU_QRCode_Assignment} row pointing at the given HU.
+	 * Preserves the row for audit/traceability; existing scan-time lookups already filter on {@code IsActive='Y'}.
 	 */
-	public List<HUQRCode> getExistingQRCodesByHuId(@NonNull final HuId huId)
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
 	{
-		return huQRCodesRepository.getQRCodesByHuId(huId);
+		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
 	}
 
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
