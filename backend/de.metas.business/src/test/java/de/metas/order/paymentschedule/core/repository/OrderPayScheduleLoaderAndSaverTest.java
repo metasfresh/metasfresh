@@ -135,6 +135,61 @@ class OrderPayScheduleLoaderAndSaverTest
 	}
 
 	/**
+	 * Saves an {@link OrderPayScheduleLine} with {@code baseAmount = null}
+	 * and non-null {@code inoutId} / {@code invoiceId}, reloads it, and asserts
+	 * that {@code baseAmount} is null while the FKs survived the round-trip.
+	 * <p>
+	 * Before the fix, {@code fromRecord} called {@code Money.of(record.getBaseAmt(), currencyId)}
+	 * unconditionally; when {@code BaseAmt} is NULL in the DB the getter returns {@code null}
+	 * and {@code Money.of} NPEs (or silently wraps zero — either way wrong).
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
+	 */
+	@Test
+	void roundTrip_nullableBaseAmtRoundTripsAsNull()
+	{
+		// --- arrange ---
+		final I_C_Order order = newInstance(I_C_Order.class);
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(1001);
+		final PaymentTermBreakId breakId = PaymentTermBreakId.ofRepoId(paymentTermId, 1002);
+
+		final InOutId inoutId = InOutId.ofRepoId(1234);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(5678);
+
+		final OrderPayScheduleLine line = OrderPayScheduleLine.builder()
+				.orderId(orderId)
+				.paymentTermBreakId(breakId)
+				.referenceDateType(ReferenceDateType.OrderDate)
+				.percent(Percent.of(100))
+				.offsetDays(0)
+				.status(OrderPayScheduleStatus.Pending)
+				.dueDate(LocalDate.of(2026, 6, 1))
+				.baseAmount(null)  // intentionally null — the column is Mandatory:false
+				.dueAmount(Money.of(BigDecimal.valueOf(42000.00), EUR))
+				.inoutId(inoutId)
+				.invoiceId(invoiceId)
+				.build();
+
+		final OrderPaySchedule schedule = OrderPaySchedule.ofList(orderId, Collections.singletonList(line));
+
+		// --- act: save ---
+		repository.save(schedule);
+
+		// --- act: reload ---
+		final Optional<OrderPaySchedule> reloaded = repository.getByOrderId(orderId);
+		assertThat(reloaded).isPresent();
+		final OrderPayScheduleLine reloadedLine = reloaded.get().getLines().get(0);
+
+		// --- assert ---
+		assertThat(reloadedLine.getBaseAmount()).as("baseAmount preserved as null").isNull();
+		assertThat(reloadedLine.getInoutId()).as("inoutId round-tripped").isEqualTo(inoutId);
+		assertThat(reloadedLine.getInvoiceId()).as("invoiceId round-tripped").isEqualTo(invoiceId);
+	}
+
+	/**
 	 * Saves an {@link OrderPayScheduleLine} without inoutId and invoiceId
 	 * (LC row scenario: no shipment or invoice yet),
 	 * reloads it by order, and asserts both fields are null.

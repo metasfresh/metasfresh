@@ -146,7 +146,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.isPaid(record.isPaid())
 				.referenceDate(TimeUtil.asLocalDate(record.getReferenceDate()))
 				.dueDate(TimeUtil.asLocalDate(record.getDueDate()))
-				.baseAmount(Money.of(record.getBaseAmt(), currencyId))
+				.baseAmount(InterfaceWrapperHelper.isNull(record, I_C_OrderPaySchedule.COLUMNNAME_BaseAmt) ? null : Money.of(record.getBaseAmt(), currencyId))
 				.dueAmount(Money.of(record.getDueAmt(), currencyId))
 				.dueAmountActual(dueAmtActualBD != null ? Money.of(dueAmtActualBD, currencyId) : null)
 				//
