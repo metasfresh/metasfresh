@@ -331,7 +331,8 @@ public class OrderPayScheduleRegularInvoiceService
 	}
 
 	@NonNull
-	private Money computeAmountToAllocate(
+	// Package-visible for unit tests in the same package; production callers use allocateForInvoice(...).
+	Money computeAmountToAllocate(
 			@NonNull final RegularInvoice regularVendorInvoice,
 			@NonNull final Prepayment prepayment)
 	{

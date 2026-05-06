@@ -71,7 +71,6 @@ import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -88,7 +87,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link OrderPayScheduleRegularInvoiceService#computeAmountToAllocate}
- * (tested via reflection — the method is private).
+ * (directly invokes package-visible method).
  *
  * <p>Covers allocation rules: Partial (proportional vs cap), Final (consumes remaining),
  * AP-sign negation, and cascade live-read from {@link OrderPaySchedulePrepaymentService}.
@@ -325,7 +324,7 @@ class OrderPayScheduleRegularInvoiceServiceTest
 				.type(MatchInvType.Material)
 				.build();
 
-		// Use thenAnswer so each call gets a fresh Stream (Streams are single-use)
+		// thenAnswer provides a fresh Stream per invocation; thenReturn would exhaust the stream on first use.
 		when(matchInvoiceRepository.stream(any())).thenAnswer(inv -> Stream.of(matchInv));
 
 		// MaterialReceiptCollection mock: containsInOutLineId returns true for our INOUT_LINE_ID
@@ -401,25 +400,10 @@ class OrderPayScheduleRegularInvoiceServiceTest
 	}
 
 	/**
-	 * Calls the private {@code computeAmountToAllocate(RegularInvoice, Prepayment)} method
-	 * via reflection so unit tests can assert on its return value directly.
+	 * Directly invokes the package-visible {@code computeAmountToAllocate(RegularInvoice, Prepayment)} method.
 	 */
 	private Money computeAmountToAllocate(final RegularInvoice invoice, final Prepayment prepayment)
 	{
-		try
-		{
-			final Method method = OrderPayScheduleRegularInvoiceService.class
-					.getDeclaredMethod("computeAmountToAllocate", RegularInvoice.class, Prepayment.class);
-			method.setAccessible(true);
-			return (Money)method.invoke(service, invoice, prepayment);
-		}
-		catch (final java.lang.reflect.InvocationTargetException e)
-		{
-			throw new RuntimeException("computeAmountToAllocate threw: " + e.getCause(), e.getCause());
-		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException("Reflection failed: " + e.getMessage(), e);
-		}
+		return service.computeAmountToAllocate(invoice, prepayment);
 	}
 }
