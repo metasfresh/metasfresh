@@ -11,10 +11,10 @@ RETURNS numeric
 AS $BODY$
 SELECT (de_metas_acct.acctBalanceToDate(
             p_C_ElementValue_ID,
-            (SELECT ci.C_AcctSchema1_ID
-               FROM C_ElementValue ev
-               JOIN AD_ClientInfo ci ON ci.AD_Client_ID = ev.AD_Client_ID
-              WHERE ev.C_ElementValue_ID = p_C_ElementValue_ID),
+            getC_AcctSchema_ID(
+                (SELECT AD_Client_ID FROM C_ElementValue WHERE C_ElementValue_ID = p_C_ElementValue_ID),
+                p_AD_Org_ID
+            ),
             now()::date,
             p_AD_Org_ID
         )).Balance
