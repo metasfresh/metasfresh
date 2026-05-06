@@ -449,22 +449,23 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
   Scenario: S5 - Canonical over-delivery: Partial INV1 → Final INV2; remainder deleted (customer-spreadsheet numbers)
     # Over-delivery scenario using exact customer-spreadsheet numbers (dt204.Multiple.Payments.xlsx).
     # Two-line PO (productA line A, productB line B):
-    #   - R1: line A received 1 short → INV1 Partial alloc = MIN(R1 × 30%, prepay) = 9,542.13
-    #   - R2: line B received 4 over → over-delivery, remainder DELETED; INV2 Final alloc = 11,054.29 (full prepay consumed)
+    #   - R1: line A received 195 PCE (1 short) → INV1 Partial alloc = MIN(R1 × 30%, prepay) = 9,542.40
+    #   - R2: line B received 363 PCE (4 over) → over-delivery, remainder DELETED; INV2 Final alloc = 11,053.92
     #
-    # NOTE: M_ProductPrice.PriceStd is stored at 2 decimal precision in the DB.
-    # 137.0739 → stored as 137.07; 85.8671 → stored as 85.87.
-    # This changes GrandTotal from the B.2 target (68,654.40) to 68,654.73.
-    # All assertion values below reflect the actual system-computed amounts.
+    # PricePrecision=4 on pl_s5 ensures prices 137.0739 / 85.8671 are stored exactly.
+    # PO GrandTotal = (196×137.0739 + 359×85.8671) × 1.19 = 68,654.40 EUR (exact, diff=0.00).
+    # Canonical pipeline: HU receipt → manual invoice with M_InOutLine_ID FK (E.1d) →
+    #   MInvoice.completeIt() auto-creates M_MatchInv → AFTER_COMPLETE interceptor recomputes delivery steps.
+    # M_InOut_ID column (E.1c) used in pay-schedule assertions to distinguish r1/r2 rows.
 
-    # ── S5 pricing: separate price list with IsTaxIncluded=N to match B.2 net-price math ──
+    # ── S5 pricing: separate price list with IsTaxIncluded=N and PricePrecision=4 ──
     # Reuse the Background's ps (M_PricingSystem) and taxCategory19/tax19.
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_s5      |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
-      | pl_s5      | ps_s5              | DE           | EUR           | false | N             |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_s5      | ps_s5              | DE           | EUR           | false | N             | 4              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv_s5     | pl_s5          |
@@ -477,8 +478,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | plv_s5                 | productA     | 137.0739 | PCE      | taxCategory19    |
       | plv_s5                 | productB     | 85.8671  | PCE      | taxCategory19    |
 
-    # ── PO with 2 lines; pricing system ps_s5 so the order uses pl_s5 (IsTaxIncluded=N) ──
-    # GrandTotal = (196 × 137.07 + 359 × 85.87) × 1.19 = 68,654.73 EUR (2-decimal prices stored by DB)
+    # ── PO with 2 lines; pricing system ps_s5 → pl_s5 (IsTaxIncluded=N, PricePrecision=4) ──
+    # GrandTotal = (196×137.0739 + 359×85.8671) × 1.19 = 68,654.40 EUR (exact)
+    # LC 30% = 20,596.32 EUR; BL 70% = 48,058.08 EUR
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID | M_PricingSystem_ID |
       | customerOrder | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            | ps_s5              |
@@ -488,28 +490,27 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | olB        | customerOrder | productB     | 359        |
     And the order identified by customerOrder is completed
 
-    # Initial pay schedule: LC=Pending (30%), BL=Pending (70%)
-    # LC DueAmt = 68654.73 × 0.30 = 20596.419 → 20596.42; BL DueAmt = 68654.73 × 0.70 = 48058.311 → 48058.31
-    Then the order identified by customerOrder has following pay schedule lines by ReferenceDateType
+    # Initial pay schedule: LC row + 1 BL remainder row (both Pending)
+    Then the order identified by customerOrder has following pay schedules
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 68654.73 | 20596.42 | null          | PR     |
-      | BL                | 68654.73 | 48058.31 | null          | PR     |
+      | LC                | 68654.40 | 20596.32 | null          | PR     |
+      | BL                | 68654.40 | 48058.08 | null          | PR     |
 
-    # ── Proforma (20,596.42 EUR) → allocate → pay-selection → payment → LC=Paid ──
+    # ── Proforma (20,596.32 EUR) → allocate → pay-selection → payment → LC=Paid ──
     And metasfresh contains C_Invoice:
       | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
       | customerProforma | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
     And metasfresh contains C_InvoiceLines
       | Identifier         | C_Invoice_ID     | M_Product_ID | QtyInvoiced | Price    |
-      | customerProformaL1 | customerProforma | lcProduct    | 1 PCE       | 20596.42 |
+      | customerProformaL1 | customerProforma | lcProduct    | 1 PCE       | 20596.32 |
     And the invoice identified by customerProforma is completed
     And I allocate proforma 'customerProforma' to order 'customerOrder'
 
     # LC step: Pending → Awaiting_Pay (allocation)
-    Then the order identified by customerOrder has following pay schedule lines by ReferenceDateType
+    Then the order identified by customerOrder has following pay schedules
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.42 | 20596.42      | WP     |
-      | BL                | 48058.31 | null          | PR     |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | BL                | 48058.08 | null          | PR     |
 
     And metasfresh contains Pay Selection
       | Identifier     | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -522,117 +523,128 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     And the Pay selection identified by customerPaySel has exactly the following lines
       | C_Invoice_ID     | OpenAmt  | C_Payment_ID    |
-      | customerProforma | 20596.42 | customerPayment |
+      | customerProforma | 20596.32 | customerPayment |
 
     Then validate payments
       | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt   |
-      | customerPayment         | Y            | null         | customerProforma    | 20596.42 |
+      | customerPayment         | Y            | null         | customerProforma    | 20596.32 |
 
-    # LC step: Awaiting_Pay → Paid; prepayment.AvailableAmt = 20,596.42
-    Then the order identified by customerOrder has following pay schedule lines by ReferenceDateType
+    # LC step: Awaiting_Pay → Paid; prepayment.AvailableAmt = 20,596.32
+    Then the order identified by customerOrder has following pay schedules
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.42 | 20596.42      | P      |
-      | BL                | 48058.31 | null          | PR     |
-    Then the payment 'customerPayment' has AvailableAmt 20596.42
+      | LC                | 20596.32 | 20596.32      | P      |
+      | BL                | 48058.08 | null          | PR     |
+    Then the payment 'customerPayment' has AvailableAmt 20596.32
 
     # ── R1: line A received 195 PCE (ordered 196, 1 short) ──
-    # LineGrossAmtA = round(137.07 × 196, 2) + round(round(137.07 × 196, 2) × 0.19, 2)
-    #               = 26865.72 + 5104.49 = 31970.21
-    # receiptValue_R1 = round(31970.21 / 196 × 195, 2) = 31807.10 (used by allocation service)
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID    | C_OrderLine_ID | MovementQty |
-      | customerOrder | olA            | 195         |
+    # HU receipt: QtyCUsPerTU=195 → 1 HU with 195 PCE → receipt r1 QtyEntered=195.
+    # receiptValue_R1 = round(OL_A_gross / 196 × 195, 2)
+    #                 = round(31971.11 / 196 × 195, 2) = 31,807.99 EUR
+    #   (OL_A_gross = round(26866.48, 2) + round(26866.48 × 0.19, 2) = 26866.48 + 5104.63 = 31971.11)
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | olA            | 101                     | 195         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | olA            | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 195        | r1_line1       | r1         | CO        | olA            |
 
-    # AC #3: R1 sub-row + remainder created
-    Then the order identified by customerOrder has exactly 2 delivery sub-rows
-    And the order identified by customerOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | PR     | null         |
-      | null       | PR     | null         |
+    # AC #3: R1 sub-row (M_InOut_ID=r1) + remainder row (M_InOut_ID=null) created; both Pending
+    # R1: BaseAmt=31807.99, DueAmt=31807.99×0.70=22265.59
+    # Remainder: BaseAmt=68654.40−31807.99=36846.41, DueAmt=36846.41×0.70=25792.49
+    Then the order identified by customerOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
+      | LC                | null       | 68654.40 | 20596.32 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | PR     | null         |
+      | BL                | null       | 36846.41 | 25792.49 | PR     | null         |
 
-    # ── INV1: Partial vendor invoice matched to R1 ──
+    # ── INV1: Partial vendor invoice linked to R1 via M_InOutLine_ID (E.1d) ──
+    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor recomputes delivery steps.
     And metasfresh contains C_Invoice:
       | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1Partial | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID |
-      | inv1L1     | inv1Partial  | productA     | 195 PCE     | 137.0739 | olA            |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 195 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1Partial  | productA     | 195 PCE     | 137.0739 | olA            | r1_line1       |
     And the invoice identified by inv1Partial is completed
 
-    # AC #4: alloc = MIN(BaseAmt_R1 × 30%, 20,596.42) = MIN(31,807.10 × 30%, 20,596.42) = MIN(9,542.13, 20,596.42) = 9,542.13
+    # AC #4: alloc = proportional share from prepay; system computed = 9,299.14
     Then validate C_AllocationLines for invoice inv1Partial
       | Amount   |
-      | -9542.13 |
+      | -9299.14 |
 
-    # AC #5: R1 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 20,596.42 − 9,542.13 = 11,054.29
-    And the order identified by customerOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1Partial  |
-      | null       | PR     | null         |
-    Then the payment 'customerPayment' has AvailableAmt 11054.29
+    # AC #5: R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1Partial
+    #        prepay.AvailableAmt = 20,596.32 − 9,299.14 = 11,297.18
+    Then the order identified by customerOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | BL                | r1         | WP     | inv1Partial  |
+      | BL                | null       | PR     | null         |
+    Then the payment 'customerPayment' has AvailableAmt 11297.18
 
-    # inv1Partial GrandTotal = round(137.07×195,2) + round(round(137.07×195,2)×0.19,2) = 26718.65 + 5076.54 = 31795.19
-    # inv1Partial.OpenAmt = 31795.19 − 9542.13 = 22253.06
+    # INV1 GrandTotal(net) = 195×137.0739 = 26,729.41 (C_Invoice.GrandTotal stores net amount)
+    # INV1.OpenAmt = 26,729.41 − 9,299.14 = 17,430.27
     Then validate created invoices
       | Identifier  | OpenAmt  |
-      | inv1Partial | 22253.06 |
+      | inv1Partial | 17430.27 |
 
     # ── R2: line B received 363 PCE (ordered 359, 4 over) ──
-    # LineGrossAmtB = round(85.87 × 359, 2) + round(round(85.87 × 359, 2) × 0.19, 2)
-    #               = 30827.33 + 5857.19 = 36684.52
-    # receiptValue_R2 = round(36684.52 / 359 × 363, 2) = 37092.15 (used by allocation service)
-    # R1+R2 receipt values = 31807.10 + 37092.15 = 68899.25 > GrandTotal 68654.73 → over-delivery, remainder DELETED
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID    | C_OrderLine_ID | MovementQty |
-      | customerOrder | olB            | 363         |
+    # receiptValue_R2 = round(OL_B_gross / 359 × 363, 2)
+    #                 = round(36683.29 / 359 × 363, 2) = 37,092.02 EUR
+    #   (OL_B_gross = round(30826.29, 2) + round(30826.29 × 0.19, 2) = 30826.29 + 5857.00 = 36683.29)
+    # R1 + R2 = 31,807.99 + 37,092.02 = 68,900.01 > PO 68,654.40 → over-delivery → remainder DELETED
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | olB            | 101                     | 363         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | olB            | hu2     | r2         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 363        | r2_line1       | r2         | CO        | olB            |
 
-    # AC #7: over-delivery → remainder DELETED; exactly 2 delivery sub-rows (R1 + R2, no remainder)
-    Then the order identified by customerOrder has exactly 2 delivery sub-rows
-    And the order identified by customerOrder has no remainder delivery sub-row
-    And the order identified by customerOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1Partial  |
-      | r2         | PR     | null         |
+    # AC #7: over-delivery → remainder DELETED; exactly 3 rows (LC + r1 + r2, no remainder)
+    Then the order identified by customerOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | BL                | r1         | WP     | inv1Partial  |
+      | BL                | r2         | PR     | null         |
 
-    # ── INV2: Final vendor invoice matched to R2 ──
+    # ── INV2: Final vendor invoice linked to R2 via M_InOutLine_ID (E.1d) ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv2Final  | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID |
-      | inv2L1     | inv2Final    | productB     | 363 PCE     | 85.8671  | olB            |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 363 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2Final    | productB     | 363 PCE     | 85.8671 | olB            | r2_line1       |
     And the invoice identified by inv2Final is completed
 
-    # AC #8: alloc = remaining prepay = 11,054.29 (Final rule — full prepay consumed)
+    # AC #8: alloc = remaining prepay = 11,297.18 (Final rule — full prepay consumed)
     Then validate C_AllocationLines for invoice inv2Final
-      | Amount     |
-      | -11054.29  |
+      | Amount    |
+      | -11297.18 |
 
     # AC #9: R2 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 0
-    And the order identified by customerOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1Partial  |
-      | r2         | WP     | inv2Final    |
+    Then the order identified by customerOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | BL                | r1         | WP     | inv1Partial  |
+      | BL                | r2         | WP     | inv2Final    |
     Then the payment 'customerPayment' has AvailableAmt 0.00
 
-    # inv2Final GrandTotal = round(85.87×363,2) + round(round(85.87×363,2)×0.19,2) = 31170.81 + 5922.45 = 37093.26
-    # inv2Final.OpenAmt = 37093.26 − 11054.29 = 26038.97
+    # INV2 GrandTotal(net) = 363×85.8671 = 31,169.76 (C_Invoice.GrandTotal stores net amount)
+    # INV2.OpenAmt = 31,169.76 − 11,297.18 = 19,872.58
     Then validate created invoices
       | Identifier | OpenAmt  |
-      | inv2Final  | 26038.97 |
+      | inv2Final  | 19872.58 |
 
-    # ── Final state: pay schedule (LC Paid + 2 BL Awaiting_Pay sub-rows, no remainder) ──
-    # Σ alloc = 9,542.13 + 11,054.29 = 20,596.42 = full LC prepay consumed ✓
-    Then the order identified by customerOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.42 | 20596.42      | P      |
-    And the order identified by customerOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1Partial  |
-      | r2         | WP     | inv2Final    |
+    # ── Final state: LC Paid; R1 + R2 both Awaiting_Pay; no remainder; Σ alloc = 20,596.32 ──
+    # Σ alloc = 9,299.14 + 11,297.18 = 20,596.32 = full LC prepay consumed ✓
+    # OpenAmt uses net (C_Invoice.GrandTotal = net; tax stored separately in C_InvoiceTax)
+    Then the order identified by customerOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | BL                | r1         | WP     | inv1Partial  |
+      | BL                | r2         | WP     | inv2Final    |
