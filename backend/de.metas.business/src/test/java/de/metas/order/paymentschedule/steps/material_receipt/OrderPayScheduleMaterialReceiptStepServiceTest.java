@@ -1,0 +1,471 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.order.paymentschedule.steps.material_receipt;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.core.OrderPaySchedule;
+import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
+import de.metas.order.paymentschedule.core.OrderPayScheduleId;
+import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.core.OrderSchedulingContext;
+import de.metas.order.paymentschedule.referenced_docs.material_receipt.MaterialReceipt;
+import de.metas.order.paymentschedule.referenced_docs.material_receipt.MaterialReceiptCollection;
+import de.metas.order.paymentschedule.referenced_docs.regular_invoice.OrderPayScheduleRegularInvoiceService;
+import de.metas.order.paymentschedule.referenced_docs.regular_invoice.RegularInvoice;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermBreak;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_OrderPaySchedule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+/**
+ * Forward-mode unit tests for {@link OrderPayScheduleMaterialReceiptStepService#computeOrderPayScheduleLines}.
+ * Directly invokes the package-visible method; reversal / idempotence / dormancy cells are in W1.2b.
+ *
+ * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
+ */
+class OrderPayScheduleMaterialReceiptStepServiceTest
+{
+	// -----------------------------------------------------------------------
+	// Constants shared across cells
+	// -----------------------------------------------------------------------
+
+	private static final CurrencyId EUR = CurrencyId.ofRepoId(318);
+	private static final OrderId ORDER_ID = OrderId.ofRepoId(9001);
+
+	/**
+	 * Payment term with two breaks: LC=30% + MR=70%.
+	 * IDs are arbitrary – the service never validates them.
+	 */
+	private static final PaymentTermId PT_ID = PaymentTermId.ofRepoId(1000);
+	private static final PaymentTermBreakId LC_BREAK_ID = PaymentTermBreakId.ofRepoId(PT_ID, 1001);
+	private static final PaymentTermBreakId MR_BREAK_ID = PaymentTermBreakId.ofRepoId(PT_ID, 1002);
+
+	/** Order grand total: 100 000 EUR. MR break gets last-break remainder = 70 000 EUR. */
+	private static final Money GRAND_TOTAL = Money.of("100000.00", EUR);
+	/** R1 receipt value (lineGrossAmt, fully matched qty). */
+	private static final Money R1_VALUE = Money.of("31808.00", EUR);
+	/** R2 receipt value – used in the over-delivery cell. */
+	private static final Money R2_VALUE = Money.of("80000.00", EUR);
+
+	/** Arbitrary movement date for receipts. */
+	private static final LocalDate MOVEMENT_DATE = LocalDate.of(2026, 3, 15);
+
+	// IDs for receipts / invoices
+	private static final InOutId R1_ID = InOutId.ofRepoId(8001);
+	private static final InOutId R2_ID = InOutId.ofRepoId(8002);
+	private static final InOutLineId R1_LINE_ID = InOutLineId.ofRepoId(8101);
+	private static final InOutLineId R2_LINE_ID = InOutLineId.ofRepoId(8201);
+	private static final InvoiceId INV1_ID = InvoiceId.ofRepoId(5001);
+
+	// -----------------------------------------------------------------------
+	// Test infrastructure
+	// -----------------------------------------------------------------------
+
+	private OrderPayScheduleMaterialReceiptStepService service;
+	private OrderPayScheduleRegularInvoiceService regularInvoiceService;
+	private I_C_UOM uom;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		// Create a POJO UOM record required by Quantity.of()
+		uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
+
+		// Mock Services.get() targets used by ReceiptValueCalculator (static fields in the service)
+		final IOrderBL orderBL = mock(IOrderBL.class);
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		Services.registerService(IOrderBL.class, orderBL);
+		Services.registerService(IOrderLineBL.class, orderLineBL);
+
+		// Stub: IOrderBL.getLinesByIds → returns a map with order lines for R1 and R2
+		when(orderBL.getLinesByIds(any())).thenAnswer(inv -> {
+			final java.util.Set<OrderAndLineId> ids = inv.getArgument(0);
+			final Map<OrderAndLineId, I_C_OrderLine> result = new java.util.HashMap<>();
+			for (final OrderAndLineId id : ids)
+			{
+				final I_C_OrderLine line = mock(I_C_OrderLine.class);
+				result.put(id, line);
+			}
+			return result;
+		});
+
+		// Stub: orderLineBL.getLineGrossAmt → return the receipt value via the order line stub
+		// The test uses qtyOrdered == qtyReceived so the full lineGrossAmt is returned.
+		when(orderLineBL.getLineGrossAmt(any(I_C_OrderLine.class))).thenAnswer(inv -> {
+			// Identify which receipt the line belongs to by checking if it was created for R1 or R2.
+			// We stash the expected lineGrossAmt on the mock via Mockito name (no side-channel needed;
+			// see the per-cell helper methods that configure the money stub further).
+			return Mockito.RETURNS_DEFAULTS.answer(inv);
+		});
+		// Default: both R1-line and R2-line return ZERO (overridden per receipt in helper methods)
+		when(orderLineBL.getQtyOrdered(any(I_C_OrderLine.class))).thenReturn(qty("10"));
+
+		final MoneyService moneyService = mock(MoneyService.class);
+		when(moneyService.getStdPrecision(any(CurrencyId.class))).thenReturn(CurrencyPrecision.TWO);
+
+		regularInvoiceService = mock(OrderPayScheduleRegularInvoiceService.class);
+		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty()); // default: no invoice
+
+		service = new OrderPayScheduleMaterialReceiptStepService(
+				moneyService,
+				mock(de.metas.order.paymentschedule.core.service.OrderPayScheduleService.class),
+				mock(de.metas.order.paymentschedule.referenced_docs.material_receipt.OrderPayScheduleMaterialReceiptService.class),
+				regularInvoiceService
+		);
+
+		// Wire up the simpler line-gross-amt stubs by making orderLineBL return the R1/R2 values
+		// based on what the ReceiptValueCalculator computes.  The two receipts each have one line;
+		// the line's gross amt is the receipt's full value (qty ordered == qty received → ratio = 1).
+		configureLineGrossAmt(orderLineBL, R1_VALUE, R2_VALUE);
+	}
+
+	/**
+	 * Configures the per-line gross amount stubs.
+	 * The order BL mock returns a distinct {@link I_C_OrderLine} mock per {@link OrderAndLineId}.
+	 * We cannot correlate the mock instance to R1 or R2 after the fact, so we key on invocation order
+	 * across the warm-up: first distinct line that appears for getLineGrossAmt → R1_VALUE, second → R2_VALUE.
+	 */
+	private void configureLineGrossAmt(final IOrderLineBL orderLineBL, final Money r1Amt, final Money r2Amt)
+	{
+		final Money[] amounts = { r1Amt, r2Amt };
+		final int[] callCount = { 0 };
+		// The ReceiptValueCalculator calls getLineGrossAmt once per line in iteration order (R1 first, then R2).
+		Mockito.doAnswer(inv -> {
+			final int idx = callCount[0]++;
+			return idx < amounts.length ? amounts[idx] : r2Amt;
+		}).when(orderLineBL).getLineGrossAmt(any(I_C_OrderLine.class));
+
+		// qtyOrdered == qtyReceived for all lines → ratio = 1 → receiptValue = lineGrossAmt
+		Mockito.doReturn(qty("10")).when(orderLineBL).getQtyOrdered(any(I_C_OrderLine.class));
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 1 — AC #1 — no receipts → single remainder row, Status=Pending
+	// -----------------------------------------------------------------------
+
+	@Test
+	void noReceipts_oneRemainder()
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				MaterialReceiptCollection.EMPTY,
+				order,
+				mrBreak(),
+				schedule);
+
+		assertThat(lines).hasSize(1);
+
+		final OrderPayScheduleLine remainder = lines.get(0);
+		assertThat(remainder.getInoutId()).isNull();
+		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		// dueAmountActual = full mrBreak share = 70 000 (no receipts → nothing consumed)
+		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("70000.00", EUR));
+		assertThat(remainder.getInvoiceId()).isNull();
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 2 — AC #3 — one receipt, no invoice → sub-row Pending + remainder
+	// -----------------------------------------------------------------------
+
+	@Test
+	void oneReceipt_pendingNoInvoice()
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		assertThat(lines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = lines.get(0);
+		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
+		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		assertThat(r1Line.getDueAmountActual()).isEqualByComparingTo(R1_VALUE); // min(31808, 70000) = 31808
+		assertThat(r1Line.getInvoiceId()).isNull();
+
+		final OrderPayScheduleLine remainder = lines.get(1);
+		assertThat(remainder.getInoutId()).isNull();
+		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		// 70000 - 31808 = 38192
+		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("38192.00", EUR));
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 3 — AC #5 — one receipt + completed (unpaid) invoice → Awaiting_Pay
+	// -----------------------------------------------------------------------
+
+	@Test
+	void oneReceipt_completedInvoice_awaitingPay()
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		// Stub: R1 has a completed but NOT yet paid invoice
+		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.of(buildInvoice(INV1_ID, false)));
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		assertThat(lines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = lines.get(0);
+		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
+		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(r1Line.getInvoiceId()).isEqualTo(INV1_ID);
+
+		// Remainder still present with Pending status
+		final OrderPayScheduleLine remainder = lines.get(1);
+		assertThat(remainder.getInoutId()).isNull();
+		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 4 — extension of AC #5 — one receipt + fully paid invoice → Paid
+	// (B4 fix: Pending→Paid direct transition now allowed)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void oneReceipt_paidInvoice_paid()
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		// Stub: R1 has a fully paid invoice
+		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.of(buildInvoice(INV1_ID, true)));
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		assertThat(lines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = lines.get(0);
+		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
+		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Paid);
+		assertThat(r1Line.getInvoiceId()).isEqualTo(INV1_ID);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 5 — AC #7 — two receipts totalling > GrandTotal → no remainder row
+	// -----------------------------------------------------------------------
+
+	@Test
+	void twoReceipts_overDelivery_remainderDeleted()
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		// R1=31808 + R2=80000 = 111808 > mrBreakDueAmt=70000 → over-delivery
+		final MaterialReceiptCollection receipts = receiptCollection(
+				buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE),
+				buildReceipt(R2_ID, R2_LINE_ID, R2_VALUE));
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		// Exactly 2 sub-rows (R1 + R2), no remainder because dueAmtRemaining reaches 0 after R1+R2
+		assertThat(lines).hasSize(2);
+
+		assertThat(lines.get(0).getInoutId()).isEqualTo(R1_ID);
+		assertThat(lines.get(0).getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+
+		assertThat(lines.get(1).getInoutId()).isEqualTo(R2_ID);
+		assertThat(lines.get(1).getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		// R2 is capped: dueAmtRemaining after R1 = 70000 - 31808 = 38192; R2_VALUE=80000 → dueAmt=38192
+		assertThat(lines.get(1).getDueAmountActual()).isEqualByComparingTo(Money.of("38192.00", EUR));
+
+		// No remainder row
+		assertThat(lines).allMatch(l -> l.getInoutId() != null);
+	}
+
+	// -----------------------------------------------------------------------
+	// Fixture helpers
+	// -----------------------------------------------------------------------
+
+	/** Build an {@link OrderSchedulingContext} with LC (30%) + MR (70%) breaks. */
+	private OrderSchedulingContext buildOrder()
+	{
+		return OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.grandTotal(GRAND_TOTAL)
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(buildPaymentTerm())
+				.build();
+	}
+
+	/** Build a {@link PaymentTerm} with two breaks: LC=30% (seqNo=10) + MR=70% (seqNo=20). */
+	private PaymentTerm buildPaymentTerm()
+	{
+		final PaymentTermBreak lcBreak = PaymentTermBreak.builder()
+				.id(LC_BREAK_ID)
+				.referenceDateType(ReferenceDateType.LetterOfCreditDate)
+				.percent(Percent.of("30"))
+				.seqNo(SeqNo.ofInt(10))
+				.offsetDays(0)
+				.build();
+
+		final PaymentTermBreak mrBreak = PaymentTermBreak.builder()
+				.id(MR_BREAK_ID)
+				.referenceDateType(ReferenceDateType.BillOfLadingDate)
+				.percent(Percent.of("70"))
+				.seqNo(SeqNo.ofInt(20))
+				.offsetDays(0)
+				.build();
+
+		return PaymentTerm.builder()
+				.id(PT_ID)
+				.clientId(ClientId.SYSTEM)
+				.orgId(de.metas.organization.OrgId.ANY)
+				.value("TEST")
+				.name("Test Payment Term")
+				.breaks(ImmutableList.of(lcBreak, mrBreak))
+				.paySchedules(ImmutableList.of())
+				.build();
+	}
+
+	/** The MR break from the payment term. */
+	private PaymentTermBreak mrBreak()
+	{
+		return buildPaymentTerm().getBreakById(MR_BREAK_ID);
+	}
+
+	/**
+	 * Build an {@link OrderPaySchedule} with one saved LC line (status=Paid).
+	 * The MR lines list is empty — computeOrderPayScheduleLines will create them fresh.
+	 */
+	private OrderPaySchedule buildEmptySchedule()
+	{
+		final PaymentTermBreak lcBreak = buildPaymentTerm().getBreakById(LC_BREAK_ID);
+		final OrderPayScheduleLine lcLine = OrderPayScheduleLine.from(buildOrder(), lcBreak);
+		lcLine.markSaved(OrderPayScheduleId.ofRepoId(1));
+		// Force LC line to Paid status (it was paid when the LC step ran before delivery)
+		lcLine.applyAndProcess(de.metas.order.paymentschedule.core.OrderPayScheduleLineContext.builder()
+				.status(OrderPayScheduleStatus.Paid)
+				.dueDate(LocalDate.of(2026, 2, 1))
+				.build());
+
+		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(lcLine));
+	}
+
+	/** Build a single-line {@link MaterialReceipt} with the given receipt/line ID and receipt value. */
+	private MaterialReceipt buildReceipt(final InOutId id, final InOutLineId lineId, final Money receiptValue)
+	{
+		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIds(ORDER_ID.getRepoId(), lineId.getRepoId());
+		return MaterialReceipt.builder()
+				.id(id)
+				.orderId(ORDER_ID)
+				.movementDate(MOVEMENT_DATE)
+				.lines(ImmutableList.of(
+						MaterialReceipt.Line.builder()
+								.id(lineId)
+								.movementQty(qty("10"))       // 10 units received
+								.orderLineId(orderLineId)
+								.build()))
+				.build();
+	}
+
+	private MaterialReceiptCollection receiptCollection(final MaterialReceipt... receipts)
+	{
+		return MaterialReceiptCollection.ofCollection(ImmutableList.copyOf(receipts));
+	}
+
+	/** Build a {@link RegularInvoice} value object stub. */
+	private RegularInvoice buildInvoice(final InvoiceId invoiceId, final boolean isPaid)
+	{
+		return RegularInvoice.builder()
+				.id(invoiceId)
+				.orderId(ORDER_ID)
+				.isPartialInvoice(true)
+				.orgId(de.metas.organization.OrgId.ANY)
+				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoId(1))
+				.dateInvoiced(LocalDate.of(2026, 3, 10))
+				.dateAcct(LocalDate.of(2026, 3, 10))
+				.currencyId(EUR)
+				.docStatus(de.metas.document.engine.DocStatus.Completed)
+				.isPaid(isPaid)
+				.lines(ImmutableList.of())
+				.build();
+	}
+
+	private Quantity qty(final String value)
+	{
+		return Quantity.of(new BigDecimal(value), uom);
+	}
+}
