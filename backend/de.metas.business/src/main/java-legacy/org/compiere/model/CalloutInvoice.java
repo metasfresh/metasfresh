@@ -35,7 +35,11 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+<<<<<<< HEAD
 import de.metas.product.IProductBL;
+=======
+import de.metas.product.ProductId;
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
@@ -53,8 +57,11 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+<<<<<<< HEAD
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
+=======
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -118,23 +125,18 @@ public class CalloutInvoice extends CalloutEngine
 
 		final boolean isSOTrx = invoice.isSOTrx();
 
-		final StringBuilder sql = new StringBuilder().append("SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-																	 + " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-																	 + " p.SO_Description,p.IsDiscountPrinted, "
-																	 + " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
-																	 + " l.C_BPartner_Location_ID,c.AD_User_ID,"
-																	 + " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
-																	 + "FROM C_BPartner p"
-																	 + " INNER JOIN "
-																	 + I_C_BPartner_Stats.Table_Name
-																	 + " stats ON (p."
-																	 + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-																	 + " = stats."
-																	 + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-																	 + ")"
-																	 + " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-																	 + " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
-																	 + " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
+		final StringBuilder sql = new StringBuilder()
+				.append("SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+						+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
+						+ " p.SO_Description,p.IsDiscountPrinted, "
+						+ " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
+						+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
+						+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
+						+ "FROM C_BPartner p"
+						+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
+						+ " LEFT OUTER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
+						+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
+						+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
 
 		if (isAllowOnlyBillToDefault_Contact && isSOTrx)
 		{
@@ -233,11 +235,11 @@ public class CalloutInvoice extends CalloutEngine
 				// CreditAvailable
 				if (isSOTrx)
 				{
-					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+					final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 					final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerID, invoice.getDateInvoiced());
 					if (CreditLimit.signum() > 0)
 					{
-						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final double creditUsed = rs.getDouble(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed); // if column=null then double=0
 						final BigDecimal CreditAvailable = CreditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{

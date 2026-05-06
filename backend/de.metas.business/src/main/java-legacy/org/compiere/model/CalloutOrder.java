@@ -694,8 +694,7 @@ public class CalloutOrder extends CalloutEngine
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
 				+ "FROM C_BPartner p"
-
-				+ " INNER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
+				+ " LEFT OUTER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				// #928
@@ -773,7 +772,14 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
+<<<<<<< HEAD
 					final String creditStatus = rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
+=======
+					final CreditStatus creditStatus = CreditStatus.ofNullableCode(
+							rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus),
+							CreditStatus.NoCreditCheck);
+
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 							.bpartnerId(bill_BPartner_ID)
 							.creditStatus(creditStatus)
@@ -782,9 +788,9 @@ public class CalloutOrder extends CalloutEngine
 							.build();
 					if (isChkCreditLimit(creditLimitRequest))
 					{
-						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+						final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
-						final BigDecimal creditUsed = CoalesceUtil.coalesce(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
+						final BigDecimal creditUsed = CoalesceUtil.coalesceNotNull(rs.getBigDecimal(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed), BigDecimal.ZERO);
 						final BigDecimal creditAvailable = creditLimit.subtract(creditUsed);
 						if (creditAvailable.signum() < 0)
 						{

@@ -20,10 +20,16 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+<<<<<<< HEAD
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+=======
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -100,14 +106,8 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
 				+ "FROM C_BPartner p"
-				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
+				+ " LEFT OUTER JOIN " + I_C_BPartner_Stats.Table_Name + " stats ON (p." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = stats." + I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + ")"
 				+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
 
@@ -195,13 +195,12 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				//	CreditAvailable
 				if (isSOTrx)
 				{
-
-					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+					final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 					final Date dateInvoiced = mTab.get_ValueAsDate("DateInvoiced", SystemTime.asDate());
 					final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID.intValue(), TimeUtil.asTimestamp(dateInvoiced));
 					if (CreditLimit.signum() > 0)
 					{
-						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final double creditUsed = rs.getDouble(I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed); // if column=null then double=0
 						final BigDecimal CreditAvailable = CreditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{

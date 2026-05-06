@@ -67,15 +67,22 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .m2-local/**
 
 # this is ignored to prevent pusing debug snapshots
+<<<<<<< HEAD
  **/*.snap.debug
+=======
+**/*.snap.debug
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 
 # environment files (may contain secrets or local overrides)
 **/.env
 
+<<<<<<< HEAD
 # github related
 .github/merge_to_master
 .github/integrate
 
+=======
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
 # claude related
 .claude
 **/CLAUDE.md
@@ -84,6 +91,7 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/claude-docs
 **/REVIEW.md
 /docs/
+<<<<<<< HEAD
 
 
 
@@ -100,3 +108,5 @@ nul
 **/playwright-report/**/*
 **/test-results/**/*
 docker-builds/e2e-tests/.env
+=======
+>>>>>>> 683d6544cb (Fix: callout works even if no C_BPartner_Stats record exists (#23829))
