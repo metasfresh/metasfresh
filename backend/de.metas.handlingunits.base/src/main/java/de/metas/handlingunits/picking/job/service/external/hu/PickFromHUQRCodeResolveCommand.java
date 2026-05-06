@@ -15,6 +15,7 @@ import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,6 +33,7 @@ class PickFromHUQRCodeResolveCommand
 	private final static AdMessageKey ERR_LMQ_LotNoNotFound = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey ERR_NoLotNoFoundForQRCode = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
 	public final static AdMessageKey ERR_QR_ProductNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	public final static AdMessageKey ERR_QR_HU_Destroyed = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_HU_DESTROYED_ERROR_MSG");
 
 	// services
 	@NonNull private final PickingJobProductService productService;
@@ -54,9 +56,15 @@ class PickFromHUQRCodeResolveCommand
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			// Destroyed HUs have empty storage, so containsProduct below would give a misleading "product not matching" error.
+			if (huService.isDestroyed(huId))
+			{
+				return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
+			}
 			if (!huService.containsProduct(huId, productId))
 			{
-				return ExplainedOptional.emptyBecause(ERR_QR_ProductNotMatching);
+				return ExplainedOptional.emptyBecause(
+						TranslatableStrings.adMessage(ERR_QR_ProductNotMatching, productService.getProductNameTrl(productId)));
 			}
 
 			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(huId, huQRCode));
@@ -162,11 +170,7 @@ class PickFromHUQRCodeResolveCommand
 			final ProductId gs1ProductId = productService.getProductIdByGTINStrictlyNotNull(gtin, ClientId.METASFRESH);
 			if (!ProductId.equals(expectedProductId, gs1ProductId))
 			{
-				return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
-				// throw new AdempiereException(ERR_QR_ProductNotMatching)
-				// 		.setParameter("GTIN", gtin)
-				// 		.setParameter("expected", expectedProductId)
-				// 		.setParameter("actual", gs1ProductId);
+				return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching, productService.getProductNameTrl(expectedProductId));
 			}
 		}
 
@@ -181,13 +185,7 @@ class PickFromHUQRCodeResolveCommand
 		final EAN13 ean13 = pickFromQRCode.unbox();
 		if (!productService.isValidEAN13Product(ean13, expectedProductId, customerId))
 		{
-			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
-			// final String expectedProductNo = productService.getProductValue(expectedProductId);
-			// final EAN13ProductCode ean13ProductNo = ean13.getProductNo();
-			// throw new AdempiereException(ERR_QR_ProductNotMatching)
-			// 		.setParameter("ean13ProductNo", ean13ProductNo)
-			// 		.setParameter("expectedProductNo", expectedProductNo)
-			// 		.setParameter("expectedProductId", expectedProductId);
+			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching, productService.getProductNameTrl(expectedProductId));
 		}
 
 		return BooleanWithReason.TRUE;
@@ -203,11 +201,7 @@ class PickFromHUQRCodeResolveCommand
 		final String expectedProductNo = productService.getProductValue(expectedProductId);
 		if (!Objects.equals(qrCodeProductNo, expectedProductNo))
 		{
-			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
-			// throw new AdempiereException(ERR_QR_ProductNotMatching)
-			// 		.setParameter("qrCodeProductNo", qrCodeProductNo)
-			// 		.setParameter("expectedProductNo", expectedProductNo)
-			// 		.setParameter("expectedProductId", expectedProductId);
+			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching, productService.getProductNameTrl(expectedProductId));
 		}
 
 		return BooleanWithReason.TRUE;
