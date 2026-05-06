@@ -83,13 +83,13 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | wh             |
 
     # Canonical accounting/tax identifiers
-    And metasfresh contains C_TaxCategory:
+    And metasfresh contains C_TaxCategory
       | Identifier    |
       | taxCategory19 |
-    And metasfresh contains C_Tax:
-      | Identifier | C_TaxCategory_ID | Rate | IsDefault | IsSalesTax | SOTrx | ValidFrom  |
-      | tax19      | taxCategory19    | 19   | Y         | N          | N     | 2000-01-01 |
-    And metasfresh contains C_VAT_Code:
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory19    | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
       | Identifier | C_Tax_ID | IsSOTrx |
       | sales19    | tax19    | Y       |
       | purchase19 | tax19    | N       |
@@ -99,7 +99,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # The procurement worker pays the LC portion of a complex-payment-term PO via a proforma invoice.
     # LC step state walk: Pending → Awaiting_Pay (allocate) → Paid (payment).
 
-    # ── Order completed → LC step Pending; BL step Awaiting_Pay (its OffsetDays=0 from BillOfLadingDate) ──
+    # ── Order completed → both LC and BL steps Pending (BL reference date = BillOfLadingDate, not yet known) ──
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
       | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
@@ -111,7 +111,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | null          | PR     |
-      | BL                | 48058.08 | null          | WP     |
+      | BL                | 48058.08 | null          | PR     |
 
     # ── Proforma created and completed (GrandTotal = LC plan = 20596.32) — no pay-schedule change ──
     And metasfresh contains C_Invoice:
@@ -130,7 +130,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | null          | PR     |
-      | BL                | 48058.08 | null          | WP     |
+      | BL                | 48058.08 | null          | PR     |
 
     # AC #17 — invoiceOpenToDate proforma branch on an unpaid proforma:
     # OpenAmt = GrandTotal, PaidAmt = 0, HasAllocations = false (proformas have no C_AllocationLine rows).
@@ -144,7 +144,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | 20596.32      | WP     |
-      | BL                | 48058.08 | null          | WP     |
+      | BL                | 48058.08 | null          | PR     |
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
@@ -186,7 +186,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.32 | 20596.32      | P      |
-      | BL                | 48058.08 | null          | WP     |
+      | BL                | 48058.08 | null          | PR     |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment completion:
     # The CO payment lands in the SUM(abs(PayAmt)) so OpenAmt = GrandTotal - GrandTotal = 0,
