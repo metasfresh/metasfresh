@@ -291,6 +291,15 @@ public class HUQRCodesService
 		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
 	}
 
+	/**
+	 * Soft-delete every active {@code M_HU_QRCode_Assignment} row pointing at the given HU.
+	 * Preserves the row for audit/traceability; existing scan-time lookups already filter on {@code IsActive='Y'}.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
+	}
+
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
 	{
 		if (isGenerateQRCodesIfMissing)
