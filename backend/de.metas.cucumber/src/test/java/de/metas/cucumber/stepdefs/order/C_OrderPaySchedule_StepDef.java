@@ -92,7 +92,7 @@ public class C_OrderPaySchedule_StepDef
 		final DataTableRows rows = DataTableRows.of(dataTable);
 
 		final OrderPaySchedule paySchedule = getOrderPaySchedule(orderIdentifier);
-		assertThat(paySchedule.getLines()).hasSameSizeAs(rows);
+		assertThat(paySchedule.getLines()).hasSize(rows.size());
 
 		final HashSet<OrderPayScheduleId> matchedIds = new HashSet<>();
 
