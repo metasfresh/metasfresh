@@ -144,28 +144,28 @@ class OrderPayScheduleDeliveryServiceTest
 	 */
 	private static final Money R2_UNDER_VALUE = Money.of("10000.00", EUR);
 
-	// dueAmountActual values — these are what the service writes, per the arithmetic note above.
+	// dueAmountActual values — §3.5 AC #3 + invariant I-1: DueAmt = BaseAmt × break% (break%=70%).
 
-	/** R1 sub-row: dueAmountActual = min(31808.00, 48058.08) = 31,808.00. */
-	private static final Money R1_DUE_ACTUAL = R1_VALUE;
+	/** R1 sub-row: BaseAmt=31808.00; DueAmt = 31808.00 × 70% = 22,265.60. */
+	private static final Money R1_DUE_ACTUAL = Money.of("22265.60", EUR);
+
+	/** R2_OVER sub-row: BaseAmt=37092.00; DueAmt = 37092.00 × 70% = 25,964.40. */
+	private static final Money R2_OVER_DUE_ACTUAL = Money.of("25964.40", EUR);
+
+	/** R2_UNDER sub-row: BaseAmt=10000.00; DueAmt = 10000.00 × 70% = 7,000.00. */
+	private static final Money R2_UNDER_DUE_ACTUAL = Money.of("7000.00", EUR);
 
 	/**
-	 * dueAmtRemaining after R1 = 48058.08 − 31808.00 = 16,250.08.
-	 * Used for: remainder after R1-only; R2_OVER sub-row (capped).
+	 * Remainder after R1 only: BaseAmt = GRAND_TOTAL − R1_VALUE = 68654.40 − 31808.00 = 36,846.40.
+	 * DueAmt = 36846.40 × 70% = 25,792.48.
 	 */
-	private static final Money REMAINING_AFTER_R1 = Money.of("16250.08", EUR);
+	private static final Money REMAINDER_AFTER_R1_DUE = Money.of("25792.48", EUR);
 
-	/** R2_OVER sub-row: dueAmountActual = min(37092, 16250.08) = 16,250.08 = REMAINING_AFTER_R1. */
-	private static final Money R2_OVER_DUE_ACTUAL = REMAINING_AFTER_R1;
-
-	/** R2_UNDER sub-row: dueAmountActual = min(10000, 16250.08) = 10,000.00. */
-	private static final Money R2_UNDER_DUE_ACTUAL = R2_UNDER_VALUE;
-
-	/** Remainder after R1 only: dueAmountActual = 16,250.08 (= dueAmtRemaining after R1). */
-	private static final Money REMAINDER_AFTER_R1_DUE = REMAINING_AFTER_R1;
-
-	/** Remainder after R1+R2_UNDER: dueAmtRemaining = 16250.08 − 10000 = 6,250.08. */
-	private static final Money REMAINDER_AFTER_R1_R2_UNDER_DUE = Money.of("6250.08", EUR);
+	/**
+	 * Remainder after R1+R2_UNDER: BaseAmt = 68654.40 − 31808.00 − 10000.00 = 26,846.40.
+	 * DueAmt = 26846.40 × 70% = 18,792.48.
+	 */
+	private static final Money REMAINDER_AFTER_R1_R2_UNDER_DUE = Money.of("18792.48", EUR);
 
 	private static final InOutId R1_ID = InOutId.ofRepoId(8001);
 	private static final InOutId R2_ID = InOutId.ofRepoId(8002);
@@ -557,6 +557,9 @@ class OrderPayScheduleDeliveryServiceTest
 			assertThat(second.getInoutId())
 					.as("idempotence row[%d] inoutId [%s]", i, cell.label)
 					.isEqualTo(first.getInoutId());
+			assertThat(second.getBaseAmount())
+					.as("idempotence row[%d] baseAmount [%s]", i, cell.label)
+					.isEqualTo(first.getBaseAmount());
 			assertThat(second.getDueAmount())
 					.as("idempotence row[%d] dueAmount [%s]", i, cell.label)
 					.isEqualByComparingTo(first.getDueAmount());
@@ -604,15 +607,22 @@ class OrderPayScheduleDeliveryServiceTest
 			}
 		}
 
-		// ── R1 sub-row (I-1, I-3) ──────────────────────────────────────────────────────────────────
+		// ── R1 sub-row (I-1, AC#3) ─────────────────────────────────────────────────────────────────
 		if (cell.hasR1)
 		{
 			assertThat(r1Idx).as("[%s] R1 sub-row must exist", cell.label).isGreaterThanOrEqualTo(0);
 			final OrderPayScheduleLine r1Line = lines.get(r1Idx);
 			assertThat(r1Line.getInoutId()).as("[%s] R1 inoutId", cell.label).isEqualTo(R1_ID);
-			// I-1/I-3: dueAmountActual = min(R1_VALUE, dueAmtRemaining) = R1_VALUE = 31808.00
+			// AC#3 / I-1: BaseAmt = receipt GrandTotal; DueAmt = BaseAmt × break%
+			assertThat(r1Line.getBaseAmount())
+					.as("[%s] R1 baseAmount = R1_VALUE (AC#3)", cell.label)
+					.isNotNull()
+					.satisfies(ba -> assertThat(ba).isEqualByComparingTo(R1_VALUE));
+			assertThat(r1Line.getDueAmount())
+					.as("[%s] R1 dueAmount = R1_VALUE × 70% (I-1)", cell.label)
+					.isEqualByComparingTo(R1_DUE_ACTUAL);
 			assertThat(r1Line.getDueAmountActual())
-					.as("[%s] R1 dueAmountActual (I-1/I-3)", cell.label)
+					.as("[%s] R1 dueAmountActual = R1_VALUE × 70% (I-1)", cell.label)
 					.isEqualByComparingTo(R1_DUE_ACTUAL);
 			assertThat(r1Line.getStatus())
 					.as("[%s] R1 status", cell.label)
@@ -628,17 +638,24 @@ class OrderPayScheduleDeliveryServiceTest
 			}
 		}
 
-		// ── R2 sub-row (I-1, I-3) ──────────────────────────────────────────────────────────────────
+		// ── R2 sub-row (I-1, AC#3) ─────────────────────────────────────────────────────────────────
 		if (cell.hasR2)
 		{
 			assertThat(r2Idx).as("[%s] R2 sub-row must exist", cell.label).isGreaterThanOrEqualTo(0);
 			final OrderPayScheduleLine r2Line = lines.get(r2Idx);
 			assertThat(r2Line.getInoutId()).as("[%s] R2 inoutId", cell.label).isEqualTo(R2_ID);
-			// Over-delivery: dueAmountActual capped at REMAINING_AFTER_R1 = 16250.08
-			// Under-delivery: dueAmountActual = R2_UNDER_VALUE = 10000.00 (below cap)
+			// AC#3 / I-1: BaseAmt = receipt GrandTotal; DueAmt = BaseAmt × break%
+			final Money expectedR2BaseAmt = cell.useOverDeliveryR2 ? R2_OVER_VALUE : R2_UNDER_VALUE;
 			final Money expectedR2Due = cell.useOverDeliveryR2 ? R2_OVER_DUE_ACTUAL : R2_UNDER_DUE_ACTUAL;
+			assertThat(r2Line.getBaseAmount())
+					.as("[%s] R2 baseAmount = receipt GrandTotal (AC#3)", cell.label)
+					.isNotNull()
+					.satisfies(ba -> assertThat(ba).isEqualByComparingTo(expectedR2BaseAmt));
+			assertThat(r2Line.getDueAmount())
+					.as("[%s] R2 dueAmount = BaseAmt × 70% (I-1)", cell.label)
+					.isEqualByComparingTo(expectedR2Due);
 			assertThat(r2Line.getDueAmountActual())
-					.as("[%s] R2 dueAmountActual (I-1)", cell.label)
+					.as("[%s] R2 dueAmountActual = BaseAmt × 70% (I-1)", cell.label)
 					.isEqualByComparingTo(expectedR2Due);
 			assertThat(r2Line.getStatus())
 					.as("[%s] R2 status", cell.label)
@@ -653,14 +670,17 @@ class OrderPayScheduleDeliveryServiceTest
 			}
 		}
 
-		// ── Remainder row (I-4) ─────────────────────────────────────────────────────────────────────
+		// ── Remainder row (I-4, AC#3) ───────────────────────────────────────────────────────────────
 		if (cell.expectedRemainderDue != null)
 		{
 			assertThat(remainderIdx).as("[%s] remainder row must exist", cell.label).isGreaterThanOrEqualTo(0);
 			final OrderPayScheduleLine remainder = lines.get(remainderIdx);
 			assertThat(remainder.getInoutId()).as("[%s] remainder inoutId null", cell.label).isNull();
 			assertThat(remainder.getStatus()).as("[%s] remainder status=Pending", cell.label).isEqualTo(OrderPayScheduleStatus.Pending);
-			// I-4: dueAmountActual = dueAmtRemaining after all receipts
+			// I-4 / AC#3: DueAmt = BaseAmt × break%; dueAmountActual = DueAmt
+			assertThat(remainder.getDueAmount())
+					.as("[%s] remainder dueAmount (I-4)", cell.label)
+					.isEqualByComparingTo(cell.expectedRemainderDue);
 			assertThat(remainder.getDueAmountActual())
 					.as("[%s] remainder dueAmountActual (I-4)", cell.label)
 					.isEqualByComparingTo(cell.expectedRemainderDue);

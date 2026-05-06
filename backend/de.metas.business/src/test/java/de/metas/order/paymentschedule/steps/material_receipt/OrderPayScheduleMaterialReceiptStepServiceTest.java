@@ -260,14 +260,17 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final OrderPayScheduleLine r1Line = lines.get(0);
 		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
 		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
-		assertThat(r1Line.getDueAmountActual()).isEqualByComparingTo(R1_VALUE); // min(31808, 70000) = 31808
+		// AC#3 / I-1: DueAmt = R1_VALUE × 70% = 31808 × 70% = 22265.60
+		assertThat(r1Line.getDueAmountActual()).isEqualByComparingTo(Money.of("22265.60", EUR));
+		assertThat(r1Line.getBaseAmount()).isEqualByComparingTo(R1_VALUE);
 		assertThat(r1Line.getInvoiceId()).isNull();
 
 		final OrderPayScheduleLine remainder = lines.get(1);
 		assertThat(remainder.getInoutId()).isNull();
 		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
-		// 70000 - 31808 = 38192
-		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("38192.00", EUR));
+		// I-4: BaseAmt = 100000 - 31808 = 68192; DueAmt = 68192 × 70% = 47734.40
+		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("47734.40", EUR));
+		assertThat(remainder.getBaseAmount()).isEqualByComparingTo(Money.of("68192.00", EUR));
 	}
 
 	// -----------------------------------------------------------------------
@@ -360,8 +363,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 
 		assertThat(lines.get(1).getInoutId()).isEqualTo(R2_ID);
 		assertThat(lines.get(1).getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
-		// R2 is capped: dueAmtRemaining after R1 = 70000 - 31808 = 38192; R2_VALUE=80000 → dueAmt=38192
-		assertThat(lines.get(1).getDueAmountActual()).isEqualByComparingTo(Money.of("38192.00", EUR));
+		// AC#3 / I-1: DueAmt = R2_VALUE × 70% = 80000 × 70% = 56000.00
+		assertThat(lines.get(1).getDueAmountActual()).isEqualByComparingTo(Money.of("56000.00", EUR));
+		assertThat(lines.get(1).getBaseAmount()).isEqualByComparingTo(R2_VALUE);
 
 		// No remainder row
 		assertThat(lines).allMatch(l -> l.getInoutId() != null);

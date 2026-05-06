@@ -59,8 +59,8 @@ public class OrderPayScheduleLine
 	private boolean isPaid;
 	@Nullable private LocalDate referenceDate;
 	@NonNull private LocalDate dueDate;
-	@Nullable private final Money baseAmount;
-	@NonNull private final Money dueAmount;
+	@Nullable private Money baseAmount;
+	@NonNull private Money dueAmount;
 	@Nullable private Money dueAmountActual;
 
 	@Nullable private InvoiceId invoiceId;
@@ -118,6 +118,12 @@ public class OrderPayScheduleLine
 	}
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, getIdNotNull());}
+
+	public void setBaseAndDueAmount(@Nullable final Money baseAmount, @NonNull final Money dueAmount)
+	{
+		this.baseAmount = baseAmount;
+		this.dueAmount = dueAmount;
+	}
 
 	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
 

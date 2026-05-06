@@ -125,7 +125,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 		final ReceiptValueCalculator receiptValueCalculator = newReceiptValueCalculator();
 		receiptValueCalculator.warmUpFrom(receipts);
 
-		Money dueAmtRemaining = order.getGrandTotalByBreakId(termBreak.getId());
+		Money totalReceiptValue = order.getGrandTotal().toZero(); // Σ receipt.with_tax across all receipts
 
 		final ArrayList<OrderPayScheduleLine> result = new ArrayList<>();
 		for (final MaterialReceipt receipt : receipts)
@@ -136,7 +136,8 @@ public class OrderPayScheduleMaterialReceiptStepService
 				continue;
 			}
 
-			final Money dueAmt = receiptValue.min(dueAmtRemaining);
+			// I-1: BaseAmt = receipt GrandTotal (with-tax); DueAmt = BaseAmt × break%
+			final Money dueAmt = receiptValue.multiply(termBreak.getPercent(), order.getPrecision());
 			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt).orElse(null);
 			final OrderPayScheduleStatus status = computeOrderPayScheduleStatus(invoice);
 
@@ -150,20 +151,25 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.status(status)
 					.referenceDate(receipt.getMovementDate())  // delivery-step reference date = receipt MovementDate
 					.dueDate(receipt.getMovementDate().plusDays(termBreak.getOffsetDays()))
-					.dueAmount(dueAmt)
 					.dueAmountActual(dueAmt)
 					.inoutId(receipt.getId())
 					.invoiceId(invoice != null ? invoice.getId() : null)
 					.build());
+			// Override BaseAmt + DueAmt per §3.5 AC #3 + invariant I-1
+			line.setBaseAndDueAmount(receiptValue, dueAmt);
 
 			result.add(line);
 
-			dueAmtRemaining = dueAmtRemaining.subtract(dueAmt).toZeroIfNegative();
+			totalReceiptValue = totalReceiptValue.add(receiptValue);
 		}
 
-		// Remainder row: max(0, orderGrandTotal − Σ receipts); omit if ≤ 0 (over-delivery)
-		if (dueAmtRemaining.signum() > 0)
+		// Remainder row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); omit if BaseAmt ≤ 0 (over-delivery)
+		// I-4: DueAmt = BaseAmt × break%
+		final Money remainderBaseAmt = order.getGrandTotal().subtract(totalReceiptValue).toZeroIfNegative();
+		if (remainderBaseAmt.signum() > 0)
 		{
+			final Money remainderDueAmt = remainderBaseAmt.multiply(termBreak.getPercent(), order.getPrecision());
+
 			final OrderPayScheduleLine existingLine = CollectionUtils.removeFirst(existingLines, line -> line.getInoutId() == null);
 
 			final OrderPayScheduleLine line = existingLine != null
@@ -174,11 +180,12 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.status(OrderPayScheduleStatus.Pending)
 					.referenceDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.dueDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
-					.dueAmount(dueAmtRemaining)
-					.dueAmountActual(dueAmtRemaining)
+					.dueAmountActual(remainderDueAmt)
 					.inoutId(null)
 					.invoiceId(null)
 					.build());
+			// Override BaseAmt + DueAmt per §3.5 AC #3 + invariant I-4
+			line.setBaseAndDueAmount(remainderBaseAmt, remainderDueAmt);
 
 			result.add(line);
 		}
