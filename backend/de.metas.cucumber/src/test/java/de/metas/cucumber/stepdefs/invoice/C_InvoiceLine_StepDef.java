@@ -418,6 +418,10 @@ public class C_InvoiceLine_StepDef
 				.map(orderLineTable::getId)
 				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId()));
 
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
+
 		row.getAsOptionalIdentifier("C_Tax_ID$set")
 				.ifPresent(taxIdentifier -> {
 					final TaxId taxId = taxTable.getId(taxIdentifier);
