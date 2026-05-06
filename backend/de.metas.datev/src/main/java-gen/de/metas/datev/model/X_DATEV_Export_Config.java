@@ -1,7 +1,6 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.datev.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export_Config extends org.compiere.model.PO implements I_DATEV_Export_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -54075521L;
+	private static final long serialVersionUID = -736122600L;
 
     /** Standard Constructor */
     public X_DATEV_Export_Config (final Properties ctx, final int DATEV_Export_Config_ID, @Nullable final String trxName)
@@ -60,16 +59,15 @@ public class X_DATEV_Export_Config extends org.compiere.model.PO implements I_DA
 	}
 
 	@Override
-	public void setChartOfAccountsNumberLength (final BigDecimal ChartOfAccountsNumberLength)
+	public void setChartOfAccountsNumberLength (final int ChartOfAccountsNumberLength)
 	{
 		set_Value (COLUMNNAME_ChartOfAccountsNumberLength, ChartOfAccountsNumberLength);
 	}
 
 	@Override
-	public BigDecimal getChartOfAccountsNumberLength() 
+	public int getChartOfAccountsNumberLength() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChartOfAccountsNumberLength);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_ChartOfAccountsNumberLength);
 	}
 
 	@Override

@@ -1403,3 +1403,36 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,778059,0,541036,541480,650503,'F',TO_TIMESTAMP('2026-05-05 16:40:44.511000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nummernlänge der Sachkonten. Wert muss beim Import mit der Konfiguration des Mandats in der DATEV App übereinstimmen.','Y','N','N','Y','N','N','N',0,'Sachkontenlänge',50,0,0,TO_TIMESTAMP('2026-05-05 16:40:44.511000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+
+
+-- Column: DATEV_Export_Config.ChartOfAccountsNumberLength
+-- 2026-05-06T05:57:23.659Z
+UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0',Updated=TO_TIMESTAMP('2026-05-06 05:57:23.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592491
+;
+
+-- 2026-05-06T05:57:28.302Z
+INSERT INTO t_alter_column values('datev_export_config','ChartOfAccountsNumberLength','NUMERIC(10)',null,'0')
+;
+
+-- 2026-05-06T05:57:28.342Z
+UPDATE DATEV_Export_Config SET ChartOfAccountsNumberLength=0 WHERE ChartOfAccountsNumberLength IS NULL
+;
+
+-- Column: DATEV_Export.ChartOfAccountsNumberLength
+-- 2026-05-06T05:58:08.908Z
+UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0', FieldLength=1, IsMandatory='Y',Updated=TO_TIMESTAMP('2026-05-06 05:58:08.908000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592495
+;
+
+-- 2026-05-06T05:58:10.424Z
+INSERT INTO t_alter_column values('datev_export','ChartOfAccountsNumberLength','NUMERIC(10)',null,'0')
+;
+
+-- 2026-05-06T05:58:10.441Z
+UPDATE DATEV_Export SET ChartOfAccountsNumberLength=0 WHERE ChartOfAccountsNumberLength IS NULL
+;
+
+-- 2026-05-06T05:58:10.442Z
+INSERT INTO t_alter_column values('datev_export','ChartOfAccountsNumberLength',null,'NOT NULL',null)
+;
+

@@ -1,6 +1,5 @@
 package de.metas.datev.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DATEV_Export_Config
@@ -98,21 +97,21 @@ public interface I_DATEV_Export_Config
 	 * Set Sachkontenlänge.
 	 * Nummernlänge der Sachkonten. Wert muss beim Import mit der Konfiguration des Mandats in der DATEV App übereinstimmen.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setChartOfAccountsNumberLength (BigDecimal ChartOfAccountsNumberLength);
+	void setChartOfAccountsNumberLength (int ChartOfAccountsNumberLength);
 
 	/**
 	 * Get Sachkontenlänge.
 	 * Nummernlänge der Sachkonten. Wert muss beim Import mit der Konfiguration des Mandats in der DATEV App übereinstimmen.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getChartOfAccountsNumberLength();
+	int getChartOfAccountsNumberLength();
 
 	ModelColumn<I_DATEV_Export_Config, Object> COLUMN_ChartOfAccountsNumberLength = new ModelColumn<>(I_DATEV_Export_Config.class, "ChartOfAccountsNumberLength", null);
 	String COLUMNNAME_ChartOfAccountsNumberLength = "ChartOfAccountsNumberLength";

@@ -35,7 +35,7 @@ public class DATEVExportConfig
 	@NonNull String clientNumber;
 	@NonNull String advisorNumber;
 	@NonNull String chartOfAccounts;
-	@NonNull BigDecimal chartOfAccountsNumberLength;
+	int chartOfAccountsNumberLength;
 
 	@Builder
 	private DATEVExportConfig(
@@ -43,7 +43,7 @@ public class DATEVExportConfig
 			@NonNull final String clientNumber,
 			@NonNull final String advisorNumber,
 			@NonNull final String chartOfAccounts,
-			@NonNull final BigDecimal chartOfAccountsNumberLength)
+			final int chartOfAccountsNumberLength)
 	{
 
 		this.id = id;
