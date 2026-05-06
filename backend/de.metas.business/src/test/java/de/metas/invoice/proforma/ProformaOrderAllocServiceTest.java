@@ -28,9 +28,12 @@ import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -63,6 +66,7 @@ class ProformaOrderAllocServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		// Mock IPaymentDAO so individual tests can pretend the proforma has a completed/closed payment.
 		// Default behaviour: no completed payment exists — deallocate guard is silent.

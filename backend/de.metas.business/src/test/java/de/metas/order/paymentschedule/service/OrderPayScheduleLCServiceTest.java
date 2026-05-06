@@ -25,7 +25,10 @@ package de.metas.order.paymentschedule.service;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderPaySchedule;
@@ -70,6 +73,7 @@ class OrderPayScheduleLCServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		service = OrderPayScheduleLCStepService.newInstanceForUnitTesting();
 	}
 
@@ -397,9 +401,14 @@ class OrderPayScheduleLCServiceTest
 
 	private void createPayment(final int proformaInvoiceId, final String docStatus)
 	{
+		final java.sql.Timestamp today = TimeUtil.asTimestamp(LocalDate.of(2026, 1, 1));
 		final I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setProforma_Invoice_ID(proformaInvoiceId);
 		payment.setDocStatus(docStatus);
+		payment.setIsPrepayment(true);
+		payment.setC_Currency_ID(318); // EUR — same as the LC pay-schedule line
+		payment.setDateTrx(today);
+		payment.setDateAcct(today);
 		payment.setIsActive(true);
 		saveRecord(payment);
 	}
