@@ -29,12 +29,12 @@ public class PickingShipmentCandidate
 			@NonNull final PickingShipmentCandidateKey key,
 			@Nullable final Set<HuId> onlyLUIds,
 			@Nullable final CreateShipmentPolicy createShipmentPolicy,
-			final boolean waitForShipments)
+			@Nullable final Boolean waitForShipments)
 	{
 		this.key = key;
 		this.onlyLUIds = onlyLUIds != null ? ImmutableSet.copyOf(onlyLUIds) : ImmutableSet.of();
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.CREATE_COMPLETE_CLOSE;
-		this.waitForShipments = waitForShipments;
+		this.waitForShipments = waitForShipments != null ? waitForShipments : false;
 		if (!this.createShipmentPolicy.isCreateShipment())
 		{
 			throw new AdempiereException("Invalid create shipment policy option: " + this.createShipmentPolicy);

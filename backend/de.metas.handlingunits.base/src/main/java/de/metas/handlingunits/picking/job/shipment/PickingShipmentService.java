@@ -84,10 +84,7 @@ public class PickingShipmentService
 				shipmentCandidates.put(key, shipmentCandidate);
 			}
 
-			if (shipmentCandidate != null)
-			{
-				shipmentCandidate.addLine(line);
-			}
+			shipmentCandidate.addLine(line);
 		}
 
 		return shipmentCandidates.values();
