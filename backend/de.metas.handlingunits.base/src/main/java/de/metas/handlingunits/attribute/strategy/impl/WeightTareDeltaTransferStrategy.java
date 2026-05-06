@@ -54,7 +54,10 @@ import java.math.BigDecimal;
  */
 public final class WeightTareDeltaTransferStrategy implements IHUAttributeTransferStrategy
 {
-	public static final WeightTareDeltaTransferStrategy instance = new WeightTareDeltaTransferStrategy();
+	public static WeightTareDeltaTransferStrategy newInstance()
+	{
+		return new WeightTareDeltaTransferStrategy();
+	}
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

@@ -54,6 +54,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampling
 {
+	private final WeightTareDeltaTransferStrategy strategy = WeightTareDeltaTransferStrategy.newInstance();
+
 	private I_M_Product product1;
 	private ProductId product1Id;
 
@@ -120,7 +122,7 @@ public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampl
 				.setVHUTransfer(true)
 				.create();
 
-		WeightTareDeltaTransferStrategy.instance.transferAttribute(request, attr_WeightTare);
+		strategy.transferAttribute(request, attr_WeightTare);
 
 		assertThat(sourceAttrs.getValueAsBigDecimal(attr_WeightTare))
 				.as("source loses (0.205 − 0.200) × 20 = 0.100: 0.500 − 0.100 = 0.400")
@@ -185,7 +187,7 @@ public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampl
 				.setVHUTransfer(true)
 				.create();
 
-		WeightTareDeltaTransferStrategy.instance.transferAttribute(request, attr_WeightTare);
+		strategy.transferAttribute(request, attr_WeightTare);
 
 		assertThat(sourceAttrs.getValueAsBigDecimal(attr_WeightTare))
 				.as("source loses (205g→0.205kg − 0.200kg) × 20 = 0.100: 0.500 − 0.100 = 0.400")
@@ -237,7 +239,7 @@ public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampl
 				.setVHUTransfer(true)
 				.create();
 
-		WeightTareDeltaTransferStrategy.instance.transferAttribute(request, attr_WeightTare);
+		strategy.transferAttribute(request, attr_WeightTare);
 
 		assertThat(sourceAttrs.getValueAsBigDecimal(attr_WeightTare))
 				.as("Net == Gross: no delta to move; source sentinel untouched")
@@ -279,7 +281,7 @@ public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampl
 				.setAttributeStorageTo(destAttrs)
 				.setVHUTransfer(true)
 				.create();
-		assertThat(WeightTareDeltaTransferStrategy.instance.isTransferable(vhuRequest, attr_WeightTare))
+		assertThat(strategy.isTransferable(vhuRequest, attr_WeightTare))
 				.as("VHU-to-VHU transfer is in scope").isTrue();
 
 		final IHUAttributeTransferRequest nonVhuRequest = new HUAttributeTransferRequestBuilder(huContext)
@@ -290,7 +292,7 @@ public class WeightTareDeltaTransferStrategyTest extends AbstractHUTestWithSampl
 				.setAttributeStorageTo(destAttrs)
 				.setVHUTransfer(false)
 				.create();
-		assertThat(WeightTareDeltaTransferStrategy.instance.isTransferable(nonVhuRequest, attr_WeightTare))
+		assertThat(strategy.isTransferable(nonVhuRequest, attr_WeightTare))
 				.as("TU/LU-level transfer is out of scope; parent tare comes from BOTU sum").isFalse();
 	}
 }

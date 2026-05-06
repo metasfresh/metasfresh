@@ -42,7 +42,7 @@ import de.metas.util.Services;
 
 public class AttributeStrategyFactory implements IAttributeStrategyFactory
 {
-	private final Map<String, IAttributeStrategy> classname2strategy = new HashMap<String, IAttributeStrategy>();
+	private final Map<String, IAttributeStrategy> classname2strategy = new HashMap<>();
 
 	private final Map<Class<? extends IAttributeStrategy>, IAttributeStrategy> defaultStrategies = new HashMap<Class<? extends IAttributeStrategy>, IAttributeStrategy>();
 
@@ -50,16 +50,16 @@ public class AttributeStrategyFactory implements IAttributeStrategyFactory
 	{
 		super();
 
-		classname2strategy.put(NullAggregationStrategy.class.getName(), NullAggregationStrategy.instance);
-		classname2strategy.put(NullSplitterStrategy.class.getName(), NullSplitterStrategy.instance);
-		classname2strategy.put(SkipHUAttributeTransferStrategy.class.getName(), SkipHUAttributeTransferStrategy.instance);
-		classname2strategy.put(CopyHUAttributeTransferStrategy.class.getName(), CopyHUAttributeTransferStrategy.instance);
-		classname2strategy.put(RedistributeQtyHUAttributeTransferStrategy.class.getName(), RedistributeQtyHUAttributeTransferStrategy.instance);
-		classname2strategy.put(WeightTareDeltaTransferStrategy.class.getName(), WeightTareDeltaTransferStrategy.instance);
+		classname2strategy.put(NullAggregationStrategy.class.getName(), NullAggregationStrategy.newInstance());
+		classname2strategy.put(NullSplitterStrategy.class.getName(), NullSplitterStrategy.newInstance());
+		classname2strategy.put(SkipHUAttributeTransferStrategy.class.getName(), SkipHUAttributeTransferStrategy.newInstance());
+		classname2strategy.put(CopyHUAttributeTransferStrategy.class.getName(), CopyHUAttributeTransferStrategy.newInstance());
+		classname2strategy.put(RedistributeQtyHUAttributeTransferStrategy.class.getName(), RedistributeQtyHUAttributeTransferStrategy.newInstance());
+		classname2strategy.put(WeightTareDeltaTransferStrategy.class.getName(), WeightTareDeltaTransferStrategy.newInstance());
 
-		defaultStrategies.put(IAttributeAggregationStrategy.class, NullAggregationStrategy.instance);
-		defaultStrategies.put(IAttributeSplitterStrategy.class, NullSplitterStrategy.instance);
-		defaultStrategies.put(IHUAttributeTransferStrategy.class, SkipHUAttributeTransferStrategy.instance);
+		defaultStrategies.put(IAttributeAggregationStrategy.class, NullAggregationStrategy.newInstance());
+		defaultStrategies.put(IAttributeSplitterStrategy.class, NullSplitterStrategy.newInstance());
+		defaultStrategies.put(IHUAttributeTransferStrategy.class, SkipHUAttributeTransferStrategy.newInstance());
 	}
 
 	private <T extends IAttributeStrategy> T getDefaultStrategy(final Class<T> strategyClass)
