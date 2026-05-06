@@ -1436,3 +1436,61 @@ UPDATE DATEV_Export SET ChartOfAccountsNumberLength=0 WHERE ChartOfAccountsNumbe
 INSERT INTO t_alter_column values('datev_export','ChartOfAccountsNumberLength',null,'NOT NULL',null)
 ;
 
+-- UI Element: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> main -> 10 -> description.DATEV Export Config
+-- Column: DATEV_Export.DATEV_Export_Config_ID
+-- 2026-05-06T06:37:33.086Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,778056,0,541036,541480,650504,'F',TO_TIMESTAMP('2026-05-06 06:37:32.038000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'DATEV Export Config',60,0,0,TO_TIMESTAMP('2026-05-06 06:37:32.038000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> main -> 10 -> description.DATEV Export Config
+-- Column: DATEV_Export.DATEV_Export_Config_ID
+-- 2026-05-06T06:37:44.065Z
+UPDATE AD_UI_Element SET SeqNo=15,Updated=TO_TIMESTAMP('2026-05-06 06:37:44.065000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=650504
+;
+
+
+-- 2026-05-06T06:33:02.012Z
+/* DDL */ SELECT public.db_alter_table('DATEV_Export','ALTER TABLE public.DATEV_Export ADD COLUMN AdvisorNumber VARCHAR(10)')
+;
+
+-- 2026-05-06T06:34:48.144Z
+/* DDL */ SELECT public.db_alter_table('DATEV_Export','ALTER TABLE public.DATEV_Export ADD COLUMN ClientNumber VARCHAR(10)')
+;
+
+
+-- UI Element: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> main -> 10 -> description.DATEV Export Config
+-- Column: DATEV_Export.DATEV_Export_Config_ID
+-- 2026-05-06T06:37:44.065Z
+UPDATE AD_UI_Element SET SeqNo=15,Updated=TO_TIMESTAMP('2026-05-06 06:37:44.065000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=650504
+;
+
+-- Field: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> Sachkontenrahmen
+-- Column: DATEV_Export.ChartOfAccounts
+-- 2026-05-06T07:37:04.187Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-06 07:37:04.187000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778058
+;
+
+-- Field: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> Sachkontenlänge
+-- Column: DATEV_Export.ChartOfAccountsNumberLength
+-- 2026-05-06T07:37:07.609Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-06 07:37:07.609000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778059
+;
+
+-- Field: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> Mandantennummer
+-- Column: DATEV_Export.ClientNumber
+-- 2026-05-06T07:37:10.998Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-06 07:37:10.998000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778060
+;
+
+-- Field: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> Beraternummer
+-- Column: DATEV_Export.AdvisorNumber
+-- 2026-05-06T07:37:19.572Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-06 07:37:19.572000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778057
+;
+
+-- Field: Buchungen Export(540413,de.metas.datev) -> Buchungen Export(541036,de.metas.datev) -> DATEV Export Config
+-- Column: DATEV_Export.DATEV_Export_Config_ID
+-- 2026-05-06T07:37:37.948Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-06 07:37:37.948000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778056
+;
+
