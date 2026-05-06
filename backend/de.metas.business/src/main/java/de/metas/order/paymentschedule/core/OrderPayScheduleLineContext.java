@@ -39,6 +39,9 @@ public class OrderPayScheduleLineContext
 
 	@NonNull LocalDate dueDate;
 
+	boolean baseAmountSet;
+	@Nullable Money baseAmount;
+
 	boolean dueAmountSet;
 	@Nullable Money dueAmount;
 
@@ -56,7 +59,11 @@ public class OrderPayScheduleLineContext
 			@NonNull final OrderPayScheduleStatus status,
 			final boolean referenceDateSet,
 			@Nullable final LocalDate referenceDate,
-			@NonNull final LocalDate dueDate, final boolean dueAmountSet, @Nullable final Money dueAmount,
+			@NonNull final LocalDate dueDate,
+			final boolean baseAmountSet,
+			@Nullable final Money baseAmount,
+			final boolean dueAmountSet,
+			@Nullable final Money dueAmount,
 			final boolean dueAmountActualSet,
 			@Nullable final Money dueAmountActual,
 			final boolean invoiceIdSet,
@@ -77,6 +84,8 @@ public class OrderPayScheduleLineContext
 		this.referenceDateSet = referenceDateSet;
 		this.referenceDate = referenceDate;
 		this.dueDate = dueDate;
+		this.baseAmountSet = baseAmountSet;
+		this.baseAmount = baseAmount;
 		this.dueAmountSet = dueAmountSet;
 		this.dueAmount = dueAmount;
 		this.dueAmountActualSet = dueAmountActualSet;
@@ -89,6 +98,13 @@ public class OrderPayScheduleLineContext
 		{
 			this.referenceDate = referenceDate;
 			this.referenceDateSet = true;
+			return this;
+		}
+
+		public OrderPayScheduleLineContextBuilder baseAmount(@Nullable final Money baseAmount)
+		{
+			this.baseAmount = baseAmount;
+			this.baseAmountSet = true;
 			return this;
 		}
 

@@ -151,12 +151,12 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.status(status)
 					.referenceDate(receipt.getMovementDate())  // delivery-step reference date = receipt MovementDate
 					.dueDate(receipt.getMovementDate().plusDays(termBreak.getOffsetDays()))
+					.baseAmount(receiptValue)        // receipt-row: BaseAmt = receipt.GrandTotal (with-tax)
+					.dueAmount(dueAmt)               // DueAmt = BaseAmt × break%
 					.dueAmountActual(dueAmt)
 					.inoutId(receipt.getId())
 					.invoiceId(invoice != null ? invoice.getId() : null)
 					.build());
-			// receipt-row: BaseAmt = receipt.GrandTotal (with-tax); DueAmt = BaseAmt × break%
-			line.setBaseAndDueAmount(receiptValue, dueAmt);
 
 			result.add(line);
 
@@ -180,12 +180,12 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.status(OrderPayScheduleStatus.Pending)
 					.referenceDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.dueDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
+					.baseAmount(remainderBaseAmt)    // remainder-row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax)
+					.dueAmount(remainderDueAmt)       // DueAmt = BaseAmt × break%
 					.dueAmountActual(remainderDueAmt)
 					.inoutId(null)
 					.invoiceId(null)
 					.build());
-			// remainder-row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); DueAmt = BaseAmt × break%
-			line.setBaseAndDueAmount(remainderBaseAmt, remainderDueAmt);
 
 			result.add(line);
 		}

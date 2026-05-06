@@ -122,21 +122,6 @@ public class OrderPayScheduleLine
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, getIdNotNull());}
 
-	/**
-	 * Sets BaseAmt and DueAmt together to enforce invariant: DueAmt = BaseAmt × break%.
-	 * <p>
-	 * For LC rows: BaseAmt = order.GrandTotal; DueAmt = order.GrandTotal × LC%.
-	 * For receipt-tied rows: BaseAmt = receipt.GrandTotal (with-tax); DueAmt = BaseAmt × break%.
-	 * For the remainder row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); DueAmt = BaseAmt × break%.
-	 * <p>
-	 * The pair is a single mutation site so the invariant cannot be temporarily violated.
-	 */
-	public void setBaseAndDueAmount(@Nullable final Money baseAmount, @NonNull final Money dueAmount)
-	{
-		this.baseAmount = baseAmount;
-		this.dueAmount = dueAmount;
-	}
-
 	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
 
 	public void applyAndProcess(@NonNull final OrderPayScheduleLineContext context)
@@ -164,6 +149,16 @@ public class OrderPayScheduleLine
 		else
 		{
 			this.referenceDate = this.dueDate.minusDays(offsetDays);
+		}
+
+		if (context.isBaseAmountSet())
+		{
+			this.baseAmount = context.getBaseAmount();
+		}
+
+		if (context.isDueAmountSet())
+		{
+			this.dueAmount = context.getDueAmount();
 		}
 
 		if (context.isDueAmountActualSet())
