@@ -132,6 +132,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
+	@NonNull
 	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
 
 	/**
@@ -246,10 +247,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
-	 *
-	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
+	void setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -298,6 +297,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void setTaxAmt(I_C_InvoiceLine invoiceLine);
 
+	@Nullable
 	I_C_DocType getC_DocType(I_C_Invoice invoice);
 
 	/**
@@ -321,10 +321,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
 	 * Invoice but sets the quantity read only.
-	 *
-	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
+	void adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and

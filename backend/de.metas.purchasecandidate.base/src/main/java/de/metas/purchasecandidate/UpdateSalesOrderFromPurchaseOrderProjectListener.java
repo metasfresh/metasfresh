@@ -30,14 +30,18 @@ import de.metas.order.OrderLineId;
 import de.metas.order.PurchaseOrderProjectListener;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +50,7 @@ import java.util.stream.Collectors;
  * <p>
  * This propagation ensures that when a project is associated with purchase order lines, the related sales order lines
  * (determined through {@link PurchaseCandidate}) are updated to reflect the same project ID.
+ * Since this is triggered via the EventBus, the environment needs to be switched to the user who triggered the event.
  */
 @Component
 @RequiredArgsConstructor
@@ -77,7 +82,21 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 				.filter(orderLine -> ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()) == null)
 				.peek(orderLine -> orderLine.setC_Project_ID(projectId.getRepoId()))
 				.collect(Collectors.toSet());
-		InterfaceWrapperHelper.saveAll(updatedOrderLines);
+		saveAllForUserId(event, updatedOrderLines);
+	}
 
+	private void saveAllForUserId(@NonNull final ProjectCreatedEvent event, @NonNull final Set<I_C_OrderLine> updatedOrderLines)
+	{
+		if (updatedOrderLines.isEmpty())
+		{
+			return;
+		}
+		final I_C_OrderLine firstOrderLine = CollectionUtils.first(updatedOrderLines);
+		final Properties properties = Env.copyCtx(InterfaceWrapperHelper.getCtx(firstOrderLine, true));
+		Env.setLoggedUserId(properties, event.getByUserId());
+		try (final IAutoCloseable ignored = Env.switchContext(properties))
+		{
+			InterfaceWrapperHelper.saveAll(updatedOrderLines);
+		}
 	}
 }

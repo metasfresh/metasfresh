@@ -37,6 +37,11 @@ export const useKeyboardBarcodeReader = ({
       if (event.ctrlKey || event.metaKey) {
         return;
       }
+      // Composition / IME events, some browser extensions and Chrome autofill dispatch
+      // keydown-like events with event.key === undefined. Bail out before any .length access.
+      if (event.key == null) {
+        return;
+      }
       // Allow altKey for printable characters (Zebra MC3300x firmware sets altKey=true on scanner keystrokes)
       if (event.altKey && event.key.length !== 1) {
         return;

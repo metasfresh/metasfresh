@@ -156,7 +156,8 @@ BEGIN
                                        'ShipmentLine', iol.line,
                                        'OrderPOReference', o.poreference,
                                        'OrderDocumentNo', o.documentno,
-                                       'DesadvLine', dl.line
+                                       'DesadvLine', dl.line,
+                                       'IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered), true)
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
                                'Line', ia.pi_line,
@@ -177,6 +178,8 @@ BEGIN
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
+            -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
+                 LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
             -- BPartner product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin, productno

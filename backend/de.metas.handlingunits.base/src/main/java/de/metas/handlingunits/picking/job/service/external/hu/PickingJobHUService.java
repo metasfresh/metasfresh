@@ -18,6 +18,9 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -88,6 +91,18 @@ public class PickingJobHUService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUGraiService huGraiService;
+
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	{
+		return huGraiService.getSnapshots(huIds);
+	}
+
+	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
+	{
+		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
+	}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{
@@ -255,6 +270,15 @@ public class PickingJobHUService
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToPick)
 	{
+		return extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, ImmutableSet.of());
+	}
+
+	public HuId extractTopLevelCUIfNeeded(
+			@NonNull final HuId pickFromHUId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
 		// Not a top level CU
@@ -274,13 +298,17 @@ public class PickingJobHUService
 			return pickFromHUId;
 		}
 
-		final I_M_HU extractedCU = HUTransformService.newInstance()
+		final I_M_HU extractedCU = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHU(pickFromHU)
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
@@ -319,6 +347,11 @@ public class PickingJobHUService
 				.collect(ImmutableSet.toImmutableSet());
 
 		huReservationService.deleteReservationsByDocumentRefs(reservationDocRefs);
+	}
+
+	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	{
+		return huReservationService.getVHUIdsByDocumentRef(documentRef);
 	}
 
 	@Nullable

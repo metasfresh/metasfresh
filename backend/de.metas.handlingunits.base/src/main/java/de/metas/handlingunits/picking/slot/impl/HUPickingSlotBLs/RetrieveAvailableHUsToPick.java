@@ -12,6 +12,7 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.slot.impl.HUPickingSlotBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -21,10 +22,14 @@ import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,7 +83,8 @@ public class RetrieveAvailableHUsToPick
 		final List<I_M_HU> vhus = retrieveVHUsFromStorage(
 				query.getShipmentSchedules(),
 				query.isOnlyIfAttributesMatchWithShipmentSchedules(),
-				query.isExcludeAllReserved());
+				query.isExcludeAllReserved(),
+				query.getAttributesKeyOverride());
 
 		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
 
@@ -95,7 +101,8 @@ public class RetrieveAvailableHUsToPick
 	private List<I_M_HU> retrieveVHUsFromStorage(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
 			final boolean considerAttributes,
-			final boolean isExcludeAllReserved)
+			final boolean isExcludeAllReserved,
+			@Nullable final AttributesKey attributesKeyOverride)
 	{
 		//
 		// Create storage queries from shipment schedules
@@ -103,7 +110,21 @@ public class RetrieveAvailableHUsToPick
 		final ArrayList<IStorageQuery> storageQueries = new ArrayList<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);
+			final IStorageQuery storageQuery;
+			if (attributesKeyOverride != null)
+			{
+				// Build query without SS ASI filtering, then apply the reservation's attributesKey
+				storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, false, isExcludeAllReserved);
+				if (!attributesKeyOverride.isNone())
+				{
+					final IAttributeSet attributeSet = AttributesKeys.toImmutableAttributeSet(attributesKeyOverride);
+					storageQuery.addAttributes(attributeSet);
+				}
+			}
+			else
+			{
+				storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);
+			}
 			storageQueries.add(storageQuery);
 		}
 

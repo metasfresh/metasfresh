@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice;
+
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1),
     p_IsSwitchCreditMemo        char(1),
@@ -84,7 +86,7 @@ BEGIN
            fa.postingtype,
            fa.c_invoice_id,
            i.poreference                                                                        AS poreference,
-                        paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
+                        i.duedate::timestamp WITH TIME ZONE                                                  AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,
@@ -160,7 +162,7 @@ BEGIN
              fa.c_bpartner_id, bp.Value, bp.Name,
              fa.c_acctschema_id,
              fa.postingtype,
-             fa.c_invoice_id, i.poreference, i.c_paymentterm_id, i.dateinvoiced,
+             fa.c_invoice_id, i.poreference, i.duedate,
              fa.ad_client_id,
              fa.ad_org_id,
              fa.c_activity_id, a.name,

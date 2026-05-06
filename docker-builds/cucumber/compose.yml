@@ -59,6 +59,8 @@ services:
     image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     environment:
       - TEST_SMTP_HOST=$TEST_SMTP_HOST
+      - TEST_SMTP_PORT=${TEST_SMTP_PORT:-587}
+      - TEST_SMTP_STARTTLS=${TEST_SMTP_STARTTLS:-true}
       - TEST_SMTP_FROM=$TEST_SMTP_FROM
       - TEST_SMTP_USER=$TEST_SMTP_USER
       - TEST_SMTP_PASSWORD=$TEST_SMTP_PASSWORD

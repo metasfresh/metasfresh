@@ -9,6 +9,14 @@
 #                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
 # ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
 # ops:no_auto_port           — (reserved for future use)
+# ops:allow_protected_merge  — Override the protection rule that blocks direct merges
+#                               between protected branches. Use sparingly and only when
+#                               auto-port merge/ branches are not feasible.
+#
+# Protection: PRs that merge directly from one protected branch (*_hotfix,
+# *_release, *_uat) into another are automatically closed. Use auto-port
+# merge/ branches instead — they test the merged result via CI first.
+# Set ops:allow_protected_merge label to override this for a specific PR.
 # =============================================================================
 
 # "Merge Gate" is the CI gate — a workflow_run-based commit status set by
@@ -87,9 +95,9 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_hotfix
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
-              - base=temporary_test202412_hotfix
               - base=green_oak_hotfix
               - base=mighty_pegasus_hotfix
               - base=task_force_hotfix
@@ -98,6 +106,7 @@ pull_request_rules:
               - base=ghost_rider_hotfix
               - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
+              - base=epic_party_hotfix
               - base=inner_silence_hotfix
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
@@ -113,9 +122,9 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_release
               - base=taloned_owl_release
               - base=organic_goat_release
-              - base=temporary_test202412_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
@@ -134,6 +143,36 @@ pull_request_rules:
         add:
           - "branch:{{base}}"
       delete_head_branch: {}
+
+  - name: Block direct merges between protected branches (use auto-port instead)
+    conditions:
+      - -merged
+      - -closed
+      - -label=ops:allow_protected_merge
+      - or:
+          - or: *ALL_BASE_BRANCHES
+      - or:
+          - head~=_uat$
+          - head~=_hotfix$
+          - head~=_release$
+          - head=release
+      - -head~=^merge/
+      - -head~=^patch/
+    actions:
+      comment:
+        message: |
+          ⛔ **Direct merge between protected branches is not allowed.**
+
+          This PR merges `{{head}}` directly into `{{base}}`. Direct merges between
+          protected branches can cause silent content duplication — Git 3-way merge
+          adds non-overlapping changes from both sides (e.g. duplicate CI workflow
+          jobs added independently on each branch).
+
+          **What to do:** Close this PR and let
+          [auto-port](https://github.com/metasfresh/metasfresh/blob/new_dawn_uat/.github/workflows/auto-port.yml)
+          handle the merge. Auto-port creates `merge/<source>-to-<target>` branches
+          that test the merged result via CI before merging into the target branch.
+      close: {}
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:

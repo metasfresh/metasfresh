@@ -24,6 +24,11 @@ export const GetQuantityDialog = {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
+    expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
+        const testId = `userInfo_${captionKey}`;
+        await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').type(`${qty}`);
     }),
@@ -82,6 +87,18 @@ export const GetQuantityDialog = {
     expectQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Expect qty not found reason '${reason}'`, async () => {
         const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
         await expect(radioButton).toBeChecked();
+    }),
+
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
@@ -165,8 +182,16 @@ export const GetQuantityDialog = {
 //
 
 const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
     if (await locator.count() > 0) {
-        await expect(locator).toBeDisabled();
+        try {
+            await expect(locator).toBeDisabled();
+        } catch (e) {
+            if (await locator.count() === 0) return;
+            throw e;
+        }
     }
 };
 

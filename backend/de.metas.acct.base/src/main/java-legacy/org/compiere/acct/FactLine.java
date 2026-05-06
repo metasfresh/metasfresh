@@ -1534,18 +1534,36 @@ public class FactLine
 		}
 
 		this.taxId = taxId;
-		this.vatCode = computeVATCode().map(VATCode::getCode).orElse(null);
+		this.vatCode = computeVATCode(null).map(VATCode::getCode).orElse(null);
 
 	}
 
-	private Optional<VATCode> computeVATCode()
+	/**
+	 * Overload for reverse-charge legs: forces the {@code IsSOTrx} used for VATCode lookup,
+	 * since both T_Due_Acct (output, §13b USt) and T_Credit_Acct (input, §13b VSt) legs are
+	 * posted from the same DocLine whose doc-level {@code IsSOTrx} can't distinguish them.
+	 */
+	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
+	{
+		this.taxId = taxId;
+		this.vatCode = computeVATCode(isSOTrxOverride).map(VATCode::getCode).orElse(null);
+	}
+
+	public void setVatCode(@Nullable final String vatCode)
+	{
+		this.vatCode = vatCode;
+	}
+
+	private Optional<VATCode> computeVATCode(@Nullable final Boolean isSOTrxOverride)
 	{
 		if (taxId == null)
 		{
 			return Optional.empty();
 		}
 
-		final boolean isSOTrx = m_docLine != null ? m_docLine.isSOTrx() : m_doc.isSOTrx();
+		final boolean isSOTrx = isSOTrxOverride != null
+				? isSOTrxOverride
+				: (m_docLine != null ? m_docLine.isSOTrx() : m_doc.isSOTrx());
 		return services.findVATCode(VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(getAcctSchemaId().getRepoId())
 				.setC_Tax_ID(taxId.getRepoId())

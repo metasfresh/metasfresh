@@ -35,7 +35,6 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
-import de.metas.incoterms.IncotermsId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -293,12 +292,18 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public ShipperId getShipperId(
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
 			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
+
+		final ShipperId locationShipperId = orderCandidateRecord == null ? null : bpartnerBL.getEffectiveShipperId(
+				effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
+						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord)
+		);
 
 		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getShipperId().orElse(null);
@@ -307,6 +312,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
+				locationShipperId,
 				bpartnerOrderParamsShipperId,
 				orderDefaultsShipperId);
 	}

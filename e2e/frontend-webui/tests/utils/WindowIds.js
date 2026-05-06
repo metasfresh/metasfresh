@@ -139,6 +139,37 @@ export const PAYMENT_WINDOW_ID = 195;
 export const FORECAST_WINDOW_ID = 328;
 
 // ============================================================================
+// STATISTICS / READ-ONLY VIEW WINDOWS
+// ============================================================================
+
+/**
+ * Purchase & Sales Overview window (Ein- und Verkaufsübersicht)
+ * Table: C_Order_M_InOut_C_Invoice_Overview_V (AD_Table_ID=542578)
+ * Window ID: 542070
+ * Description: Read-only grid view combining order, shipment, and invoice lines
+ * with current stock on hand. Used for sales & purchase statistics.
+ */
+export const PURCHASE_SALES_OVERVIEW_WINDOW_ID = 542070;
+// PICKING WINDOWS
+// ============================================================================
+
+/**
+ * Picking Terminal V2 (Kommissionier-Terminal v2)
+ * Custom view backed by PackageableViewFactoryV2
+ * Window ID: 540485
+ * Description: Browse-all picking terminal showing shipment schedules
+ */
+export const PICKING_TERMINAL_V2_WINDOW_ID = 540485;
+
+/**
+ * Picking Terminal V1 (Kommissionier-Terminal)
+ * Custom view backed by PackageableView with included PickingSlotView
+ * Window ID: 540350
+ * Description: Classic picking terminal with HU editor
+ */
+export const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
+
+// ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
 
