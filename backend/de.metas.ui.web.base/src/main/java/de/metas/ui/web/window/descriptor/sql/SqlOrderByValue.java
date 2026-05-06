@@ -90,9 +90,12 @@ public class SqlOrderByValue
 
 			// computed values:
 			this.sqlOrderByColumnNameFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectValueEffective.getColumnNameAlias());
-			this.sourceSqlExpression = ConstantStringExpression.of(sqlSelectValueEffective.toSqlString());
+			// NOTE: compile (not ConstantStringExpression.of) so that any `@...@` context-variable markers
+			// inside a virtual ColumnSQL (e.g. `@#AD_Org_ID@`) survive as parameters of the resulting
+			// expression and get substituted at ORDER BY evaluation time against the user-session evaluator.
+			this.sourceSqlExpression = IStringExpression.compile(sqlSelectValueEffective.toSqlString());
 		}
-		else if (columnName != null && Check.isNotBlank(columnName))
+		else if (Check.isNotBlank(columnName))
 		{
 			this.sqlSelectDisplayValue = null;
 			this.sqlSelectValue = null;

@@ -597,7 +597,7 @@ public final class SqlViewSelectionQueryBuilder
 					{
 						sqlKeyColumnNames.append("\n, ");
 					}
-					sqlKeyColumnNames.append(getSqlSelectValue(keyColumnName).withColumnNameAlias(keyColumnName).toSqlStringWithColumnNameAlias());
+					sqlKeyColumnNames.append(getSqlSelectValue(keyColumnName).withColumnNameAlias(keyColumnName).toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
 				}
 			}
 
@@ -628,7 +628,7 @@ public final class SqlViewSelectionQueryBuilder
 				{
 					sqlSourceTableBuilder.append("\n, ").append(sqlSelectValue
 							.withJoinOnTableNameOrAlias(getTableName())
-							.toSqlStringWithColumnNameAlias());
+							.toSqlStringWithColumnNameAlias(viewEvalCtx.toEvaluatee()));
 				}
 			}
 
