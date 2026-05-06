@@ -146,7 +146,7 @@ const BarcodeScannerComponent = ({
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
     if (!scannedBarcode?.trim()) {
-      console.warn('Ignoring blank barcode');
+      uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
       return;
     }
     inputTextRef?.current?.select();
