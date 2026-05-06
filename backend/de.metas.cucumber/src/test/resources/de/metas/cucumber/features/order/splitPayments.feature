@@ -194,3 +194,77 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then for invoice the following invoiceOpenToDate result is expected:
       | C_Invoice_ID | OpenAmt | PaidAmt  | GrandTotal | HasAllocations |
       | lcInvoice    | 0       | 20596.32 | 20596.32   | false          |
+
+
+  Scenario: S2 - Proforma GrandTotal below planned LC DueAmt — DueAmt_Actual captures the actual amount
+    # Procurement-worker variant: vendor sends a proforma for slightly less than the planned LC amount
+    # (rounding, FX, partial coverage). The plan invariant DueAmt = order.GrandTotal × break% must hold;
+    # only DueAmt_Actual reflects the actual proforma amount.
+    # BL break stays PR (Pending) until a goods receipt is recorded — BillOfLadingDate is not yet known.
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lcOrderL1  | lcOrder    | lcProduct    | 1          |
+    And the order identified by lcOrder is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | lcProduct    | 1 PCE       | 20500.00 |
+    And the invoice identified by lcInvoice is completed
+
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
+
+    # DueAmt = plan (20596.32, unchanged); DueAmt_Actual = proforma.GrandTotal (20500.00).
+    # BL break is PR (Pending) because BillOfLadingDate is not yet known (no goods receipt).
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20500.00      | WP     |
+      | BL                | 48058.08 | null          | PR     |
+
+
+  Scenario: S3 - Deallocation before payment rolls LC back to Pending (DueAmt_Actual + LC_Date cleared)
+    # The procurement worker realises the wrong proforma was allocated and removes it before paying.
+    # State walk: Pending → Awaiting_Pay (allocate) → Pending (deallocate).
+    # BL break stays PR (Pending) throughout — BillOfLadingDate is not yet known (no goods receipt).
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lcOrderL1  | lcOrder    | lcProduct    | 1          |
+    And the order identified by lcOrder is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | lcProduct    | 1 PCE       | 20596.32 |
+    And the invoice identified by lcInvoice is completed
+
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | BL                | 48058.08 | null          | PR     |
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | lcOrder    | 2026-04-24 |
+
+    And I deallocate proforma 'lcInvoice' from order 'lcOrder'
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | null          | PR     |
+      | BL                | 48058.08 | null          | PR     |
+    And validate the created orders
+      | Identifier | LC_Date |
+      | lcOrder    | null    |
