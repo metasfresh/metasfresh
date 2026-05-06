@@ -931,8 +931,10 @@ public class C_Order_StepDef
 					else
 					{
 						final LocalDate expectedDate = LocalDate.parse(rawValue);
-						final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date(), zoneId))
+						// Wall-clock interpretation (no zoneId): matches the production read at
+						// OrderPayScheduleService#toOrderSchedulingContext (TimeUtil.asLocalDate(getLC_Date())).
+						// LC_Date is on a deprecation path; don't introduce a new instant-based read here.
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date()))
 								.as("LC_Date for Identifier=%s", identifierStr)
 								.isEqualTo(expectedDate);
 					}
