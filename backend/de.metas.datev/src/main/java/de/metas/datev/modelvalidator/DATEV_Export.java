@@ -28,6 +28,7 @@ import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
@@ -40,14 +41,17 @@ public class DATEV_Export
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setDatevExportConfig(final I_DATEV_Export datevExport)
 	{
-		final DATEVExportConfig exportConfig = exportConfigRepo.getByOrgId(OrgId.ofRepoId(datevExport.getAD_Org_ID()));
-		if (exportConfig != null)
+		if (InterfaceWrapperHelper.isNew(datevExport))
 		{
-			datevExport.setDATEV_Export_Config_ID(exportConfig.getId());
-			datevExport.setAdvisorNumber(exportConfig.getAdvisorNumber());
-			datevExport.setClientNumber(exportConfig.getClientNumber());
-			datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
-			datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
+			final DATEVExportConfig exportConfig = exportConfigRepo.getByOrgId(OrgId.ofRepoId(datevExport.getAD_Org_ID()));
+			if (exportConfig != null)
+			{
+				datevExport.setDATEV_Export_Config_ID(exportConfig.getId());
+				datevExport.setAdvisorNumber(exportConfig.getAdvisorNumber());
+				datevExport.setClientNumber(exportConfig.getClientNumber());
+				datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
+				datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
+			}
 		}
 	}
 
