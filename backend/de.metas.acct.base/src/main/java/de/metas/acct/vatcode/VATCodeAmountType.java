@@ -11,7 +11,7 @@ public enum VATCodeAmountType implements ReferenceListAwareEnum
 	Net("N"),
 	Tax("T");
 
-	public static final int AD_Reference_ID = 542087;
+	public static final int AD_REFERENCE_ID = 542087;
 
 	@NonNull private final String code;
 

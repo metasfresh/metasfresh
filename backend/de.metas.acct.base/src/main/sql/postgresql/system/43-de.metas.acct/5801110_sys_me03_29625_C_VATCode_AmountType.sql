@@ -5,9 +5,9 @@
 -- AD_Reference (list container)
 INSERT INTO AD_Reference (AD_Client_ID, IsActive, Created, CreatedBy, IsOrderByValue,
   Updated, UpdatedBy, AD_Reference_ID, ValidationType, Name, AD_Org_ID, EntityType)
-VALUES (0, 'Y', TO_TIMESTAMP('2026-05-06 12:00:00','YYYY-MM-DD HH24:MI:SS'), 0, 'N',
-  TO_TIMESTAMP('2026-05-06 12:00:00','YYYY-MM-DD HH24:MI:SS'), 0,
-  542087, 'L', 'C_VAT_Code AmountType', 0, 'de.metas.acct');
+VALUES (0, 'Y', TO_TIMESTAMP('2026-05-06 12:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'N',
+  TO_TIMESTAMP('2026-05-06 12:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
+  542087 /*From ID Server*/, 'L', 'C_VAT_Code AmountType', 0, 'de.metas.acct');
 
 -- AD_Reference_Trl propagation
 INSERT INTO AD_Reference_Trl (AD_Language, AD_Reference_ID, Help, Name, Description,
@@ -24,11 +24,11 @@ WHERE l.IsActive='Y'
 -- AD_Ref_List: N = Net (Netto)
 INSERT INTO AD_Ref_List (AD_Reference_ID, AD_Client_ID, IsActive, Created, CreatedBy,
   Name, Updated, UpdatedBy, AD_Ref_List_ID, ValueName, Value, AD_Org_ID, EntityType)
-VALUES (542087, 0, 'Y',
-  TO_TIMESTAMP('2026-05-06 12:00:01','YYYY-MM-DD HH24:MI:SS'), 0,
+VALUES (542087 /*From ID Server*/, 0, 'Y',
+  TO_TIMESTAMP('2026-05-06 12:00:01','YYYY-MM-DD HH24:MI:SS'), 100,
   'Netto',
-  TO_TIMESTAMP('2026-05-06 12:00:01','YYYY-MM-DD HH24:MI:SS'), 0,
-  544226, 'Net', 'N', 0, 'de.metas.acct');
+  TO_TIMESTAMP('2026-05-06 12:00:01','YYYY-MM-DD HH24:MI:SS'), 100,
+  544226 /*From ID Server*/, 'Net', 'N', 0, 'de.metas.acct');
 
 -- AD_Ref_List_Trl propagation for N
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Name, Description,
@@ -45,17 +45,17 @@ WHERE l.IsActive='Y'
 -- English translation for N
 UPDATE AD_Ref_List_Trl
 SET IsTranslated='Y', Name='Net',
-  Updated=TO_TIMESTAMP('2026-05-06 12:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=0
+  Updated=TO_TIMESTAMP('2026-05-06 12:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544226;
 
 -- AD_Ref_List: T = Tax (Steuer)
 INSERT INTO AD_Ref_List (AD_Reference_ID, AD_Client_ID, IsActive, Created, CreatedBy,
   Name, Updated, UpdatedBy, AD_Ref_List_ID, ValueName, Value, AD_Org_ID, EntityType)
-VALUES (542087, 0, 'Y',
-  TO_TIMESTAMP('2026-05-06 12:00:03','YYYY-MM-DD HH24:MI:SS'), 0,
+VALUES (542087 /*From ID Server*/, 0, 'Y',
+  TO_TIMESTAMP('2026-05-06 12:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
   'Steuer',
-  TO_TIMESTAMP('2026-05-06 12:00:03','YYYY-MM-DD HH24:MI:SS'), 0,
-  544227, 'Tax', 'T', 0, 'de.metas.acct');
+  TO_TIMESTAMP('2026-05-06 12:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
+  544227 /*From ID Server*/, 'Tax', 'T', 0, 'de.metas.acct');
 
 -- AD_Ref_List_Trl propagation for T
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Name, Description,
@@ -72,7 +72,7 @@ WHERE l.IsActive='Y'
 -- English translation for T
 UPDATE AD_Ref_List_Trl
 SET IsTranslated='Y', Name='Tax',
-  Updated=TO_TIMESTAMP('2026-05-06 12:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=0
+  Updated=TO_TIMESTAMP('2026-05-06 12:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544227;
 
 -- AD_Column for C_VAT_Code.AmountType (using existing AD_Element_ID 1602)
@@ -82,15 +82,17 @@ INSERT INTO AD_Column (
     ColumnName, Created, CreatedBy, EntityType, FieldLength,
     IsActive, IsAlwaysUpdateable, IsEncrypted, IsIdentifier, IsKey,
     IsMandatory, IsParent, IsSelectionColumn, IsSyncDatabase, IsTranslated, IsUpdateable,
-    Name, DefaultValue, SeqNo, Updated, UpdatedBy, Version
+    Name, DefaultValue, SeqNo, Updated, UpdatedBy, Version,
+    PersonalDataCategory
 ) VALUES (
-    0, 592499, 1602, 0,
-    17, 542087, 540703,
-    'AmountType', TO_TIMESTAMP('2026-05-06 12:00:06','YYYY-MM-DD HH24:MI:SS'), 0, 'de.metas.acct', 1,
+    0, 592499 /*From ID Server*/, 1602, 0,
+    17, 542087 /*From ID Server*/, 540703,
+    'AmountType', TO_TIMESTAMP('2026-05-06 12:00:06','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.acct', 1,
     'Y', 'N', 'N', 'N', 'N',
     'Y', 'N', 'N', 'Y', 'N', 'Y',
     'Betragsart', 'T', 0,
-    TO_TIMESTAMP('2026-05-06 12:00:06','YYYY-MM-DD HH24:MI:SS'), 0, 0
+    TO_TIMESTAMP('2026-05-06 12:00:06','YYYY-MM-DD HH24:MI:SS'), 100, 0,
+    'NP'
 );
 
 -- AD_Column_Trl propagation
