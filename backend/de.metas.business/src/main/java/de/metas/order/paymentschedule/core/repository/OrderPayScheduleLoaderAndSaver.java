@@ -218,8 +218,8 @@ public class OrderPayScheduleLoaderAndSaver
 		record.setPercent(from.getPercent().toInt());
 		record.setOffsetDays(from.getOffsetDays());
 		record.setReferenceDateType(from.getReferenceDateType().getCode());
-		record.setM_InOut_ID(from.getInoutId() != null ? from.getInoutId().getRepoId() : 0);
-		record.setC_Invoice_ID(from.getInvoiceId() != null ? from.getInvoiceId().getRepoId() : 0);
+		record.setM_InOut_ID(InOutId.toRepoId(from.getInoutId()));
+		record.setC_Invoice_ID(InvoiceId.toRepoId(from.getInvoiceId()));
 		record.setSeqNo(seqNoProvider.getAndIncrement().toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getStatus()));
 		record.setDueAmt_Actual(from.getDueAmountActual() != null ? from.getDueAmountActual().toBigDecimal() : null);

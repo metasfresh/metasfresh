@@ -72,16 +72,17 @@ class OrderPayScheduleLoaderAndSaverTest
 	}
 
 	/**
-	 * Saves an {@link OrderPayScheduleLine} with iter-3 columns set
-	 * ({@code baseAmount}, {@code inoutId}, {@code invoiceId}),
+	 * Saves an {@link OrderPayScheduleLine} with BaseAmount, M_InOut_ID, and C_Invoice_ID columns set,
 	 * reloads it by order, and asserts all three values survived the round-trip.
 	 * <p>
 	 * Before the fix, {@code updateRecord} was not calling
 	 * {@code record.setBaseAmt}, {@code record.setM_InOut_ID}, or
 	 * {@code record.setC_Invoice_ID}, so the reloaded line had null/0 values.
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
 	 */
 	@Test
-	void testRoundTripPreservesIter3Columns()
+	void roundTrip_preservesBaseAmountInoutAndInvoice()
 	{
 		// --- arrange ---
 		final I_C_Order order = newInstance(I_C_Order.class);
@@ -131,5 +132,65 @@ class OrderPayScheduleLoaderAndSaverTest
 		assertThat(reloadedLine.getInvoiceId())
 				.as("invoiceId must survive the round-trip")
 				.isEqualTo(invoiceId);
+	}
+
+	/**
+	 * Saves an {@link OrderPayScheduleLine} without inoutId and invoiceId
+	 * (LC row scenario: no shipment or invoice yet),
+	 * reloads it by order, and asserts both fields are null.
+	 * <p>
+	 * Exercises the null-path in {@code updateRecord} where both IDs are converted to 0
+	 * and then reloaded as null via {@code ofRepoIdOrNull}.
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
+	 */
+	@Test
+	void roundTrip_nullableFKsRoundTripAsNull()
+	{
+		// --- arrange ---
+		final I_C_Order order = newInstance(I_C_Order.class);
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(1001);
+		final PaymentTermBreakId breakId = PaymentTermBreakId.ofRepoId(paymentTermId, 1002);
+
+		final Money baseAmount = Money.of(BigDecimal.valueOf(42000.00), EUR);
+
+		final OrderPayScheduleLine line = OrderPayScheduleLine.builder()
+				.orderId(orderId)
+				.paymentTermBreakId(breakId)
+				.referenceDateType(ReferenceDateType.OrderDate)
+				.percent(Percent.of(100))
+				.offsetDays(0)
+				.status(OrderPayScheduleStatus.Pending)
+				.dueDate(LocalDate.of(2026, 6, 1))
+				.baseAmount(baseAmount)
+				.dueAmount(Money.of(BigDecimal.valueOf(42000.00), EUR))
+				// inoutId and invoiceId are NOT set (null)
+				.build();
+
+		final OrderPaySchedule schedule = OrderPaySchedule.ofList(orderId, Collections.singletonList(line));
+
+		// --- act: save ---
+		repository.save(schedule);
+
+		// --- act: reload ---
+		final Optional<OrderPaySchedule> reloaded = repository.getByOrderId(orderId);
+		assertThat(reloaded).isPresent();
+		final OrderPayScheduleLine reloadedLine = reloaded.get().getLines().get(0);
+
+		// --- assert nullable FKs round-trip as null ---
+		assertThat(reloadedLine.getBaseAmount())
+				.as("baseAmount must survive the round-trip even when FKs are null")
+				.isEqualTo(baseAmount);
+
+		assertThat(reloadedLine.getInoutId())
+				.as("inoutId must be null (LC row scenario)")
+				.isNull();
+
+		assertThat(reloadedLine.getInvoiceId())
+				.as("invoiceId must be null (LC row scenario)")
+				.isNull();
 	}
 }
