@@ -295,6 +295,7 @@ BEGIN
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
         SET Amt              = t.Amt * (-1),
+            AmtSource        = t.AmtSource * (-1),
             TaxAmtSource     = t.TaxAmtSource * (-1),
             dr_account       = t.cr_account,
             cr_account       = t.dr_account,
@@ -316,6 +317,7 @@ BEGIN
     IF p_IsNegateInboundAmounts = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
         SET Amt          = t.Amt * (-1),
+            AmtSource    = t.AmtSource * (-1),
             TaxAmtSource = t.TaxAmtSource * (-1)
         WHERE t.docbasetype IN ('APC', 'ARI');
     END IF;
