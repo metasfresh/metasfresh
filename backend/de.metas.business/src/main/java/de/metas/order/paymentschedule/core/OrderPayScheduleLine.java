@@ -71,6 +71,7 @@ public class OrderPayScheduleLine
 		final OrderPayScheduleLineContext lineContext = context.computeLineContext(termBreak);
 
 		return builder()
+				.orderId(context.getOrderId())
 				.paymentTermBreak(termBreak)
 				//
 				.status(lineContext.getStatus())
@@ -124,12 +125,8 @@ public class OrderPayScheduleLine
 	{
 		final OrderPayScheduleStatus nextStatus = context.getStatus();
 
-		if (nextStatus.equals(this.status))
-		{
-			return;
-		}
-
-		if (!this.status.isAllowTransitionTo(nextStatus))
+		// Validate transition only when status actually changes; same-status updates apply field changes without re-validating.
+		if (!nextStatus.equals(this.status) && !this.status.isAllowTransitionTo(nextStatus))
 		{
 			throw new AdempiereException("Cannot change status from " + this.status + " to " + nextStatus);
 		}

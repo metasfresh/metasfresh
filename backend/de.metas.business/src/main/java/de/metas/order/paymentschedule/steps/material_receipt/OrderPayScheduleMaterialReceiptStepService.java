@@ -158,7 +158,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 			result.add(line);
 
-			dueAmtRemaining = dueAmtRemaining.subtract(line.getDueAmount()).toZeroIfNegative();
+			dueAmtRemaining = dueAmtRemaining.subtract(dueAmt).toZeroIfNegative();
 		}
 
 		// Remainder row: max(0, orderGrandTotal − Σ receipts); omit if ≤ 0 (over-delivery)
