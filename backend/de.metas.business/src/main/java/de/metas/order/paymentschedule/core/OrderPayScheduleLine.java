@@ -59,7 +59,10 @@ public class OrderPayScheduleLine
 	private boolean isPaid;
 	@Nullable private LocalDate referenceDate;
 	@NonNull private LocalDate dueDate;
+	@EqualsAndHashCode.Exclude
 	@Nullable private Money baseAmount;
+
+	@EqualsAndHashCode.Exclude
 	@NonNull private Money dueAmount;
 	@Nullable private Money dueAmountActual;
 
@@ -119,6 +122,15 @@ public class OrderPayScheduleLine
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, getIdNotNull());}
 
+	/**
+	 * Sets BaseAmt and DueAmt together to enforce invariant: DueAmt = BaseAmt × break%.
+	 * <p>
+	 * For LC rows: BaseAmt = order.GrandTotal; DueAmt = order.GrandTotal × LC%.
+	 * For receipt-tied rows: BaseAmt = receipt.GrandTotal (with-tax); DueAmt = BaseAmt × break%.
+	 * For the remainder row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); DueAmt = BaseAmt × break%.
+	 * <p>
+	 * The pair is a single mutation site so the invariant cannot be temporarily violated.
+	 */
 	public void setBaseAndDueAmount(@Nullable final Money baseAmount, @NonNull final Money dueAmount)
 	{
 		this.baseAmount = baseAmount;

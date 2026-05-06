@@ -155,7 +155,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.inoutId(receipt.getId())
 					.invoiceId(invoice != null ? invoice.getId() : null)
 					.build());
-			// Override BaseAmt + DueAmt per §3.5 AC #3 + invariant I-1
+			// receipt-row: BaseAmt = receipt.GrandTotal (with-tax); DueAmt = BaseAmt × break%
 			line.setBaseAndDueAmount(receiptValue, dueAmt);
 
 			result.add(line);
@@ -184,7 +184,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.inoutId(null)
 					.invoiceId(null)
 					.build());
-			// Override BaseAmt + DueAmt per §3.5 AC #3 + invariant I-4
+			// remainder-row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); DueAmt = BaseAmt × break%
 			line.setBaseAndDueAmount(remainderBaseAmt, remainderDueAmt);
 
 			result.add(line);

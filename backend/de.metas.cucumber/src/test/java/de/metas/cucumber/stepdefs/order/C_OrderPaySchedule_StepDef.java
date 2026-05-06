@@ -28,6 +28,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.inout.InOutId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderPaySchedule;
@@ -62,6 +64,7 @@ public class C_OrderPaySchedule_StepDef
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 
@@ -170,6 +173,22 @@ public class C_OrderPaySchedule_StepDef
 			resultingPredicate = resultingPredicate == null ? predicate : resultingPredicate.and(predicate);
 		}
 
+		final var inOutIdentifierOpt = row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_M_InOut_ID);
+		if (inOutIdentifierOpt.isPresent())
+		{
+			final Predicate<OrderPayScheduleLine> predicate;
+			if (inOutIdentifierOpt.get().isNullPlaceholder())
+			{
+				predicate = (line) -> line.getInoutId() == null;
+			}
+			else
+			{
+				final InOutId inOutId = inOutTable.getId(inOutIdentifierOpt.get());
+				predicate = (line) -> InOutId.equals(line.getInoutId(), inOutId);
+			}
+			resultingPredicate = resultingPredicate == null ? predicate : resultingPredicate.and(predicate);
+		}
+
 		if (resultingPredicate == null)
 		{
 			throw new AdempiereException("No matching line predicate found for " + row);
@@ -235,6 +254,17 @@ public class C_OrderPaySchedule_StepDef
 					else
 					{
 						softly.assertThat(payScheduleLine.getInvoiceId()).as("C_Invoice_ID").isEqualTo(invoiceTable.getId(identifier));
+					}
+				});
+		row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_M_InOut_ID)
+				.ifPresent(identifier -> {
+					if (identifier.isNullPlaceholder())
+					{
+						softly.assertThat(payScheduleLine.getInoutId()).as("M_InOut_ID").isNull();
+					}
+					else
+					{
+						softly.assertThat(payScheduleLine.getInoutId()).as("M_InOut_ID").isEqualTo(inOutTable.getId(identifier));
 					}
 				});
 

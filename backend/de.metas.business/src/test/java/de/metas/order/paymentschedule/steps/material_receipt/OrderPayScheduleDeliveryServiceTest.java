@@ -92,14 +92,13 @@ import static org.mockito.Mockito.when;
  * <li>Asserts (a) all expected fields per {@link Cell}, (b) second invocation produces identical state (idempotence — AC #19).</li>
  * </ol>
  *
- * <p><b>Arithmetic note</b> (I-1 / I-3 / I-4):
- * <p>The service computes {@code dueAmtRemaining = getGrandTotalByBreakId(MR) = 48,058.08}.
- * For each receipt: {@code dueAmountActual = min(receiptValue, dueAmtRemaining)}.
- * The remainder row gets {@code dueAmountActual = dueAmtRemaining} after all receipts.
+ * <p><b>Arithmetic note</b>:
+ * <p>For each receipt row: {@code dueAmountActual = receipt.GrandTotal (with-tax) × break%}.
+ * The remainder row (BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax)) is omitted if BaseAmt ≤ 0 (over-delivery).
  * <ul>
- * <li>R1 (31,808.00): dueAmountActual = min(31808, 48058.08) = 31808.00; remaining = 16250.08.</li>
- * <li>R2_OVER (37,092.00): dueAmountActual = min(37092, 16250.08) = 16250.08; remaining = 0 → no remainder.</li>
- * <li>R2_UNDER (10,000.00): dueAmountActual = min(10000, 16250.08) = 10000.00; remaining = 6250.08 → remainder.</li>
+ * <li>R1 (31,808.00): dueAmountActual = 31808.00 × 51.04% ≈ 16,224.03.</li>
+ * <li>R2_OVER (37,092.00): dueAmountActual = 37092.00 × 51.04% ≈ 18,923.85; remainder BaseAmt = 0 (over-delivery) → remainder omitted.</li>
+ * <li>R2_UNDER (10,000.00): dueAmountActual = 10000.00 × 51.04% ≈ 5,104.00; remainder BaseAmt = 8,858.00 → remainder row created.</li>
  * </ul>
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
