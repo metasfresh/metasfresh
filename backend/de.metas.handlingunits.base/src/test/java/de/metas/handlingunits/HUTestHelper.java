@@ -59,6 +59,7 @@ import de.metas.handlingunits.attribute.strategy.impl.LinearDistributionAttribut
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.WeightTareDeltaTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -856,7 +857,8 @@ public class HUTestHelper
 			final I_M_HU_PI_Attribute piAttr_WeightTare = createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_WeightTare)
 					.setM_HU_PI(huDefNone)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
+					.setAggregationStrategyClass(SumAggregationStrategy.class)
+					.setTransferStrategyClass(WeightTareDeltaTransferStrategy.class));
 			piAttr_WeightTare.setIsReadOnly(true);
 			piAttr_WeightTare.setSeqNo(piAttrSeqNo);
 			piAttr_WeightTare.setUseInASI(false);
