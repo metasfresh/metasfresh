@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1802147736L;
+	private static final long serialVersionUID = 2056848634L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -424,6 +424,18 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
+	public void setEmptyColumn (final @Nullable java.lang.String EmptyColumn)
+	{
+		set_Value (COLUMNNAME_EmptyColumn, EmptyColumn);
+	}
+
+	@Override
+	public java.lang.String getEmptyColumn() 
+	{
+		return get_ValueAsString(COLUMNNAME_EmptyColumn);
+	}
+
+	@Override
 	public void setIsSOTrx (final @Nullable java.lang.String IsSOTrx)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsSOTrx, IsSOTrx);
@@ -433,18 +445,6 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getIsSOTrx() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsSOTrx);
-	}
-
-	@Override
-	public void setNullColumns (final @Nullable java.lang.String NullColumns)
-	{
-		set_Value (COLUMNNAME_NullColumns, NullColumns);
-	}
-
-	@Override
-	public java.lang.String getNullColumns() 
-	{
-		return get_ValueAsString(COLUMNNAME_NullColumns);
 	}
 
 	@Override

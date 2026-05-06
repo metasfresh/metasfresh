@@ -678,6 +678,29 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_DueDate = "DueDate";
 
 	/**
+	 * Set Empty Column.
+	 * Field used as a structural placeholder to maintain the required DATEV CSV column sequence. It contains no data and is exported as an empty value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEmptyColumn (@Nullable java.lang.String EmptyColumn);
+
+	/**
+	 * Get Empty Column.
+	 * Field used as a structural placeholder to maintain the required DATEV CSV column sequence. It contains no data and is exported as an empty value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEmptyColumn();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_EmptyColumn = new ModelColumn<>(I_DATEV_ExportLine.class, "EmptyColumn", null);
+	String COLUMNNAME_EmptyColumn = "EmptyColumn";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -722,29 +745,6 @@ public interface I_DATEV_ExportLine
 
 	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DATEV_ExportLine.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
-	 * Set Null Columns.
-	 * Columns with NULL value
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setNullColumns (@Nullable java.lang.String NullColumns);
-
-	/**
-	 * Get Null Columns.
-	 * Columns with NULL value
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getNullColumns();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_NullColumns = new ModelColumn<>(I_DATEV_ExportLine.class, "NullColumns", null);
-	String COLUMNNAME_NullColumns = "NullColumns";
 
 	/**
 	 * Set Order Reference.
