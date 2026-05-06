@@ -268,3 +268,98 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And validate the created orders
       | Identifier | LC_Date |
       | lcOrder    | null    |
+
+
+  Scenario: S4 - Payment reversal rolls LC back from Paid to Awaiting_Pay (DueAmt_Actual + LC_Date preserved)
+    # The procurement worker reverses the proforma payment (e.g., wrong bank account). The LC step
+    # rolls back to Awaiting_Pay because the allocation is still active — only the payment is gone.
+    # State walk: Pending → Awaiting_Pay (allocate) → Paid (payment) → Awaiting_Pay (reversal).
+    # BL break stays PR (Pending) throughout — BillOfLadingDate is not yet known (no goods receipt).
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | lcOrder    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lcOrderL1  | lcOrder    | lcProduct    | 1          |
+    And the order identified by lcOrder is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | lcInvoice  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    |
+      | lcInvoiceL1 | lcInvoice    | lcProduct    | 1 PCE       | 20596.32 |
+    And the invoice identified by lcInvoice is completed
+
+    And I allocate proforma 'lcInvoice' to order 'lcOrder'
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | BL                | 48058.08 | null          | PR     |
+
+    And metasfresh contains Pay Selection
+      | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySelection | org_EUR_account     | CT                  | 2026-04-24 |
+    And "Create from..." is invoked for pay selection paySelection, using following parameters:
+      | MatchRequirement | C_BPartner_ID | OnlyDue |
+      | OUT              | vendor        | Y       |
+    And the pay selection identified by paySelection is completed
+    Then "Create Payments" is invoked for pay selection paySelection
+
+    And the Pay selection identified by paySelection has exactly the following lines
+      | C_Invoice_ID | OpenAmt  | C_Payment_ID |
+      | lcInvoice    | 20596.32 | lcPayment    |
+
+    # Proforma flips to IsPaid=Y when the full payment completes (C_Payment AFTER_COMPLETE
+    # interceptor — proforma payments have no C_AllocationLine rows, so the regular
+    # allocation-driven update doesn't fire).
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | Y      |
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | P      |
+      | BL                | 48058.08 | null          | PR     |
+
+    # ── Reverse the proforma payment ──
+    # MPayment.reverseCorrectIt() creates a counter-payment that mirrors the original — every
+    # classification field (Proforma_Invoice_ID, IsPrepayment) is preserved; only the numeric
+    # effect is negated (PayAmt = -GrandTotal). Both rows end at DocStatus='RE' linked by
+    # Reversal_ID. The LC-step authority's `findCompletedOrClosedByProformaInvoiceId` filters
+    # on DocStatus IN (CO,CL), so it sees no completed payment and rolls the LC step back to
+    # Awaiting_Pay. DueAmt_Actual + LC_Date are preserved because the proforma allocation is
+    # still active.
+    And the payment identified by lcPayment is reversed with a reversal identified by lcPaymentReversal
+
+    # Reversal symmetry — AC #14: every classification field of the original is preserved
+    # on the reversal row (C_Invoice_ID stays null, Proforma_Invoice_ID stays set,
+    # IsPrepayment stays Y); only PayAmt is negated; both end at DocStatus='RE'.
+    Then validate payments
+      | C_Payment_ID.Identifier | DocStatus | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt    |
+      | lcPayment               | RE        | Y            | null         | lcInvoice           |  20596.32 |
+      | lcPaymentReversal       | RE        | Y            | null         | lcInvoice           | -20596.32 |
+
+    # Proforma rolls back to IsPaid=N once the only completed payment is reversed
+    # (C_Payment AFTER_REVERSECORRECT interceptor — symmetric to AFTER_COMPLETE).
+    And validate created invoices
+      | Identifier | IsPaid |
+      | lcInvoice  | N      |
+
+    Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
+      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+      | LC                | 20596.32 | 20596.32      | WP     |
+      | BL                | 48058.08 | null          | PR     |
+
+    # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
+    # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
+    # so the proforma reverts to unpaid: OpenAmt = GrandTotal, PaidAmt = 0.
+    Then for invoice the following invoiceOpenToDate result is expected:
+      | C_Invoice_ID | OpenAmt  | PaidAmt | GrandTotal | HasAllocations |
+      | lcInvoice    | 20596.32 | 0       | 20596.32   | false          |
+
+    And validate the created orders
+      | Identifier | LC_Date    |
+      | lcOrder    | 2026-04-24 |
