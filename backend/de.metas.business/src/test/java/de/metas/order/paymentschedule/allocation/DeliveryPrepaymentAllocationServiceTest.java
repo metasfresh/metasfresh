@@ -23,8 +23,6 @@
 package de.metas.order.paymentschedule.allocation;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.allocation.api.C_AllocationHdr_Builder;
-import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
@@ -33,9 +31,11 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
@@ -70,13 +70,12 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Answers;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -86,10 +85,11 @@ import java.util.stream.Stream;
 import static de.metas.organization.ClientAndOrgId.SYSTEM;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -98,11 +98,24 @@ import static org.mockito.Mockito.when;
  * <p>
  * Covers: Partial-rule MIN cap (binding + non-binding), Final-rule consumes-remaining-prepay,
  * Final-when-prepay-exhausted edge, and zero-receipt edge.
+ * <p>
+ * Sentinel pattern: {@link IAllocationBL#newBuilder()} is stubbed to throw
+ * {@link AllocationInitiatedSentinel}. Tests that expect an allocation to be created assert
+ * that the sentinel is thrown; tests that expect no allocation assert no exception is raised.
  *
  * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 Split-Payment Iter 3</a>
  */
 class DeliveryPrepaymentAllocationServiceTest
 {
+	/**
+	 * Thrown by the {@link IAllocationBL#newBuilder()} stub to signal that the allocation was initiated.
+	 * This avoids the need to mock the concrete {@code C_AllocationHdr_Builder} whose methods are {@code final}.
+	 */
+	private static class AllocationInitiatedSentinel extends RuntimeException
+	{
+		AllocationInitiatedSentinel() {super("allocation-initiated");}
+	}
+
 	private static final CurrencyId EUR = CurrencyId.ofRepoId(318);
 	private static final OrderId ORDER_ID = OrderId.ofRepoId(9001);
 	private static final InvoiceId INVOICE_ID = InvoiceId.ofRepoId(5001);
@@ -120,13 +133,11 @@ class DeliveryPrepaymentAllocationServiceTest
 	private OrderPayScheduleMaterialReceiptService materialReceiptService;
 	private MoneyService moneyService;
 	private OrderPayScheduleProformaService proformaService;
-	private IAllocationBL allocationBL;
-
-	// Mocked builder chain
-	private C_AllocationHdr_Builder builderMock;
-	private C_AllocationLine_Builder lineBuilderMock;
 
 	private I_C_UOM uom;
+
+	/** Receipt value used by the current test, tracked by {@link #stubReceiptValue}. */
+	private Money currentReceiptValue;
 
 	private OrderPayScheduleRegularInvoiceService service;
 
@@ -142,19 +153,16 @@ class DeliveryPrepaymentAllocationServiceTest
 		Services.registerService(IInOutDAO.class, mock(IInOutDAO.class));
 		Services.registerService(ITaxBL.class, mock(ITaxBL.class));
 
-		allocationBL = mock(IAllocationBL.class);
+		// Sentinel stub: newBuilder() throws AllocationInitiatedSentinel so tests can detect
+		// whether the allocation path was entered without needing to mock the final-method builder.
+		final IAllocationBL allocationBL = mock(IAllocationBL.class);
+		when(allocationBL.newBuilder()).thenThrow(new AllocationInitiatedSentinel());
 		Services.registerService(IAllocationBL.class, allocationBL);
-
-		// Builder chain mocks — RETURNS_SELF keeps all fluent calls on the same mock
-		builderMock = mock(C_AllocationHdr_Builder.class, Answers.RETURNS_SELF);
-		lineBuilderMock = mock(C_AllocationLine_Builder.class, Answers.RETURNS_SELF);
-		when(allocationBL.newBuilder()).thenReturn(builderMock);
-		when(builderMock.addLine()).thenReturn(lineBuilderMock);
-		when(lineBuilderMock.lineDone()).thenReturn(builderMock);
 
 		// UOM for Quantity construction
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+		currentReceiptValue = money("0.00");
 
 		// Constructor-injected mocks
 		payScheduleRepository = mock(OrderPayScheduleRepository.class);
@@ -197,10 +205,9 @@ class DeliveryPrepaymentAllocationServiceTest
 		stubReceiptValue(money("100000.00"));
 		stubAvailableAmount(money("11053.92"));
 
-		service.allocateForInvoice(buildInvoice(/*isPartial*/true));
-
-		// Allocation must have been initiated — cap applied
-		verify(allocationBL).newBuilder();
+		// Allocation MUST be initiated: sentinel is thrown, confirming newBuilder() was reached
+		assertThatThrownBy(() -> service.allocateForInvoice(buildInvoice(/*isPartial*/true)))
+				.isInstanceOf(AllocationInitiatedSentinel.class);
 	}
 
 	// -----------------------------------------------------------------------
@@ -216,10 +223,9 @@ class DeliveryPrepaymentAllocationServiceTest
 		stubReceiptValue(money("31808.00"));
 		stubAvailableAmount(money("20596.32"));
 
-		service.allocateForInvoice(buildInvoice(/*isPartial*/true));
-
-		// Allocation must have been initiated — proportional used
-		verify(allocationBL).newBuilder();
+		// Allocation MUST be initiated: proportional is below the cap, so alloc = proportional
+		assertThatThrownBy(() -> service.allocateForInvoice(buildInvoice(/*isPartial*/true)))
+				.isInstanceOf(AllocationInitiatedSentinel.class);
 	}
 
 	// -----------------------------------------------------------------------
@@ -235,10 +241,9 @@ class DeliveryPrepaymentAllocationServiceTest
 		stubReceiptValue(money("50000.00"));
 		stubAvailableAmount(money("11053.92"));
 
-		service.allocateForInvoice(buildInvoice(/*isPartial*/false));
-
-		// Final branch: allocAmt = remainingPrepay = 11053.92 — allocation must be created
-		verify(allocationBL).newBuilder();
+		// Final branch: allocAmt = remainingPrepay = 11053.92 — allocation MUST be initiated
+		assertThatThrownBy(() -> service.allocateForInvoice(buildInvoice(/*isPartial*/false)))
+				.isInstanceOf(AllocationInitiatedSentinel.class);
 	}
 
 	// -----------------------------------------------------------------------
@@ -253,10 +258,9 @@ class DeliveryPrepaymentAllocationServiceTest
 		stubReceiptValue(money("50000.00"));
 		stubAvailableAmount(money("0.00"));
 
-		service.allocateForInvoice(buildInvoice(/*isPartial*/false));
-
-		// availableAmt <= 0 → early return → no allocation created
-		verify(allocationBL, never()).newBuilder();
+		// availableAmt <= 0 → early return → newBuilder() MUST NOT be called → no sentinel thrown
+		assertThatCode(() -> service.allocateForInvoice(buildInvoice(/*isPartial*/false)))
+				.doesNotThrowAnyException();
 	}
 
 	// -----------------------------------------------------------------------
@@ -274,10 +278,44 @@ class DeliveryPrepaymentAllocationServiceTest
 
 		stubAvailableAmount(money("20596.32"));
 
-		service.allocateForInvoice(buildInvoice(/*isPartial*/true));
+		// receiptValue = 0 → proportional = 0 → min(0, remaining) = 0 → newBuilder() MUST NOT be called
+		assertThatCode(() -> service.allocateForInvoice(buildInvoice(/*isPartial*/true)))
+				.doesNotThrowAnyException();
+	}
 
-		// receiptValue = 0 → proportional = 0 → min(0, remaining) = 0 → no allocation created
-		verify(allocationBL, never()).newBuilder();
+	// -----------------------------------------------------------------------
+	// Test (f): Credit memo (DocBaseType=APC) — guard prevents allocation
+	// vendor credit memos bypass iter-3 allocation logic: fromRecordIfRegularInvoice returns empty
+	// Covers AC #26
+	// -----------------------------------------------------------------------
+
+	@Test
+	void creditMemoIsRejected()
+	{
+		// Build an APC (purchase credit memo) invoice record and pass it through fromRecordIfRegularInvoice.
+		// The guard checks docBaseType and rejects APC, so the conversion returns empty.
+		// No RegularInvoice is created → allocateForInvoice is never called → no allocation initiated.
+
+		// Build a mock invoice record with DocBaseType=APC (vendor credit memo)
+		final I_C_Invoice apCreditMemoRecord = buildMockInvoiceRecord(/*isPartial*/true);
+
+		// Stub invoiceBL to report APC docBaseType
+		final IInvoiceBL invoiceBLMock = Services.get(IInvoiceBL.class);
+		when(invoiceBLMock.getInvoiceDocBaseType(apCreditMemoRecord))
+				.thenReturn(InvoiceDocBaseType.VendorCreditMemo);
+
+		// Stub the repository lookups so the code can find the order ID before hitting the guard
+		when(matchInvoiceRepository.list(any())).thenReturn(MatchInvCollection.EMPTY);
+
+		// Pass it through the guard: fromRecordIfRegularInvoice should reject it and return empty
+		final Optional<RegularInvoice> result = service.fromRecordIfRegularInvoice(apCreditMemoRecord);
+
+		// Verify the guard rejects the APC invoice: no RegularInvoice created
+		assertThat(result).isEmpty();
+
+		// If no RegularInvoice is created, allocateForInvoice is never called, so no sentinel thrown
+		// (This implicit: if the guard didn't work, a RegularInvoice would be created and passed to
+		// allocateForInvoice, which would trigger the sentinel. The empty result proves the guard worked.)
 	}
 
 	// -----------------------------------------------------------------------
@@ -292,6 +330,10 @@ class DeliveryPrepaymentAllocationServiceTest
 	/**
 	 * Stubs the repository + materialReceiptService so that
 	 * {@code RegularInvoiceValueCalculator.computeValueMatchedByReceipts} returns {@code receiptValue}.
+	 * <p>
+	 * The invoice built by {@link #buildInvoice} uses {@code currentReceiptValue} as the line's
+	 * {@code lineGrossAmt}; with {@code qtyInvoiced == qtyMatched == 1}, the calculator returns it
+	 * verbatim.
 	 */
 	private void stubReceiptValue(final Money receiptValue)
 	{
@@ -322,21 +364,33 @@ class DeliveryPrepaymentAllocationServiceTest
 		when(receiptsMock.containsInOutLineId(INOUT_LINE_ID)).thenReturn(true);
 		when(materialReceiptService.getByOrderId(any(OrderId.class))).thenReturn(receiptsMock);
 
-		// lineGrossAmt == receiptValue (qtyInvoiced == qtyMatched == 1)
-		// set via buildInvoice(lineGrossAmt=receiptValue)
-		CURRENT_RECEIPT_VALUE = receiptValue;
+		currentReceiptValue = receiptValue;
 	}
 
 	/**
-	 * Stubs {@code prepaymentService.getAvailableAmount} for the default prepayment.
+	 * Stubs {@code prepaymentService.getAvailableAmount} to return the given amount.
 	 */
 	private void stubAvailableAmount(final Money amount)
 	{
 		when(prepaymentService.getAvailableAmount(any(Prepayment.class))).thenReturn(amount);
 	}
 
-	/** Tracks the receipt value set by the last {@link #stubReceiptValue} call. */
-	private Money CURRENT_RECEIPT_VALUE = money("0.00");
+	/**
+	 * Builds a mock {@link I_C_Invoice} record.
+	 * Used to test guards that inspect the I_C_Invoice record's properties before conversion.
+	 * The docBaseType stub is set up separately in the test method.
+	 */
+	private I_C_Invoice buildMockInvoiceRecord(final boolean isPartialInvoice)
+	{
+		final I_C_Invoice invoiceRecord = mock(I_C_Invoice.class);
+		when(invoiceRecord.getC_Invoice_ID()).thenReturn(INVOICE_ID.getRepoId());
+		when(invoiceRecord.isSOTrx()).thenReturn(false); // Purchase invoice
+		when(invoiceRecord.isFinancial()).thenReturn(true);
+		when(invoiceRecord.getDocStatus()).thenReturn(DocStatus.Completed.getCode());
+		when(invoiceRecord.isPartialInvoice()).thenReturn(isPartialInvoice);
+
+		return invoiceRecord;
+	}
 
 	/**
 	 * Builds a minimal {@link RegularInvoice} with one line whose {@code lineGrossAmt} matches
@@ -349,7 +403,7 @@ class DeliveryPrepaymentAllocationServiceTest
 		final RegularInvoice.Line line = RegularInvoice.Line.builder()
 				.id(INVOICE_LINE_ID)
 				.qtyInvoiced(qty)
-				.lineGrossAmt(CURRENT_RECEIPT_VALUE)
+				.lineGrossAmt(currentReceiptValue)
 				.build();
 
 		return RegularInvoice.builder()
