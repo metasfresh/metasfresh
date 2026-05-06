@@ -4,7 +4,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
-import { step } from '../../utils/common';
+import { step, FAST_ACTION_TIMEOUT } from '../../utils/common';
 
 const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
@@ -101,6 +101,6 @@ test('Spurious Enter without barcode does not trigger blank API call', async ({ 
                 input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
             }
         });
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(FAST_ACTION_TIMEOUT);
     });
 });
