@@ -109,7 +109,7 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
-	// iter-3: for linking invoice lines back to order lines (C_OrderLine_ID FK)
+	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
 	private final C_OrderLine_StepDefData orderLineTable;
 
 	@And("metasfresh contains C_InvoiceLines")
@@ -412,7 +412,7 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setPriceActual(price);
 				});
 
-		// iter-3: link the invoice line back to the order line so M_MatchInv → orderLine.C_Tax_ID
+		// link the invoice line back to the order line so M_MatchInv → orderLine.C_Tax_ID
 		// traversal in DeliveryPrepaymentAllocationService works correctly.
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
 				.map(orderLineTable::getId)
