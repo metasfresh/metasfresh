@@ -89,7 +89,8 @@ public class OrderPayScheduleRegularInvoiceService
 		);
 	}
 
-	private boolean isRegularInvoice(@NonNull final I_C_Invoice invoiceRecord, boolean validateDocStatus)
+	// Package-visible for unit tests in the same package; production callers use fromRecordIfRegularInvoice/getRegularInvoicesByOrderId.
+	boolean isRegularInvoice(@NonNull final I_C_Invoice invoiceRecord, boolean validateDocStatus)
 	{
 		// SOTrx guard: only purchase invoices
 		if (invoiceRecord.isSOTrx())
@@ -207,9 +208,9 @@ public class OrderPayScheduleRegularInvoiceService
 				.build();
 	}
 
-	private List<RegularInvoice> findRegularInvoicesNotAlreadyAllocatedToPrepayment(@NonNull final Prepayment prepayment)
+	// Package-visible for unit tests in the same package; production callers use retroAllocateUnallocatedInvoices.
+	List<RegularInvoice> findRegularInvoicesNotAlreadyAllocatedToPrepayment(@NonNull final Prepayment prepayment)
 	{
-		// TODO 
 		return getRegularInvoicesByOrderId(prepayment.getOrderId())
 				.stream()
 				.filter(invoice -> !allocationBL.hasActiveAllocationBetween(invoice.getId(), prepayment.getId()))
@@ -217,7 +218,8 @@ public class OrderPayScheduleRegularInvoiceService
 	}
 
 	@NonNull
-	private List<RegularInvoice> getRegularInvoicesByOrderId(@NonNull final OrderId orderId)
+	// Package-visible for unit tests in the same package; production callers use findRegularInvoicesNotAlreadyAllocatedToPrepayment.
+	List<RegularInvoice> getRegularInvoicesByOrderId(@NonNull final OrderId orderId)
 	{
 		final List<InOutId> inoutIds = inOutDAO.retrieveInOutIdsByOrderId(orderId);
 		final Set<InvoiceId> invoiceIds = findInvoiceIdsByInOutIds(inoutIds);

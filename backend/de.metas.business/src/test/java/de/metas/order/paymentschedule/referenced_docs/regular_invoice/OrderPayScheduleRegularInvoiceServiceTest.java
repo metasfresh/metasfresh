@@ -32,9 +32,11 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
@@ -67,12 +69,14 @@ import de.metas.util.lang.Percent;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -99,6 +103,9 @@ class OrderPayScheduleRegularInvoiceServiceTest
 	private static final CurrencyId EUR = CurrencyId.ofRepoId(318);
 	private static final OrderId ORDER_ID = OrderId.ofRepoId(9001);
 	private static final InvoiceId INVOICE_ID = InvoiceId.ofRepoId(5001);
+	private static final InvoiceId INV1_ID = InvoiceId.ofRepoId(5010);
+	private static final InvoiceId INV2_ID = InvoiceId.ofRepoId(5020);
+	private static final InvoiceId INV3_ID = InvoiceId.ofRepoId(5030);
 	private static final InvoiceLineId INVOICE_LINE_ID = InvoiceLineId.ofRepoId(6001);
 	private static final PaymentId PAYMENT_ID = PaymentId.ofRepoId(7001);
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(1);
@@ -405,5 +412,160 @@ class OrderPayScheduleRegularInvoiceServiceTest
 	private Money computeAmountToAllocate(final RegularInvoice invoice, final Prepayment prepayment)
 	{
 		return service.computeAmountToAllocate(invoice, prepayment);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 6: GAP §3 row B + §11 dec 1 — getRegularInvoicesByOrderId returns invoices in FIFO order
+	// Stubs return invoices with dates scrambled (INV3=2026-01-15, INV1=2026-01-01, INV2=2026-01-08);
+	// asserts the result is sorted oldest-first.
+	// -----------------------------------------------------------------------
+
+	@Test
+	void retroAllocateUnallocatedInvoices_fifoOrdering()
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		// 3 invoice records with scrambled dates: INV3 newest, INV1 oldest, INV2 middle
+		final I_C_Invoice rec3 = buildInvoiceRecord(INV3_ID, LocalDate.of(2026, 1, 15));
+		final I_C_Invoice rec1 = buildInvoiceRecord(INV1_ID, LocalDate.of(2026, 1, 1));
+		final I_C_Invoice rec2 = buildInvoiceRecord(INV2_ID, LocalDate.of(2026, 1, 8));
+
+		when(inOutDAO.retrieveInOutIdsByOrderId(ORDER_ID)).thenReturn(ImmutableList.of(INOUT_ID));
+		when(matchInvoiceRepository.list(any())).thenReturn(MatchInvCollection.ofList(ImmutableList.of(
+				buildMatchInv(INV3_ID, MatchInvId.ofRepoId(31)),
+				buildMatchInv(INV1_ID, MatchInvId.ofRepoId(11)),
+				buildMatchInv(INV2_ID, MatchInvId.ofRepoId(21))
+		)));
+		when(invoiceBL.getByIds(any())).thenReturn(ImmutableList.of(rec3, rec1, rec2));
+		when(invoiceBL.getInvoiceDocBaseType(any())).thenReturn(InvoiceDocBaseType.VendorInvoice);
+		when(invoiceBL.getLinesByInvoiceIds(any())).thenReturn(ImmutableList.of());
+
+		final List<RegularInvoice> result = service.getRegularInvoicesByOrderId(ORDER_ID);
+
+		assertThat(result).hasSize(3);
+		assertThat(result.get(0).getDateInvoiced()).isEqualTo(LocalDate.of(2026, 1, 1));  // INV1 oldest
+		assertThat(result.get(1).getDateInvoiced()).isEqualTo(LocalDate.of(2026, 1, 8));  // INV2 middle
+		assertThat(result.get(2).getDateInvoiced()).isEqualTo(LocalDate.of(2026, 1, 15)); // INV3 newest
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 7: GAP §3 row B + §11 dec 1 — findRegularInvoicesNotAlreadyAllocatedToPrepayment skips allocated
+	// One of 3 invoices has hasActiveAllocationBetween=true; asserts only 2 are returned.
+	// -----------------------------------------------------------------------
+
+	@Test
+	void retroAllocateUnallocatedInvoices_skipsAlreadyAllocated()
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+
+		final I_C_Invoice rec1 = buildInvoiceRecord(INV1_ID, LocalDate.of(2026, 1, 1));
+		final I_C_Invoice rec2 = buildInvoiceRecord(INV2_ID, LocalDate.of(2026, 1, 8));
+		final I_C_Invoice rec3 = buildInvoiceRecord(INV3_ID, LocalDate.of(2026, 1, 15));
+
+		when(inOutDAO.retrieveInOutIdsByOrderId(ORDER_ID)).thenReturn(ImmutableList.of(INOUT_ID));
+		when(matchInvoiceRepository.list(any())).thenReturn(MatchInvCollection.ofList(ImmutableList.of(
+				buildMatchInv(INV1_ID, MatchInvId.ofRepoId(11)),
+				buildMatchInv(INV2_ID, MatchInvId.ofRepoId(21)),
+				buildMatchInv(INV3_ID, MatchInvId.ofRepoId(31))
+		)));
+		when(invoiceBL.getByIds(any())).thenReturn(ImmutableList.of(rec1, rec2, rec3));
+		when(invoiceBL.getInvoiceDocBaseType(any())).thenReturn(InvoiceDocBaseType.VendorInvoice);
+		when(invoiceBL.getLinesByInvoiceIds(any())).thenReturn(ImmutableList.of());
+
+		// INV2 is already allocated to the prepayment
+		when(allocationBL.hasActiveAllocationBetween(INV2_ID, PAYMENT_ID)).thenReturn(true);
+
+		final Prepayment prepayment = buildPrepayment();
+		final List<RegularInvoice> result = service.findRegularInvoicesNotAlreadyAllocatedToPrepayment(prepayment);
+
+		assertThat(result).hasSize(2);
+		assertThat(result.stream().map(RegularInvoice::getId)).doesNotContain(INV2_ID);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 8: AC #23 — sales invoice (IsSOTrx=Y) is excluded by isRegularInvoice
+	// -----------------------------------------------------------------------
+
+	@Test
+	void triggerFilter_salesInvoice_excluded()
+	{
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setIsSOTrx(true);
+		invoice.setIsFinancial(true);
+		invoice.setDocStatus(DocStatus.Completed.getCode());
+
+		assertThat(service.isRegularInvoice(invoice, true)).isFalse();
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 9: AC #26 — purchase credit memo (DocBaseType=APC) is excluded by isRegularInvoice
+	// -----------------------------------------------------------------------
+
+	@Test
+	void triggerFilter_creditMemoAPC_excluded()
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setIsSOTrx(false);
+		invoice.setIsFinancial(true);
+		invoice.setDocStatus(DocStatus.Completed.getCode());
+		when(invoiceBL.getInvoiceDocBaseType(invoice)).thenReturn(InvoiceDocBaseType.VendorCreditMemo);
+
+		assertThat(service.isRegularInvoice(invoice, true)).isFalse();
+	}
+
+	// -----------------------------------------------------------------------
+	// Additional helpers for cells 6–9
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Builds an {@link I_C_Invoice} POJO with the given ID and dateInvoiced,
+	 * configured as a regular purchase invoice (IsSOTrx=N, IsFinancial=Y, DocStatus=CO).
+	 */
+	private I_C_Invoice buildInvoiceRecord(final InvoiceId invoiceId, final LocalDate dateInvoiced)
+	{
+		final I_C_Invoice record = newInstance(I_C_Invoice.class);
+		// Set ID before save so extractInvoiceId(record) returns the expected InvoiceId.
+		// In POJO mode, setting the PK column before the first saveRecord fixes the ID.
+		record.setC_Invoice_ID(invoiceId.getRepoId());
+		record.setIsSOTrx(false);
+		record.setIsFinancial(true);
+		record.setDocStatus(DocStatus.Completed.getCode());
+		record.setDateInvoiced(org.compiere.util.TimeUtil.asTimestamp(dateInvoiced));
+		record.setDateAcct(org.compiere.util.TimeUtil.asTimestamp(dateInvoiced));
+		record.setC_Currency_ID(EUR.getRepoId());
+		record.setC_BPartner_ID(1);
+		record.setAD_Org_ID(0);
+		return record;
+	}
+
+	/**
+	 * Builds a minimal {@link MatchInv} that maps the given invoiceId (for invoice-ID lookup via MatchInvCollection).
+	 */
+	private MatchInv buildMatchInv(final InvoiceId invoiceId, final MatchInvId matchInvId)
+	{
+		final Quantity qty = Quantity.of(1, uom);
+		return MatchInv.builder()
+				.id(matchInvId)
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoId(invoiceId.getRepoId(), INVOICE_LINE_ID.getRepoId()))
+				.inoutLineId(INOUT_LINE_ID)
+				.clientAndOrgId(SYSTEM)
+				.soTrx(de.metas.lang.SOTrx.PURCHASE)
+				.dateTrx(Instant.EPOCH)
+				.dateAcct(Instant.EPOCH)
+				.posted(false)
+				.updatedByUserId(UserId.SYSTEM)
+				.productId(PRODUCT_ID)
+				.asiId(AttributeSetInstanceId.NONE)
+				.qty(StockQtyAndUOMQty.builder()
+						.productId(PRODUCT_ID)
+						.stockQty(qty)
+						.build())
+				.type(MatchInvType.Material)
+				.build();
 	}
 }
