@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.order;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
@@ -49,6 +50,7 @@ import org.compiere.model.I_C_OrderPaySchedule;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -173,7 +175,7 @@ public class C_OrderPaySchedule_StepDef
 			resultingPredicate = resultingPredicate == null ? predicate : resultingPredicate.and(predicate);
 		}
 
-		final var inOutIdentifierOpt = row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_M_InOut_ID);
+		final Optional<StepDefDataIdentifier> inOutIdentifierOpt = row.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_M_InOut_ID);
 		if (inOutIdentifierOpt.isPresent())
 		{
 			final Predicate<OrderPayScheduleLine> predicate;
