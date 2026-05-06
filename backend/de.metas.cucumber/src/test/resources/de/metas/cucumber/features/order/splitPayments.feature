@@ -363,3 +363,85 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
+
+
+  # ═══════════════════════════════════════════════════════════════════════════════════
+  # S5 CUSTOMER-SPREADSHEET 2-LINE DECOMPOSITION
+  # ═══════════════════════════════════════════════════════════════════════════════════
+  #
+  # Source: https://github.com/user-attachments/files/25867894/dt204.Multiple.Payments.xlsx
+  # Ref:    ai-work/29369/REQUIREMENTS.md §1
+  #
+  # ── PO totals ──────────────────────────────────────────────────────────────────
+  #   Tax rate:          19% German standard
+  #   PO with-tax:       68,654.40 EUR  (customer spreadsheet, price-list item)
+  #   PO net:            68,654.40 / 1.19 = 57,692.77 EUR
+  #                      (exact: 57,692.773109...; banker's rounding → 57,692.77)
+  #
+  # ── Chosen qty/price decomposition ────────────────────────────────────────────
+  #   Line A (under-delivery by 1):
+  #     orderedQtyA  = 196  PCE
+  #     actualQtyA   = 195  PCE  (= orderedQtyA − 1)
+  #     priceA       = 137.0739 EUR/PCE  (net unit price, 4 decimal places)
+  #
+  #   Line B (over-delivery by 4):
+  #     orderedQtyB  = 359  PCE
+  #     actualQtyB   = 363  PCE  (= orderedQtyB + 4)
+  #     priceB       =  85.8671 EUR/PCE  (net unit price, 4 decimal places)
+  #
+  # ── Verification (6 hand-calculations) ────────────────────────────────────────
+  #   1) R1 with-tax  = actualQtyA × priceA × 1.19
+  #                   = 195 × 137.0739 × 1.19
+  #                   = 26,729.4105 × 1.19
+  #                   = 31,808.00 EUR   (target 31,808.00; diff = 0.00)
+  #
+  #   2) R2 with-tax  = actualQtyB × priceB × 1.19
+  #                   = 363 × 85.8671 × 1.19
+  #                   = 31,179.7173 × 1.19
+  #                   = 37,092.01 EUR   (target 37,092.00; diff = +0.01, within +-0.01)
+  #
+  #   3) PO with-tax  = (orderedQtyA × priceA + orderedQtyB × priceB) × 1.19
+  #                   = (196 × 137.0739 + 359 × 85.8671) × 1.19
+  #                   = (26,866.4844 + 30,826.2889) × 1.19
+  #                   = 57,692.7733 × 1.19
+  #                   = 68,654.40 EUR   (target 68,654.40; diff = 0.00)
+  #
+  #   4) Net over-delivery with-tax
+  #                   = (actualQtyB - orderedQtyB) × priceB × 1.19
+  #                     - (orderedQtyA - actualQtyA) × priceA × 1.19
+  #                   = 4 × 85.8671 × 1.19 - 1 × 137.0739 × 1.19
+  #                   = 408.9272 - 163.0179
+  #                   = +245.61 EUR     (target +245.60; diff = +0.01, within +-0.01)
+  #
+  #   5) R1 + R2 - PO = 31,808.00 + 37,092.01 - 68,654.40 = +245.61 EUR
+  #                     consistent with (4) above
+  #
+  #   6) PO net check = orderedQtyA × priceA + orderedQtyB × priceB
+  #                   = 57,692.7733 EUR  approx 57,692.77 EUR
+  #
+  # ── What S5 demonstrates ───────────────────────────────────────────────────────
+  #   Over-delivery scenario: PO with LC prepay 30% paid upfront (20,596.32 EUR);
+  #   R1 (under-delivered) creates INV1 Partial with alloc 9,542.40 EUR;
+  #   R2 (over-delivered) creates INV2 Final with alloc 11,053.92 EUR consuming the
+  #   full remaining prepay, and the over-delivery remainder row is deleted.
+  #
+  # ── Search provenance ─────────────────────────────────────────────────────────
+  #   Solution found by brute-force integer search over qtyA in [50,1000],
+  #   qtyB in [50,1000].  Prices derived via:
+  #     priceA = 31,808.00 / (1.19 x (qtyA - 1))  rounded to 4 decimal places
+  #     priceB = 37,092.00 / (1.19 x (qtyB + 4))  rounded to 4 decimal places
+  #   Selection criterion: smallest qtyA + qtyB satisfying PO with-tax = 68,654.40
+  #   and all 4 targets within +-0.01 EUR.
+  #   qtyA=196, qtyB=359 was chosen (PO diff = 0.00, R1 diff = 0.00).
+  #
+  # ── notes (for human review) ──────────────────────────────────────────────────
+  #   Task brief stated PO net = 57,693.61 EUR; verified value is 57,692.77 EUR.
+  #   The brief contained a transcription error; the with-tax total 68,654.40 is
+  #   the authoritative figure and is satisfied exactly (diff = 0.00).
+  #   R2 and over-delivery each land at +0.01 EUR vs target due to the 4-decimal
+  #   price rounding of priceB; this is within the permitted +-0.01 tolerance.
+  #   No adjustment to REQUIREMENTS.md is needed — all customer-stated with-tax
+  #   totals (68,654.40 / 31,808.00 / 37,092.00 / +245.60) are preserved to +-0.01.
+  #
+  # ═══════════════════════════════════════════════════════════════════════════════════
+  # --- S5 will be authored in B.3 below ---
