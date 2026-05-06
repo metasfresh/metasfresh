@@ -169,9 +169,28 @@ public class X_C_VAT_Code extends org.compiere.model.PO implements I_C_VAT_Code,
 		@return This is a Sales Transaction
 	  */
 	@Override
-	public java.lang.String getIsSOTrx () 
+	public java.lang.String getIsSOTrx ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsSOTrx);
+	}
+
+	/** Set Amount Type.
+		@param AmountType Amount Type
+	  */
+	@Override
+	public void setAmountType (java.lang.String AmountType)
+	{
+
+		set_Value (COLUMNNAME_AmountType, AmountType);
+	}
+
+	/** Get Amount Type.
+		@return Amount Type
+	  */
+	@Override
+	public java.lang.String getAmountType ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AmountType);
 	}
 
 	/** Set Gültig ab.
