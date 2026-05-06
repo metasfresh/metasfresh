@@ -118,3 +118,69 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
       | LC                | 21000.00 | null          | PR     | null          | N      |
       | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
     And the order identified by lcOrder has exactly 1 delivery sub-rows
+
+
+  @from:cucumber
+  @Id:S29369_TC23
+  Scenario: Non-proforma payment with IsAutoAllocateAvailableAmt='Y' triggers standard greedy allocation (AC #23 regression guard)
+    # Domain: a vendor invoice + a vendor payment that are allocated via the standard
+    # IAllocationBL greedy MIN path.  There is NO proforma allocation on any related order,
+    # so iter-3's DeliveryPrepaymentAllocationService is entirely dormant.
+    #
+    # Allocation rule under test: alloc = MIN(payment.AvailableAmt, invoice.OpenAmt)
+    #
+    # Setup:
+    #   - Vendor invoice: 10 PCE × 100 EUR (tax-inclusive) → GrandTotal = 1,000 EUR
+    #   - Vendor payment: PayAmt = 600 EUR  (partial — tests the MIN cap)
+    #   - Expected C_AllocationLine.Amount = MIN(600, 1000) = 600 EUR
+    #
+    # Assertions:
+    #   1. Exactly one C_AllocationLine exists for the invoice (standard path).
+    #   2. Amount = 600 EUR  (greedy MIN: payment amt < invoice open amt → amount = payAmt).
+    #   3. Invoice.IsPartiallyPaid = true (600 out of 1,000 paid).
+
+    # ── Organisation bank account (needed to create the vendor payment) ──
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
+
+    # ── Non-proforma PO: 10 PCE × 100 EUR = 1,000 EUR (no proforma allocation) ──
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | ac23_order    | N       | vendor        | 2026-04-24  | POO         | wh             | pt_lc            |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered |
+      | ac23_orderL1  | ac23_order | product      | 10         |
+    And the order identified by ac23_order is completed
+
+    # ── Vendor invoice: 10 PCE × 100 EUR = 1,000 EUR, matched to the order line ──
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
+      | ac23_inv   | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
+      | ac23_invL1  | ac23_inv     | product      | 10 PCE      | 100.00 | ac23_orderL1   |
+    And the invoice identified by ac23_inv is completed
+
+    # ── Vendor payment: 600 EUR (IsPrepayment=N, no Proforma_Invoice_ID) ──
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
+      | ac23_pmt    | vendor        | 600 EUR  | false     | org_EUR_account     |
+    And the payment identified by ac23_pmt is completed
+
+    # ── Trigger standard greedy MIN allocation via PaymentAllocationBuilder ──
+    # alloc = MIN(payment.AvailableAmt=600, invoice.OpenAmt=1000) = 600
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID |
+      | ac23_inv     | ac23_pmt     |
+
+    # ── Assert: standard C_AllocationLine created with Amount = -600 (AP sign: negative) ──
+    # alloc = MIN(payment.AvailableAmt=600, invoice.OpenAmt=1000) = 600; stored as -600 for AP
+    Then validate C_AllocationLines for invoice ac23_inv
+      | C_Payment_ID | Amount  |
+      | ac23_pmt     | -600.00 |
+
+    # ── Assert: invoice is partially paid (standard allocation reduced OpenAmt) ──
+    And validate created invoices
+      | C_Invoice_ID | IsPartiallyPaid |
+      | ac23_inv     | true            |
