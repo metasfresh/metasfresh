@@ -24,6 +24,7 @@ package de.metas.order.paymentschedule.steps.material_receipt;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -40,8 +41,10 @@ import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.core.OrderPayScheduleId;
 import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
 import de.metas.order.paymentschedule.core.OrderSchedulingContext;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.order.paymentschedule.referenced_docs.material_receipt.MaterialReceipt;
 import de.metas.order.paymentschedule.referenced_docs.material_receipt.MaterialReceiptCollection;
+import de.metas.order.paymentschedule.referenced_docs.material_receipt.OrderPayScheduleMaterialReceiptService;
 import de.metas.order.paymentschedule.referenced_docs.regular_invoice.OrderPayScheduleRegularInvoiceService;
 import de.metas.order.paymentschedule.referenced_docs.regular_invoice.RegularInvoice;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -59,6 +62,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_OrderPaySchedule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -73,6 +78,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -121,6 +128,8 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 
 	private OrderPayScheduleMaterialReceiptStepService service;
 	private OrderPayScheduleRegularInvoiceService regularInvoiceService;
+	private OrderPayScheduleService orderPayScheduleService;
+	private OrderPayScheduleMaterialReceiptService receiptService;
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -167,10 +176,13 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		regularInvoiceService = mock(OrderPayScheduleRegularInvoiceService.class);
 		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty()); // default: no invoice
 
+		orderPayScheduleService = mock(OrderPayScheduleService.class);
+		receiptService = mock(OrderPayScheduleMaterialReceiptService.class);
+
 		service = new OrderPayScheduleMaterialReceiptStepService(
 				moneyService,
-				mock(de.metas.order.paymentschedule.core.service.OrderPayScheduleService.class),
-				mock(de.metas.order.paymentschedule.referenced_docs.material_receipt.OrderPayScheduleMaterialReceiptService.class),
+				orderPayScheduleService,
+				receiptService,
 				regularInvoiceService
 		);
 
@@ -353,6 +365,170 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 
 		// No remainder row
 		assertThat(lines).allMatch(l -> l.getInoutId() != null);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 6 — AC #16 — reversed invoice clears invoiceId, status back to Pending
+	// -----------------------------------------------------------------------
+
+	@Test
+	void reverseInvoice_clearsCInvoiceId_statusPending()
+	{
+		// Setup: R1 sub-row was Awaiting_Pay with INV1. Now the invoice is reversed.
+		// Production code calls regularInvoiceService.getByReceipt(...) which filters for CO/CL invoices.
+		// A reversed invoice fails that filter → Optional.empty() → invoice=null → status=Pending.
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		// Stub: reversed invoice is absent from the service (filter rejects RE status)
+		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty());
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		assertThat(lines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = lines.get(0);
+		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
+		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		assertThat(r1Line.getInvoiceId()).isNull();
+
+		// Remainder row unchanged
+		final OrderPayScheduleLine remainder = lines.get(1);
+		assertThat(remainder.getInoutId()).isNull();
+		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 7 — AC #17 — reversed receipt drops sub-row, remainder covers full amount
+	// -----------------------------------------------------------------------
+
+	@Test
+	void reverseReceipt_dropsSubrow_remainderRecomputed()
+	{
+		// Setup: R1 is now reversed / ineligible; receiptService returns an empty collection.
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+
+		// Stub: no eligible receipts (R1 reversed → filtered out by isEligibleReceipt)
+		final MaterialReceiptCollection emptyReceipts = MaterialReceiptCollection.EMPTY;
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				emptyReceipts,
+				order,
+				mrBreak(),
+				schedule);
+
+		// Same shape as Cell 1: 0 sub-rows, 1 remainder with full mrBreak share
+		assertThat(lines).hasSize(1);
+
+		final OrderPayScheduleLine remainder = lines.get(0);
+		assertThat(remainder.getInoutId()).isNull();
+		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("70000.00", EUR));
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 8 — AC #19 — idempotence: calling recompute twice yields identical structure
+	// -----------------------------------------------------------------------
+
+	@Test
+	void idempotent_secondCallNoChange()
+	{
+		// Re-stub getLineGrossAmt to always return R1_VALUE (pure / stateless)
+		// so that both calls to computeOrderPayScheduleLines see the same data.
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		Mockito.doReturn(R1_VALUE).when(orderLineBL).getLineGrossAmt(any(de.metas.interfaces.I_C_OrderLine.class));
+
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		// First call
+		final List<OrderPayScheduleLine> firstResult = service.computeOrderPayScheduleLines(
+				receipts, order, mrBreak(), schedule);
+
+		// Second call on the same inputs — must produce the same structure
+		final List<OrderPayScheduleLine> secondResult = service.computeOrderPayScheduleLines(
+				receipts, order, mrBreak(), schedule);
+
+		assertThat(secondResult).hasSize(firstResult.size());
+		for (int i = 0; i < firstResult.size(); i++)
+		{
+			final OrderPayScheduleLine first = firstResult.get(i);
+			final OrderPayScheduleLine second = secondResult.get(i);
+			assertThat(second.getInoutId()).isEqualTo(first.getInoutId());
+			assertThat(second.getDueAmount()).isEqualByComparingTo(first.getDueAmount());
+			assertThat(second.getDueAmountActual()).isEqualByComparingTo(first.getDueAmountActual());
+			assertThat(second.getStatus()).isEqualTo(first.getStatus());
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 9 — AC #22 — non-proforma (non-complex) order → recomputeDeliverySteps is dormant
+	// -----------------------------------------------------------------------
+
+	@Test
+	void nonProformaOrder_dormant()
+	{
+		// Build a non-complex payment term (empty breaks → isComplex=false)
+		final PaymentTerm nonComplexTerm = PaymentTerm.builder()
+				.id(PT_ID)
+				.clientId(ClientId.SYSTEM)
+				.orgId(de.metas.organization.OrgId.ANY)
+				.value("SIMPLE")
+				.name("Simple Payment Term")
+				.breaks(ImmutableList.of())
+				.paySchedules(ImmutableList.of())
+				.build();
+
+		final OrderSchedulingContext nonComplexOrder = OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.grandTotal(GRAND_TOTAL)
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(nonComplexTerm)
+				.build();
+
+		// Stub: getContextById returns a non-complex order
+		when(orderPayScheduleService.getContextById(ORDER_ID)).thenReturn(Optional.of(nonComplexOrder));
+
+		// When: public entry point is called
+		service.recomputeDeliverySteps(ORDER_ID);
+
+		// Then: updateById is never called (dormancy short-circuit at line 92)
+		verify(orderPayScheduleService, never()).updateById(any(), any());
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 10 — Finding #1 — non-completed/closed invoices treated as absent (parametrised)
+	// -----------------------------------------------------------------------
+
+	@ParameterizedTest
+	@ValueSource(strings = { "DR", "VO", "RE" })
+	void onlyCompletedOrClosedInvoicesCount(final String docStatusCode)
+	{
+		final OrderSchedulingContext order = buildOrder();
+		final OrderPaySchedule schedule = buildEmptySchedule();
+		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+
+		// Simulate: production isCompletedOrClosed() filter rejects DR/VO/RE → service returns empty
+		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty());
+
+		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
+				receipts, order, mrBreak(), schedule);
+
+		assertThat(lines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = lines.get(0);
+		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
+		assertThat(r1Line.getStatus())
+				.as("DocStatus=%s should be treated as absent → Pending", docStatusCode)
+				.isEqualTo(OrderPayScheduleStatus.Pending);
+		assertThat(r1Line.getInvoiceId()).isNull();
 	}
 
 	// -----------------------------------------------------------------------
