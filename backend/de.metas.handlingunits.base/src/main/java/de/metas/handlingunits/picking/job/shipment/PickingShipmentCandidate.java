@@ -20,6 +20,7 @@ public class PickingShipmentCandidate
 	@NonNull @Delegate private final PickingShipmentCandidateKey key;
 	@NonNull @Getter private final ImmutableSet<HuId> onlyLUIds;
 	@NonNull @Getter private final CreateShipmentPolicy createShipmentPolicy;
+	@Getter private final boolean waitForShipments;
 
 	@NonNull private final HashSet<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
 
@@ -27,11 +28,13 @@ public class PickingShipmentCandidate
 	private PickingShipmentCandidate(
 			@NonNull final PickingShipmentCandidateKey key,
 			@Nullable final Set<HuId> onlyLUIds,
-			@Nullable final CreateShipmentPolicy createShipmentPolicy)
+			@Nullable final CreateShipmentPolicy createShipmentPolicy,
+			final boolean waitForShipments)
 	{
 		this.key = key;
 		this.onlyLUIds = onlyLUIds != null ? ImmutableSet.copyOf(onlyLUIds) : ImmutableSet.of();
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.CREATE_COMPLETE_CLOSE;
+		this.waitForShipments = waitForShipments;
 		if (!this.createShipmentPolicy.isCreateShipment())
 		{
 			throw new AdempiereException("Invalid create shipment policy option: " + this.createShipmentPolicy);

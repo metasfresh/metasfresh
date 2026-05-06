@@ -42,20 +42,21 @@ public class PickingShipmentService
 
 	public void createShipmentIfNeeded(final PickingJob pickingJob)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.of(), null)
+		prepareShipmentCandidates(pickingJob, ImmutableSet.of(), null, false)
 				.forEach(this::createShipment);
 	}
 
 	public void createShipmentForLUs(@NonNull final PickingJob pickingJob, @NonNull final Set<HuId> luIds)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds), CreateShipmentPolicy.CREATE_COMPLETE_CLOSE)
+		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds), null, true)
 				.forEach(this::createShipment);
 	}
 
 	private Collection<PickingShipmentCandidate> prepareShipmentCandidates(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final ImmutableSet<HuId> onlyLUIds,
-			@Nullable final CreateShipmentPolicy createShipmentPolicyOverride
+			@Nullable final CreateShipmentPolicy createShipmentPolicyOverride,
+			final boolean waitForShipments
 	)
 	{
 		final LinkedHashMap<PickingShipmentCandidateKey, PickingShipmentCandidate> shipmentCandidates = new LinkedHashMap<>();
@@ -78,6 +79,7 @@ public class PickingShipmentService
 						.key(key)
 						.onlyLUIds(onlyLUIds)
 						.createShipmentPolicy(createShipmentPolicyEffective)
+						.waitForShipments(waitForShipments)
 						.build();
 				shipmentCandidates.put(key, shipmentCandidate);
 			}
@@ -106,8 +108,7 @@ public class PickingShipmentService
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 				.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
-				// since we are not going to immediately create invoices, we want to move on and to not wait for shipments
-				.waitForShipments(false)
+				.waitForShipments(shipmentCandidate.isWaitForShipments())
 				.build());
 	}
 
