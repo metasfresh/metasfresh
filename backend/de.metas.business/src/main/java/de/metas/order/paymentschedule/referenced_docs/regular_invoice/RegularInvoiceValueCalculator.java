@@ -26,6 +26,17 @@ class RegularInvoiceValueCalculator
 	@NonNull private final MatchInvoiceRepository matchInvoiceRepository;
 	@NonNull private final OrderPayScheduleMaterialReceiptService materialReceiptService;
 
+	/**
+	 * Computes the value of an invoice as matched by receipts via M_MatchInv.
+	 * <p>
+	 * <b>Semantic split</b> (per me03 #29369 GAP §3 row C + §11 decision 3): this calculator reads
+	 * the invoice-line gross amount (LineNetAmt + TaxAmtInfo). It assumes the financial invoice was
+	 * faithfully generated from the order/receipt; if those diverge (vendor edited prices, accountant
+	 * adjusted tax independently, currency rounding differs), the prepayment allocation reflects the
+	 * invoice's reality, not the order's intent. The receipt-side BaseAmt computation in
+	 * {@link de.metas.order.paymentschedule.steps.material_receipt.ReceiptValueCalculator} retains
+	 * the per-order-line tax semantic for AC #21.
+	 */
 	@NonNull
 	public Money computeValueMatchedByReceipts(@NonNull final RegularInvoice invoice)
 	{
