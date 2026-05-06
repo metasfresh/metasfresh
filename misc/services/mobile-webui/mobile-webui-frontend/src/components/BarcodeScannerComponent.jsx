@@ -145,6 +145,10 @@ const BarcodeScannerComponent = ({
   });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
+    if (!scannedBarcode?.trim()) {
+      console.warn('Ignoring blank barcode');
+      return;
+    }
     inputTextRef?.current?.select();
 
     const scanningStatus = scanningStatusRef.current;
@@ -237,7 +241,8 @@ const BarcodeScannerComponent = ({
 
   const handleInputTextKeyPress = (e) => {
     if (e.key === 'Enter') {
-      const scannedBarcode = e.target.value;
+      const scannedBarcode = e.target.value?.trim();
+      if (!scannedBarcode) return;
 
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
