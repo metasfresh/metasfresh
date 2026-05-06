@@ -1,5 +1,24 @@
 package de.metas.datev;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.data.export.api.IExportDataSource;
+import de.metas.data.export.api.impl.AbstractExporter;
+import de.metas.data.export.api.impl.CSVWriter;
+import de.metas.datev.model.I_DATEV_Export;
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
+import de.metas.util.ThreadLocalDecimalFormatter;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
@@ -8,28 +27,6 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaBL;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyBL;
-import de.metas.datev.model.I_DATEV_Export;
-import de.metas.money.CurrencyId;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.util.TimeUtil;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.data.export.api.IExportDataSource;
-import de.metas.data.export.api.impl.AbstractExporter;
-import de.metas.data.export.api.impl.CSVWriter;
-import de.metas.util.ThreadLocalDecimalFormatter;
-import lombok.Builder;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -58,7 +55,7 @@ public class DATEVCsvExporter extends AbstractExporter
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-	private static final DateTimeFormatter EXTF_TS_FMT   = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+	private static final DateTimeFormatter EXTF_TS_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 	private static final DateTimeFormatter EXTF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
 	@Nullable
@@ -180,10 +177,10 @@ public class DATEVCsvExporter extends AbstractExporter
 
 	private String buildExtfLine(@NonNull final I_DATEV_Export datevExport, @NonNull final DATEVExportFormat exportFormat)
 	{
-		final String ts       = LocalDateTime.now().format(EXTF_TS_FMT);
+		final String ts = LocalDateTime.now().format(EXTF_TS_FMT);
 		final String dateFrom = datevExport.getDateAcctFrom() != null
 				? TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).format(EXTF_DATE_FMT) : "";
-		final String dateTo   = datevExport.getDateAcctTo() != null
+		final String dateTo = datevExport.getDateAcctTo() != null
 				? TimeUtil.asLocalDate(datevExport.getDateAcctTo()).format(EXTF_DATE_FMT) : "";
 		final String formatName = exportFormat.getName();
 
@@ -194,9 +191,10 @@ public class DATEVCsvExporter extends AbstractExporter
 		// TODO: get fiscal year start from C_Period/C_Year based on accounting schema and period
 		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).getYear());
 
-		final String advisorNumber   = datevExport.getAdvisorNumber();
+		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();
-
+		final int chartOfAccountsNumberLength = datevExport.getChartOfAccountsNumberLength();
+		final String chartOfAccounts = datevExport.getChartOfAccounts();
 		return "EXTF;510;21;"
 				+ formatName
 				+ ";7;"
@@ -206,12 +204,13 @@ public class DATEVCsvExporter extends AbstractExporter
 				+ ";" + advisorNumber
 				+ ";" + clientNumber
 				+ ";" + fiscalYearStart
-				+ ";4"
+				+ ";" + chartOfAccountsNumberLength
 				+ ";" + dateFrom
 				+ ";" + dateTo
 				+ ";metasfresh;MM;1;0;1;"
 				+ currencyCode.toThreeLetterCode()
-				+ ";;;;52.025;;;;";
+				+ ";;;;" + chartOfAccounts
+				+ ";;;;";
 	}
 
 }
