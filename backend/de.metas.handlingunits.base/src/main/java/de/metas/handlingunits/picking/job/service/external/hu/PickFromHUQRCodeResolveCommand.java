@@ -66,7 +66,8 @@ class PickFromHUQRCodeResolveCommand
 				final HuId inactiveHuId = huService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode).orElse(null);
 				if (inactiveHuId != null && huService.isDestroyed(inactiveHuId))
 				{
-					return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
+					return ExplainedOptional.emptyBecause(
+							TranslatableStrings.adMessage(ERR_QR_HU_Destroyed, inactiveHuId.getRepoId()));
 				}
 				huService.getHuIdByQRCode(huQRCode); // throws AdempiereException — see HUQRCodesService.java
 				throw new IllegalStateException("unreachable");
@@ -75,7 +76,8 @@ class PickFromHUQRCodeResolveCommand
 			// Legacy backstop: assignment still active but HU was destroyed before the destroy interceptor was deployed.
 			if (huService.isDestroyed(activeHuId))
 			{
-				return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
+				return ExplainedOptional.emptyBecause(
+						TranslatableStrings.adMessage(ERR_QR_HU_Destroyed, activeHuId.getRepoId()));
 			}
 			if (!huService.containsProduct(activeHuId, productId))
 			{
