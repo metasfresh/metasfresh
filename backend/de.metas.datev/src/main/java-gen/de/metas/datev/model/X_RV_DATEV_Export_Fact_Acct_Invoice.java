@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1622097502L;
+	private static final long serialVersionUID = 1643198872L;
 
     /** Standard Constructor */
     public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
@@ -468,6 +468,19 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public java.sql.Timestamp getDueDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setGrossAmt (final BigDecimal GrossAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_GrossAmt, GrossAmt);
+	}
+
+	@Override
+	public BigDecimal getGrossAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

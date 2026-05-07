@@ -21,6 +21,8 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -85,7 +87,6 @@ public class DATEVCsvExporter extends AbstractExporter
 			out.write('\n');
 		}
 
-		//  Hand the same stream to CSVWriter — it will write the column-header line next
 		final Properties config = new Properties(getConfig());
 		config.setProperty(CSVWriter.CONFIG_Encoding, exportFormat.getCsvEncoding());
 		config.setProperty(CSVWriter.CONFIG_FieldDelimiter, exportFormat.getCsvFieldDelimiter());
@@ -179,8 +180,11 @@ public class DATEVCsvExporter extends AbstractExporter
 		final String ts = LocalDateTime.now().format(EXTF_TS_FMT);
 		final String dateFrom = datevExport.getDateAcctFrom() != null
 				? TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).format(EXTF_DATE_FMT) : "";
-		final String dateTo = datevExport.getDateAcctTo() != null
-				? TimeUtil.asLocalDate(datevExport.getDateAcctTo()).format(EXTF_DATE_FMT) : "";
+		final Timestamp dateToTS = datevExport.getDateAcctTo() != null
+				? datevExport.getDateAcctTo()
+				: Timestamp.valueOf(LocalDate.now().atStartOfDay());
+
+		final String dateTo = TimeUtil.asLocalDate(dateToTS).format(EXTF_DATE_FMT);
 		final String formatName = exportFormat.getName();
 
 		final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.ofRepoId(datevExport.getAD_Client_ID()));
@@ -188,7 +192,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(acctSchemaCurrencyId);
 
 		// TODO: get fiscal year start from C_Period/C_Year based on accounting schema and period
-		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(datevExport.getDateAcctTo()).getYear());
+		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(dateToTS).getYear());
 
 		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();

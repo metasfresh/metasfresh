@@ -607,6 +607,27 @@ public interface I_RV_DATEV_Export_Fact_Acct_Invoice
 	String COLUMNNAME_DueDate = "DueDate";
 
 	/**
+	 * Set Zeilenbrutto.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossAmt (BigDecimal GrossAmt);
+
+	/**
+	 * Get Zeilenbrutto.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossAmt();
+
+	ModelColumn<I_RV_DATEV_Export_Fact_Acct_Invoice, Object> COLUMN_GrossAmt = new ModelColumn<>(I_RV_DATEV_Export_Fact_Acct_Invoice.class, "GrossAmt", null);
+	String COLUMNNAME_GrossAmt = "GrossAmt";
+
+	/**
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *

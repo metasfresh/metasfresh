@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2056848634L;
+	private static final long serialVersionUID = 1359849101L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -433,6 +433,19 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	public java.lang.String getEmptyColumn() 
 	{
 		return get_ValueAsString(COLUMNNAME_EmptyColumn);
+	}
+
+	@Override
+	public void setGrossAmt (final BigDecimal GrossAmt)
+	{
+		set_Value (COLUMNNAME_GrossAmt, GrossAmt);
+	}
+
+	@Override
+	public BigDecimal getGrossAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

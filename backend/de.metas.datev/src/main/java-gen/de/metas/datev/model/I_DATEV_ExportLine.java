@@ -701,6 +701,27 @@ public interface I_DATEV_ExportLine
 	String COLUMNNAME_EmptyColumn = "EmptyColumn";
 
 	/**
+	 * Set Brutto betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrossAmt (BigDecimal GrossAmt);
+
+	/**
+	 * Get Brutto betrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrossAmt();
+
+	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_GrossAmt = new ModelColumn<>(I_DATEV_ExportLine.class, "GrossAmt", null);
+	String COLUMNNAME_GrossAmt = "GrossAmt";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
