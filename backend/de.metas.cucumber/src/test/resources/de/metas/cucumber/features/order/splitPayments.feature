@@ -534,6 +534,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # receiptValue_R1 = round(OL_A_gross / 196 × 195, 2)
     #                 = round(31971.11 / 196 × 195, 2) = 31,807.99 EUR
     #   (OL_A_gross = round(196×163.1179, 2) = 31971.11; TaxFree → net = gross)
+    # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID    | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | customerOrder | olA            | vendor        | vendor_loc             | productA     | 195        | wh             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
       | hu1     | olA            | 101                     | 195         |
