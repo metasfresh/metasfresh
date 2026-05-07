@@ -34,6 +34,7 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
@@ -76,6 +77,7 @@ class UniqueProductPriceFallbackRule extends AbstractPriceListBasedRule
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
+	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
@@ -145,8 +147,11 @@ class UniqueProductPriceFallbackRule extends AbstractPriceListBasedRule
 		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(productPrice.getInvoicableQtyBasedOn()));
 		result.setCalculated(true);
 
-		// Propagate the packing material if the unique record carries one.
-		// Mirrors AttributePricing.setResultForProductPriceAttribute.
+		// Propagate the price's attribute set and packing material into the pricing result so
+		// downstream consumers (order line, invoice candidate) inherit the same ASI / packing
+		// dimensions as the price record we matched. Mirrors
+		// AttributePricing.setResultForProductPriceAttribute.
+		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
 		InterfaceWrapperHelper.getRepoIdOptional(productPrice, IPackingMaterialAware.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId::ofRepoId)
 				.ifPresent(result::setPackingMaterialId);
 
