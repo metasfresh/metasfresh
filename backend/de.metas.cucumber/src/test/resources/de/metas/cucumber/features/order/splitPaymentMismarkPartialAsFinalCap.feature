@@ -115,43 +115,55 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
       | lcInvoice    | 21000.00 | lcPayment    |
 
     # ── R1: 400 PCE → R1.with_tax = 40,000 ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 400         |
+    # Canonical HU receipt: 400 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 400         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     # ── INV1: correctly marked as Partial, matched to R1 ──
+    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 400 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
     # INV1 alloc = MIN(40,000 × 30 %, 21,000) = 12,000; prepay → 9,000
     Then validate C_AllocationLines for invoice inv1
       | Amount    |
       | -12000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 9000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 9000.00 |
 
     # ── R2: 320 PCE → R2.with_tax = 32,000; over-delivery (R1+R2 = 72,000 > 70,000) ──
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 320         |
+    # Canonical HU receipt: 320 PCE in 1 TU → receipt r2 with line r2_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | lcOrderL1      | 101                     | 320         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu2     | r2         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 320        | r2_line1       | r2         | CO        | lcOrderL1      |
 
     # ── INV2: MISMARKED as Partial (IsPartialInvoice='Y' when it should be 'N' Final), matched to R2 ──
+    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 320 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      | r2_line1       |
     And the invoice identified by inv2 is completed
 
     # AC #12 — the MIN cap clamps INV2 alloc at remaining_prepay (9,000), NOT 9,600 (= 32,000 × 30 %)
@@ -159,7 +171,9 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
       | Amount   |
       | -9000.00 |
     # End-state Σ = 12,000 + 9,000 = 21,000 = full prepay; no over-allocation
-    Then the payment 'lcPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
 
     # INV2.OpenAmt = 32,000 − 9,000 = 23,000 (same as the canonical TC1 case — the cap saved the books)
     Then validate created invoices
