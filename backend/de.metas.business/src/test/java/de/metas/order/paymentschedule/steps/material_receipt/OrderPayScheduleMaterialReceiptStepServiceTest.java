@@ -174,7 +174,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		when(moneyService.getStdPrecision(any(CurrencyId.class))).thenReturn(CurrencyPrecision.TWO);
 
 		regularInvoiceService = mock(OrderPayScheduleRegularInvoiceService.class);
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty()); // default: no invoice
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.empty()); // default: no invoice
 
 		orderPayScheduleService = mock(OrderPayScheduleService.class);
 		receiptService = mock(OrderPayScheduleMaterialReceiptService.class);
@@ -285,7 +285,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
 
 		// Stub: R1 has a completed but NOT yet paid invoice
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.of(buildInvoice(INV1_ID, false)));
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.of(buildInvoice(INV1_ID, false)));
 
 		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
 				receipts,
@@ -319,7 +319,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
 
 		// Stub: R1 has a fully paid invoice
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.of(buildInvoice(INV1_ID, true)));
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.of(buildInvoice(INV1_ID, true)));
 
 		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
 				receipts,
@@ -386,7 +386,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
 
 		// Stub: reversed invoice is absent from the service (filter rejects RE status)
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty());
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.empty());
 
 		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
 				receipts,
@@ -520,7 +520,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final MaterialReceiptCollection receipts = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
 
 		// Simulate: production isCompletedOrClosed() filter rejects DR/VO/RE → service returns empty
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty());
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.empty());
 
 		final List<OrderPayScheduleLine> lines = service.computeOrderPayScheduleLines(
 				receipts, order, mrBreak(), schedule);

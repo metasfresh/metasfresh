@@ -64,7 +64,9 @@ public class C_Invoice
 		}
 		// Allocate BEFORE recompute so that the recompute can see the new allocation
 		regularInvoiceService.allocateForInvoice(regularInvoice);
-		materialReceiptStepService.recomputeDeliverySteps(orderId);
+		// Pass the in-memory regularInvoice so the recompute can bypass the stale DocStatus="IP" in the DB.
+		// See OrderPayScheduleRegularInvoiceService#getByReceipt(MaterialReceipt, RegularInvoice) for details.
+		materialReceiptStepService.recomputeDeliveryStepsAfterInvoiceCompleted(orderId, regularInvoice);
 	}
 
 	/**

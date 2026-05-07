@@ -65,7 +65,22 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 	public void recomputeDeliverySteps(@NonNull final OrderId orderId)
 	{
-		recomputeDeliverySteps(orderId, null);
+		recomputeDeliverySteps(orderId, (I_M_InOut)null, null);
+	}
+
+	/**
+	 * Overload used by {@code C_Invoice}'s AFTER_COMPLETE interceptor to thread the in-memory
+	 * {@code RegularInvoice} all the way down to the per-receipt lookup, bypassing the stale
+	 * {@code DocStatus="IP"} that the DB still shows at that point in the completion lifecycle.
+	 * See {@link OrderPayScheduleRegularInvoiceService#getByReceipt(MaterialReceipt, RegularInvoice)}
+	 * for the full explanation.
+	 *
+	 * @param orderId          the order whose delivery steps must be recomputed
+	 * @param completingInvoice the in-memory invoice that is currently completing (not yet {@code CO} in DB)
+	 */
+	public void recomputeDeliveryStepsAfterInvoiceCompleted(@NonNull final OrderId orderId, @NonNull final RegularInvoice completingInvoice)
+	{
+		recomputeDeliverySteps(orderId, null, completingInvoice);
 	}
 
 	public void recomputeDeliverySteps(@NonNull final I_M_InOut inoutRecord)
@@ -83,10 +98,10 @@ public class OrderPayScheduleMaterialReceiptStepService
 			return;
 		}
 
-		recomputeDeliverySteps(orderId, inoutRecord);
+		recomputeDeliverySteps(orderId, inoutRecord, null);
 	}
 
-	private void recomputeDeliverySteps(@NonNull final OrderId orderId, @Nullable final I_M_InOut completingReceipt)
+	private void recomputeDeliverySteps(@NonNull final OrderId orderId, @Nullable final I_M_InOut completingReceipt, @Nullable final RegularInvoice completingInvoice)
 	{
 		final OrderSchedulingContext order = orderPayScheduleService.getContextById(orderId).orElse(null);
 		if (order == null || !order.isComplexPaymentTerm()) {return;}
@@ -95,14 +110,18 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 		orderPayScheduleService.updateById(
 				orderId,
-				orderPaySchedule -> updateOrderPaySchedule(orderPaySchedule, order, receiptInfos));
+				orderPaySchedule -> updateOrderPaySchedule(orderPaySchedule, order, receiptInfos, completingInvoice));
 	}
 
-	private void updateOrderPaySchedule(final OrderPaySchedule orderPaySchedule, final OrderSchedulingContext order, final MaterialReceiptCollection receiptInfos)
+	private void updateOrderPaySchedule(
+			final OrderPaySchedule orderPaySchedule,
+			final OrderSchedulingContext order,
+			final MaterialReceiptCollection receiptInfos,
+			@Nullable final RegularInvoice completingInvoice)
 	{
 		order.getBreaksBy(OrderPayScheduleMaterialReceiptStepService::isEligibleBreak)
 				.forEach(termBreak -> {
-					final List<OrderPayScheduleLine> newLines = computeOrderPayScheduleLines(receiptInfos, order, termBreak, orderPaySchedule);
+					final List<OrderPayScheduleLine> newLines = computeOrderPayScheduleLines(receiptInfos, order, termBreak, orderPaySchedule, completingInvoice);
 					orderPaySchedule.replaceLinesByBreakId(newLines);
 				});
 	}
@@ -112,11 +131,22 @@ public class OrderPayScheduleMaterialReceiptStepService
 		return termBreak.getReferenceDateType().isMaterialReceiptDate();
 	}
 
+	// Package-visible for unit tests in the same package; production callers go through recomputeDeliverySteps.
 	List<OrderPayScheduleLine> computeOrderPayScheduleLines(
 			@NonNull final MaterialReceiptCollection receipts,
 			@NonNull final OrderSchedulingContext order,
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final OrderPaySchedule orderPaySchedule)
+	{
+		return computeOrderPayScheduleLines(receipts, order, termBreak, orderPaySchedule, null);
+	}
+
+	List<OrderPayScheduleLine> computeOrderPayScheduleLines(
+			@NonNull final MaterialReceiptCollection receipts,
+			@NonNull final OrderSchedulingContext order,
+			@NonNull final PaymentTermBreak termBreak,
+			@NonNull final OrderPaySchedule orderPaySchedule,
+			@Nullable final RegularInvoice completingInvoice)
 	{
 		final ArrayList<OrderPayScheduleLine> existingLines = orderPaySchedule.streamLinesByBreakId(termBreak.getId())
 				.filter(OrderPayScheduleLine::isSaved)
@@ -138,7 +168,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 			// I-1: BaseAmt = receipt GrandTotal (with-tax); DueAmt = BaseAmt × break%
 			final Money dueAmt = receiptValue.multiply(termBreak.getPercent(), order.getPrecision());
-			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt).orElse(null);
+			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt, completingInvoice).orElse(null);
 			final OrderPayScheduleStatus status = computeOrderPayScheduleStatus(invoice);
 
 			final OrderPayScheduleLine existingLine = CollectionUtils.removeFirst(existingLines, line -> InOutId.equals(line.getInoutId(), receipt.getId()));

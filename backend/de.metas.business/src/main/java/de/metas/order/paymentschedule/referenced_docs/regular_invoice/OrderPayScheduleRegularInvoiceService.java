@@ -116,6 +116,32 @@ public class OrderPayScheduleRegularInvoiceService
 
 	public Optional<RegularInvoice> getByReceipt(@NonNull final MaterialReceipt receipt)
 	{
+		return getByReceipt(receipt, null);
+	}
+
+	/**
+	 * Why this overload exists:
+	 * <p>
+	 * {@code MInvoice.completeIt()} fires {@code @DocValidate(TIMING_AFTER_COMPLETE)} listeners at line 1133, which is
+	 * <em>before</em> {@code DocumentEngine.completeIt()} flips {@code DocStatus} from {@code "IP"} to {@code "CO"}
+	 * at line 454–455. Any AFTER_COMPLETE listener that re-reads the invoice from the DB sees
+	 * {@code DocStatus="IP"} — i.e. "not completed yet" — even though we are inside the after-complete callback.
+	 * <p>
+	 * The interceptor already holds the in-memory invoice (which is authoritatively completing right now).
+	 * We thread it down through this overload so the lookup can bypass the stale DB read for exactly this one
+	 * invoice. All other invoices are looked up and filtered through the standard
+	 * {@link RegularInvoice#isCompletedOrClosed()} check as usual.
+	 * <p>
+	 * A framework-level cleanup (set {@code DocStatus=CO} before firing AFTER_COMPLETE in all
+	 * {@code M*.completeIt()} implementations) is intentionally out of scope for the iter-3 PR due to its
+	 * broad blast radius. Until that is addressed, this thread-through is the iter-3 workaround.
+	 *
+	 * @param receipt         the material receipt whose matching regular invoice is sought
+	 * @param completingInvoice the in-memory invoice that is currently completing (may be {@code null}
+	 *                          when not called from an AFTER_COMPLETE listener)
+	 */
+	public Optional<RegularInvoice> getByReceipt(@NonNull final MaterialReceipt receipt, @Nullable final RegularInvoice completingInvoice)
+	{
 		final Set<InvoiceId> invoiceIds = findInvoiceIdsByInOutIds(ImmutableSet.of(receipt.getId()));
 
 		RegularInvoice result = null;
@@ -123,10 +149,20 @@ public class OrderPayScheduleRegularInvoiceService
 		{
 			if (result == null)
 			{
-				final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
-				result = fromRecordIfRegularInvoice(invoiceRecord, receipt.getOrderId())
-						.filter(RegularInvoice::isCompletedOrClosed)
-						.orElse(null);
+				// Fast path: if the caller has already built the in-memory RegularInvoice for this invoice
+				// (e.g. from an AFTER_COMPLETE interceptor), use it directly — the DB row still has
+				// DocStatus="IP" at this point (see javadoc above), so a fresh DB read would falsely reject it.
+				if (completingInvoice != null && InvoiceId.equals(completingInvoice.getId(), invoiceId))
+				{
+					result = completingInvoice;
+				}
+				else
+				{
+					final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
+					result = fromRecordIfRegularInvoice(invoiceRecord, receipt.getOrderId())
+							.filter(RegularInvoice::isCompletedOrClosed)
+							.orElse(null);
+				}
 			}
 			else if (!InvoiceId.equals(result.getId(), invoiceId))
 			{

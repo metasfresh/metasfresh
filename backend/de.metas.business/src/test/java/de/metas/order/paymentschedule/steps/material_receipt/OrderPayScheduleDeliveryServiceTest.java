@@ -697,14 +697,14 @@ class OrderPayScheduleDeliveryServiceTest
 	private void configureInvoiceStubs(final Cell cell)
 	{
 		// Default: no invoice for any receipt
-		when(regularInvoiceService.getByReceipt(any())).thenReturn(Optional.empty());
+		when(regularInvoiceService.getByReceipt(any(), any())).thenReturn(Optional.empty());
 
 		// R1 → inv1 (filtered to CO/CL only, mimicking the production service)
-		when(regularInvoiceService.getByReceipt(Mockito.argThat(r -> r != null && R1_ID.equals(r.getId()))))
+		when(regularInvoiceService.getByReceipt(Mockito.argThat(r -> r != null && R1_ID.equals(r.getId())), any()))
 				.thenReturn(Optional.ofNullable(completedOrClosedOnly(cell.inv1ForR1)));
 
 		// R2 → inv2
-		when(regularInvoiceService.getByReceipt(Mockito.argThat(r -> r != null && R2_ID.equals(r.getId()))))
+		when(regularInvoiceService.getByReceipt(Mockito.argThat(r -> r != null && R2_ID.equals(r.getId())), any()))
 				.thenReturn(Optional.ofNullable(completedOrClosedOnly(cell.inv2ForR2)));
 	}
 
