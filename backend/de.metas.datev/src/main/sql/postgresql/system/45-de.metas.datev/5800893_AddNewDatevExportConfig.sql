@@ -314,10 +314,9 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2026-05-05 15:54:04.9
 /* DDL */ CREATE TABLE public.DATEV_Export_Config (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, AdvisorNumber VARCHAR(10) NOT NULL, ChartOfAccounts VARCHAR(10) NOT NULL, ChartOfAccountsNumberLength NUMERIC NOT NULL, ClientNumber VARCHAR(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, DATEV_Export_Config_ID NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT DATEV_Export_Config_Key PRIMARY KEY (DATEV_Export_Config_ID))
 ;
 
-ALTER TABLE DATEV_Export_Config ADD CONSTRAINT DATEV_Config_OneDefault_UQ UNIQUE (AD_Org_ID);
-
-CREATE INDEX DATEV_Config_Org_IDX ON DATEV_Export_Config (AD_Org_ID);
-
+CREATE UNIQUE INDEX DATEV_Config_OneDefault_UQ
+    ON DATEV_Export_Config (AD_Org_ID)
+    WHERE IsActive = 'Y';
 -- Element: DATEV_Export_Config_ID
 -- 2026-05-05T15:57:21.275Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='DATEV-Konfiguration', PrintName='DATEV-Konfiguration',Updated=TO_TIMESTAMP('2026-05-05 15:57:21.275000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584826 AND AD_Language='de_CH'

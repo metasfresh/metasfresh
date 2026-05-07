@@ -26,19 +26,22 @@ import de.metas.datev.DATEVExportConfig;
 import de.metas.datev.DATEVExportConfigRepository;
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
-@Validator(I_DATEV_Export.class)
+@Component
+@Interceptor(I_DATEV_Export.class)
 public class DATEV_Export
 {
 	private final DATEVExportConfigRepository exportConfigRepo =
 			SpringContextHolder.instance.getBean(DATEVExportConfigRepository.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setDatevExportConfig(final I_DATEV_Export datevExport)
 	{
 		if (InterfaceWrapperHelper.isNew(datevExport))

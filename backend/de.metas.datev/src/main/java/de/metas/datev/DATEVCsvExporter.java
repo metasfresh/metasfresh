@@ -55,7 +55,7 @@ public class DATEVCsvExporter extends AbstractExporter
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-	private static final DateTimeFormatter EXTF_TS_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+	private static final DateTimeFormatter EXTF_TS_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 	private static final DateTimeFormatter EXTF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
 	@Nullable
@@ -77,7 +77,6 @@ public class DATEVCsvExporter extends AbstractExporter
 	@Override
 	protected CSVWriter createDataDestination(final OutputStream out) throws IOException
 	{
-		// 1. Write EXTF line (line 1) if a datevExport record was provided
 		if (datevExport != null && datevExport.getDATEV_Export_Config_ID() > 0)
 		{
 			final String extfLine = buildExtfLine(datevExport, exportFormat);
@@ -86,7 +85,7 @@ public class DATEVCsvExporter extends AbstractExporter
 			out.write('\n');
 		}
 
-		// 2. Hand the same stream to CSVWriter — it will write the column-header line next
+		//  Hand the same stream to CSVWriter — it will write the column-header line next
 		final Properties config = new Properties(getConfig());
 		config.setProperty(CSVWriter.CONFIG_Encoding, exportFormat.getCsvEncoding());
 		config.setProperty(CSVWriter.CONFIG_FieldDelimiter, exportFormat.getCsvFieldDelimiter());
@@ -189,7 +188,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(acctSchemaCurrencyId);
 
 		// TODO: get fiscal year start from C_Period/C_Year based on accounting schema and period
-		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).getYear());
+		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(datevExport.getDateAcctTo()).getYear());
 
 		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();
@@ -197,8 +196,8 @@ public class DATEVCsvExporter extends AbstractExporter
 		final String chartOfAccounts = datevExport.getChartOfAccounts();
 		return "EXTF;510;21;"
 				+ formatName
-				+ ";7;"
-				+ ts + "313"
+				+ ";7;" // Formatversion
+				+ ts // created
 				+ ";;"          // imported / exported (empty on export)
 				+ ";FR;B.L;"    // source, initials, reserved
 				+ ";" + advisorNumber

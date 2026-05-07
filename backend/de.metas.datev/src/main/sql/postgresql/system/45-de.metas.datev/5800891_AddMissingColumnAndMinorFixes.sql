@@ -142,8 +142,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 
-
--- 2026-05-06T12:46:59.666Z
-INSERT INTO AD_ModelValidator (AD_Client_ID,AD_ModelValidator_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,ModelValidationClass,Name,SeqNo,Updated,UpdatedBy) VALUES (0,540126,0,TO_TIMESTAMP('2026-05-06 12:46:59.459000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.datev','Y','de.metas.datev.modelvalidator.Main','de.metas.datev.modelvalidator.Main',0,TO_TIMESTAMP('2026-05-06 12:46:59.459000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-

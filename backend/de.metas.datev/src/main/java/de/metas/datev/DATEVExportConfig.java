@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * metasfresh-datev
@@ -28,6 +26,7 @@ import java.math.BigDecimal;
  * #L%
  */
 
+@Builder
 @Value
 public class DATEVExportConfig
 {
@@ -36,21 +35,4 @@ public class DATEVExportConfig
 	@NonNull String advisorNumber;
 	@NonNull String chartOfAccounts;
 	int chartOfAccountsNumberLength;
-
-	@Builder
-	private DATEVExportConfig(
-			final int id,
-			@NonNull final String clientNumber,
-			@NonNull final String advisorNumber,
-			@NonNull final String chartOfAccounts,
-			final int chartOfAccountsNumberLength)
-	{
-
-		this.id = id;
-		this.clientNumber = clientNumber;
-		this.advisorNumber = advisorNumber;
-		this.chartOfAccounts = chartOfAccounts;
-		this.chartOfAccountsNumberLength = chartOfAccountsNumberLength;
-	}
-
 }

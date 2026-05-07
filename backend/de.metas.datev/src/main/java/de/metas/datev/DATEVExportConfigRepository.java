@@ -33,6 +33,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DATEVExportConfigRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<OrgId, DATEVExportConfig> exportConfigsByOrgId = CCache.newCache(I_DATEV_Export_Config.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	public @Nullable DATEVExportConfig getByOrgId(final OrgId orgId)
@@ -40,13 +42,12 @@ public class DATEVExportConfigRepository
 		return exportConfigsByOrgId.getOrLoad(orgId, () -> retrieveByOrgId(orgId));
 	}
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private @Nullable DATEVExportConfig retrieveByOrgId(final OrgId orgId)
 	{
 		final I_DATEV_Export_Config config = queryBL
 				.createQueryBuilder(I_DATEV_Export_Config.class)
 				.addEqualsFilter(I_DATEV_Export_Config.COLUMNNAME_AD_Org_ID, orgId)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_DATEV_Export_Config.class);
 
