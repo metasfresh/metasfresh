@@ -141,6 +141,10 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			record.setDescription(request.getDescription());
 		}
+		if (request.getAmountType() != null)
+		{
+			record.setAmountType(request.getAmountType().getCode());
+		}
 		InterfaceWrapperHelper.saveRecord(record);
 		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
 	}

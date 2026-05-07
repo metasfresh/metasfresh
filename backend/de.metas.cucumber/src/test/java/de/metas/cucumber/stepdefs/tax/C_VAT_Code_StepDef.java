@@ -23,7 +23,6 @@ package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
-import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
@@ -38,7 +37,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.UUID;
 
@@ -112,22 +110,20 @@ public class C_VAT_Code_StepDef
 		// setter, making two codes for the same C_Tax collide on the truncated prefix.
 		final String vatCodeValue = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
+		// AmountType: optional column; defaults to 'T' (tax amount).
+		// getAsOptionalEnum resolves by ReferenceListAwareEnum code ('N'/'T'), so invalid values fail fast
+		// at the step level with a clear enum-resolution error rather than a DB constraint violation.
+		final VATCodeAmountType amountType = row.getAsOptionalEnum("AmountType", VATCodeAmountType.class)
+				.orElse(VATCodeAmountType.Tax);
+
 		final VATCode vatCode = vatCodeDAO.createVATCode(CreateVATCodeRequest.builder()
 				.acctSchemaId(acctSchema.getId())
 				.taxId(taxId)
 				.vatCode(vatCodeValue)
 				.isSOTrx(isSOTrx)
+				.amountType(amountType)
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
-
-		// AmountType: optional column; defaults to 'T' (tax amount). Parsed through the enum to catch
-		// invalid values early with a clear scenario-level error rather than a DB constraint violation.
-		final VATCodeAmountType amountType = row.getAsOptionalString("AmountType")
-				.map(VATCodeAmountType::ofCode)
-				.orElse(VATCodeAmountType.Tax);
-		final I_C_VAT_Code vatCodeRecord = InterfaceWrapperHelper.load(vatCode.getVatCodeId().getRepoId(), I_C_VAT_Code.class);
-		vatCodeRecord.setAmountType(amountType.getCode());
-		InterfaceWrapperHelper.saveRecord(vatCodeRecord);
 
 		vatCodeTable.putOrReplace(row.getAsIdentifier(), vatCode);
 	}
