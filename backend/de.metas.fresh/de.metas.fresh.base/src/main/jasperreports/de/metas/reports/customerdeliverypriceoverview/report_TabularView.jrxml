@@ -120,7 +120,7 @@
 					<textFieldExpression><![CDATA[$R{IsFromBasePriceList}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="430" y="22" width="80" height="24" forecolor="#000000" uuid="b71fbe77-5023-42f2-9088-93be2c93b85b">
+					<reportElement key="textField-20" x="431" y="22" width="80" height="24" forecolor="#000000" uuid="b71fbe77-5023-42f2-9088-93be2c93b85b">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement textAlignment="Left" verticalAlignment="Bottom" markup="none">
@@ -132,14 +132,16 @@
 					<reportElement x="28" y="48" width="558" height="1" uuid="abb728ff-14cb-427b-97a6-49731771ab26"/>
 				</line>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-16" x="140" y="10" width="143" height="12" forecolor="#000000" uuid="6c8f15e9-930b-4e50-b9fb-799c9131b1f4"/>
+					<reportElement key="textField-16" x="145" y="10" width="143" height="12" forecolor="#000000" uuid="6c8f15e9-930b-4e50-b9fb-799c9131b1f4">
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					</reportElement>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpvalue}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-16" x="37" y="10" width="101" height="12" forecolor="#000000" uuid="da9f3ec0-73f9-4d53-bce7-56ef681db99c"/>
+					<reportElement key="textField-16" x="37" y="10" width="108" height="12" forecolor="#000000" uuid="da9f3ec0-73f9-4d53-bce7-56ef681db99c"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -194,28 +196,28 @@
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="0" width="101" height="14" uuid="a8f025a1-ad59-41f0-bc1e-7b10bfa4e10a"/>
+				<reportElement x="37" y="0" width="108" height="14" uuid="a8f025a1-ad59-41f0-bc1e-7b10bfa4e10a"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="14" width="101" height="14" uuid="5fa67573-e7fe-4818-8e15-6382bc5d4cbf"/>
+				<reportElement x="37" y="14" width="108" height="14" uuid="5fa67573-e7fe-4818-8e15-6382bc5d4cbf"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="138" y="0" width="107" height="14" uuid="1819656f-201c-484f-a5eb-d1a0165d8d67"/>
+				<reportElement x="145" y="0" width="107" height="14" uuid="1819656f-201c-484f-a5eb-d1a0165d8d67"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="244" y="0" width="51" height="14" uuid="4cd98207-b2ea-4bcd-9a49-ff8ebb8e4f8b"/>
+				<reportElement x="251" y="0" width="51" height="14" uuid="4cd98207-b2ea-4bcd-9a49-ff8ebb8e4f8b"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
