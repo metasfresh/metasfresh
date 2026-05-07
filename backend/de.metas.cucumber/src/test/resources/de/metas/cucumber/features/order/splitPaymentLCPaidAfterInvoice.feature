@@ -113,19 +113,23 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
     # ── T2: R1 + INV1 complete BEFORE the LC payment ──
     # The procurement worker has goods received + vendor's financial invoice in hand
     # while the LC bank wire is still in flight.
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 100         |
+    # Canonical HU receipt: 100 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 100         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 100        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 100 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 100 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 100 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
     # Forward-mode allocation chain runs at INV1 AFTER_COMPLETE but
@@ -162,4 +166,6 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
       | OD                | 7000.00 | null          | WP     | N      |
 
     # Prepayment fully consumed: AvailableAmt = 3000 − 3000 = 0.
-    Then the payment 'lcPayment' has AvailableAmt 0
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
