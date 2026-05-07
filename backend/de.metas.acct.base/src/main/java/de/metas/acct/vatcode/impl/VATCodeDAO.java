@@ -186,6 +186,8 @@ public class VATCodeDAO implements IVATCodeDAO
 		if (request.getAmountType() != null)
 		{
 			final String matchingAmountType = matching.getAmountType();
+			// null matchingAmountType: record has no AmountType set (only in legacy/test data;
+			// production column is NOT NULL DEFAULT 'T'). A null record cannot satisfy a typed request.
 			if (!request.getAmountType().getCode().equals(matchingAmountType))
 			{
 				logger.debug("=> not matching (AmountType)");

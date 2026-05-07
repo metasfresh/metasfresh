@@ -175,11 +175,10 @@ public class VATCodeDAOTest
 				.setAmountType(null)
 				.build()).orElse(null);
 
-		// Should get one of the two codes (first match)
+		// records are ordered by C_VAT_Code_ID ascending; Net code was created first → it is returned
 		assertThat(actualVATCode)
-				.as("When AmountType is null, should return first matching VAT code (backward compatible)")
-				.isNotNull()
-				.isIn(codeNet, codeTax);
+				.as("When AmountType is null, first matching code (lowest C_VAT_Code_ID) should be returned")
+				.isEqualTo(codeNet);
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
