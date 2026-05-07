@@ -70,7 +70,7 @@ BEGIN
                                                       ELSE ''
             END)                                                                                 AS BP_Account_Place,
            COALESCE(SUM(fa.Amt), 0)                                                              AS Amt,
-           (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id)  AS Currency,
+           fa.Currency,
            fa.CurrencyRate,
            SUM(fa.AmtSource)                                                                     AS AmtSource,
            SUM(fa.TaxAmtSource)                                                                  AS TaxAmtSource,
