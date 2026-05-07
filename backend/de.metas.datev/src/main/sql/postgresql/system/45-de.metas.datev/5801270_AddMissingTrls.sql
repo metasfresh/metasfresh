@@ -50,3 +50,19 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-07 14:08:38.859000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=543887 AND AD_Language='en_US'
 ;
 
+-- 2026-05-07T19:25:23.153Z
+UPDATE AD_Element_Trl SET Description='Defines whether the accounting data is exported in the DATEV EXTF format. If enabled, the system generates a file compliant with the DATEV EXTF interface specification. If disabled, the export may be generated in an alternative format (e.g., simple CSV) without the EXTF-specific structure.',Updated=TO_TIMESTAMP('2026-05-07 19:25:23.152000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584825 AND AD_Language='en_US'
+;
+
+-- 2026-05-07T19:25:23.155Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-07T19:25:34.866Z
+UPDATE AD_Element_Trl SET Description='Legt fest, ob die Buchhaltungsdaten im DATEV-EXTF-Format exportiert werden. Wenn aktiviert, erzeugt das System eine Datei, die der DATEV-EXTF-Schnittstellenspezifikation entspricht. Falls deaktiviert, wird der Export in einem alternativen Format (z. B. einfache CSV) ohne die EXTF-spezifische Struktur erstellt.',Updated=TO_TIMESTAMP('2026-05-07 19:25:34.864000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584825 AND AD_Language in ('de_CH', 'de_DE')
+;
+
+-- 2026-05-07T19:25:34.867Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language in ('de_CH', 'de_DE') AND trl.AD_Language=getBaseLanguage()
+;
+
