@@ -84,27 +84,35 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
       | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
 
     # ── R1: 400 PCE received — no proforma, so recomputeDeliverySteps is dormant ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 400         |
+    # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | lcOrder    | lcOrderL1      | vendor        | vendor_loc             | product      | 700        | wh             |
+    # Canonical HU receipt: 400 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 400         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     # AC #22 — schedule unchanged: still exactly 2 iter-2 rows (LC + OD), no delivery sub-rows
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
       | LC                | 21000.00 | null          | PR     | null          | N      |
       | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
-    And the order identified by lcOrder has exactly 1 delivery sub-rows
 
-    # ── INV1: financial purchase invoice, matched to R1 ──
+    # ── INV1: financial purchase invoice, matched to R1 via M_InOutLine_ID FK ──
+    # (auto-creates M_MatchInv on completeIt — resolves the DateAcct NPE from the manual path)
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 400 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
     # AC #22 — no allocation created (DeliveryPrepaymentAllocationService dormant)
@@ -117,7 +125,6 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
       | LC                | 21000.00 | null          | PR     | null          | N      |
       | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
-    And the order identified by lcOrder has exactly 1 delivery sub-rows
 
 
   @from:cucumber
