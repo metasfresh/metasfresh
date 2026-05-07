@@ -187,7 +187,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # ── Reverse INV1 only ──
     And the invoice identified by inv1 is reversed
 
-    # AC #16 — iter-3 alloc auto-reversed; INV1.OpenAmt back to full 40,000
+    # AC #16 — iter-3 alloc auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
+    # metasfresh's MInvoice.reverseCorrectIt() explicitly sets OpenAmt=0 + IsPaid=Y on the original invoice
     # Expected allocation lines after reversal (all active, ordered by C_AllocationLine_ID):
     #   1. Original payment→inv1 line: Amount=-12000 (in original alloc hdr, DocStatus=RE)
     #   2. Counter-line from reversal hdr: Amount=+12000 (DocStatus=RE; nets #1 to zero)
@@ -200,7 +201,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | -40000.00  |
     Then validate created invoices
       | Identifier | OpenAmt  |
-      | inv1       | 40000.00 |
+      | inv1       | 0.00     |
 
     # prepay restored: was 0, INV1 alloc 12,000 reversed → prepay = 12,000
     # INV2 alloc unchanged → 9,000 still consumed
@@ -295,7 +296,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # ── Reverse INV1 only (INV2 stays completed) ──
     And the invoice identified by inv1 is reversed
 
-    # AC #25 — INV1's iter-3 alloc auto-reversed; INV1.OpenAmt back to full 40,000
+    # AC #25 — INV1's iter-3 alloc auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
+    # metasfresh's MInvoice.reverseCorrectIt() explicitly sets OpenAmt=0 + IsPaid=Y on the original invoice
     # Same mirror-pair shape as TC5a: 3 active lines for inv1 after reversal
     And validate C_AllocationLines for invoice inv1
       | Amount     |
@@ -304,7 +306,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | -40000.00  |
     Then validate created invoices
       | Identifier | OpenAmt  |
-      | inv1       | 40000.00 |
+      | inv1       | 0.00     |
       | inv2       | 23000.00 |
 
     # AC #25 — INV2's alloc unchanged (still 9,000 against INV2)
