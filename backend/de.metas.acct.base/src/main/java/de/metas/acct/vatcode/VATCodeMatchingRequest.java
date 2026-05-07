@@ -40,8 +40,7 @@ public final class VATCodeMatchingRequest
 	private final boolean isSOTrx;
 	private final Date date;
 	/** Optional AmountType filter. When null the DAO returns the first match regardless of AmountType. */
-	@Nullable
-	private final VATCodeAmountType amountType;
+	@Nullable private final VATCodeAmountType amountType;
 
 	private VATCodeMatchingRequest(final Builder builder)
 	{
@@ -98,8 +97,7 @@ public final class VATCodeMatchingRequest
 		private Integer C_Tax_ID;
 		private Boolean isSOTrx;
 		private Date date;
-		@Nullable
-		private VATCodeAmountType amountType;
+		@Nullable private VATCodeAmountType amountType;
 
 		private Builder()
 		{
