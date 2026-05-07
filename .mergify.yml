@@ -37,11 +37,13 @@ merge_protections:
 queue_rules:
   - name: squash-queue
     merge_method: squash
+    allow_inplace_checks: true
     merge_conditions:
       - check-success=Merge Gate
 
   - name: merge-queue
     merge_method: merge
+    allow_inplace_checks: true
     merge_conditions:
       - check-success=Merge Gate
 
