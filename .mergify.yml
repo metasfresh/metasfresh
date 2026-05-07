@@ -75,26 +75,21 @@ pull_request_rules:
               - base=intensive_care_uat
               - base=iron_plant_uat
               - base=koala_yawn_uat
-              - base=mad_orange_uat
               - base=majestic_kangaroo_uat
               - base=massive_entropy_uat
-              - base=middle_ages_uat
               - base=modified_carbon_uat
-              - base=modus_operandi_uat
               - base=neon_underwear_uat
               - base=new_dawn_uat
-              - base=oasis_sun_uat
               - base=pink_rooster_uat
-              - base=release
               - base=soft_panda_uat
               - base=science_vessel_uat
               - base=secondary_opinion_uat
-              - base=tasty_ham_uat
               - base=tenacious_d_uat
               - base=vampire_textbook_uat
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_hotfix
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
               - base=green_oak_hotfix
@@ -108,20 +103,20 @@ pull_request_rules:
               - base=epic_party_hotfix
               - base=inner_silence_hotfix
               - base=intensive_care_hotfix
-              - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
               - base=memorable_shiny_hotfix
+              - base=middle_ages_hotfix
               - base=modus_operandi_hotfix
               - base=pink_rooster_hotfix
               - base=science_vessel_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
               - base=swift_eagle_hotfix
-              - base=tasty_ham_hotfix
               - base=vampire_textbook_hotfix
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test202412_release
               - base=taloned_owl_release
               - base=organic_goat_release
               - base=green_oak_release
@@ -131,6 +126,7 @@ pull_request_rules:
               - base=game_time_release
               - base=ghost_rider_release
               - base=intensive_care_release
+              - base=middle_ages_release
               - base=modus_operandi_release
               - base=soft_panda_release
               - base=swift_eagle_release

@@ -45,10 +45,10 @@ SELECT SUM(il.qtyEntered)                                                       
        il.pricelist,
        il.discount,
        ol.invoicableqtybasedon,
-       REGEXP_REPLACE(pp.UPC, '\s+$', '')                                        AS UPC_CU,
-       REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
+       REGEXP_REPLACE(asi_data.UPC, '\s+$', '')                                    AS UPC_CU,
+       REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
        REGEXP_REPLACE(p.value, '\s+$', '')                                       AS Value,
-       REGEXP_REPLACE(pp.productno, '\s+$', '')                                  AS CustomerProductNo,
+       REGEXP_REPLACE(asi_data.productno, '\s+$', '')                              AS CustomerProductNo,
        SUBSTR(p.name, 1, 35)                                                     AS name,
        SUBSTR(p.name, 36, 70)                                                    AS name2,
        t.rate,
@@ -73,7 +73,7 @@ SELECT SUM(il.qtyEntered)                                                       
            WHEN 'Leergut' THEN 'P'
                           ELSE ''
        END                                                                       AS leergut,
-       COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''),
+       COALESCE(NULLIF(asi_data.productdescription, ''), NULLIF(asi_data.productname, ''), NULLIF(p.description, ''),
                 p.name)::character varying                                       AS productdescription,
        COALESCE(ol.line, il.line)                                                AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
@@ -83,11 +83,11 @@ SELECT SUM(il.qtyEntered)                                                       
        REGEXP_REPLACE(pip.EAN_TU::text, '\s+$'::text, ''::text)                  AS EAN_TU,
        REGEXP_REPLACE(pip.UPC::text, '\s+$'::text, ''::text)                     AS UPC_TU,
        REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       COALESCE( -- if there is no explicit pp.GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
-               NULLIF(REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text), ''::text),
+       COALESCE( -- if there is no explicit asi_data GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
+               NULLIF(REGEXP_REPLACE(asi_data.GTIN::text, '\s+$'::text, ''::text), ''::text),
                REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)
        )                                                                         AS Buyer_GTIN_CU,
-       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                   AS Buyer_EAN_CU,
+       REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text)             AS Buyer_EAN_CU,
        REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
        SUM(il.QtyEnteredInBPartnerUOM)                                           AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
@@ -102,8 +102,17 @@ FROM c_invoiceline il
          LEFT JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
          LEFT JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
-         LEFT JOIN c_bpartner_product pp
-                   ON pp.c_bpartner_id = i.c_bpartner_id AND pp.m_product_id = il.m_product_id AND pp.isactive = 'Y'
+         -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+         LEFT JOIN LATERAL (
+             SELECT gtin, ean_cu, upc, productno, productdescription, productname
+             FROM m_product_asi_data
+             WHERE isactive = 'Y'
+               AND m_product_id = il.m_product_id
+               AND (c_bpartner_id IS NULL OR c_bpartner_id = i.c_bpartner_id)
+               AND IsASIAttributesKeySubset(m_attributesetinstance_id, il.m_attributesetinstance_id)
+             ORDER BY seqno
+             LIMIT 1
+         ) asi_data ON TRUE
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
@@ -115,10 +124,10 @@ GROUP BY il.c_invoice_id,
          il.pricelist,
          il.discount,
          ol.InvoicableQtyBasedOn,
-         pp.UPC,
-         pp.EAN_CU,
+         asi_data.UPC,
+         asi_data.EAN_CU,
          p.value,
-         pp.productno,
+         asi_data.productno,
          (SUBSTR(p.name, 1, 35)),
          (SUBSTR(p.name, 36, 70)),
          t.rate,
@@ -144,11 +153,11 @@ GROUP BY il.c_invoice_id,
               WHEN 'Leergut' THEN 'P'
                              ELSE ''
           END),
-         (COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''), p.name)),
+         (COALESCE(NULLIF(asi_data.productdescription, ''), NULLIF(asi_data.productname, ''), NULLIF(p.description, ''), p.name)),
          (COALESCE(NULLIF(o.poreference, ''), i.poreference)),
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
-         pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
+         pip.UPC, pip.GTIN, pip.EAN_TU, asi_data.GTIN, asi_data.EAN_CU, p.GTIN,
          il.C_UOM_BPartner_ID, il.externalids, ol.externalseqno
 ORDER BY COALESCE(ol.line, il.line)
 ;

@@ -46,8 +46,17 @@ BEGIN
              -- Crucial: Ensure v_edi_desadv_line_object is efficient or inline its logic.
              LEFT JOIN "de.metas.edi".edi_desadv_line_object_v line_obj_no_pack ON line_obj_no_pack.edi_desadvline_id = edl_lat.edi_desadvline_id
              -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
-             LEFT JOIN m_inoutline iol_diol ON iol_diol.m_inout_id = p_m_inout_id AND iol_diol.edi_desadvline_id = edl_lat.edi_desadvline_id
-             LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = iol_diol.m_inoutline_id AND diol.edi_desadvline_id = edl_lat.edi_desadvline_id
+             -- LATERAL + LIMIT 1 prevents row multiplication when one edi_desadvline maps to multiple m_inoutline records in the same shipment.
+             LEFT JOIN LATERAL (
+                 SELECT diol_inner.desadvlinetotalqtydelivered
+                 FROM m_inoutline iol_diol
+                          JOIN edi_desadvline_inoutline diol_inner
+                               ON diol_inner.m_inoutline_id = iol_diol.m_inoutline_id
+                              AND diol_inner.edi_desadvline_id = edl_lat.edi_desadvline_id
+                 WHERE iol_diol.m_inout_id = p_m_inout_id
+                   AND iol_diol.edi_desadvline_id = edl_lat.edi_desadvline_id
+                 LIMIT 1
+             ) diol ON TRUE
     WHERE edl_lat.edi_desadv_id = p_edi_desadv_id -- Filter by parameter!
       AND edl_lat.isactive = 'Y'
       -- Include lines that either have a shipment line in this InOut (shipped but no pack),

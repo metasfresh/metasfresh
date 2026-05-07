@@ -210,6 +210,17 @@ public class HUQRCodesService
 				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 
+	/**
+	 * Variant of {@link #getHuIdByQRCodeIfExists(HUQRCode)} that also resolves through soft-deleted
+	 * assignments. Use when a stale sticker scan needs to surface a more specific cause than the
+	 * generic "no HU attached" exception (e.g. the HU was destroyed and the destroy interceptor
+	 * deactivated the assignment).
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(@NonNull final HUQRCode qrCode)
+	{
+		return huQRCodesRepository.getHuIdByQRCodeIncludingInactive(qrCode);
+	}
+
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
 	{
 		return huQRCodesRepository.getHUAssignmentByQRCode(huQRCode);
@@ -289,6 +300,15 @@ public class HUQRCodesService
 	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
 	{
 		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
+	}
+
+	/**
+	 * Soft-delete every active {@code M_HU_QRCode_Assignment} row pointing at the given HU.
+	 * Preserves the row for audit/traceability; existing scan-time lookups already filter on {@code IsActive='Y'}.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
 	}
 
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
