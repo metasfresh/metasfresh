@@ -58,3 +58,28 @@ UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=592501,Updated=TO_TIMESTAMP('20
 -- 2026-05-06T11:16:43.384Z
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE public.DATEV_ExportLine ADD COLUMN GrossAmt NUMERIC')
 ;
+
+
+
+-- 2026-05-06T11:16:43.384Z
+/* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE public.DATEV_ExportLine ADD COLUMN GrossAmt NUMERIC')
+;-- 2026-05-07T19:13:00.456Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545678,0,TO_TIMESTAMP('2026-05-07 19:13:00.351000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.datev','Y','EXTF export requires a DATEV Export Config to be set on the organisation.','E',TO_TIMESTAMP('2026-05-07 19:13:00.351000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'DATEV_ExportFile_EXT_NoDATEVConfig')
+;
+
+-- 2026-05-07T19:13:00.463Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545678 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- 2026-05-07T19:13:36.399Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Für den EXTF-Export muss eine DATEV-Exportkonfiguration in der Organisation hinterlegt sein.',Updated=TO_TIMESTAMP('2026-05-07 19:13:36.397000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language in ('de_CH', 'de_DE') AND AD_Message_ID=545678
+;
+
+-- 2026-05-07T19:13:36.400Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language in ('de_CH', 'de_DE') AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-07T19:13:41.709Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-07 19:13:41.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545678
+;
+
