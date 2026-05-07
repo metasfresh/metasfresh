@@ -27,6 +27,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
@@ -397,7 +398,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.setAmtSource(getCurrencyId(), null, docTax.getTaxAmt())
 					.alsoAddZeroLine()
 					.buildAndAddNotNull();
-			tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
+			tl.setTaxIdAndUpdateVatCode(docTax.getTaxId(), VATCodeAmountType.Tax);
 		}
 
 		// Revenue CR
@@ -412,14 +413,22 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				{
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
-					fact.createLine(line,
+					final FactLine discountLeg = fact.createLine(line,
 							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
 							getCurrencyId(), dAmt, null);
+					if (discountLeg != null)
+					{
+						discountLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+					}
 				}
 			}
-			fact.createLine(line,
+			final FactLine revenueLeg = fact.createLine(line,
 					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
 					getCurrencyId(), null, lineAmt);
+			if (revenueLeg != null)
+			{
+				revenueLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+			}
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -531,14 +540,22 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				{
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
-					fact.createLine(line,
+					final FactLine discountLeg = fact.createLine(line,
 							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
 							getCurrencyId(), null, dAmt);
+					if (discountLeg != null)
+					{
+						discountLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+					}
 				}
 			}
-			fact.createLine(line,
+			final FactLine revenueLeg = fact.createLine(line,
 					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
 					getCurrencyId(), lineAmt, null);
+			if (revenueLeg != null)
+			{
+				revenueLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+			}
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -639,51 +656,71 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				{
 					final Money discount = Money.of(discountBD, currencyId);
 					amt = amt.add(discount);
-					fact.createLine()
+					final FactLine discountLeg = fact.createLine()
 							.setDocLine(line)
 							.setAccount(line.getAccount(ProductAcctType.P_TradeDiscountRec_Acct, as))
 							.setAmtSource((Money)null, discount)
 							.buildAndAdd();
+					if (discountLeg != null)
+					{
+						discountLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+					}
 				}
 			}
 
 			if (line.isItem())  // stockable item
 			{
 				final Money amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine()
+				final FactLine inventoryClearingLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
 						.setAmtSource(amtReceived, null)
 						.setQty(line.getQtyReceivedAbs())
 						.buildAndAdd();
+				if (inventoryClearingLeg != null)
+				{
+					inventoryClearingLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 
 				final Money amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine()
+				final FactLine expenseLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
 						.setAmtSource(amtNotReceived, null)
 						.setQty(line.getQtyNotReceivedAbs())
 						.buildAndAdd();
+				if (expenseLeg != null)
+				{
+					expenseLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 			}
 			else // service
 			{
 				final Money costAmountMatched = line.getCostAmountMatched();
 				if (!costAmountMatched.isZero())
 				{
-					fact.createLine()
+					final FactLine inventoryClearingLeg = fact.createLine()
 							.setDocLine(line)
 							.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
 							.setAmtSource(costAmountMatched, null)
 							.setQty(line.getQtyReceivedAbs())
 							.buildAndAdd();
+					if (inventoryClearingLeg != null)
+					{
+						inventoryClearingLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+					}
 				}
 
 				final Money expenseAmt = amt.subtract(costAmountMatched);
-				fact.createLine()
+				final FactLine expenseLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
 						.setAmtSource(expenseAmt, null)
 						.buildAndAdd();
+				if (expenseLeg != null)
+				{
+					expenseLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 			}
 
 			if (!line.isItem())
@@ -708,19 +745,27 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				// T_Due (output §13b, KZ 84/85) uses IsSOTrx=Y — see §13b UStG + UStVA.
 				final Fact rcFact = newFact(as);
 				// VSt (Vorsteuer / input tax) — debit the tax receivable
-				rcFact.createLine()
+				final FactLine vstLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (vstLeg != null)
+				{
+					vstLeg.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false, VATCodeAmountType.Tax);
+				}
 				// USt (Umsatzsteuer / output tax) — credit the tax payable
-				rcFact.createLine()
+				final FactLine ustLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
 						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (ustLeg != null)
+				{
+					ustLeg.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true, VATCodeAmountType.Tax);
+				}
 				rcFact.forEach(fl -> {
 					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
 					fl.setLocationFromOrg(fl.getOrgId(), false);
@@ -834,39 +879,55 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					final Money discount = Money.of(discountBD, currencyId);
 					amt = amt.add(discount);
 
-					fact.createLine()
+					final FactLine discountLeg = fact.createLine()
 							.setDocLine(line)
 							.setAccount(line.getAccount(ProductAcctType.P_TradeDiscountRec_Acct, as))
 							.setAmtSource(discount, null)
 							.buildAndAdd();
+					if (discountLeg != null)
+					{
+						discountLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+					}
 				}
 			}
 
 			if (line.isItem())  // stockable item
 			{
 				final Money amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine()
+				final FactLine inventoryClearingLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
 						.setAmtSource((Money)null, amtReceived)
 						.setQty(line.getQtyReceivedAbs().negate())
 						.buildAndAdd();
+				if (inventoryClearingLeg != null)
+				{
+					inventoryClearingLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 
 				final Money amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine()
+				final FactLine expenseLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
 						.setAmtSource((Money)null, amtNotReceived)
 						.setQty(line.getQtyNotReceivedAbs().negate())
 						.buildAndAdd();
+				if (expenseLeg != null)
+				{
+					expenseLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 			}
 			else // service
 			{
-				fact.createLine()
+				final FactLine expenseLeg = fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
 						.setAmtSource((Money)null, amt)
 						.buildAndAdd();
+				if (expenseLeg != null)
+				{
+					expenseLeg.setTaxIdAndUpdateVatCode(line.getTaxId().orElse(null), VATCodeAmountType.Net);
+				}
 			}
 
 			if (!line.isItem())
@@ -890,19 +951,27 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				// Per-leg VATCode: T_Due    (§13b output, UStVA KZ 84/85) → IsSOTrx=Y.
 				final Fact rcFact = newFact(as);
 				// VSt (Vorsteuer / input tax) — credit to reverse the original VSt debit
-				rcFact.createLine()
+				final FactLine vstLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
 						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (vstLeg != null)
+				{
+					vstLeg.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false, VATCodeAmountType.Tax);
+				}
 				// USt (Umsatzsteuer / output tax) — debit to reverse the original USt credit
-				rcFact.createLine()
+				final FactLine ustLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (ustLeg != null)
+				{
+					ustLeg.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true, VATCodeAmountType.Tax);
+				}
 				rcFact.forEach(fl -> {
 					fl.setLocationFromBPartner(getBPartnerLocationId(), true);
 					fl.setLocationFromOrg(fl.getOrgId(), false);
