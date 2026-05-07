@@ -120,53 +120,66 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | lcInvoice    | 21000.00 | lcPayment    |
 
     # ── R1: 400 PCE → R1.with_tax = 40,000 ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 400         |
+    # Canonical HU receipt: 400 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 400         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
 
-    # ── INV1: MISMARKED as Final (IsPartialInvoice='N' when it should be 'Y' Partial) ──
+    # ── INV1bad: MISMARKED as Final (IsPartialInvoice='N' when it should be 'Y' Partial) ──
+    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1bad    | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1badL1  | inv1bad      | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1badL1        | r1         | 400 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1badL1  | inv1bad      | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1bad is completed
 
     # Final rule: alloc = remaining_prepay = 21,000 (full prepay drained at first invoice)
     Then validate C_AllocationLines for invoice inv1bad
       | Amount    |
       | -21000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
 
     # INV1bad.OpenAmt = 40,000 − 21,000 = 19,000 (visibly too low → user detects)
     Then validate created invoices
       | Identifier | OpenAmt  |
       | inv1bad    | 19000.00 |
 
+    # OD sub-row for r1 linked to inv1bad; Status = Awaiting_Pay
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | OD                | r1         | WP     | inv1bad      |
+
     # ── User detects mistake → reverses INV1bad (AC #13 + AC #16 cascade) ──
     And the invoice identified by inv1bad is reversed
 
     # iter-3 alloc auto-reverses → prepay.AvailableAmt restored to full 21,000
-    Then the payment 'lcPayment' has AvailableAmt 21000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt   |
+      | lcPayment               | 21000.00  |
     # No active allocation lines link prepayment to inv1bad after reversal
     And there are no allocation lines for invoice
       | C_Invoice_ID |
       | inv1bad      |
 
     # ── User reissues INV1' correctly marked as Partial (IsPartialInvoice='Y'), matched to R1 ──
+    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 400 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
     # AC #13 — end-state matches TC1 step 3:
@@ -174,12 +187,15 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
     Then validate C_AllocationLines for invoice inv1
       | Amount    |
       | -12000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 9000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 9000.00 |
     Then validate created invoices
       | Identifier | OpenAmt  |
       | inv1       | 28000.00 |
 
     # R1 sub-row now points to the corrected invoice; Status = Awaiting_Pay
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | WP     | inv1         |
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | OD                | r1         | WP     | inv1         |
