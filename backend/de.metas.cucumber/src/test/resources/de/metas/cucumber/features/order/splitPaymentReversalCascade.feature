@@ -53,8 +53,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | Identifier |
       | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 100.00   | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_purchase           | product      | 100.00   | PCE      | TaxFree          |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
@@ -116,38 +116,54 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | C_Invoice_ID | OpenAmt  | C_Payment_ID |
       | lcInvoice    | 21000.00 | lcPayment    |
 
-    # R1 = 40,000; INV1 Partial → alloc 12,000; prepay = 9,000
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 400         |
+    # R1 = 40,000 with-tax (400 PCE × 100 EUR, TaxFree, IsTaxIncluded=Y).
+    # Canonical HU receipt: 400 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 400         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
+
+    # INV1 Partial → alloc 12,000; prepay = 9,000.
+    # M_InOutLine_ID FK drives auto M_MatchInv on MInvoice.completeIt().
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 400 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
-    # R2 = 32,000 (over-delivery); INV2 Final → alloc 9,000; prepay = 0
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 320         |
+    # R2 = 32,000 with-tax (320 PCE × 100 EUR, over-delivery).
+    # Canonical HU receipt: 320 PCE in 1 TU → receipt r2 with line r2_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | lcOrderL1      | 101                     | 320         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu2     | r2         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 320        | r2_line1       | r2         | CO        | lcOrderL1      |
+
+    # INV2 Final → alloc 9,000; prepay = 0.
+    # M_InOutLine_ID FK drives auto M_MatchInv on MInvoice.completeIt().
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 320 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      | r2_line1       |
     And the invoice identified by inv2 is completed
 
     # Sanity: TC1 step-5 state baseline
-    Then the payment 'lcPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
     And validate C_AllocationLines for invoice inv1
       | Amount    |
       | -12000.00 |
@@ -177,13 +193,17 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
 
     # prepay restored: was 0, INV1 alloc 12,000 reversed → prepay = 12,000
     # INV2 alloc unchanged → 9,000 still consumed
-    Then the payment 'lcPayment' has AvailableAmt 12000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | lcPayment               | 12000.00 |
 
-    # AC #16 — R1 sub-row: C_Invoice_ID cleared, Status → Pending (PR)
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | PR     | null         |
-      | r2         | WP     | inv2         |
+    # AC #16 — R1 sub-row: C_Invoice_ID cleared, Status → Pending (PR); R2 sub-row unchanged
+    # LC row stays Paid; total pay schedule lines = LC + r1 + r2 = 3
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | OD                | r1         | PR     | null         |
+      | OD                | r2         | WP     | inv2         |
 
 
   @from:cucumber
@@ -195,7 +215,9 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     And there are no allocation lines for invoice
       | C_Invoice_ID |
       | inv1         |
-    Then the payment 'lcPayment' has AvailableAmt 12000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | lcPayment               | 12000.00 |
 
     # ── Step 2: reverse R1 ──
     And the material receipt identified by r1 is reversed
@@ -203,11 +225,12 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # AC #17 — R1 sub-row deleted from schedule; remainder row recomputes.
     # After: 1 sub-row for R2 (still completed) + 1 remainder row.
     # R2 still 32,000 with-tax → remainder BaseAmt = 70,000 − 32,000 = 38,000; DueAmt = 38,000 × 70 % = 26,600.
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r2         | 32000.00 | 22400.00 | WP     | inv2         |
-      | null       | 38000.00 | 26600.00 | PR     | null         |
+    # LC row stays Paid; total pay schedule lines = LC + r2 + null(remainder) = 3
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
+      | LC                | null       | null     | null     | P      | null         |
+      | OD                | r2         | 32000.00 | 22400.00 | WP     | inv2         |
+      | OD                | null       | 38000.00 | 26600.00 | PR     | null         |
 
 
   @from:cucumber
@@ -230,16 +253,17 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | inv2       | 32000.00 |
 
     # AC #18 — LC step Paid → Awaiting_Pay (iter-2 contract).
-    # Delivery sub-rows are unchanged (still tied to invoices) — only the allocation cascade reversed.
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | Status | IsPaid |
       | LC                | WP     | N      |
+
     # Delivery sub-rows: still 2 rows (R1 + R2), still pointing at the invoices, no remainder (over-delivery preserved)
-    And the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | C_Invoice_ID |
-      | r1         | inv1         |
-      | r2         | inv2         |
+    # LC row reverted to WP; total pay schedule lines = LC + r1 + r2 = 3
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | C_Invoice_ID |
+      | LC                | null       | null         |
+      | OD                | r1         | inv1         |
+      | OD                | r2         | inv2         |
 
 
   @from:cucumber
@@ -266,10 +290,14 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # AC #25 — stranded amount: prepay.AvailableAmt = 12,000 (the freed INV1 alloc)
     # Iter-3 does NOT auto-re-allocate; the 12,000 sits available until either INV2 is also
     # reversed or a new partial invoice claims it.
-    Then the payment 'lcPayment' has AvailableAmt 12000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | lcPayment               | 12000.00 |
 
     # R1 sub-row: C_Invoice_ID cleared; R2 sub-row unchanged (still tied to INV2)
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | Status | C_Invoice_ID |
-      | r1         | PR     | null         |
-      | r2         | WP     | inv2         |
+    # LC row stays Paid; total pay schedule lines = LC + r1 + r2 = 3
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | OD                | r1         | PR     | null         |
+      | OD                | r2         | WP     | inv2         |
