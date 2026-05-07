@@ -22,6 +22,10 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
   #
   # Key assertion (AC #24): INV3 alloc = 9,000 (not 6,000), proving Final rule is independent
   # of the partial-invoice proportional calculation.
+  #
+  # Canonical pipeline: HU receipt → invoice with M_InOutLine_ID FK (E.1d) →
+  #   MInvoice.completeIt() auto-creates M_MatchInv → AFTER_COMPLETE interceptor triggers allocation.
+  # OD break type: isMaterialReceiptDate(OD)=false; no delivery sub-row decomposition.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -42,8 +46,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
       | Identifier |
       | product    |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 100.00   | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_purchase           | product      | 100.00   | PCE      | TaxFree          |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PaymentRulePO |
@@ -111,95 +115,94 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
       | lcInvoice    | 21000.00 | lcPayment    |
 
     # ── R1: 200 PCE → R1.with_tax = 20,000 ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
+    # Canonical HU receipt: 200 PCE in 1 TU → receipt r1 with line r1_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 200         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And validate the created material receipt lines
+      | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
+      | r1         | product      | r1_line1       |
 
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 20000.00 | 14000.00 | PR     | null         |
-      | null       | 50000.00 | 35000.00 | PR     | null         |
-
-    # ── INV1: Partial, matched to R1 ──
+    # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK ──
+    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv1L1     | inv1         | product      | 200 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 200 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | product      | 200 PCE     | 100.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
-    # INV1 alloc = MIN(20,000 × 30%, 21,000) = 6,000
+    # INV1 alloc = MIN(20,000 × 30%, 21,000) = 6,000; remaining prepay = 15,000
     Then validate C_AllocationLines for invoice inv1
       | Amount   |
       | -6000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 15000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | lcPayment               | 15000.00 |
 
     # ── R2: 200 PCE → R2.with_tax = 20,000 ──
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
+    # Canonical HU receipt: 200 PCE in 1 TU → receipt r2 with line r2_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | lcOrderL1      | 101                     | 200         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu2     | r2         |
+    And validate the created material receipt lines
+      | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
+      | r2         | product      | r2_line1       |
 
-    Then the order identified by lcOrder has exactly 3 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 20000.00 | 14000.00 | WP     | inv1         |
-      | r2         | 20000.00 | 14000.00 | PR     | null         |
-      | null       | 30000.00 | 21000.00 | PR     | null         |
-
-    # ── INV2: Partial, matched to R2 ──
+    # ── INV2: Partial, matched to R2 via M_InOutLine_ID FK ──
+    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv2L1     | inv2         | product      | 200 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 200 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2         | product      | 200 PCE     | 100.00 | lcOrderL1      | r2_line1       |
     And the invoice identified by inv2 is completed
 
-    # INV2 alloc = MIN(20,000 × 30%, 15,000) = 6,000
+    # INV2 alloc = MIN(20,000 × 30%, 15,000) = 6,000; remaining prepay = 9,000
     Then validate C_AllocationLines for invoice inv2
       | Amount   |
       | -6000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 9000.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 9000.00 |
 
     # ── R3: 200 PCE → R3.with_tax = 20,000. R1+R2+R3 = 60,000 < 70,000 (under-delivery) ──
-    When iter3 purchase receipt 'r3' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
+    # Canonical HU receipt: 200 PCE in 1 TU → receipt r3 with line r3_line1.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu3     | lcOrderL1      | 101                     | 200         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu3     | r3         |
+    And validate the created material receipt lines
+      | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
+      | r3         | product      | r3_line1       |
 
-    # Remainder still exists with BaseAmt = 10,000 (under-delivery)
-    Then the order identified by lcOrder has exactly 4 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | r1         | 20000.00 | 14000.00 | WP     | inv1         |
-      | r2         | 20000.00 | 14000.00 | WP     | inv2         |
-      | r3         | 20000.00 | 14000.00 | PR     | null         |
-      | null       | 10000.00 | 7000.00  | PR     | null         |
-
-    # ── INV3: Final, matched to R3 ──
+    # ── INV3: Final, matched to R3 via M_InOutLine_ID FK ──
+    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv3       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
-      | inv3L1     | inv3         | product      | 200 PCE     | 100.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv3L1           | r3         | 200 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
+      | inv3L1     | inv3         | product      | 200 PCE     | 100.00 | lcOrderL1      | r3_line1       |
     And the invoice identified by inv3 is completed
 
     # AC #24 — INV3 alloc = 9,000 (remaining prepay — Final rule), NOT 6,000 (= 20,000 × 30%)
     Then validate C_AllocationLines for invoice inv3
       | Amount   |
       | -9000.00 |
-    Then the payment 'lcPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
 
     # INV3.OpenAmt = 20,000 − 9,000 = 11,000
     Then validate created invoices
