@@ -1574,12 +1574,14 @@ public class FactLine
 				.build());
 	}
 
+	/** Sets the tax and resolves the VAT code filtered by amountType, using the document's own IsSOTrx. */
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, @NonNull final VATCodeAmountType amountType)
 	{
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(null, amountType).map(VATCode::getCode).orElse(null);
 	}
 
+	/** Sets the tax and resolves the VAT code, overriding IsSOTrx and filtering by amountType. */
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride, @NonNull final VATCodeAmountType amountType)
 	{
 		this.taxId = taxId;

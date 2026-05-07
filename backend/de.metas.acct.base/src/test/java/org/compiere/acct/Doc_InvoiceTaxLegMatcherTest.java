@@ -29,7 +29,7 @@ class Doc_InvoiceTaxLegMatcherTest
 				.setC_Tax_ID(1)
 				.setIsSOTrx(false)
 				.setDate(SystemTime.asDate())
-				.setAmountType(VATCodeAmountType.Net)  // does not exist yet → RED
+				.setAmountType(VATCodeAmountType.Net)
 				.build();
 		assertThat(request.getAmountType()).isEqualTo(VATCodeAmountType.Net);
 	}
@@ -42,7 +42,7 @@ class Doc_InvoiceTaxLegMatcherTest
 				.setC_Tax_ID(1)
 				.setIsSOTrx(false)
 				.setDate(SystemTime.asDate())
-				.setAmountType(VATCodeAmountType.Tax)  // does not exist yet → RED
+				.setAmountType(VATCodeAmountType.Tax)
 				.build();
 		assertThat(request.getAmountType()).isEqualTo(VATCodeAmountType.Tax);
 	}
@@ -52,13 +52,13 @@ class Doc_InvoiceTaxLegMatcherTest
 	{
 		final VATCodeMatchingRequest netReq = VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(1).setC_Tax_ID(1).setIsSOTrx(false).setDate(SystemTime.asDate())
-				.setAmountType(VATCodeAmountType.Net).build();  // RED
+				.setAmountType(VATCodeAmountType.Net).build();
 		final VATCodeMatchingRequest inputTaxReq = VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(1).setC_Tax_ID(1).setIsSOTrx(false).setDate(SystemTime.asDate())
-				.setAmountType(VATCodeAmountType.Tax).build();  // RED
+				.setAmountType(VATCodeAmountType.Tax).build();
 		final VATCodeMatchingRequest outputTaxReq = VATCodeMatchingRequest.builder()
 				.setC_AcctSchema_ID(1).setC_Tax_ID(1).setIsSOTrx(true).setDate(SystemTime.asDate())
-				.setAmountType(VATCodeAmountType.Tax).build();  // RED
+				.setAmountType(VATCodeAmountType.Tax).build();
 		assertThat(netReq.getAmountType()).isEqualTo(VATCodeAmountType.Net);
 		assertThat(inputTaxReq.getAmountType()).isEqualTo(VATCodeAmountType.Tax);
 		assertThat(outputTaxReq.getAmountType()).isEqualTo(VATCodeAmountType.Tax);
