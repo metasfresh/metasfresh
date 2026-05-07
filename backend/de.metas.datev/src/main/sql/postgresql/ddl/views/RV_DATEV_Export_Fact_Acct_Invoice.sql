@@ -118,6 +118,7 @@ BEGIN
                  fa.amt                                                                               AS Amt,
                  fa.c_currency_id                                                                     AS C_Currency_ID,
                  fa.amtsource                                                                         AS AmtSource,
+                 fa.Currency,
                  fa.CurrencyRate,
                  --
                  -- Tax Amounts
@@ -178,6 +179,7 @@ BEGIN
         ev_cr.value,
         ev_cr.name,
         fa.c_currency_id,
+        fa.Currency,
         fa.CurrencyRate,
         fa.c_tax_id,
         tax.rate,
