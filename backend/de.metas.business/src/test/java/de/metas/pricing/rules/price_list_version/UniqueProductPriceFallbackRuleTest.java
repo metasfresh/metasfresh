@@ -27,6 +27,7 @@ import de.metas.pricing.service.impl.ASIBuilder;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -74,7 +75,7 @@ class UniqueProductPriceFallbackRuleTest
 		return helper.newProductPriceBuilder().setPrice(amount).build();
 	}
 
-	private I_M_ProductPrice newAttributeDependentPrice(final int amount, final String countryValue)
+	private I_M_ProductPrice newAttributeDependentPrice(final int amount, final AttributeListValue countryValue)
 	{
 		return helper.newProductPriceBuilder()
 				.setASI(ASIBuilder.newInstance()
@@ -85,22 +86,26 @@ class UniqueProductPriceFallbackRuleTest
 	}
 
 	@Test
-	@DisplayName("Single attribute-dependent price, no order-line ASI → fallback uses it")
+	@DisplayName("Single attribute-dependent price, no order-line ASI → fallback uses it and propagates attributes")
 	void uniqueRecord_attributeDependent_isPickedUp()
 	{
-		newAttributeDependentPrice(11, "DE");
+		newAttributeDependentPrice(11, helper.attr_Country_DE);
 
 		final IPricingResult result = helper.calculatePrice(helper.createPricingContext());
 
 		assertThat(result.isCalculated()).as("calculated").isTrue();
 		assertThat(result.getPriceStd()).as("PriceStd").isEqualByComparingTo(BigDecimal.valueOf(11));
+		assertThat(result.getPricingAttributes())
+				.as("the price's attribute set must be propagated to the pricing result")
+				.extracting(pa -> pa.getAttributeValue() == null ? null : pa.getAttributeValue().getId())
+				.containsExactly(helper.attr_Country_DE.getId());
 	}
 
 	@Test
 	@DisplayName("Tagged + baseline siblings → MainProductPriceRule wins on baseline; fallback skipped")
 	void taggedPlusBaseline_baselineWins()
 	{
-		newAttributeDependentPrice(10, "DE");
+		newAttributeDependentPrice(10, helper.attr_Country_DE);
 		newBaselinePrice(20);
 
 		final IPricingResult result = helper.calculatePrice(helper.createPricingContext());
@@ -109,14 +114,17 @@ class UniqueProductPriceFallbackRuleTest
 		assertThat(result.getPriceStd())
 				.as("PriceStd should match the baseline, not the tagged record")
 				.isEqualByComparingTo(BigDecimal.valueOf(20));
+		assertThat(result.getPricingAttributes())
+				.as("baseline path must not propagate attributes (the price has none)")
+				.isEmpty();
 	}
 
 	@Test
 	@DisplayName("Two tagged records, no baseline → uniqueness gate skips, result stays uncalculated")
 	void twoTaggedRecords_uniquenessGateSkips()
 	{
-		newAttributeDependentPrice(10, "DE");
-		newAttributeDependentPrice(15, "CH");
+		newAttributeDependentPrice(10, helper.attr_Country_DE);
+		newAttributeDependentPrice(15, helper.attr_Country_CH);
 
 		final IPricingResult result = helper.calculatePrice(helper.createPricingContext());
 
