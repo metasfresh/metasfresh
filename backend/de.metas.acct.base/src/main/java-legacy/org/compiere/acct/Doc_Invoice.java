@@ -520,13 +520,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxDue DR
 		for (final DocTax docTax : getTaxes())
 		{
-			fact.createLine()
+			final FactLine tl = fact.createLine()
 					.setDocLine(null)
 					.setAccount(docTax.getTaxDueAcct(as))
 					.setAmtSource(getCurrencyId(), docTax.getTaxAmt(), null)
-					.setC_Tax_ID(docTax.getTaxId())
+					// NOTE: NO setC_Tax_ID here — handled post-build
 					.alsoAddZeroLine()
 					.buildAndAdd();
+			if (tl != null)
+			{
+				tl.setTaxIdAndUpdateVatCode(docTax.getTaxId(), VATCodeAmountType.Tax);
+			}
 		}
 		// Revenue CR
 		for (final DocLine_Invoice line : getDocLines())
@@ -772,12 +776,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			}
 			else
 			{
-				fact.createLine()
+				final FactLine tl = fact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
+						// NOTE: NO setC_Tax_ID here — handled post-build
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (tl != null)
+				{
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId(), VATCodeAmountType.Tax);
+				}
 			}
 		}
 
@@ -976,12 +984,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			}
 			else
 			{
-				fact.createLine()
+				final FactLine tl = fact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
+						// NOTE: NO setC_Tax_ID here — handled post-build
 						.alsoAddZeroLine()
 						.buildAndAdd();
+				if (tl != null)
+				{
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId(), VATCodeAmountType.Tax);
+				}
 			}
 		}
 
