@@ -23,6 +23,7 @@ package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
@@ -36,6 +37,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.UUID;
 
@@ -64,6 +66,13 @@ public class C_VAT_Code_StepDef
 	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code</li>
 	 * </ul>
 	 *
+	 * <p><b>Optional columns</b>:
+	 * <ul>
+	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
+	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
+	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
+	 * </ul>
+	 *
 	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
 	 * {@link StepDefConstants#CLIENT_ID} (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The
 	 * {@code VATCode} value is a 10-char UUID prefix (the {@code C_VAT_Code.VATCode} column is
@@ -80,9 +89,9 @@ public class C_VAT_Code_StepDef
 	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
 	 *   | tax19      | taxCategory      | 19   | DE                       | DE                        |
 	 * And metasfresh contains C_VAT_Codes:
-	 *   | Identifier      | C_Tax_ID | IsSOTrx |
-	 *   | vatCode19_sales | tax19    | Y       |
-	 *   | vatCode19_buy   | tax19    | N       |
+	 *   | Identifier      | C_Tax_ID | IsSOTrx | AmountType |
+	 *   | vatCode19_sales | tax19    | Y       | T          |
+	 *   | vatCode19_buy   | tax19    | N       | T          |
 	 * }</pre>
 	 */
 	@And("metasfresh contains C_VAT_Codes:")
@@ -109,6 +118,13 @@ public class C_VAT_Code_StepDef
 				.isSOTrx(isSOTrx)
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
+
+		// AmountType: optional column; defaults to 'T' (tax amount). Set it explicitly on the
+		// freshly-created record so the DB column reflects the test scenario's intent.
+		final String amountTypeStr = row.getAsOptionalString("AmountType").orElse("T");
+		final I_C_VAT_Code vatCodeRecord = InterfaceWrapperHelper.load(vatCode.getVatCodeId().getRepoId(), I_C_VAT_Code.class);
+		vatCodeRecord.setAmountType(amountTypeStr);
+		InterfaceWrapperHelper.saveRecord(vatCodeRecord);
 
 		vatCodeTable.putOrReplace(row.getAsIdentifier(), vatCode);
 	}
