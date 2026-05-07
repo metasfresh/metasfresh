@@ -216,3 +216,33 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543193 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
+
+-- 2026-05-07T12:38:34.324Z
+UPDATE AD_Process_Para SET DefaultValue='PDF',Updated=TO_TIMESTAMP('2026-05-07 12:38:34.322000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543193
+;
+
+
+-- 2026-05-07T12:41:30.713Z
+UPDATE AD_Process_Trl SET Description='This report provides a consolidated view of processed shipment schedules for a specific business partner, enriched with the current raw standard sales price for each product.
+It specifically retrieves the base list price from the customer''s assigned pricing system. Please note:
+* No Discounts: Prices shown are standard list prices; customer-specific discounts or promotional deductions are not applied.
+* No ASI/PI Matching: The lookup ignores Attribute Set Instances (ASI) and Handling Unit/Package Item (PI) specific pricing.
+* Standard UOM only: It returns the base standard price for the product''s default unit of measure.', IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-07 12:41:30.711000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585614
+;
+
+-- 2026-05-07T12:41:30.715Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-07T12:42:15.259Z
+UPDATE AD_Process_Trl SET Description='Dieser Bericht bietet eine konsolidierte Übersicht der verarbeiteten Lieferpläne (Shipment Schedules) für einen bestimmten Geschäftspartner, angereichert mit dem aktuellen Standard-Listenverkaufspreis für jedes Produkt.
+Der Bericht ruft gezielt den Basis-Listenpreis aus dem dem Kunden zugewiesenen Preissystem ab. Bitte beachten Sie:
+* Keine Rabatte: Die ausgewiesenen Preise sind Standard-Listenpreise; kundenspezifische Rabatte oder Aktionsabzüge werden nicht berücksichtigt.
+* Keine ASI/PI-Prüfung: Die Preisermittlung ignoriert spezifische Preise für Attributsatz-Instanzen (ASI) sowie Packmittel-spezifische Preise (Handling Unit/PI).
+* Nur Standard-UOM: Es wird der Basis-Standardpreis für die Standard-Maßeinheit (UOM) des Produkts ausgegeben.', IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-07 12:42:15.255000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language in ('de_CH', 'de_DE') AND AD_Process_ID=585614
+;
+
+-- 2026-05-07T12:42:15.259Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language in ('de_CH', 'de_DE') AND trl.AD_Language=getBaseLanguage()
+;
+
