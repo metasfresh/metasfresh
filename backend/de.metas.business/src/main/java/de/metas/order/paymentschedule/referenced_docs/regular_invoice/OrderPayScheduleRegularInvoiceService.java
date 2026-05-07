@@ -117,7 +117,7 @@ public class OrderPayScheduleRegularInvoiceService
 
 	public Optional<RegularInvoice> getByReceipt(@NonNull final MaterialReceipt receipt)
 	{
-		return getByReceipt(receipt, null);
+		return getByReceipt(receipt, null, null);
 	}
 
 	/**
@@ -143,11 +143,41 @@ public class OrderPayScheduleRegularInvoiceService
 	 */
 	public Optional<RegularInvoice> getByReceipt(@NonNull final MaterialReceipt receipt, @Nullable final RegularInvoice completingInvoice)
 	{
+		return getByReceipt(receipt, completingInvoice, null);
+	}
+
+	/**
+	 * Extended overload that also excludes a specific invoice from the result.
+	 *
+	 * <p>Used by {@code C_Invoice}'s AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL interceptor
+	 * to prevent a just-reversed invoice from appearing as the active invoice on its receipt.
+	 * At the time the interceptor fires, {@code DocStatus=RE} is set on the in-memory invoice
+	 * but NOT yet saved to DB — the DB still shows {@code DocStatus=CO}.  Threading the reversed
+	 * invoice's ID as {@code excludeInvoiceId} ensures the lookup skips it.
+	 *
+	 * <p>Sibling pattern to the {@code completingInvoice} thread-through for AFTER_COMPLETE.
+	 *
+	 * @param receipt           the material receipt whose matching regular invoice is sought
+	 * @param completingInvoice the in-memory invoice that is currently completing (may be {@code null})
+	 * @param excludeInvoiceId  invoice to exclude from the result even if found in DB (may be {@code null})
+	 */
+	public Optional<RegularInvoice> getByReceipt(
+			@NonNull final MaterialReceipt receipt,
+			@Nullable final RegularInvoice completingInvoice,
+			@Nullable final InvoiceId excludeInvoiceId)
+	{
 		final Set<InvoiceId> invoiceIds = findInvoiceIdsByInOutIds(ImmutableSet.of(receipt.getId()));
 
 		RegularInvoice result = null;
 		for (final InvoiceId invoiceId : invoiceIds)
 		{
+			// Skip the invoice that is currently being reversed — its DocStatus=RE is only
+			// set in-memory at this point; the DB still shows CO.
+			if (InvoiceId.equals(excludeInvoiceId, invoiceId))
+			{
+				continue;
+			}
+
 			if (result == null)
 			{
 				// Fast path: if the caller has already built the in-memory RegularInvoice for this invoice

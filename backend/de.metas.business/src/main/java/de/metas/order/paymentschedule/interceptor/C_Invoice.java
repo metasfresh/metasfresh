@@ -91,6 +91,9 @@ public class C_Invoice
 		{
 			return;
 		}
-		materialReceiptStepService.recomputeDeliverySteps(orderId);
+		// Thread the in-memory reversed invoice so its DocStatus=RE (not yet saved to DB at this point)
+		// is honoured during the receipt→invoice lookup — without this, the reversed invoice still
+		// appears as CO in the DB and the receipt sub-row is not properly reset to PR/null.
+		materialReceiptStepService.recomputeDeliveryStepsAfterInvoiceReversed(orderId, invoiceRecord);
 	}
 }

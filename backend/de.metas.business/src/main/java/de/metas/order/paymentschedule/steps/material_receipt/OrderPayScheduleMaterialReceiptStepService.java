@@ -23,6 +23,7 @@
 package de.metas.order.paymentschedule.steps.material_receipt;
 
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
@@ -45,6 +46,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +67,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 	public void recomputeDeliverySteps(@NonNull final OrderId orderId)
 	{
-		recomputeDeliverySteps(orderId, null, null, null);
+		recomputeDeliverySteps(orderId, null, null, null, null);
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 	 */
 	public void recomputeDeliveryStepsAfterInvoiceCompleted(@NonNull final OrderId orderId, @NonNull final RegularInvoice completingInvoice)
 	{
-		recomputeDeliverySteps(orderId, null, null, completingInvoice);
+		recomputeDeliverySteps(orderId, null, null, completingInvoice, null);
 	}
 
 	/**
@@ -107,7 +109,32 @@ public class OrderPayScheduleMaterialReceiptStepService
 	 */
 	public void recomputeDeliveryStepsAfterReceiptReversed(@NonNull final OrderId orderId, @NonNull final I_M_InOut reversedReceipt)
 	{
-		recomputeDeliverySteps(orderId, null, reversedReceipt, null);
+		recomputeDeliverySteps(orderId, null, reversedReceipt, null, null);
+	}
+
+	/**
+	 * Overload used by {@code C_Invoice}'s AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL interceptor
+	 * to thread the in-memory reversed invoice down to the invoice-retrieval path so it is
+	 * excluded from per-receipt invoice lookups despite still appearing as {@code DocStatus=CO}
+	 * in the DB at the time the interceptor fires.
+	 *
+	 * <p>Why this overload exists: {@code MInvoice.reverseCorrectIt()} sets {@code DocStatus=RE}
+	 * on the in-memory invoice at line 1456 but the document is NOT saved to the DB until
+	 * {@code AbstractDocumentBL.processEx()} returns (after all interceptors have fired).
+	 * Any listener that re-reads the invoice from DB sees {@code DocStatus=CO} — i.e. still active.
+	 * We thread the in-memory reversed invoice's ID as an exclude parameter so the lookup skips
+	 * this invoice while reading all others normally.
+	 *
+	 * <p>Sibling pattern to {@link #recomputeDeliveryStepsAfterReceiptReversed} (K.3) which
+	 * threads the reversed receipt to exclude it despite {@code Reversal_ID} not yet saved to DB.
+	 *
+	 * @param orderId         the order whose delivery steps must be recomputed
+	 * @param reversedInvoice the in-memory invoice that is currently being reversed
+	 *                        (its {@code DocStatus=RE} is set in memory but not yet saved to DB)
+	 */
+	public void recomputeDeliveryStepsAfterInvoiceReversed(@NonNull final OrderId orderId, @NonNull final I_C_Invoice reversedInvoice)
+	{
+		recomputeDeliverySteps(orderId, null, null, null, InvoiceId.ofRepoId(reversedInvoice.getC_Invoice_ID()));
 	}
 
 	public void recomputeDeliverySteps(@NonNull final I_M_InOut inoutRecord)
@@ -125,14 +152,15 @@ public class OrderPayScheduleMaterialReceiptStepService
 			return;
 		}
 
-		recomputeDeliverySteps(orderId, inoutRecord, null, null);
+		recomputeDeliverySteps(orderId, inoutRecord, null, null, null);
 	}
 
 	private void recomputeDeliverySteps(
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt,
 			@Nullable final I_M_InOut excludeReceipt,
-			@Nullable final RegularInvoice completingInvoice)
+			@Nullable final RegularInvoice completingInvoice,
+			@Nullable final InvoiceId excludeInvoiceId)
 	{
 		final OrderSchedulingContext order = orderPayScheduleService.getContextById(orderId).orElse(null);
 		if (order == null || !order.isComplexPaymentTerm()) {return;}
@@ -141,18 +169,19 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 		orderPayScheduleService.updateById(
 				orderId,
-				orderPaySchedule -> updateOrderPaySchedule(orderPaySchedule, order, receiptInfos, completingInvoice));
+				orderPaySchedule -> updateOrderPaySchedule(orderPaySchedule, order, receiptInfos, completingInvoice, excludeInvoiceId));
 	}
 
 	private void updateOrderPaySchedule(
 			final OrderPaySchedule orderPaySchedule,
 			final OrderSchedulingContext order,
 			final MaterialReceiptCollection receiptInfos,
-			@Nullable final RegularInvoice completingInvoice)
+			@Nullable final RegularInvoice completingInvoice,
+			@Nullable final InvoiceId excludeInvoiceId)
 	{
 		order.getBreaksBy(OrderPayScheduleMaterialReceiptStepService::isEligibleBreak)
 				.forEach(termBreak -> {
-					final List<OrderPayScheduleLine> newLines = computeOrderPayScheduleLines(receiptInfos, order, termBreak, orderPaySchedule, completingInvoice);
+					final List<OrderPayScheduleLine> newLines = computeOrderPayScheduleLines(receiptInfos, order, termBreak, orderPaySchedule, completingInvoice, excludeInvoiceId);
 					orderPaySchedule.replaceLinesByBreakId(newLines);
 				});
 	}
@@ -169,7 +198,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final OrderPaySchedule orderPaySchedule)
 	{
-		return computeOrderPayScheduleLines(receipts, order, termBreak, orderPaySchedule, null);
+		return computeOrderPayScheduleLines(receipts, order, termBreak, orderPaySchedule, null, null);
 	}
 
 	List<OrderPayScheduleLine> computeOrderPayScheduleLines(
@@ -178,6 +207,17 @@ public class OrderPayScheduleMaterialReceiptStepService
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final OrderPaySchedule orderPaySchedule,
 			@Nullable final RegularInvoice completingInvoice)
+	{
+		return computeOrderPayScheduleLines(receipts, order, termBreak, orderPaySchedule, completingInvoice, null);
+	}
+
+	List<OrderPayScheduleLine> computeOrderPayScheduleLines(
+			@NonNull final MaterialReceiptCollection receipts,
+			@NonNull final OrderSchedulingContext order,
+			@NonNull final PaymentTermBreak termBreak,
+			@NonNull final OrderPaySchedule orderPaySchedule,
+			@Nullable final RegularInvoice completingInvoice,
+			@Nullable final InvoiceId excludeInvoiceId)
 	{
 		final ArrayList<OrderPayScheduleLine> existingLines = orderPaySchedule.streamLinesByBreakId(termBreak.getId())
 				.filter(OrderPayScheduleLine::isSaved)
@@ -199,7 +239,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 			// I-1: BaseAmt = receipt GrandTotal (with-tax); DueAmt = BaseAmt × break%
 			final Money dueAmt = receiptValue.multiply(termBreak.getPercent(), order.getPrecision());
-			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt, completingInvoice).orElse(null);
+			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt, completingInvoice, excludeInvoiceId).orElse(null);
 			final OrderPayScheduleStatus status = computeOrderPayScheduleStatus(invoice);
 
 			final OrderPayScheduleLine existingLine = CollectionUtils.removeFirst(existingLines, line -> InOutId.equals(line.getInoutId(), receipt.getId()));
