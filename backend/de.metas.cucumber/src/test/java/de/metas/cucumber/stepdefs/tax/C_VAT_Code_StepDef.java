@@ -27,6 +27,7 @@ import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -119,11 +120,13 @@ public class C_VAT_Code_StepDef
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
 
-		// AmountType: optional column; defaults to 'T' (tax amount). Set it explicitly on the
-		// freshly-created record so the DB column reflects the test scenario's intent.
-		final String amountTypeStr = row.getAsOptionalString("AmountType").orElse("T");
+		// AmountType: optional column; defaults to 'T' (tax amount). Parsed through the enum to catch
+		// invalid values early with a clear scenario-level error rather than a DB constraint violation.
+		final VATCodeAmountType amountType = row.getAsOptionalString("AmountType")
+				.map(VATCodeAmountType::ofCode)
+				.orElse(VATCodeAmountType.Tax);
 		final I_C_VAT_Code vatCodeRecord = InterfaceWrapperHelper.load(vatCode.getVatCodeId().getRepoId(), I_C_VAT_Code.class);
-		vatCodeRecord.setAmountType(amountTypeStr);
+		vatCodeRecord.setAmountType(amountType.getCode());
 		InterfaceWrapperHelper.saveRecord(vatCodeRecord);
 
 		vatCodeTable.putOrReplace(row.getAsIdentifier(), vatCode);
