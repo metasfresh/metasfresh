@@ -65,7 +65,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 
 	public void recomputeDeliverySteps(@NonNull final OrderId orderId)
 	{
-		recomputeDeliverySteps(orderId, (I_M_InOut)null, null);
+		recomputeDeliverySteps(orderId, null, null, null);
 	}
 
 	/**
@@ -80,7 +80,34 @@ public class OrderPayScheduleMaterialReceiptStepService
 	 */
 	public void recomputeDeliveryStepsAfterInvoiceCompleted(@NonNull final OrderId orderId, @NonNull final RegularInvoice completingInvoice)
 	{
-		recomputeDeliverySteps(orderId, null, completingInvoice);
+		recomputeDeliverySteps(orderId, null, null, completingInvoice);
+	}
+
+	/**
+	 * Overload used by {@code M_InOut}'s AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL interceptor
+	 * to thread the in-memory reversed receipt down to the receipt-retrieval path so it is
+	 * excluded from the receipts list despite still appearing as {@code DocStatus=CO /
+	 * Reversal_ID=0} in the DB at the time the interceptor fires.
+	 *
+	 * <p>Why this overload exists: {@code MInOut.reverseCorrectIt()} sets {@code Reversal_ID}
+	 * on the in-memory original receipt at line 2208 but does NOT save it before firing
+	 * AFTER_REVERSECORRECT at line 2262.  Any listener that re-reads the receipt from DB sees
+	 * {@code Reversal_ID=0} + {@code DocStatus=CO} – i.e. it looks "still active" – even though
+	 * we are inside the after-reverse callback.  We thread the in-memory reversed receipt down to
+	 * the receipt-retrieval path so the lookup excludes this one receipt while reading all others
+	 * normally.
+	 *
+	 * <p>Sibling pattern to {@link #recomputeDeliveryStepsAfterInvoiceCompleted} from J.1 (which
+	 * threads the in-memory completing invoice through to bypass the analogous
+	 * {@code DocStatus=IP} gap during AFTER_COMPLETE).
+	 *
+	 * @param orderId         the order whose delivery steps must be recomputed
+	 * @param reversedReceipt the in-memory receipt that is currently being reversed
+	 *                        (its {@code Reversal_ID} is set in memory but not yet saved to DB)
+	 */
+	public void recomputeDeliveryStepsAfterReceiptReversed(@NonNull final OrderId orderId, @NonNull final I_M_InOut reversedReceipt)
+	{
+		recomputeDeliverySteps(orderId, null, reversedReceipt, null);
 	}
 
 	public void recomputeDeliverySteps(@NonNull final I_M_InOut inoutRecord)
@@ -98,15 +125,19 @@ public class OrderPayScheduleMaterialReceiptStepService
 			return;
 		}
 
-		recomputeDeliverySteps(orderId, inoutRecord, null);
+		recomputeDeliverySteps(orderId, inoutRecord, null, null);
 	}
 
-	private void recomputeDeliverySteps(@NonNull final OrderId orderId, @Nullable final I_M_InOut completingReceipt, @Nullable final RegularInvoice completingInvoice)
+	private void recomputeDeliverySteps(
+			@NonNull final OrderId orderId,
+			@Nullable final I_M_InOut completingReceipt,
+			@Nullable final I_M_InOut excludeReceipt,
+			@Nullable final RegularInvoice completingInvoice)
 	{
 		final OrderSchedulingContext order = orderPayScheduleService.getContextById(orderId).orElse(null);
 		if (order == null || !order.isComplexPaymentTerm()) {return;}
 
-		final MaterialReceiptCollection receiptInfos = receiptService.getByOrderId(orderId, completingReceipt);
+		final MaterialReceiptCollection receiptInfos = receiptService.getByOrderId(orderId, completingReceipt, excludeReceipt);
 
 		orderPayScheduleService.updateById(
 				orderId,

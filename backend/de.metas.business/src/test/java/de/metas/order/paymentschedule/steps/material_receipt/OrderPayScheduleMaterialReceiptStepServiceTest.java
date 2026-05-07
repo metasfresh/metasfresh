@@ -77,6 +77,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -642,6 +644,103 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 				.isPaid(isPaid)
 				.lines(ImmutableList.of())
 				.build();
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 11 — AC #17 — receipt reversal: in-memory reversed receipt excluded, remainder recreated
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Verifies the fix for the Bug C1-sibling (receipt-reversal path).
+	 *
+	 * <p>Scenario: order with R1 (40 000) + R2 (32 000); GrandTotal = 100 000 → MR break 70 000.
+	 * R1 is reversed. {@code MInOut.reverseCorrectIt()} sets {@code Reversal_ID} on the
+	 * in-memory R1 at line 2208 but does NOT save before AFTER_REVERSECORRECT fires at line 2262.
+	 *
+	 * <p>Without the fix: DB query returns R1 (CO / Reversal_ID=0) + R2 → total 72 000 &gt; 70 000 → no remainder.
+	 * With the fix: R1 is excluded via the in-memory hint → only R2 (32 000) → remainder = 38 000 recreated.
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369 AC#17</a>
+	 */
+	@Test
+	void recomputeAfterReceiptReversal_recreatesRemainder()
+	{
+		// ---- Setup ----
+		// R1 receipt: 40 000 EUR (being reversed; Reversal_ID set in memory, not yet saved to DB)
+		final Money r1Value = Money.of("40000.00", EUR);
+		// R2 receipt: 32 000 EUR (still active)
+		final Money r2Value = Money.of("32000.00", EUR);
+
+		// Re-stub lineGrossAmt: only R2 is returned (R1 is excluded by the fix)
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		Mockito.doReturn(r2Value).when(orderLineBL).getLineGrossAmt(any(de.metas.interfaces.I_C_OrderLine.class));
+
+		// Build the complex order context
+		final OrderSchedulingContext order = buildOrder();
+
+		// The in-memory R1 record: DocStatus=CO but Reversal_ID already set in memory
+		final org.compiere.model.I_M_InOut r1Record = mock(org.compiere.model.I_M_InOut.class);
+		when(r1Record.getM_InOut_ID()).thenReturn(R1_ID.getRepoId());
+
+		// Stub: orderPayScheduleService.getContextById → complex order
+		when(orderPayScheduleService.getContextById(ORDER_ID)).thenReturn(Optional.of(order));
+
+		// Stub: receiptService.getByOrderId(orderId, null, r1Record) → only R2
+		// (simulates the fix: R1 excluded because excludeReceipt=r1Record)
+		final MaterialReceiptCollection onlyR2 = receiptCollection(buildReceipt(R2_ID, R2_LINE_ID, r2Value));
+		when(receiptService.getByOrderId(eq(ORDER_ID), isNull(), eq(r1Record))).thenReturn(onlyR2);
+
+		// Capture the consumer passed to updateById so we can invoke it and inspect the result
+		final OrderPaySchedule[] capturedSchedule = { null };
+		final List<OrderPayScheduleLine>[] capturedLines = new List[] { null };
+		Mockito.doAnswer(inv -> {
+			final OrderPaySchedule schedule = buildEmptySchedule();
+			capturedSchedule[0] = schedule;
+			@SuppressWarnings("unchecked")
+			final java.util.function.Consumer<OrderPaySchedule> consumer = inv.getArgument(1);
+			consumer.accept(schedule);
+			return null;
+		}).when(orderPayScheduleService).updateById(eq(ORDER_ID), any());
+
+		// ---- Act ----
+		service.recomputeDeliveryStepsAfterReceiptReversed(ORDER_ID, r1Record);
+
+		// ---- Assert ----
+		// updateById must have been called (proves the service did not short-circuit)
+		verify(orderPayScheduleService).updateById(eq(ORDER_ID), any());
+
+		// receiptService must have been called with the exclude hint
+		verify(receiptService).getByOrderId(eq(ORDER_ID), isNull(), eq(r1Record));
+
+		// The schedule must have been updated: R2 sub-row + remainder row (no R1 sub-row)
+		assertThat(capturedSchedule[0]).isNotNull();
+		final List<OrderPayScheduleLine> mrLines = capturedSchedule[0].streamLinesByBreakId(MR_BREAK_ID)
+				.collect(java.util.stream.Collectors.toList());
+
+		// Expect: 1 sub-row for R2 + 1 remainder row
+		assertThat(mrLines).hasSize(2);
+
+		final OrderPayScheduleLine r2Line = mrLines.stream()
+				.filter(l -> R2_ID.equals(l.getInoutId()))
+				.findFirst()
+				.orElse(null);
+		assertThat(r2Line).as("R2 sub-row must be present").isNotNull();
+		assertThat(r2Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		// DueAmt = 32000 × 70% = 22400.00
+		assertThat(r2Line.getDueAmountActual()).isEqualByComparingTo(Money.of("22400.00", EUR));
+
+		final OrderPayScheduleLine remainderLine = mrLines.stream()
+				.filter(l -> l.getInoutId() == null)
+				.findFirst()
+				.orElse(null);
+		assertThat(remainderLine).as("Remainder row must be present after R1 reversal").isNotNull();
+		assertThat(remainderLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+		// BaseAmt = GrandTotal(100000) - R2(32000) = 68000; DueAmt = 68000 × 70% = 47600.00
+		assertThat(remainderLine.getDueAmountActual()).isEqualByComparingTo(Money.of("47600.00", EUR));
+
+		// R1 must NOT appear in the schedule lines
+		final boolean r1Present = mrLines.stream().anyMatch(l -> R1_ID.equals(l.getInoutId()));
+		assertThat(r1Present).as("R1 sub-row must NOT be present after reversal").isFalse();
 	}
 
 	private Quantity qty(final String value)

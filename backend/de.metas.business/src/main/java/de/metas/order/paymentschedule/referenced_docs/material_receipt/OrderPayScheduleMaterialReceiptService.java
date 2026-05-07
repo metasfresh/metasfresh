@@ -40,7 +40,36 @@ public class OrderPayScheduleMaterialReceiptService
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt)
 	{
-		final List<I_M_InOut> receiptRecords = retrieveReceiptRecords(orderId, completingReceipt);
+		return getByOrderId(orderId, completingReceipt, null);
+	}
+
+	/**
+	 * Overload used by the AFTER_REVERSECORRECT / AFTER_REVERSEACCRUAL path to thread the
+	 * in-memory reversed receipt down to the retrieval layer so it can be excluded from
+	 * the receipts list.
+	 *
+	 * <p>Why this overload exists: {@code MInOut.reverseCorrectIt()} sets {@code Reversal_ID}
+	 * on the in-memory original receipt at line 2208 but does NOT save it before
+	 * AFTER_REVERSECORRECT fires at line 2262.  Any listener that re-reads the receipt from
+	 * DB sees {@code Reversal_ID=0} + {@code DocStatus=CO} – i.e. it looks "still active" –
+	 * even though we are inside the after-reverse callback.  We thread the in-memory reversed
+	 * receipt down so the lookup excludes it by ID while reading all other receipts normally.
+	 *
+	 * <p>Sibling pattern to the {@code completingReceipt} include-override used during
+	 * AFTER_COMPLETE (where the DB still shows {@code DocStatus=IP}).
+	 *
+	 * @param orderId         the order whose receipts are to be retrieved
+	 * @param completingReceipt in-memory receipt currently completing (not yet CO in DB); may be {@code null}
+	 * @param excludeReceipt  in-memory receipt currently being reversed (Reversal_ID not yet saved to DB);
+	 *                        the receipt with this ID will be excluded from the result even if the DB still
+	 *                        shows it as {@code DocStatus=CO} / {@code Reversal_ID=0}; may be {@code null}
+	 */
+	public MaterialReceiptCollection getByOrderId(
+			@NonNull final OrderId orderId,
+			@Nullable final I_M_InOut completingReceipt,
+			@Nullable final I_M_InOut excludeReceipt)
+	{
+		final List<I_M_InOut> receiptRecords = retrieveReceiptRecords(orderId, completingReceipt, excludeReceipt);
 
 		return fromRecords(receiptRecords, orderId);
 	}
@@ -110,11 +139,26 @@ public class OrderPayScheduleMaterialReceiptService
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt0)
 	{
+		return retrieveReceiptRecords(orderId, completingReceipt0, null);
+	}
+
+	private @NotNull List<I_M_InOut> retrieveReceiptRecords(
+			@NonNull final OrderId orderId,
+			@Nullable final I_M_InOut completingReceipt0,
+			@Nullable final I_M_InOut excludeReceipt)
+	{
 		final I_M_InOut completingReceiptEffective = isEligibleReceipt(completingReceipt0, false) ? completingReceipt0 : null;
+		final int excludeReceiptId = excludeReceipt != null ? excludeReceipt.getM_InOut_ID() : -1;
 
 		final ArrayList<I_M_InOut> result = new ArrayList<>();
 		for (final I_M_InOut receiptRecord : inOutDAO.retrieveInOutsByOrderId(orderId))
 		{
+			// Skip the reversed receipt even though the DB still shows it as CO/Reversal_ID=0
+			if (excludeReceiptId > 0 && receiptRecord.getM_InOut_ID() == excludeReceiptId)
+			{
+				continue;
+			}
+
 			if (completingReceiptEffective != null && completingReceiptEffective.getM_InOut_ID() == receiptRecord.getM_InOut_ID())
 			{
 				result.add(completingReceiptEffective);
