@@ -137,13 +137,6 @@ public class OrderPayScheduleMaterialReceiptService
 
 	private @NotNull List<I_M_InOut> retrieveReceiptRecords(
 			@NonNull final OrderId orderId,
-			@Nullable final I_M_InOut completingReceipt0)
-	{
-		return retrieveReceiptRecords(orderId, completingReceipt0, null);
-	}
-
-	private @NotNull List<I_M_InOut> retrieveReceiptRecords(
-			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt0,
 			@Nullable final I_M_InOut excludeReceipt)
 	{

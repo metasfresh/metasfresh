@@ -1141,6 +1141,11 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public Money getLineGrossAmt(@NonNull final I_C_OrderLine orderLine)
 	{
+		// TODO(29369): Latent bug — same arithmetic as OrderPayScheduleRegularInvoiceService.fromRecord:
+		// when the owning price list has IsTaxIncluded=Y, LineNetAmt is already the gross-inclusive
+		// total, so adding TaxAmtInfo double-counts tax. Currently dormant because no active scenario
+		// exercises IsTaxIncluded=Y on order lines via this path.
+		// Cross-ref: https://github.com/metasfresh/me03/issues/29369
 		final BigDecimal lineGrossAmt = orderLine.getLineNetAmt().add(orderLine.getTaxAmtInfo());
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		return Money.of(lineGrossAmt, currencyId);
