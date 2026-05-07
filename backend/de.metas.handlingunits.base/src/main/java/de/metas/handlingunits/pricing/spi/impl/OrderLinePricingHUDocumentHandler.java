@@ -110,13 +110,6 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 			return;
 		}
 
-		final int pricePIItemProductId = productPrice.getM_HU_PI_Item_Product_ID();
-		if (pricePIItemProductId > 0 && orderLine.getM_HU_PI_Item_Product_ID() != pricePIItemProductId)
-		{
-			// "HU PI Item Product" from Product Price Attribute does not match the one from Order Line
-			return;
-		}
-
 		final I_M_AttributeSetInstance asi = attributePricingBL.generateASI(productPrice);
 		orderLine.setM_AttributeSetInstance(asi);
 
