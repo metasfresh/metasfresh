@@ -37,13 +37,11 @@ merge_protections:
 queue_rules:
   - name: squash-queue
     merge_method: squash
-    allow_inplace_checks: true
     merge_conditions:
       - check-success=Merge Gate
 
   - name: merge-queue
     merge_method: merge
-    allow_inplace_checks: true
     merge_conditions:
       - check-success=Merge Gate
 
@@ -57,8 +55,10 @@ pull_request_rules:
     conditions:
       - merged
       - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
-      - or: &ALL_BASE_BRANCHES # this rule should apply to the project-branches from above
-          - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
+      - or: &ALL_BASE_BRANCHES
+                               # this rule should apply to the project-branches from above
+          - or:
+                                      # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_uat
@@ -89,7 +89,7 @@ pull_request_rules:
               - base=tenacious_d_uat
               - base=vampire_textbook_uat
               - base=yoyo_uat
-          - or: &PROJECT_BRANCHES_HOTFIX
+          - or:
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=temporary_test202412_hotfix
               - base=taloned_owl_hotfix
@@ -116,7 +116,7 @@ pull_request_rules:
               - base=swift_eagle_hotfix
               - base=vampire_textbook_hotfix
               - base=yoyo_hotfix
-          - or: &PROJECT_BRANCHES_RELEASE
+          - or:
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=temporary_test202412_release
               - base=taloned_owl_release
