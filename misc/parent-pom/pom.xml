@@ -82,7 +82,7 @@
             3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.27.2</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
 
