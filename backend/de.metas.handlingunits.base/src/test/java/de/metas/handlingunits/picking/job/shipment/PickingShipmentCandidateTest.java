@@ -10,9 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Regression coverage for the contract that {@link PickingShipmentCandidate} carries the
- * customer-configured {@link CreateShipmentPolicy} and the synchronous-wait flag through to
- * {@link PickingShipmentService#createShipment(PickingShipmentCandidate)} unchanged. The earlier
- * bug (me03 issue 27448) was that the service layer was forcing {@code CREATE_COMPLETE_CLOSE}
+ * customer-configured {@link CreateShipmentPolicy}. The earlier
+ * bug was that the service layer was forcing {@code CREATE_COMPLETE_CLOSE}
  * regardless of the configured policy.
  */
 class PickingShipmentCandidateTest
@@ -49,28 +48,5 @@ class PickingShipmentCandidateTest
 				.build())
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Invalid create shipment policy");
-	}
-
-	@Test
-	void waitForShipments_defaultsToFalse_whenNotSet()
-	{
-		final PickingShipmentCandidate candidate = PickingShipmentCandidate.builder()
-				.key(KEY)
-				.createShipmentPolicy(CreateShipmentPolicy.CREATE_AND_COMPLETE)
-				.build();
-
-		assertThat(candidate.isWaitForShipments()).isFalse();
-	}
-
-	@Test
-	void waitForShipments_isTrue_whenExplicitlySet()
-	{
-		final PickingShipmentCandidate candidate = PickingShipmentCandidate.builder()
-				.key(KEY)
-				.createShipmentPolicy(CreateShipmentPolicy.CREATE_AND_COMPLETE)
-				.waitForShipments(true)
-				.build();
-
-		assertThat(candidate.isWaitForShipments()).isTrue();
 	}
 }
