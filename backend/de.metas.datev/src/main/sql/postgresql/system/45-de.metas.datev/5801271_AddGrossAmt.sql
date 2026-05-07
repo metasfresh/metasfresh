@@ -55,15 +55,13 @@ UPDATE AD_Column SET DefaultValue='0',Updated=TO_TIMESTAMP('2026-05-07 18:49:35.
 UPDATE DATEV_ExportFormatColumn SET AD_Column_ID=592501,Updated=TO_TIMESTAMP('2026-05-07 18:50:14.308000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormatColumn_ID=540050
 ;
 
--- 2026-05-06T11:16:43.384Z
+
+-- 2026-05-07T19:13:00.436Z
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE public.DATEV_ExportLine ADD COLUMN GrossAmt NUMERIC')
 ;
 
 
-
--- 2026-05-06T11:16:43.384Z
-/* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE public.DATEV_ExportLine ADD COLUMN GrossAmt NUMERIC')
-;-- 2026-05-07T19:13:00.456Z
+-- 2026-05-07T19:13:00.456Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545678,0,TO_TIMESTAMP('2026-05-07 19:13:00.351000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.datev','Y','EXTF export requires a DATEV Export Config to be set on the organisation.','E',TO_TIMESTAMP('2026-05-07 19:13:00.351000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'DATEV_ExportFile_EXT_NoDATEVConfig')
 ;
 
