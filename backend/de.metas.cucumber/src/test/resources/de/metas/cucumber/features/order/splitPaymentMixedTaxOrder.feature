@@ -162,7 +162,9 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     Then validate C_AllocationLines for invoice inv1
       | Amount   |
       | -3600.00 |
-    Then the payment 'lcPayment' has AvailableAmt 3300.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 3300.00 |
 
     # R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1
     Then the order identified by lcOrder has following pay schedules
@@ -205,7 +207,9 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     Then validate C_AllocationLines for invoice inv2
       | Amount   |
       | -3300.00 |
-    Then the payment 'lcPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | lcPayment               | 0.00    |
 
     # INV2.OpenAmt = 11,000 (gross with 10% tax) − 3,300 (allocated) = 7,700
     Then validate created invoices

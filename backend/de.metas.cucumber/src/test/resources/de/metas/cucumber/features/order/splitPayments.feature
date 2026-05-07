@@ -525,7 +525,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
       | LC                | 20596.31 | 20596.31      | P      |
       | BL                | 48058.07 | null          | PR     |
-    Then the payment 'customerPayment' has AvailableAmt 20596.31
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | customerPayment         | 20596.31 |
 
     # ── R1: line A received 195 PCE (ordered 196, 1 short) ──
     # HU receipt: QtyCUsPerTU=195 → 1 HU with 195 PCE → receipt r1 QtyEntered=195.
@@ -573,7 +575,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | LC                | null       | P      | null         |
       | BL                | r1         | WP     | inv1Partial  |
       | BL                | null       | PR     | null         |
-    Then the payment 'customerPayment' has AvailableAmt 11053.91
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt  |
+      | customerPayment         | 11053.91 |
 
     # INV1 GrandTotal(net) = 195×163.1179 = 31,807.99 (C_Invoice.GrandTotal stores net; TaxFree → tax=0)
     # INV1.OpenAmt = 31,807.99 − 9,542.40 = 22,265.59
@@ -623,7 +627,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | LC                | null       | P      | null         |
       | BL                | r1         | WP     | inv1Partial  |
       | BL                | r2         | WP     | inv2Final    |
-    Then the payment 'customerPayment' has AvailableAmt 0.00
+    Then validate payments
+      | C_Payment_ID.Identifier | OpenAmt |
+      | customerPayment         | 0.00    |
 
     # INV2 GrandTotal(net) = 363×102.1818 = 37,091.99 (C_Invoice.GrandTotal stores net; TaxFree → tax=0)
     # INV2.OpenAmt = 37,091.99 − 11,053.91 = 26,038.08
