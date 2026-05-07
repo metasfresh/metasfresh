@@ -26,35 +26,31 @@ import de.metas.datev.DATEVExportConfig;
 import de.metas.datev.DATEVExportConfigRepository;
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Component
 @Interceptor(I_DATEV_Export.class)
+@RequiredArgsConstructor
 public class DATEV_Export
 {
-	private final DATEVExportConfigRepository exportConfigRepo =
-			SpringContextHolder.instance.getBean(DATEVExportConfigRepository.class);
+	@NonNull private final DATEVExportConfigRepository exportConfigRepo;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setDatevExportConfig(final I_DATEV_Export datevExport)
 	{
-		if (InterfaceWrapperHelper.isNew(datevExport))
+		final DATEVExportConfig exportConfig = exportConfigRepo.getByOrgId(OrgId.ofRepoId(datevExport.getAD_Org_ID()));
+		if (exportConfig != null)
 		{
-			final DATEVExportConfig exportConfig = exportConfigRepo.getByOrgId(OrgId.ofRepoId(datevExport.getAD_Org_ID()));
-			if (exportConfig != null)
-			{
-				datevExport.setDATEV_Export_Config_ID(exportConfig.getId());
-				datevExport.setAdvisorNumber(exportConfig.getAdvisorNumber());
-				datevExport.setClientNumber(exportConfig.getClientNumber());
-				datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
-				datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
-			}
+			datevExport.setDATEV_Export_Config_ID(exportConfig.getId());
+			datevExport.setAdvisorNumber(exportConfig.getAdvisorNumber());
+			datevExport.setClientNumber(exportConfig.getClientNumber());
+			datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
+			datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
 		}
 	}
 
