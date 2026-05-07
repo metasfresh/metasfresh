@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.shipment;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
@@ -66,10 +67,7 @@ public class PickingShipmentService
 			PickingShipmentCandidate shipmentCandidate = shipmentCandidates.get(key);
 			if (shipmentCandidate == null)
 			{
-				final CreateShipmentPolicy createShipmentPolicyEffective = CoalesceUtil.coalesceNotNull(
-						createShipmentPolicyOverride,
-						() -> configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy()
-				);
+				final CreateShipmentPolicy createShipmentPolicyEffective = resolveCreateShipmentPolicy(key.getCustomerId(), createShipmentPolicyOverride);
 				if (!createShipmentPolicyEffective.isCreateShipment())
 				{
 					continue;
@@ -88,6 +86,17 @@ public class PickingShipmentService
 		}
 
 		return shipmentCandidates.values();
+	}
+
+	@VisibleForTesting
+	@NonNull
+	CreateShipmentPolicy resolveCreateShipmentPolicy(
+			@NonNull final BPartnerId customerId,
+			@Nullable final CreateShipmentPolicy override)
+	{
+		return CoalesceUtil.coalesceNotNull(
+				override,
+				() -> configRepository.getPickingJobOptions(customerId).getCreateShipmentPolicy());
 	}
 
 	private void createShipment(@NonNull final PickingShipmentCandidate shipmentCandidate)
