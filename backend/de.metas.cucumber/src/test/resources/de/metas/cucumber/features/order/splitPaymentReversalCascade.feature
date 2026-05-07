@@ -188,9 +188,16 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     And the invoice identified by inv1 is reversed
 
     # AC #16 — iter-3 alloc auto-reversed; INV1.OpenAmt back to full 40,000
-    And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv1         |
+    # Expected allocation lines after reversal (all active, ordered by C_AllocationLine_ID):
+    #   1. Original payment→inv1 line: Amount=-12000 (in original alloc hdr, DocStatus=RE)
+    #   2. Counter-line from reversal hdr: Amount=+12000 (DocStatus=RE; nets #1 to zero)
+    #   3. Invoice-to-invoice alloc inv1 side: Amount=-40000 (DocStatus=CO; inv1 GrandTotal negated for AP)
+    # Lines #1+#2 net to zero (payment de-allocated). Line #3 is netted by line #4 in the same hdr (inv1_reversal side).
+    And validate C_AllocationLines for invoice inv1
+      | Amount     |
+      | -12000.00  |
+      | 12000.00   |
+      | -40000.00  |
     Then validate created invoices
       | Identifier | OpenAmt  |
       | inv1       | 40000.00 |
@@ -216,9 +223,12 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
 
     # ── Step 1: reverse INV1 (per recommended sequence: invoice first, then receipt) ──
     And the invoice identified by inv1 is reversed
-    And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv1         |
+    # Same mirror-pair shape as TC5a: 3 active lines for inv1 after reversal
+    And validate C_AllocationLines for invoice inv1
+      | Amount     |
+      | -12000.00  |
+      | 12000.00   |
+      | -40000.00  |
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt  |
       | lcPayment               | 12000.00 |
@@ -245,10 +255,18 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     And the payment identified by lcPayment is reversed
 
     # AC #18 — all iter-3 C_AllocationHdr auto-reverse via MPayment.deAllocate()
-    And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv1         |
-      | inv2         |
+    # After reversing the payment, each invoice's allocation is reversed (reverseCorrectIt0 path):
+    #   inv1: original line Amount=-12000 + counter-line Amount=+12000 (net zero, both DocStatus=RE hdrs)
+    #   inv2: original line Amount=-9000  + counter-line Amount=+9000  (net zero, both DocStatus=RE hdrs)
+    # No new invoice-to-invoice alloc (that is only created by MInvoice.reverseCorrectIt, not MPayment).
+    And validate C_AllocationLines for invoice inv1
+      | Amount     |
+      | -12000.00  |
+      | 12000.00   |
+    And validate C_AllocationLines for invoice inv2
+      | Amount    |
+      | -9000.00  |
+      | 9000.00   |
 
     # AC #18 (G4/G5 fold-in 2026-04-28) — both invoices' OpenAmt grow back to full receipt-with-tax
     Then validate created invoices
@@ -278,9 +296,12 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     And the invoice identified by inv1 is reversed
 
     # AC #25 — INV1's iter-3 alloc auto-reversed; INV1.OpenAmt back to full 40,000
-    And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv1         |
+    # Same mirror-pair shape as TC5a: 3 active lines for inv1 after reversal
+    And validate C_AllocationLines for invoice inv1
+      | Amount     |
+      | -12000.00  |
+      | 12000.00   |
+      | -40000.00  |
     Then validate created invoices
       | Identifier | OpenAmt  |
       | inv1       | 40000.00 |
