@@ -43,6 +43,7 @@ import java.util.Optional;
 
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_C_UOM_Dimension_ID;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Height;
+import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_IsInvoiceable;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Length;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID;
@@ -60,6 +61,24 @@ public class M_HU_PackingMaterial_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_UOM_StepDefData uomTable;
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference (also accepted: <code>M_HU_PackingMaterial_ID</code> or <code>Name</code>)<br>
+	 *   <b>Name</b> — (required) packing-material display name; also used to look up an existing record before creating one<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) the product representing this packing material (e.g. a Karton or Pallet product)<br>
+	 *   <b>Length</b>, <b>Width</b>, <b>Height</b> — (optional) physical dimensions; if any is set, <code>C_UOM_Dimension_ID</code> becomes required<br>
+	 *   <b>C_UOM_Dimension_ID</b> — (optional, identifier-ref) UOM for length/width/height (e.g. <code>cm</code>)<br>
+	 *   <b>IsInvoiceable</b> — (optional) when <code>N</code>, the packing material does NOT generate an invoice candidate
+	 *   (<code>HuInOutInvoiceCandidateVetoer</code> blocks it); defaults to <code>Y</code> matching the column DB default
+	 * @cucumber.depends StepDefData: M_HU_PackingMaterial_StepDefData, M_Product_StepDefData, C_UOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_HU_PackingMaterial:
+	 *   | M_HU_PackingMaterial_ID | M_Product_ID      | Name   | Length | Width | Height | C_UOM_Dimension_ID | IsInvoiceable |
+	 *   | dhl_pm                  | packing_product_1 | Karton | 30     | 20    | 10     | cm                 | N             |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_HU_PackingMaterial:")
 	public void add_M_HU_PackingMaterial(@NonNull final DataTable dataTable)
 	{
@@ -116,6 +135,8 @@ public class M_HU_PackingMaterial_StepDef
 						final UomId uomId = uomDimensionIdentifier.get().lookupIdIn(uomTable);
 						huPackingMaterial.setC_UOM_Dimension_ID(uomId.getRepoId());
 					}
+
+					huPackingMaterial.setIsInvoiceable(row.getAsOptionalBoolean(COLUMNNAME_IsInvoiceable).orElseTrue());
 
 					saveRecord(huPackingMaterial);
 
