@@ -139,6 +139,23 @@ public class HUQRCodesRepository
 	}
 
 	/**
+	 * Read-only counterpart of {@link #getHUAssignmentByQRCode(HUQRCode)} that also returns rows whose
+	 * {@code M_HU_QRCode_Assignment.IsActive='N'}. Use from cleanup / forensic paths (e.g. detecting a
+	 * stale sticker scan after the HU was destroyed and the assignment soft-deleted by the destroy
+	 * interceptor). Returns the most recent assignment first when several exist.
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactive(@NonNull final HUQRCode huQRCode)
+	{
+		return getByUniqueId(huQRCode.getId())
+				.flatMap(record -> queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+						.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, record.getM_HU_QRCode_ID())
+						.orderByDescending(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_Assignment_ID)
+						.create()
+						.firstOptional(I_M_HU_QRCode_Assignment.class)
+						.map(assignment -> HuId.ofRepoId(assignment.getM_HU_ID())));
+	}
+
+	/**
 	 * Soft-delete: set {@code IsActive='N'} on every active {@code M_HU_QRCode_Assignment} row pointing at
 	 * the given HU, preserving the row for audit/traceability. All scan-time lookup paths already filter on
 	 * {@code IsActive='Y'} via {@code addOnlyActiveRecordsFilter()}, so deactivated rows stop resolving.
