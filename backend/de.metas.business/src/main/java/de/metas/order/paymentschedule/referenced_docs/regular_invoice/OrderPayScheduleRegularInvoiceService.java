@@ -48,6 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -216,6 +217,8 @@ public class OrderPayScheduleRegularInvoiceService
 	{
 		final InvoiceId invoiceId = extractInvoiceId(invoiceRecord);
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		// Read once from the invoice record; copied from the price list at invoice creation time.
+		final boolean isTaxIncluded = invoiceRecord.isTaxIncluded();
 
 		return RegularInvoice.builder()
 				.id(invoiceId)
@@ -230,17 +233,28 @@ public class OrderPayScheduleRegularInvoiceService
 				.isPaid(invoiceRecord.isPaid())
 				.lines(invoiceLinesByInvoiceId.get(invoiceId)
 						.stream()
-						.map(lineRecord -> fromRecord(lineRecord, currencyId))
+						.map(lineRecord -> fromRecord(lineRecord, currencyId, isTaxIncluded))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private RegularInvoice.Line fromRecord(@NonNull final I_C_InvoiceLine lineRecord, @NonNull final CurrencyId currencyId)
+	private RegularInvoice.Line fromRecord(
+			@NonNull final I_C_InvoiceLine lineRecord,
+			@NonNull final CurrencyId currencyId,
+			final boolean isTaxIncluded)
 	{
+		// LineNetAmt is the gross-inclusive total when IsTaxIncluded=Y (price list
+		// has prices already including tax). Adding TaxAmtInfo would double-count.
+		// When IsTaxIncluded=N, LineNetAmt is the net (excl-tax) and TaxAmtInfo
+		// adds the tax to reach gross.
+		final BigDecimal lineGross = isTaxIncluded
+				? lineRecord.getLineNetAmt()
+				: lineRecord.getLineNetAmt().add(lineRecord.getTaxAmtInfo());
+
 		return RegularInvoice.Line.builder()
 				.id(InvoiceLineId.ofRepoId(lineRecord.getC_InvoiceLine_ID()))
 				.qtyInvoiced(invoiceLineBL.getQtyInvoicedStockUOM(lineRecord))
-				.lineGrossAmt(Money.of(lineRecord.getLineNetAmt().add(lineRecord.getTaxAmtInfo()), currencyId))
+				.lineGrossAmt(Money.of(lineGross, currencyId))
 				.build();
 	}
 

@@ -23,6 +23,7 @@
 package de.metas.order.paymentschedule.referenced_docs.regular_invoice;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
@@ -567,5 +568,89 @@ class OrderPayScheduleRegularInvoiceServiceTest
 						.build())
 				.type(MatchInvType.Material)
 				.build();
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 10: AC#12 fix — IsTaxIncluded=Y → lineGrossAmt = LineNetAmt (no TaxAmtInfo added)
+	// Scenario: 400 PCE × 100 EUR with 19% VAT and IsTaxIncluded=Y:
+	//   LineNetAmt  = 40,000 (gross-inclusive)
+	//   TaxAmtInfo  = 6,386.55 (tax PORTION extracted; adding it would double-count)
+	//   lineGrossAmt must be 40,000.00
+	// -----------------------------------------------------------------------
+
+	@Test
+	void fromRecord_taxIncluded_lineGrossAmt_equalsLineNetAmt()
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
+		// Invoice with IsTaxIncluded=Y
+		final I_C_Invoice invoiceRec = buildInvoiceRecord(INVOICE_ID, LocalDate.of(2026, 3, 1));
+		invoiceRec.setIsTaxIncluded(true);
+
+		// Invoice line: LineNetAmt=40000, TaxAmtInfo=6386.55
+		final I_C_InvoiceLine lineRec = newInstance(I_C_InvoiceLine.class);
+		lineRec.setC_Invoice_ID(INVOICE_ID.getRepoId());
+		lineRec.setC_InvoiceLine_ID(INVOICE_LINE_ID.getRepoId());
+		lineRec.setLineNetAmt(new java.math.BigDecimal("40000.00"));
+		lineRec.setTaxAmtInfo(new java.math.BigDecimal("6386.55"));
+
+		when(inOutDAO.retrieveInOutIdsByOrderId(ORDER_ID)).thenReturn(ImmutableList.of(INOUT_ID));
+		when(matchInvoiceRepository.list(any())).thenReturn(MatchInvCollection.ofList(
+				ImmutableList.of(buildMatchInv(INVOICE_ID, MatchInvId.ofRepoId(11)))));
+		when(invoiceBL.getByIds(any())).thenReturn(ImmutableList.of(invoiceRec));
+		when(invoiceBL.getInvoiceDocBaseType(any())).thenReturn(InvoiceDocBaseType.VendorInvoice);
+		when(invoiceBL.getLinesByInvoiceIds(any())).thenReturn(ImmutableList.of(lineRec));
+		when(invoiceLineBL.getQtyInvoicedStockUOM(lineRec)).thenReturn(Quantity.of(400, uom));
+
+		final List<RegularInvoice> invoices = service.getRegularInvoicesByOrderId(ORDER_ID);
+
+		assertThat(invoices).hasSize(1);
+		final RegularInvoice.Line line = invoices.get(0).getLines().get(0);
+		// IsTaxIncluded=Y: lineGrossAmt must equal LineNetAmt (40,000), NOT LineNetAmt + TaxAmtInfo (46,386.55)
+		assertThat(line.getLineGrossAmt().toBigDecimal()).isEqualByComparingTo("40000.00");
+	}
+
+	// -----------------------------------------------------------------------
+	// Cell 11: AC#12 fix — IsTaxIncluded=N → lineGrossAmt = LineNetAmt + TaxAmtInfo (existing correct path)
+	// Scenario: 400 PCE × 84.03 EUR net with 19% VAT and IsTaxIncluded=N:
+	//   LineNetAmt  = 33,613.45 (net excl-tax)
+	//   TaxAmtInfo  = 6,386.55  (tax added on top)
+	//   lineGrossAmt must be 40,000.00
+	// -----------------------------------------------------------------------
+
+	@Test
+	void fromRecord_taxNotIncluded_lineGrossAmt_equalsNetPlusTax()
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
+		// Invoice with IsTaxIncluded=N
+		final I_C_Invoice invoiceRec = buildInvoiceRecord(INVOICE_ID, LocalDate.of(2026, 3, 1));
+		invoiceRec.setIsTaxIncluded(false);
+
+		// Invoice line: LineNetAmt=33613.45, TaxAmtInfo=6386.55
+		final I_C_InvoiceLine lineRec = newInstance(I_C_InvoiceLine.class);
+		lineRec.setC_Invoice_ID(INVOICE_ID.getRepoId());
+		lineRec.setC_InvoiceLine_ID(INVOICE_LINE_ID.getRepoId());
+		lineRec.setLineNetAmt(new java.math.BigDecimal("33613.45"));
+		lineRec.setTaxAmtInfo(new java.math.BigDecimal("6386.55"));
+
+		when(inOutDAO.retrieveInOutIdsByOrderId(ORDER_ID)).thenReturn(ImmutableList.of(INOUT_ID));
+		when(matchInvoiceRepository.list(any())).thenReturn(MatchInvCollection.ofList(
+				ImmutableList.of(buildMatchInv(INVOICE_ID, MatchInvId.ofRepoId(11)))));
+		when(invoiceBL.getByIds(any())).thenReturn(ImmutableList.of(invoiceRec));
+		when(invoiceBL.getInvoiceDocBaseType(any())).thenReturn(InvoiceDocBaseType.VendorInvoice);
+		when(invoiceBL.getLinesByInvoiceIds(any())).thenReturn(ImmutableList.of(lineRec));
+		when(invoiceLineBL.getQtyInvoicedStockUOM(lineRec)).thenReturn(Quantity.of(400, uom));
+
+		final List<RegularInvoice> invoices = service.getRegularInvoicesByOrderId(ORDER_ID);
+
+		assertThat(invoices).hasSize(1);
+		final RegularInvoice.Line line = invoices.get(0).getLines().get(0);
+		// IsTaxIncluded=N: lineGrossAmt must equal LineNetAmt + TaxAmtInfo = 33,613.45 + 6,386.55 = 40,000.00
+		assertThat(line.getLineGrossAmt().toBigDecimal()).isEqualByComparingTo("40000.00");
 	}
 }
