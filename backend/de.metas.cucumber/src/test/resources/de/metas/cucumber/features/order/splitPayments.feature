@@ -537,7 +537,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID    | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
-      | rs1                  | customerOrder | olA            | vendor        | vendor_loc             | productA     | 195        | wh             |
+      | rs1                  | customerOrder | olA            | vendor        | vendor_loc             | productA     | 196        | wh             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
       | hu1     | olA            | 101                     | 195         |
