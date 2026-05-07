@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.shipment;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -42,21 +40,25 @@ public class PickingShipmentService
 
 	public void createShipmentIfNeeded(final PickingJob pickingJob)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.of(), null)
+		prepareShipmentCandidates(pickingJob, ImmutableSet.of())
 				.forEach(this::createShipment);
 	}
 
 	public void createShipmentForLUs(@NonNull final PickingJob pickingJob, @NonNull final Set<HuId> luIds)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds), CreateShipmentPolicy.CREATE_COMPLETE_CLOSE)
+		// waitForShipments=false on purpose: the caller is inside an open trx that has just updated
+		// M_ShipmentSchedule_QtyPicked (LU assignment) and not yet committed. Setting waitForShipments=true
+		// routes the enqueue through AsyncBatchService.executeBatch -> trxManager.callInNewTrx, which commits
+		// the C_Queue_WorkPackage in a separate trx and lets the worker pick it up before the caller commits.
+		// The worker then can't see the QtyPicked LU assignment and fails with MSG_NoQtyPicked
+		// at ShipmentScheduleWithHUService.prepareAndValidateCandidatesForPick. See me03#27448.
+		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds))
 				.forEach(this::createShipment);
 	}
 
 	private Collection<PickingShipmentCandidate> prepareShipmentCandidates(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final ImmutableSet<HuId> onlyLUIds,
-			@Nullable final CreateShipmentPolicy createShipmentPolicyOverride
-	)
+			@NonNull final ImmutableSet<HuId> onlyLUIds)
 	{
 		final LinkedHashMap<PickingShipmentCandidateKey, PickingShipmentCandidate> shipmentCandidates = new LinkedHashMap<>();
 		for (final PickingJobLine line : pickingJob.getLines())
@@ -65,10 +67,7 @@ public class PickingShipmentService
 			PickingShipmentCandidate shipmentCandidate = shipmentCandidates.get(key);
 			if (shipmentCandidate == null)
 			{
-				final CreateShipmentPolicy createShipmentPolicyEffective = CoalesceUtil.coalesceNotNull(
-						createShipmentPolicyOverride,
-						() -> configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy()
-				);
+				final CreateShipmentPolicy createShipmentPolicyEffective = configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy();
 				if (!createShipmentPolicyEffective.isCreateShipment())
 				{
 					continue;
@@ -82,10 +81,7 @@ public class PickingShipmentService
 				shipmentCandidates.put(key, shipmentCandidate);
 			}
 
-			if (shipmentCandidate != null)
-			{
-				shipmentCandidate.addLine(line);
-			}
+			shipmentCandidate.addLine(line);
 		}
 
 		return shipmentCandidates.values();
@@ -106,7 +102,6 @@ public class PickingShipmentService
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 				.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
-				// since we are not going to immediately create invoices, we want to move on and to not wait for shipments
 				.waitForShipments(false)
 				.build());
 	}
