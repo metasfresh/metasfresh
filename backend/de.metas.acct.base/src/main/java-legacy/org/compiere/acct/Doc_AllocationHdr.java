@@ -40,6 +40,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -691,7 +692,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 				if (fl != null)
 				{
-					fl.setTaxIdAndUpdateVatCode(taxId);
+					fl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Tax);
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
