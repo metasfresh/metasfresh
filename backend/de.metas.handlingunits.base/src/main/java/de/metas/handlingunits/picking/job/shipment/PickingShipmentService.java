@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.shipment;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
@@ -42,20 +43,21 @@ public class PickingShipmentService
 
 	public void createShipmentIfNeeded(final PickingJob pickingJob)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.of(), null)
+		prepareShipmentCandidates(pickingJob, ImmutableSet.of(), null, false)
 				.forEach(this::createShipment);
 	}
 
 	public void createShipmentForLUs(@NonNull final PickingJob pickingJob, @NonNull final Set<HuId> luIds)
 	{
-		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds), CreateShipmentPolicy.CREATE_COMPLETE_CLOSE)
+		prepareShipmentCandidates(pickingJob, ImmutableSet.copyOf(luIds), null, true)
 				.forEach(this::createShipment);
 	}
 
 	private Collection<PickingShipmentCandidate> prepareShipmentCandidates(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final ImmutableSet<HuId> onlyLUIds,
-			@Nullable final CreateShipmentPolicy createShipmentPolicyOverride
+			@Nullable final CreateShipmentPolicy createShipmentPolicyOverride,
+			final boolean waitForShipments
 	)
 	{
 		final LinkedHashMap<PickingShipmentCandidateKey, PickingShipmentCandidate> shipmentCandidates = new LinkedHashMap<>();
@@ -65,10 +67,7 @@ public class PickingShipmentService
 			PickingShipmentCandidate shipmentCandidate = shipmentCandidates.get(key);
 			if (shipmentCandidate == null)
 			{
-				final CreateShipmentPolicy createShipmentPolicyEffective = CoalesceUtil.coalesceNotNull(
-						createShipmentPolicyOverride,
-						() -> configRepository.getPickingJobOptions(key.getCustomerId()).getCreateShipmentPolicy()
-				);
+				final CreateShipmentPolicy createShipmentPolicyEffective = resolveCreateShipmentPolicy(key.getCustomerId(), createShipmentPolicyOverride);
 				if (!createShipmentPolicyEffective.isCreateShipment())
 				{
 					continue;
@@ -78,17 +77,26 @@ public class PickingShipmentService
 						.key(key)
 						.onlyLUIds(onlyLUIds)
 						.createShipmentPolicy(createShipmentPolicyEffective)
+						.waitForShipments(waitForShipments)
 						.build();
 				shipmentCandidates.put(key, shipmentCandidate);
 			}
 
-			if (shipmentCandidate != null)
-			{
-				shipmentCandidate.addLine(line);
-			}
+			shipmentCandidate.addLine(line);
 		}
 
 		return shipmentCandidates.values();
+	}
+
+	@VisibleForTesting
+	@NonNull
+	CreateShipmentPolicy resolveCreateShipmentPolicy(
+			@NonNull final BPartnerId customerId,
+			@Nullable final CreateShipmentPolicy override)
+	{
+		return CoalesceUtil.coalesceNotNull(
+				override,
+				() -> configRepository.getPickingJobOptions(customerId).getCreateShipmentPolicy());
 	}
 
 	private void createShipment(@NonNull final PickingShipmentCandidate shipmentCandidate)
@@ -106,8 +114,7 @@ public class PickingShipmentService
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 				.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
-				// since we are not going to immediately create invoices, we want to move on and to not wait for shipments
-				.waitForShipments(false)
+				.waitForShipments(shipmentCandidate.isWaitForShipments())
 				.build());
 	}
 
