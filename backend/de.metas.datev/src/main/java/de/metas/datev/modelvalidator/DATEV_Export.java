@@ -2,7 +2,7 @@ package de.metas.datev.modelvalidator;
 
 /*
  * #%L
- * de.metas.dunning
+ * de.metas.datev
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%

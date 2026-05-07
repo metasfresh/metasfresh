@@ -51,7 +51,7 @@ import java.time.format.DateTimeFormatter;
 
 public class DATEV_ExportFile extends JavaProcess implements IProcessPrecondition
 {
-	private static final AdMessageKey MSG_NoneOrEmpty = AdMessageKey.of("DATEV_ExportFile_EXT_NoDATEVConfig");
+	private static final AdMessageKey MSG_EXT_NoDATEVConfig = AdMessageKey.of("DATEV_ExportFile_EXT_NoDATEVConfig");
 
 	@Autowired
 	private DATEVExportFormatRepository exportFormatRepo;
@@ -90,7 +90,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 
 		if (isExportEXTF && datevExport.getDATEV_Export_Config_ID() <= 0)
 		{
-			throw new AdempiereException(MSG_NoneOrEmpty);
+			throw new AdempiereException(MSG_EXT_NoDATEVConfig);
 		}
 
 		final IExportDataSource dataSource = createDataSource(exportFormat, datevExport.getDATEV_Export_ID());

@@ -75,10 +75,10 @@ BEGIN
            fa.CurrencyRate,
            SUM(fa.AmtSource)                         AS AmtSource,
            SUM(fa.TaxAmtSource)                      AS TaxAmtSource,
-           SUM(CASE
-                   WHEN tax.rate > 0 THEN ROUND(fa.Amt * (1 + tax.rate / 100), 2)
-                                     ELSE fa.Amt
-               END)                                  AS grossamt,
+           ROUND(SUM(CASE
+                         WHEN tax.rate > 0 THEN fa.Amt * (1 + tax.rate / 100)
+                                           ELSE fa.Amt
+                     END), 2)                        AS grossamt,
            fa.c_tax_id                               AS c_tax_id,
            tax.rate                                  AS c_tax_rate,
            fa.vatcode,
