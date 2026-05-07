@@ -77,7 +77,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
-      | ptb_od     | pt_lc            | 70      | 0          | OD                | 20    |
+      | ptb_bl     | pt_lc            | 70      | 0          | BL                | 20    |
     And validate C_PaymentTerm:
       | Identifier | IsComplex | IsValid |
       | pt_lc      | Y         | Y       |
@@ -214,8 +214,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     Then the order identified by lcOrder has following pay schedules
       | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
       | LC                | null       | P      | null         |
-      | OD                | r1         | PR     | null         |
-      | OD                | r2         | WP     | inv2         |
+      | BL                | r1         | PR     | null         |
+      | BL                | r2         | WP     | inv2         |
 
 
   @from:cucumber
@@ -244,8 +244,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     Then the order identified by lcOrder has following pay schedules
       | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
       | LC                | null       | null     | null     | P      | null         |
-      | OD                | r2         | 32000.00 | 22400.00 | WP     | inv2         |
-      | OD                | null       | 38000.00 | 26600.00 | PR     | null         |
+      | BL                | r2         | 32000.00 | 22400.00 | WP     | inv2         |
+      | BL                | null       | 38000.00 | 26600.00 | PR     | null         |
 
 
   @from:cucumber
@@ -285,8 +285,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     Then the order identified by lcOrder has following pay schedules
       | ReferenceDateType | M_InOut_ID | C_Invoice_ID |
       | LC                | null       | null         |
-      | OD                | r1         | inv1         |
-      | OD                | r2         | inv2         |
+      | BL                | r1         | inv1         |
+      | BL                | r2         | inv2         |
 
 
   @from:cucumber
@@ -326,5 +326,5 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     Then the order identified by lcOrder has following pay schedules
       | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
       | LC                | null       | P      | null         |
-      | OD                | r1         | PR     | null         |
-      | OD                | r2         | WP     | inv2         |
+      | BL                | r1         | PR     | null         |
+      | BL                | r2         | WP     | inv2         |
