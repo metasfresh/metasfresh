@@ -780,8 +780,6 @@ public class C_Invoice_Candidate_StepDef
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
-		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
-		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 
 		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 		invoicingParams.setCompleteInvoices(completeInvoices);
