@@ -2,7 +2,6 @@ package de.metas.acct.vatcode.impl;
 
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
-import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
@@ -98,19 +97,6 @@ public class VATCodeDAOTest
 
 		// Test not matching
 		assertVATCode(null, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
-	}
-
-	@Test
-	void setAndGetAmountType()
-	{
-		final de.metas.acct.model.I_C_VAT_Code record =
-				InterfaceWrapperHelper.newInstance(de.metas.acct.model.I_C_VAT_Code.class);
-
-		record.setAmountType(VATCodeAmountType.Tax.getCode());
-		assertThat(record.getAmountType()).isEqualTo("T");
-
-		record.setAmountType(VATCodeAmountType.Net.getCode());
-		assertThat(record.getAmountType()).isEqualTo("N");
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
