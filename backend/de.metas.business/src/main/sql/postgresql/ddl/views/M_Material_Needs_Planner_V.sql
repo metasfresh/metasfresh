@@ -63,9 +63,6 @@ WITH qty_data AS (SELECT candidate.m_product_id,
                                         FROM stock_data
                                         UNION
                                         SELECT DISTINCT m_product_id, m_warehouse_id
-                                        FROM atp_data
-                                        UNION
-                                        SELECT DISTINCT m_product_id, m_warehouse_id
                                         FROM replenish_data),
      product_hupi AS (SELECT DISTINCT ON (m_product_id) m_product_id,
                                                         m_hu_pi_item_product_id

@@ -79,7 +79,7 @@ INSERT INTO AD_Column
      Name, PersonalDataCategory, SelectionColumnSeqNo, SeqNo,
      Updated, UpdatedBy, Version)
 VALUES
-    (0, 592461 /*From ID Server*/, 584821, 0, 11,
+    (0, 592461 /*From ID Server*/, 584821, 0, 29,
      542466, 'XX', 'QtyATP', TO_TIMESTAMP('2026-05-04 12:00','YYYY-MM-DD HH24:MI'), 0,
      'N', 'D', 0, 10,
      'Y', 'N', 'Y', 'N',

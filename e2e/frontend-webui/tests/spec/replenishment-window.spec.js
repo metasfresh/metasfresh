@@ -1,15 +1,15 @@
-import { expect } from '@playwright/test';
-import { test } from '../../playwright.config';
-import { allure } from 'allure-playwright';
-import { Backend } from '../utils/Backend';
-import { LoginPage } from '../utils/pages/LoginPage';
-import { DashboardPage } from '../utils/pages/DashboardPage';
-import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
+import { expect } from "@playwright/test";
+import { test } from "../../playwright.config";
+import { allure } from "allure-playwright";
+import { Backend } from "../utils/Backend";
+import { LoginPage } from "../utils/pages/LoginPage";
+import { DashboardPage } from "../utils/pages/DashboardPage";
+import { MasterWindowPage } from "../utils/pages/MasterWindowPage";
 
 // Replenishment window ("Wiederauffüllung")
 const REPLENISHMENT_WINDOW_ID = 541869;
 
-test.describe('Replenishment window — QtyATP column (gh28902)', () => {
+test.describe('Replenishment window — QtyATP column', () => {
   //
   // Verifies that the new QtyATP column added in gh28902 appears in the grid
   // of the Replenishment window's "Materialbedarf" tab, with the correct
@@ -17,7 +17,6 @@ test.describe('Replenishment window — QtyATP column (gh28902)', () => {
   //
   test('German label "Verfügbare Menge" is shown in the grid', async ({ page }) => {
     allure.epic('Material Disposition');
-    allure.tag('Material Disposition');
     allure.story('gh28902: Show ATP in Replenishment window');
     allure.severity('normal');
 
@@ -41,14 +40,12 @@ test.describe('Replenishment window — QtyATP column (gh28902)', () => {
 
     const headerTexts = await page.locator('th').allTextContents();
     const allHeaderText = headerTexts.join(' | ');
-    console.log('Replenishment grid headers (de_DE):', allHeaderText);
     expect(allHeaderText).toContain('Verfügbare Menge');
     expect(allHeaderText).toContain('Lagerbestand');
   });
 
   test('English label "Available Qty" is shown in the grid', async ({ page }) => {
     allure.epic('Material Disposition');
-    allure.tag('Material Disposition');
     allure.story('gh28902: Show ATP in Replenishment window');
     allure.severity('normal');
 
@@ -70,7 +67,6 @@ test.describe('Replenishment window — QtyATP column (gh28902)', () => {
 
     const headerTexts = await page.locator('th').allTextContents();
     const allHeaderText = headerTexts.join(' | ');
-    console.log('Replenishment grid headers (en_US):', allHeaderText);
     expect(allHeaderText).toContain('Available Qty');
     expect(allHeaderText).toContain('Onhand Quantity');
   });
