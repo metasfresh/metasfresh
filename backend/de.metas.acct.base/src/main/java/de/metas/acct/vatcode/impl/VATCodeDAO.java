@@ -182,6 +182,17 @@ public class VATCodeDAO implements IVATCodeDAO
 			return false;
 		}
 
+		// Match AmountType (when specified in request)
+		if (request.getAmountType() != null)
+		{
+			final String matchingAmountType = matching.getAmountType();
+			if (!request.getAmountType().getCode().equals(matchingAmountType))
+			{
+				logger.debug("=> not matching (AmountType)");
+				return false;
+			}
+		}
+
 		logger.debug("=> matching");
 		return true;
 	}
