@@ -3,12 +3,12 @@
 -- AD_Field
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     Created, CreatedBy, DisplayLength, EntityType,
-    IsActive, IsCentrallyMaintained, IsDisplayed, IsDisplayedGrid,
+    IsActive, IsDisplayed, IsDisplayedGrid,
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
 VALUES (0, 592499 /*From ID Server*/, 778076 /*From ID Server*/, 0, 540720,
     TO_TIMESTAMP('2026-05-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 1, 'de.metas.acct',
-    'Y', 'Y', 'Y', 'Y',
+    'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
     'Betragsart', TO_TIMESTAMP('2026-05-07 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
