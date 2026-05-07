@@ -748,7 +748,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final FactLine vstLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				if (vstLeg != null)
@@ -759,7 +758,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final FactLine ustLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				if (ustLeg != null)
@@ -954,7 +952,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final FactLine vstLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), false)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				if (vstLeg != null)
@@ -965,7 +962,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final FactLine ustLeg = rcFact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setTaxIdAndUpdateVatCode(docTax.getTaxId(), true)
 						.alsoAddZeroLine()
 						.buildAndAdd();
 				if (ustLeg != null)
