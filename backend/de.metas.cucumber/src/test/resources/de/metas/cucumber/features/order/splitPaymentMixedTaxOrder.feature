@@ -11,7 +11,7 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
   #   - OrderLine1 (productA): 200 PCE @ 50 EUR net, 20% tax → line gross = 12,000 EUR.
   #   - OrderLine2 (productB): 200 PCE @ 50 EUR net, 10% tax → line gross = 11,000 EUR.
   #   - GrandTotal = 23,000 EUR (12,000 + 11,000).
-  #   - LC 30% = 6,900 EUR; OD 70% = 16,100 EUR.
+  #   - LC 30% = 6,900 EUR; BL 70% = 16,100 EUR (BillOfLadingDate → isMaterialReceiptDate=true).
   #   - Proforma + payment for 6,900 → LC step Paid.
   #   - R1: 200 PCE productA → BaseAmt = 12,000 (200 × 50 × 1.20, per-line 20% rate).
   #     Wrong approach (avg 15% rate) would give 200 × 50 × 1.15 = 11,500 ≠ 12,000.
@@ -74,7 +74,7 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
-      | ptb_od     | pt_lc            | 70      | 0          | OD                | 20    |
+      | ptb_bl     | pt_lc            | 70      | 0          | BL                | 20    |
     And validate C_PaymentTerm:
       | Identifier | IsComplex | IsValid |
       | pt_lc      | Y         | Y       |
@@ -99,11 +99,11 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     And the order identified by lcOrder is completed
 
     # GrandTotal = 12,000 (productA: 200×50×1.20) + 11,000 (productB: 200×50×1.10) = 23,000
-    # LC 30% = 6,900; OD 70% = 16,100
+    # LC 30% = 6,900; BL 70% = 16,100
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
       | LC                | 6900.00  | null          | PR     | null          | N      |
-      | OD                | 16100.00 | null          | WP     | 2026-04-24    | N      |
+      | BL                | 16100.00 | null          | PR     | null          | N      |
 
     # ── Iter-2: proforma (6,900 EUR) + payment → LC Paid ──
     And metasfresh contains C_Invoice:
@@ -128,28 +128,34 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | C_Invoice_ID | OpenAmt | C_Payment_ID |
       | lcInvoice    | 6900.00 | lcPayment    |
 
-    # ── R1: 200 PCE of productA → BaseAmt = 12,000 (200 × 50 × 1.20, 20% per-line rate) ──
-    When iter3 purchase receipt 'r1' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL1      | 200         |
+    # ── R1: 200 PCE of productA ──
+    # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r1 QtyEntered=200.
+    # BaseAmt = 200 × 50 × 1.20 = 12,000 EUR (per-line 20% rate; AC #21)
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu1     | lcOrderL1      | 101                     | 200         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL1      | hu1     | r1         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 200        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     # AC #21: BaseAmt = 12,000 proves per-line 20% rate was used (not avg 15% = 11,500)
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
-      | r1         | 12000.00  | 8400.00 | PR     | null         |
-      | null       | 11000.00  | 7700.00 | PR     | null         |
+    # Remainder row: BaseAmt = 23,000 − 12,000 = 11,000; DueAmt = 11,000 × 70% = 7,700
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
+      | LC                | null       | 23000.00  | 6900.00 | P      | null         |
+      | BL                | r1         | 12000.00  | 8400.00 | PR     | null         |
+      | BL                | null       | 11000.00  | 7700.00 | PR     | null         |
 
-    # ── INV1: Partial, matched to R1 ──
+    # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID |
-      | inv1L1     | inv1         | productA     | 200 PCE     | 50.00 | lcOrderL1      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv1L1           | r1         | 200 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1         | productA     | 200 PCE     | 50.00 | lcOrderL1      | r1_line1       |
     And the invoice identified by inv1 is completed
 
     # INV1 alloc = MIN(12,000 × 30%, 6,900) = MIN(3,600, 6,900) = 3,600
@@ -158,29 +164,41 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | -3600.00 |
     Then the payment 'lcPayment' has AvailableAmt 3300.00
 
-    # ── R2: 200 PCE of productB → BaseAmt = 11,000 (200 × 50 × 1.10, 10% per-line rate) ──
-    When iter3 purchase receipt 'r2' is created and completed:
-      | C_Order_ID | C_OrderLine_ID | MovementQty |
-      | lcOrder    | lcOrderL2      | 200         |
+    # R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
+      | LC                | null       | P      | null         |
+      | BL                | r1         | WP     | inv1         |
+      | BL                | null       | PR     | null         |
 
-    # R1(12,000) + R2(11,000) = 23,000 = GrandTotal → over-delivery condition → no remainder
-    Then the order identified by lcOrder has exactly 2 delivery sub-rows
-    And the order identified by lcOrder has no remainder delivery sub-row
-    And the order identified by lcOrder has following delivery sub-rows:
-      | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
-      | r1         | 12000.00  | 8400.00 | WP     | inv1         |
-      | r2         | 11000.00  | 7700.00 | PR     | null         |
+    # ── R2: 200 PCE of productB ──
+    # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r2 QtyEntered=200.
+    # BaseAmt = 200 × 50 × 1.10 = 11,000 EUR (per-line 10% rate; AC #21)
+    # R1(12,000) + R2(11,000) = 23,000 = GrandTotal → exact delivery → no remainder
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
+      | hu2     | lcOrderL2      | 101                     | 200         |
+    And create material receipt
+      | C_OrderLine_ID | M_HU_ID | M_InOut_ID |
+      | lcOrderL2      | hu2     | r2         |
+    And load M_InOut:
+      | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
+      | 200        | r2_line1       | r2         | CO        | lcOrderL2      |
 
-    # ── INV2: Final, matched to R2 ──
+    # R1(12,000) + R2(11,000) = 23,000 = GrandTotal → exact delivery → no remainder row
+    Then the order identified by lcOrder has following pay schedules
+      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
+      | LC                | null       | 23000.00  | 6900.00 | P      | null         |
+      | BL                | r1         | 12000.00  | 8400.00 | WP     | inv1         |
+      | BL                | r2         | 11000.00  | 7700.00 | PR     | null         |
+
+    # ── INV2: Final, matched to R2 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
       | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID |
-      | inv2L1     | inv2         | productB     | 200 PCE     | 50.00 | lcOrderL2      |
-    And iter3 M_MatchInv is created:
-      | C_InvoiceLine_ID | M_InOut_ID | Qty |
-      | inv2L1           | r2         | 200 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2         | productB     | 200 PCE     | 50.00 | lcOrderL2      | r2_line1       |
     And the invoice identified by inv2 is completed
 
     # INV2 alloc = 3,300 (remaining prepay — Final rule)
