@@ -110,11 +110,13 @@ public class C_OrderPaySchedule_StepDef
 	}
 
 	/**
-	 * Verifies pay-schedule lines for an order matched by {@link ReferenceDateType}.
-	 * This step is used for split-payment LC scenarios (TC1-TC4) where lines are
-	 * identified by their reference-date type rather than a specific break identifier.
+	 * Verifies a subset of pay-schedule lines for an order, matched by {@link ReferenceDateType} (and any other
+	 * key columns present in the DataTable row). Only the rows listed in the DataTable are asserted; additional
+	 * lines in the order's pay schedule are silently ignored. Use this step when a scenario needs to assert
+	 * specific lines without caring about the full set (e.g. asserting only the LC line after a payment reversal
+	 * while OD lines are irrelevant to the assertion).
 	 *
-	 * <p>Required DataTable columns:
+	 * <p>Required DataTable columns (at least one key column required to identify a line):
 	 * <ul>
 	 *   <li>{@code ReferenceDateType} — DB code ({@code LC} / {@code OD} / {@code IV} / {@code BL} / {@code ET}).
 	 *       Resolved via {@code ReferenceListAwareEnums.ofNullableCode} — use the code, not the enum name.</li>
@@ -125,20 +127,28 @@ public class C_OrderPaySchedule_StepDef
 	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code: {@code PR} (Pending), {@code WP} (Awaiting_Pay), {@code P} (Paid)</li>
 	 *   <li>{@code DueAmt_Actual} — actual due amount from the proforma invoice;
 	 *       use {@code null} to assert the column is NULL/zero.</li>
+	 *   <li>{@code IsPaid} — boolean; whether the line is paid</li>
 	 * </ul>
 	 *
 	 * <pre>{@code
 	 * Then the order identified by po has following pay schedule lines by ReferenceDateType
 	 *   | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
 	 *   | LC                | 20596.32 | 20596.32      | WP     |
-	 *   | OD                | 48058.08 | null          | WP     |
 	 * }</pre>
 	 */
 	@And("^the order identified by (.*) has following pay schedule lines by ReferenceDateType$")
-	@Deprecated
 	public void verifyOrderPaySchedulesByRefDateType(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
-		verifyOrderPaySchedules(orderIdentifier, dataTable);
+		final DataTableRows rows = DataTableRows.of(dataTable);
+
+		final OrderPaySchedule paySchedule = getOrderPaySchedule(orderIdentifier);
+		final HashSet<OrderPayScheduleId> matchedIds = new HashSet<>();
+
+		rows.forEach(row -> {
+			final OrderPayScheduleLine line = findMatchingLine(paySchedule, row, matchedIds);
+			verifyOrderPaySchedule(row, line);
+			matchedIds.add(line.getIdNotNull());
+		});
 	}
 
 	private OrderPayScheduleLine findMatchingLine(
