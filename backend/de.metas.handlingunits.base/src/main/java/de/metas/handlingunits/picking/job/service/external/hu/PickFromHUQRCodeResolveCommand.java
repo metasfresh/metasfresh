@@ -55,19 +55,35 @@ class PickFromHUQRCodeResolveCommand
 		else if (pickFromHUQRCode instanceof HUQRCode)
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
-			final HuId huId = huService.getHuIdByQRCode(huQRCode);
-			// Destroyed HUs have empty storage, so containsProduct below would give a misleading "product not matching" error.
-			if (huService.isDestroyed(huId))
+			final HuId activeHuId = huService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
+			if (activeHuId == null)
+			{
+				// No active assignment. The destroy interceptor (M_HU.deactivateQRCodeAssignmentsOnDestroy)
+				// soft-deletes assignments when an HU is destroyed, so check the inactive set as well: if
+				// the QR resolves to a destroyed HU, surface the dedicated message instead of the generic
+				// "no HU attached" exception. Anything else (genuinely unknown QR, or inactive assignment
+				// pointing at a still-alive HU) falls through to the existing throwing variant.
+				final HuId inactiveHuId = huService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode).orElse(null);
+				if (inactiveHuId != null && huService.isDestroyed(inactiveHuId))
+				{
+					return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
+				}
+				huService.getHuIdByQRCode(huQRCode); // throws AdempiereException — see HUQRCodesService.java
+				throw new IllegalStateException("unreachable");
+			}
+
+			// Legacy backstop: assignment still active but HU was destroyed before the destroy interceptor was deployed.
+			if (huService.isDestroyed(activeHuId))
 			{
 				return ExplainedOptional.emptyBecause(ERR_QR_HU_Destroyed);
 			}
-			if (!huService.containsProduct(huId, productId))
+			if (!huService.containsProduct(activeHuId, productId))
 			{
 				return ExplainedOptional.emptyBecause(
 						TranslatableStrings.adMessage(ERR_QR_ProductNotMatching, productService.getProductNameTrl(productId)));
 			}
 
-			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(huId, huQRCode));
+			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(activeHuId, huQRCode));
 		}
 		else if (pickFromHUQRCode instanceof LMQRCode)
 		{
