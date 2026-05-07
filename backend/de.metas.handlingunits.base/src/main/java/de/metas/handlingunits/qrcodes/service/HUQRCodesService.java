@@ -210,6 +210,17 @@ public class HUQRCodesService
 				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 
+	/**
+	 * Variant of {@link #getHuIdByQRCodeIfExists(HUQRCode)} that also resolves through soft-deleted
+	 * assignments. Use when a stale sticker scan needs to surface a more specific cause than the
+	 * generic "no HU attached" exception (e.g. the HU was destroyed and the destroy interceptor
+	 * deactivated the assignment).
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(@NonNull final HUQRCode qrCode)
+	{
+		return huQRCodesRepository.getHuIdByQRCodeIncludingInactive(qrCode);
+	}
+
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
 	{
 		return huQRCodesRepository.getHUAssignmentByQRCode(huQRCode);

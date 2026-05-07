@@ -79,6 +79,13 @@ Feature: DESADV - mobileUI Picking - Pick catch weight products
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID    |
       | line1              | invCU      |
+    # WeightNet = product.Weight × storedQty (1.9 × 1000), WeightTare = (Gross-Net) × storedQty (0.05 × 1000),
+    # WeightGross = WeightNet + WeightTare.
+    And M_HU_Attribute is validated
+      | M_HU_ID | M_Attribute_ID.Value | ValueNumber |
+      | invCU   | WeightNet            | 1900        |
+      | invCU   | WeightTare           | 50          |
+      | invCU   | WeightGross          | 1950        |
     And transform CU to new LU
       | sourceCU    | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
       | invCU       | pickFromAggregatedLU | TU       | 1           | 10          |
@@ -142,6 +149,47 @@ Feature: DESADV - mobileUI Picking - Pick catch weight products
 
     Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
 
+    And after not more than 30s, there are no records in EDI_Desadv_Pack
+
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Pick catch weight products without manual weighing — catch quantity derives from source HU's nominal NET
+    # When the picker does not enter a manual CatchWeight, QtyDeliveredCatch is taken from the
+    # source HU's WeightNet attribute (rolled-up product net = 1.9 × 10 = 19.000 for the source LU).
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | salesOrder | true    | customer      | 2024-03-26  | po_ref_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID | C_UOM_ID.X12DE355 | QtyItemCapacity |
+      | line1      | salesOrder | product      | 2          | TUx1                    | COLI              | 4               |
+    And the order identified by salesOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | line1          | N             |
+
+    And start picking job for sales order identified by salesOrder
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked |
+      | product               | pickFromAggregatedLU | 2         |
+    And expect current picking target
+      | Existing_LU |
+      | lu          |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | QtyTU | QtyLU | M_LU_HU_ID | Processed |
+      | 19.000            | KGM          | 2         | 2     | 1     | lu         | N         |
+    And complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | shipmentSchedule      | shipment   | CO        |
+
+    # Reverse the shipment to clean up the EDI_Desadv_Pack(_Item) records this scenario produced.
+    # The empty checks below verify the cleanup is complete — they protect the next scenario in
+    # this feature (and other features in the same CI executor) from inheriting leftover rows.
+    And the shipment identified by shipment is reversed
+    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
     And after not more than 30s, there are no records in EDI_Desadv_Pack
 
 
