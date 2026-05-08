@@ -16,13 +16,13 @@ SET    Name      = 'Betragsart',
        UpdatedBy = 100
 WHERE  AD_Element_ID = 1602;
 
--- Fix the de_DE Trl row — this is what the sync function actually reads
+-- Fix the de_DE and de_CH Trl rows — this is what the sync function actually reads
 UPDATE AD_Element_Trl
 SET    Name      = 'Betragsart',
        Updated   = TO_TIMESTAMP('2026-05-08 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy = 100
 WHERE  AD_Element_ID = 1602
-  AND  AD_Language = 'de_DE';
+  AND  AD_Language IN ('de_DE', 'de_CH');
 
 -- Fix AD_Field directly with the same timestamp as the Trl row above,
 -- so after_migration sync (f.updated == e_trl.updated) leaves it unchanged
@@ -31,6 +31,15 @@ SET    Name      = 'Betragsart',
        Updated   = TO_TIMESTAMP('2026-05-08 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy = 100
 WHERE  AD_Field_ID = 778076;
+
+-- Fix de_CH AD_Field_Trl row (same fix as de_DE base row)
+UPDATE AD_Field_Trl
+SET    IsTranslated = 'Y',
+       Name         = 'Betragsart',
+       Updated      = TO_TIMESTAMP('2026-05-08 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy    = 100
+WHERE  AD_Language = 'de_CH'
+  AND  AD_Field_ID = 778076;
 
 -- Ensure en_US translation remains correct
 UPDATE AD_Field_Trl
