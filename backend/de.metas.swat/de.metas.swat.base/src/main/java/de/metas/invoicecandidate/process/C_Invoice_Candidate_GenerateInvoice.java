@@ -10,6 +10,7 @@ import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -23,6 +24,8 @@ public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 	private boolean p_Selection = true;
 
 	private boolean p_IgnoreInvoiceSchedule = false;
+
+	private Boolean p_IsPartialInvoice = null;
 
 	public static final String CHECKBOX_IGNORE_INVOICE_SCHEDULE = "IgnoreInvoiceSchedule";
 
@@ -44,6 +47,10 @@ public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 			{
 				p_IgnoreInvoiceSchedule = "Y".equals(para.getParameter());
 			}
+			else if (name.equals(IInvoicingParams.PARA_IsPartialInvoice))
+			{
+				p_IsPartialInvoice = "Y".equals(para.getParameter());
+			}
 		}
 	}
 
@@ -57,7 +64,7 @@ public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 
 		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
 		final IInvoiceGenerateResult result =
-				service.generateInvoicesFromSelection(getCtx(), getPinstanceId(), p_IgnoreInvoiceSchedule, get_TrxName());
+				service.generateInvoicesFromSelection(getCtx(), getPinstanceId(), p_IgnoreInvoiceSchedule, p_IsPartialInvoice, get_TrxName());
 
 		final ADHyperlinkBuilder linkHelper = new ADHyperlinkBuilder();
 		final StringBuffer summary = new StringBuffer("@Generated@");
