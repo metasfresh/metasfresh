@@ -25,9 +25,6 @@ package de.metas.calendar.impl;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.Period;
-import de.metas.calendar.PeriodId;
-import de.metas.calendar.PeriodRepo;
 import de.metas.calendar.YearId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
@@ -42,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -63,7 +59,6 @@ public class CalendarBL implements ICalendarBL
 	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-	private final PeriodRepo periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
 
 	@Override
 	public boolean isLengthOneYear(final I_C_Year year)
