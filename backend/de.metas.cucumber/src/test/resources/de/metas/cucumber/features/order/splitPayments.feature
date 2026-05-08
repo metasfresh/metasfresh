@@ -557,20 +557,15 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | BL                | r1         | 31807.99 | 22265.59 | PR     | null         |
       | BL                | null       | 36846.39 | 25792.47 | PR     | null         |
 
-    # ── INV1: Partial — generate via real IC pipeline with IsPartialInvoice=Y ──
-    # Wait for IC to be created after R1 receipt, then generate invoice via the real pipeline.
-    And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic1                               | olA                       | 195          |
-    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
-      | ic1                               | Y                | 195         |
-    And after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic1                               | inv1Partial             |
-    And validate created invoices
-      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
-      | inv1Partial             | Y                | CO        |
+    # ── INV1: Partial vendor invoice linked to R1 via M_InOutLine_ID (E.1d) ──
+    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor recomputes delivery steps.
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
+      | inv1Partial | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID | M_InOutLine_ID |
+      | inv1L1     | inv1Partial  | productA     | 195 PCE     | 163.1179 | olA            | r1_line1       |
+    And the invoice identified by inv1Partial is completed
 
     # AC #4: alloc = MIN(R1×0.30, prepay) = MIN(31807.99×0.30, 20596.31) = MIN(9542.40, 20596.31) = 9,542.40
     Then validate C_AllocationLines for invoice inv1Partial
@@ -616,20 +611,14 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | BL                | r1         | WP     | inv1Partial  |
       | BL                | r2         | PR     | null         |
 
-    # ── INV2: Final — generate via real IC pipeline with IsPartialInvoice=N ──
-    # Wait for IC to be created after R2 receipt, then generate Final invoice via the real pipeline.
-    And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic2                               | olB                       | 363          |
-    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
-      | ic2                               | N                | 363         |
-    And after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic2                               | inv2Final               |
-    And validate created invoices
-      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
-      | inv2Final               | N                | CO        |
+    # ── INV2: Final vendor invoice linked to R2 via M_InOutLine_ID (E.1d) ──
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
+      | inv2Final  | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   | C_OrderLine_ID | M_InOutLine_ID |
+      | inv2L1     | inv2Final    | productB     | 363 PCE     | 102.1818 | olB            | r2_line1       |
+    And the invoice identified by inv2Final is completed
 
     # AC #8: alloc = remaining prepay = 11,053.91 (Final rule — full prepay consumed)
     Then validate C_AllocationLines for invoice inv2Final
