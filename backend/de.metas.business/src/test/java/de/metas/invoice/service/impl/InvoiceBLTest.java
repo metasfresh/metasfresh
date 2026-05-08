@@ -1,5 +1,6 @@
 package de.metas.invoice.service.impl;
 
+import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
@@ -61,7 +62,7 @@ public class InvoiceBLTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

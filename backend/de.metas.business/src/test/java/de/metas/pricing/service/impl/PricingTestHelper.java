@@ -2,6 +2,7 @@ package de.metas.pricing.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.calendar.PeriodRepo;
 import de.metas.location.ICountryAreaBL;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -95,6 +96,7 @@ public class PricingTestHelper
 	public PricingTestHelper()
 	{
 		final IProductPA productPA = Mockito.mock(IProductPA.class);
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		Services.registerService(IProductPA.class, productPA);
 
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
