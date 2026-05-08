@@ -68,9 +68,10 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_lc        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_lc        |             |
+      | pt_immediate |             |
+      | pt_net90     | 90          |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -129,6 +130,11 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | lcInvoice    | 6900.00 | lcPayment    |
 
     # ── R1: 200 PCE of productA ──
+    # Wait for WP processor to create M_ReceiptSchedule for both order lines (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | lcOrder    | lcOrderL1      | vendor        | vendor_loc             | productA     | 200        | wh             |
+      | rs2                  | lcOrder    | lcOrderL2      | vendor        | vendor_loc             | productB     | 200        | wh             |
     # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r1 QtyEntered=200.
     # BaseAmt = 200 × 50 × 1.20 = 12,000 EUR (per-line 20% rate; AC #21)
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -149,14 +155,23 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | BL                | r1         | 12000.00  | 8400.00 | PR     | null         |
       | BL                | null       | 11000.00  | 7700.00 | PR     | null         |
 
-    # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | productA     | 200 PCE     | 50.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # ── INV1: Partial, matched to R1 via IC pipeline (IsPartialInvoice=Y) ──
+    # Wait for IC to be created after r1 receipt, then generate invoice via the real pipeline.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | r1_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | Y                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1       | pt_net90             |
 
     # INV1 alloc = MIN(12,000 × 30%, 6,900) = MIN(3,600, 6,900) = 3,600
     Then validate C_AllocationLines for invoice inv1
@@ -194,14 +209,23 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | BL                | r1         | 12000.00  | 8400.00 | WP     | inv1         |
       | BL                | r2         | 11000.00  | 7700.00 | PR     | null         |
 
-    # ── INV2: Final, matched to R2 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price | C_OrderLine_ID | M_InOutLine_ID |
-      | inv2L1     | inv2         | productB     | 200 PCE     | 50.00 | lcOrderL2      | r2_line1       |
-    And the invoice identified by inv2 is completed
+    # ── INV2: Final, matched to R2 via IC pipeline (IsPartialInvoice=N) ──
+    # Wait for IC to be created after r2 receipt, then generate invoice via the real pipeline.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic2                               | lcOrderL2                 | r2_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic2                               | N                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic2                               | inv2                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv2                    | N                | CO        |
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv2       | pt_net90             |
 
     # INV2 alloc = 3,300 (remaining prepay — Final rule)
     Then validate C_AllocationLines for invoice inv2
