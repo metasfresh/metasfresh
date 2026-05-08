@@ -7,6 +7,7 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /*
@@ -66,5 +67,5 @@ public interface IVATCodeDAO extends ISingletonService
 	 *
 	 * @return Optional.empty() if vatCode is null/empty or no record found
 	 */
-	Optional<Boolean> findIsSOTrxByCode(@javax.annotation.Nullable String vatCode);
+	Optional<Boolean> findIsSOTrxByCode(@Nullable String vatCode, @NonNull AcctSchemaId acctSchemaId);
 }

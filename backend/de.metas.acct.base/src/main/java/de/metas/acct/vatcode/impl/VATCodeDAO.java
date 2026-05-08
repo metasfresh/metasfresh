@@ -15,6 +15,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -150,7 +151,7 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	@Override
-	public Optional<Boolean> findIsSOTrxByCode(@javax.annotation.Nullable final String vatCode)
+	public Optional<Boolean> findIsSOTrxByCode(@Nullable final String vatCode, @NonNull final AcctSchemaId acctSchemaId)
 	{
 		if (vatCode == null || vatCode.isEmpty())
 		{
@@ -158,6 +159,7 @@ public class VATCodeDAO implements IVATCodeDAO
 		}
 		return queryBL.createQueryBuilder(I_C_VAT_Code.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
 				.create()
 				.firstOptional()
