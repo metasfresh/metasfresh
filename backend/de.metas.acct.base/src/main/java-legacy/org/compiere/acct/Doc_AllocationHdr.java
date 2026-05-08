@@ -1549,13 +1549,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						if (isDiscountExpense)
 						{
 							// DR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							}
 
 							// CR
 							fact.createLine()
@@ -1571,13 +1574,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						else
 						{
 							// DR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							}
 
 							// CR
 							fact.createLine()
@@ -1619,13 +1625,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 
 							// CR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							}
 
 						}
 						// Discount revenue
@@ -1642,13 +1651,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 
 							// CR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							}
 
 						}
 					}
@@ -1672,13 +1684,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						result.add(fact);
 
 						//DR
-						fact.createLine()
+						final FactLine writeOffFl = fact.createLine()
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(taxAmtAdjustment, null)
-								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
+						if (writeOffFl != null)
+						{
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+						}
 
 						// CR
 						fact.createLine()
@@ -1714,13 +1729,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.buildAndAdd();
 
 						// CR
-						fact.createLine()
+						final FactLine writeOffFl = fact.createLine()
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.additionalDescription(description)
 								.buildAndAdd();
+						if (writeOffFl != null)
+						{
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+						}
 					}
 				}
 			}                // WriteOff
