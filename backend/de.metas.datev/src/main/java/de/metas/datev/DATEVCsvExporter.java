@@ -195,10 +195,10 @@ public class DATEVCsvExporter extends AbstractExporter
 		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(acctSchemaCurrencyId);
 
 		final PeriodId periodId = primaryAcctSchema.getPeriodControl().getPeriodId();
-		final int fiscalYear = periodId != null
-				? TimeUtil.asLocalDate(calendarBL.getFirstDayOfYear(periodId.getYearId())).getYear()
-				: TimeUtil.asLocalDate(dateToTS).getYear();
-		final String fiscalYearStart = String.format("%04d0101", fiscalYear);
+		final LocalDate fiscalYearStartDate = periodId != null
+				? TimeUtil.asLocalDate(calendarBL.getFirstDayOfYear(periodId.getYearId()))
+				: LocalDate.of(TimeUtil.asLocalDate(dateToTS).getYear(), 1, 1);
+		final String fiscalYearStart = fiscalYearStartDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
 		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();
