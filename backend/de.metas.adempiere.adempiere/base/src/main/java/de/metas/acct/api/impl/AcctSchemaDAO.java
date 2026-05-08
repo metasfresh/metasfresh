@@ -70,18 +70,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-	@Nullable
-	private PeriodRepo periodRepo; // lazy
-
-	private PeriodRepo getPeriodRepo()
-	{
-		if (periodRepo == null)
-		{
-			periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
-		}
-		return periodRepo;
-	}
+	private final SpringContextHolder.Lazy<PeriodRepo> periodRepo = SpringContextHolder.lazyBean(PeriodRepo.class);
 
 	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
@@ -407,7 +396,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemaPeriodControl toAcctSchemaPeriodControl(final I_C_AcctSchema acctSchemaRecord)
 	{
-		final PeriodId periodId = acctSchemaRecord.getC_Period_ID() > 0 ? getPeriodRepo().getPeriodId(acctSchemaRecord.getC_Period_ID()) : null;
+		final PeriodId periodId = acctSchemaRecord.getC_Period_ID() > 0 ? periodRepo.get().getPeriodId(acctSchemaRecord.getC_Period_ID()) : null;
 
 		return AcctSchemaPeriodControl.builder()
 				.automaticPeriodControl(acctSchemaRecord.isAutoPeriodControl())
