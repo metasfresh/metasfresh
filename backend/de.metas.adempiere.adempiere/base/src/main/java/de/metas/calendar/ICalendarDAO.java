@@ -47,9 +47,9 @@ public interface ICalendarDAO extends ISingletonService
 
 	List<I_C_Year> retrieveYearsOfCalendar(I_C_Calendar calendar);
 
-	I_C_Period retrieveFirstPeriodOfTheYear(final YearId yearId);
+	I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId);
 
-	I_C_Period retrieveLastPeriodOfTheYear(final YearId yearId);
+	I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId);
 
 	I_C_Period findByCalendar(Timestamp date, @NonNull CalendarId calendarId);
 
