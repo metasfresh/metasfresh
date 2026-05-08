@@ -2,6 +2,8 @@ package de.metas.acct.vatcode;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.MoreObjects;
 
 /*
@@ -37,6 +39,8 @@ public final class VATCodeMatchingRequest
 	private final int C_Tax_ID;
 	private final boolean isSOTrx;
 	private final Date date;
+	/** Optional AmountType filter. When null the DAO returns the first match regardless of AmountType. */
+	@Nullable private final VATCodeAmountType amountType;
 
 	private VATCodeMatchingRequest(final Builder builder)
 	{
@@ -46,6 +50,7 @@ public final class VATCodeMatchingRequest
 		C_Tax_ID = builder.C_Tax_ID;
 		isSOTrx = builder.isSOTrx;
 		date = (Date)builder.date.clone();
+		amountType = builder.amountType;
 	}
 
 	@Override
@@ -56,6 +61,7 @@ public final class VATCodeMatchingRequest
 				.add("C_Tax_ID", C_Tax_ID)
 				.add("IsSOTrx", isSOTrx)
 				.add("Date", date)
+				.add("AmountType", amountType)
 				.toString();
 	}
 
@@ -79,12 +85,19 @@ public final class VATCodeMatchingRequest
 		return (Date)date.clone();
 	}
 
+	@Nullable
+	public VATCodeAmountType getAmountType()
+	{
+		return amountType;
+	}
+
 	public static final class Builder
 	{
 		private Integer C_AcctSchema_ID;
 		private Integer C_Tax_ID;
 		private Boolean isSOTrx;
 		private Date date;
+		@Nullable private VATCodeAmountType amountType;
 
 		private Builder()
 		{
@@ -117,6 +130,12 @@ public final class VATCodeMatchingRequest
 		public Builder setDate(final Date date)
 		{
 			this.date = date;
+			return this;
+		}
+
+		public Builder setAmountType(@Nullable final VATCodeAmountType amountType)
+		{
+			this.amountType = amountType;
 			return this;
 		}
 	}
