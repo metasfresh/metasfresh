@@ -199,7 +199,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		final LocalDate fiscalYearStartDate = periodId != null
 				? TimeUtil.asLocalDate(calendarBL.getFirstDayOfYear(periodId.getYearId()))
 				: LocalDate.of(TimeUtil.asLocalDate(dateToTS).getYear(), 1, 1);
-		final String fiscalYearStart = fiscalYearStartDate.format(EXTF_DATE_FMT );
+		final String fiscalYearStart = fiscalYearStartDate.format(EXTF_DATE_FMT);
 
 		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();

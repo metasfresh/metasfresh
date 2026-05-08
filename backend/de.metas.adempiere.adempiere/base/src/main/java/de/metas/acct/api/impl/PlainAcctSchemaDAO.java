@@ -35,7 +35,7 @@ public class PlainAcctSchemaDAO extends AcctSchemaDAO
 	 * the current practice is to register an anonymous subclass of {@link AcctSchemaDAO}.
 	 */
 	@Override
-	public @NonNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
 	{
 		Adempiere.assertUnitTestMode();
 		return null;
