@@ -188,7 +188,7 @@ Feature: invoice payment allocation
   Scenario: sales invoice with VAT codes — allocation discount tax correction has Tax-AmountType VAT code
 
     Given metasfresh has date and time 2022-05-11T08:00:00+02:00[Europe/Berlin]
-    And metasfresh contains C_TaxCategory:
+    And metasfresh contains C_TaxCategory
       | Identifier    |
       | taxCategory19 |
     And metasfresh contains C_Tax
@@ -222,7 +222,7 @@ Feature: invoice payment allocation
       | P_Revenue_Acct        |             | 100 EUR     | tax19    | invoice   | sales19_N     |
       | T_Due_Acct            |             | 19 EUR      | tax19    | invoice   | sales19_T     |
 
-    And metasfresh contains C_Payment:
+    And metasfresh contains C_Payment
       | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
       | payment    | customer1     | 107.10 EUR | true      | org_EUR_account     |
     And the payment identified by payment is completed
