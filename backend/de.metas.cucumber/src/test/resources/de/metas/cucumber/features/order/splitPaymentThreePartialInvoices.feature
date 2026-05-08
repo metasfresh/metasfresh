@@ -130,15 +130,20 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
       | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
       | r1         | product      | r1_line1       |
 
-    # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK ──
-    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 200 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # ── INV1: Partial — generate via real IC pipeline with IsPartialInvoice=Y ──
+    # Wait for IC to be created after R1 receipt, then generate invoice via the real pipeline.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | r1_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | Y                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
 
     # INV1 alloc = MIN(20,000 × 30%, 21,000) = 6,000; remaining prepay = 15,000
     Then validate C_AllocationLines for invoice inv1
@@ -160,15 +165,20 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
       | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
       | r2         | product      | r2_line1       |
 
-    # ── INV2: Partial, matched to R2 via M_InOutLine_ID FK ──
-    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv2L1     | inv2         | product      | 200 PCE     | 100.00 | lcOrderL1      | r2_line1       |
-    And the invoice identified by inv2 is completed
+    # ── INV2: Partial — generate via real IC pipeline with IsPartialInvoice=Y ──
+    # Wait for IC to be updated after R2 receipt (QtyToInvoice back to 200), then generate invoice.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic2                               | lcOrderL1                 | r2_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic2                               | Y                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic2                               | inv2                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv2                    | Y                | CO        |
 
     # INV2 alloc = MIN(20,000 × 30%, 15,000) = 6,000; remaining prepay = 9,000
     Then validate C_AllocationLines for invoice inv2
@@ -190,15 +200,20 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
       | M_InOut_ID | M_Product_ID | M_InOutLine_ID |
       | r3         | product      | r3_line1       |
 
-    # ── INV3: Final, matched to R3 via M_InOutLine_ID FK ──
-    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv3       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv3L1     | inv3         | product      | 200 PCE     | 100.00 | lcOrderL1      | r3_line1       |
-    And the invoice identified by inv3 is completed
+    # ── INV3: Final — generate via real IC pipeline with IsPartialInvoice=N ──
+    # Wait for IC to be updated after R3 receipt (QtyToInvoice back to 200), then generate Final invoice.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic3                               | lcOrderL1                 | r3_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic3                               | N                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic3                               | inv3                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv3                    | N                | CO        |
 
     # AC #24 — INV3 alloc = 9,000 (remaining prepay — Final rule), NOT 6,000 (= 20,000 × 30%)
     Then validate C_AllocationLines for invoice inv3
