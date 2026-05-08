@@ -746,15 +746,24 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Properties ctx,
 			final PInstanceId AD_PInstance_ID,
 			final boolean ignoreInvoiceSchedule,
+			@Nullable final Boolean isPartialInvoice,
 			final String trxName)
 	{
 		final Iterator<I_C_Invoice_Candidate> candidates =
 				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
-		return generateInvoices()
+		final IInvoiceGenerator generator = generateInvoices()
 				.setContext(ctx, trxName)
-				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
-				.generateInvoices(candidates);
+				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+
+		if (isPartialInvoice != null)
+		{
+			final PlainInvoicingParams params = new PlainInvoicingParams();
+			params.setIsPartialInvoice(isPartialInvoice);
+			generator.setInvoicingParams(params);
+		}
+
+		return generator.generateInvoices(candidates);
 	}
 
 	@Override
