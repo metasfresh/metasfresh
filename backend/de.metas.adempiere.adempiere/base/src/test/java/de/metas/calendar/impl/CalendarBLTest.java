@@ -24,9 +24,11 @@ package de.metas.calendar.impl;
 
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.PeriodRepo;
 import de.metas.calendar.YearId;
 import de.metas.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;

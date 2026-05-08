@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.calendar.PeriodRepo;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -116,7 +117,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
 

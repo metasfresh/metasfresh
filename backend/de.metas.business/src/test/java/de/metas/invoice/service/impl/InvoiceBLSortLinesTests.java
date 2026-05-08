@@ -2,6 +2,7 @@ package de.metas.invoice.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyRepository;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -29,7 +30,7 @@ public class InvoiceBLSortLinesTests
 	public final void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);

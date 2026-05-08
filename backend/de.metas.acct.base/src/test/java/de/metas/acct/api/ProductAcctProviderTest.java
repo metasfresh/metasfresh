@@ -1,6 +1,7 @@
 package de.metas.acct.api;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.calendar.PeriodRepo;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
@@ -8,6 +9,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
@@ -58,6 +60,8 @@ public class ProductAcctProviderTest
 		final Properties ctx = Env.getCtx();
 		clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
+
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 
 		//
 		// Master data

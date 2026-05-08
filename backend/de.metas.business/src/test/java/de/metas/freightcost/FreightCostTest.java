@@ -24,6 +24,7 @@ package de.metas.freightcost;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -101,7 +102,7 @@ public class FreightCostTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		new PricingTestHelper();
 
 		final FreightCostRepository freightCostRepo = new FreightCostRepository();

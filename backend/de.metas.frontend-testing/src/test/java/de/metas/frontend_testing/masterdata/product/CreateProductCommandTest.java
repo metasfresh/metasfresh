@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.calendar.PeriodRepo;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.GTIN;
@@ -8,6 +9,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,8 @@ public class CreateProductCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		productRepository = new ProductRepository();
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		context = new MasterdataContext();
 	}
 

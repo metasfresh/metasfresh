@@ -39,11 +39,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Function;
 
+import de.metas.calendar.PeriodRepo;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -89,7 +91,7 @@ public class PricingConditionsTest
 	{
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
-
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		repo = new PricingConditionsRepository();
 		service = new PricingConditionsService();
 		Services.registerService(IPricingConditionsRepository.class, repo);

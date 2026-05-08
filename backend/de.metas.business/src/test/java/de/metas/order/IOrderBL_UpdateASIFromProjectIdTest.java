@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import de.metas.calendar.PeriodRepo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
@@ -64,6 +65,7 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		SpringContextHolder.registerJUnitBean(ProjectRepository.newInstanceForUnitTesting());
 		createProjectValueAttr();
 	}

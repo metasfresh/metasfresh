@@ -25,10 +25,12 @@ package de.metas.acct.model.validator;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.interceptor.C_BPartner;
+import de.metas.calendar.PeriodRepo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
@@ -61,6 +63,8 @@ public class C_BPartnerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
 
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
