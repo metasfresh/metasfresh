@@ -485,7 +485,7 @@ public class AcctDocRequiredServicesFacade
 		{
 			return Optional.empty();
 		}
-		return vatCodeDAO.findIsSOTrxByCode(VATCode.ofCode(vatCode), acctSchemaId, taxId);
+		return vatCodeDAO.findIsSOTrxByCode(vatCode, acctSchemaId, taxId);
 	}
 
 	public Dimension extractDimensionFromModel(final Object model)

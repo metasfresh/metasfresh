@@ -151,12 +151,12 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	@Override
-	public Optional<Boolean> findIsSOTrxByCode(@NonNull final VATCode vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
+	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
 	{
 		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode.getCode())
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
 				.firstOnlyOptional()

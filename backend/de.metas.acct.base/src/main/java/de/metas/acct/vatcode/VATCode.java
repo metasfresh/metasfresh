@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.acct.base
@@ -40,19 +38,13 @@ public final class VATCode
 		return new VATCode(code, VatCodeId.ofRepoId(vatCodeId));
 	}
 
-	public static VATCode ofCode(@NonNull final String code)
-	{
-		return new VATCode(code, null);
-	}
-
 	@Getter
 	private final String code;
 
 	@Getter
-	@Nullable
 	private final VatCodeId vatCodeId;
 
-	private VATCode(final String code, @Nullable final VatCodeId vatCodeId)
+	private VATCode(final String code, @NonNull final VatCodeId vatCodeId)
 	{
 		Check.assumeNotEmpty(code, "code not empty");
 		this.code = code;

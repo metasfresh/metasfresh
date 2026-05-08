@@ -60,11 +60,11 @@ public interface IVATCodeDAO extends ISingletonService
 	VATCode createVATCode(@NonNull CreateVATCodeRequest request);
 
 	/**
-	 * Returns the IsSOTrx flag of the C_VAT_Code record that matches the given VATCode.
+	 * Returns the IsSOTrx flag of the C_VAT_Code record that has the given VATCode string.
 	 * Used to derive the correct IsSOTrx for Net VAT code lookup when the tax leg's IsSOTrx
 	 * differs from the document's (e.g. reverse-charge T_Due_Acct within a purchase allocation).
 	 *
 	 * @return Optional.empty() if no record found or if the record's IsSOTrx is blank
 	 */
-	Optional<Boolean> findIsSOTrxByCode(@NonNull VATCode vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
+	Optional<Boolean> findIsSOTrxByCode(@NonNull String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
 }
