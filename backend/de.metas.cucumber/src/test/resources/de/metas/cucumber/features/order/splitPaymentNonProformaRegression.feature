@@ -105,15 +105,20 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
       | LC                | 21000.00 | null          | PR     | null          | N      |
       | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
 
-    # ── INV1: financial purchase invoice, matched to R1 via M_InOutLine_ID FK ──
-    # (auto-creates M_MatchInv on completeIt — resolves the DateAcct NPE from the manual path)
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # ── INV1: financial purchase invoice via the real IC pipeline (IsPartialInvoice=Y) ──
+    # Wait for IC to be created after receipt, then generate invoice via the real pipeline.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | 400          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | Y                | 400         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
 
     # AC #22 — no allocation created (DeliveryPrepaymentAllocationService dormant)
     Then there are no allocation lines for invoice
