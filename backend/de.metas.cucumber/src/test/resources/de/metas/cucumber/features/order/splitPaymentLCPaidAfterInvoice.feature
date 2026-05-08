@@ -113,6 +113,10 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
     # ── T2: R1 + INV1 complete BEFORE the LC payment ──
     # The procurement worker has goods received + vendor's financial invoice in hand
     # while the LC bank wire is still in flight.
+    # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | lcOrder    | lcOrderL1      | vendor        | vendor_loc             | product      | 100        | wh             |
     # Canonical HU receipt: 100 PCE in 1 TU → receipt r1 with line r1_line1.
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
