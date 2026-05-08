@@ -59,9 +59,10 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_lc        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_lc        |             |
+      | pt_immediate |             |
+      | pt_net90     | 90          |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -128,13 +129,24 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
       | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
       | 100        | r1_line1       | r1         | CO        | lcOrderL1      |
 
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 100 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # Wait for IC to be created after receipt, then generate invoice via the real pipeline with IsPartialInvoice=Y.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | 100          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | Y                | 100         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
+    # Override inv1's payment term so it is not due on 2026-04-24 (pay date) — prevents it from
+    # appearing in the pay-selection's "Create from..." which only targets the proforma payment.
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1       | pt_net90             |
 
     # Forward-mode allocation chain runs at INV1 AFTER_COMPLETE but
     # lookupProformaPrepaymentPayment returns null (no completed payment yet) → no-op.

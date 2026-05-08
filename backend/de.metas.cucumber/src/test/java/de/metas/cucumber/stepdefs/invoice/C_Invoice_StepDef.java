@@ -519,6 +519,9 @@ public class C_Invoice_StepDef
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
 
+		row.getAsOptionalBoolean(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(isPartialInvoice -> softly.assertThat(invoice.isPartialInvoice()).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(isPartialInvoice));
+
 		// payment related
 		{
 			row.getAsOptionalBoolean(COLUMNNAME_IsPaid)
@@ -895,21 +898,10 @@ public class C_Invoice_StepDef
 			invoice.setDateInvoiced(dateInvoiced);
 		}
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
-		if (Check.isNotBlank(paymentTerm))
-		{
-			final PaymentTermQuery query = PaymentTermQuery.builder()
-					.orgId(StepDefConstants.ORG_ID)
-					.value(paymentTerm)
-					.build();
-
-			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
-					.orElse(null);
-
-			assertThat(paymentTermId).isNotNull();
-
-			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-		}
+		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
+		// resolve correctly even when the DB record has a unique timestamped Value.
+		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
 
