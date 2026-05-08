@@ -7,7 +7,6 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 /*
@@ -65,7 +64,7 @@ public interface IVATCodeDAO extends ISingletonService
 	 * Used to derive the correct IsSOTrx for Net VAT code lookup when the tax leg's IsSOTrx
 	 * differs from the document's (e.g. reverse-charge T_Due_Acct within a purchase allocation).
 	 *
-	 * @return Optional.empty() if vatCode is null/empty or no record found
+	 * @return Optional.empty() if no record found or if the record's IsSOTrx is blank
 	 */
-	Optional<Boolean> findIsSOTrxByCode(@Nullable String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
+	Optional<Boolean> findIsSOTrxByCode(@NonNull String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
 }

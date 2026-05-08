@@ -481,6 +481,10 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final TaxId taxId)
 	{
+		if (vatCode == null || vatCode.isEmpty())
+		{
+			return Optional.empty();
+		}
 		return vatCodeDAO.findIsSOTrxByCode(vatCode, acctSchemaId, taxId);
 	}
 

@@ -151,20 +151,23 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	@Override
-	public Optional<Boolean> findIsSOTrxByCode(@Nullable final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
+	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
 	{
-		if (vatCode == null || vatCode.isEmpty())
-		{
-			return Optional.empty();
-		}
-		return queryBL.createQueryBuilder(I_C_VAT_Code.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
 				.firstOnlyOptional()
-				.map(r -> X_C_VAT_Code.ISSOTRX_Yes.equals(r.getIsSOTrx()));
+				.flatMap(r -> {
+					final String isSOTrxStr = r.getIsSOTrx();
+					if (isSOTrxStr == null || isSOTrxStr.isEmpty())
+					{
+						return Optional.empty();
+					}
+					return Optional.of(X_C_VAT_Code.ISSOTRX_Yes.equals(isSOTrxStr));
+				});
 	}
 
 	/**

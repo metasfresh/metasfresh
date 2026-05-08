@@ -435,8 +435,8 @@ Feature: invoice payment allocation
     # Gross write-off leg (2.90 EUR) has no VAT code (createInvoiceWriteOffFacts does not set one)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
-      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |               |
-      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |               |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    | null          |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    | null          |
       | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    | tax1_T        |
       | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    | tax1_N        |
 
