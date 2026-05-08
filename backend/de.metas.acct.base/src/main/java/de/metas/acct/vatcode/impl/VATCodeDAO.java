@@ -141,6 +141,10 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			record.setDescription(request.getDescription());
 		}
+		if (request.getAmountType() != null)
+		{
+			record.setAmountType(request.getAmountType().getCode());
+		}
 		InterfaceWrapperHelper.saveRecord(record);
 		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
 	}
@@ -180,6 +184,19 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			logger.debug("=> not matching (Date)");
 			return false;
+		}
+
+		// Match AmountType (when specified in request)
+		if (request.getAmountType() != null)
+		{
+			final String matchingAmountType = matching.getAmountType();
+			// null matchingAmountType: record has no AmountType set (only in legacy/test data;
+			// production column is NOT NULL DEFAULT 'T'). A null record cannot satisfy a typed request.
+			if (!request.getAmountType().getCode().equals(matchingAmountType))
+			{
+				logger.debug("=> not matching (AmountType)");
+				return false;
+			}
 		}
 
 		logger.debug("=> matching");

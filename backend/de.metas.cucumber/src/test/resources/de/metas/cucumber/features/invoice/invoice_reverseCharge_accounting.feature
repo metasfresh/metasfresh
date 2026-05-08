@@ -43,6 +43,12 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsReverseCharge |
       | rcTax19    | rcTaxCategory    | 19   | DE                       | DE                        | true            |
 
+    And metasfresh contains C_VAT_Codes:
+      | Identifier   | C_Tax_ID | IsSOTrx | AmountType |
+      | purchase19_N | rcTax19  | N       | N          |
+      | purchase19_T | rcTax19  | N       | T          |
+      | sales19_T    | rcTax19  | Y       | T          |
+
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | pricingSystem |
@@ -105,11 +111,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
 
     # Invoice posting: expense DR, liability CR, VSt DR (tax receivable), USt CR (tax payable)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvoice |
-      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvoice |
-      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvoice |
-      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcInvoice |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvoice | -             |
+      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvoice | purchase19_N  |
+      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvoice | purchase19_T  |
+      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcInvoice | sales19_T     |
 
     # Payment with discount (Skonto): pay 970, discount 30
     And metasfresh contains C_Payment
@@ -127,14 +133,14 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
     #   discount 30 EUR * 19% = 5.70 EUR tax correction per leg.
     # Both legs net to zero in cash terms but are required for correct VAT declaration (§17 UStG).
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | V_Liability_Acct      | -1000 EUR   |             | -        | rcAlloc   |
-      | B_PaymentSelect_Acct  |             | -970 EUR    | -        | rcAlloc   |
-      | PayDiscount_Rev_Acct  |             | -30 EUR     | rcTax19  | rcAlloc   |
-      | PayDiscount_Rev_Acct  | -5.70 EUR   |             | rcTax19  | rcAlloc   |
-      | T_Credit_Acct         |             | -5.70 EUR   | rcTax19  | rcAlloc   |
-      | T_Due_Acct            | -5.70 EUR   |             | rcTax19  | rcAlloc   |
-      | PayDiscount_Rev_Acct  |             | -5.70 EUR   | rcTax19  | rcAlloc   |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | V_Liability_Acct      | -1000 EUR   |             | -        | rcAlloc   | -             |
+      | B_PaymentSelect_Acct  |             | -970 EUR    | -        | rcAlloc   | -             |
+      | PayDiscount_Rev_Acct  |             | -30 EUR     | rcTax19  | rcAlloc   | purchase19_T  |
+      | PayDiscount_Rev_Acct  | -5.70 EUR   |             | rcTax19  | rcAlloc   | purchase19_T  |
+      | T_Credit_Acct         |             | -5.70 EUR   | rcTax19  | rcAlloc   | purchase19_T  |
+      | T_Due_Acct            | -5.70 EUR   |             | rcTax19  | rcAlloc   | sales19_T     |
+      | PayDiscount_Rev_Acct  |             | -5.70 EUR   | rcTax19  | rcAlloc   | sales19_T     |
 
 
 # ############################################################################################################################################
@@ -162,11 +168,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
 
     # APC posting: Liability DR, Expense CR, VSt CR (reverses debit), USt DR (reverses credit)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
-      | V_Liability_Acct      | 1000 EUR    |             | -        | rcCreditMemo |
-      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCreditMemo |
-      | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCreditMemo |
-      | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcCreditMemo |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    | C_VAT_Code_ID |
+      | V_Liability_Acct      | 1000 EUR    |             | -        | rcCreditMemo | -             |
+      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCreditMemo | purchase19_N  |
+      | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCreditMemo | purchase19_T  |
+      | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcCreditMemo | sales19_T     |
 
 
 # ############################################################################################################################################
@@ -186,11 +192,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
 
     # Verify original posting: VSt DR 190 (receivable), USt CR 190 (payable)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID      |
-      | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvToReverse |
-      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvToReverse |
-      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvToReverse |
-      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcInvToReverse |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID      | C_VAT_Code_ID |
+      | V_Liability_Acct      |             | 1000 EUR    | -        | rcInvToReverse | -             |
+      | P_Expense_Acct        | 1000 EUR    |             | rcTax19  | rcInvToReverse | purchase19_N  |
+      | T_Credit_Acct         | 190 EUR     |             | rcTax19  | rcInvToReverse | purchase19_T  |
+      | T_Due_Acct            |             | 190 EUR     | rcTax19  | rcInvToReverse | sales19_T     |
 
     And the invoice identified by rcInvToReverse is reversed
     And the reversal of invoice rcInvToReverse is identified by rcInvReversal
@@ -199,11 +205,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
     # Original: V_Liability CR 1000, P_Expense DR 1000, T_Credit DR 190, T_Due CR 190
     # Reversal: V_Liability CR -1000, P_Expense DR -1000, T_Credit DR -190, T_Due CR -190
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
-      | V_Liability_Acct      |             | -1000 EUR   | -        | rcInvReversal |
-      | P_Expense_Acct        | -1000 EUR   |             | rcTax19  | rcInvReversal |
-      | T_Credit_Acct         | -190 EUR    |             | rcTax19  | rcInvReversal |
-      | T_Due_Acct            |             | -190 EUR    | rcTax19  | rcInvReversal |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     | C_VAT_Code_ID |
+      | V_Liability_Acct      |             | -1000 EUR   | -        | rcInvReversal | -             |
+      | P_Expense_Acct        | -1000 EUR   |             | rcTax19  | rcInvReversal | purchase19_N  |
+      | T_Credit_Acct         | -190 EUR    |             | rcTax19  | rcInvReversal | purchase19_T  |
+      | T_Due_Acct            |             | -190 EUR    | rcTax19  | rcInvReversal | sales19_T     |
 
     # Sum of original + reversal on T_Credit_Acct = 0, T_Due_Acct = 0
 
@@ -225,11 +231,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
 
     # Verify original APC posting: Liability DR, Expense CR, VSt CR, USt DR
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     |
-      | V_Liability_Acct      | 1000 EUR    |             | -        | rcCmToReverse |
-      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCmToReverse |
-      | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCmToReverse |
-      | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcCmToReverse |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID     | C_VAT_Code_ID |
+      | V_Liability_Acct      | 1000 EUR    |             | -        | rcCmToReverse | -             |
+      | P_Expense_Acct        |             | 1000 EUR    | rcTax19  | rcCmToReverse | purchase19_N  |
+      | T_Credit_Acct         |             | 190 EUR     | rcTax19  | rcCmToReverse | purchase19_T  |
+      | T_Due_Acct            | 190 EUR     |             | rcTax19  | rcCmToReverse | sales19_T     |
 
     And the invoice identified by rcCmToReverse is reversed
     And the reversal of invoice rcCmToReverse is identified by rcCmReversal
@@ -238,11 +244,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
     # Original APC: V_Liability DR 1000, P_Expense CR 1000, T_Credit CR 190, T_Due DR 190
     # Reversal:     V_Liability DR -1000, P_Expense CR -1000, T_Credit CR -190, T_Due DR -190
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    |
-      | V_Liability_Acct      | -1000 EUR   |             | -        | rcCmReversal |
-      | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal |
-      | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal |
-      | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID    | C_VAT_Code_ID |
+      | V_Liability_Acct      | -1000 EUR   |             | -        | rcCmReversal | -             |
+      | P_Expense_Acct        |             | -1000 EUR   | rcTax19  | rcCmReversal | purchase19_N  |
+      | T_Credit_Acct         |             | -190 EUR    | rcTax19  | rcCmReversal | purchase19_T  |
+      | T_Due_Acct            | -190 EUR    |             | rcTax19  | rcCmReversal | sales19_T     |
 
 
 # ############################################################################################################################################
