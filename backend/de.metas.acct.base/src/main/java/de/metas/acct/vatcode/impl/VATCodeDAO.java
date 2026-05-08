@@ -163,7 +163,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
-				.firstOptional()
+				.firstOnlyOptional()
 				.map(r -> X_C_VAT_Code.ISSOTRX_Yes.equals(r.getIsSOTrx()));
 	}
 
@@ -239,7 +239,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addColumn(I_C_VAT_Code.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_ValidTo, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_IsSOTrx, Direction.Ascending, Nulls.Last)
-				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID)
+				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
 				.create()
