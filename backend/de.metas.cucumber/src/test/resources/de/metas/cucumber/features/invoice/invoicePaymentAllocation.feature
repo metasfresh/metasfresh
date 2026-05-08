@@ -380,6 +380,10 @@ Feature: invoice payment allocation
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
       | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | tax1_N     | tax1     | Y       | N          |
+      | tax1_T     | tax1     | Y       | T          |
     And the invoice identified by inv_120_1 is completed
     And the invoice identified by inv_120_2 is completed
 
@@ -427,12 +431,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_120_2    | 0      | 2.9         | alloc3             |
+    # §17 UStG: WriteOff offset leg → Net VAT code; T_Due correction → Tax VAT code
+    # Gross write-off leg (2.90 EUR) has no VAT code (createInvoiceWriteOffFacts does not set one)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
-      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
-      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
-      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |               |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |               |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    | tax1_T        |
+      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    | tax1_N        |
 
 
 
