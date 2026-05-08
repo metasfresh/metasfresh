@@ -68,9 +68,10 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_lc        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_lc        |             |
+      | pt_immediate |             |
+      | pt_net90     | 90          |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -120,6 +121,10 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | lcInvoice    | 21000.00 | lcPayment    |
 
     # ── R1: 400 PCE → R1.with_tax = 40,000 ──
+    # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | lcOrder    | lcOrderL1      | vendor        | vendor_loc             | product      | 700        | wh             |
     # Canonical HU receipt: 400 PCE in 1 TU → receipt r1 with line r1_line1.
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
@@ -132,14 +137,24 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     # ── INV1bad: MISMARKED as Final (IsPartialInvoice='N' when it should be 'Y' Partial) ──
-    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1bad    | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1badL1  | inv1bad      | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1bad is completed
+    # Wait for IC to be created after receipt, then generate invoice via the real pipeline with IsPartialInvoice=N.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | 400          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | N                | 400         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1bad                 |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1bad                 | N                | CO        |
+    # Override inv1bad's payment term so it is not due on 2026-04-24 (pay date) — prevents it from
+    # appearing in any pay-selection's "Create from..." run.
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1bad    | pt_net90             |
 
     # Final rule: alloc = remaining_prepay = 21,000 (full prepay drained at first invoice)
     Then validate C_AllocationLines for invoice inv1bad
@@ -173,14 +188,22 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | inv1bad      |
 
     # ── User reissues INV1' correctly marked as Partial (IsPartialInvoice='Y'), matched to R1 ──
-    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # After inv1bad reversal the IC is reset; generate the corrected invoice via the real pipeline.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | lcOrderL1                 | 400          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic1                               | Y                | 400         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic1                               | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1       | pt_net90             |
 
     # AC #13 — end-state matches TC1 step 3:
     #   alloc = MIN(40,000 × 30 %, 21,000) = 12,000; prepay = 9,000; INV1.OpenAmt = 28,000
