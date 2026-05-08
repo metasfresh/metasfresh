@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV_ExportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -130832715L;
+	private static final long serialVersionUID = 1359849101L;
 
     /** Standard Constructor */
     public X_DATEV_ExportLine (final Properties ctx, final int DATEV_ExportLine_ID, @Nullable final String trxName)
@@ -48,6 +48,18 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
+	public void setAdditionalDescription (final @Nullable java.lang.String AdditionalDescription)
+	{
+		set_Value (COLUMNNAME_AdditionalDescription, AdditionalDescription);
+	}
+
+	@Override
+	public java.lang.String getAdditionalDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdditionalDescription);
+	}
+
+	@Override
 	public void setAmt (final BigDecimal Amt)
 	{
 		set_Value (COLUMNNAME_Amt, Amt);
@@ -71,6 +83,18 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmtSource);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setBP_Account_Place (final @Nullable java.lang.String BP_Account_Place)
+	{
+		set_Value (COLUMNNAME_BP_Account_Place, BP_Account_Place);
+	}
+
+	@Override
+	public java.lang.String getBP_Account_Place() 
+	{
+		return get_ValueAsString(COLUMNNAME_BP_Account_Place);
 	}
 
 	@Override
@@ -261,6 +285,19 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	}
 
 	@Override
+	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
+	{
+		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getCurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setDateAcct (final @Nullable java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
@@ -377,13 +414,38 @@ public class X_DATEV_ExportLine extends org.compiere.model.PO implements I_DATEV
 	@Override
 	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
 	{
-		set_ValueNoCheck (COLUMNNAME_DueDate, DueDate);
+		set_Value (COLUMNNAME_DueDate, DueDate);
 	}
 
 	@Override
 	public java.sql.Timestamp getDueDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setEmptyColumn (final @Nullable java.lang.String EmptyColumn)
+	{
+		set_Value (COLUMNNAME_EmptyColumn, EmptyColumn);
+	}
+
+	@Override
+	public java.lang.String getEmptyColumn() 
+	{
+		return get_ValueAsString(COLUMNNAME_EmptyColumn);
+	}
+
+	@Override
+	public void setGrossAmt (final BigDecimal GrossAmt)
+	{
+		set_Value (COLUMNNAME_GrossAmt, GrossAmt);
+	}
+
+	@Override
+	public BigDecimal getGrossAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
