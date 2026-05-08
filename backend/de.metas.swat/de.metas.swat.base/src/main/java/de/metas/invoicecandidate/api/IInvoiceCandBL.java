@@ -111,7 +111,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 *
-	 * @param isPartialInvoice if non-null, overrides the partial/final invoice routing in the aggregation engine; if null, no override is applied
+	 * @param isPartialInvoice {@code true} to generate partial invoices, {@code false} for final invoices,
+	 *                         or {@code null} to use the default behaviour.
 	 */
 	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, @Nullable Boolean isPartialInvoice, String trxName);
 

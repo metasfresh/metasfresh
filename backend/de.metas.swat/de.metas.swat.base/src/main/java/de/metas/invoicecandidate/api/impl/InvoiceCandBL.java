@@ -760,6 +760,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final PlainInvoicingParams params = new PlainInvoicingParams();
 			params.setIsPartialInvoice(isPartialInvoice);
+			params.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
 			generator.setInvoicingParams(params);
 		}
 
