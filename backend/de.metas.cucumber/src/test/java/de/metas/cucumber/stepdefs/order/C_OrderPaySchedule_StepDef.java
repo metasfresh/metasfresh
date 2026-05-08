@@ -79,7 +79,7 @@ public class C_OrderPaySchedule_StepDef
 	 * </ul>
 	 * Optional DataTable columns:
 	 * <ul>
-	 *   <li>{@code DueAmt} — planned due amount</li>
+	 *   <li>{@code DueAmt} — planned due amount; use {@code null} to assert the column is NULL.</li>
 	 *   <li>{@code DueDate} — due date</li>
 	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} enum name</li>
 	 * </ul>
@@ -123,7 +123,7 @@ public class C_OrderPaySchedule_StepDef
 	 * </ul>
 	 * Optional DataTable columns:
 	 * <ul>
-	 *   <li>{@code DueAmt} — planned due amount</li>
+	 *   <li>{@code DueAmt} — planned due amount; use {@code null} to assert the column is NULL.</li>
 	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code: {@code PR} (Pending), {@code WP} (Awaiting_Pay), {@code P} (Paid)</li>
 	 *   <li>{@code DueAmt_Actual} — actual due amount from the proforma invoice;
 	 *       use {@code null} to assert the column is NULL/zero.</li>
@@ -234,8 +234,18 @@ public class C_OrderPaySchedule_StepDef
 						softly.assertThat(actual != null ? actual.toBigDecimal() : null).as("BaseAmt").isEqualByComparingTo(rawValue);
 					}
 				});
-		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
+				.ifPresent(rawValue -> {
+					final Money actual = payScheduleLine.getDueAmount();
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(actual).as("DueAmt should be null").isNull();
+					}
+					else
+					{
+						softly.assertThat(actual != null ? actual.toBigDecimal() : null).as("DueAmt").isEqualByComparingTo(rawValue);
+					}
+				});
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
 				.ifPresent(rawValue -> {
 					final Money actual = payScheduleLine.getDueAmountActual();
