@@ -5,6 +5,7 @@ import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
+import org.jetbrains.annotations.NotNull;
 
 /*
  * #%L
@@ -35,7 +36,7 @@ public class PlainAcctSchemaDAO extends AcctSchemaDAO
 	 *         the current practice is to register an anonymous subclass of {@link AcctSchemaDAO}.
 	 */
 	@Override
-	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
+	public @NotNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
 	{
 		Adempiere.assertUnitTestMode();
 		return null;

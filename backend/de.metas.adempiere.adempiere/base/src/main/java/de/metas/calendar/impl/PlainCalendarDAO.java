@@ -37,7 +37,6 @@ import org.compiere.model.I_C_Year;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -57,7 +56,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		{
 
 			@Override
-			public boolean accept(I_C_Period pojo)
+			public boolean accept(final I_C_Period pojo)
 			{
 				if (!pojo.getC_Year().equals(year))
 				{
@@ -78,13 +77,13 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 			}
 
 		});
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
+		periods.sort(new AccessorComparator<I_C_Period, Timestamp>(
 				new ComparableComparator<Timestamp>(),
 				new TypedAccessor<Timestamp>()
 				{
 
 					@Override
-					public Timestamp getValue(Object o)
+					public Timestamp getValue(final Object o)
 					{
 						return ((I_C_Period)o).getStartDate();
 					}
@@ -103,14 +102,9 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		{
 
 			@Override
-			public boolean accept(I_C_Year pojo)
+			public boolean accept(final I_C_Year pojo)
 			{
-				if (pojo.getC_Calendar_ID() != calendarId)
-				{
-					return false;
-				}
-
-				return true;
+				return pojo.getC_Calendar_ID() == calendarId;
 			}
 
 		});
@@ -119,7 +113,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		{
 
 			@Override
-			public boolean accept(I_C_Period pojo)
+			public boolean accept(final I_C_Period pojo)
 			{
 				if (!years.contains(pojo.getC_Year()))
 				{
@@ -146,13 +140,13 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 
 		});
 
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
+		periods.sort(new AccessorComparator<I_C_Period, Timestamp>(
 				new ComparableComparator<Timestamp>(),
 				new TypedAccessor<Timestamp>()
 				{
 
 					@Override
-					public Timestamp getValue(Object o)
+					public Timestamp getValue(final Object o)
 					{
 						return ((I_C_Period)o).getStartDate();
 					}
@@ -170,7 +164,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		{
 
 			@Override
-			public boolean accept(I_C_Year pojo)
+			public boolean accept(final I_C_Year pojo)
 			{
 				if (!pojo.isActive())
 				{
@@ -192,13 +186,13 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 
 		});
 
-		Collections.sort(years, new AccessorComparator<I_C_Year, Integer>(
+		years.sort(new AccessorComparator<I_C_Year, Integer>(
 				new ComparableComparator<Integer>(),
 				new TypedAccessor<Integer>()
 				{
 
 					@Override
-					public Integer getValue(Object o)
+					public Integer getValue(final Object o)
 					{
 						return ((I_C_Year)o).getC_Year_ID();
 					}
@@ -224,11 +218,10 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 
 	private List<I_C_Period> getPeriodsOfYear(@NonNull final YearId yearId)
 	{
-
-		List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
+		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
 		{
 			@Override
-			public boolean accept(I_C_Period pojo)
+			public boolean accept(final I_C_Period pojo)
 			{
 				if (pojo.getC_Year_ID() != yearId.getRepoId())
 				{
@@ -250,13 +243,13 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 
 		});
 
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
+		periods.sort(new AccessorComparator<I_C_Period, Timestamp>(
 				new ComparableComparator<Timestamp>(),
 				new TypedAccessor<Timestamp>()
 				{
 
 					@Override
-					public Timestamp getValue(Object o)
+					public Timestamp getValue(final Object o)
 					{
 						return ((I_C_Period)o).getStartDate();
 					}
