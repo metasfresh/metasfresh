@@ -1,7 +1,10 @@
 package de.metas.acct.api.impl;
 
+import de.metas.calendar.PeriodId;
 import lombok.Builder;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,4 +35,5 @@ public class AcctSchemaPeriodControl
 	boolean automaticPeriodControl;
 	int openDaysInFuture;
 	int openDaysInPast;
+	@Nullable PeriodId periodId;
 }

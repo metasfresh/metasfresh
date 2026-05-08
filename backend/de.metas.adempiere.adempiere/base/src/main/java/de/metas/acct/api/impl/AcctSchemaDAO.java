@@ -19,6 +19,8 @@ import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.cache.CCache;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
@@ -40,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -67,6 +70,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final PeriodRepo periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
 
 	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
@@ -202,7 +206,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		record.setName(acctSchemaElement.getName());
 		record.setC_AcctSchema_ID(acctSchemaElement.getAcctSchemaId().getRepoId());
-		record.setC_Element_ID(chartOfAccountsId !=null ? chartOfAccountsId.getRepoId() : -1);
+		record.setC_Element_ID(chartOfAccountsId != null ? chartOfAccountsId.getRepoId() : -1);
 		record.setElementType(acctSchemaElement.getElementType().getCode());
 		record.setIsBalanced(acctSchemaElement.isBalanced());
 		record.setIsDisplayInEditor(acctSchemaElement.isDisplayedInEditor());
@@ -392,10 +396,13 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemaPeriodControl toAcctSchemaPeriodControl(final I_C_AcctSchema acctSchemaRecord)
 	{
+		final PeriodId periodId = acctSchemaRecord.getC_Period_ID() > 0 ? periodRepo.getPeriodId(acctSchemaRecord.getC_Period_ID()) : null;
+
 		return AcctSchemaPeriodControl.builder()
 				.automaticPeriodControl(acctSchemaRecord.isAutoPeriodControl())
 				.openDaysInPast(acctSchemaRecord.getPeriod_OpenHistory())
 				.openDaysInFuture(acctSchemaRecord.getPeriod_OpenFuture())
+				.periodId(periodId)
 				.build();
 	}
 

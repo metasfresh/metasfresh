@@ -36,8 +36,10 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
@@ -1440,7 +1442,7 @@ public class FlatrateBL implements IFlatrateBL
 				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
-				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
+				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()) );
 
 				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
 			}

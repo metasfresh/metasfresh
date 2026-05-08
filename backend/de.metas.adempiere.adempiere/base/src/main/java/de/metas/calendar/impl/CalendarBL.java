@@ -25,6 +25,10 @@ package de.metas.calendar.impl;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.Period;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
+import de.metas.calendar.YearId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -35,10 +39,10 @@ import de.metas.util.TypedAccessor;
 import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -59,7 +63,7 @@ public class CalendarBL implements ICalendarBL
 	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final PeriodRepo periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
 
 	@Override
 	public boolean isLengthOneYear(final I_C_Year year)
@@ -109,7 +113,7 @@ public class CalendarBL implements ICalendarBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
 		final String trxName = InterfaceWrapperHelper.getTrxName(year);
 
-		final List<I_C_Period> periodsOfTheYear = Services.get(ICalendarDAO.class).retrievePeriods(ctx, year, trxName);
+		final List<I_C_Period> periodsOfTheYear = calendarDAO.retrievePeriods(ctx, year, trxName);
 
 		final int numberOfPeriods = periodsOfTheYear.size();
 
@@ -148,9 +152,9 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getLastDayOfYear(final I_C_Year year)
+	public Timestamp getLastDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveLastPeriodOfTheYear(year);
+		final I_C_Period period = calendarDAO.retrieveLastPeriodOfTheYear(yearId);
 
 		final Timestamp lastDay = period.getEndDate();
 
@@ -158,13 +162,20 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getFirstDayOfYear(final I_C_Year year)
+	public Timestamp getFirstDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveFirstPeriodOfTheYear(year);
+		final I_C_Period period = calendarDAO.retrieveFirstPeriodOfTheYear(yearId);
 
-		final Timestamp firstDay = period.getStartDate();
+		return period.getStartDate();
+	}
 
-		return firstDay;
+	@Override
+	public Timestamp getFirstDayOfYear(@NonNull final PeriodId periodId)
+	{
+		final Period period = periodRepo.getById(periodId);
+		final I_C_Period firsPeriodOfTheYear = calendarDAO.retrieveFirstPeriodOfTheYear(period.getId().getYearId());
+
+		return firsPeriodOfTheYear.getStartDate();
 	}
 
 	@Override
@@ -173,7 +184,7 @@ public class CalendarBL implements ICalendarBL
 		Check.errorUnless(isCalendarNoOverlaps(calendar), "{} has overlaps", calendar);
 		Check.errorUnless(isCalendarNoGaps(calendar), "{} has gaps", calendar);
 
-		final List<I_C_Year> years = Services.get(ICalendarDAO.class).retrieveYearsOfCalendar(calendar);
+		final List<I_C_Year> years = calendarDAO.retrieveYearsOfCalendar(calendar);
 
 		for (final I_C_Year year : years)
 		{
@@ -187,27 +198,25 @@ public class CalendarBL implements ICalendarBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(calendar);
 		final String trxName = InterfaceWrapperHelper.getTrxName(calendar);
 
-		final List<I_C_Year> years = Services.get(ICalendarDAO.class).retrieveYearsOfCalendar(calendar);
+		final List<I_C_Year> years = calendarDAO.retrieveYearsOfCalendar(calendar);
 		final List<I_C_Period> periodsOfCalendar = new ArrayList<>();
 
 		for (final I_C_Year year : years)
 		{
-			final List<I_C_Period> periodsOfYear = Services.get(ICalendarDAO.class).retrievePeriods(ctx, year, trxName);
+			final List<I_C_Period> periodsOfYear = calendarDAO.retrievePeriods(ctx, year, trxName);
 			periodsOfCalendar.addAll(periodsOfYear);
 
 		}
 
-		Collections.sort(periodsOfCalendar, new AccessorComparator<I_C_Period, Timestamp>(
-				new ComparableComparator<Timestamp>(),
-				new TypedAccessor<Timestamp>()
-				{
+		Collections.sort(periodsOfCalendar, new AccessorComparator<I_C_Period, Timestamp>(new ComparableComparator<Timestamp>(), new TypedAccessor<Timestamp>()
+		{
 
-					@Override
-					public Timestamp getValue(final Object o)
-					{
-						return ((I_C_Period)o).getStartDate();
-					}
-				}));
+			@Override
+			public Timestamp getValue(final Object o)
+			{
+				return ((I_C_Period)o).getStartDate();
+			}
+		}));
 
 		return periodsOfCalendar;
 	}
@@ -222,9 +231,7 @@ public class CalendarBL implements ICalendarBL
 	public IBusinessDayMatcher createBusinessDayMatcherExcluding(final Set<DayOfWeek> excludeWeekendDays)
 	{
 		// TODO: consider I_C_NonBusinessDay and compose the matchers using CompositeBusinessDayMatcher
-		return ExcludeWeekendBusinessDayMatcher.builder()
-				.excludeWeekendDays(excludeWeekendDays)
-				.build();
+		return ExcludeWeekendBusinessDayMatcher.builder().excludeWeekendDays(excludeWeekendDays).build();
 	}
 
 	@Override

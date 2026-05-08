@@ -58,3 +58,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2026-05-08 08:09:11.468000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=778081
 ;
 
+-- 2026-05-08T08:57:53.252Z
+UPDATE DATEV_ExportFormat SET CSVFieldQuote='"',Updated=TO_TIMESTAMP('2026-05-08 08:57:53.250000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE DATEV_ExportFormat_ID=540004
+;
+

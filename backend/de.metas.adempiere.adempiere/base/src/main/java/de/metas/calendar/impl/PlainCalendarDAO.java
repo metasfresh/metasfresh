@@ -22,8 +22,10 @@
 
 package de.metas.calendar.impl;
 
+import de.metas.calendar.YearId;
 import de.metas.util.Check;
 import de.metas.util.TypedAccessor;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -206,31 +208,29 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	}
 
 	@Override
-	public I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year)
+	public I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
+		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
 		return periods.get(0);
 
 	}
 
 	@Override
-	public I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year)
+	public I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
+		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
 		return periods.get(periods.size() - 1);
 	}
 
-	private List<I_C_Period> getPeriodsOfYear(final I_C_Year year)
+	private List<I_C_Period> getPeriodsOfYear(@NonNull final YearId yearId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
 
 		List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
 		{
-
 			@Override
 			public boolean accept(I_C_Period pojo)
 			{
-				if (!pojo.getC_Year().equals(year))
+				if (pojo.getC_Year_ID() != yearId.getRepoId())
 				{
 					return false;
 				}
@@ -240,7 +240,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 					return false;
 				}
 
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
+				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID())
 				{
 					return false;
 				}

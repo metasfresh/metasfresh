@@ -30,8 +30,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 public class PeriodId implements RepoIdAware
 {
@@ -41,14 +39,14 @@ public class PeriodId implements RepoIdAware
 	YearId yearId;
 
 	@JsonCreator
-	public static PeriodId ofRepoId(@NonNull final YearId calendarId, final int repoId)
+	public static PeriodId ofRepoId(@NonNull final YearId yearId, final int repoId)
 	{
-		return new PeriodId(calendarId, repoId);
+		return new PeriodId(yearId, repoId);
 	}
 
-	private PeriodId(@Nullable final YearId calendarId, final int repoId)
+	private PeriodId(@NonNull final YearId yearId, final int repoId)
 	{
-		this.yearId = calendarId;
+		this.yearId = yearId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, "periodId");
 	}
 
