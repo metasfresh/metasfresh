@@ -34,5 +34,6 @@ public class DATEVExportConfig
 	@NonNull String clientNumber;
 	@NonNull String advisorNumber;
 	@NonNull String chartOfAccounts;
+	@NonNull String origin;
 	int chartOfAccountsNumberLength;
 }

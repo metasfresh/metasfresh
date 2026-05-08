@@ -209,6 +209,27 @@ public interface I_DATEV_Export_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Herkunft.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOrigin (java.lang.String Origin);
+
+	/**
+	 * Get Herkunft.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getOrigin();
+
+	ModelColumn<I_DATEV_Export_Config, Object> COLUMN_Origin = new ModelColumn<>(I_DATEV_Export_Config.class, "Origin", null);
+	String COLUMNNAME_Origin = "Origin";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

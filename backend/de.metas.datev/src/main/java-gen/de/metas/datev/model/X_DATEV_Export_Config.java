@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export_Config extends org.compiere.model.PO implements I_DATEV_Export_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -736122600L;
+	private static final long serialVersionUID = 670510491L;
 
     /** Standard Constructor */
     public X_DATEV_Export_Config (final Properties ctx, final int DATEV_Export_Config_ID, @Nullable final String trxName)
@@ -95,5 +95,17 @@ public class X_DATEV_Export_Config extends org.compiere.model.PO implements I_DA
 	public int getDATEV_Export_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DATEV_Export_Config_ID);
+	}
+
+	@Override
+	public void setOrigin (final java.lang.String Origin)
+	{
+		set_Value (COLUMNNAME_Origin, Origin);
+	}
+
+	@Override
+	public java.lang.String getOrigin() 
+	{
+		return get_ValueAsString(COLUMNNAME_Origin);
 	}
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1485734460L;
+	private static final long serialVersionUID = 1844434239L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -227,6 +227,18 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	public boolean isSwitchCreditMemo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSwitchCreditMemo);
+	}
+
+	@Override
+	public void setOrigin (final @Nullable java.lang.String Origin)
+	{
+		set_ValueNoCheck (COLUMNNAME_Origin, Origin);
+	}
+
+	@Override
+	public java.lang.String getOrigin() 
+	{
+		return get_ValueAsString(COLUMNNAME_Origin);
 	}
 
 	@Override

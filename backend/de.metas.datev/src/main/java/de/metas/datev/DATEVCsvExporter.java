@@ -198,6 +198,8 @@ public class DATEVCsvExporter extends AbstractExporter
 		final String clientNumber = datevExport.getClientNumber();
 		final int chartOfAccountsNumberLength = datevExport.getChartOfAccountsNumberLength();
 		final String chartOfAccounts = datevExport.getChartOfAccounts();
+		final String origin = datevExport.getOrigin();
+
 		return "EXTF;510;21;"
 				+ formatName
 				+ ";7;" // Formatversion
@@ -210,7 +212,8 @@ public class DATEVCsvExporter extends AbstractExporter
 				+ ";" + chartOfAccountsNumberLength
 				+ ";" + dateFrom
 				+ ";" + dateTo
-				+ ";metasfresh;MM;1;0;1;"
+				+ ";" + origin
+				+ ";MM;1;0;1;"
 				+ currencyCode.toThreeLetterCode()
 				+ ";;;;" + chartOfAccounts
 				+ ";;;;";

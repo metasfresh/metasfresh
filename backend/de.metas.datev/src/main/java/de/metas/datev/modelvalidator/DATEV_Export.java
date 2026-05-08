@@ -51,6 +51,7 @@ public class DATEV_Export
 			datevExport.setClientNumber(exportConfig.getClientNumber());
 			datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
 			datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
+			datevExport.setOrigin(exportConfig.getOrigin());
 		}
 	}
 

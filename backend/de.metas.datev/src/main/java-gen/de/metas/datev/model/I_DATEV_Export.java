@@ -411,6 +411,27 @@ public interface I_DATEV_Export
 	String COLUMNNAME_IsSwitchCreditMemo = "IsSwitchCreditMemo";
 
 	/**
+	 * Set Herkunft.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrigin (@Nullable java.lang.String Origin);
+
+	/**
+	 * Get Herkunft.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrigin();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_Origin = new ModelColumn<>(I_DATEV_Export.class, "Origin", null);
+	String COLUMNNAME_Origin = "Origin";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo

@@ -62,6 +62,7 @@ public class DATEVExportConfigRepository
 				.clientNumber(config.getClientNumber())
 				.chartOfAccounts(config.getChartOfAccounts())
 				.chartOfAccountsNumberLength(config.getChartOfAccountsNumberLength())
+				.origin(config.getOrigin())
 				.build();
 	}
 }
