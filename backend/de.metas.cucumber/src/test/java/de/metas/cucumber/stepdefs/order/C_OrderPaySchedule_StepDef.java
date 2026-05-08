@@ -222,10 +222,18 @@ public class C_OrderPaySchedule_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_BaseAmt)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getBaseAmount() != null ? payScheduleLine.getBaseAmount().toBigDecimal() : null)
-						.as("BaseAmt")
-						.isEqualByComparingTo(expected));
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_BaseAmt)
+				.ifPresent(rawValue -> {
+					final Money actual = payScheduleLine.getBaseAmount();
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(actual).as("BaseAmt should be null").isNull();
+					}
+					else
+					{
+						softly.assertThat(actual != null ? actual.toBigDecimal() : null).as("BaseAmt").isEqualByComparingTo(rawValue);
+					}
+				});
 		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
 		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
