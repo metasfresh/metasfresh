@@ -15,7 +15,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -28,6 +27,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -151,7 +151,7 @@ public class VATCodeDAO implements IVATCodeDAO
 	}
 
 	@Override
-	public Optional<Boolean> findIsSOTrxByCode(@Nullable final String vatCode, @NonNull final AcctSchemaId acctSchemaId)
+	public Optional<Boolean> findIsSOTrxByCode(@Nullable final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
 	{
 		if (vatCode == null || vatCode.isEmpty())
 		{
@@ -161,6 +161,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
 				.firstOptional()
 				.map(r -> X_C_VAT_Code.ISSOTRX_Yes.equals(r.getIsSOTrx()));

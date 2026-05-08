@@ -67,5 +67,5 @@ public interface IVATCodeDAO extends ISingletonService
 	 *
 	 * @return Optional.empty() if vatCode is null/empty or no record found
 	 */
-	Optional<Boolean> findIsSOTrxByCode(@Nullable String vatCode, @NonNull AcctSchemaId acctSchemaId);
+	Optional<Boolean> findIsSOTrxByCode(@Nullable String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
 }
