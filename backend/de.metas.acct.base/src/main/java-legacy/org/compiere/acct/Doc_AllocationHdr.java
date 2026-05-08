@@ -692,7 +692,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 				if (fl != null)
 				{
-					fl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Tax);
+					fl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
