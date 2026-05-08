@@ -1,0 +1,4 @@
+
+GET {{baseURL}}/api/v2/test/ping/notifications?noEmail=true
+Authorization: {{authToken}}
+accept: application/json
