@@ -30,6 +30,7 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -1557,7 +1558,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 							if (discountFl != null)
 							{
-								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+								final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+										.findIsSOTrxByCode(taxFactAcct.getVATCode())
+										.orElseGet(line::isSOTrx);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 							}
 
 							// CR
@@ -1582,7 +1586,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 							if (discountFl != null)
 							{
-								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+								final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+										.findIsSOTrxByCode(taxFactAcct.getVATCode())
+										.orElseGet(line::isSOTrx);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 							}
 
 							// CR
@@ -1633,7 +1640,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 							if (discountFl != null)
 							{
-								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+								final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+										.findIsSOTrxByCode(taxFactAcct.getVATCode())
+										.orElseGet(line::isSOTrx);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 							}
 
 						}
@@ -1659,7 +1669,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.buildAndAdd();
 							if (discountFl != null)
 							{
-								discountFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+								final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+										.findIsSOTrxByCode(taxFactAcct.getVATCode())
+										.orElseGet(line::isSOTrx);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 							}
 
 						}
@@ -1692,7 +1705,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.buildAndAdd();
 						if (writeOffFl != null)
 						{
-							writeOffFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+									.findIsSOTrxByCode(taxFactAcct.getVATCode())
+									.orElseGet(line::isSOTrx);
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 						}
 
 						// CR
@@ -1737,7 +1753,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.buildAndAdd();
 						if (writeOffFl != null)
 						{
-							writeOffFl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
+							final boolean netIsSOTrx = Services.get(IVATCodeDAO.class)
+									.findIsSOTrxByCode(taxFactAcct.getVATCode())
+									.orElseGet(line::isSOTrx);
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
 						}
 					}
 				}

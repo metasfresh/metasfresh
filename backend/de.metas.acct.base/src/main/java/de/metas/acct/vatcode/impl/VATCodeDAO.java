@@ -149,6 +149,21 @@ public class VATCodeDAO implements IVATCodeDAO
 		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
 	}
 
+	@Override
+	public Optional<Boolean> findIsSOTrxByCode(@javax.annotation.Nullable final String vatCode)
+	{
+		if (vatCode == null || vatCode.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return queryBL.createQueryBuilder(I_C_VAT_Code.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+				.create()
+				.firstOptional()
+				.map(r -> X_C_VAT_Code.ISSOTRX_Yes.equals(r.getIsSOTrx()));
+	}
+
 	/**
 	 * @return true if the given {@link I_C_VAT_Code} is matching our request.
 	 */
