@@ -27,6 +27,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -149,6 +150,26 @@ public class VATCodeDAO implements IVATCodeDAO
 		return VATCode.of(record.getVATCode(), record.getC_VAT_Code_ID());
 	}
 
+	@Override
+	public Optional<Boolean> findIsSOTrxByCode(@NonNull final String vatCode, @NonNull final AcctSchemaId acctSchemaId, @NonNull final TaxId taxId)
+	{
+		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_C_Tax_ID, taxId)
+				.create()
+				.firstOnlyOptional()
+				.flatMap(r -> {
+					final String isSOTrxStr = r.getIsSOTrx();
+					if (isSOTrxStr == null || isSOTrxStr.isEmpty())
+					{
+						return Optional.empty();
+					}
+					return Optional.of(X_C_VAT_Code.ISSOTRX_Yes.equals(isSOTrxStr));
+				});
+	}
+
 	/**
 	 * @return true if the given {@link I_C_VAT_Code} is matching our request.
 	 */
@@ -221,7 +242,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addColumn(I_C_VAT_Code.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_ValidTo, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_IsSOTrx, Direction.Ascending, Nulls.Last)
-				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID)
+				.addColumn(I_C_VAT_Code.COLUMN_C_VAT_Code_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
 				.create()
