@@ -185,7 +185,7 @@ Feature: invoice payment allocation
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
-  Scenario: sales invoice with VAT codes — allocation discount tax correction has Tax-AmountType VAT code
+  Scenario: allocation discount: PayDiscount_Exp_Acct carries Net VAT code, T_Due_Acct carries Tax VAT code (§17 UStG)
 
     Given metasfresh has date and time 2022-05-11T08:00:00+02:00[Europe/Berlin]
     And metasfresh contains C_TaxCategory
@@ -232,10 +232,14 @@ Feature: invoice payment allocation
       | C_AllocationHdr_ID | C_Invoice_ID | C_Payment_ID | Amount     | DiscountAmt |
       | alloc              | invoice      | payment      | 107.10 EUR | 11.90 EUR   |
 
-    # Key assertion: the T_Due_Acct tax correction leg on the allocation must carry the Tax-AmountType VAT code
+    # §17 UStG: PayDiscount gross leg and offset leg → Net VAT code (Bemessungsgrundlage reduced)
+    # T_Due_Acct correction → Tax VAT code (Steuerbetrag corrected)
+    # Net contribution to N-bucket: 11.90 − 1.90 = 10.00 EUR ✓
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | PayDiscount_Exp_Acct  | 11.90 EUR   |             | tax19    | alloc     | sales19_N     |
       | T_Due_Acct            | 1.90 EUR    |             | tax19    | alloc     | sales19_T     |
+      | PayDiscount_Exp_Acct  |             | 1.90 EUR    | tax19    | alloc     | sales19_N     |
       | *                     |             |             |          | alloc     |               |
 
 
