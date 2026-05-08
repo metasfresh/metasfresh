@@ -62,8 +62,6 @@ public interface ICalendarBL extends ISingletonService
 
 	Timestamp getFirstDayOfYear(@NonNull final YearId yearId);
 
-	Timestamp getFirstDayOfYear(@NonNull PeriodId periodId);
-
 	/**
 	 * Make all the validation for a calendar so it can be properly used in transactions: <br>
 	 * Length: DatenEnd of the C_Year's last period must be one year after DateStart of the C_Year's first period No; <br>

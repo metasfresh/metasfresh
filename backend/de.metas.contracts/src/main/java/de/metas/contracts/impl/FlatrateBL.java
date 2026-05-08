@@ -1442,7 +1442,7 @@ public class FlatrateBL implements IFlatrateBL
 				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
-				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()) );
+				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()));
 
 				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
 			}

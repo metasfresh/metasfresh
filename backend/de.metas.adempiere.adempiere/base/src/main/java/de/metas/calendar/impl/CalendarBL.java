@@ -170,15 +170,6 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getFirstDayOfYear(@NonNull final PeriodId periodId)
-	{
-		final Period period = periodRepo.getById(periodId);
-		final I_C_Period firsPeriodOfTheYear = calendarDAO.retrieveFirstPeriodOfTheYear(period.getId().getYearId());
-
-		return firsPeriodOfTheYear.getStartDate();
-	}
-
-	@Override
 	public void checkCorrectCalendar(final I_C_Calendar calendar)
 	{
 		Check.errorUnless(isCalendarNoOverlaps(calendar), "{} has overlaps", calendar);
