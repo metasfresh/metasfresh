@@ -23,7 +23,7 @@
 -- ---------------------------------------------------------------------------
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version,ColumnSQL)
 VALUES (0,592498,858,0,22,188,'CurrentBalance',TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,14,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N',0,'Current Balance',0,0,TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,
-       '(de_metas_acct.C_ElementValue_CurrentBalance(C_ElementValue.C_ElementValue_ID, @#AD_Org_ID@))')
+       '(de_metas_acct.C_ElementValue_CurrentBalance(C_ElementValue.C_ElementValue_ID))')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -42,7 +42,7 @@ SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.C
 -- 2) AD_Field on AD_Tab_ID=542127 (Konten -> Kontenart)
 -- ---------------------------------------------------------------------------
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy)
-VALUES (0,592498,778075,0,542127,TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,14,'D','Y','Y','Y','N','N','N','Y','N','Current Balance',now(),100)
+VALUES (0,592498,778075,0,542127,TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,14,'D','Y','Y','Y','N','N','N','Y','N','Current Balance',TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -65,48 +65,30 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=778075
 
 -- ---------------------------------------------------------------------------
 -- 3) AD_UI_Element appended to primary group 543186 ("default") of section 541655
---    Position: SeqNo=30 (last in primary group), SeqNoGrid=75 (before AD_Org_ID=80)
+--    Position: SeqNo=30 (last in primary group), SeqNoGrid=80 (after AccountSign=70,
+--              before IsOpenItem=90, Org=100, Client=110)
 -- ---------------------------------------------------------------------------
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy)
-VALUES (0,778075,0,542127,650506,543186,'F',TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','Y','N',0,'Current Balance',30,0,75,now(),100)
+VALUES (0,778075,0,542127,650506,543186,'F',TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','Y','N',0,'Current Balance',30,0,80,TO_TIMESTAMP('2026-05-06 17:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- ---------------------------------------------------------------------------
--- 5) Make IsOpenItem filterable. The grid visibility / SeqNoGrid changes are
---    handled by the Swing-export UPDATE block below.
---    NOTE: filter config lives on AD_Field (IsFilterField / FilterOperator), not
---    on AD_UI_Element.IsAllowFiltering — the latter is only consulted for
---    Labels-type fields (see GridTabVOBasedDocumentEntityDescriptorFactory).
+-- 4) Make IsOpenItem filterable + visible in the grid after CurrentBalance
+--    (per design rule: filterable fields should also be displayed in the grid).
+--    NOTE: filter config lives on AD_Column.IsSelectionColumn + FilterOperator,
+--    not on AD_UI_Element.IsAllowFiltering or AD_Field.IsFilterField (the latter
+--    is only consulted for per-window overrides in custom windows).
 -- ---------------------------------------------------------------------------
-
--- AD_Column.IsSelectionColumn must also be 'Y' for the field to surface in the filter panel
--- (covers Auto mode). FilterOperator is read FROM AD_Column at descriptor build (see
--- GridFieldVO.retrieveDefaultFilterDescriptor line ~464), so it must be set here, not only on AD_Field.
--- Column: C_ElementValue.IsOpenItem
--- 2026-05-06T18:08:00.938Z
 UPDATE AD_Column SET IsSelectionColumn='Y',SelectionColumnSeqNo = 20,FilterOperator='E',Updated=TO_TIMESTAMP('2026-05-06 18:08:00.938000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=587038
 ;
 
--- UI Element: Konten(540761,D) -> Kontenart(542127,D) -> main -> 10 -> default.Current Balance
--- Column: C_ElementValue.CurrentBalance
--- 2026-05-06T17:49:53.490Z
-UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2026-05-06 17:49:53.490000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=650506
-;
-
--- UI Element: Konten(540761,D) -> Kontenart(542127,D) -> main -> 20 -> flags.Open Item Managed
--- Column: C_ElementValue.IsOpenItem
--- 2026-05-06T17:49:53.505Z
+-- Move IsOpenItem (618219) into the grid at SeqNoGrid=90 (after CurrentBalance=80)
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2026-05-06 17:49:53.505000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=618219
 ;
 
--- UI Element: Konten(540761,D) -> Kontenart(542127,D) -> main -> 20 -> orgs.Sektion
--- Column: C_ElementValue.AD_Org_ID
--- 2026-05-06T17:49:53.516Z
+-- Push AD_Org_ID and AD_Client_ID to the rightmost positions
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2026-05-06 17:49:53.516000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=564083
 ;
 
--- UI Element: Konten(540761,D) -> Kontenart(542127,D) -> main -> 20 -> orgs.Mandant
--- Column: C_ElementValue.AD_Client_ID
--- 2026-05-06T17:49:53.527Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2026-05-06 17:49:53.527000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=564084
 ;

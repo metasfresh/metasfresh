@@ -173,15 +173,12 @@ public class SqlViewSelectData
 			@NonNull final Collection<String> displayFieldNames,
 			@NonNull final Collection<SqlViewRowFieldBinding> allFields)
 	{
-		final List<IStringExpression> sqlSelectValuesList = new ArrayList<>();
+		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		allFields.forEach(field -> {
 			// Collect the SQL select for internal value
 			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			// NOTE: we expose this as IStringExpression (not raw String) so that virtual ColumnSQL with @#X@ context tokens
-			//       (e.g. @#AD_Org_ID@) keep them as parameters in the composed expression — they get substituted at view-eval
-			//       time against the ViewEvaluationCtx instead of being baked in as constant text.
-			sqlSelectValuesList.add(field.getSqlSelectValue().toStringExpressionWithColumnNameAlias());
+			sqlSelectValuesList.add(field.getSqlSelectValue().toSqlStringWithColumnNameAlias());
 
 			// Collect the SQL select for displayed value,
 			// * if there is one
@@ -208,7 +205,7 @@ public class SqlViewSelectData
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
-				.append("\n   ").appendAllJoining("\n   , ", sqlSelectValuesList)
+				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "sel." + columnName + " AS " + COLUMNNAME_Paging_Prefix + columnName))
@@ -232,7 +229,7 @@ public class SqlViewSelectData
 	{
 		final String sqlKeyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 
-		final List<IStringExpression> sqlSelectValuesList = new ArrayList<>();
+		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		final List<String> sqlGroupBys = new ArrayList<>();
 		allFields.forEach(field -> {
@@ -242,12 +239,12 @@ public class SqlViewSelectData
 			//
 			if (keyColumnNamesMap.isKeyPartFieldName(field.getColumnName()))
 			{
-				sqlSelectValuesList.add(IStringExpression.compile("sel." + keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(field.getColumnName()) + " AS " + field.getColumnName()));
+				sqlSelectValuesList.add("sel." + keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(field.getColumnName()) + " AS " + field.getColumnName());
 			}
 			else if (groupingBinding.isGroupBy(fieldName))
 			{
 				final SqlSelectValue sqlSelectValue = field.getSqlSelectValue();
-				sqlSelectValuesList.add(sqlSelectValue.toStringExpressionWithColumnNameAlias());
+				sqlSelectValuesList.add(sqlSelectValue.toSqlStringWithColumnNameAlias());
 				sqlGroupBys.add(sqlSelectValue.toSqlString());
 
 				if (usingDisplayColumn)
@@ -267,7 +264,7 @@ public class SqlViewSelectData
 							.build();
 				}
 
-				sqlSelectValuesList.add(sqlSelectValueAgg.withColumnNameAlias(field.getColumnName()).toStringExpressionWithColumnNameAlias());
+				sqlSelectValuesList.add(sqlSelectValueAgg.withColumnNameAlias(field.getColumnName()).toSqlStringWithColumnNameAlias());
 
 				// FIXME: NOT supported atm
 				// if (usingDisplayColumn)
@@ -294,7 +291,7 @@ public class SqlViewSelectData
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
 				//
-				.append("\n   ").appendAllJoining("\n   , ", sqlSelectValuesList)
+				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				//
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
@@ -333,13 +330,12 @@ public class SqlViewSelectData
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields)
 	{
-		final List<IStringExpression> sqlSelectValuesList = new ArrayList<>();
+		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		allFields.forEach(field -> {
 			// Collect the SQL select for internal value
 			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			// NOTE: see buildSqlSelect_WithoutGrouping for why we expose this as IStringExpression rather than raw String.
-			sqlSelectValuesList.add(field.getSqlSelectValue().toStringExpressionWithColumnNameAlias());
+			sqlSelectValuesList.add(field.getSqlSelectValue().toSqlStringWithColumnNameAlias());
 
 			// Collect the SQL select for displayed value,
 			// * if there is one
@@ -365,7 +361,7 @@ public class SqlViewSelectData
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
-				.append("\n   ").appendAllJoining("\n   , ", sqlSelectValuesList)
+				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_UUID)
 				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(webuiSelectionColumnName -> "sl." + webuiSelectionColumnName + " AS " + COLUMNNAME_Paging_Prefix + webuiSelectionColumnName))
 				.append("\n , ").append(keyColumnNamesMap.getSqlIsNullExpression(sqlTableName)).append(" AS ").append(COLUMNNAME_IsRecordMissing)
@@ -520,7 +516,7 @@ public class SqlViewSelectData
 					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias("t").toStringExpressionWithColumnNameAlias())
 					.append("\n FROM (")
 					.append("\n SELECT DISTINCT ")
-					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias())
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
 					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
 					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
@@ -534,7 +530,7 @@ public class SqlViewSelectData
 					.append(sqlValue.getColumnNameAlias())
 					.append("\n FROM (")
 					.append("\n SELECT ")
-					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias())
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
 					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
 					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")

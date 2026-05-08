@@ -8,9 +8,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.column.ColumnSql;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -80,28 +77,6 @@ public class SqlSelectValue
 	public String toSqlStringWithColumnNameAlias()
 	{
 		return toSqlString() + " AS " + columnNameAlias;
-	}
-
-	/**
-	 * Like {@link #toSqlStringWithColumnNameAlias()}, but returns an {@link IStringExpression}
-	 * so that any context-variable tokens (e.g. {@code @#AD_Org_ID@}) inside a virtual ColumnSQL
-	 * remain visible as parameters of the resulting expression — and thus get resolved later
-	 * against the user-session evaluator instead of being baked in as constant text.
-	 */
-	public IStringExpression toStringExpressionWithColumnNameAlias()
-	{
-		return IStringExpression.compile(toSqlStringWithColumnNameAlias());
-	}
-
-	/**
-	 * Like {@link #toSqlStringWithColumnNameAlias()}, but resolves any context-variable tokens
-	 * (e.g. {@code @#AD_Org_ID@}) against the supplied evaluator before returning the SQL string.
-	 * Use this on String-builder paths (e.g. {@link de.metas.ui.web.view.descriptor.SqlAndParams})
-	 * which cannot carry expression parameters through to a later evaluation step.
-	 */
-	public String toSqlStringWithColumnNameAlias(@NonNull final Evaluatee ctx)
-	{
-		return toStringExpressionWithColumnNameAlias().evaluate(ctx, OnVariableNotFound.Fail);
 	}
 
 	public String toSqlString()

@@ -315,41 +315,9 @@ public final class CompositeStringExpression implements IStringExpression
 				return this;
 			}
 
-			// If the string contains metasfresh expression markers (`@<name>@` / `@<name>/<default>@`),
-			// recompile it as IStringExpression so the parameters become visible to upstream evaluators.
-			// Otherwise, the markers would be buried inside a ConstantStringExpression and never
-			// substituted — breaking session-variable resolution in virtual ColumnSQL etc.
-			//
-			// Defensive: only switch paths when the compile actually produces parameters; this leaves
-			// literal `@...@` text inside SQL strings (rare, e.g. inside quoted values) untouched and
-			// prevents accidental compile failures from changing behaviour.
-			//
-			// Marker-free strings stay on the fast constant-buffer path (no compile overhead).
-			if (mightContainExpressionMarker(constant))
-			{
-				try
-				{
-					final IStringExpression compiled = IStringExpression.compile(constant);
-					if (!compiled.getParameterNames().isEmpty())
-					{
-						return append(compiled);
-					}
-				}
-				catch (final Exception ignored)
-				{
-					// Compile failed — fall through and append as constant (preserves prior behaviour).
-				}
-			}
-
 			appendToLastConstantBuffer(constant);
 
 			return this;
-		}
-
-		private static boolean mightContainExpressionMarker(final String s)
-		{
-			final int firstAt = s.indexOf('@');
-			return firstAt >= 0 && s.indexOf('@', firstAt + 1) >= 0;
 		}
 
 		private void appendToLastConstantBuffer(final String constant)
