@@ -243,7 +243,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # LC row stays Paid; total pay schedule lines = LC + r2 + null(remainder) = 3
     Then the order identified by lcOrder has following pay schedules
       | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | LC                | null       | null     | null     | P      | null         |
+      | LC                | null       | 70000.00 | 21000.00 | P      | null         |
       | BL                | r2         | 32000.00 | 22400.00 | WP     | inv2         |
       | BL                | null       | 38000.00 | 26600.00 | PR     | null         |
 
