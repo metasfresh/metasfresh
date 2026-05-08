@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -38,7 +37,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -106,7 +104,6 @@ public class CustomsInvoiceServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		customsInvoiceRepo = new CustomsInvoiceRepository();

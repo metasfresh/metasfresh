@@ -22,7 +22,6 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeValueType;
@@ -33,7 +32,6 @@ import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
@@ -80,7 +78,6 @@ public class AttributesBLTest
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 	}
 
 	@BeforeEach

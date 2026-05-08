@@ -7,10 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import de.metas.calendar.PeriodRepo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +49,7 @@ public class StockQtyAndUOMQtysTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		stockUomRecord = newInstance(I_C_UOM.class);
 		saveRecord(stockUomRecord);
 

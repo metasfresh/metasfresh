@@ -22,7 +22,6 @@
 
 package de.metas.pricing.service.impl;
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.time.SystemTime;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -50,7 +49,6 @@ public class PricingTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		helper = new PricingTestHelper();
 
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));

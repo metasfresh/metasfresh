@@ -1,6 +1,5 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -10,7 +9,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -51,7 +49,6 @@ public class AttributeSetDescriptionBuilderCommandTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 	}
 
 	private void createEachUOM()

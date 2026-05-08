@@ -25,7 +25,6 @@ package de.metas.remittanceadvice;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
@@ -85,7 +84,7 @@ public class RemittanceAdviceServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		bpartnerId = createBPartnerId();
 		invoiceDocTypes = new HashMap<>();
 

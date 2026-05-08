@@ -1,6 +1,5 @@
 package de.metas.uom.impl;
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -16,7 +15,6 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +42,6 @@ class UOMConversionBLTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		POJOWrapper.setDefaultStrictValues(true);
 
 		this.uomConversionHelper = new UOMTestHelper(Env.getCtx());

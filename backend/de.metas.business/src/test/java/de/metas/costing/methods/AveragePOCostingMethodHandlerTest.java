@@ -7,7 +7,6 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
-import de.metas.calendar.PeriodRepo;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateRequest.CostDetailCreateRequestBuilder;
@@ -46,7 +45,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -117,7 +115,7 @@ public class AveragePOCostingMethodHandlerTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 
 		final Properties ctx = Env.getCtx();

@@ -26,7 +26,6 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.interceptor.C_ElementValue;
-import de.metas.calendar.PeriodRepo;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;
@@ -39,7 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_ElementValue;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +61,6 @@ public class C_ElementValueTest
 		AdempiereTestHelper.get().init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		AdempiereTestHelper.createClientInfo();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 
 		final ChartOfAccountsService chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
 		final TreeNodeRepository treeNodeRepo = new TreeNodeRepository();

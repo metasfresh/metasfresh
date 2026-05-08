@@ -2,7 +2,6 @@ package org.adempiere.mmovement.api.impl;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.calendar.PeriodRepo;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -12,7 +11,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
@@ -44,7 +42,7 @@ public class MovementBLTest
 	{
 		AdempiereTestHelper.get().init();
 		context = PlainContextAware.newOutOfTrx();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		productActivities = new HashMap<>();
 		final IProductActivityProvider productActivityProvider = (clientId, orgId, productId) -> productActivities.get(productId);
 		Services.registerService(IProductActivityProvider.class, productActivityProvider);

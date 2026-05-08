@@ -23,7 +23,6 @@
 package org.eevolution.api;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.calendar.PeriodRepo;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -36,7 +35,6 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.eevolution.api.BOMComponentType;
@@ -56,7 +54,6 @@ public class QtyCalculationsBOMLineTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 	}
 
 	private I_C_UOM uom(

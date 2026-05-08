@@ -5,7 +5,6 @@ import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.interceptor.C_ElementValue;
-import de.metas.calendar.PeriodRepo;
 import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;
@@ -72,7 +71,6 @@ public class AccountImportProcess_Test
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 
 		this.chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
 		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository();

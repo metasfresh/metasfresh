@@ -1,7 +1,6 @@
 package de.metas.allocation.api.impl;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -13,7 +12,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
@@ -36,7 +34,7 @@ class AllocationDAOTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		allocationDAO = (PlainAllocationDAO)Services.get(IAllocationDAO.class);
 
 		EUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);

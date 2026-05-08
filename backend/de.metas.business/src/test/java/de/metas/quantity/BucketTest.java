@@ -1,11 +1,9 @@
 package de.metas.quantity;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.calendar.PeriodRepo;
 import de.metas.product.ProductId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +25,7 @@ public class BucketTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
 		uomEach = BusinessTestHelper.createUomEach();
 

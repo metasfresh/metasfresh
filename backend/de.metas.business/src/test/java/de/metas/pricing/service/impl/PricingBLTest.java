@@ -22,13 +22,11 @@
 
 package de.metas.pricing.service.impl;
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
@@ -53,7 +51,6 @@ public class PricingBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		helper = new PricingTestHelper();
 	}
 

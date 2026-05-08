@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import de.metas.calendar.PeriodRepo;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
@@ -50,7 +49,7 @@ class IInvoiceBLTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		invoiceBL = Services.get(IInvoiceBL.class);
 	}

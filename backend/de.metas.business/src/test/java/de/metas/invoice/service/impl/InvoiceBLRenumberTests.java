@@ -25,7 +25,6 @@ package de.metas.invoice.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -41,7 +40,6 @@ public class InvoiceBLRenumberTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 	}
 

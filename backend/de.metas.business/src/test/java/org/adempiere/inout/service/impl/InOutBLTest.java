@@ -22,7 +22,6 @@ package org.adempiere.inout.service.impl;
  * #L%
  */
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.impl.InOutBL;
@@ -33,7 +32,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
@@ -58,7 +56,7 @@ public class InOutBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		POJOWrapper.setDefaultStrictValues(false); // we will want to return "null"
 
 		inoutBL = new InOutBL();

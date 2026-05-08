@@ -3,7 +3,6 @@ package de.metas.shipping;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
@@ -28,7 +27,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
@@ -101,7 +99,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				return constantSSCC18;
 			}
 		});
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
+
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
 		uom1 = createUOM("UomCode1");

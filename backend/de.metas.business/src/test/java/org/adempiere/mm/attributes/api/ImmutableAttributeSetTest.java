@@ -1,12 +1,10 @@
 package org.adempiere.mm.attributes.api;
 
-import de.metas.calendar.PeriodRepo;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
@@ -55,7 +53,6 @@ public class ImmutableAttributeSetTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PeriodRepo());
 		attributesTestHelper = new AttributesTestHelper();
 
 	}
