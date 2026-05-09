@@ -172,10 +172,14 @@ test('AC3 (regression): Confirming HU-capacity suggestion depletes HU with no in
     });
 });
 
-// AC4 — [REGRESSION] Worker typing qty > current HU capacity over-issues; backend handles it (inventory adjustment)
-test('AC4 (regression): Over-issuing by typing more than current HU capacity creates inventory adjustment', async ({ page }) => {
+// AC4 — [REGRESSION] Backend rejects issuing more than current HU capacity; HU unchanged.
+// With the JS fix, the suggestion is now correctly capped at HU capacity (5).
+// If a worker manually types more (e.g. 8 > 5), the backend rejects the whole operation
+// with a 422 error ("Could not issue the whole quantity required") and rolls back —
+// HU stays unchanged. This verifies the system boundary is enforced on the backend.
+test('AC4 (regression): Over-issuing rejected by backend — HU unchanged', async ({ page }) => {
     await allureMeta();
-    await allure.story('AC4 regression: manual over-issue behavior unchanged');
+    await allure.story('AC4 regression: backend rejects over-issue, HU unchanged');
 
     const masterdata = await createMasterdataForDrainTest();
     await loginAndStartMfg(masterdata);
@@ -189,7 +193,7 @@ test('AC4 (regression): Over-issuing by typing more than current HU capacity cre
         await drainHUViaPP2({ masterdata });
     });
 
-    await test.step('Resume PP1, type 8 (over HU capacity 5) — over-issues by 3, HU depleted', async () => {
+    await test.step('Resume PP1, type 8 (over HU capacity 5) — backend rejects, HU unchanged', async () => {
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
         await ManufacturingJobScreen.clickIssueButton({ index: 1 });
         await RawMaterialIssueLineScreen.scanQRCode({
@@ -201,9 +205,9 @@ test('AC4 (regression): Over-issuing by typing more than current HU capacity cre
     });
 
     await Backend.expect({
-        title: 'Over-issue: typed 8 against HU capacity 5 — HU depleted, inventory adjustment of 3 created',
+        title: 'Over-issue rejected: backend returns 422, entire operation rolled back — HU unchanged at 5',
         hus: {
-            HU: { storages: { COMP: '0 PCE' } },
+            HU: { storages: { COMP: '5 PCE' } },
         },
     });
 });
