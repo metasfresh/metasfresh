@@ -18,7 +18,7 @@ export const RawMaterialIssueLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining }) => await test.step(`${NAME} - Scan QR code`, async () => {
+    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining, qtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
@@ -28,7 +28,7 @@ export const RawMaterialIssueLineScreen = {
         if (expectQtyRemaining != null) {
             await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick', expectedValue: expectQtyRemaining });
         }
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
         await RawMaterialIssueLineScreen.waitForScreen();
     }),
 

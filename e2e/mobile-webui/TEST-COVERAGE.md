@@ -9,7 +9,7 @@
 | Login / Home | 8 | 10 | 80% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
-| Manufacturing | 19 | 29 | 66% |
+| Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
 | Inventory | 1 | 3 | 33% |
@@ -243,13 +243,13 @@
 
 | Scenario | Test |
 |---|---|
-| ❌ HU qty < BOM remaining → suggestion capped at HU qty | — |
-| ❌ After partial issue, HU qty < remaining BOM → suggestion still capped at HU qty | — |
-| ❌ HU qty ≥ BOM remaining → suggestion unchanged (no capping) | — |
-| ❌ Type old wrong (uncapped) suggestion → over-issue, inventory adjustment created | — |
-| ❌ Confirm HU-capacity suggestion → no inventory adjustment created | — |
+| HU qty drops after plan creation → suggestion capped at live HU qty | `manufacturing/issue_hu_qty_suggestion.spec.js` |
+| ❌ After partial issue of PP1, HU qty < remaining BOM → suggestion still capped at HU qty | — |
+| HU qty ≥ BOM remaining → suggestion unchanged (no capping) | `manufacturing/issue_hu_qty_suggestion.spec.js` |
+| Type qty > HU capacity → over-issue accepted, inventory adjustment created | `manufacturing/issue_hu_qty_suggestion.spec.js` |
+| Confirm HU-capacity suggestion → HU depleted, no inventory adjustment created | `manufacturing/issue_hu_qty_suggestion.spec.js` |
 
-**0/5 — 0%**
+**4/5 — 80%**
 
 ### Component issue — qty tolerance
 
