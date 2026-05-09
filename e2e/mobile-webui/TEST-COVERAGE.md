@@ -108,9 +108,7 @@
 | `manufacturing/isAllowIssuingAnyHU.spec.js` | isAllowIssuingAnyHU=false, isCreateRawMaterialsStock=true => expect OK | `isAllowIssuingAnyHU=false` with stock present allows starting a job |
 | `manufacturing/isAllowIssuingAnyHU.spec.js` | isAllowIssuingAnyHU=true, isCreateRawMaterialsStock=false => expect OK | `isAllowIssuingAnyHU=true` allows starting a job even with no stock |
 | `manufacturing/isAllowIssuingAnyHU.spec.js` | isAllowIssuingAnyHU=true, isCreateRawMaterialsStock=true => expect OK | `isAllowIssuingAnyHU=true` with stock present allows starting a job |
-| `manufacturing/issue_hu_qty_suggestion.spec.js` | Suggested qty is capped at HU capacity when HU qty is less than BOM requirement | BOM 20, HU 5, nothing issued → suggestion = 5 (HU capacity, not BOM remaining) |
-| `manufacturing/issue_hu_qty_suggestion.spec.js` | Suggested qty is capped at HU capacity after a partial issue (customer scenario) | BOM 20, 7 issued, second HU has 5 → suggestion = 5, not 13 |
-| `manufacturing/manufacturing_small_qty_tolerance.spec.js` | Issue raw material with very small qty (0.00384 kg) shows non-zero qty after scan | Scanning an HU for a BOM line with a very small qty (0.00384 kg) must display a non-zero pre-filled qty (regression for https://github.com/metasfresh/tf201/issues/242) |
+| `manufacturing/manufacturing_small_qty_tolerance.spec.js` | Issue raw material with very small qty (0.00384 kg) shows non-zero qty after scan | Scanning an HU for a BOM line with a very small qty (0.00384 kg) must display a non-zero pre-filled qty (regression) |
 | `manufacturing/manufacturing_small_qty_tolerance.spec.js` | Issue raw material with small qty (0.01913 kg) and 1% tolerance | Full issue-and-receive cycle for a BOM with 0.01913 kg and 1% issuing tolerance; validates final HU storage and remaining quantity |
 | `manufacturing/receive_using_customQRCodeFormat.spec.js` | Receive using custom QR Code format | Receipt of finished product using two different custom QR code formats (catch-weight + lot + dates); validates HU storage, WeightNet, and CU child records |
 | `manufacturing/receiving_by_products.spec.js` | Receive By-Products from 2 manufacturing orders into same HU | Two manufacturing orders contribute by-product qty into the same target TU; validates accumulated HU storage |
@@ -203,12 +201,13 @@ By workflow area, paths that have **no** Playwright test or known weak coverage:
 
 ## Section 3 — Tests added by issue https://github.com/metasfresh/me03/issues/27759
 
-These 5 tests will be written in `tests/spec/manufacturing/issue_hu_qty_suggestion.spec.js`:
+These 5 tests are planned for `tests/spec/manufacturing/issue_hu_qty_suggestion.spec.js`.
+Task 4 will write the complete 5-test file (replacing an existing 2-test draft). AC3–AC5 are new; AC1 and AC2 are rewrites of the draft.
 
-| Test name | Scenario | AC covered |
-|---|---|---|
-| AC1: Suggested qty capped at HU capacity — HU smaller than BOM requirement | BOM 20, HU 5, nothing issued → suggestion = 5 | AC1 |
-| AC2: Suggested qty capped at HU capacity after partial issue (customer scenario) | BOM 20, 7 issued, HU 5 → suggestion = 5 | AC2 |
-| AC3 (regression): Suggestion unchanged when HU capacity exceeds remaining BOM qty | BOM 20, HU 100 → suggestion = 20 | AC3 |
-| AC4 (regression): Typing the old wrong suggestion (13) over-issues by 8 — inventory adjustment created | BOM 20, HU 5, type 13 → 13 issued, HU depleted, adj 8 | AC4 |
-| AC5 (regression): Confirming HU-capacity suggestion creates no inventory adjustment | BOM 20, HU 5, confirm 5 → 5 issued, HU depleted, no adj | AC5 |
+| Test name | Scenario | AC covered | Status |
+|---|---|---|---|
+| AC1: Suggested qty capped at HU capacity — HU smaller than BOM requirement | BOM 20, HU 5, nothing issued → suggestion = 5 | AC1 | Draft (to be replaced) |
+| AC2: Suggested qty capped at HU capacity after partial issue (customer scenario) | BOM 20, 7 issued, HU 5 → suggestion = 5 | AC2 | Draft (to be replaced) |
+| AC3 (regression): Suggestion unchanged when HU capacity exceeds remaining BOM qty | BOM 20, HU 100 → suggestion = 20 | AC3 | New |
+| AC4 (regression): Typing the old wrong suggestion (13) over-issues by 8 — inventory adjustment created | BOM 20, HU 5, type 13 → 13 issued, HU depleted, adj 8 | AC4 | New |
+| AC5 (regression): Confirming HU-capacity suggestion creates no inventory adjustment | BOM 20, HU 5, confirm 5 → 5 issued, HU depleted, no adj | AC5 | New |
