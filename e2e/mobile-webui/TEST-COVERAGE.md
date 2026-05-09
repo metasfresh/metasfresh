@@ -50,15 +50,15 @@
 
 | Scenario | Test |
 |---|---|
-| Full pick, single HU, confirm, shipment schedule marked picked | `picking.spec.js` |
-| Pick HU then unpick → HU returns to unallocated | `picking.spec.js` |
-| Scan invalid picking slot QR code → error shown | `picking.spec.js` |
-| Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking.spec.js` |
-| Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking.spec.js` |
-| Partial pick, allowCompletingPartialPickingJob = Y → complete succeeds | `picking.spec.js` |
-| Close LU during picking → shipment created automatically | `picking.spec.js` |
-| Close LU then reopen → state transitions verified | `picking.spec.js` |
-| Job already started → "already started" indicator shown in jobs list | `picking.spec.js` |
+| Full pick, single HU, confirm, shipment schedule marked picked | `picking/picking.spec.js` |
+| Pick HU then unpick → HU returns to unallocated | `picking/picking.spec.js` |
+| Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
+| Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
+| Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
+| Partial pick, allowCompletingPartialPickingJob = Y → complete succeeds | `picking/picking.spec.js` |
+| Close LU during picking → shipment created automatically | `picking/picking.spec.js` |
+| Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
+| Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
