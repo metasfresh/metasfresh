@@ -2327,6 +2327,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
+		if (invoice.isPartialInvoice())
+		{
+			logger.debug("C_Invoice is a partial invoice (IsPartialInvoice=Y); => not closing any invoice candidates");
+			return;
+		}
+
 		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ilRecord))
