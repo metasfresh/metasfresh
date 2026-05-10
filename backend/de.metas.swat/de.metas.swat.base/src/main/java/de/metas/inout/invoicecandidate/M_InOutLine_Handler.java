@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inout.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
@@ -9,7 +31,10 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -35,7 +60,6 @@ import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapte
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -43,7 +67,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -75,7 +99,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -95,28 +118,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * Creates {@link I_C_Invoice_Candidate}s from {@link I_M_InOutLine}s which do not reference an order line.
  */
@@ -125,11 +126,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
 
 	// Services
-	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
-	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	@NonNull private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+	@NonNull private final transient BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
+	@NonNull private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -301,6 +303,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
+		//
+		// Handle Transaction Type: Shipment / Receipt
+		final boolean isSOTrx = inOut.isSOTrx();
+		icRecord.setIsSOTrx(isSOTrx); // 05265
+
 		// extractQtyDelivered() depends on the C_PaymentTerm to be set
 		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
@@ -339,11 +346,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		//
-		// Handle Transaction Type: Shipment / Receipt
-		final boolean isSOTrx = inOut.isSOTrx();
-		icRecord.setIsSOTrx(isSOTrx); // 05265
-
-		//
 		// Set the bill related details
 		{
 			setBPartnerData(icRecord, inOutLineRecord);
@@ -359,32 +361,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Description
 		icRecord.setDescription(inOut.getDescription());
-
-		//
-		// Set invoice rule form linked order (if exists)
-		if (inOut.getC_Order_ID() > 0)
-		{
-			final I_C_Order order = inOut.getC_Order();
-			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
-		}
-		// Set Invoice Rule from BPartner
-		else
-		{
-			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
-
-			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
-					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
-
-			if (invoiceRule!= null)
-			{
-				icRecord.setInvoiceRule(invoiceRule.getCode());
-			}
-			else
-			{
-				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
-			}
-		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
 
@@ -610,7 +586,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Order order = inOut.getC_Order();
 
-		if (inOut.getC_Order_ID() > 0)
+		if (OrderId.ofRepoIdOrNull(inOut.getC_Order_ID()) != null)
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setPaymentRule(order.getPaymentRule());
@@ -622,11 +598,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				icRecord.setEMail(order.getEMail());
 			}
 		}
-		else if (icRecord.getC_Order_ID() <= 0)
+		else if (OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID()) == null)
 		{
 			// don't attempt to "clear" the order data if it is already set/known.
 			icRecord.setC_Order(null);
 			icRecord.setDateOrdered(inOut.getMovementDate());
+
+			final SOTrx soTrx = SOTrx.ofBooleanNotNull(icRecord.isSOTrx());
+			final BPartnerEffective bPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()));
+			icRecord.setInvoiceRule(bPartnerEffective.getInvoiceRule(soTrx).getCode());
+			icRecord.setPaymentRule(bPartnerEffective.getPaymentRule(soTrx).getCode());
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
