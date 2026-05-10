@@ -89,10 +89,11 @@ public class TestJasperPrint
 	
 	private static JasperPrint getJasperPrintFromFile(File file) throws Exception
 	{
-		FileInputStream in = new FileInputStream(file);
-		JasperPrint jasperPrint = getJasperPrint(in);
-		System.out.println("Loaded jasperprint from "+file);
-		return jasperPrint;
+		try (FileInputStream in = new FileInputStream(file)) {
+			JasperPrint jasperPrint = getJasperPrint(in);
+			System.out.println("Loaded jasperprint from "+file);
+			return jasperPrint;
+		}
 	}
 
 	protected static void exportPDF(JasperPrint jasperPrint) throws Exception
