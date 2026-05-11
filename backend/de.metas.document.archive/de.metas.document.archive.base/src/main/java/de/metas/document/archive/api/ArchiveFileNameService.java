@@ -83,11 +83,14 @@ public class ArchiveFileNameService
 
 	private static final Logger logger = LogManager.getLogger(ArchiveFileNameService.class);
 	private static final String PDF_EXTENSION = ".pdf";
-	private static final Pattern PLACEHOLDER_TOKEN = Pattern.compile("\\{([a-z]+)}");
+	// Bounded length + possessive quantifier — guards against polynomial backtracking on pathological input
+	// (CodeQL alert: polynomial regular expression on uncontrolled data). Placeholder names are short.
+	private static final Pattern PLACEHOLDER_TOKEN = Pattern.compile("\\{([a-z]{1,32}+)}");
 	// Date expression inspired by Camel's Simple language, e.g. ${date:yyyyMMdd_HHmmss}. Format string is
 	// anything before the closing brace; it's passed to DateTimeFormatter. Resolves to "now" formatted in the
 	// archive's org timezone (falls back to JVM default if the archive has no regular org).
-	private static final Pattern DATE_TOKEN = Pattern.compile("\\$\\{date:([^}]+)}");
+	// Bounded length + possessive quantifier — guards against polynomial backtracking on pathological input.
+	private static final Pattern DATE_TOKEN = Pattern.compile("\\$\\{date:([^}]{1,100}+)}");
 
 	@VisibleForTesting
 	public static ArchiveFileNameService newInstanceForUnitTesting()
