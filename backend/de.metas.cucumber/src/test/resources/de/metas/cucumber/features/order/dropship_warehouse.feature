@@ -79,9 +79,13 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | warehouse_dw | Y                   |
 
   @from:cucumber
-  Scenario: SO on a dropship warehouse auto-creates a PO with IsDropShip=Y and order-line allocation records
-    # Create a sales order with 2 lines; the vendor is set on each order line so the
-    # purchase candidate grouping links them to the same vendor.
+  Scenario: SO on a dropship warehouse auto-creates a single PO with IsDropShip=Y linked back to the SO
+    # The C_Order_DropshipPO interceptor fires synchronously in TIMING_AFTER_COMPLETE on the SO,
+    # invoking DropshipPOFromSOService which drives CreatePOFromSOsAggregator with
+    # PurchaseTypeEnum.DROPSHIP. The resulting PO has Link_Order_ID = the SO's id, IsDropShip='Y',
+    # and DocStatus='CO'. This entire flow is in-transaction with SO completion — no async wait
+    # is needed for the PO creation itself. (Material-event short-circuit is verified in the next
+    # scenario.)
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw1     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
@@ -91,44 +95,11 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | sol_dw1_2  | so_dw1     | product_dw   | 5          | vendor_dw     |
     When the order identified by so_dw1 is completed
 
-    # Wait for async processing (purchase candidate + PO generation)
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-
-    # Verify purchase candidates were created (one per SO line)
-    And after not more than 60s, C_PurchaseCandidates are found
-      | Identifier | C_OrderSO_ID | C_OrderLineSO_ID | M_Product_ID |
-      | pc_dw1_1   | so_dw1       | sol_dw1_1        | product_dw   |
-    And after not more than 60s, C_PurchaseCandidates are found
-      | Identifier | C_OrderSO_ID | C_OrderLineSO_ID | M_Product_ID |
-      | pc_dw1_2   | so_dw1       | sol_dw1_2        | product_dw   |
-    And C_PurchaseCandidates are validated
-      | C_PurchaseCandidate_ID | QtyToPurchase | IsDropShip |
-      | pc_dw1_1               | 10            | false      |
-    And C_PurchaseCandidates are validated
-      | C_PurchaseCandidate_ID | QtyToPurchase | IsDropShip |
-      | pc_dw1_2               | 5             | false      |
-
-    # Verify C_PurchaseCandidate_Alloc rows — they link the PO lines back to the SO lines
-    And after not more than 60s, C_PurchaseCandidate_Alloc are found
-      | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |
-      | pc_dw1_1               | pca_dw1_1                    |
-    And after not more than 60s, C_PurchaseCandidate_Alloc are found
-      | C_PurchaseCandidate_ID | C_PurchaseCandidate_Alloc_ID |
-      | pc_dw1_2               | pca_dw1_2                    |
-
-    And load C_OrderLines from C_PurchaseCandidate_Alloc
-      | C_OrderLinePO_ID | C_PurchaseCandidate_Alloc_ID |
-      | pol_dw1_1        | pca_dw1_1                    |
-      | pol_dw1_2        | pca_dw1_2                    |
-
-    And load C_Order from C_OrderLine
-      | C_Order_ID | C_OrderLine_ID |
-      | po_dw1     | pol_dw1_1      |
-
-    # Assert: exactly 1 PO was created; it has IsDropShip=Y and DocStatus=CO
-    Then validate the created orders
-      | C_Order_ID | C_BPartner_ID | DocBaseType | DocStatus | IsDropShip |
-      | po_dw1     | vendor_dw     | POO         | CO        | true       |
+    # Assert: exactly 1 PO was created with Link_Order_ID pointing back to the SO, IsDropShip=Y, DocStatus=CO.
+    # The 'the order is created:' step uses Link_Order_ID.Identifier to locate the PO.
+    Then the order is created:
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocStatus | IsDropShip |
+      | so_dw1                   | false   | POO         | CO        | true       |
 
   @from:cucumber
   Scenario: SO on a dropship warehouse does not create MD_Candidate rows
