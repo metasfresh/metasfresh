@@ -3,16 +3,16 @@ CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v AS
 SELECT dl.edi_desadvline_id,
        JSONB_BUILD_OBJECT(
                'Product', JSONB_BUILD_OBJECT(
-                   'SupplierProductNo', p.value,
-                   'Name', p.name,
-                   'Description', p.Description,
-                   'BuyerProductNo', COALESCE(dl.ProductNo,bpp.productno),
-                   'GTIN_CU', COALESCE(dl.GTIN_CU, bpp.gtin, bpp.ean_cu, p.gtin),
-                   'GTIN_TU', COALESCE(dl.GTIN_TU, pip.gtin),
-                   'NetWeight', p.weight,
-                   'GrossWeight', p.grossweight,
-                   'GrossWeightUOM', COALESCE(grossweightUom.uom_json, '{}'::jsonb)
-               ),
+               'SupplierProductNo', p.value,
+               'Name', p.name,
+               'Description', p.Description,
+               'BuyerProductNo', COALESCE(dl.ProductNo,bpp.productno),
+               'GTIN_CU', COALESCE(dl.GTIN_CU, bpp.gtin, bpp.ean_cu, p.gtin),
+               'GTIN_TU', COALESCE(dl.GTIN_TU, pip.gtin),
+               'NetWeight', p.weight,
+               'GrossWeight', p.grossweight,
+               'GrossWeightUOM', COALESCE(grossweightUom.uom_json, '{}'::jsonb)
+                          ),
                'QtyOrderedInDesadvLineUOM', dl.qtyentered,
                'QtyDeliveredInDesadvLineUOM', dl.QtyDeliveredInUOM,
                'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
@@ -33,7 +33,7 @@ FROM edi_desadvline dl
          LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
          LEFT JOIN m_inoutline iol ON iol.edi_desadvline_id = dl.edi_desadvline_id
 
- -- Joins for the packing-instruction with the desadv's bpartner (preferred) or an empty bpartner
+    -- Joins for the packing-instruction with the desadv's bpartner (preferred) or an empty bpartner
          JOIN edi_desadv d ON d.edi_desadv_id = dl.edi_desadv_id
          LEFT JOIN LATERAL (
     SELECT gtin

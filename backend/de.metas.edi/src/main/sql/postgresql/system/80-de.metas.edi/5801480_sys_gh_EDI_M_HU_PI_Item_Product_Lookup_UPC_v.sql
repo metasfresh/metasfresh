@@ -52,8 +52,8 @@ FROM
         WHERE bpp.IsActive='Y'
     ) lookup
         JOIN m_product p ON p.m_product_id = lookup.m_product_id
-        LEFT JOIN EDI_C_BPartner_Lookup_BPL_GLN_v bpLookup ON bpLookup.c_bpartner_id = lookup.c_bpartner_id
-            OR lookup.c_bpartner_id IS NULL
+        LEFT JOIN EDI_C_BPartner_Lookup_BPL_GLN_v bpLookup on bpLookup.c_bpartner_id = lookup.c_bpartner_id
+        OR lookup.c_bpartner_id IS NULL
 WHERE lookup.UPC IS NOT NULL AND trim(both ' ' from lookup.UPC)!=''
   AND lookup.isactive = 'Y'
   AND p.isactive='Y' AND p.discontinued='N'
