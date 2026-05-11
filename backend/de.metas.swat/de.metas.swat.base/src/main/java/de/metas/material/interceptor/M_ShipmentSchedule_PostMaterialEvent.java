@@ -29,6 +29,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -329,16 +330,8 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			return false;
 		}
 
-		try
-		{
-			return Services.get(IWarehouseDAO.class)
-					.getById(warehouseId)
-					.isDropShipWarehouse();
-		}
-		catch (final Exception e)
-		{
-			// Defensive: if warehouse lookup fails, default to false
-			return false;
-		}
+		return Services.get(IWarehouseDAO.class)
+				.getById(WarehouseId.ofRepoId(warehouseId))
+				.isDropShipWarehouse();
 	}
 }
