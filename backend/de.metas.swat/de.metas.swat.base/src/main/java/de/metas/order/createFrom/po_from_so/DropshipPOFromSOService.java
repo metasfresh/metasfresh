@@ -69,11 +69,10 @@ public class DropshipPOFromSOService
 
 		final boolean isVendorInOrderLinesRequired = true;
 		final boolean allowMultiplePOOrders = true;
-		final int p_Vendor_ID = 0; // no fixed vendor — derive per line via aggregation key
 
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
-		final CreatePOFromSOsAggregator aggregator = new CreatePOFromSOsAggregator(ctxAware, purchaseQtySource, PurchaseTypeEnum.DROPSHIP);
-		aggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, ctxAware, isVendorInOrderLinesRequired));
+		final CreatePOFromSOsAggregator aggregator = createAggregator(ctxAware, purchaseQtySource, PurchaseTypeEnum.DROPSHIP);
+		aggregator.setItemAggregationKeyBuilder(createKeyBuilder(ctxAware, isVendorInOrderLinesRequired));
 		aggregator.setGroupsBufferSize(100);
 
 		final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder, allowMultiplePOOrders, purchaseQtySource);
@@ -90,5 +89,27 @@ public class DropshipPOFromSOService
 		{
 			throw new AdempiereException("Dropship PO creation skipped sales-order lines: " + msg);
 		});
+	}
+
+	/**
+	 * Factory method for the aggregator. Protected to allow overriding in tests.
+	 */
+	protected CreatePOFromSOsAggregator createAggregator(
+			@NonNull final IContextAware ctxAware,
+			@NonNull final String purchaseQtySource,
+			@NonNull final PurchaseTypeEnum purchaseType)
+	{
+		return new CreatePOFromSOsAggregator(ctxAware, purchaseQtySource, purchaseType);
+	}
+
+	/**
+	 * Factory method for the aggregation key builder. Protected to allow overriding in tests.
+	 */
+	protected CreatePOFromSOsAggregationKeyBuilder createKeyBuilder(
+			@NonNull final IContextAware ctxAware,
+			final boolean isVendorInOrderLinesRequired)
+	{
+		final int p_Vendor_ID = 0; // no fixed vendor — derive per line via aggregation key
+		return new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, ctxAware, isVendorInOrderLinesRequired);
 	}
 }
