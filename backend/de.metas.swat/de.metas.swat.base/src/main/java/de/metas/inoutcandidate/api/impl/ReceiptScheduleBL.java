@@ -490,6 +490,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
+		// TEMP me03#29369 diagnostic — to be reverted once CI stack captured
 		logger.warn("[CI-LOGGER-CLOSE] ReceiptScheduleBL.close called rs_ID={} stack:\n{}",
 				rs.getM_ReceiptSchedule_ID(),
 				java.util.Arrays.stream(Thread.currentThread().getStackTrace())
