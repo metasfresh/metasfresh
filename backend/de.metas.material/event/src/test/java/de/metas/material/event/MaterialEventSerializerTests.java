@@ -730,6 +730,35 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void shipmentScheduleCreatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ShipmentScheduleCreatedEvent event = createShipmentScheduleEventBuilder()
+				.documentLineDescriptor(newOrderLineDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void shipmentScheduleCreatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ShipmentScheduleCreatedEvent withFlag = createShipmentScheduleEventBuilder()
+				.documentLineDescriptor(newOrderLineDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ShipmentScheduleCreatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ShipmentScheduleCreatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ShipmentScheduleCreatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
 	public void transactionCreatedEvent()
 	{
 		final TransactionCreatedEvent evt = newTransactionCreatedEvent();
