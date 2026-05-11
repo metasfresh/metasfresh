@@ -196,54 +196,6 @@ class TableQuickInput extends PureComponent {
     this.form = refNode;
   };
 
-  handleTabKeyTrap = (e) => {
-    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
-
-    const form = this.form;
-    if (!form) return;
-
-    const active = document.activeElement;
-    if (!active || !form.contains(active)) return;
-
-    const FOCUSABLE =
-      'input:not([disabled]):not([tabindex="-1"]):not([type="hidden"]),' +
-      'textarea:not([disabled]):not([tabindex="-1"]),' +
-      'select:not([disabled]):not([tabindex="-1"]),' +
-      'button:not([disabled]):not([tabindex="-1"]),' +
-      'a[href]:not([tabindex="-1"]),' +
-      '[tabindex]:not([tabindex="-1"])';
-
-    const isVisible = (el) => {
-      if (!el) return false;
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return false;
-      const style = window.getComputedStyle(el);
-      return (
-        style.visibility !== 'hidden' &&
-        style.display !== 'none' &&
-        style.opacity !== '0'
-      );
-    };
-
-    const focusables = [...form.querySelectorAll(FOCUSABLE)].filter(isVisible);
-    if (focusables.length === 0) return;
-
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-
-    if (e.shiftKey) {
-      if (active === first) {
-        e.preventDefault();
-        last.focus();
-      }
-    } else {
-      if (active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  };
-
   setWidgetWrapperElement = (widgetWrapperElement, fieldNames) => {
     const rawWidgetElement = widgetWrapperElement?.getWrappedElement?.();
     if (!rawWidgetElement) {
@@ -342,6 +294,54 @@ class TableQuickInput extends PureComponent {
    * @summary When click is executed in the form we set the internal `hasFocus` flag indicating that we got the focus
    */
   handleOnClick = () => this.setState({ hasFocus: true });
+
+  handleTabKeyTrap = (e) => {
+    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
+
+    const form = this.form;
+    if (!form) return;
+
+    const active = document.activeElement;
+    if (!active || !form.contains(active)) return;
+
+    const FOCUSABLE =
+      'input:not([disabled]):not([tabindex="-1"]):not([type="hidden"]),' +
+      'textarea:not([disabled]):not([tabindex="-1"]),' +
+      'select:not([disabled]):not([tabindex="-1"]),' +
+      'button:not([disabled]):not([tabindex="-1"]),' +
+      'a[href]:not([tabindex="-1"]),' +
+      '[tabindex]:not([tabindex="-1"])';
+
+    const isVisible = (el) => {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return false;
+      const style = window.getComputedStyle(el);
+      return (
+        style.visibility !== 'hidden' &&
+        style.display !== 'none' &&
+        style.opacity !== '0'
+      );
+    };
+
+    const focusables = [...form.querySelectorAll(FOCUSABLE)].filter(isVisible);
+    if (focusables.length === 0) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey) {
+      if (active === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
 
   render() {
     return (
