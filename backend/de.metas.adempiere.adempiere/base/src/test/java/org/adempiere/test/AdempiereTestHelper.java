@@ -244,7 +244,15 @@ public class AdempiereTestHelper
 
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
+		allOrgs.setValue("0");
+		allOrgs.setName("*");
 		save(allOrgs);
+
+		// Mirror production: AD_Org_ID=0 has an AD_OrgInfo row. TimeZone left unset — callers fall back to SystemTime.zoneId().
+		final I_AD_OrgInfo allOrgsInfo = newInstance(I_AD_OrgInfo.class);
+		allOrgsInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
+		allOrgsInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		save(allOrgsInfo);
 
 		final org.compiere.model.I_AD_User systemUser = newInstance(I_AD_User.class);
 		systemUser.setAD_User_ID(UserId.SYSTEM.getRepoId());
@@ -307,7 +315,7 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
+	public void onCleanup(@NonNull final String name, @NonNull final Runnable runnable)
 	{
 		final CleanupTask task = new CleanupTask(name, runnable);
 		cleanupTasks.add(task);
