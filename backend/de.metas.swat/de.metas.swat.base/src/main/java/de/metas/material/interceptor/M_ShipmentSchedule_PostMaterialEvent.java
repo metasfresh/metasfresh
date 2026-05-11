@@ -29,6 +29,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -150,6 +151,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
 		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
@@ -165,6 +167,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(isDropShipWarehouse)
 				.build();
 	}
 
@@ -181,6 +184,8 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
+
 		final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder = ShipmentScheduleUpdatedEvent.builder();
 
 		shipmentScheduleUpdatedEventBuilder
@@ -188,7 +193,8 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
-				.minMaxDescriptor(minMaxDescriptor);
+				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(isDropShipWarehouse);
 
 		setShipmentScheduleDetail(shipmentScheduleUpdatedEventBuilder, materialDescriptor, shipmentSchedule);
 
@@ -263,6 +269,8 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
+
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
@@ -273,6 +281,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 						.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
 						.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+				.isDropShipWarehouse(isDropShipWarehouse)
 				.build();
 	}
 
@@ -311,5 +320,25 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
 				.reduce(BigDecimal::add)
 				.orElse(BigDecimal.ZERO);
+	}
+
+	private boolean getIsDropShipWarehouse(final int warehouseId)
+	{
+		if (warehouseId <= 0)
+		{
+			return false;
+		}
+
+		try
+		{
+			return Services.get(IWarehouseDAO.class)
+					.getById(warehouseId)
+					.isDropShipWarehouse();
+		}
+		catch (final Exception e)
+		{
+			// Defensive: if warehouse lookup fails, default to false
+			return false;
+		}
 	}
 }
