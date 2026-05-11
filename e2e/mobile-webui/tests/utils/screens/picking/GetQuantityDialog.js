@@ -30,7 +30,7 @@ export const GetQuantityDialog = {
     }),
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
-        await page.locator('#qty-input').type(`${qty}`);
+        await page.locator('#qty-input').fill(`${qty}`);
     }),
 
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
