@@ -97,9 +97,13 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
 
     # Assert: exactly 1 PO was created with Link_Order_ID pointing back to the SO, IsDropShip=Y, DocStatus=CO.
     # The 'the order is created:' step uses Link_Order_ID.Identifier to locate the PO.
+    # The PO ends in DR (Drafted) — same behaviour as the existing C_Order_CreatePOFromSOs
+    # process: the aggregator sets DocAction=Complete but leaves the actual completion to the
+    # buyer's review step (or a downstream workpackage). For dropship-warehouse SOs the buyer
+    # still owns the PO before it ships.
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
-      | so_dw1                   | false   | POO         | CO            | true           |
+      | so_dw1                   | false   | POO         | DR            | true           |
 
   @from:cucumber
   Scenario: SO on a dropship warehouse does not create MD_Candidate rows
