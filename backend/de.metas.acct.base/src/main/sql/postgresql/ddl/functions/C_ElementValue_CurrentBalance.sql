@@ -4,8 +4,6 @@ CREATE OR REPLACE FUNCTION de_metas_acct.C_ElementValue_CurrentBalance(
     p_C_ElementValue_ID numeric)
 RETURNS numeric
 AS $BODY$
--- Delegates to the centralised resolver. The (schema, org) pair is determined
--- by the data model alone — see getC_AcctSchema_AndOrg_For_C_ElementValue.
 SELECT (de_metas_acct.acctBalanceToDate(
             p_C_ElementValue_ID,
             so.C_AcctSchema_ID,
