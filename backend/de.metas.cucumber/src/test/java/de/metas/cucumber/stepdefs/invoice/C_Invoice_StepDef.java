@@ -519,8 +519,16 @@ public class C_Invoice_StepDef
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
 
-		row.getAsOptionalBoolean(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
-				.ifPresent(isPartialInvoice -> softly.assertThat(invoice.isPartialInvoice()).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(isPartialInvoice));
+		// IsPartialInvoice is a tri-state column (Y / N / null = NA). Read the raw String
+		// instead of the boolean accessor (which collapses N and null to false), so the
+		// assertion can distinguish all three states. Cucumber's "-" / "null" tokens map
+		// to actual SQL null via DataTableUtil.nullToken2Null.
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(expectedRaw -> {
+					final String expected = DataTableUtil.nullToken2Null(expectedRaw);
+					final String actual = InterfaceWrapperHelper.<String>getValue(invoice, I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
+					softly.assertThat(actual).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(expected);
+				});
 
 		// payment related
 		{
