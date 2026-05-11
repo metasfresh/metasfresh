@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",
-    "allure-playwright": "^3.4.3"
+    "allure-playwright": "^3.7.2"
   },
   "engines": {
     "node": ">=18.0.0"
