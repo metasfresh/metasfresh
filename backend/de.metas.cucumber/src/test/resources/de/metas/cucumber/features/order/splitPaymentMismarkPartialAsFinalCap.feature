@@ -64,9 +64,10 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_lc        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_lc        |             |
+      | pt_immediate |             |
+      | pt_net90     | 90          |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -131,14 +132,23 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
       | 400        | r1_line1       | r1         | CO        | lcOrderL1      |
 
     # ── INV1: correctly marked as Partial, matched to R1 ──
-    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # Wait for IC to be created after receipt, then generate invoice via the real pipeline with IsPartialInvoice=Y.
+    # Domain invariant: 1 IC per OrderLine — the same IC is reused for both R1 and R2.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic                                | lcOrderL1                 | r1_line1                  | 400          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic                                | Y                | 400         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic                                | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1       | pt_net90             |
 
     # INV1 alloc = MIN(40,000 × 30 %, 21,000) = 12,000; prepay → 9,000
     Then validate C_AllocationLines for invoice inv1
@@ -161,14 +171,29 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
       | 320        | r2_line1       | r2         | CO        | lcOrderL1      |
 
     # ── INV2: MISMARKED as Partial (IsPartialInvoice='Y' when it should be 'N' Final), matched to R2 ──
-    # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      | r2_line1       |
-    And the invoice identified by inv2 is completed
+    # Wait for IC to bump (QtyDelivered 400→720; QtyInvoiced still 400 → QtyToInvoice=320),
+    # then generate the second invoice via the real pipeline with IsPartialInvoice=Y.
+    # Same IC identifier (1-IC-per-orderline) — putOrReplace is a no-op when the row resolves to the same record.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic                                | lcOrderL1                 | r2_line1                  | 320          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic                                | Y                | 720         |
+    # The IC now has 2 invoices linked via M_InvoiceCandidate_InOutLine + C_InvoiceLine; the IC-based
+    # finder is ambiguous (findFirst over both completed invoices). Disambiguate via QtyInvoiced=320
+    # + C_OrderLine_ID on the invoice line — that uniquely identifies INV2's line.
+    # (load C_Invoice: legacy step requires OPT.C_OrderLine_ID.Identifier — without the OPT. prefix
+    # the orderline filter is silently dropped and QtyInvoiced=320 alone is not unique across the DB.)
+    And load C_Invoice:
+      | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier | QtyInvoiced | OPT.C_OrderLine_ID.Identifier | DocStatus |
+      | inv2                    | inv2L1                      | 320         | lcOrderL1                     | CO        |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv2                    | Y                | CO        |
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv2       | pt_net90             |
 
     # AC #12 — the MIN cap clamps INV2 alloc at remaining_prepay (9,000), NOT 9,600 (= 32,000 × 30 %)
     Then validate C_AllocationLines for invoice inv2
