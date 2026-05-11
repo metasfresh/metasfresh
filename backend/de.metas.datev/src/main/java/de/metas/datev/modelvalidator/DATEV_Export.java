@@ -70,6 +70,11 @@ public class DATEV_Export
 			datevExport.setDateAcctFrom(TimeUtil.asTimestamp(period.getStartDate()));
 			datevExport.setDateAcctTo(TimeUtil.asTimestamp(period.getEndDate()));
 		}
+		else
+		{
+			datevExport.setDateAcctFrom(null);
+			datevExport.setDateAcctTo(null);
+		}
 	}
 
 }
