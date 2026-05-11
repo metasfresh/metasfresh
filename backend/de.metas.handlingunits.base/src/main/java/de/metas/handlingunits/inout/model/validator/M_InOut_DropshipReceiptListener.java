@@ -79,7 +79,6 @@ public class M_InOut_DropshipReceiptListener
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final CatchWeightHelper catchWeightHelper = new CatchWeightHelper();
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void onAfterComplete(@NonNull final I_M_InOut inout)
@@ -208,7 +207,13 @@ public class M_InOut_DropshipReceiptListener
 		// Resolve VHU for idempotency check
 		final LUTUCUPair lutuPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu);
 		final I_M_HU vhu = lutuPair.getVHU();
-		final int vhuRepoId = vhu != null ? vhu.getM_HU_ID() : 0;
+		if (vhu == null)
+		{
+			logger.warn("Cannot determine VHU for HU {}; skipping schedule allocation to avoid duplicate-risk on VHU_ID=0", hu.getM_HU_ID());
+			Loggables.addLog("Skipped dropship receipt HU {0}: no VHU found", hu.getM_HU_ID());
+			return;
+		}
+		final int vhuRepoId = vhu.getM_HU_ID();
 
 		// Idempotency: skip if QtyPicked already exists for (schedule, VHU)
 		final boolean alreadyPicked = queryBL
@@ -226,7 +231,7 @@ public class M_InOut_DropshipReceiptListener
 		}
 
 		// Build qtyPicked from the HU's actual storage for the given product
-		final StockQtyAndUOMQty qtyPicked = catchWeightHelper.extractQtys(huContext, productId, hu);
+		final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(huContext, productId, hu);
 
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.shipmentSchedule(schedule)

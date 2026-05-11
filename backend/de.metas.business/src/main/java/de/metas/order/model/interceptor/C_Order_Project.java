@@ -182,7 +182,7 @@ public class C_Order_Project
 			return false;
 		}
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-		return warehouse.isDropShipWarehouse();
+		return warehouse != null && warehouse.isDropShipWarehouse();
 	}
 
 	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order purchaseOrder)
