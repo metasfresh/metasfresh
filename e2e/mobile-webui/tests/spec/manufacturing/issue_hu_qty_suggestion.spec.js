@@ -156,12 +156,11 @@ test('Confirming HU-capacity suggestion depletes HU with no inventory adjustment
     });
 });
 
-// Regression: backend rejects issuing more than current HU capacity; HU unchanged.
-// With the JS fix, the suggestion is now correctly capped at HU capacity (5).
-// If a worker manually types more (e.g. 8 > 5), the backend rejects the whole operation
-// with a 422 error ("Could not issue the whole quantity required") and rolls back —
-// HU stays unchanged. This verifies the system boundary is enforced on the backend.
-test('Over-issuing rejected by backend — HU unchanged', async ({ page }) => {
+// Over-issue UX: worker types more than HU capacity.
+// Backend rejects the operation with 422 ("Could not issue the whole quantity required") and rolls back.
+// The frontend must show an error toast and keep the worker on the dialog (not navigate away),
+// so they can correct the qty and retry. This tests the full recovery path.
+test('Over-issuing shows error toast and worker can retype to recover', async ({ page }) => {
     const masterdata = await createMasterdataForDrainTest();
     await loginAndStartMfg(masterdata);
 
@@ -174,21 +173,24 @@ test('Over-issuing rejected by backend — HU unchanged', async ({ page }) => {
         await drainHUViaPP2({ masterdata });
     });
 
-    await test.step('Resume PP1, type 8 (over HU capacity 5) — backend rejects, HU unchanged', async () => {
+    await test.step('Resume PP1, type 8 (over HU capacity 5) — error toast shown, worker stays on dialog', async () => {
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
         await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-        await RawMaterialIssueLineScreen.scanQRCode({
+        // Over-issue attempt: backend returns 422, toast appears, dialog stays open
+        await RawMaterialIssueLineScreen.scanQRCodeExpectError({
             qrCode: masterdata.handlingUnits.HU.qrCode,
             qtyEntered: '8',
         });
+        // Recovery: worker retypes the correct qty (HU capacity = 5) and confirms
+        await RawMaterialIssueLineScreen.retypeQtyAndConfirm({ qtyEntered: '5' });
         await RawMaterialIssueLineScreen.goBack();
         await ManufacturingJobScreen.expectIssueButton({ index: 1 });
     });
 
     await Backend.expect({
-        title: 'Over-issue rejected: backend returns 422, entire operation rolled back — HU unchanged at 5',
+        title: 'Over-issue rejected (422), worker retypes 5 — HU depleted to 0',
         hus: {
-            HU: { storages: { COMP: '5 PCE' } },
+            HU: { storages: { COMP: '0 PCE' } },
         },
     });
 });

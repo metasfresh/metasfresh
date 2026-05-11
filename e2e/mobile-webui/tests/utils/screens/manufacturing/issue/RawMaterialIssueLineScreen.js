@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page } from '../../../common';
+import { expectErrorToast, ID_BACK_BUTTON, page } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScanScreen } from './RawMaterialIssueLineScanScreen';
@@ -45,6 +45,23 @@ export const RawMaterialIssueLineScreen = {
             await expect(locator.getByTestId('indicator')).toHaveCount(0);
             await expect(locator.getByTestId('indicator2')).toHaveCount(0);
         }
+    }),
+
+    scanQRCodeExpectError: async ({ qrCode, qtyEntered }) => await test.step(`${NAME} - Scan QR code (expect error, qty=${qtyEntered})`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await RawMaterialIssueLineScanScreen.waitForScreen();
+        await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
+        await expectErrorToast(`${NAME} over-issue rejected`, async () => {
+            await GetQuantityDialog.fillAndPressDone({ qtyEntered });
+            // On success: dialog closes and navigates back to line screen.
+            // On error (after fix): dialog stays open → waitToClose hangs → toast wins.
+        });
+        await GetQuantityDialog.waitForDialog(); // dialog still open — worker was not navigated away
+    }),
+
+    retypeQtyAndConfirm: async ({ qtyEntered }) => await test.step(`${NAME} - Retype qty=${qtyEntered} and confirm`, async () => {
+        await GetQuantityDialog.fillAndPressDone({ qtyEntered });
+        await RawMaterialIssueLineScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
