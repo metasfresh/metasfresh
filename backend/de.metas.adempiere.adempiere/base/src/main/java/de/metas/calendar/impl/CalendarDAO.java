@@ -104,7 +104,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 		return queryBL.createQueryBuilder(I_C_Period.class)
 				.addEqualsFilter(I_C_Period.COLUMNNAME_C_Year_ID, yearId)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_C_Period.COLUMNNAME_StartDate)
+				.orderBy(I_C_Period.COLUMNNAME_PeriodNo)
 				.create()
 				.firstNotNull(I_C_Period.class);
 	}
@@ -115,7 +115,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 		return queryBL.createQueryBuilder(I_C_Period.class)
 				.addEqualsFilter(I_C_Period.COLUMNNAME_C_Year_ID, yearId)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_C_Period.COLUMNNAME_StartDate)
+				.orderByDescending(I_C_Period.COLUMNNAME_PeriodNo)
 				.create()
 				.firstNotNull(I_C_Period.class);
 	}

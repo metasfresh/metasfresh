@@ -128,6 +128,8 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	public I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId)
 	{
 		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
+		Check.assumeNotEmpty(periods, "No periods found for yearId={}", yearId);
+
 		return periods.get(0);
 
 	}
@@ -136,6 +138,8 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	public I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId)
 	{
 		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
+		Check.assumeNotEmpty(periods, "No periods found for yearId={}", yearId);
+
 		return periods.get(periods.size() - 1);
 	}
 

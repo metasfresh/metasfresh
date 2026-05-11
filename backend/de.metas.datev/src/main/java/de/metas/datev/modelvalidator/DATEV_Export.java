@@ -60,7 +60,7 @@ public class DATEV_Export
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_DATEV_Export.COLUMNNAME_C_Period_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW  }, ifColumnsChanged = I_DATEV_Export.COLUMNNAME_C_Period_ID)
 	public void setDateAcctFromAndDateAcctTo(final I_DATEV_Export datevExport)
 	{
 		if (datevExport.getC_Period_ID() > 0)
