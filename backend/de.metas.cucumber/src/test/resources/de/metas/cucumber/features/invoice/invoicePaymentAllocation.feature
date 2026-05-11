@@ -185,7 +185,7 @@ Feature: invoice payment allocation
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
-  Scenario: sales invoice with VAT codes — allocation discount tax correction has Tax-AmountType VAT code
+  Scenario: allocation discount: PayDiscount_Exp_Acct carries Net VAT code, T_Due_Acct carries Tax VAT code (§17 UStG)
 
     Given metasfresh has date and time 2022-05-11T08:00:00+02:00[Europe/Berlin]
     And metasfresh contains C_TaxCategory
@@ -232,10 +232,14 @@ Feature: invoice payment allocation
       | C_AllocationHdr_ID | C_Invoice_ID | C_Payment_ID | Amount     | DiscountAmt |
       | alloc              | invoice      | payment      | 107.10 EUR | 11.90 EUR   |
 
-    # Key assertion: the T_Due_Acct tax correction leg on the allocation must carry the Tax-AmountType VAT code
+    # §17 UStG: PayDiscount gross leg and offset leg → Net VAT code (Bemessungsgrundlage reduced)
+    # T_Due_Acct correction → Tax VAT code (Steuerbetrag corrected)
+    # Net contribution to N-bucket: 11.90 − 1.90 = 10.00 EUR ✓
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | PayDiscount_Exp_Acct  | 11.90 EUR   |             | tax19    | alloc     | sales19_N     |
       | T_Due_Acct            | 1.90 EUR    |             | tax19    | alloc     | sales19_T     |
+      | PayDiscount_Exp_Acct  |             | 1.90 EUR    | tax19    | alloc     | sales19_N     |
       | *                     |             |             |          | alloc     |               |
 
 
@@ -376,6 +380,10 @@ Feature: invoice payment allocation
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
       | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | tax1_N     | tax1     | Y       | N          |
+      | tax1_T     | tax1     | Y       | T          |
     And the invoice identified by inv_120_1 is completed
     And the invoice identified by inv_120_2 is completed
 
@@ -423,12 +431,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_120_2    | 0      | 2.9         | alloc3             |
+    # §17 UStG: WriteOff offset leg → Net VAT code; T_Due correction → Tax VAT code
+    # Gross write-off leg (2.90 EUR) has no VAT code (createInvoiceWriteOffFacts does not set one)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
-      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
-      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
-      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    | -             |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    | -             |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    | tax1_T        |
+      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    | tax1_N        |
 
 
 

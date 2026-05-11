@@ -48,6 +48,7 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
       | purchase19_N | rcTax19  | N       | N          |
       | purchase19_T | rcTax19  | N       | T          |
       | sales19_T    | rcTax19  | Y       | T          |
+      | sales19_N    | rcTax19  | Y       | N          |
 
     And metasfresh contains M_PricingSystems
       | Identifier    |
@@ -136,11 +137,11 @@ Feature: Reverse Charge tax — accounting posting for purchase and sales docume
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
       | V_Liability_Acct      | -1000 EUR   |             | -        | rcAlloc   | -             |
       | B_PaymentSelect_Acct  |             | -970 EUR    | -        | rcAlloc   | -             |
-      | PayDiscount_Rev_Acct  |             | -30 EUR     | rcTax19  | rcAlloc   | purchase19_T  |
-      | PayDiscount_Rev_Acct  | -5.70 EUR   |             | rcTax19  | rcAlloc   | purchase19_T  |
+      | PayDiscount_Rev_Acct  |             | -30 EUR     | rcTax19  | rcAlloc   | purchase19_N  |
+      | PayDiscount_Rev_Acct  | -5.70 EUR   |             | rcTax19  | rcAlloc   | purchase19_N  |
       | T_Credit_Acct         |             | -5.70 EUR   | rcTax19  | rcAlloc   | purchase19_T  |
       | T_Due_Acct            | -5.70 EUR   |             | rcTax19  | rcAlloc   | sales19_T     |
-      | PayDiscount_Rev_Acct  |             | -5.70 EUR   | rcTax19  | rcAlloc   | sales19_T     |
+      | PayDiscount_Rev_Acct  |             | -5.70 EUR   | rcTax19  | rcAlloc   | sales19_N     |
 
 
 # ############################################################################################################################################
