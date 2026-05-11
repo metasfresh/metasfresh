@@ -22,6 +22,9 @@ package de.metas.datev.modelvalidator;
  * #L%
  */
 
+import de.metas.calendar.Period;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
 import de.metas.datev.DATEVExportConfig;
 import de.metas.datev.DATEVExportConfigRepository;
 import de.metas.datev.model.I_DATEV_Export;
@@ -31,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,6 +43,7 @@ import org.springframework.stereotype.Component;
 public class DATEV_Export
 {
 	@NonNull private final DATEVExportConfigRepository exportConfigRepo;
+	@NonNull private final PeriodRepo periodRepo;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setDatevExportConfig(final I_DATEV_Export datevExport)
@@ -52,6 +57,18 @@ public class DATEV_Export
 			datevExport.setChartOfAccounts(exportConfig.getChartOfAccounts());
 			datevExport.setChartOfAccountsNumberLength(exportConfig.getChartOfAccountsNumberLength());
 			datevExport.setOrigin(exportConfig.getOrigin());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_DATEV_Export.COLUMNNAME_C_Period_ID)
+	public void setDateAcctFromAndDateAcctTo(final I_DATEV_Export datevExport)
+	{
+		if (datevExport.getC_Period_ID() > 0)
+		{
+			final PeriodId periodId = periodRepo.getPeriodId(datevExport.getC_Period_ID());
+			final Period period = periodRepo.getById(periodId);
+			datevExport.setDateAcctFrom(TimeUtil.asTimestamp(period.getStartDate()));
+			datevExport.setDateAcctTo(TimeUtil.asTimestamp(period.getEndDate()));
 		}
 	}
 
