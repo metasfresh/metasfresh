@@ -105,8 +105,8 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
         qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
       })
     )
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => history.goBack());
+      .then(() => history.goBack())
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   return (
