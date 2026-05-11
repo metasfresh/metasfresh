@@ -49,6 +49,8 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -70,6 +72,8 @@ import java.util.stream.Collectors;
  * - Promotes a project from order lines to the order when applicable.
  * - Creates a new project and associates it with an order and its lines if no appropriate project exists.
  * - Propagates the project association from the order to its lines.
+ * - Dropship-warehouse sales orders (where {@code M_Warehouse.IsDropShipWarehouse='Y'}) are also handled
+ *   by this interceptor, bypassing the normal SO early-return so that project creation/promotion runs for them too.
  * <p>
  * Dependency injection is used to provide services and repositories required for its operations.
  * <p>
@@ -106,6 +110,7 @@ public class C_Order_Project
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final ProjectService projectService;
 	@NonNull private final ProjectTypeRepository projectTypeRepository;
 	@NonNull private final PurchaseOrderProjectListenerDispatcher eventDispatcher;
@@ -116,10 +121,20 @@ public class C_Order_Project
 		populateProjectIfNeeded(order);
 	}
 
+	/**
+	 * Core logic for project creation/promotion.
+	 * <p>
+	 * Note: the parameter is named {@code purchaseOrder} for historical reasons; this method now also handles
+	 * dropship-warehouse sales orders (see class-level Javadoc).
+	 */
 	private void populateProjectIfNeeded(final @NonNull I_C_Order purchaseOrder)
 	{
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(purchaseOrder.getC_Project_ID());
-		if (purchaseOrder.isSOTrx() || projectId != null)
+		if (projectId != null)
+		{
+			return;
+		}
+		if (purchaseOrder.isSOTrx() && !isDropshipWarehouseOrder(purchaseOrder))
 		{
 			return;
 		}
@@ -155,6 +170,21 @@ public class C_Order_Project
 		}
 	}
 
+	/**
+	 * Returns {@code true} if the order's warehouse has {@code IsDropShipWarehouse='Y'}.
+	 * Used to decide whether a sales order should participate in the project creation/promotion logic.
+	 */
+	private boolean isDropshipWarehouseOrder(final @NonNull I_C_Order order)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		if (warehouseId == null)
+		{
+			return false;
+		}
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return warehouse.isDropShipWarehouse();
+	}
+
 	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order purchaseOrder)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID());
@@ -185,6 +215,10 @@ public class C_Order_Project
 
 		InterfaceWrapperHelper.saveAll(poLinesUpdated.values());
 
+		// Note: for dropship-warehouse SOs, `poLinesUpdated` contains SO lines despite the field name
+		// `purchaseOrderLineIds`. The listener (`UpdateSalesOrderFromPurchaseOrderProjectListener`) will
+		// attempt to look up purchase candidates by these IDs and find none — which is harmless since the
+		// project is already propagated directly to the SO lines above.
 		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
 				.projectId(newProjectId)
 				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
