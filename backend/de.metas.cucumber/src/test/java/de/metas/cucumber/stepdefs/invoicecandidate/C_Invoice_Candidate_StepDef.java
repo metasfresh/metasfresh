@@ -117,6 +117,7 @@ import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFo
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_DateInvoiced;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IgnoreInvoiceSchedule;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
@@ -742,6 +743,34 @@ public class C_Invoice_Candidate_StepDef
 				.forEach(this::updateInvoiceCandidate);
 	}
 
+	/**
+	 * Enqueues the given invoice candidates for invoicing and waits until each is processed.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier of the invoice candidate to process</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.IgnoreInvoiceSchedule} – {@code Y}/{@code N}; when {@code Y} the enqueuer bypasses the
+	 *       {@code InvoiceRule=Manual} schedule-skip filter and invoices immediately. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
+	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
+	 *   <li>{@code OPT.OverrideDueDate} – override due date (ISO local date).</li>
+	 *   <li>{@code OPT.IsCompleteInvoices} – {@code Y}/{@code N}. Default: {@code Y} (complete the invoice).</li>
+	 *   <li>{@code OPT.QtyInvoiced} – if set, waits until the candidate's {@code QtyInvoiced} reaches this value
+	 *       instead of waiting for {@code Processed=true}.</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
+	 *   | ic_1                              | Y                         |
+	 * }</pre>
+	 */
 	@And("^process invoice candidates and wait (.*)s for C_Invoice_Candidate to be processed$")
 	public void process_invoice_cand(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
@@ -751,13 +780,14 @@ public class C_Invoice_Candidate_StepDef
 					InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 					final boolean isUpdateLocationAndContactForInvoice = row.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+					final boolean ignoreInvoiceSchedule = row.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
 
 					final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 
 					final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
 
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-					invoicingParams.setIgnoreInvoiceSchedule(false);
+					invoicingParams.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 					row.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
@@ -789,6 +819,109 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	/**
+	 * Enqueues the given invoice candidates for invoicing with {@code IgnoreInvoiceSchedule=false} (the default),
+	 * then asserts that each candidate remains <em>unprocessed</em> for the full timeout period and that no
+	 * {@code C_Invoice} was created for it.
+	 *
+	 * <p>Use this step to verify that an {@code InvoiceRule=Manual} candidate is correctly skipped when the
+	 * "ignore schedule" flag is not set (TC1 of me03#28882).
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier of the invoice candidate to check</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.IsCompleteInvoices} – {@code Y}/{@code N}. Default: {@code Y}.</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * And process invoice candidates and verify C_Invoice_Candidate is not processed after 30s
+	 *   | C_Invoice_Candidate_ID.Identifier |
+	 *   | ic_1                              |
+	 * }</pre>
+	 */
+	@And("^process invoice candidates and verify C_Invoice_Candidate is not processed after (.*)s$")
+	public void process_invoice_cand_verify_not_processed(final int waitSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
+		{
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
+
+			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+			invoicingParams.setIgnoreInvoiceSchedule(false);
+			invoicingParams.setCompleteInvoices(row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true));
+
+			StepDefUtil.tryAndWait(waitSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
+
+			// Attempt to enqueue with IgnoreInvoiceSchedule=false.
+			// For InvoiceRule=Manual candidates the schedule-skip filter will exclude this candidate
+			// so nothing is enqueued (no exception is thrown because setFailIfNothingEnqueued=false).
+			try
+			{
+				invoiceCandBL.enqueueForInvoicing()
+						.setContext(Env.getCtx())
+						.setFailIfNothingEnqueued(false)
+						.setInvoicingParams(invoicingParams)
+						.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+			}
+			catch (final AdempiereException adempiereException)
+			{
+				logCurrentContext(invoiceCandidate, row);
+				throw adempiereException;
+			}
+			finally
+			{
+				DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+			}
+
+			// Wait for the full timeout, then assert that the candidate was NOT processed.
+			Thread.sleep(waitSec * 1000L);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			Assertions.assertThat(invoiceCandidate.isProcessed())
+					.as("Invoice candidate %s must NOT be processed when InvoiceRule=Manual and IgnoreInvoiceSchedule=false",
+							invoiceCandidateId)
+					.isFalse();
+		}
+	}
+
+	/**
+	 * Enqueues multiple invoice candidates together in a single selection and waits until all are processed.
+	 * Invoicing parameters are taken from the first row; all rows must share the same parameters.
+	 *
+	 * <p>Required columns (per row):
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier of the invoice candidate to process</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns (read from the first row):
+	 * <ul>
+	 *   <li>{@code OPT.IgnoreInvoiceSchedule} – {@code Y}/{@code N}; when {@code Y} the enqueuer bypasses the
+	 *       {@code InvoiceRule=Manual} schedule-skip filter and invoices immediately. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
+	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
+	 *   <li>{@code OPT.OverrideDueDate} – override due date (ISO local date).</li>
+	 *   <li>{@code OPT.IsCompleteInvoices} – {@code Y}/{@code N}. Default: {@code Y} (complete the invoice).</li>
+	 *   <li>{@code OPT.QtyInvoiced} – if set, waits until each candidate's {@code QtyInvoiced} reaches this value.</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
+	 *   | ic_1                              | Y                         |
+	 *   | ic_2                              | Y                         |
+	 * }</pre>
+	 */
 	@And("^process invoice candidates together and wait (.*)s for C_Invoice_Candidate to be processed$")
 	public void process_invoice_cand_together(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -816,9 +949,10 @@ public class C_Invoice_Candidate_StepDef
 		// Use the first row to extract common invoicing parameters
 		final DataTableRow firstRow = rows.get(0);
 		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+		final boolean ignoreInvoiceSchedule = firstRow.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
 		invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
