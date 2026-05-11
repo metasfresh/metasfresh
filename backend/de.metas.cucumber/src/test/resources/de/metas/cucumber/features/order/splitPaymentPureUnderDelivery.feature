@@ -63,9 +63,10 @@ Feature: Split-payment — pure under-delivery (Final invoice consumes remaining
       | vendor_bank_account | vendor        | EUR           |
 
     And metasfresh contains C_PaymentTerm
-      | Identifier   |
-      | pt_lc        |
-      | pt_immediate |
+      | Identifier   | OPT.NetDays |
+      | pt_lc        |             |
+      | pt_immediate |             |
+      | pt_net90     | 90          |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | ptb_lc     | pt_lc            | 30      | 0          | LC                | 10    |
@@ -129,15 +130,26 @@ Feature: Split-payment — pure under-delivery (Final invoice consumes remaining
       | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
       | 200        | r1_line1       | r1         | CO        | lcOrderL1      |
 
-    # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK ──
-    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv1L1     | inv1         | product      | 200 PCE     | 100.00 | lcOrderL1      | r1_line1       |
-    And the invoice identified by inv1 is completed
+    # ── INV1: Partial, via the real IC pipeline (IsPartialInvoice=Y) ──
+    # Wait for IC to be created after R1 receipt, then generate invoice via the real pipeline.
+    # Domain invariant: 1 IC per OrderLine — the same IC is reused for both R1 and R2.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic                                | lcOrderL1                 | r1_line1                  | 200          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic                                | Y                | 200         |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic                                | inv1                    |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv1                    | Y                | CO        |
+    # Override inv1's payment term so it is not due on 2026-04-24 (pay date) — prevents it from
+    # appearing in the pay-selection's "Create from..." which only targets the proforma payment.
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv1       | pt_net90             |
 
     # INV1 alloc = MIN(20,000 × 30 %, 21,000) = 6,000; remaining prepay = 15,000
     Then validate C_AllocationLines for invoice inv1
@@ -164,15 +176,31 @@ Feature: Split-payment — pure under-delivery (Final invoice consumes remaining
       | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
       | 300        | r2_line1       | r2         | CO        | lcOrderL1      |
 
-    # ── INV2: Final, matched to R2 via M_InOutLine_ID FK ──
-    # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
-      | inv2L1     | inv2         | product      | 300 PCE     | 100.00 | lcOrderL1      | r2_line1       |
-    And the invoice identified by inv2 is completed
+    # ── INV2: Final, via the real IC pipeline (IsPartialInvoice=N) ──
+    # Wait for IC to bump (QtyDelivered 200→500; QtyInvoiced still 200 → QtyToInvoice=300),
+    # then generate the second invoice via the real pipeline with IsPartialInvoice=N (Final).
+    # Same IC identifier (1-IC-per-orderline) — putOrReplace is a no-op when the row resolves to the same record.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | M_InOutLine_ID.Identifier | QtyToInvoice |
+      | ic                                | lcOrderL1                 | r2_line1                  | 300          |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | IsPartialInvoice | QtyInvoiced |
+      | ic                                | N                | 500         |
+    # The IC now has 2 invoices linked via M_InvoiceCandidate_InOutLine + C_InvoiceLine; the IC-based
+    # finder is ambiguous (findFirst over both completed invoices). Disambiguate via QtyInvoiced=300
+    # + C_OrderLine_ID on the invoice line — that uniquely identifies INV2's line.
+    # (load C_Invoice: legacy step requires OPT.C_OrderLine_ID.Identifier — without the OPT. prefix
+    # the orderline filter is silently dropped and QtyInvoiced=300 alone is not unique across the DB.)
+    And load C_Invoice:
+      | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier | QtyInvoiced | OPT.C_OrderLine_ID.Identifier | DocStatus |
+      | inv2                    | inv2L1                      | 300         | lcOrderL1                     | CO        |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | IsPartialInvoice | DocStatus |
+      | inv2                    | N                | CO        |
+    # Override inv2's payment term so it is not due on 2026-04-24 (pay date).
+    And update C_Invoice:
+      | Identifier | OPT.C_PaymentTerm_ID |
+      | inv2       | pt_net90             |
 
     # AC #10 — INV2 alloc = 15,000 (remaining prepay — Final rule), NOT 9,000 (= 30,000 × 30 %)
     Then validate C_AllocationLines for invoice inv2
