@@ -1,17 +1,10 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
-import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
-
-const allureMeta = async () => {
-    await allure.epic('E0160: Manufacturing Execution');
-    await allure.feature('F8030: MobileUI Manufacturing');
-    await allure.severity('critical');
-};
 
 // Drain scenario: HU(30), HU_SPARE(20), PP1(FG/BOM=20), PP2(FG_DRAIN/BOM=25).
 //
@@ -93,12 +86,9 @@ const drainHUViaPP2 = async ({ masterdata }) => {
     // HU now has 30 - 25 = 5 COMP remaining.
 };
 
-// AC1 — Backend recalculates plan on resume: when HU stock dropped after PP1's plan was stored,
+// Backend recalculates plan on resume: when HU stock dropped after PP1's plan was stored,
 // createJob recreates the schedule with fresh HU data → suggestion reflects actual remaining HU qty.
-test('AC1: Backend plan recalculation on resume reflects actual HU qty after concurrent drain', async ({ page }) => {
-    await allureMeta();
-    await allure.story('AC1: Backend plan recalculation reflects actual HU qty after concurrent drain');
-
+test('Backend plan recalculation on resume reflects actual HU qty after concurrent drain', async ({ page }) => {
     const masterdata = await createMasterdataForDrainTest();
     await loginAndStartMfg(masterdata);
 
@@ -121,11 +111,8 @@ test('AC1: Backend plan recalculation on resume reflects actual HU qty after con
     });
 });
 
-// AC2 — [REGRESSION] When HU capacity >= remaining BOM qty, suggestion = BOM remaining (fix must not regress this)
-test('AC2 (regression): Suggestion unchanged when HU capacity exceeds remaining BOM qty', async ({ page }) => {
-    await allureMeta();
-    await allure.story('AC2 regression: large HU does not change suggestion');
-
+// Regression: when HU capacity >= remaining BOM qty, suggestion = BOM remaining (fix must not regress this)
+test('Suggestion unchanged when HU capacity exceeds remaining BOM qty', async ({ page }) => {
     // HU(100): plan step.qtyToIssue=20 (capped at BOM=20). Fix: min(20,20,20,100)=20 — same result.
     const masterdata = await createMasterdataSimple({ huQty: 100 });
     await loginAndStartMfg(masterdata);
@@ -139,11 +126,8 @@ test('AC2 (regression): Suggestion unchanged when HU capacity exceeds remaining 
     });
 });
 
-// AC3 — [REGRESSION] Confirming the (now correct) HU-capacity suggestion depletes HU with no inventory adjustment
-test('AC3 (regression): Confirming HU-capacity suggestion depletes HU with no inventory adjustment', async ({ page }) => {
-    await allureMeta();
-    await allure.story('AC3 regression: no inventory adjustment when confirming correct suggestion');
-
+// Regression: confirming the (now correct) HU-capacity suggestion depletes HU with no inventory adjustment
+test('Confirming HU-capacity suggestion depletes HU with no inventory adjustment', async ({ page }) => {
     const masterdata = await createMasterdataForDrainTest();
     await loginAndStartMfg(masterdata);
 
@@ -172,15 +156,12 @@ test('AC3 (regression): Confirming HU-capacity suggestion depletes HU with no in
     });
 });
 
-// AC4 — [REGRESSION] Backend rejects issuing more than current HU capacity; HU unchanged.
+// Regression: backend rejects issuing more than current HU capacity; HU unchanged.
 // With the JS fix, the suggestion is now correctly capped at HU capacity (5).
 // If a worker manually types more (e.g. 8 > 5), the backend rejects the whole operation
 // with a 422 error ("Could not issue the whole quantity required") and rolls back —
 // HU stays unchanged. This verifies the system boundary is enforced on the backend.
-test('AC4 (regression): Over-issuing rejected by backend — HU unchanged', async ({ page }) => {
-    await allureMeta();
-    await allure.story('AC4 regression: backend rejects over-issue, HU unchanged');
-
+test('Over-issuing rejected by backend — HU unchanged', async ({ page }) => {
     const masterdata = await createMasterdataForDrainTest();
     await loginAndStartMfg(masterdata);
 
