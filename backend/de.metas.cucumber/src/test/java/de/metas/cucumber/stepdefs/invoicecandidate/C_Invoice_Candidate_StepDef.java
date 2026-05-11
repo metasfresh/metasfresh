@@ -57,6 +57,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
@@ -118,6 +119,7 @@ import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNo
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_DateInvoiced;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IgnoreInvoiceSchedule;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsUpdateLocationAndContactForInvoice;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
@@ -779,7 +781,7 @@ public class C_Invoice_Candidate_StepDef
 					final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
 					InterfaceWrapperHelper.refresh(invoiceCandidate);
 
-					final boolean isUpdateLocationAndContactForInvoice = row.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+					final boolean isUpdateLocationAndContactForInvoice = row.getAsOptionalBoolean(PARA_IsUpdateLocationAndContactForInvoice).orElse(false);
 					final boolean ignoreInvoiceSchedule = row.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
 
 					final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
@@ -839,7 +841,7 @@ public class C_Invoice_Candidate_StepDef
 	 *
 	 * <p>Example:
 	 * <pre>{@code
-	 * And process invoice candidates and verify C_Invoice_Candidate is not processed after 30s
+	 * And process invoice candidates and verify C_Invoice_Candidate is not processed after 5s
 	 *   | C_Invoice_Candidate_ID.Identifier |
 	 *   | ic_1                              |
 	 * }</pre>
@@ -883,13 +885,23 @@ public class C_Invoice_Candidate_StepDef
 				DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
 			}
 
-			// Wait for the full timeout, then assert that the candidate was NOT processed.
+			// Wait for the full timeout, then assert that the candidate was NOT processed
+			// AND that no C_Invoice was created for it (independent evidence beyond the IsProcessed flag).
 			Thread.sleep(waitSec * 1000L);
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 			Assertions.assertThat(invoiceCandidate.isProcessed())
 					.as("Invoice candidate %s must NOT be processed when InvoiceRule=Manual and IgnoreInvoiceSchedule=false",
 							invoiceCandidateId)
 					.isFalse();
+
+			final int invoiceLineAllocCount = queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+					.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId.getRepoId())
+					.create()
+					.count();
+			Assertions.assertThat(invoiceLineAllocCount)
+					.as("No C_Invoice_Line_Alloc must exist for invoice candidate %s when InvoiceRule=Manual and IgnoreInvoiceSchedule=false (i.e. no C_Invoice was created)",
+							invoiceCandidateId)
+					.isZero();
 		}
 	}
 
@@ -948,7 +960,7 @@ public class C_Invoice_Candidate_StepDef
 
 		// Use the first row to extract common invoicing parameters
 		final DataTableRow firstRow = rows.get(0);
-		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean(PARA_IsUpdateLocationAndContactForInvoice).orElse(false);
 		final boolean ignoreInvoiceSchedule = firstRow.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
