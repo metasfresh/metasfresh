@@ -49,6 +49,8 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 
 	private static final String COLUMNNAME_IsPackingMaterial = "IsPackingMaterial";
 	private static final String COLUMNNAME_Count = "Count";
+	// Column alias for the conditional SUM of LineNetAmt where DatePromised = tomorrow
+	private static final String COLUMNNAME_NetOrderValueNextDay = "NetOrderValueNextDay";
 
 	private static final String I_M_HU_PackingMaterial_Table_Name = "M_HU_PackingMaterial";
 	private static final String I_M_HU_PackingMaterial_COLUMNNAME_M_Product_ID = "M_Product_ID";
@@ -121,6 +123,17 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				+ "."
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + ") as "
 				+ COLUMNNAME_Count);
+		//
+		// NetOrderValueNextDay: SUM of LineNetAmt for rows whose DatePromised is tomorrow.
+		// Using a conditional SUM (FILTER or CASE) so we stay in a single query pass.
+		// date_trunc('day', ...) normalises any time-of-day component on DatePromised.
+		sql.append(", COALESCE(SUM("
+						   + I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt
+						   + ") FILTER (WHERE date_trunc('day', "
+						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_DatePromised
+						   + ") = CURRENT_DATE + INTERVAL '1 day'), 0) AS "
+						   + COLUMNNAME_NetOrderValueNextDay);
+
 		sql.append(" FROM "
 				+ I_C_Invoice_Candidate.Table_Name);
 		sql.append(" WHERE ");
@@ -173,10 +186,12 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				final String curSymbol = rs.getString(I_C_Currency.COLUMNNAME_CurSymbol);
 				final boolean isToRecompute = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
 				final int countToRecompute = rs.getInt(COLUMNNAME_Count);
+				final BigDecimal netOrderValueNextDay = rs.getBigDecimal(COLUMNNAME_NetOrderValueNextDay);
 
 				summaryBuilder
 						.addTotalNetAmt(netAmtTotal, isApprovedForInvoicing, isPackingMaterial)
-						.addCurrencySymbol(curSymbol);
+						.addCurrencySymbol(curSymbol)
+						.addNetOrderValueNextDay(netOrderValueNextDay);
 				if (isToRecompute)
 				{
 					summaryBuilder.addCountToRecompute(countToRecompute);

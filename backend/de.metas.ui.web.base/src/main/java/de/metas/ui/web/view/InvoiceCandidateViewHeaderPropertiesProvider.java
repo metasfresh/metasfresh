@@ -118,7 +118,15 @@ public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderP
 								.caption(msgBL.translatable("IsGoods"))
 								.value(summary.getCUNetAmtNotApprovedAsTranslatableString())
 								.build())
-						.build());
+						.build())
+				//
+				// Net Order Value for next day (Netto Auftragswert – Zugesagter Termin morgen)
+				.add(ViewHeaderPropertiesGroup.builder()
+							 .entry(ViewHeaderProperty.builder()
+											.caption(msgBL.translatable("NetOrderValueNextDay"))
+											.value(summary.getNetOrderValueNextDayAsTranslatableString())
+											.build())
+							 .build());
 
 		if (summary.getCountTotalToRecompute() > 0)
 		{
