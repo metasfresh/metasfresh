@@ -100,8 +100,14 @@ public class C_Invoice // 03771
 
 	/**
 	 * Package-private static helper — testable without Spring context.
-	 * Copies {@code IsPartialInvoice} from the invoice's current document type to the invoice.
-	 * Falls back to {@code true} (Partial) when no doctype is set.
+	 * Copies the doctype's {@code IsPartialInvoice} (Y / N / NULL = NA) to the invoice — see
+	 * {@link de.metas.invoice.IsPartialInvoice}. Leaves the field as NULL (= NA, legacy semantic)
+	 * when no doctype is set, or when the doctype's flag is itself NULL.
+	 *
+	 * <p>The 3-state nullable redesign (migration {@code 5801950}) means the absence of explicit
+	 * intent is the correct default — pre-iter-3 behaviour was a hardcoded "safe default: Partial",
+	 * which masked the design intent and propagated spurious {@code 'Y'} values into all invoices
+	 * created without a matching doctype.
 	 *
 	 * <p>Skips the defaulting when the caller already set {@code IsPartialInvoice} explicitly
 	 * (detected via {@link InterfaceWrapperHelper#isValueChanged}). This lets callers — e.g.
@@ -120,12 +126,14 @@ public class C_Invoice // 03771
 		if (docTypeId > 0)
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-			invoice.setIsPartialInvoice(docType.isPartialInvoice());
+			// Read the raw column value to preserve the Y / N / NULL tri-state — the boolean
+			// accessor docType.isPartialInvoice() would collapse N and NULL into the same false.
+			final String docTypeFlag = InterfaceWrapperHelper
+					.<String>getValue(docType, org.compiere.model.I_C_DocType.COLUMNNAME_IsPartialInvoice)
+					.orElse(null);
+			InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, docTypeFlag);
 		}
-		else
-		{
-			invoice.setIsPartialInvoice(true); // safe default: Partial
-		}
+		// else: no doctype → leave NULL (= NA = legacy behaviour in closePartiallyInvoiced_InvoiceCandidates)
 	}
 
 	// ==========================================================================
