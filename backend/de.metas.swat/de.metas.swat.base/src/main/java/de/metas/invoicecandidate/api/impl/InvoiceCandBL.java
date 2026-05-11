@@ -75,6 +75,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -2312,6 +2313,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
+		// me03 #29369: if the user explicitly marked this invoice as Partial (more invoices coming
+		// on the same order), skip the auto-close entirely. N or NULL = NA falls through to the
+		// legacy qty-based close logic below. See de.metas.invoice.IsPartialInvoice for the tri-state
+		// mapping and migration 5801950 for the schema redesign.
+		final Optional<String> isPartialInvoiceCode = InterfaceWrapperHelper.getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice);
+		if (IsPartialInvoice.fromCode(isPartialInvoiceCode.orElse(null)).isYes())
+		{
+			logger.debug("Invoice IsPartialInvoice=Y (explicit Partial - more invoices coming); => not closing any invoice candidates");
+			return;
+		}
+
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
