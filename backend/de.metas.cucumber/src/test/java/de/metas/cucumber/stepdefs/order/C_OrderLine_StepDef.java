@@ -177,6 +177,10 @@ public class C_OrderLine_StepDef
 				.map(partnerTable::getId)
 				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
 
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> orderLine.setC_BPartner_Vendor_ID(vendorBPartnerId.getRepoId()));
+
 		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(flatrateConditionsIdentifier))
 		{

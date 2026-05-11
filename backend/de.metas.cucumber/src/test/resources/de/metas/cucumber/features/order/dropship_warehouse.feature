@@ -90,7 +90,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw1     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_ID |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
       | sol_dw1_1  | so_dw1     | product_dw   | 10         | vendor_dw     |
       | sol_dw1_2  | so_dw1     | product_dw   | 5          | vendor_dw     |
     When the order identified by so_dw1 is completed
@@ -110,7 +110,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_dw2     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_ID |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
       | sol_dw2_1  | so_dw2     | product_dw   | 8          | vendor_dw     |
       | sol_dw2_2  | so_dw2     | product_dw   | 3          | vendor_dw     |
     When the order identified by so_dw2 is completed
