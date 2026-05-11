@@ -392,6 +392,37 @@ public class MD_Candidate_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateDetailWasDeleted);
 	}
 
+	/**
+	 * Asserts that no {@code MD_Candidate} rows (excluding STOCK-type) exist for the given product.
+	 * Use after draining the RabbitMQ queue to verify that a dropship-warehouse SO did not trigger
+	 * any material-disposition demand candidates.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   (none — product identifier is provided directly in the step text)
+	 * @cucumber.example
+	 * <pre>
+	 * Then no MD_Candidate exists for M_Product_ID product_dw
+	 * </pre>
+	 */
+	@Then("^no MD_Candidate exists for M_Product_ID (.*)$")
+	public void no_md_candidate_exists_for_product(@NonNull final String productIdentifier)
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+
+		final int count = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addNotEqualsFilter(COLUMNNAME_MD_Candidate_Type, de.metas.material.dispo.commons.candidate.CandidateType.STOCK.getCode())
+				.create()
+				.count();
+
+		assertThat(count)
+				.as("Expected zero non-STOCK MD_Candidate rows for product %s (M_Product_ID=%s) — dropship-warehouse SO must bypass material disposition",
+						productIdentifier, productRecord.getM_Product_ID())
+				.isZero();
+	}
+
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
 	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
