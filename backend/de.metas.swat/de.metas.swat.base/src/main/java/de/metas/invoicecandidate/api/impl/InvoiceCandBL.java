@@ -367,6 +367,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						return TimeUtil.asTimestamp(nextDateToInvoice, timeZone);
 					}
 				}
+			case Manual:
+				// me03#28882: user owns invoicing timing — no scheduled date.
+				// The skip-filter in isSkipCandidateFromInvoicing treats null DateToInvoice as "skip unless IgnoreInvoiceSchedule=Y".
+				return null;
 			default:
 				throw new AdempiereException("Unexpected invoicerule=" + invoiceRule);
 		}
@@ -2371,6 +2375,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			case CustomerScheduleAfterDelivery:
 			case OrderCompletelyDelivered:
 				return true;
+			case Manual:
+				// me03#28882: user owns invoicing timing — never auto-close on partial invoicing.
+				return false;
 			default:
 				return false;
 		}

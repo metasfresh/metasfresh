@@ -399,6 +399,9 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
+			case Manual:
+				// me03#28882: Manual reuses AfterDelivery's qty semantics — when the user finally triggers
+				// invoicing (with IgnoreInvoiceSchedule=Y), the candidate carries the full delivered qty.
 				if (product.isItemType())
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();
