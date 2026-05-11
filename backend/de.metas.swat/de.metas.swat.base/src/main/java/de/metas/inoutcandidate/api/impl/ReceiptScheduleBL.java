@@ -490,13 +490,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		logger.warn("[CI-LOGGER-CLOSE] ReceiptScheduleBL.close called rs_ID={} stack:\n{}",
-				rs.getM_ReceiptSchedule_ID(),
-				java.util.Arrays.stream(Thread.currentThread().getStackTrace())
-						.limit(25)
-						.map(s -> "  " + s)
-						.collect(java.util.stream.Collectors.joining("\n")));
-
 		// Make sure receipt schedule was not already closed
 		if (isClosed(rs))
 		{
