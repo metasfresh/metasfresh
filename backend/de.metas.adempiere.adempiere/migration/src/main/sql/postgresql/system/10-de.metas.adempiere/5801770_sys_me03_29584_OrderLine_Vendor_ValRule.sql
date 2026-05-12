@@ -22,7 +22,7 @@ INSERT INTO AD_Val_Rule
      Name, Type, Code, EntityType)
 VALUES
     (540782 /*From ID Server*/, 0, 0, 'Y',
-     '2026-05-11 10:00', 100, '2026-05-11 10:00', 100,
+     TO_TIMESTAMP('2026-05-11 14:05:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:05:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'C_BPartner Vendor for OrderLine (dropship-aware)',
      'S',
      'C_BPartner.IsVendor=''Y''
@@ -57,6 +57,6 @@ AND (
 -- =============================================================================
 UPDATE AD_Column
 SET    AD_Val_Rule_ID = 540782 /*From ID Server*/,
-       Updated        = '2026-05-11 10:00',
+       Updated        = TO_TIMESTAMP('2026-05-11 14:05:01','YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy      = 100
 WHERE  AD_Column_ID = 577156;

@@ -53,6 +53,8 @@ BEGIN
 			
 		inssel := TRIM (ins) || ' ' || TRIM (sel);
 
+        raise notice 'Executing: %', inssel;
+
 		EXECUTE inssel;
 		v_TrlTablesCount := v_TrlTablesCount + 1;
 		

@@ -15,7 +15,7 @@ INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, C
                       Name, Description,
                       IsDisplayed, IsDisplayedGrid, IsReadOnly, IsSameLine,
                       SeqNo, SeqNoGrid, SortNo, EntityType)
-VALUES (779180 /*From ID Server*/, 0, 0, 'Y', '2026-05-11 09:00', 100, '2026-05-11 09:00', 100,
+VALUES (779180 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:02:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:02:00','YYYY-MM-DD HH24:MI:SS'), 100,
         177, 592508, NULL,
         'Streckengeschäft-Lager',
         'Wenn Ja, werden Verkaufsaufträge auf diesem Lager als Streckengeschäft (Dropship) abgewickelt. Bei Auftragsabschluss wird automatisch eine Bestellung an den Lieferanten erzeugt.',
@@ -45,10 +45,10 @@ INSERT INTO AD_UI_Element (
 ) VALUES (
     0, 779180, 0, 177,
     540174, 651164 /*From ID Server*/, 'F',
-    '2026-05-11 09:00', 100, 'Y', 'N',
+    TO_TIMESTAMP('2026-05-11 14:02:01','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Streckengeschäft-Lager', 55, 105, 0,
-    '2026-05-11 09:00', 100
+    TO_TIMESTAMP('2026-05-11 14:02:01','YYYY-MM-DD HH24:MI:SS'), 100
 );
 
 -- =============================================================================

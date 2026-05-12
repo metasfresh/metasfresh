@@ -6,7 +6,7 @@
 -- =============================================================================
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                         ColumnName, Name, PrintName, Description, Help)
-VALUES (584854 /*From ID Server*/, 0, 0, 'Y', '2026-05-11 09:00', 100, '2026-05-11 09:00', 100,
+VALUES (584854 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
         'IsDropShipWarehouse',
         'Streckengeschäft-Lager',
         'Streckengeschäft-Lager',
@@ -29,7 +29,7 @@ SET Name        = 'Dropship Warehouse',
     Description = 'If Yes, sales orders on this warehouse are handled as dropship. On sales-order completion a single purchase order is automatically created for the vendor.',
     Help        = 'Marks this warehouse as a dropship warehouse. On such warehouses, completing a sales order automatically creates exactly one purchase order per sales order — bypassing the normal material-disposition / purchase-candidate path. Per-line vendor selection is enforced more strictly for dropship warehouses.',
     IsTranslated = 'Y',
-    Updated     = '2026-05-11 09:00',
+    Updated     = TO_TIMESTAMP('2026-05-11 14:00:01','YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584854 AND AD_Language = 'en_US';
 
@@ -40,7 +40,7 @@ SET Name        = 'Streckengeschäft-Lager',
     Description = 'Wenn Ja, werden Verkaufsaufträge auf diesem Lager als Streckengeschäft (Dropship) abgewickelt. Bei Auftragsabschluss wird automatisch eine Bestellung an den Lieferanten erzeugt.',
     Help        = 'Markiert dieses Lager als Streckengeschäft-Lager (Dropship). Auf solchen Lagern wird bei Auftragsabschluss automatisch genau eine Bestellung pro Verkaufsauftrag an den Lieferanten erzeugt — ohne Umweg über die normale Materialdisposition / Bestellkandidaten. Die Lieferant-Auswahl pro Position wird bei dieser Lager-Art strenger geprüft.',
     IsTranslated = 'N',
-    Updated     = '2026-05-11 09:00',
+    Updated     = TO_TIMESTAMP('2026-05-11 14:00:02','YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584854 AND AD_Language = 'de_DE';
 
@@ -51,6 +51,6 @@ SET Name        = 'Streckengeschäft-Lager',
     Description = 'Wenn Ja, werden Verkaufsaufträge auf diesem Lager als Streckengeschäft (Dropship) abgewickelt. Bei Auftragsabschluss wird automatisch eine Bestellung an den Lieferanten erzeugt.',
     Help        = 'Markiert dieses Lager als Streckengeschäft-Lager (Dropship). Auf solchen Lagern wird bei Auftragsabschluss automatisch genau eine Bestellung pro Verkaufsauftrag an den Lieferanten erzeugt — ohne Umweg über die normale Materialdisposition / Bestellkandidaten. Die Lieferant-Auswahl pro Position wird bei dieser Lager-Art strenger geprüft.',
     IsTranslated = 'N',
-    Updated     = '2026-05-11 09:00',
+    Updated     = TO_TIMESTAMP('2026-05-11 14:00:03','YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584854 AND AD_Language = 'de_CH';
