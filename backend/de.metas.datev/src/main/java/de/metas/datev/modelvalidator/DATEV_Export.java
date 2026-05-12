@@ -65,8 +65,7 @@ public class DATEV_Export
 	{
 		if (datevExport.getC_Period_ID() > 0)
 		{
-			final PeriodId periodId = periodRepo.getPeriodId(datevExport.getC_Period_ID());
-			final Period period = periodRepo.getById(periodId);
+			final Period period = periodRepo.getByRepoId(datevExport.getC_Period_ID());
 			datevExport.setDateAcctFrom(TimeUtil.asTimestamp(period.getStartDate()));
 			datevExport.setDateAcctTo(TimeUtil.asTimestamp(period.getEndDate()));
 		}

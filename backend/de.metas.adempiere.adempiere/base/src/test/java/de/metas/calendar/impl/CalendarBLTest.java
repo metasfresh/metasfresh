@@ -306,6 +306,6 @@ public class CalendarBLTest extends CalendarTestBase
 		db.save(period1);
 
 		final Timestamp firstDayOfYear = Services.get(ICalendarBL.class).getFirstDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(calendar.getC_Calendar_ID()), year1.getC_Year_ID()));
-		Assertions.assertEquals(0, firstDayOfYear.compareTo(TimeUtil.getDay(2013, 1, 1)), "Wrong last day of year");
+		Assertions.assertEquals(0, firstDayOfYear.compareTo(TimeUtil.getDay(2013, 1, 1)), "Wrong first day of year");
 	}
 }
