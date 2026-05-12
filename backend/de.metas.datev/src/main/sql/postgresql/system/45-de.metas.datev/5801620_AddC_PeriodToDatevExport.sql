@@ -112,3 +112,9 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2026-05-11 07:57:11.952000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551038
 ;
 
+
+-- Column: DATEV_Export.DateAcctTo
+-- 2026-05-12T07:49:05.031Z
+UPDATE AD_Column SET DefaultValue='@#Date@',Updated=TO_TIMESTAMP('2026-05-12 07:49:05.031000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=559134
+;
+
