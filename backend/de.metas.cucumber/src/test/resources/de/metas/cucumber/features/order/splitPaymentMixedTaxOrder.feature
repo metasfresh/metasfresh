@@ -131,6 +131,10 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     # ── R1: 200 PCE of productA ──
     # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r1 QtyEntered=200.
     # BaseAmt = 200 × 50 × 1.20 = 12,000 EUR (per-line 20% rate; AC #21)
+    # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_OrderLine_ID |
+      | rs1                  | lcOrderL1      |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | C_OrderLine_ID | M_HU_PI_Item_Product_ID | QtyCUsPerTU |
       | hu1     | lcOrderL1      | 101                     | 200         |
