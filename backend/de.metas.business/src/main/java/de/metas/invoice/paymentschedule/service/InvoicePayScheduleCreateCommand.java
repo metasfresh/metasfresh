@@ -1,20 +1,15 @@
 package de.metas.invoice.paymentschedule.service;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.core.OrderPaySchedule;
-import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaySchedule;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
-import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,6 +20,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import com.google.common.collect.ImmutableList;
+
 @Builder
 class InvoicePayScheduleCreateCommand
 {
@@ -32,7 +29,6 @@ class InvoicePayScheduleCreateCommand
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
-	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final I_C_Invoice invoiceRecord;
 
@@ -47,48 +43,12 @@ class InvoicePayScheduleCreateCommand
 		invoicePayScheduleRepository.deleteByInvoiceId(invoiceId);
 		invoiceRecord.setIsPayScheduleValid(false);
 
-		final InvoicePayScheduleCreateRequest createRequest = newInvoicePayScheduleCreateRequest().orElse(null);
+		final InvoicePayScheduleCreateRequest createRequest = newInvoicePayScheduleCreateRequest_fromPaymentTerm().orElse(null);
 		if (createRequest != null)
 		{
 			invoicePayScheduleRepository.create(createRequest);
 			invoiceRecord.setIsPayScheduleValid(true);
 		}
-	}
-
-	private Optional<InvoicePayScheduleCreateRequest> newInvoicePayScheduleCreateRequest()
-	{
-		return Optionals.firstPresentOfSuppliers(
-				this::newInvoicePayScheduleCreateRequest_fromOrderPaySchedule,
-				this::newInvoicePayScheduleCreateRequest_fromPaymentTerm
-		);
-	}
-
-	private Optional<InvoicePayScheduleCreateRequest> newInvoicePayScheduleCreateRequest_fromOrderPaySchedule()
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceRecord.getC_Order_ID());
-		if (orderId == null)
-		{
-			return Optional.empty();
-		}
-
-		final OrderPaySchedule orderPaySchedule = orderPayScheduleService.getByOrderId(orderId).orElse(null);
-		if (orderPaySchedule == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(
-				InvoicePayScheduleCreateRequest.builder()
-						.invoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
-						.lines(orderPaySchedule.streamLines()
-								.map(line -> InvoicePayScheduleCreateRequest.Line.builder()
-										.dueDate(line.getDueDate())
-										.dueAmount(line.getDueAmount())
-										.orderAndPayScheduleId(line.getOrderAndPayScheduleId())
-										.build())
-								.collect(ImmutableList.toImmutableList()))
-						.build()
-		);
 	}
 
 	private Optional<InvoicePayScheduleCreateRequest> newInvoicePayScheduleCreateRequest_fromPaymentTerm()
