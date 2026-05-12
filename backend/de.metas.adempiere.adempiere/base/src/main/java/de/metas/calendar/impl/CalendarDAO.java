@@ -79,6 +79,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 				.setClient_ID()
 				// .setApplyAccessFilter(true) isn't required here and case cause problems when running from ad_scheduler
 				.setOrderBy(I_C_Period.COLUMNNAME_PeriodNo)
+				.setOrderBy(I_C_Period.COLUMNNAME_StartDate)
 				.list(I_C_Period.class);
 	}
 
