@@ -31,7 +31,6 @@ import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -44,13 +43,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Interceptor(I_DATEV_Export.class)
 @Callout(I_DATEV_Export.class)
-@RequiredArgsConstructor
 public class DATEV_Export
 {
 	@NonNull private final DATEVExportConfigRepository exportConfigRepo;
 	@NonNull private final PeriodRepo periodRepo;
-
-
 
 	public DATEV_Export(@NonNull final DATEVExportConfigRepository exportConfigRepo, @NonNull final PeriodRepo periodRepo)
 	{
