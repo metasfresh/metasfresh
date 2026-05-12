@@ -1,6 +1,5 @@
 -- Tax Declaration Iter4: C_TaxDeclarationLine schema migration
 -- Drop 13 legacy columns, add 4 new columns (C_VAT_Code_ID, AmountType, Amount, LineCount), add unique index
--- me03: https://github.com/metasfresh/me03/issues/29628
 
 -- ============================================================================
 -- Section 0: Create missing AD_Element for LineCount
@@ -10,9 +9,17 @@ INSERT INTO AD_Element (
     ColumnName, EntityType, PrintName, Name
 )
 VALUES (
-    584856, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    584856 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
     'LineCount', 'D', 'Line Count', 'Line Count'
 ) ON CONFLICT (AD_Element_ID) DO NOTHING;
+
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Description, Help, Name, PO_Description, PO_Help, PO_Name, PO_PrintName, PrintName,
+    IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.Description, t.Help, t.Name, t.PO_Description, t.PO_Help, t.PO_Name, t.PO_PrintName, t.PrintName,
+    'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Element_ID = 584856
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
 
 -- ============================================================================
 -- Section 1: Remove legacy AD_Field records (required before AD_Column deletion)
@@ -52,6 +59,11 @@ VALUES (
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
     19, 'N', 'N', 'Y', 'D', 0
 );
+INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Column t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592510
+  AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- Column 2: AmountType (uses existing AD_Element_ID 1602)
 INSERT INTO AD_Column (
@@ -66,6 +78,11 @@ VALUES (
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
     10, 'N', 'N', 'Y', 'D', 0
 );
+INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Column t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592511
+  AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- Column 3: Amount (uses existing AD_Element_ID 1367)
 INSERT INTO AD_Column (
@@ -80,6 +97,11 @@ VALUES (
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
     12, 'N', 'N', 'Y', 'D', 0
 );
+INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Column t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592512
+  AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- Column 4: LineCount (uses new AD_Element_ID 584856 from ID server)
 INSERT INTO AD_Column (
@@ -94,6 +116,11 @@ VALUES (
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
     11, 'N', 'N', 'Y', 'D', 0
 );
+INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Column t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592513
+  AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- ============================================================================
 -- Section 4: Physical DDL
