@@ -45,22 +45,18 @@ CREATE OR REPLACE FUNCTION report.open_account_balance_report(
                 -- -------------------------------------------------------
                 oi_open_amt              numeric,     -- SUM(OI_OpenAmount)
                 oi_open_amt_unreconciled numeric,     -- SUM where IsOpenItemsReconciled='N'
-                oldest_open_dateacct     date,        -- MIN(DateAcct) of unreconciled lines
+                oldest_open_dateacct     timestamp without time zone,        -- MIN(DateAcct) of unreconciled lines
 
                 -- -------------------------------------------------------
                 -- Data-quality flags (summary level)
                 -- -------------------------------------------------------
                 has_open_items           char(1),     -- 'Y' if oi_open_amt_unreconciled > tolerance
-                is_reconciliation_error  char(1),     -- 'Y' if gl_balance != oi_open_amt (within tolerance)
-                gl_balance_amt           numeric,     -- SUM(AmtAcctDr - AmtAcctCr) — for integrity check
-                gl_balance_source_amt    numeric,     -- SUM(AmtSourceDr - AmtSourceCr)
-                gl_vs_oi_diff            numeric,     -- gl_balance_amt - oi_open_amt  (must be 0)
 
                 -- -------------------------------------------------------
                 -- Detail-level columns (populated only when p_show_details='Y')
                 -- -------------------------------------------------------
                 fact_acct_id             numeric,
-                dateacct                 date,
+                dateacct                 timestamp without time zone,
                 documentno               text,
                 oi_trxtype               varchar,
                 openitemkey              varchar,
@@ -85,31 +81,12 @@ $BODY$
     # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
     v_rowcount    numeric;
-    v_ad_client_id numeric;
     v_overall     bigint;
 BEGIN
 
     /* ================================================================
-       STEP 0 — Resolve AD_Client_ID from the accounting schema.
-       All subsequent filters use this to guarantee tenant isolation
-       in multi-tenant deployments.
-       ================================================================ */
-    SELECT s.AD_Client_ID
-      INTO v_ad_client_id
-      FROM AD_AcctSchema s
-     WHERE s.C_AcctSchema_ID = p_c_acctschema_id;
-
-    IF v_ad_client_id IS NULL THEN
-        RAISE EXCEPTION 'No AD_AcctSchema found for C_AcctSchema_ID = %', p_c_acctschema_id;
-    END IF;
-
-    RAISE NOTICE 'Resolved AD_Client_ID: % for C_AcctSchema_ID: %', v_ad_client_id, p_c_acctschema_id;
-
-
-    /* ================================================================
        STEP 1 — Resolve open-item accounts.
        Only accounts with C_ElementValue.IsOpenItem = 'Y' participate.
-       Scoped to the resolved client for tenant isolation.
        ================================================================ */
     DROP TABLE IF EXISTS tmp_oib_accounts;
     CREATE TEMPORARY TABLE tmp_oib_accounts ON COMMIT DROP AS
@@ -120,7 +97,7 @@ BEGIN
     FROM C_ElementValue ev
     WHERE ev.IsOpenItem      = 'Y'
       AND ev.IsActive        = 'Y'
-      AND ev.AD_Client_ID    = v_ad_client_id
+      AND ev.AD_Org_ID in(p_ad_org_id, 0)
       AND (p_account_id IS NULL OR ev.C_ElementValue_ID = p_account_id)
     ;
 
@@ -133,7 +110,6 @@ BEGIN
        Pull all Fact_Acct lines up to p_date for the resolved accounts.
        All amount expressions are centralised here.
 
-       FIX (moderate) — AD_Client_ID filter added for tenant isolation.
        ================================================================ */
     DROP TABLE IF EXISTS tmp_oib_fact_base;
     CREATE TEMPORARY TABLE tmp_oib_fact_base ON COMMIT DROP AS
@@ -171,7 +147,6 @@ BEGIN
              JOIN tmp_oib_accounts oa
                   ON oa.account_id = fa.Account_ID
     WHERE TRUE
-      AND fa.AD_Client_ID    = v_ad_client_id                          -- FIX: tenant isolation
       AND fa.DateAcct       <= p_date
       AND fa.C_AcctSchema_ID = p_c_acctschema_id
       AND fa.AD_Org_ID       = p_ad_org_id
@@ -222,7 +197,6 @@ BEGIN
                 CASE
                     WHEN f.isopenitemsreconciled = 'N'
                         THEN f.dateacct
-                        ELSE NULL
                 END
         )                                                              AS oldest_open_dateacct,
 
@@ -245,20 +219,9 @@ BEGIN
 
     /* ================================================================
        STEP 4 — Suppress fully balanced / reconciled accounts.
-
-       FIX (critical) — Removed the third condition (ABS(gl_balance_amt)
-       <= tolerance). That condition was incorrectly suppressing accounts
-       that are GL-balanced but carry an OI integrity error
-       (gl_balance = 0 yet oi_open_amt ≠ 0). Those must surface as
-       is_reconciliation_error = 'Y'.
-
-       An account is suppressed only when BOTH of the following are true:
-         1. No unreconciled open items           ABS(oi_open_amt_unreconciled) <= tolerance
-         2. No GL-vs-OI integrity discrepancy    ABS(gl_balance_amt - oi_open_amt) <= tolerance
-       ================================================================ */
+      ================================================================ */
     DELETE FROM tmp_oib_summary
     WHERE ABS(oi_open_amt_unreconciled)     <= p_tolerance
-      AND ABS(gl_balance_amt - oi_open_amt) <= p_tolerance
     ;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -300,16 +263,6 @@ BEGIN
                     ELSE 'N'
             END::char(1)                                               AS has_open_items,
 
-            CASE
-                WHEN ABS(s.gl_balance_amt - s.oi_open_amt) > p_tolerance
-                    THEN 'Y'
-                    ELSE 'N'
-            END::char(1)                                               AS is_reconciliation_error,
-
-            s.gl_balance_amt,
-            s.gl_balance_source_amt,
-            (s.gl_balance_amt - s.oi_open_amt)                         AS gl_vs_oi_diff,
-
             /* --- Detail columns: NULL at summary level --- */
             NULL::numeric                                              AS fact_acct_id,
             NULL::date                                                 AS dateacct,
@@ -339,15 +292,6 @@ BEGIN
            DETAIL rows — only when p_show_details = 'Y'.
            Joined back to summary to ensure we only show detail for
            accounts that survived the suppression step (STEP 4).
-
-           FIX (critical) — NULL-safe join on c_bpartner_id using
-           IS NOT DISTINCT FROM so that journal lines with no partner
-           (c_bpartner_id IS NULL) correctly match their summary row
-           instead of being silently dropped.
-
-           FIX (moderate) — c_acctschema_id added to the join to
-           prevent cross-schema row leakage if the function is ever
-           extended to multi-schema use.
            ---------------------------------------------------------- */
         SELECT
             'DETAIL'::text                                             AS report_level,
@@ -365,10 +309,6 @@ BEGIN
             NULL::numeric                                              AS oi_open_amt_unreconciled,
             NULL::date                                                 AS oldest_open_dateacct,
             NULL::char(1)                                              AS has_open_items,
-            NULL::char(1)                                              AS is_reconciliation_error,
-            NULL::numeric                                              AS gl_balance_amt,
-            NULL::numeric                                              AS gl_balance_source_amt,
-            NULL::numeric                                              AS gl_vs_oi_diff,
 
             /* --- Detail columns --- */
             f.fact_acct_id,
@@ -394,9 +334,9 @@ BEGIN
                       ON oa.account_id = f.account_id
                  /* Only emit detail for accounts that survived suppression */
                  JOIN tmp_oib_summary s
-                      ON  s.c_acctschema_id  = f.c_acctschema_id      -- FIX: schema-scoped join
+                      ON  s.c_acctschema_id  = f.c_acctschema_id
                       AND s.account_id       = f.account_id
-                      AND s.c_bpartner_id    IS NOT DISTINCT FROM f.c_bpartner_id  -- FIX: NULL-safe
+                      AND s.c_bpartner_id    IS NOT DISTINCT FROM f.c_bpartner_id
                       AND s.c_currency_id    = f.c_currency_id
         WHERE p_show_details = 'Y'
           AND (
@@ -411,11 +351,6 @@ BEGIN
 
     /* ================================================================
        STEP 6 — Patch overall_count.
-
-       FIX (moderate) — COUNT(*) OVER () inside a UNION ALL evaluates
-       per-branch, not over the combined result set. We compute the true
-       total row count here and update every row with a single pass,
-       ensuring the diagnostic column is consistent across all rows.
        ================================================================ */
     SELECT COUNT(*) INTO v_overall FROM tmp_oib_final;
 
@@ -447,10 +382,6 @@ BEGIN
             r.oi_open_amt_unreconciled,
             r.oldest_open_dateacct,
             r.has_open_items,
-            r.is_reconciliation_error,
-            r.gl_balance_amt,
-            r.gl_balance_source_amt,
-            r.gl_vs_oi_diff,
             r.fact_acct_id,
             r.dateacct,
             r.documentno,
