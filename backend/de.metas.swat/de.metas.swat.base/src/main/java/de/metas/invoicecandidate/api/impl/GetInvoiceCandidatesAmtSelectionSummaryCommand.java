@@ -146,12 +146,12 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 						   + " = "
 						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID);
 		sql.append(" WHERE ");
-		sql.append("(" + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
+		sql.append("(" + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
 
 		if (Check.isEmpty(extraWhereClause))
 		{
 			// we might have deactivated candidates on individual DBs after support cases/fixes
-			sql.append(" AND (" + I_C_Invoice_Candidate.COLUMNNAME_IsActive + " = 'Y')");
+			sql.append(" AND (" + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_IsActive + " = 'Y')");
 		}
 		else
 		{
@@ -164,7 +164,10 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 
 		if (!sqlDefaultFilter.isEmpty())
 		{
-			sql.append(" AND (").append(sqlDefaultFilter).append(")");
+			final String qualifiedDefaultFilter = sqlDefaultFilter.replace(
+					"AD_Org_ID",
+					I_C_Invoice_Candidate.Table_Name + ".AD_Org_ID");
+			sql.append(" AND (").append(qualifiedDefaultFilter).append(")");
 		}
 
 		// NOTE: ApprovalForInvoicing and M_Product_ID must be table-qualified; after the LEFT JOIN C_OrderLine,
