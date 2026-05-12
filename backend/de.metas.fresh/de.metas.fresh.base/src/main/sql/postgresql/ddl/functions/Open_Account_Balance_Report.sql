@@ -132,12 +132,10 @@ BEGIN
         /* --- Accounting amounts --- */
         COALESCE(fa.AmtAcctDr, 0)                                      AS amt_acct_dr,
         COALESCE(fa.AmtAcctCr, 0)                                      AS amt_acct_cr,
-        (COALESCE(fa.AmtAcctDr, 0) - COALESCE(fa.AmtAcctCr, 0))       AS posting_amt_acct,
 
         /* --- Source amounts --- */
         COALESCE(fa.AmtSourceDr, 0)                                    AS amt_source_dr,
         COALESCE(fa.AmtSourceCr, 0)                                    AS amt_source_cr,
-        (COALESCE(fa.AmtSourceDr, 0) - COALESCE(fa.AmtSourceCr, 0))   AS posting_amt_source,
 
         /* --- Detail fields --- */
         fa.DateAcct                                                    AS dateacct,
@@ -161,11 +159,6 @@ BEGIN
     /* ================================================================
        STEP 3 — Summary aggregation (Level 1).
        Group by the mandatory dimensions.
-       OpenItemKey is NOT a grouping key here — we aggregate across all
-       keys per account / partner / currency to get the account-level view.
-
-       NOTE: c_bpartner_id can be NULL; NULLs group together correctly
-       in GROUP BY — no special handling needed here.
        ================================================================ */
     DROP TABLE IF EXISTS tmp_oib_summary;
     CREATE TEMPORARY TABLE tmp_oib_summary ON COMMIT DROP AS
@@ -176,10 +169,6 @@ BEGIN
         f.account_id,
         f.c_bpartner_id,                                               -- NULL is a valid group
         f.c_currency_id,
-
-        /* --- GL balance (must match Trial Balance) --- */
-        SUM(f.posting_amt_acct)                                        AS gl_balance_amt,
-        SUM(f.posting_amt_source)                                      AS gl_balance_source_amt,
 
         /* --- Open Item measures --- */
         SUM(COALESCE(f.oi_openamount, 0))                              AS oi_open_amt,
@@ -210,7 +199,8 @@ BEGIN
         f.c_acctschema_id,
         f.account_id,
         f.c_bpartner_id,                                               -- NULL groups with NULL — correct
-        f.c_currency_id
+        f.c_currency_id,
+        f.openitemkey
     ;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
