@@ -413,6 +413,148 @@ public interface I_C_TaxDeclarationAcct
     public static final String COLUMNNAME_C_TaxDeclarationLine_ID = "C_TaxDeclarationLine_ID";
 
 	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_VAT_Code_ID (int C_VAT_Code_ID);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_VAT_Code_ID();
+
+    /** Column definition for C_VAT_Code_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, Object> COLUMN_C_VAT_Code_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "C_VAT_Code_ID", null);
+    /** Column name C_VAT_Code_ID */
+    public static final String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
+
+	/**
+	 * Set Amount Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAmountType (java.lang.String AmountType);
+
+	/**
+	 * Get Amount Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAmountType();
+
+    /** Column definition for AmountType */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, Object> COLUMN_AmountType = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "AmountType", null);
+    /** Column name AmountType */
+    public static final String COLUMNNAME_AmountType = "AmountType";
+
+	/**
+	 * Set Table.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
+
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Set Record ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
+
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Line ID.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLine_ID (java.math.BigDecimal Line_ID);
+
+	/**
+	 * Get Line ID.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getLine_ID();
+
+    /** Column definition for Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "Line_ID", null);
+    /** Column name Line_ID */
+    public static final String COLUMNNAME_Line_ID = "Line_ID";
+
+	/**
+	 * Set Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAmount (java.math.BigDecimal Amount);
+
+	/**
+	 * Get Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAmount();
+
+    /** Column definition for Amount */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationAcct, Object> COLUMN_Amount = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationAcct.class, "Amount", null);
+    /** Column name Amount */
+    public static final String COLUMNNAME_Amount = "Amount";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *

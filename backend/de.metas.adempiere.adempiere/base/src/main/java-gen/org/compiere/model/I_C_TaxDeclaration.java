@@ -110,6 +110,35 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
 
 	/**
+	 * Set Buchführungs-Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
+
+	/**
+	 * Get Buchführungs-Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_AcctSchema_ID();
+
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
+
+    /** Column definition for C_AcctSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclaration.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+    /** Column name C_AcctSchema_ID */
+    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -261,31 +290,6 @@ public interface I_C_TaxDeclaration
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
-
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Verarbeitet.

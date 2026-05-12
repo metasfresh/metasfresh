@@ -483,7 +483,7 @@ public class X_C_TaxDeclarationAcct extends org.compiere.model.PO implements I_C
 	}
 
 	/** Set Zeile Nr..
-		@param Line 
+		@param Line
 		Unique line for this document
 	  */
 	@Override
@@ -496,11 +496,155 @@ public class X_C_TaxDeclarationAcct extends org.compiere.model.PO implements I_C
 		@return Unique line for this document
 	  */
 	@Override
-	public int getLine () 
+	public int getLine ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set C_VAT_Code_ID.
+		@param C_VAT_Code_ID VAT Code
+	  */
+	@Override
+	public void setC_VAT_Code_ID (int C_VAT_Code_ID)
+	{
+		if (C_VAT_Code_ID < 1)
+			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+		else
+			set_Value (COLUMNNAME_C_VAT_Code_ID, Integer.valueOf(C_VAT_Code_ID));
+	}
+
+	/** Get C_VAT_Code_ID.
+		@return VAT Code
+	  */
+	@Override
+	public int getC_VAT_Code_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_VAT_Code_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set AmountType.
+		@param AmountType Amount Type
+	  */
+	@Override
+	public void setAmountType (java.lang.String AmountType)
+	{
+		set_Value (COLUMNNAME_AmountType, AmountType);
+	}
+
+	/** Get AmountType.
+		@return Amount Type
+	  */
+	@Override
+	public java.lang.String getAmountType ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AmountType);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
+
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set AD_Table_ID.
+		@param AD_Table_ID Table
+	  */
+	@Override
+	public void setAD_Table_ID (int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1)
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+	}
+
+	/** Get AD_Table_ID.
+		@return Table
+	  */
+	@Override
+	public int getAD_Table_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Record_ID.
+		@param Record_ID Record ID
+	  */
+	@Override
+	public void setRecord_ID (int Record_ID)
+	{
+		if (Record_ID < 1)
+			set_Value (COLUMNNAME_Record_ID, null);
+		else
+			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+	}
+
+	/** Get Record_ID.
+		@return Record ID
+	  */
+	@Override
+	public int getRecord_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Line_ID.
+		@param Line_ID Line ID
+	  */
+	@Override
+	public void setLine_ID (java.math.BigDecimal Line_ID)
+	{
+		set_Value (COLUMNNAME_Line_ID, Line_ID);
+	}
+
+	/** Get Line_ID.
+		@return Line ID
+	  */
+	@Override
+	public java.math.BigDecimal getLine_ID ()
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Line_ID);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Amount.
+		@param Amount Amount
+	  */
+	@Override
+	public void setAmount (java.math.BigDecimal Amount)
+	{
+		set_Value (COLUMNNAME_Amount, Amount);
+	}
+
+	/** Get Amount.
+		@return Amount
+	  */
+	@Override
+	public java.math.BigDecimal getAmount ()
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amount);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 }
