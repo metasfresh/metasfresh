@@ -128,10 +128,11 @@ public class C_Invoice // 03771
 			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
 			// Read the raw column value to preserve the Y / N / NULL tri-state — the boolean
 			// accessor docType.isPartialInvoice() would collapse N and NULL into the same false.
-			final String docTypeFlag = InterfaceWrapperHelper
-					.<String>getValue(docType, org.compiere.model.I_C_DocType.COLUMNNAME_IsPartialInvoice)
-					.orElse(null);
-			InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, docTypeFlag);
+			// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
+			// (when explicitly set via setValue); IsPartialInvoice.fromValue handles both.
+			final de.metas.invoice.IsPartialInvoice docTypeIntent = de.metas.invoice.IsPartialInvoice.fromValue(
+					InterfaceWrapperHelper.getValue(docType, org.compiere.model.I_C_DocType.COLUMNNAME_IsPartialInvoice).orElse(null));
+			InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, docTypeIntent.toCode());
 		}
 		// else: no doctype → leave NULL (= NA = legacy behaviour in closePartiallyInvoiced_InvoiceCandidates)
 	}

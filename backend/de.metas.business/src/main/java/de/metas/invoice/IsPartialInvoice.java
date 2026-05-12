@@ -47,6 +47,31 @@ public enum IsPartialInvoice
 		}
 	}
 
+	/**
+	 * Type-safe factory that reads from raw PO storage. The PO layer for YesNo columns stores values as
+	 * {@link Boolean} (Y → Boolean.TRUE, N → Boolean.FALSE, NULL → null). For values explicitly written
+	 * via {@code setValue(..., "Y"/"N")} the raw may also be a {@link String}. Handles all three cases.
+	 *
+	 * @throws AdempiereException if the raw value is of an unexpected type
+	 */
+	@NonNull
+	public static IsPartialInvoice fromValue(@Nullable final Object raw)
+	{
+		if (raw == null)
+		{
+			return NA;
+		}
+		if (raw instanceof Boolean)
+		{
+			return ((Boolean)raw) ? Yes : No;
+		}
+		if (raw instanceof String)
+		{
+			return fromCode((String)raw);
+		}
+		throw new AdempiereException("Unexpected IsPartialInvoice raw value: " + raw + " (type: " + raw.getClass().getName() + ")");
+	}
+
 	@Nullable
 	public String toCode()
 	{

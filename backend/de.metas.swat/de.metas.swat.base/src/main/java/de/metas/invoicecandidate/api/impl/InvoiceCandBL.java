@@ -2317,8 +2317,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// on the same order), skip the auto-close entirely. N or NULL = NA falls through to the
 		// legacy qty-based close logic below. See de.metas.invoice.IsPartialInvoice for the tri-state
 		// mapping and migration 5801950 for the schema redesign.
-		final Optional<String> isPartialInvoiceCode = InterfaceWrapperHelper.getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice);
-		if (IsPartialInvoice.fromCode(isPartialInvoiceCode.orElse(null)).isYes())
+		// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
+		// (when explicitly set via setValue); IsPartialInvoice.fromValue handles both.
+		final IsPartialInvoice invoiceIntent = IsPartialInvoice.fromValue(
+				InterfaceWrapperHelper.getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null));
+		if (invoiceIntent.isYes())
 		{
 			logger.debug("Invoice IsPartialInvoice=Y (explicit Partial - more invoices coming); => not closing any invoice candidates");
 			return;
