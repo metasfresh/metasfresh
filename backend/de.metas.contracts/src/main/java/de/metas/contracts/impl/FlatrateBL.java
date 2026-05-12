@@ -184,7 +184,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-	private final ICalendarBL calendarBL= Services.get(ICalendarBL.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
