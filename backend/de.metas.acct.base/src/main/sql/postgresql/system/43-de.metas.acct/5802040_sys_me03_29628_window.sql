@@ -26,6 +26,18 @@ UPDATE AD_Window_Trl
 SET Name = 'Steuererklärung (alt)', Updated = NOW(), UpdatedBy = 100
 WHERE AD_Window_ID = 359 AND AD_Language IN ('de_DE', 'de_CH');
 
+-- Also rename the base-record Name so after_migration_sync_translations doesn't reset it
+UPDATE AD_Window
+SET Name = 'Tax Declaration (legacy)', Updated = NOW(), UpdatedBy = 100
+WHERE AD_Window_ID = 359;
+
+-- Unlink window 359 from AD_Element 2862 so the translation sync only targets the new window.
+-- Without this, after_migration_sync_translations() finds both windows for element 2862 and
+-- tries to set window 359 Name back to 'Tax Declaration' — violating the ad_window_name constraint.
+UPDATE AD_Window
+SET AD_Element_ID = NULL, Updated = NOW(), UpdatedBy = 100
+WHERE AD_Window_ID = 359;
+
 -- ============================================================
 -- Part 2: Create new AD_Window
 -- ============================================================
