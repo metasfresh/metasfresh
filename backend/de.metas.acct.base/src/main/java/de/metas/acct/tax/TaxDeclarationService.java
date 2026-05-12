@@ -9,9 +9,9 @@ public class TaxDeclarationService
 {
 	public void build(final TaxDeclarationId id)
 	{
-		DB.executeUpdateAndThrowExceptionOnFail(
+		DB.executeFunctionCallEx(
+				ITrx.TRXNAME_ThreadInherited,
 				"SELECT de_metas_acct.tax_declaration_build(?)",
-				new Object[] { id.getRepoId() },
-				ITrx.TRXNAME_ThreadInherited);
+				new Object[] { id.getRepoId() });
 	}
 }
