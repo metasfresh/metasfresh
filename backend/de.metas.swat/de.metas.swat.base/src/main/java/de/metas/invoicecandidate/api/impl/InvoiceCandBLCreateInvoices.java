@@ -449,6 +449,21 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
+
+			// Propagate caller's explicit IsPartialInvoice intent (set by AggregationEngine from
+			// PlainInvoicingParams.partialInvoice) to the C_Invoice. Use setValue rather than the
+			// typed boolean setter so the C_Invoice BEFORE_NEW interceptor sees isValueChanged=true
+			// and skips its doctype-default — preserving the caller's intent even when the
+			// doctype-swap in AggregationEngine could not find a matching sibling. See me03 #29369.
+			final Boolean isPartialInvoiceIntent = invoiceHeader.getIsPartialInvoice();
+			if (isPartialInvoiceIntent != null)
+			{
+				InterfaceWrapperHelper.setValue(
+						invoice,
+						org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice,
+						isPartialInvoiceIntent ? "Y" : "N");
+			}
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

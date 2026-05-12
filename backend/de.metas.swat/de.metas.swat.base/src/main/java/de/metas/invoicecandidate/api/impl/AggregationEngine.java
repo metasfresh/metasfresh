@@ -944,6 +944,18 @@ public final class AggregationEngine
 			}
 		}
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdFinal);
+
+		// Propagate caller's explicit IsPartialInvoice intent directly to the invoice header.
+		// The downstream invoice-creation code (InvoiceCandBLCreateInvoices) sets the value on
+		// the C_Invoice via setValue before save; the C_Invoice BEFORE_NEW interceptor's
+		// "skip if already set" branch then preserves it. Required because iter-3 migration
+		// 5801950 made C_DocType.IsPartialInvoice nullable, so the doctype-swap above may find
+		// no matching sibling — the direct propagation guarantees the caller's intent reaches
+		// the invoice. See me03 #29369.
+		if (partialInvoice != null)
+		{
+			invoiceHeader.setIsPartialInvoice(partialInvoice);
+		}
 	}
 
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)

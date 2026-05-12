@@ -77,6 +77,8 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 
 		// then
 		assertThat(header.getDocTypeInvoiceId()).contains(DOC_TYPE_ID_NORMAL);
+		// no caller intent → header.isPartialInvoice stays null
+		assertThat(header.getIsPartialInvoice()).isNull();
 	}
 
 	// -----------------------------------------------------------------------
@@ -99,6 +101,8 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 		// then — original ID preserved, no alternative lookup
 		assertThat(header.getDocTypeInvoiceId()).contains(DOC_TYPE_ID_PARTIAL);
 		verify(docTypeBLMock, never()).getDocTypeIdOrNull(any(DocTypeQuery.class));
+		// caller's intent (true) propagated to header for direct C_Invoice propagation
+		assertThat(header.getIsPartialInvoice()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
@@ -121,6 +125,8 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 
 		// then — swapped to alternative
 		assertThat(header.getDocTypeInvoiceId()).contains(DOC_TYPE_ID_PARTIAL);
+		// caller's intent (true) propagated to header
+		assertThat(header.getIsPartialInvoice()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
@@ -145,6 +151,10 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 
 		// then — original doctype preserved (no throw)
 		assertThat(header.getDocTypeInvoiceId()).contains(DOC_TYPE_ID_NORMAL);
+		// caller's intent (true) still propagated to header — this is the direct path that
+		// makes the doctype-swap optional (the C_Invoice gets IsPartialInvoice='Y' regardless
+		// of whether a sibling doctype exists). See me03 #29369.
+		assertThat(header.getIsPartialInvoice()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
@@ -168,6 +178,8 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 		// then — no swap attempted; original doctype preserved
 		assertThat(header.getDocTypeInvoiceId()).contains(DOC_TYPE_ID_NA);
 		verify(docTypeBLMock, never()).getDocTypeIdOrNull(any(DocTypeQuery.class));
+		// caller's intent (true) still propagated to header
+		assertThat(header.getIsPartialInvoice()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
