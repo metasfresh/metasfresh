@@ -3,6 +3,7 @@
 --
 -- IDs used:
 --   AD_Window_ID=542146, Tabs: 549256/549257/549258
+--   AD_Element_ID=584857 (legacy window element for C_TaxDeclaration_Legacy)
 --   AD_UI_Section: 547771/547772/547773
 --   AD_UI_Column: 549485/549486/549487
 --   AD_UI_ElementGroup: 555313/555314/555315
@@ -31,11 +32,21 @@ UPDATE AD_Window
 SET Name = 'Tax Declaration (legacy)', Updated = NOW(), UpdatedBy = 100
 WHERE AD_Window_ID = 359;
 
--- Unlink window 359 from AD_Element 2862 so the translation sync only targets the new window.
+-- Re-link window 359 to a dedicated legacy element so the translation sync only targets the new window.
+-- AD_Window.AD_Element_ID is NOT NULL so we cannot set it to NULL.
 -- Without this, after_migration_sync_translations() finds both windows for element 2862 and
 -- tries to set window 359 Name back to 'Tax Declaration' — violating the ad_window_name constraint.
+INSERT INTO AD_Element (
+    AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+    ColumnName, EntityType, PrintName, Name
+)
+VALUES (
+    584857 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    'C_TaxDeclaration_Legacy', 'D', 'Tax Declaration (legacy)', 'Tax Declaration (legacy)'
+) ON CONFLICT (AD_Element_ID) DO NOTHING;
+
 UPDATE AD_Window
-SET AD_Element_ID = NULL, Updated = NOW(), UpdatedBy = 100
+SET AD_Element_ID = 584857 /*From ID Server*/, Updated = NOW(), UpdatedBy = 100
 WHERE AD_Window_ID = 359;
 
 -- ============================================================
