@@ -100,6 +100,8 @@ VALUES (
 -- ============================================================================
 
 -- Drop 13 legacy columns
+-- Drop report.RV_TaxDeclarationLine first — it references these columns (see 5802000 which is now a no-op)
+DROP VIEW IF EXISTS report.RV_TaxDeclarationLine;
 ALTER TABLE C_TaxDeclarationLine DROP COLUMN IF EXISTS C_Invoice_ID;
 ALTER TABLE C_TaxDeclarationLine DROP COLUMN IF EXISTS C_InvoiceLine_ID;
 ALTER TABLE C_TaxDeclarationLine DROP COLUMN IF EXISTS GL_JournalLine_ID;
