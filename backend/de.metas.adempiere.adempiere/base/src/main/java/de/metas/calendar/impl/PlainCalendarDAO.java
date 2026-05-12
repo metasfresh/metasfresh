@@ -109,7 +109,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 
 		periods.sort(new AccessorComparator<>(
 				new ComparableComparator<>(),
-				o -> ((I_C_Period)o).getPeriodNo()));
+				o -> ((I_C_Period)o).getStartDate()));
 
 		return periods;
 	}
