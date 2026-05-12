@@ -60,3 +60,16 @@ WHERE l.IsActive = 'Y'
   AND t.AD_Message_ID = 545682
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Message_ID = t.AD_Message_ID)
 ;
+
+-- Wire the Processing button column (C_TaxDeclaration.Processing, col 14464) to the new process.
+-- The old process AD_Process_ID=336 (C_TaxDeclaration_CreateLines) had its Java class deleted in Iter4.
+UPDATE AD_Column
+SET AD_Process_ID = 585615, Updated = NOW(), UpdatedBy = 100
+WHERE AD_Column_ID = 14464;
+
+-- Inactivate the legacy C_TaxDeclaration_CreateLines process (AD_Process_ID=336).
+-- Its Java class org.adempiere.acct.process.C_TaxDeclaration_CreateLines was removed in Iter4;
+-- the health check fails when it tries to instantiate it.
+UPDATE AD_Process
+SET IsActive = 'N', Updated = NOW(), UpdatedBy = 100
+WHERE AD_Process_ID = 336;
