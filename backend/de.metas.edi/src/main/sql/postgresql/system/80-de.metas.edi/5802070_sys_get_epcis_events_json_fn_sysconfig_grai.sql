@@ -1,3 +1,5 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/epcis_json/get_epcis_events_json_fn.sql
+
 /*
  * #%L
  * de.metas.edi
@@ -405,4 +407,18 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql STABLE
+;
+
+-- AD_SysConfig default for the configurable dummy GRAI prefix
+INSERT INTO AD_SysConfig
+    (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel, Created, CreatedBy, Description, EntityType, IsActive, Name, Updated, UpdatedBy, Value)
+VALUES (0, 0, 541807 /*From ID Server*/, 'C',
+        TO_TIMESTAMP('2026-05-12 10:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
+        100,
+        'GCP.assetType. prefix prepended to the 12-char serial when generating a dummy GRAI. Trailing dot required. Customer-specific value must be set via set_sysconfig_value.',
+        'D', 'Y',
+        'de.metas.edi.epcis.dummyGRAI.Prefix',
+        TO_TIMESTAMP('2026-05-12 10:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
+        100,
+        '0000000.11111.')
 ;
