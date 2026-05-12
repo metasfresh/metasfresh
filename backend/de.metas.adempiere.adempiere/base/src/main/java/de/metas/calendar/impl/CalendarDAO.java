@@ -51,7 +51,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 				.setParameters(year.getC_Year_ID())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
-				.setOrderBy(I_C_Period.COLUMNNAME_StartDate)
+				.setOrderBy(I_C_Period.COLUMNNAME_PeriodNo)
 				.list(I_C_Period.class);
 	}
 
@@ -78,7 +78,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				// .setApplyAccessFilter(true) isn't required here and case cause problems when running from ad_scheduler
-				.setOrderBy(I_C_Period.COLUMNNAME_StartDate)
+				.setOrderBy(I_C_Period.COLUMNNAME_PeriodNo)
 				.list(I_C_Period.class);
 	}
 

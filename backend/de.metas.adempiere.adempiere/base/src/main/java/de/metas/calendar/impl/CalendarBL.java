@@ -187,7 +187,7 @@ public class CalendarBL implements ICalendarBL
 
 		periodsOfCalendar.sort(new AccessorComparator<>(
 				new ComparableComparator<>(),
-				o -> ((I_C_Period)o).getStartDate()));
+				o -> ((I_C_Period)o).getPeriodNo()));
 
 		return periodsOfCalendar;
 	}
