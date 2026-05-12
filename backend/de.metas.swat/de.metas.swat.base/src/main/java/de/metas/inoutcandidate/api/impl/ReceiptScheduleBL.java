@@ -490,18 +490,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		// [CI-LOGGER-CLOSE] TEMPORARY (me03 #29369): capture call-stack of every rs.close() to diagnose
-		// the profile1 CI-only 'receipt schedule shall not be closed' assumption failure on AC #12.
-		// Reverts together with the CI-LOGGER-COMPLETE entry on C_Invoice interceptor.
-		logger.warn("[CI-LOGGER-CLOSE] ReceiptScheduleBL.close called rs_ID={} orderLine_ID={} qtyOrdered={} stack:\n{}",
-				rs.getM_ReceiptSchedule_ID(),
-				rs.getC_OrderLine_ID(),
-				rs.getQtyOrdered(),
-				java.util.Arrays.stream(Thread.currentThread().getStackTrace())
-						.limit(25)
-						.map(s -> "  " + s)
-						.collect(java.util.stream.Collectors.joining("\n")));
-
 		// Make sure receipt schedule was not already closed
 		if (isClosed(rs))
 		{

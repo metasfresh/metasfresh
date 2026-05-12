@@ -18,7 +18,6 @@ import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -64,9 +63,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
-	/** [CI-LOGGER-COMPLETE] TEMPORARY (me03 #29369): logger for diagnosing AC #10 (PureUnderDelivery) OpenAmt inflation. Reverts together with [CI-LOGGER-CLOSE] in ReceiptScheduleBL. */
-	private static final org.slf4j.Logger logger = LogManager.getLogger(C_Invoice.class);
-
 	/** Error key for the readonly-after-Complete guard on IsPartialInvoice. */
 	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
 
@@ -178,28 +174,6 @@ public class C_Invoice // 03771
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
 	{
-		// [CI-LOGGER-COMPLETE] TEMPORARY (me03 #29369): capture (id, GrandTotal, qty, IsPartialInvoice, C_Order_ID,
-		// C_OrderLine_IDs on lines, C_DocType, BPartner) on every completing invoice to diagnose the profile1 CI-only
-		// AC #10 (PureUnderDelivery) 'inv1.OpenAmt expected 14000 but was 64000' shape — inv1.GrandTotal=70000
-		// means the test bound `inv1` to a full-order invoice (700×100) rather than the partial R1 (200×100).
-		// Reverts together with [CI-LOGGER-CLOSE] in ReceiptScheduleBL.
-		try
-		{
-			final java.util.List<de.metas.adempiere.model.I_C_InvoiceLine> _lines = invoiceDAO.retrieveLines(invoice);
-			final String _lineDump = _lines.stream()
-					.map(l -> "OL=" + l.getC_OrderLine_ID() + " InOutL=" + l.getM_InOutLine_ID() + " QtyInv=" + l.getQtyInvoiced() + " LineNetAmt=" + l.getLineNetAmt())
-					.collect(java.util.stream.Collectors.joining("; "));
-			logger.warn("[CI-LOGGER-COMPLETE] C_Invoice.onAfterComplete invoice_ID={} DocumentNo={} GrandTotal={} IsPartialInvoice={} C_DocType_ID={} C_Order_ID={} BPartner_ID={} IsSOTrx={} lines=[{}]",
-					invoice.getC_Invoice_ID(), invoice.getDocumentNo(), invoice.getGrandTotal(),
-					InterfaceWrapperHelper.getValue(invoice, "IsPartialInvoice").orElse(null),
-					invoice.getC_DocType_ID(), invoice.getC_Order_ID(), invoice.getC_BPartner_ID(),
-					invoice.isSOTrx(), _lineDump);
-		}
-		catch (final Exception e)
-		{
-			logger.warn("[CI-LOGGER-COMPLETE] failed to dump invoice {}: {}", invoice.getC_Invoice_ID(), e.toString());
-		}
-
 		// FIXME: This Kills performance. Please ask for extra budget next time you have to work around this area.
 		// We're calling `testAndMarkAsPaid` multiple times, just to set the invoice.IsPaid flag.
 		// That kills the performance as each time we have to read multiple allocations from db.
