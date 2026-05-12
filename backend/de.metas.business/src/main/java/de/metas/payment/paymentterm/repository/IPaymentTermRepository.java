@@ -22,12 +22,14 @@
 
 package de.metas.payment.paymentterm.repository;
 
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.impl.PaymentTermLoaderAndSaver;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -43,6 +45,14 @@ public interface IPaymentTermRepository extends ISingletonService
 	// this method is implemented after a code block from MOrder.beforeSave()
 	@NonNull
 	Optional<PaymentTermId> getDefaultPaymentTermId();
+
+	/**
+	 * Returns the "Immediate" payment term for the given client + org: an active, non-installment
+	 * payment term with {@code NetDays=0}. Org-specific terms are preferred over the
+	 * {@link OrgId#ANY} fallback; ties are broken by {@code IsDefault DESC}.
+	 */
+	@NonNull
+	Optional<PaymentTermId> getImmediatePaymentTermId(@NonNull ClientId clientId, @NonNull OrgId orgId);
 
 	/**
 	 * Convenience method that thorws an exception if no term is found.
