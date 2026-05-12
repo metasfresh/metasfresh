@@ -76,8 +76,9 @@ WHERE lookup.UPC IS NOT NULL
   AND lookup.isactive = 'Y'
   AND p.isactive = 'Y'
   AND p.discontinued = 'N'
-ORDER BY lookup.c_bpartner_id NULLS LAST /*prefer records that have the bpartner set explicitly*/,
-         lookup.UPC, bpLookup.GLN, bpLookup.storegln, lookup.M_HU_PI_Item_Product_ID DESC
+ORDER BY lookup.UPC, bpLookup.GLN, bpLookup.storegln,
+         lookup.c_bpartner_id NULLS LAST /*prefer records that have the bpartner set explicitly*/,
+         lookup.M_HU_PI_Item_Product_ID DESC
 ;
 
 COMMENT ON VIEW EDI_M_HU_PI_Item_Product_Lookup_UPC_v IS
