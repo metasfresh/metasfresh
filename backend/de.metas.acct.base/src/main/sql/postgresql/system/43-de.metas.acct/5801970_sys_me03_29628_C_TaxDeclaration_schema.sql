@@ -21,6 +21,8 @@ VALUES (
 );
 
 -- 3. Physical DDL: drop Name, add C_AcctSchema_ID
+-- Drop report.fresh_TaxDeclaration_Overview first — it references td.name (see 5802010 which is now a no-op)
+DROP VIEW IF EXISTS report.fresh_TaxDeclaration_Overview;
 ALTER TABLE C_TaxDeclaration DROP COLUMN IF EXISTS Name;
 ALTER TABLE C_TaxDeclaration ADD COLUMN IF NOT EXISTS C_AcctSchema_ID NUMERIC(10) REFERENCES C_AcctSchema;
 -- Table was wiped in migration 5801960; no existing rows to backfill
