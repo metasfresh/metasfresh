@@ -28,10 +28,13 @@ import de.metas.datev.DATEVExportConfig;
 import de.metas.datev.DATEVExportConfigRepository;
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -46,6 +49,12 @@ public class DATEV_Export
 {
 	@NonNull private final DATEVExportConfigRepository exportConfigRepo;
 	@NonNull private final PeriodRepo periodRepo;
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setDatevExportConfig(final I_DATEV_Export datevExport)
@@ -78,5 +87,4 @@ public class DATEV_Export
 			datevExport.setDateAcctTo(null);
 		}
 	}
-
 }
