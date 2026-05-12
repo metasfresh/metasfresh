@@ -49,7 +49,7 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 
 	private static final String COLUMNNAME_IsPackingMaterial = "IsPackingMaterial";
 	private static final String COLUMNNAME_Count = "Count";
-	// Column alias for the conditional SUM of LineNetAmt where DatePromised = tomorrow
+	// Column alias for the conditional SUM of NetAmtToInvoice where DatePromised (from C_OrderLine) = tomorrow
 	private static final String COLUMNNAME_NetOrderValueNextDay = "NetOrderValueNextDay";
 
 	private static final String I_M_HU_PackingMaterial_Table_Name = "M_HU_PackingMaterial";
@@ -125,11 +125,13 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				+ COLUMNNAME_Count);
 		//
 		// NetOrderValueNextDay: SUM of NetAmtToInvoice for rows whose DatePromised (from C_OrderLine) is tomorrow.
-		// DatePromised is a virtual column on C_Invoice_Candidate resolved via C_OrderLine — it is not a physical
-		// column on C_Invoice_Candidate, so we must join C_OrderLine and read DatePromised from there.
-		// We cast to ::date on both sides to avoid timezone-offset mismatches (DatePromised is timestamptz).
+		// DatePromised is a virtual column on C_Invoice_Candidate — not a physical column — so we join C_OrderLine
+		// and read DatePromised from there via the alias "ol".
+		// Both sides cast to ::date to avoid timestamptz vs date comparison issues (timezone offset mismatch).
+		// NOTE: SUM must qualify NetAmtToInvoice with the table name; without it PostgreSQL raises an ambiguity
+		// error because C_OrderLine also has columns that shadow unqualified names after the LEFT JOIN.
 		sql.append(", COALESCE(SUM("
-						   + I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice
+						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice
 						   + ") FILTER (WHERE ol."
 						   + I_C_Invoice_Candidate.COLUMNNAME_DatePromised
 						   + "::date = (CURRENT_DATE + INTERVAL '1 day')::date), 0) AS "
@@ -137,7 +139,7 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 
 		sql.append(" FROM "
 						   + I_C_Invoice_Candidate.Table_Name);
-		// Join C_OrderLine to resolve DatePromised (virtual column on C_Invoice_Candidate).
+		// Join C_OrderLine to resolve the virtual DatePromised column.
 		// LEFT JOIN so candidates without an order line (e.g. manual candidates) are still included.
 		sql.append(" LEFT JOIN C_OrderLine ol ON ol."
 						   + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID
@@ -165,14 +167,17 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 			sql.append(" AND (").append(sqlDefaultFilter).append(")");
 		}
 
+		// NOTE: ApprovalForInvoicing and M_Product_ID must be table-qualified; after the LEFT JOIN C_OrderLine,
+		// these unqualified names are ambiguous because C_OrderLine has the same columns.
+		// CurSymbol, IsToRecompute, IsPackingMaterial are SELECT-level aliases — no table prefix needed.
 		sql.append(" GROUP BY "
-				+ I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
+				+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
 				+ ", "
 				+ I_C_Currency.COLUMNNAME_CurSymbol
 				+ ", "
 				+ I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute
 				+ ", "
-				+ I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
+				+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
 				+ ", "
 				+ COLUMNNAME_IsPackingMaterial);
 
