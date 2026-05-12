@@ -124,18 +124,25 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + ") as "
 				+ COLUMNNAME_Count);
 		//
-		// NetOrderValueNextDay: SUM of LineNetAmt for rows whose DatePromised is tomorrow.
-		// Using a conditional SUM (FILTER or CASE) so we stay in a single query pass.
-		// date_trunc('day', ...) normalises any time-of-day component on DatePromised.
+		// NetOrderValueNextDay: SUM of NetAmtToInvoice for rows whose DatePromised (from C_OrderLine) is tomorrow.
+		// DatePromised is a virtual column on C_Invoice_Candidate resolved via C_OrderLine — it is not a physical
+		// column on C_Invoice_Candidate, so we must join C_OrderLine and read DatePromised from there.
+		// We cast to ::date on both sides to avoid timezone-offset mismatches (DatePromised is timestamptz).
 		sql.append(", COALESCE(SUM("
-						   + I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt
-						   + ") FILTER (WHERE date_trunc('day', "
-						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_DatePromised
-						   + ") = CURRENT_DATE + INTERVAL '1 day'), 0) AS "
+						   + I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice
+						   + ") FILTER (WHERE ol."
+						   + I_C_Invoice_Candidate.COLUMNNAME_DatePromised
+						   + "::date = (CURRENT_DATE + INTERVAL '1 day')::date), 0) AS "
 						   + COLUMNNAME_NetOrderValueNextDay);
 
 		sql.append(" FROM "
-				+ I_C_Invoice_Candidate.Table_Name);
+						   + I_C_Invoice_Candidate.Table_Name);
+		// Join C_OrderLine to resolve DatePromised (virtual column on C_Invoice_Candidate).
+		// LEFT JOIN so candidates without an order line (e.g. manual candidates) are still included.
+		sql.append(" LEFT JOIN C_OrderLine ol ON ol."
+						   + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID
+						   + " = "
+						   + I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID);
 		sql.append(" WHERE ");
 		sql.append("(" + I_C_Invoice_Candidate.COLUMNNAME_Processed + " = 'N')"); // avoid bad perf problems when no filter-whereclause was given
 
