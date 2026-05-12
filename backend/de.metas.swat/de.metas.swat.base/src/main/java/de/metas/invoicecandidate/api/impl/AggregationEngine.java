@@ -902,12 +902,23 @@ public final class AggregationEngine
 		}
 
 		// If a specific isPartialInvoice flavor is required and a doctype was resolved,
-		// swap to a sibling doctype that matches the required isPartialInvoice flag.
+		// try to swap to a sibling doctype that matches the required isPartialInvoice flag.
+		// Iter-3 tri-state: when the doctype is NA (NULL) the doctype is neutral and no swap
+		// is needed — the invoice's IsPartialInvoice value will be set directly from the caller
+		// via the C_Invoice interceptor. If a swap is needed but no sibling exists, fall through
+		// and keep the current doctype rather than throwing (same rationale: the explicit
+		// caller value is honoured by the interceptor).
 		DocTypeId docTypeIdFinal = docTypeIdToBeUsed;
 		if (partialInvoice != null && docTypeIdToBeUsed != null)
 		{
 			final I_C_DocType resolvedDocType = docTypeBL.getById(docTypeIdToBeUsed);
-			if (resolvedDocType.isPartialInvoice() != partialInvoice)
+			final de.metas.invoice.IsPartialInvoice resolvedDocTypeIntent = de.metas.invoice.IsPartialInvoice.fromValue(
+					InterfaceWrapperHelper.getValue(resolvedDocType, I_C_DocType.COLUMNNAME_IsPartialInvoice).orElse(null));
+
+			final boolean swapNeeded = !resolvedDocTypeIntent.isNA()
+					&& (resolvedDocTypeIntent.isYes() != partialInvoice);
+
+			if (swapNeeded)
 			{
 				final DocTypeQuery query = DocTypeQuery.builder()
 						.docBaseType(DocBaseType.ofCode(resolvedDocType.getDocBaseType()))
@@ -919,15 +930,17 @@ public final class AggregationEngine
 				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(query);
 				if (alternativeDocTypeId == null)
 				{
-					throw new AdempiereException("No matching doctype found for isPartialInvoice=" + partialInvoice)
-							.appendParametersToMessage()
-							.setParameter("resolvedDocType", resolvedDocType.getName())
-							.setParameter("docBaseType", resolvedDocType.getDocBaseType())
-							.setParameter("isSOTrx", resolvedDocType.isSOTrx())
-							.setParameter("adClientId", resolvedDocType.getAD_Client_ID())
-							.setParameter("adOrgId", resolvedDocType.getAD_Org_ID());
+					// No sibling doctype found — keep the current doctype; the invoice's
+					// IsPartialInvoice will be set explicitly from the caller's intent via
+					// the C_Invoice interceptor's "skip if already set" branch. Don't throw —
+					// iter-3 makes the doctype-swap optional.
+					logger.warn("No sibling doctype with IsPartialInvoice={} found for resolved {}; keeping current doctype, invoice intent will be set directly.",
+							partialInvoice, resolvedDocType);
 				}
-				docTypeIdFinal = alternativeDocTypeId;
+				else
+				{
+					docTypeIdFinal = alternativeDocTypeId;
+				}
 			}
 		}
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdFinal);
