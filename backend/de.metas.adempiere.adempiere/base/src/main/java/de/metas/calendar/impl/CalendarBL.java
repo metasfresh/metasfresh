@@ -175,7 +175,7 @@ public class CalendarBL implements ICalendarBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(calendar);
 		final String trxName = InterfaceWrapperHelper.getTrxName(calendar);
 
-		final List<I_C_Year> years = Services.get(ICalendarDAO.class).retrieveYearsOfCalendar(calendar);
+		final List<I_C_Year> years = calendarDAO.retrieveYearsOfCalendar(calendar);
 		final List<I_C_Period> periodsOfCalendar = new ArrayList<>();
 
 		for (final I_C_Year year : years)
@@ -187,7 +187,7 @@ public class CalendarBL implements ICalendarBL
 
 		periodsOfCalendar.sort(new AccessorComparator<>(
 				new ComparableComparator<>(),
-				o -> ((I_C_Period)o).getPeriodNo()));
+				o -> ((I_C_Period)o).getStartDate()));
 
 		return periodsOfCalendar;
 	}

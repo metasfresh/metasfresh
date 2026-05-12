@@ -47,16 +47,10 @@ public class PeriodRepo
 	private final CCache<Integer, YearId> yearIdCache = CCache.newLRUCache(I_C_Year.Table_Name + "#by#C_Year_ID", 100, 60);
 
 	@NonNull
-	public Period getByRepoId(final int periodRepoId)
-	{
-		final I_C_Period record = getRecord(periodRepoId);
-		return fromPO(record);
-	}
-
-	@NonNull
 	public Period getById(@NonNull final PeriodId periodId)
 	{
-		return getByRepoId(periodId.getRepoId());
+		final I_C_Period record = getRecord(periodId.getRepoId());
+		return fromPO(record);
 	}
 
 	private Period fromPO(@NonNull final I_C_Period periodRecord)

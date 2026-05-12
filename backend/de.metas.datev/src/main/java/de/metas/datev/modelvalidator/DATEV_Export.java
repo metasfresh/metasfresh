@@ -23,6 +23,7 @@ package de.metas.datev.modelvalidator;
  */
 
 import de.metas.calendar.Period;
+import de.metas.calendar.PeriodId;
 import de.metas.calendar.PeriodRepo;
 import de.metas.datev.DATEVExportConfig;
 import de.metas.datev.DATEVExportConfigRepository;
@@ -34,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -50,10 +50,15 @@ public class DATEV_Export
 	@NonNull private final DATEVExportConfigRepository exportConfigRepo;
 	@NonNull private final PeriodRepo periodRepo;
 
-	@Init
-	public void registerCallout()
+
+
+	public DATEV_Export(@NonNull final DATEVExportConfigRepository exportConfigRepo, @NonNull final PeriodRepo periodRepo)
 	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programaticCalloutProvider.registerAnnotatedCallout(this);
+
+		this.exportConfigRepo = exportConfigRepo;
+		this.periodRepo = periodRepo;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -77,7 +82,8 @@ public class DATEV_Export
 	{
 		if (datevExport.getC_Period_ID() > 0)
 		{
-			final Period period = periodRepo.getByRepoId(datevExport.getC_Period_ID());
+			final PeriodId periodId = periodRepo.getPeriodId(datevExport.getC_Period_ID());
+			final Period period = periodRepo.getById(periodId);
 			datevExport.setDateAcctFrom(TimeUtil.asTimestamp(period.getStartDate()));
 			datevExport.setDateAcctTo(TimeUtil.asTimestamp(period.getEndDate()));
 		}
