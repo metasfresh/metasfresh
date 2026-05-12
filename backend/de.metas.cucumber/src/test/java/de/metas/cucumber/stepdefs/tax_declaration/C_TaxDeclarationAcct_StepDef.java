@@ -57,7 +57,7 @@ public class C_TaxDeclarationAcct_StepDef
 	 *
 	 * <p><b>Required DataTable columns:</b>
 	 * <ul>
-	 *   <li>{@code Identifier} — document identifier; resolved via
+	 *   <li>{@code Record_ID} — document identifier; resolved via
 	 *       {@link IdentifiersResolver#getTableRecordReference(StepDefDataIdentifier)} to get
 	 *       {@code AD_Table_ID + Record_ID}</li>
 	 *   <li>{@code C_VAT_Code_ID} — identifier of a {@link de.metas.acct.vatcode.VATCode}
@@ -69,8 +69,8 @@ public class C_TaxDeclarationAcct_StepDef
 	 * <p><b>Example:</b>
 	 * <pre>{@code
 	 * Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-	 *   | Identifier | C_VAT_Code_ID | AmountType | Amount |
-	 *   | invoice    | sales19       | T          | -190   |
+	 *   | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+	 *   | invoice   | sales19       | T          | -190   |
 	 * }</pre>
 	 */
 	@Then("the C_TaxDeclarationAcct for declaration {string} contains entries for documents:")
@@ -93,7 +93,7 @@ public class C_TaxDeclarationAcct_StepDef
 			@NonNull final TaxDeclarationId declId,
 			@NonNull final SoftAssertions softly)
 	{
-		final StepDefDataIdentifier docIdentifier = row.getAsIdentifier("Identifier");
+		final StepDefDataIdentifier docIdentifier = row.getAsIdentifier("Record_ID");
 		final TableRecordReference ref = identifiersResolver.getTableRecordReference(docIdentifier);
 
 		final int adTableId = adTableDAO.retrieveAdTableId(ref.getTableName()).getRepoId();

@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.util.Services;
-import org.compiere.util.TimeUtil;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
@@ -41,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_TaxDeclaration;
+import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
 
@@ -110,7 +110,7 @@ public class C_TaxDeclaration_StepDef
 						.addOnlyActiveRecordsFilter()
 						.orderBy(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
 						.create()
-						.first(I_C_AcctSchema.class));
+						.firstOnlyNotNull(I_C_AcctSchema.class));
 	}
 
 	/**

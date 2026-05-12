@@ -53,7 +53,6 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And metasfresh contains C_VAT_Codes:
       | Identifier | C_Tax_ID | IsSOTrx | AmountType |
       | sales19    | tax19    | Y       | T          |
-      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -84,8 +83,8 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     When the tax declaration 'td1' is built
 
     Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-      | Identifier | C_VAT_Code_ID | AmountType | Amount |
-      | invoice    | sales19       | T          | -190   |
+      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | invoice   | sales19       | T          | -190   |
 
 
 # ############################################################################################################################################
@@ -104,7 +103,6 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And metasfresh contains C_VAT_Codes:
       | Identifier | C_Tax_ID | IsSOTrx | AmountType |
       | sales19    | tax19    | Y       | T          |
-      | purchase19 | tax19    | N       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -130,8 +128,8 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     When the tax declaration 'td1' is built
 
     Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-      | Identifier | C_VAT_Code_ID | AmountType | Amount |
-      | invoice    | sales19       | T          | -190   |
+      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | invoice   | sales19       | T          | -190   |
 
 
 # ############################################################################################################################################
@@ -153,11 +151,9 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | taxA       | taxCategory1     | 19   | DE                       | DE                        |
       | taxB       | taxCategory2     | 7    | DE                       | DE                        |
     And metasfresh contains C_VAT_Codes:
-      | Identifier  | C_Tax_ID | IsSOTrx | AmountType |
-      | salesVatA   | taxA     | Y       | T          |
-      | purchaseA   | taxA     | N       | T          |
-      | salesVatB   | taxB     | Y       | T          |
-      | purchaseB   | taxB     | N       | T          |
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | salesVatA  | taxA     | Y       | T          |
+      | salesVatB  | taxB     | Y       | T          |
     And metasfresh contains M_Products:
       | Identifier |
       | productA   |
@@ -188,6 +184,6 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
     # Each invoice must map to its own VAT code — no cross-contamination
     Then the C_TaxDeclarationAcct for declaration 'td11' contains entries for documents:
-      | Identifier | C_VAT_Code_ID | AmountType | Amount |
-      | invoiceA   | salesVatA     | T          | -190   |
-      | invoiceB   | salesVatB     | T          | -70    |
+      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | invoiceA  | salesVatA     | T          | -190   |
+      | invoiceB  | salesVatB     | T          | -70    |
