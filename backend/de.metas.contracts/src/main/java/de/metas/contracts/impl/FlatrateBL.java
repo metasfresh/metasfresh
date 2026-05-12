@@ -134,7 +134,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -185,6 +184,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final ICalendarBL calendarBL= Services.get(ICalendarBL.class);
 	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -198,7 +198,6 @@ public class FlatrateBL implements IFlatrateBL
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
-	@Nullable
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
@@ -747,7 +746,7 @@ public class FlatrateBL implements IFlatrateBL
 				endDate,
 				UomId.ofRepoId(uom.getC_UOM_ID()));
 
-		final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(
+		final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
 
 		for (final I_C_Period periodOfTerm : periodsOfTerm)
@@ -831,8 +830,6 @@ public class FlatrateBL implements IFlatrateBL
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
 		int counter = 0;
-
-		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
 		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
@@ -1435,7 +1432,7 @@ public class FlatrateBL implements IFlatrateBL
 			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
 			for (int i = 0; i < termDuration; i++)
 			{
-				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
+				final List<I_C_Period> periodsContainingDay = calendarDAO.retrievePeriods(
 						InterfaceWrapperHelper.getCtx(transition), calendar, currentFirstDay, currentFirstDay, InterfaceWrapperHelper.getTrxName(transition));
 
 				Check.errorIf(periodsContainingDay.isEmpty(), "Date {} does not exist in calendar={}", currentFirstDay, calendar);
@@ -1444,7 +1441,7 @@ public class FlatrateBL implements IFlatrateBL
 				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
-				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()));
+				lastDayOfTerm = calendarBL.getLastDayOfYear(YearId.ofRepoId(CalendarId.ofRepoId(year.getC_Calendar_ID()), year.getC_Year_ID()));
 
 				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
 			}
