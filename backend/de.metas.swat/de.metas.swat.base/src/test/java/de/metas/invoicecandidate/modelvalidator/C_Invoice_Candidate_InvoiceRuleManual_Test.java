@@ -30,6 +30,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -116,7 +118,7 @@ class C_Invoice_Candidate_InvoiceRuleManual_Test
 		assertThat(ic.isAutoInvoice()).isTrue();
 	}
 
-	private static I_C_Invoice_Candidate newIC(final String invoiceRule, final String invoiceRuleOverride, final boolean isAutoInvoice)
+	private static I_C_Invoice_Candidate newIC(final String invoiceRule, @Nullable final String invoiceRuleOverride, final boolean isAutoInvoice)
 	{
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		ic.setInvoiceRule(invoiceRule);
