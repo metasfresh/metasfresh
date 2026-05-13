@@ -40,7 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 /**
  * Unit tests for {@link InvoiceCandBL} behaviour when {@link InvoiceRule#Manual} is used.
  *
- * <p>TC5 from me03#28882: verifies that {@code computeDateToInvoice} returns {@code null} for Manual,
+ * <p>TC5 — verifies that {@code computeDateToInvoice} returns {@code null} for Manual,
  * and that {@code isSkipCandidateFromInvoicing} only includes the Manual candidate when the dedicated
  * {@code isInvoiceManualRule} flag is set (decoupled from {@code ignoreInvoiceSchedule}).</p>
  */

@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * me03#28882: verifies that the interceptor in {@link C_Order} forbids the contradictory combination
+ * Verifies that the interceptor in {@link C_Order} forbids the contradictory combination
  * {@code InvoiceRule = Manual} + {@code IsAutoInvoice = Y}, and allows all other combinations.
  */
 class C_Order_InvoiceRuleManual_Test

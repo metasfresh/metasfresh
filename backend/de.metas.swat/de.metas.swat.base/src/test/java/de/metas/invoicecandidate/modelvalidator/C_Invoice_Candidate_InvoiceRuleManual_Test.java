@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * me03#28882: verifies that the {@link C_Invoice_Candidate#preventInvoiceRuleManualWithIsAutoInvoice} interceptor
+ * Verifies that the {@link C_Invoice_Candidate#preventInvoiceRuleManualWithIsAutoInvoice} interceptor
  * blocks {@code InvoiceRule = Manual} (direct or via override) together with {@code IsAutoInvoice = Y}.
  */
 class C_Invoice_Candidate_InvoiceRuleManual_Test

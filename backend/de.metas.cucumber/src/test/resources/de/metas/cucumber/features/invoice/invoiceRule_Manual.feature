@@ -4,7 +4,7 @@
 @F00703
 @ghActions:run_on_executor5
 Feature: InvoiceRule Manual
-## F00703: Invoice Rule — Manual (me03#28882)
+## F00703: Invoice Rule — Manual
 ## TC1: order with InvoiceRule=Manual, default run (IsInvoiceManualRule=N) → candidate NOT invoiced
 ## TC2: order with InvoiceRule=Manual, IsInvoiceManualRule=Y run          → candidate IS invoiced
 ## TC3: order with InvoiceRule=Immediate (regression guard)               → candidate IS invoiced

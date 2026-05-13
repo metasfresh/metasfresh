@@ -762,7 +762,7 @@ public class C_Invoice_Candidate_StepDef
 	 *       {@code OPT.IsInvoiceManualRule}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsInvoiceManualRule} – {@code Y}/{@code N}; when {@code Y} the enqueuer includes
 	 *       invoice candidates whose effective rule is {@code Manual} (which carry {@code DateToInvoice=NULL}).
-	 *       me03#28882. Default: {@code N}.</li>
+	 *       Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
 	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
@@ -835,7 +835,7 @@ public class C_Invoice_Candidate_StepDef
 	 * <em>unprocessed</em> for the full timeout period and that no {@code C_Invoice} was created for it.
 	 *
 	 * <p>Use this step to verify that an {@code InvoiceRule=Manual} candidate is correctly skipped when the
-	 * dedicated "invoice manual rule" flag is not set (TC1 of me03#28882).
+	 * dedicated "invoice manual rule" flag is not set (TC1 of the Manual InvoiceRule feature).
 	 *
 	 * <p>Required columns:
 	 * <ul>
@@ -868,7 +868,7 @@ public class C_Invoice_Candidate_StepDef
 
 			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 			invoicingParams.setIgnoreInvoiceSchedule(false);
-			invoicingParams.setInvoiceManualRule(false); // me03#28882: Manual is invoiced ONLY when this flag is true
+			invoicingParams.setInvoiceManualRule(false); // Manual is invoiced ONLY when this flag is true
 			invoicingParams.setCompleteInvoices(row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true));
 
 			StepDefUtil.tryAndWait(waitSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
@@ -929,7 +929,7 @@ public class C_Invoice_Candidate_StepDef
 	 *       date-based schedule-skip filter. Does NOT affect {@code InvoiceRule=Manual} — use
 	 *       {@code OPT.IsInvoiceManualRule} for that. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsInvoiceManualRule} – {@code Y}/{@code N}; when {@code Y} the enqueuer includes
-	 *       invoice candidates whose effective rule is {@code Manual}. me03#28882. Default: {@code N}.</li>
+	 *       invoice candidates whose effective rule is {@code Manual}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
 	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
