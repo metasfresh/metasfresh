@@ -22,25 +22,24 @@
 
 package de.metas.invoicecandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.InvoiceRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link InvoiceCandBL} behaviour when {@link InvoiceRule#Manual} is used.
  *
- * <p>TC5 — verifies that {@code computeDateToInvoice} returns {@code null} for Manual,
+ * <p>TC5 — verifies that {@code computeDateToInvoice} returns {@link Env#MAX_DATE} for Manual,
  * and that {@code isSkipCandidateFromInvoicing} only includes the Manual candidate when the dedicated
  * {@code isInvoiceManualRule} flag is set (decoupled from {@code ignoreInvoiceSchedule}).</p>
  */

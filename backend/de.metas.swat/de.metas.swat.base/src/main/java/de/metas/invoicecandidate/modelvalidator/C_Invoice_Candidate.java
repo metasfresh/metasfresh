@@ -66,6 +66,7 @@ public class C_Invoice_Candidate
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
@@ -82,17 +83,6 @@ public class C_Invoice_Candidate
 		this.documentLocationBL = documentLocationBL;
 	}
 
-	/**
-	 * Builds a fully-wired {@link C_Invoice_Candidate} interceptor instance for unit tests, without Spring or Mockito.
-	 *
-	 * <p>Each dependency is constructed via its own real (no-arg or factory) constructor:
-	 * <ul>
-	 *   <li>{@link InvoiceCandidateRecordService} – no-arg constructor; its inner services come from {@code Services.get(...)} which falls back to JUnit-mode pojo implementations.</li>
-	 *   <li>{@link InvoiceCandidateGroupRepository} – takes a {@link GroupCompensationLineCreateRequestFactory}, which is itself a no-arg-constructable {@code @Service}.</li>
-	 *   <li>{@link AttachmentEntryService} – uses the dedicated {@link AttachmentEntryService#createInstanceForUnitTesting()} that wires the 5-dep attachment graph.</li>
-	 *   <li>{@link DocumentLocationBL} – uses the dedicated {@link DocumentLocationBL#newInstanceForUnitTesting()}.</li>
-	 * </ul>
-	 */
 	@VisibleForTesting
 	public static C_Invoice_Candidate newInstanceForUnitTesting()
 	{
@@ -132,11 +122,8 @@ public class C_Invoice_Candidate
 			return;
 		}
 
-		final String effectiveCode = Check.isNotBlank(icRecord.getInvoiceRule_Override())
-				? icRecord.getInvoiceRule_Override()
-				: icRecord.getInvoiceRule();
+		final InvoiceRule effectiveRule = invoiceCandBL.getInvoiceRule(icRecord);
 
-		final InvoiceRule effectiveRule = InvoiceRule.ofNullableCode(effectiveCode);
 		if (effectiveRule != null && effectiveRule.isManual())
 		{
 			throw new AdempiereException(MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT)
@@ -155,7 +142,6 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{
-			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 			if (invoiceCandBL.isUpdateProcessInProgress())
 			{
 				logger.debug("Change was performed by scheduler process. No need to update the receord again: {}", icRecord);
@@ -227,8 +213,6 @@ public class C_Invoice_Candidate
 
 	private void invalidateCandidates0(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		if (invoiceCandBL.isUpdateProcessInProgress())
 		{
 			logger.debug("Change was performed by scheduler process. No need to invalidate: {}", ic);
@@ -259,8 +243,6 @@ public class C_Invoice_Candidate
 			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateNetAmtToInvoice(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		// first check priceActual
 		invoiceCandBL.setPriceActual_Override(ic);
 		// note: we don't need to do this "BEFORE_NEW", because a new record doesn't have a "QtyToInvoice" yet.
@@ -284,7 +266,6 @@ public class C_Invoice_Candidate
 	})
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 		invoiceCandBL.updateProcessedFlag(ic);
 	}
 
@@ -334,7 +315,7 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updatePOReference(final I_C_Invoice_Candidate ic)
 	{
-		Services.get(IInvoiceCandBL.class).updatePOReferenceFromOrder(ic);
+		invoiceCandBL.updatePOReferenceFromOrder(ic);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -372,7 +353,7 @@ public class C_Invoice_Candidate
 		{
 			return; // the IC is not yet ready for this
 		}
-		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
+		invoiceCandBL.setPriceActualNet(candidate);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsError })
@@ -380,7 +361,7 @@ public class C_Invoice_Candidate
 	{
 		if (!ic.isError())
 		{
-			Services.get(IInvoiceCandBL.class).resetError(ic);
+			invoiceCandBL.resetError(ic);
 		}
 	}
 
@@ -496,8 +477,6 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
 
 		if (ic.isProcessed()
