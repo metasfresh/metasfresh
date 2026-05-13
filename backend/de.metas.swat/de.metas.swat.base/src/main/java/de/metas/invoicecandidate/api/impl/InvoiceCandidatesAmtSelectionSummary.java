@@ -54,8 +54,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 	/**
 	 * Sum of {@code LineNetAmt} for all invoice candidates in the current selection
-	 * whose {@code DatePromised} (Zugesagter Termin) falls on the next calendar day.
-	 * Represents the "Netto Auftragswert" (Net Order Value) expected for tomorrow.
+	 * whose {@code DatePromised} falls on the next calendar day.
 	 */
 	private final BigDecimal netOrderValueNextDay;
 
@@ -153,8 +152,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 
 	/**
 	 * Returns the sum of {@code LineNetAmt} for candidates in the current selection
-	 * whose {@code DatePromised} (Zugesagter Termin) is tomorrow.
-	 * Displayed in the view header as "Netto Auftragswert" / "Net Order Value".
+	 * whose {@code DatePromised} is tomorrow.
 	 */
 	public BigDecimal getNetOrderValueNextDay()
 	{
@@ -273,7 +271,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		 * Accumulates the per-row {@code NetOrderValueNextDay} value across result set rows.
 		 * {@code null} (from {@link java.sql.ResultSet#getBigDecimal}) is treated as zero.
 		 */
-		@SuppressWarnings("UnusedReturnValue")
+		/** null treated as zero. */
 		public Builder addNetOrderValueNextDay(@Nullable final BigDecimal amtToAdd)
 		{
 			if (amtToAdd != null)
