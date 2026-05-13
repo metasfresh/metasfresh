@@ -6,6 +6,8 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 
+// GRAI_PREFIX layout per GS1 AI 8003: AI(4) + pad(0) + companyPrefix(7613264) + assetType(003095, 6 digits incl. check digit) + first serial digit(1) = 19 chars.
+// The trailing "1" is the first character of the variable-length serial that follows.
 const GRAI_PREFIX = '8003076132640030951';
 
 const makeGraiBarcodes = (count) => {
@@ -16,8 +18,10 @@ const makeGraiBarcodes = (count) => {
 };
 
 /** Expected chip display text for a generated GRAI serial number (1-based).
- *  Chips now show the full canonical GRAI: companyPrefix.assetType.serial */
-const graiChipText = (n) => `7613264.003095.${String(n).padStart(11, '0')}`;
+ *  Chips show the canonical GRAI: companyPrefix.assetType.serial — the serial
+ *  starts with the "1" that comes from GRAI_PREFIX (position 14 of the post-AI
+ *  data, per GS1 AI 8003: 1 pad + 13-digit asset reference + serial). */
+const graiChipText = (n) => `7613264.003095.1${String(n).padStart(11, '0')}`;
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -118,18 +122,18 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipWithText({ text: '7613264.003095.00691412000' });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
+    await GRAIScreen.expectGraiChipWithText({ text: '7613264.003095.100691412000' });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
 
     // Send to backend — chips should remain unchanged
     await GRAIScreen.tapSendButton();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
 
     // Verify backend persistence: reload from backend, confirm GRAI survived the round-trip
     await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.00691412000'] });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -499,4 +503,88 @@ test('Undo discards unsaved changes and reloads from backend', async ({ page }) 
     await GRAIScreen.tapUndoButton();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
     await GRAIScreen.expectSendButtonDisabled();
+});
+
+// noinspection JSUnusedLocalSymbols
+/**
+ * Reproducer for me03#29827 — distribution of GRAIs across the TUs of a single-product LU.
+ *
+ * The LU is created with PI tuCount=3 (one product, three aggregated TUs). The customer
+ * reported that, after https://github.com/metasfresh/metasfresh/pull/23927, three GRAIs
+ * scanned onto such an LU could still end up "all on the first TU". The post-PR-23927
+ * per-block loop in HUGraiSnapshot.computeDelta should fill the single aggregate block
+ * with all three GRAIs as a comma-separated value on its VHU, and the UI round-trip
+ * must preserve all three.
+ *
+ * If a regression ever collapses the storage back to "first slot only", the
+ * reloadFromBackend() chip count after Send will drop below three.
+ */
+test('Three GRAIs distribute across a 3-TU single-product LU and survive the round-trip', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - GRAI Distribution on 3-TU Single-Product LU');
+    allure.severity('critical');
+
+    const masterdata = await Backend.createMasterdata({
+        language: "en_US",
+        request: {
+            login: { user: { language: "en_US" } },
+            products: { "P1": {} },
+            warehouses: { "wh1": {} },
+            packingInstructions: {
+                "PI_3TU": { lu: "LU", qtyTUsPerLU: 3, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI_3TU' },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+
+    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '12 PCE' });
+
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Three distinct GRAI barcodes — the canonical forms the parser produces after the
+    // me03#29827 fix (serial starts with the "1" that follows the asset reference).
+    const graiBarcodes = [
+        '800307613264003095100691412001',
+        '800307613264003095100691412002',
+        '800307613264003095100691412003',
+    ];
+    const expectedCanonicals = [
+        '7613264.003095.100691412001',
+        '7613264.003095.100691412002',
+        '7613264.003095.100691412003',
+    ];
+
+    // Scan one at a time; the assertion between scans gives the keyboard-hook interval
+    // flush enough time to process each barcode (see e2e/mobile-webui/CLAUDE.md).
+    await GRAIScreen.scanGraiBarcode({ barcodeString: graiBarcodes[0] });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: graiBarcodes[1] });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 2 });
+    await GRAIScreen.scanGraiBarcode({ barcodeString: graiBarcodes[2] });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+
+    // No extras for a 3-TU LU with 3 scans
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+
+    // Send to backend — all three must reach the VHU under the single HA item
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+
+    // Round-trip via the backend: any regression that drops GRAIs into "first slot only"
+    // would surface here as fewer than three chips.
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
 });
