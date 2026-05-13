@@ -80,4 +80,20 @@ class TrolleyServiceTest
 		assertThat(service.getCurrent(USER_A)).isPresent();
 		assertThat(service.getCurrent(USER_B)).isEmpty();
 	}
+
+	@Test
+	void clearCurrent_removesUserFromAssignmentMap()
+	{
+		service.setCurrent(USER_A, scannedCode);
+		service.clearCurrent(USER_A);
+		assertThat(service.getCurrent(USER_A)).isEmpty();
+	}
+
+	@Test
+	void clearCurrent_isIdempotent()
+	{
+		// user has no trolley — must not throw
+		service.clearCurrent(USER_A);
+		assertThat(service.getCurrent(USER_A)).isEmpty();
+	}
 }
