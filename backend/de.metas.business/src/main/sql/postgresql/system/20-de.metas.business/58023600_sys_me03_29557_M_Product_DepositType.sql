@@ -230,6 +230,9 @@ WHERE l.IsActive='Y'
 -- New column → use ALTER TABLE ADD COLUMN (t_alter_column requires column to already exist)
 ALTER TABLE M_Product ADD COLUMN IF NOT EXISTS DepositType CHAR(3) DEFAULT NULL;
 
+ALTER TABLE M_Product ADD CONSTRAINT DepositType_Check
+    CHECK (DepositType IS NULL OR DepositType IN ('NRC', 'RC'));
+
 -- ===========================================================================
 -- 7. AD_Field: place in Product window main tab, next to GTIN (SeqNo 430+5=435)
 -- ===========================================================================
@@ -304,6 +307,58 @@ VALUES
 ;
 
 -- ===========================================================================
--- 9. Safety net: fill any missing _Trl rows for all translatable tables
+-- 9. en_US translations (explicit — add_missing_translations would back-fill
+--    German placeholder text for en_US; we set the correct English values here)
+-- ===========================================================================
+
+-- AD_Reference_Trl: en_US
+INSERT INTO AD_Reference_Trl
+    (AD_Language, AD_Reference_ID, Name, IsTranslated,
+     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT 'en_US', t.AD_Reference_ID, 'Deposit Type', 'Y',
+       t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100, 'Y'
+FROM AD_Reference t
+WHERE t.AD_Reference_ID=542089 /*From ID Server*/
+  AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt
+                  WHERE tt.AD_Language='en_US' AND tt.AD_Reference_ID=t.AD_Reference_ID);
+
+-- AD_Ref_List_Trl: en_US for NRC (Disposable Deposit)
+INSERT INTO AD_Ref_List_Trl
+    (AD_Language, AD_Ref_List_ID, Name, IsTranslated,
+     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT 'en_US', t.AD_Ref_List_ID, 'Disposable Deposit', 'Y',
+       t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100, 'Y'
+FROM AD_Ref_List t
+WHERE t.AD_Ref_List_ID=544229 /*From ID Server*/
+  AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt
+                  WHERE tt.AD_Language='en_US' AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID);
+
+-- AD_Ref_List_Trl: en_US for RC (Reusable Deposit)
+INSERT INTO AD_Ref_List_Trl
+    (AD_Language, AD_Ref_List_ID, Name, IsTranslated,
+     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT 'en_US', t.AD_Ref_List_ID, 'Reusable Deposit', 'Y',
+       t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
+       TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100, 'Y'
+FROM AD_Ref_List t
+WHERE t.AD_Ref_List_ID=544230 /*From ID Server*/
+  AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt
+                  WHERE tt.AD_Language='en_US' AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID);
+
+-- AD_Element_Trl: update en_US row (created by the skeleton INSERT above with German placeholder)
+UPDATE AD_Element_Trl
+SET Name='Deposit Type', PrintName='Deposit Type', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
+WHERE AD_Element_ID=584866 /*From ID Server*/ AND AD_Language='en_US';
+
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584866 /*From ID Server*/, 'en_US');
+
+-- ===========================================================================
+-- 10. Safety net: fill any missing _Trl rows for all translatable tables
 -- ===========================================================================
 SELECT add_missing_translations();
