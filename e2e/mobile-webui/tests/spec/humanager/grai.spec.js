@@ -5,6 +5,8 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
+import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
+import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
 // GRAI_PREFIX layout per GS1 AI 8003: AI(4) + pad(0) + companyPrefix(7613264) + assetType(003095, 6 digits incl. check digit) + first serial digit(1) = 19 chars.
 // The trailing "1" is the first character of the variable-length serial that follows.
@@ -586,5 +588,143 @@ test('Three GRAIs distribute across a 3-TU single-product LU and survive the rou
     // would surface here as fewer than three chips.
     await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 3 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+});
+
+// noinspection JSUnusedLocalSymbols
+/**
+ * Reproducer for me03#29827 — distribution of GRAIs across **multiple** aggregate
+ * blocks on a multi-product LU (the real shape from me03#29753).
+ *
+ * The LU is built via a 3-product picking job in shape `3 / 5 / 1` TUs
+ * (lines 10 / 20 / 30 of the original Migros LAF1021 order). After picking, the
+ * LU has three HA items — one per product — so `HUGraiSnapshot.aggregateBlocks`
+ * holds three entries. Scanning nine GRAIs through the Scan-GRAI screen must
+ * fill block-0 with three GRAIs, block-1 with five GRAIs and block-2 with one,
+ * NOT dump everything onto the first block (the pre-fix behaviour).
+ *
+ * The Send + reload round-trip is what catches an inter-block regression — if
+ * the loop ever collapses back to "first block gets everything" the second
+ * Send call would either lose GRAIs or write them to the wrong VHU.
+ */
+test('Nine GRAIs distribute across three aggregate blocks on a multi-product LU', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5230');
+    allure.story('HU Manager - GRAI Distribution across Multiple Aggregate Blocks (3/5/1)');
+    allure.severity('critical');
+
+    const masterdata = await Backend.createMasterdata({
+        language: "en_US",
+        request: {
+            login: { user: { language: "en_US" } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    shipOnCloseLU: false,
+                    pickTo: ['LU_TU'],
+                    allowCompletingPartialPickingJob: false,
+                }
+            },
+            bpartners: { "BP1": {} },
+            warehouses: { "wh": {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                "P1": { prices: [{ price: 1 }] },
+                "P2": { prices: [{ price: 1 }] },
+                "P3": { prices: [{ price: 1 }] },
+            },
+            packingInstructions: {
+                "PI1": { lu: "LU", qtyTUsPerLU: 20, tu: "TU1", product: "P1", qtyCUsPerTU: 10 },
+                "PI2": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 10 },
+                "PI3": { lu: "LU", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 10 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', qty: 200 },
+                "HU2": { product: 'P2', warehouse: 'wh', qty: 200 },
+                "HU3": { product: 'P3', warehouse: 'wh', qty: 200 },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [
+                        { product: 'P1', qty: 30, piItemProduct: 'TU1' }, // 30 CU / 10 per TU = 3 TU
+                        { product: 'P2', qty: 50, piItemProduct: 'TU2' }, // 50 CU / 10 per TU = 5 TU
+                        { product: 'P3', qty: 10, piItemProduct: 'TU3' }, // 10 CU / 10 per TU = 1 TU
+                    ]
+                }
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+
+    await test.step("Pick all three products onto the same LU", async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, color: 'green', qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, expectQtyEntered: '5' });
+        await PickingJobScreen.expectLineButton({ index: 2, color: 'green', qtyToPick: '5 TU', qtyPicked: '5 TU', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU3.qrCode, expectQtyEntered: '1' });
+        await PickingJobScreen.expectLineButton({ index: 3, color: 'green', qtyToPick: '1 TU', qtyPicked: '1 TU', qtyPickedCatchWeight: '' });
+    });
+
+    // Confirm the picked LU actually has 3 products before we touch GRAIs
+    await Backend.expect({
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '30 PCE', P2: '50 PCE', P3: '10 PCE' } },
+        }
+    });
+
+    // Resolve the picked LU's global QR code via the test backend so the HU
+    // Manager can scan it. Picked LUs are not exposed in masterdata.handlingUnits
+    // because they're created indirectly by the picking flow.
+    const luQRCode = await Backend.getHUQRCodeByIdentifier({ identifier: 'lu1' });
+
+    await PickingJobScreen.goBack();
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.goBack();
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+
+    await HUManagerScreen.scanHUQRCode({ huQRCode: luQRCode });
+    await HUManagerScreen.openGRAIScreen();
+    await GRAIScreen.expectVisible();
+
+    // Nine distinct GRAIs (3 + 5 + 1). The trailing "1" of the prefix becomes the
+    // first serial digit per GS1 AI 8003 (post-me03#29827 parser fix).
+    const graiBarcodes = makeGraiBarcodes(9);
+    const expectedCanonicals = Array.from({ length: 9 }, (_, i) => graiChipText(i + 1));
+
+    await GRAIScreen.scanGraiBatch({ graiCodes: graiBarcodes });
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 9 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+    await GRAIScreen.expectExtraGraiChipCount({ expectedCount: 0 });
+
+    // Send → the per-block loop must fill block-0 (P1, tuCount=3), block-1 (P2, tuCount=5)
+    // and block-2 (P3, tuCount=1) — NOT collapse onto block-0.
+    await GRAIScreen.tapSendButton();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 9 });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+
+    // Round-trip: any regression that drops GRAIs into "first block only" would
+    // surface here as fewer than nine chips on reload (the second/third VHUs
+    // would have been overwritten with empty / different values).
+    await GRAIScreen.reloadFromBackend();
+    await GRAIScreen.expectGraiChipCount({ expectedCount: 9 });
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
 });
