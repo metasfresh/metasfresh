@@ -1,3 +1,7 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Saldobilanz_Report.sql
+-- Extends saldobilanz_Report to 10 levels: adds parentname5-9/parentvalue5-9 columns
+-- and L5-L9 window-function sum pairs so depth-6+ accounts are included in subtotals.
+
 --
 -- this overwrites a view in de.metas.fresh !
 --

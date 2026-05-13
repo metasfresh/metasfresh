@@ -1,5 +1,9 @@
-DROP VIEW IF EXISTS C_Element_levels;
-CREATE OR REPLACE VIEW C_Element_levels AS
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/C_Element_Levels.sql
+-- Extends C_Element_Levels from 5 to 10 levels so accounts at depth 6–10 appear in Saldobilanz.
+
+DROP VIEW IF EXISTS C_Element_levels$new;
+
+CREATE OR REPLACE VIEW C_Element_levels$new AS
 	SELECT
 		ev1.C_ElementValue_ID AS lvl1_C_ElementValue_ID, ev1.value AS lvl1_value, ev1.name AS lvl1_name, (ev1.value::text || ' '::text) || ev1.name::text AS lvl1_label
 		, ev2.C_ElementValue_ID AS lvl2_C_ElementValue_ID, ev2.value AS lvl2_value, ev2.name AS lvl2_name, (ev2.value::text || ' '::text) || ev2.name::text AS lvl2_label
@@ -73,3 +77,12 @@ LEFT JOIN AD_TreeNode tn9 ON tn9.AD_Tree_ID = e.AD_Tree_ID AND tn9.Parent_ID = t
 LEFT JOIN C_ElementValue ev9 ON ev9.C_ElementValue_ID = tn9.Node_ID
 LEFT JOIN AD_TreeNode tn10 ON tn10.AD_Tree_ID = e.AD_Tree_ID AND tn10.Parent_ID = tn9.Node_ID
 LEFT JOIN C_ElementValue ev10 ON ev10.C_ElementValue_ID = tn10.Node_ID;
+
+SELECT db_alter_view(
+    'c_element_levels',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('c_element_levels$new'))
+);
+
+DROP VIEW IF EXISTS C_Element_levels$new;

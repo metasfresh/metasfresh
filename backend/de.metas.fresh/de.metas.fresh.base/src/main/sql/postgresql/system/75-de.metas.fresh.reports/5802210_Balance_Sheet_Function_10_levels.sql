@@ -1,3 +1,8 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Balance_Sheet.sql
+-- Extends Balance_Sheet_Function to 10 levels: adds parentname4-9/parentvalue4-9 and L4-L9
+-- window-sum pairs to match the new saldobilanz_Report return type.
+-- Also replaces the previous SELECT * with an explicit column list to avoid positional ambiguity.
+
 drop function if exists report.Balance_Sheet_Function(Date DATE, p_IncludePostingTypeStatistical char) ;
 
 drop function if exists report.Balance_Sheet_Function(Date DATE,  ad_org_id numeric(10,0),  p_IncludePostingTypeStatistical char) ;
