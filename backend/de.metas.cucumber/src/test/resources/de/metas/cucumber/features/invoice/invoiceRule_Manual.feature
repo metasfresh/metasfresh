@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00703_Invoice_Rule
-@F00703
 @ghActions:run_on_executor5
 Feature: InvoiceRule Manual
 ## F00703: Invoice Rule — Manual
@@ -18,7 +17,6 @@ Feature: InvoiceRule Manual
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
-  @F00703
   Scenario: TC1 - InvoiceRule=Manual, default run (IsInvoiceManualRule=N) => no invoice created
     Given metasfresh has date and time 2024-06-01T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -68,7 +66,6 @@ Feature: InvoiceRule Manual
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
-  @F00703
   Scenario: TC2 - InvoiceRule=Manual, IsInvoiceManualRule=Y => invoice IS created
     Given metasfresh has date and time 2024-06-01T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -127,7 +124,6 @@ Feature: InvoiceRule Manual
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
-  @F00703
   Scenario: TC3 - InvoiceRule=Immediate (regression guard) => invoice IS created with default run
     Given metasfresh has date and time 2024-06-01T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_Products:
