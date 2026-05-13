@@ -34,7 +34,9 @@ $BODY$
 				round(1::numeric, uom.StdPrecision) as QtyBOM,
 				null::numeric as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID
+				uom.C_UOM_ID,
+				-- tracks M_Product_IDs whose BOMs have been entered, to detect cycles
+				ARRAY[bomProduct.M_Product_ID::integer] as visited_product_ids
 			from PP_Product_BOM bom
 			inner join M_Product bomProduct on bomProduct.M_Product_ID=bom.M_Product_ID
 			LEFT OUTER JOIN M_Product_Trl pt    ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language =p_ad_language
@@ -56,11 +58,13 @@ $BODY$
 				coalesce(pt.Name, bomLineProduct.Name) as ProductName,
 				bomLineProduct.M_Product_ID,
 				bomLineProduct.IsBOM,
+				-- guard against cycles: only look up the sub-BOM if this product
+				-- has not already been expanded as a BOM root in the current path
 				(case when bomLineProduct.IsBOM='Y'
+				      AND NOT (bomLineProduct.M_Product_ID::integer = ANY(parent.visited_product_ids))
 					then (select bom.PP_Product_BOM_ID from PP_Product_BOM bom
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
-						and bom.Value=bomLineProduct.Value
                         AND (bom.validto >= NOW() OR bom.validto IS NULL)
                         ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
 						limit 1)
@@ -70,7 +74,8 @@ $BODY$
 				(case when bomLine.IsQtyPercentage='N' then round(bomLine.QtyBOM, uom.StdPrecision) else null end) as QtyBOM,
 				(case when bomLine.IsQtyPercentage='Y' then round(bomLine.QtyBatch, 2) else null end) as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID
+				uom.C_UOM_ID,
+				parent.visited_product_ids || bomLineProduct.M_Product_ID::integer as visited_product_ids
 			from bomNode parent
 			inner join PP_Product_BOMLine bomLine on bomLine.PP_Product_BOM_ID=parent.PP_Product_BOM_ID
 			inner join M_Product bomLineProduct on bomLineProduct.M_Product_ID = bomLine.M_Product_ID
