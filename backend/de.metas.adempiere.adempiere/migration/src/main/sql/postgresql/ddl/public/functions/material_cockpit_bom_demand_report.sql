@@ -129,7 +129,7 @@ BEGIN
              ),
              -- Global stock, reservations, and open PO/MO quantities per component product.
              -- Reserved = qty committed via sales orders (qtyReserved)
-             --          + production order candidates (qtyToProduce)
+             --          + production order (qtyToProduce)
              --          + open manufacturing orders (PP_Order docstatus CO/IP, not yet issued).
              -- Ordered  = qty incoming from purchase orders without goods receipt (qtyToMove).
              global_stock AS (
@@ -138,7 +138,7 @@ BEGIN
                         SUM(src.qty_reserved) AS total_reserved,
                         SUM(src.qty_ordered)  AS total_ordered
                  FROM (
-                          -- stock, SO reservations, PP_Order_Candidate demand, PO incoming
+                          -- stock, SO reservations, PP_Order demand, PO incoming
                           SELECT v.m_product_id,
                                  COALESCE(v.qtyStock, 0)                                   AS qty_stock,
                                  COALESCE(v.qtyReserved, 0) + COALESCE(v.qtyToProduce, 0) AS qty_reserved,
