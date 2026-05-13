@@ -56,7 +56,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	 * Sum of {@code LineNetAmt} for all invoice candidates in the current selection
 	 * whose {@code DatePromised} falls on the next calendar day.
 	 */
-	private final BigDecimal netOrderValueNextDay;
+	private final BigDecimal netOrderValueNextDayBD;
 
 	private final ImmutableSet<String> currencySymbols;
 
@@ -76,7 +76,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		cuNetAmtNotApproved = builder.cuNetAmtNotApproved;
 
 		countTotalToRecompute = builder.countTotalToRecompute;
-		netOrderValueNextDay = builder.netOrderValueNextDay;
+		netOrderValueNextDayBD = builder.netOrderValueNextDayBD;
 		currencySymbols = builder.currencySymbols.build();
 	}
 
@@ -156,7 +156,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	 */
 	public BigDecimal getNetOrderValueNextDay()
 	{
-		return netOrderValueNextDay;
+		return netOrderValueNextDayBD;
 	}
 
 	public ITranslatableString getNetOrderValueNextDayAsTranslatableString()
@@ -205,7 +205,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		private BigDecimal cuNetAmtNotApproved = BigDecimal.ZERO;
 
 		private int countTotalToRecompute = 0;
-		private BigDecimal netOrderValueNextDay = BigDecimal.ZERO;
+		private BigDecimal netOrderValueNextDayBD = BigDecimal.ZERO;
 		private final ImmutableSet.Builder<String> currencySymbols = ImmutableSet.builder();
 
 		private Builder()
@@ -276,7 +276,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		{
 			if (amtToAdd != null)
 			{
-				netOrderValueNextDay = netOrderValueNextDay.add(amtToAdd);
+				netOrderValueNextDayBD = netOrderValueNextDayBD.add(amtToAdd);
 			}
 			return this;
 		}
