@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -81,6 +82,8 @@ class TrolleyServiceTest
 		service.setCurrent(USER_A, scannedCode);
 		service.clearCurrent(USER_A);
 		assertThat(service.getCurrent(USER_A)).isEmpty();
+		// The trolley must now be free — USER_B can claim it without conflict.
+		assertThatCode(() -> service.setCurrent(USER_B, scannedCode)).doesNotThrowAnyException();
 	}
 
 	@Test
