@@ -53,7 +53,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	private final int countTotalToRecompute;
 
 	/**
-	 * Sum of {@code LineNetAmt} for all invoice candidates in the current selection
+	 * Sum of {@code NetAmtToInvoice} for all invoice candidates in the current selection
 	 * whose {@code DatePromised} falls on the next calendar day.
 	 */
 	private final BigDecimal netOrderValueNextDayBD;
@@ -151,7 +151,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	}
 
 	/**
-	 * Returns the sum of {@code LineNetAmt} for candidates in the current selection
+	 * Returns the sum of {@code NetAmtToInvoice} for candidates in the current selection
 	 * whose {@code DatePromised} is tomorrow.
 	 */
 	public BigDecimal getNetOrderValueNextDay()
@@ -270,8 +270,8 @@ public class InvoiceCandidatesAmtSelectionSummary
 		/**
 		 * Accumulates the per-row {@code NetOrderValueNextDay} value across result set rows.
 		 * {@code null} (from {@link java.sql.ResultSet#getBigDecimal}) is treated as zero.
+		 * null treated as zero.
 		 */
-		/** null treated as zero. */
 		public Builder addNetOrderValueNextDay(@Nullable final BigDecimal amtToAdd)
 		{
 			if (amtToAdd != null)

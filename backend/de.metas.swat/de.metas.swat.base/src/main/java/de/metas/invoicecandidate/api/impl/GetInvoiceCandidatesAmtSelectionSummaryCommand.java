@@ -126,6 +126,8 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 		//
 		// NetOrderValueNextDay: SUM of NetAmtToInvoice for candidates whose DatePromised is tomorrow.
 		sql.append(", COALESCE(SUM("
+						   + I_C_Invoice_Candidate.Table_Name
+						   + "."
 						   + I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice
 						   + ") FILTER (WHERE "
 						   + SQL_FN_GET_DATE_PROMISED + "("
