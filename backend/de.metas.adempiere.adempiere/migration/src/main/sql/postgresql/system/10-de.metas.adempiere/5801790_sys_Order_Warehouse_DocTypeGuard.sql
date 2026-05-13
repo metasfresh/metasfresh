@@ -32,20 +32,7 @@ VALUES
      TO_TIMESTAMP('2026-05-11 14:06:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:06:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'M_Warehouse for C_Order (no dropship unless Standard SO)',
      'S',
-     'M_Warehouse.IsActive=''Y''
-AND (
-  -- Standard Sales Order (DocSubType=''SO''): all warehouses allowed
-  EXISTS (
-    SELECT 1 FROM C_DocType dt
-    WHERE dt.C_DocType_ID = @C_DocTypeTarget_ID@
-      AND dt.DocSubType   = ''SO''
-  )
-  OR
-  -- Any other doc-type (quotation, prepay, RMA, …): hide dropship warehouses
-  (
-    COALESCE(M_Warehouse.IsDropShipWarehouse, ''N'') = ''N''
-  )
-)',
+     'COALESCE(M_Warehouse.IsDropShipWarehouse,''N'')=''N'' OR @C_DocTypeTarget_ID@ IN (SELECT C_DocType_ID FROM C_DocType WHERE DocSubType=''SO'')',
      'D');
 
 -- =============================================================================
