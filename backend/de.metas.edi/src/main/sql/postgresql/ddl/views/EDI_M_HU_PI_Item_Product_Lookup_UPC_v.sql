@@ -54,7 +54,7 @@ WHERE lookup.UPC IS NOT NULL
   AND p.isactive = 'Y'
   AND p.discontinued = 'N'
 ORDER BY lookup.UPC, bpLookup.GLN, bpLookup.storegln,
-         lookup.c_bpartner_id NULLS LAST /*prefer records that have the bpartner set explicitly*/,
+         (lookup.c_bpartner_id IS NULL) /*prefer records that have the bpartner set explicitly; boolean avoids the implicit ASC tie-break between two non-null c_bpartner_ids*/,
          lookup.M_HU_PI_Item_Product_ID DESC
 ;
 
