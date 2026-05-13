@@ -13,15 +13,15 @@ import javax.annotation.Nullable;
  *       on the same order. Auto-close of the linked invoice candidate must be skipped.</li>
  *   <li>{@link #No} — the user explicitly marked the invoice as Final (the cap). Legacy
  *       qty-based close logic applies in {@code closePartiallyInvoiced_InvoiceCandidates}.</li>
- *   <li>{@link #NA} — no user intent stated (NULL on the DB column). Preserves pre-iter-3
- *       behaviour: legacy qty-based close logic applies.</li>
+ *   <li>{@link #NA} — no user intent stated (NULL on the DB column).
+ *       Legacy qty-based close logic applies (see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369</a>).</li>
  * </ul>
  *
  * <p>Mapped to the underlying CHAR(1) {@code C_Invoice.IsPartialInvoice} /
  * {@code C_DocType.IsPartialInvoice} columns as: {@code Y → Yes}, {@code N → No},
  * {@code null/empty → NA}.
  *
- * <p>See me03 #29369 (iter-3 split-payment) for the design rationale.
+ * <p>See <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369</a> for the design rationale.
  */
 public enum IsPartialInvoice
 {

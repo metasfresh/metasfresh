@@ -105,7 +105,7 @@ public class C_Invoice // 03771
 	 * when no doctype is set, or when the doctype's flag is itself NULL.
 	 *
 	 * <p>The 3-state nullable redesign (migration {@code 5801950}) means the absence of explicit
-	 * intent is the correct default — pre-iter-3 behaviour was a hardcoded "safe default: Partial",
+	 * intent is the correct default — legacy behaviour was a hardcoded "safe default: Partial",
 	 * which masked the design intent and propagated spurious {@code 'Y'} values into all invoices
 	 * created without a matching doctype.
 	 *

@@ -933,7 +933,7 @@ public final class AggregationEngine
 					// No sibling doctype found — keep the current doctype; the invoice's
 					// IsPartialInvoice will be set explicitly from the caller's intent via
 					// the C_Invoice interceptor's "skip if already set" branch. Don't throw —
-					// iter-3 makes the doctype-swap optional.
+					// migration 5801950 made the doctype-swap optional.
 					logger.warn("No sibling doctype with IsPartialInvoice={} found for resolved {}; keeping current doctype, invoice intent will be set directly.",
 							partialInvoice, resolvedDocType);
 				}
@@ -948,7 +948,7 @@ public final class AggregationEngine
 		// Propagate caller's explicit IsPartialInvoice intent directly to the invoice header.
 		// The downstream invoice-creation code (InvoiceCandBLCreateInvoices) sets the value on
 		// the C_Invoice via setValue before save; the C_Invoice BEFORE_NEW interceptor's
-		// "skip if already set" branch then preserves it. Required because iter-3 migration
+		// "skip if already set" branch then preserves it. Required because migration
 		// 5801950 made C_DocType.IsPartialInvoice nullable, so the doctype-swap above may find
 		// no matching sibling — the direct propagation guarantees the caller's intent reaches
 		// the invoice. See me03 #29369.
