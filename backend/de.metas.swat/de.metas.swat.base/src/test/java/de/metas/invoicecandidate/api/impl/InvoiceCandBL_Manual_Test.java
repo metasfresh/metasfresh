@@ -41,8 +41,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * Unit tests for {@link InvoiceCandBL} behaviour when {@link InvoiceRule#Manual} is used.
  *
  * <p>TC5 from me03#28882: verifies that {@code computeDateToInvoice} returns {@code null} for Manual,
- * and that {@code isSkipCandidateFromInvoicing} consequently skips the candidate in a default batch run
- * but invoices it when {@code ignoreInvoiceSchedule=true}.</p>
+ * and that {@code isSkipCandidateFromInvoicing} only includes the Manual candidate when the dedicated
+ * {@code isInvoiceManualRule} flag is set (decoupled from {@code ignoreInvoiceSchedule}).</p>
  */
 class InvoiceCandBL_Manual_Test
 {
@@ -78,15 +78,17 @@ class InvoiceCandBL_Manual_Test
 	}
 
 	/**
-	 * TC5, steps 2 + 3:
+	 * TC5 — Manual rule is decoupled from {@code ignoreInvoiceSchedule}:
 	 * <ul>
 	 *   <li>After {@code set_DateToInvoice_DefaultImpl}, {@code DateToInvoice} is {@code null}.</li>
-	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=false)} → {@code true} (skipped).</li>
-	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=true)} → {@code false} (not skipped).</li>
+	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=false, isInvoiceManualRule=false)} → skipped.</li>
+	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=true, isInvoiceManualRule=false)} → still skipped
+	 *       (ignoreInvoiceSchedule alone does NOT unlock Manual).</li>
+	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=false, isInvoiceManualRule=true)} → NOT skipped.</li>
 	 * </ul>
 	 */
 	@Test
-	void isSkipCandidateFromInvoicing_skips_when_default_run_and_not_skipped_when_ignore_schedule()
+	void isSkipCandidateFromInvoicing_only_invoices_Manual_when_dedicated_flag_is_set()
 	{
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setInvoiceRule(InvoiceRule.Manual.getCode());
@@ -101,14 +103,42 @@ class InvoiceCandBL_Manual_Test
 				.as("DateToInvoice must be null after set_DateToInvoice_DefaultImpl for Manual rule")
 				.isNull();
 
-		// Default batch run (ignoreInvoiceSchedule=false): must skip the candidate
-		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ false))
-				.as("IC with Manual rule must be skipped in default (scheduled) run")
+		// Default user run: neither flag set → skipped
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ false, /* isInvoiceManualRule= */ false))
+				.as("IC with Manual rule must be skipped when neither bypass flag is set")
 				.isTrue();
 
-		// Explicit 'invoice now' run (ignoreInvoiceSchedule=true): must NOT skip the candidate
-		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ true))
-				.as("IC with Manual rule must NOT be skipped when IgnoreInvoiceSchedule=true")
+		// IgnoreInvoiceSchedule alone does NOT include Manual (decoupled)
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ true, /* isInvoiceManualRule= */ false))
+				.as("IC with Manual rule must STILL be skipped when only IgnoreInvoiceSchedule=true (Manual axis is independent)")
+				.isTrue();
+
+		// Dedicated Manual flag set → NOT skipped
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ false, /* isInvoiceManualRule= */ true))
+				.as("IC with Manual rule must NOT be skipped when IsInvoiceManualRule=true")
 				.isFalse();
+
+		// Both flags set: also NOT skipped (Manual axis takes precedence for Manual rule)
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ true, /* isInvoiceManualRule= */ true))
+				.as("IC with Manual rule must NOT be skipped when both bypass flags are true")
+				.isFalse();
+	}
+
+	/**
+	 * Backward-compat sanity: the 2-arg overload delegates with {@code isInvoiceManualRule=false},
+	 * so it always skips Manual candidates regardless of {@code ignoreInvoiceSchedule}.
+	 */
+	@Test
+	void two_arg_overload_always_skips_Manual()
+	{
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setInvoiceRule(InvoiceRule.Manual.getCode());
+		ic.setQtyDelivered(BigDecimal.ONE);
+		ic.setQtyOrdered(BigDecimal.ONE);
+		saveRecord(ic);
+		invoiceCandBL.set_DateToInvoice_DefaultImpl(ic);
+
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ false)).isTrue();
+		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ true)).isTrue();
 	}
 }

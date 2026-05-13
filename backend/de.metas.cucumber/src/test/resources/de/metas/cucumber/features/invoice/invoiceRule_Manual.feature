@@ -5,8 +5,8 @@
 @ghActions:run_on_executor5
 Feature: InvoiceRule Manual
 ## F00703: Invoice Rule — Manual (me03#28882)
-## TC1: order with InvoiceRule=Manual, default run (IgnoreInvoiceSchedule=N) → candidate NOT invoiced
-## TC2: order with InvoiceRule=Manual, IgnoreInvoiceSchedule=Y run        → candidate IS invoiced
+## TC1: order with InvoiceRule=Manual, default run (IsInvoiceManualRule=N) → candidate NOT invoiced
+## TC2: order with InvoiceRule=Manual, IsInvoiceManualRule=Y run          → candidate IS invoiced
 ## TC3: order with InvoiceRule=Immediate (regression guard)               → candidate IS invoiced
 
   Background:
@@ -19,7 +19,7 @@ Feature: InvoiceRule Manual
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
   @F00703
-  Scenario: TC1 - InvoiceRule=Manual, default run (IgnoreInvoiceSchedule=N) => no invoice created
+  Scenario: TC1 - InvoiceRule=Manual, default run (IsInvoiceManualRule=N) => no invoice created
     Given metasfresh has date and time 2024-06-01T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                      |
@@ -69,7 +69,7 @@ Feature: InvoiceRule Manual
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
   @F00703
-  Scenario: TC2 - InvoiceRule=Manual, IgnoreInvoiceSchedule=Y => invoice IS created
+  Scenario: TC2 - InvoiceRule=Manual, IsInvoiceManualRule=Y => invoice IS created
     Given metasfresh has date and time 2024-06-01T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                      |
@@ -112,8 +112,8 @@ Feature: InvoiceRule Manual
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 10           |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
-      | ic_1                              | Y                         |
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsInvoiceManualRule |
+      | ic_1                              | Y                       |
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |

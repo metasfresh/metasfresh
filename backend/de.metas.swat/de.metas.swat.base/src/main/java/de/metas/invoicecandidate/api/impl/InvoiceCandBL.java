@@ -804,7 +804,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule))
+		final boolean isInvoiceManualRule = true; // me03#28882: same rationale for Manual — display the candidate's amount, the user decides when to invoice.
+		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule, isInvoiceManualRule))
 		{
 			icRecord.setNetAmtToInvoice(ZERO);
 			icRecord.setSplitAmt(ZERO);
@@ -986,6 +987,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public boolean isSkipCandidateFromInvoicing(final I_C_Invoice_Candidate ic, final boolean ignoreInvoiceSchedule)
 	{
+		return isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, /* isInvoiceManualRule */ false);
+	}
+
+	@Override
+	public boolean isSkipCandidateFromInvoicing(
+			final I_C_Invoice_Candidate ic,
+			final boolean ignoreInvoiceSchedule,
+			final boolean isInvoiceManualRule)
+	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -1030,6 +1040,21 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
 					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
 			return true;
+		}
+
+		// me03#28882: Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
+		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		if (invoiceRule.isManual())
+		{
+			if (!isInvoiceManualRule)
+			{
+				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
+						new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp((LocalDate) null), TimeUtil.asTimestamp(getToday()) });
+				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+				return true;
+			}
+			// Manual is explicitly requested → don't apply the date gate (Manual has no schedule by design).
+			return false;
 		}
 
 		// flagged via field color

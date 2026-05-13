@@ -119,6 +119,7 @@ import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNo
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_DateInvoiced;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IgnoreInvoiceSchedule;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsInvoiceManualRule;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsUpdateLocationAndContactForInvoice;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
@@ -756,7 +757,12 @@ public class C_Invoice_Candidate_StepDef
 	 * <p>Optional columns:
 	 * <ul>
 	 *   <li>{@code OPT.IgnoreInvoiceSchedule} – {@code Y}/{@code N}; when {@code Y} the enqueuer bypasses the
-	 *       {@code InvoiceRule=Manual} schedule-skip filter and invoices immediately. Default: {@code N}.</li>
+	 *       date-based schedule-skip filter (e.g. for {@code CustomerScheduleAfterDelivery} candidates that
+	 *       are scheduled in the future). Does NOT affect {@code InvoiceRule=Manual} candidates — see
+	 *       {@code OPT.IsInvoiceManualRule}. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsInvoiceManualRule} – {@code Y}/{@code N}; when {@code Y} the enqueuer includes
+	 *       invoice candidates whose effective rule is {@code Manual} (which carry {@code DateToInvoice=NULL}).
+	 *       me03#28882. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
 	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
@@ -769,8 +775,8 @@ public class C_Invoice_Candidate_StepDef
 	 * <p>Example:
 	 * <pre>{@code
 	 * When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
-	 *   | ic_1                              | Y                         |
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IsInvoiceManualRule |
+	 *   | ic_1                              | Y                       |
 	 * }</pre>
 	 */
 	@And("^process invoice candidates and wait (.*)s for C_Invoice_Candidate to be processed$")
@@ -783,6 +789,7 @@ public class C_Invoice_Candidate_StepDef
 
 					final boolean isUpdateLocationAndContactForInvoice = row.getAsOptionalBoolean(PARA_IsUpdateLocationAndContactForInvoice).orElse(false);
 					final boolean ignoreInvoiceSchedule = row.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
+					final boolean isInvoiceManualRule = row.getAsOptionalBoolean(PARA_IsInvoiceManualRule).orElse(false);
 
 					final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 
@@ -790,6 +797,7 @@ public class C_Invoice_Candidate_StepDef
 
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 					invoicingParams.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+					invoicingParams.setInvoiceManualRule(isInvoiceManualRule);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 					row.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
@@ -822,12 +830,12 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	/**
-	 * Enqueues the given invoice candidates for invoicing with {@code IgnoreInvoiceSchedule=false} (the default),
-	 * then asserts that each candidate remains <em>unprocessed</em> for the full timeout period and that no
-	 * {@code C_Invoice} was created for it.
+	 * Enqueues the given invoice candidates for invoicing with both {@code IgnoreInvoiceSchedule=false}
+	 * and {@code IsInvoiceManualRule=false} (the defaults), then asserts that each candidate remains
+	 * <em>unprocessed</em> for the full timeout period and that no {@code C_Invoice} was created for it.
 	 *
 	 * <p>Use this step to verify that an {@code InvoiceRule=Manual} candidate is correctly skipped when the
-	 * "ignore schedule" flag is not set (TC1 of me03#28882).
+	 * dedicated "invoice manual rule" flag is not set (TC1 of me03#28882).
 	 *
 	 * <p>Required columns:
 	 * <ul>
@@ -860,12 +868,13 @@ public class C_Invoice_Candidate_StepDef
 
 			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 			invoicingParams.setIgnoreInvoiceSchedule(false);
+			invoicingParams.setInvoiceManualRule(false); // me03#28882: Manual is invoiced ONLY when this flag is true
 			invoicingParams.setCompleteInvoices(row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true));
 
 			StepDefUtil.tryAndWait(waitSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
 
-			// Attempt to enqueue with IgnoreInvoiceSchedule=false.
-			// For InvoiceRule=Manual candidates the schedule-skip filter will exclude this candidate
+			// Attempt to enqueue with both bypass flags off.
+			// For InvoiceRule=Manual candidates the Manual-rule gate excludes this candidate
 			// so nothing is enqueued (no exception is thrown because setFailIfNothingEnqueued=false).
 			try
 			{
@@ -917,7 +926,10 @@ public class C_Invoice_Candidate_StepDef
 	 * <p>Optional columns (read from the first row):
 	 * <ul>
 	 *   <li>{@code OPT.IgnoreInvoiceSchedule} – {@code Y}/{@code N}; when {@code Y} the enqueuer bypasses the
-	 *       {@code InvoiceRule=Manual} schedule-skip filter and invoices immediately. Default: {@code N}.</li>
+	 *       date-based schedule-skip filter. Does NOT affect {@code InvoiceRule=Manual} — use
+	 *       {@code OPT.IsInvoiceManualRule} for that. Default: {@code N}.</li>
+	 *   <li>{@code OPT.IsInvoiceManualRule} – {@code Y}/{@code N}; when {@code Y} the enqueuer includes
+	 *       invoice candidates whose effective rule is {@code Manual}. me03#28882. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsUpdateLocationAndContactForInvoice} – {@code Y}/{@code N}. Default: {@code N}.</li>
 	 *   <li>{@code OPT.IsDeliveryDateAsInvoiceDate} – {@code Y}/{@code N}. Default: not set.</li>
 	 *   <li>{@code OPT.DateInvoiced} – override invoice date (ISO local date).</li>
@@ -929,9 +941,9 @@ public class C_Invoice_Candidate_StepDef
 	 * <p>Example:
 	 * <pre>{@code
 	 * And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
-	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
-	 *   | ic_1                              | Y                         |
-	 *   | ic_2                              | Y                         |
+	 *   | C_Invoice_Candidate_ID.Identifier | OPT.IsInvoiceManualRule |
+	 *   | ic_1                              | Y                       |
+	 *   | ic_2                              | Y                       |
 	 * }</pre>
 	 */
 	@And("^process invoice candidates together and wait (.*)s for C_Invoice_Candidate to be processed$")
@@ -962,9 +974,11 @@ public class C_Invoice_Candidate_StepDef
 		final DataTableRow firstRow = rows.get(0);
 		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean(PARA_IsUpdateLocationAndContactForInvoice).orElse(false);
 		final boolean ignoreInvoiceSchedule = firstRow.getAsOptionalBoolean(PARA_IgnoreInvoiceSchedule).orElse(false);
+		final boolean isInvoiceManualRule = firstRow.getAsOptionalBoolean(PARA_IsInvoiceManualRule).orElse(false);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+		invoicingParams.setInvoiceManualRule(isInvoiceManualRule);
 		invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);

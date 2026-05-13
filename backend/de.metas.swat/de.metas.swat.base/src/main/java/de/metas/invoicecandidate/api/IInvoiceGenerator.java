@@ -54,6 +54,14 @@ public interface IInvoiceGenerator
 
 	IInvoiceGenerator setIgnoreInvoiceSchedule(boolean ignoreInvoiceSchedule);
 
+	/**
+	 * me03#28882: when {@code true}, invoice candidates whose effective {@link de.metas.order.InvoiceRule} is
+	 * {@link de.metas.order.InvoiceRule#Manual} are NOT skipped at the actual-invoicing stage. The workpackage
+	 * processor sets this to {@code true} on the assumption that any Manual IC that reached the workpackage
+	 * already passed the enqueue-time skip filter.
+	 */
+	IInvoiceGenerator setInvoiceManualRule(boolean isInvoiceManualRule);
+
 	IInvoiceGenerator setCollector(IInvoiceGenerateResult collector);
 
 	IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams);
