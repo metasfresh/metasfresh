@@ -8,16 +8,19 @@ import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -34,6 +37,8 @@ import java.sql.Timestamp;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	private static final AdMessageKey MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT = AdMessageKey.of("ERR_INVOICERULE_MANUAL_AUTO_INVOICE");
+
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -42,7 +47,7 @@ public class C_Order
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
-	 * Invalidate the invoice candidates on complete, for cases where the order was re-activated, the user changed things in it (e.g.the product) and now is completed again 
+	 * Invalidate the invoice candidates on complete, for cases where the order was re-activated, the user changed things in it (e.g.the product) and now is completed again
 	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
@@ -50,6 +55,36 @@ public class C_Order
 	public void invalidateInvoiceCandidates(@NonNull final I_C_Order order)
 	{
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
+	}
+
+	/**
+	 * me03#28882: forbid the contradictory combination {@code InvoiceRule = Manual} + {@code IsAutoInvoice = Y}.
+	 *
+	 * <p>The two flags express opposite intents: {@code Manual} means "user controls when to invoice" (no scheduled date),
+	 * while {@code IsAutoInvoice = Y} schedules the candidate for the auto-invoice batch. Saving an order with both flags
+	 * set would normally be incidentally safe (the auto-invoice query filters {@code COALESCE(DateToInvoice_Override, DateToInvoice) = today}
+	 * and {@code Manual} carries {@code DateToInvoice = NULL}), but a manual {@code DateToInvoice_Override} on the resulting
+	 * invoice candidate is enough to bypass the safety. Block the combination at the source instead.
+	 */
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					org.compiere.model.I_C_Order.COLUMNNAME_InvoiceRule,
+					org.compiere.model.I_C_Order.COLUMNNAME_IsAutoInvoice })
+	public void preventInvoiceRuleManualWithIsAutoInvoice(@NonNull final I_C_Order order)
+	{
+		if (!order.isAutoInvoice())
+		{
+			return;
+		}
+
+		final InvoiceRule invoiceRule = InvoiceRule.ofNullableCode(order.getInvoiceRule());
+		if (invoiceRule != null && invoiceRule.isManual())
+		{
+			throw new AdempiereException(MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT)
+					.markAsUserValidationError();
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
