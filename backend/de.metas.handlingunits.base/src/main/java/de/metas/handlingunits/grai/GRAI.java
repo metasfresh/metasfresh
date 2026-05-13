@@ -94,18 +94,22 @@ public class GRAI implements Comparable<GRAI>
 			data = data.substring(4);
 		}
 
-		// Minimum: 1 (indicator) + 13 (company prefix + asset type) + 1 (check digit) + 1 (serial) = 16
-		if (data.length() < 16)
+		// Per GS1 General Specifications, AI 8003 (GRAI) has a fixed-length asset
+		// reference of 14 digits after the AI: 1 padding digit + 13-digit asset
+		// reference (GS1 Company Prefix + Item Reference + check digit at the end).
+		// An optional alphanumeric serial (0..16 chars) may follow.
+		// Minimum meaningful length: 14 (asset reference) + 1 (at least one serial char,
+		// required to form a non-empty canonical serial part) = 15.
+		if (data.length() < 15)
 		{
 			return null;
 		}
 
-		// Position 0: indicator digit (skip)
-		// Positions 1-13: company prefix + asset type (13 digits)
-		// Position 14: check digit (skip)
-		// Position 15+: serial
+		// Position 0: padding digit (skip)
+		// Positions 1-13: 13-digit asset reference (company prefix + asset type, last digit is the GS1 check digit)
+		// Position 14+: serial reference
 		final String base = data.substring(1, 14);
-		final String serial = data.substring(15);
+		final String serial = data.substring(14);
 
 		final String companyPrefix = base.substring(0, GS1_COMPANY_PREFIX_LENGTH);
 		final String assetType = base.substring(GS1_COMPANY_PREFIX_LENGTH);
