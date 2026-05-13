@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0103_Drop_Shipment
+@allure.label.feature:F72000_Drop_Shipment
 @ghActions:run_on_executor6
 Feature: Dropship-warehouse SO auto-creates a PO and bypasses material disposition
 
