@@ -122,9 +122,16 @@ public class C_Invoice_Candidate
 			return;
 		}
 
+		// An IC with no rule yet (early-stage record) cannot conflict with IsAutoInvoice.
+		// invoiceCandBL.getInvoiceRule(ic) eventually calls InvoiceRule.ofCode (@NonNull) — guard before that.
+		if (Check.isBlank(icRecord.getInvoiceRule()) && Check.isBlank(icRecord.getInvoiceRule_Override()))
+		{
+			return;
+		}
+
 		final InvoiceRule effectiveRule = invoiceCandBL.getInvoiceRule(icRecord);
 
-		if (effectiveRule != null && effectiveRule.isManual())
+		if (effectiveRule.isManual())
 		{
 			throw new AdempiereException(MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT)
 					.markAsUserValidationError();
