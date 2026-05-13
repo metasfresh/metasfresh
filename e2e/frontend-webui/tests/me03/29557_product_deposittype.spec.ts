@@ -23,6 +23,7 @@ import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { PRODUCT_WINDOW_ID } from '../utils/WindowIds';
+import { assertRecordIsValid } from '../utils/WebAPIValidation';
 
 // AD_Column.ColumnName for the new deposit-type field
 const FIELD_NAME = 'DepositType';
@@ -35,7 +36,6 @@ test.describe('me03#29557 — M_Product.DepositType field in Product window', ()
     // === ALLURE METADATA ===
     allure.epic('E0380: Masterdata Products');
     allure.tag('F6000: Maintain Product Data');
-    allure.tag('F6000');
     allure.story('me03#29557 DepositType field visible and persists');
     allure.severity('normal');
     allure.description(`
@@ -64,24 +64,20 @@ and that selecting "Einwegpfand" (NRC) persists after save and page reload.
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    // Navigate to Product window list view
-    await MasterWindowPage.goto(PRODUCT_WINDOW_ID);
-    await MasterWindowPage.expectWindowLoaded();
-    await MasterWindowPage.waitForTableData();
-
-    // Open the first available product record (double-click to enter detail view)
-    await MasterWindowPage.clickRow(0);
-
-    // Verify we are now in a detail view (URL pattern /window/140/<id>)
+    // Navigate directly to the created test product to avoid row-0 pollution
+    const productId = masterdata.products.PROD_DEPOSITTYPE.id;
+    await page.goto(`/window/${PRODUCT_WINDOW_ID}/${productId}`);
     await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 30000 });
-    const detailUrl = page.url();
-    console.log(`[INFO] Opened product detail view: ${detailUrl}`);
+    console.log(`[INFO] Navigated to product detail view: ${page.url()}`);
+
+    // CRITICAL: assert record is valid before modifying — if valid=false changes will not be saved
+    await assertRecordIsValid(PRODUCT_WINDOW_ID, productId, 'before setting DepositType');
 
     // === STEP 1: Verify DepositType field is visible ===
     await test.step('Assert DepositType field is present in the form', async () => {
       // List widgets render as: #lookup_DepositType (the container div)
       // with an <input> inside for display, and a dropdown trigger.
-      const fieldContainer = page.locator(`#lookup_${FIELD_NAME}, .form-field-${FIELD_NAME}`).first();
+      const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
       await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
       await expect(fieldContainer).toBeVisible();
       console.log(`[INFO] DepositType field container is visible`);
@@ -93,11 +89,7 @@ and that selecting "Einwegpfand" (NRC) persists after save and page reload.
       console.log(`[INFO] Selected "${DEPOSIT_TYPE_NRC_LABEL}" from DepositType dropdown`);
     });
 
-    // === STEP 3: Wait for auto-save to complete ===
-    await test.step('Wait for record save to complete', async () => {
-      await WidgetCommon.waitForSaveComplete();
-      console.log(`[INFO] Record saved`);
-    });
+    // ListWidget.setValue already calls triggerBlur + waitForSaveComplete internally — no extra step needed.
 
     // === STEP 4: Reload page and verify persistence ===
     await test.step('Reload page and assert DepositType still shows Einwegpfand', async () => {
@@ -106,7 +98,7 @@ and that selecting "Einwegpfand" (NRC) persists after save and page reload.
       await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 30000 });
 
       // Wait for the field to be visible again after reload
-      const fieldContainer = page.locator(`#lookup_${FIELD_NAME}, .form-field-${FIELD_NAME}`).first();
+      const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
       await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
 
       // Read back the displayed value
