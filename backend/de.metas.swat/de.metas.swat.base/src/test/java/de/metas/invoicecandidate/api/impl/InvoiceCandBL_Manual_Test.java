@@ -60,11 +60,12 @@ class InvoiceCandBL_Manual_Test
 	}
 
 	/**
-	 * TC5, step 1: {@code computeDateToInvoice} must return {@code null} for {@link InvoiceRule#Manual}.
-	 * This is the trigger that drives the skip-filter behaviour.
+	 * TC5, step 1: {@code computeDateToInvoice} returns {@link Env#MAX_DATE} for {@link InvoiceRule#Manual} so the
+	 * column stays non-null (consistent with the other "wait" rules). The skip filter branches on the rule itself,
+	 * not on the date value, so this does not affect the gate behaviour.
 	 */
 	@Test
-	void computeDateToInvoice_returns_null_for_Manual()
+	void computeDateToInvoice_returns_MAX_DATE_for_Manual()
 	{
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setInvoiceRule(InvoiceRule.Manual.getCode());
@@ -73,14 +74,14 @@ class InvoiceCandBL_Manual_Test
 		saveRecord(ic);
 
 		assertThat(invoiceCandBL.computeDateToInvoice(ic))
-				.as("computeDateToInvoice must return null for InvoiceRule=Manual")
-				.isNull();
+				.as("computeDateToInvoice must return Env.MAX_DATE for InvoiceRule=Manual")
+				.isEqualTo(Env.MAX_DATE);
 	}
 
 	/**
 	 * TC5 — Manual rule is decoupled from {@code ignoreInvoiceSchedule}:
 	 * <ul>
-	 *   <li>After {@code set_DateToInvoice_DefaultImpl}, {@code DateToInvoice} is {@code null}.</li>
+	 *   <li>After {@code set_DateToInvoice_DefaultImpl}, {@code DateToInvoice} is {@link Env#MAX_DATE}.</li>
 	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=false, isInvoiceManualRule=false)} → skipped.</li>
 	 *   <li>{@code isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule=true, isInvoiceManualRule=false)} → still skipped
 	 *       (ignoreInvoiceSchedule alone does NOT unlock Manual).</li>
@@ -100,8 +101,8 @@ class InvoiceCandBL_Manual_Test
 		invoiceCandBL.set_DateToInvoice_DefaultImpl(ic);
 
 		assertThat(ic.getDateToInvoice())
-				.as("DateToInvoice must be null after set_DateToInvoice_DefaultImpl for Manual rule")
-				.isNull();
+				.as("DateToInvoice must be Env.MAX_DATE after set_DateToInvoice_DefaultImpl for Manual rule")
+				.isEqualTo(Env.MAX_DATE);
 
 		// Default user run: neither flag set → skipped
 		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ false, /* isInvoiceManualRule= */ false))
@@ -122,6 +123,30 @@ class InvoiceCandBL_Manual_Test
 		assertThat(invoiceCandBL.isSkipCandidateFromInvoicing(ic, /* ignoreInvoiceSchedule= */ true, /* isInvoiceManualRule= */ true))
 				.as("IC with Manual rule must NOT be skipped when both bypass flags are true")
 				.isFalse();
+	}
+
+	/**
+	 * Regression guard for the {@code closePartiallyInvoiced_InvoiceCandidates} → {@code canCloseBasedOnInvoiceRule}
+	 * path: when only the override is Manual (base rule is something that would normally allow auto-close),
+	 * the effective rule must still resolve to Manual so the auto-close guard fires correctly.
+	 *
+	 * <p>The auto-close path reads the effective rule via {@code getInvoiceRule(candidate)} — this test verifies
+	 * the helper honours {@code InvoiceRule_Override} for Manual.
+	 */
+	@Test
+	void getInvoiceRule_honours_Override_for_Manual()
+	{
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setInvoiceRule(InvoiceRule.AfterDelivery.getCode()); // base rule that would normally allow auto-close
+		ic.setInvoiceRule_Override(InvoiceRule.Manual.getCode()); // user override
+		saveRecord(ic);
+
+		assertThat(invoiceCandBL.getInvoiceRule(ic))
+				.as("Effective rule must follow InvoiceRule_Override")
+				.isEqualTo(InvoiceRule.Manual);
+		assertThat(invoiceCandBL.getInvoiceRule(ic).isManual())
+				.as("Effective rule must be Manual when override=Manual, regardless of base rule")
+				.isTrue();
 	}
 
 	/**

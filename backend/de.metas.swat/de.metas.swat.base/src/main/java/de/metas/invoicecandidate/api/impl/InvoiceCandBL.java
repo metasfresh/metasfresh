@@ -368,8 +368,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					}
 				}
 			case Manual:
-				// user owns invoicing timing — no scheduled date.
-				// The skip-filter in isSkipCandidateFromInvoicing treats null DateToInvoice as "skip unless IgnoreInvoiceSchedule=Y".
+				// User owns invoicing timing — there is no scheduled date. Return MAX_DATE so the column stays non-null
+				// (consistent with the other "wait" rules); isSkipCandidateFromInvoicing branches on the rule itself and
+				// only invoices Manual candidates when the dedicated IsInvoiceManualRule flag is set.
 				return Env.MAX_DATE;
 			default:
 				throw new AdempiereException("Unexpected invoicerule=" + invoiceRule);
@@ -1048,8 +1049,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			if (!isInvoiceManualRule)
 			{
+				final LocalDate dateToInvoiceForLog = getDateToInvoice(ic);
 				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
-						new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp((LocalDate) null), TimeUtil.asTimestamp(getToday()) });
+						new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoiceForLog), TimeUtil.asTimestamp(getToday()) });
 				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 				return true;
 			}
@@ -2355,7 +2357,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(candidate))
 					{
 
-						final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
+						// Use the effective rule (override-or-direct) so InvoiceRule_Override=Manual is honoured here too.
+						final InvoiceRule candidateInvoiceRule = getInvoiceRule(candidate);
 
 						if (!canCloseBasedOnInvoiceRule(candidateInvoiceRule))
 						{
