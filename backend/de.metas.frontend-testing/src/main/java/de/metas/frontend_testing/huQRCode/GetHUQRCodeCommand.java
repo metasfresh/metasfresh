@@ -8,7 +8,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.warehouse.WarehouseId;
 
 /**
  * Resolves a masterdata identifier (e.g. {@code "lu1"}) to its handling-unit
@@ -37,11 +36,18 @@ public class GetHUQRCodeCommand
 		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId);
 
 		return JsonGetHUQRCodeResponse.builder()
-				.huId(huId.getRepoId())
 				.qrCode(qrCode.toGlobalQRCodeString())
 				.build();
 	}
 
+	/**
+	 * Build a {@link MasterdataContext} populated with just the handling-unit
+	 * identifiers — all this command needs to resolve to an {@link HuId}. The
+	 * extra identifier types ({@code bpartners}, {@code products}, {@code warehouses})
+	 * that {@code AssertExpectationsCommand.createContext} populates are not
+	 * relevant here. Identifiers registered downstream by picking expectations
+	 * (e.g. {@code lu1}, {@code vhu1}) arrive via {@code request.getContext()}.
+	 */
 	private MasterdataContext buildContext()
 	{
 		final MasterdataContext context = new MasterdataContext();
@@ -51,8 +57,6 @@ public class GetHUQRCodeCommand
 		{
 			masterdata.getHandlingUnits().forEach((identifierStr, handlingUnit) ->
 					context.putIdentifier(Identifier.ofString(identifierStr), HuId.ofObject(handlingUnit.getHuId())));
-			masterdata.getWarehouses().forEach((identifierStr, warehouse) ->
-					context.putIdentifier(Identifier.ofString(identifierStr), WarehouseId.ofRepoId(warehouse.getWarehouseId())));
 		}
 
 		context.putFromJson(request.getContext());

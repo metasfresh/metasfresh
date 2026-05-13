@@ -10,6 +10,5 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonGetHUQRCodeResponse
 {
-	int huId;
 	@NonNull String qrCode;
 }
