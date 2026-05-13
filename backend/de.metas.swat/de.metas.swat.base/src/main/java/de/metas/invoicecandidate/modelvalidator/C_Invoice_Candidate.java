@@ -1,11 +1,13 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -23,6 +25,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.InvoiceRule;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -77,6 +80,27 @@ public class C_Invoice_Candidate
 
 		this.attachmentEntryService = attachmentEntryService;
 		this.documentLocationBL = documentLocationBL;
+	}
+
+	/**
+	 * Builds a fully-wired {@link C_Invoice_Candidate} interceptor instance for unit tests, without Spring or Mockito.
+	 *
+	 * <p>Each dependency is constructed via its own real (no-arg or factory) constructor:
+	 * <ul>
+	 *   <li>{@link InvoiceCandidateRecordService} – no-arg constructor; its inner services come from {@code Services.get(...)} which falls back to JUnit-mode pojo implementations.</li>
+	 *   <li>{@link InvoiceCandidateGroupRepository} – takes a {@link GroupCompensationLineCreateRequestFactory}, which is itself a no-arg-constructable {@code @Service}.</li>
+	 *   <li>{@link AttachmentEntryService} – uses the dedicated {@link AttachmentEntryService#createInstanceForUnitTesting()} that wires the 5-dep attachment graph.</li>
+	 *   <li>{@link DocumentLocationBL} – uses the dedicated {@link DocumentLocationBL#newInstanceForUnitTesting()}.</li>
+	 * </ul>
+	 */
+	@VisibleForTesting
+	public static C_Invoice_Candidate newInstanceForUnitTesting()
+	{
+		return new C_Invoice_Candidate(
+				new InvoiceCandidateRecordService(),
+				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
+				AttachmentEntryService.createInstanceForUnitTesting(),
+				DocumentLocationBL.newInstanceForUnitTesting());
 	}
 
 	/**

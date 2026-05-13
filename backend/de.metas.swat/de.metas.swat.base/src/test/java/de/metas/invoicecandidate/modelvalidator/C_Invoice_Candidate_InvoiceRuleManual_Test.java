@@ -29,7 +29,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,13 +45,7 @@ class C_Invoice_Candidate_InvoiceRuleManual_Test
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		// The class has @NonNull constructor params we don't exercise; pass Mockito doubles so we can call
-		// the validation method which doesn't depend on them.
-		interceptor = new C_Invoice_Candidate(
-				Mockito.mock(de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService.class),
-				Mockito.mock(de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository.class),
-				Mockito.mock(de.metas.attachments.AttachmentEntryService.class),
-				Mockito.mock(de.metas.document.location.IDocumentLocationBL.class));
+		interceptor = C_Invoice_Candidate.newInstanceForUnitTesting();
 	}
 
 	@Test
