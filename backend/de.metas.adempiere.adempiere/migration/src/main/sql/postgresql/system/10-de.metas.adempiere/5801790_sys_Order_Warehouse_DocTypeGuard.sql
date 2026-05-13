@@ -1,4 +1,4 @@
--- me03#29584: Doc-subtype guard for dropship warehouse on C_Order (T4b)
+-- Doc-subtype guard for dropship warehouse on C_Order
 --
 -- DECISION: Field-level val-rule binding (NOT column-level).
 -- Reason: The column-level rule (AD_Val_Rule_ID=540006, "M_Warehouse Org Order") already

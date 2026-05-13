@@ -52,7 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link C_Order_Project} — dropship-warehouse gate (me03#29584).
+ * Unit tests for {@link C_Order_Project} — dropship-warehouse gate.
  * <p>
  * Style: {@code AdempiereTestHelper.get().init()} (POJO-backed IQueryBL) +
  * Mockito for BL services registered via {@link Services#registerService(Class, Object)}.

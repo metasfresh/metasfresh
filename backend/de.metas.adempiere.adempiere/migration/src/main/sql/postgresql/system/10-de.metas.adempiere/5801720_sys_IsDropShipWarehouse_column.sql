@@ -1,4 +1,4 @@
--- me03#29584: Add IsDropShipWarehouse to M_Warehouse
+-- Add IsDropShipWarehouse to M_Warehouse
 -- Script 2 of 3: AD_Column + AD_Column_Trl + physical DDL on M_Warehouse
 
 -- =============================================================================

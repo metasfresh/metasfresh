@@ -1,4 +1,4 @@
--- me03#29584: Add IsDropShipWarehouse to M_Warehouse
+-- Add IsDropShipWarehouse to M_Warehouse
 -- Script 1 of 3: AD_Element + AD_Element_Trl (de_DE, de_CH, en_US)
 
 -- =============================================================================

@@ -1,4 +1,4 @@
--- me03#29584: Restrict C_OrderLine.C_BPartner_Vendor_ID dropdown on dropship-warehouse sales orders
+-- Restrict C_OrderLine.C_BPartner_Vendor_ID dropdown on dropship-warehouse sales orders
 --
 -- DECISION: INSERT new AD_Val_Rule (column C_BPartner_Vendor_ID had no val-rule before).
 -- APPROACH: Single rule with conditional SQL (Approach A):

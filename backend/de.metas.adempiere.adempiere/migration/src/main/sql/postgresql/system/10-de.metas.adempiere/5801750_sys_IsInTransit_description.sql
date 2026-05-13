@@ -1,4 +1,4 @@
--- me03#29584: Supplement IsInTransit description/help (clarify distinction from new IsDropShipWarehouse)
+-- Supplement IsInTransit description/help (clarify distinction from new IsDropShipWarehouse)
 
 -- German (base language on AD_Element)
 UPDATE AD_Element

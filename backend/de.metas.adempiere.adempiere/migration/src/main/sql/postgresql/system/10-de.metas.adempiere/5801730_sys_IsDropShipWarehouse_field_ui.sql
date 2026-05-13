@@ -1,4 +1,4 @@
--- me03#29584: Add IsDropShipWarehouse to M_Warehouse
+-- Add IsDropShipWarehouse to M_Warehouse
 -- Script 3 of 3: AD_Field + AD_Field_Trl + AD_UI_Element on main Lager tab (AD_Tab_ID=177, AD_Window_ID=139)
 --
 -- Placement: next to existing IsInTransit field

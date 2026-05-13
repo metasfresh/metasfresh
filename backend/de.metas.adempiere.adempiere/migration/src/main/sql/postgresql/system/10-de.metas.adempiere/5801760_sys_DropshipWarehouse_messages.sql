@@ -1,4 +1,4 @@
--- Migration for me03#29584: Add 3 DropshipWarehouse AD_Messages
+-- Add 3 DropshipWarehouse AD_Messages
 -- Created: 2026-05-11 14:00
 
 -- Message 1: DropshipWarehouse_MissingVendorOnLine (Error)
