@@ -743,6 +743,103 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(r1Present).as("R1 sub-row must NOT be present after reversal").isFalse();
 	}
 
+	// -----------------------------------------------------------------------
+	// Cell 12 — invoice completion path: in-memory invoice threaded through bypasses
+	//                                    the stale DocStatus="IP" filter in the DB
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Verifies the F1 fix for Bug C1 (invoice-completion path).
+	 *
+	 * <p>Scenario: R1 receipt is matched to INV1.  INV1 is currently completing —
+	 * {@code MInvoice.completeIt()} fires {@code @DocValidate(AFTER_COMPLETE)} listeners at line 1133
+	 * BEFORE {@code DocumentEngine.completeIt()} flips {@code DocStatus} from "IP" to "CO" at line
+	 * 454–455.  Any AFTER_COMPLETE listener that re-reads the invoice from DB sees {@code DocStatus="IP"}.
+	 *
+	 * <p>Without the F1 fix: DB re-read returns DocStatus=IP → {@code isCompletedOrClosed()} filter
+	 * rejects → {@code getByReceipt} returns empty → sub-row stays at Status=Pending / C_Invoice_ID=null.
+	 *
+	 * <p>With the F1 fix: the interceptor threads the in-memory (authoritatively completing) {@code RegularInvoice}
+	 * down through {@code recomputeDeliveryStepsAfterInvoiceCompleted}, and {@code getByReceipt} bypasses
+	 * the DB re-read for exactly this one invoice → sub-row flips to Status=Awaiting_Pay / C_Invoice_ID=INV1.
+	 *
+	 * <p>Sibling pattern to Cell 11 (receipt-reversal path).
+	 *
+	 * @see <a href="https://github.com/metasfresh/me03/issues/29369">me03 #29369</a>
+	 */
+	@Test
+	void recomputeAfterInvoiceCompletion_resolvesToAwaitingPay()
+	{
+		// ---- Setup ----
+		// R1 receipt: 31808 EUR (matches INV1, which is currently completing)
+		final OrderSchedulingContext order = buildOrder();
+
+		// The in-memory completing invoice (DocStatus would be IP in the DB at this point)
+		final RegularInvoice completingInvoice = buildInvoice(INV1_ID, false);
+
+		// Stub: orderPayScheduleService.getContextById → complex order
+		when(orderPayScheduleService.getContextById(ORDER_ID)).thenReturn(Optional.of(order));
+
+		// Stub: receiptService.getByOrderId(orderId, null, null) → R1 only
+		final MaterialReceiptCollection onlyR1 = receiptCollection(buildReceipt(R1_ID, R1_LINE_ID, R1_VALUE));
+		when(receiptService.getByOrderId(eq(ORDER_ID), isNull(), isNull())).thenReturn(onlyR1);
+
+		// Stub regularInvoiceService.getByReceipt: simulate the F1 bypass.
+		// - Called WITH the in-memory completingInvoice → resolves to INV1 (fast path).
+		// - Called WITHOUT it (e.g. plain DB path) → empty (DB still shows DocStatus=IP, filter rejects).
+		when(regularInvoiceService.getByReceipt(any(), eq(completingInvoice), isNull()))
+				.thenReturn(Optional.of(completingInvoice));
+		when(regularInvoiceService.getByReceipt(any(), isNull(), isNull()))
+				.thenReturn(Optional.empty());
+
+		// Capture the consumer passed to updateById so we can invoke it and inspect the result
+		final OrderPaySchedule[] capturedSchedule = { null };
+		Mockito.doAnswer(inv -> {
+			final OrderPaySchedule schedule = buildEmptySchedule();
+			capturedSchedule[0] = schedule;
+			@SuppressWarnings("unchecked")
+			final java.util.function.Consumer<OrderPaySchedule> consumer = inv.getArgument(1);
+			consumer.accept(schedule);
+			return null;
+		}).when(orderPayScheduleService).updateById(eq(ORDER_ID), any());
+
+		// ---- Act ----
+		service.recomputeDeliveryStepsAfterInvoiceCompleted(ORDER_ID, completingInvoice);
+
+		// ---- Assert ----
+		// updateById must have been called (proves the service did not short-circuit)
+		verify(orderPayScheduleService).updateById(eq(ORDER_ID), any());
+
+		// regularInvoiceService.getByReceipt must have been called WITH the in-memory completingInvoice
+		// (proves the thread-through reached the lookup layer)
+		verify(regularInvoiceService).getByReceipt(any(), eq(completingInvoice), isNull());
+
+		// The schedule must have been updated: R1 sub-row resolved to Awaiting_Pay + remainder row
+		assertThat(capturedSchedule[0]).isNotNull();
+		final List<OrderPayScheduleLine> mrLines = capturedSchedule[0].streamLinesByBreakId(MR_BREAK_ID)
+				.collect(java.util.stream.Collectors.toList());
+
+		// Expect: 1 sub-row for R1 + 1 remainder row
+		assertThat(mrLines).hasSize(2);
+
+		final OrderPayScheduleLine r1Line = mrLines.stream()
+				.filter(l -> R1_ID.equals(l.getInoutId()))
+				.findFirst()
+				.orElse(null);
+		assertThat(r1Line).as("R1 sub-row must be present").isNotNull();
+		// Without the F1 fix this would be Pending (DocStatus=IP filter rejects); with the fix
+		// the in-memory invoice is used directly and the status flips to Awaiting_Pay.
+		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(r1Line.getInvoiceId()).isEqualTo(INV1_ID);
+
+		final OrderPayScheduleLine remainderLine = mrLines.stream()
+				.filter(l -> l.getInoutId() == null)
+				.findFirst()
+				.orElse(null);
+		assertThat(remainderLine).as("Remainder row must be present").isNotNull();
+		assertThat(remainderLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
+	}
+
 	private Quantity qty(final String value)
 	{
 		return Quantity.of(new BigDecimal(value), uom);
