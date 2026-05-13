@@ -8,8 +8,9 @@ import { GRAIScreen } from '../../utils/screens/huManager/GRAIScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
-// GRAI_PREFIX layout per GS1 AI 8003: AI(4) + pad(0) + companyPrefix(7613264) + assetType(003095, 6 digits incl. check digit) + first serial digit(1) = 19 chars.
-// The trailing "1" is the first character of the variable-length serial that follows.
+// GRAI_PREFIX layout per GS1 AI 8003: AI(4) + pad(0) + companyPrefix(7613264) + assetType(00309) + check digit(5) + first serial digit(1) = 19 chars.
+// The "5" at position 17 is the GS1 check digit (dropped from the EPCIS canonical);
+// the trailing "1" is the first character of the variable-length serial that follows.
 const GRAI_PREFIX = '8003076132640030951';
 
 const makeGraiBarcodes = (count) => {
@@ -20,10 +21,11 @@ const makeGraiBarcodes = (count) => {
 };
 
 /** Expected chip display text for a generated GRAI serial number (1-based).
- *  Chips show the canonical GRAI: companyPrefix.assetType.serial — the serial
- *  starts with the "1" that comes from GRAI_PREFIX (position 14 of the post-AI
- *  data, per GS1 AI 8003: 1 pad + 13-digit asset reference + serial). */
-const graiChipText = (n) => `7613264.003095.1${String(n).padStart(11, '0')}`;
+ *  Chips show the GS1 EPCIS "Pure Identity" URI canonical:
+ *  {@code companyPrefix(7).assetType(5).serial} — the check digit at GTIN-13
+ *  position 13 is omitted from the canonical, and the serial starts with the
+ *  "1" that comes from GRAI_PREFIX (position 14 of the post-AI data). */
+const graiChipText = (n) => `7613264.00309.1${String(n).padStart(11, '0')}`;
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -124,18 +126,18 @@ test('Scan GRAI barcode and verify chip appears', async ({ page }) => {
     // Scan a GS1 AI 8003 GRAI barcode (as emitted by a keyboard barcode reader) — MIGROS A crate
     await GRAIScreen.scanGraiBarcode({ barcodeString: '800307613264003095100691412000' });
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipWithText({ text: '7613264.003095.100691412000' });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
+    await GRAIScreen.expectGraiChipWithText({ text: '7613264.00309.100691412000' });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.00309.100691412000'] });
 
     // Send to backend — chips should remain unchanged
     await GRAIScreen.tapSendButton();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.00309.100691412000'] });
 
     // Verify backend persistence: reload from backend, confirm GRAI survived the round-trip
     await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 1 });
-    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.003095.100691412000'] });
+    await GRAIScreen.expectGraiChipTexts({ expectedTexts: ['7613264.00309.100691412000'] });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -561,9 +563,9 @@ test('Three GRAIs distribute across a 3-TU single-product LU and survive the rou
         '800307613264003095100691412003',
     ];
     const expectedCanonicals = [
-        '7613264.003095.100691412001',
-        '7613264.003095.100691412002',
-        '7613264.003095.100691412003',
+        '7613264.00309.100691412001',
+        '7613264.00309.100691412002',
+        '7613264.00309.100691412003',
     ];
 
     // Scan one at a time; the assertion between scans gives the keyboard-hook interval
@@ -666,7 +668,7 @@ test('Nine GRAIs distribute across three aggregate blocks on a multi-product LU'
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
@@ -682,8 +684,21 @@ test('Nine GRAIs distribute across three aggregate blocks on a multi-product LU'
         await PickingJobScreen.expectLineButton({ index: 3, color: 'green', qtyToPick: '1 TU', qtyPicked: '1 TU', qtyPickedCatchWeight: '' });
     });
 
-    // Confirm the picked LU actually has 3 products before we touch GRAIs
+    // Confirm the picked LU has 3 products before we touch GRAIs.
+    // The picking expectation's `lu: 'lu1'` field registers the picked LU's HuId
+    // in the masterdata context under the identifier "lu1"; without that the
+    // subsequent `hus: { lu1: ... }` block and getHUQRCodeByIdentifier call
+    // cannot resolve it (context.getOptionalId returns null otherwise).
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ qtyPicked: '30 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }] },
+                    P2: { qtyPicked: [{ qtyPicked: '50 PCE', qtyTUs: 5, qtyLUs: 1, vhu: 'vhu2', tu: 'tu2', lu: 'lu1', processed: false, shipmentLineId: '-' }] },
+                    P3: { qtyPicked: [{ qtyPicked: '10 PCE', qtyTUs: 1, qtyLUs: 1, vhu: 'vhu3', tu: 'tu3', lu: 'lu1', processed: false, shipmentLineId: '-' }] },
+                }
+            }
+        },
         hus: {
             lu1: { huStatus: 'S', storages: { P1: '30 PCE', P2: '50 PCE', P3: '10 PCE' } },
         }

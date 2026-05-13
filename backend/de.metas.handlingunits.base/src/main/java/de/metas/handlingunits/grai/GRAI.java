@@ -106,9 +106,10 @@ public class GRAI implements Comparable<GRAI>
 		}
 
 		// Position 0: padding digit (skip)
-		// Positions 1-13: 13-digit asset reference (company prefix + asset type, last digit is the GS1 check digit)
+		// Positions 1-12: 12-digit asset reference base (company prefix + asset type, no check digit)
+		// Position 13: GS1 check digit (skip — not part of the EPCIS "Pure Identity" URI canonical form)
 		// Position 14+: serial reference
-		final String base = data.substring(1, 14);
+		final String base = data.substring(1, 13);
 		final String serial = data.substring(14);
 
 		final String companyPrefix = base.substring(0, GS1_COMPANY_PREFIX_LENGTH);

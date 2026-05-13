@@ -107,10 +107,10 @@ class GRAITest
 		@Test
 		void gs1_withAIPrefix()
 		{
-			// AI 8003 + padding(0) + 13-digit asset reference (company prefix 7613204 + asset type 003095, last digit is the GS1 check digit) + serial(100691412000)
+			// AI 8003 + padding(0) + 12-digit asset reference (company prefix 7613204 + asset type 00309) + check digit 5 (dropped) + serial(100691412000)
 			final GRAI result = GRAI.parse("800307613204003095100691412000");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613204.003095.100691412000");
+			assertThat(result.toCanonicalString()).isEqualTo("7613204.00309.100691412000");
 		}
 
 		@Test
@@ -119,16 +119,16 @@ class GRAITest
 			// Same as above but without the "8003" prefix
 			final GRAI result = GRAI.parse("07613204003095100691412000");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613204.003095.100691412000");
+			assertThat(result.toCanonicalString()).isEqualTo("7613204.00309.100691412000");
 		}
 
 		@Test
 		void gs1_migrosA_firstBarcode()
 		{
-			// Real barcode from GRAI_A-Gebinde.pdf (MIGROS A, serial 100691412000)
+			// Real barcode from GRAI_A-Gebinde.pdf (MIGROS A, asset type 00309, serial 100691412000) — per the Migros-Genossenschaftsbund GRAI encoding spec (epcis/customer-docs/Migros_GRAI/GRAI Kodierung.pdf)
 			final GRAI result = GRAI.parse("800307613264003095100691412000");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613264.003095.100691412000");
+			assertThat(result.toCanonicalString()).isEqualTo("7613264.00309.100691412000");
 		}
 
 		@Test
@@ -137,16 +137,16 @@ class GRAITest
 			// Real barcode from GRAI_A-Gebinde.pdf (MIGROS A, serial 100691412031)
 			final GRAI result = GRAI.parse("800307613264003095100691412031");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613264.003095.100691412031");
+			assertThat(result.toCanonicalString()).isEqualTo("7613264.00309.100691412031");
 		}
 
 		@Test
 		void gs1_migrosB_firstBarcode()
 		{
-			// Real barcode from GRAI_B-Gebinde.pdf (MIGROS B, asset type 003071)
+			// Real barcode from GRAI_B-Gebinde.pdf (MIGROS B, asset type 00307)
 			final GRAI result = GRAI.parse("800307613264003071100691412000");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613264.003071.100691412000");
+			assertThat(result.toCanonicalString()).isEqualTo("7613264.00307.100691412000");
 		}
 
 		@Test
@@ -155,7 +155,7 @@ class GRAITest
 			// Real barcode from GRAI_B-Gebinde.pdf (MIGROS B, serial 100691412031)
 			final GRAI result = GRAI.parse("800307613264003071100691412031");
 			assertThat(result).isNotNull();
-			assertThat(result.toCanonicalString()).isEqualTo("7613264.003071.100691412031");
+			assertThat(result.toCanonicalString()).isEqualTo("7613264.00307.100691412031");
 		}
 
 		@Test
@@ -165,8 +165,8 @@ class GRAITest
 			final GRAI a = Objects.requireNonNull(GRAI.parse("800307613264003095100691412000"));
 			final GRAI b = Objects.requireNonNull(GRAI.parse("800307613264003071100691412000"));
 			assertThat(a).isNotEqualTo(b);
-			assertThat(a.toCanonicalString()).isEqualTo("7613264.003095.100691412000");
-			assertThat(b.toCanonicalString()).isEqualTo("7613264.003071.100691412000");
+			assertThat(a.toCanonicalString()).isEqualTo("7613264.00309.100691412000");
+			assertThat(b.toCanonicalString()).isEqualTo("7613264.00307.100691412000");
 		}
 
 		@Test
@@ -195,23 +195,30 @@ class GRAITest
 
 		/**
 		 * me03#29827 — customer-reported bug. Scanning the raw barcode
-		 * {@code 800307613264003095100691412003} produced
-		 * {@code 7613264.003095.00691412003} — losing the {@code 1} between
-		 * the asset type and the serial.
-		 * <p>
-		 * Per GS1 AI 8003 spec, the fixed-length portion after the AI is
-		 * 14 characters (1 pad + 13-digit asset reference, GTIN-13 check
-		 * digit at position 13). Position 14 onwards is the serial. The
-		 * previous parser skipped one additional digit at position 14,
-		 * dropping the first serial digit.
+		 * {@code 800307613264003095100691412003} originally produced
+		 * {@code 7613264.003095.00691412003}, which had two problems against
+		 * the GS1 EPCIS "Pure Identity" URI canonical:
+		 * <ol>
+		 *   <li>The leading {@code 1} of the serial was dropped (the
+		 *       parser treated position 14 as a separate check digit and
+		 *       skipped it).</li>
+		 *   <li>The asset-type segment was 6 characters long because it
+		 *       included the GS1 check digit, instead of the 5-char form
+		 *       that the EPCIS URI {@code urn:epc:id:grai:7613264.00309.100691412003}
+		 *       and {@link DummyGRAITemplate#MIGROS_ASSET_TYPE} both use.</li>
+		 * </ol>
+		 * Canonical form per the Migros GRAI encoding spec
+		 * ({@code epcis/customer-docs/Migros_GRAI/GRAI Kodierung.pdf}):
+		 * {@code companyPrefix(7).assetType(5).serial} with the GS1 check
+		 * digit at GTIN-13 position 13 omitted from the canonical.
 		 */
 		@Test
-		void gs1_me03_29827_serialFirstDigitMustNotBeDropped()
+		void gs1_me03_29827_canonicalMatchesEPCISPureIdentityURI()
 		{
 			final GRAI result = GRAI.parse("800307613264003095100691412003");
 			assertThat(result).isNotNull();
 			assertThat(result.toCanonicalString())
-					.isEqualTo("7613264.003095.100691412003");
+					.isEqualTo("7613264.00309.100691412003");
 		}
 	}
 
@@ -230,7 +237,7 @@ class GRAITest
 		{
 			final GRAI grai = GRAI.parse("800307613204003095100691412000");
 			assertThat(grai).isNotNull();
-			assertThat(grai.toCanonicalString()).isEqualTo("7613204.003095.100691412000");
+			assertThat(grai.toCanonicalString()).isEqualTo("7613204.00309.100691412000");
 		}
 	}
 
