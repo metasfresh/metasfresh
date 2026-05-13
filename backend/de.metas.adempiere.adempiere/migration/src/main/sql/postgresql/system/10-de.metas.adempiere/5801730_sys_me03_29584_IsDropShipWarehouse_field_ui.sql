@@ -55,3 +55,32 @@ INSERT INTO AD_UI_Element (
 -- 3. Propagate translations from AD_Element to AD_Field_Trl (fills de_DE, de_CH, en_US)
 -- =============================================================================
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584854);
+
+-- =============================================================================
+-- 4. Explicit en_US translation on Trl tables
+--    The propagation function above leaves the skeleton en_US row with IsTranslated='N'
+--    and the German base name, so on an English UI the label renders as
+--    'Streckengeschäft-Lager'. Set the English label + IsTranslated='Y' directly.
+-- =============================================================================
+UPDATE AD_Field_Trl
+SET Name        = 'Dropship Warehouse',
+    Description = 'If Yes, sales orders on this warehouse are handled as dropship. On sales-order completion a single purchase order is automatically created for the vendor.',
+    Help        = 'Marks this warehouse as a dropship warehouse. On such warehouses, completing a sales order automatically creates exactly one purchase order per sales order — bypassing the normal material-disposition / purchase-candidate path. Per-line vendor selection is enforced more strictly for dropship warehouses.',
+    IsTranslated = 'Y',
+    Updated     = TO_TIMESTAMP('2026-05-11 14:02:02','YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy   = 100
+WHERE AD_Field_ID = 779180 AND AD_Language = 'en_US';
+
+UPDATE AD_UI_Element_Trl
+SET Name         = 'Dropship Warehouse',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-05-11 14:02:03','YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_UI_Element_ID = 651164 AND AD_Language = 'en_US';
+
+UPDATE AD_Column_Trl
+SET Name         = 'Dropship Warehouse',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-05-11 14:02:04','YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Column_ID = 592508 AND AD_Language = 'en_US';
