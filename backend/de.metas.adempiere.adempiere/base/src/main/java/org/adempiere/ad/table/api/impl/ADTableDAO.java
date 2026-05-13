@@ -31,6 +31,7 @@ import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,6 +53,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -177,6 +179,19 @@ public class ADTableDAO implements IADTableDAO
 	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
 	{
 		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
+	}
+
+	@Override
+	@NonNull
+	public ITranslatableString getTableNameTrl(@NonNull final AdTableId adTableId)
+	{
+		final I_AD_Table tableRecord = retrieveTable(adTableId);
+		if (tableRecord == null)
+		{
+			return TranslatableStrings.empty();
+		}
+		return InterfaceWrapperHelper.getModelTranslationMap(tableRecord)
+				.getColumnTrl(I_AD_Table.COLUMNNAME_Name, tableRecord.getName());
 	}
 
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
