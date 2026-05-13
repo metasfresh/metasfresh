@@ -10,7 +10,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2026-05-13T16:00:02.000Z
 -- me03#28882 — English (en_US) translation for the new element
-UPDATE AD_Element_Trl SET Name='Invoice Manual-rule candidates',PrintName='Invoice Manual-rule candidates',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-13 16:00:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=584862
+UPDATE AD_Element_Trl SET Name='Invoice Manual Candidates',PrintName='Invoice Manual Candidates',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-13 16:00:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=584862
 ;
 
 -- 2026-05-13T16:00:03.000Z
@@ -27,7 +27,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 2026-05-13T16:00:05.000Z
 -- me03#28882 — English (en_US) translation for the process parameter
-UPDATE AD_Process_Para_Trl SET Name='Invoice Manual-rule candidates',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-13 16:00:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=543195
+UPDATE AD_Process_Para_Trl SET Name='Invoice Manual Candidates',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-13 16:00:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=543195
 ;
 
 -- 2026-05-13T16:00:06.000Z
