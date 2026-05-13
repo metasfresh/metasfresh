@@ -228,6 +228,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ManualRule");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Processed");
 	private static final AdMessageKey MSG_FixProblemDeleteWaitForRegeneration = AdMessageKey.of("FixProblemDeleteWaitForRegeneration");
@@ -1049,9 +1050,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			if (!isInvoiceManualRule)
 			{
-				final LocalDate dateToInvoiceForLog = getDateToInvoice(ic);
-				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
-						new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoiceForLog), TimeUtil.asTimestamp(getToday()) });
+				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE,
+						new Object[] { ic.getC_Invoice_Candidate_ID() });
 				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 				return true;
 			}
