@@ -72,6 +72,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -752,9 +753,8 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 	 * Verifies the F1 fix for Bug C1 (invoice-completion path).
 	 *
 	 * <p>Scenario: R1 receipt is matched to INV1.  INV1 is currently completing —
-	 * {@code MInvoice.completeIt()} fires {@code @DocValidate(AFTER_COMPLETE)} listeners at line 1133
-	 * BEFORE {@code DocumentEngine.completeIt()} flips {@code DocStatus} from "IP" to "CO" at line
-	 * 454–455.  Any AFTER_COMPLETE listener that re-reads the invoice from DB sees {@code DocStatus="IP"}.
+	 * {@code MInvoice.completeIt()} fires {@code @DocValidate(AFTER_COMPLETE)} listeners
+	 * BEFORE {@code DocumentEngine.completeIt()} flips {@code DocStatus} from "IP" to "CO".  Any AFTER_COMPLETE listener that re-reads the invoice from DB sees {@code DocStatus="IP"}.
 	 *
 	 * <p>Without the F1 fix: DB re-read returns DocStatus=IP → {@code isCompletedOrClosed()} filter
 	 * rejects → {@code getByReceipt} returns empty → sub-row stays at Status=Pending / C_Invoice_ID=null.
@@ -798,7 +798,7 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 			final OrderPaySchedule schedule = buildEmptySchedule();
 			capturedSchedule[0] = schedule;
 			@SuppressWarnings("unchecked")
-			final java.util.function.Consumer<OrderPaySchedule> consumer = inv.getArgument(1);
+			final Consumer<OrderPaySchedule> consumer = inv.getArgument(1);
 			consumer.accept(schedule);
 			return null;
 		}).when(orderPayScheduleService).updateById(eq(ORDER_ID), any());
