@@ -22,11 +22,11 @@
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Reference
     (AD_Reference_ID, AD_Client_ID, AD_Org_ID, Name, ValidationType, EntityType,
-     IsActive, Version,
+     IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (542089 /*From ID Server*/, 0, 0, 'Deposit Type', 'L', 'D',
-     'Y', 0,
+     'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
