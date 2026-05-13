@@ -54,11 +54,11 @@ WHERE l.IsActive='Y'
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Ref_List
     (AD_Ref_List_ID, AD_Client_ID, AD_Org_ID, AD_Reference_ID,
-     Value, Name, EntityType, IsActive, ValidFromVersion,
+     Value, Name, EntityType, IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (544229 /*From ID Server*/, 0, 0, 542089 /*From ID Server*/,
-     'NRC', 'Einwegpfand', 'D', 'Y', 0,
+     'NRC', 'Einwegpfand', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -86,11 +86,11 @@ WHERE l.IsActive='Y'
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Ref_List
     (AD_Ref_List_ID, AD_Client_ID, AD_Org_ID, AD_Reference_ID,
-     Value, Name, EntityType, IsActive, ValidFromVersion,
+     Value, Name, EntityType, IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (544230 /*From ID Server*/, 0, 0, 542089 /*From ID Server*/,
-     'RC', 'Mehrwegpfand', 'D', 'Y', 0,
+     'RC', 'Mehrwegpfand', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -118,11 +118,11 @@ WHERE l.IsActive='Y'
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Element
     (AD_Element_ID, AD_Client_ID, AD_Org_ID, ColumnName,
-     Name, PrintName, EntityType, IsActive, PersonalDataCategory,
+     Name, PrintName, EntityType, IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (584866 /*From ID Server*/, 0, 0, 'DepositType',
-     'Pfandart', 'Pfandart', 'D', 'Y', 'NP',
+     'Pfandart', 'Pfandart', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -358,7 +358,11 @@ WHERE AD_Element_ID=584866 /*From ID Server*/ AND AD_Language='en_US';
 
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584866 /*From ID Server*/, 'en_US');
 
--- ===========================================================================
--- 10. Safety net: fill any missing _Trl rows for all translatable tables
--- ===========================================================================
-SELECT add_missing_translations();
+-- All required _Trl rows for the entities introduced by this migration
+-- (AD_Reference, AD_Ref_List × 2, AD_Element, AD_Field, AD_UI_Element) are
+-- explicitly inserted above for de_DE / de_CH / en_US. The global
+-- `add_missing_translations()` safety-net is intentionally NOT called here:
+-- it walks every translatable table and can collide with pre-existing
+-- duplicates elsewhere in the AD dictionary (caught locally on
+-- swift_eagle_uat: ad_window_trl_name_uc on (Position, fr_CH)). The
+-- explicit inserts above cover everything this migration introduces.
