@@ -6,6 +6,7 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -21,6 +22,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.InvoiceRule;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
@@ -32,6 +34,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -51,6 +54,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 public class C_Invoice_Candidate
 {
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
+
+	private static final AdMessageKey MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT = AdMessageKey.of("ERR_INVOICERULE_MANUAL_AUTO_INVOICE");
 
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -73,6 +78,47 @@ public class C_Invoice_Candidate
 
 		this.attachmentEntryService = attachmentEntryService;
 		this.documentLocationBL = documentLocationBL;
+	}
+
+	/**
+	 * me03#28882: forbid the contradictory combination of an effective {@code InvoiceRule = Manual}
+	 * with {@code IsAutoInvoice = Y} on the candidate itself.
+	 *
+	 * <p>The same conflict is already blocked at {@code C_Order} level by
+	 * {@link de.metas.invoicecandidate.modelvalidator.C_Order#preventInvoiceRuleManualWithIsAutoInvoice},
+	 * but the candidate can re-enter the bad state via:
+	 * <ul>
+	 *   <li>The user setting {@code InvoiceRule_Override = Manual} on an existing IC whose {@code IsAutoInvoice = Y}
+	 *       was inherited from the order at creation.</li>
+	 *   <li>The user toggling {@code IsAutoInvoice = Y} on an IC whose effective rule is already Manual.</li>
+	 * </ul>
+	 *
+	 * <p>The effective rule is computed as {@code COALESCE(InvoiceRule_Override, InvoiceRule)}, matching the
+	 * runtime semantics used by {@code InvoiceCandBL.getInvoiceRule(ic)}.
+	 */
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule,
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice })
+	public void preventInvoiceRuleManualWithIsAutoInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (!icRecord.isAutoInvoice())
+		{
+			return;
+		}
+
+		final String effectiveCode = Check.isNotBlank(icRecord.getInvoiceRule_Override())
+				? icRecord.getInvoiceRule_Override()
+				: icRecord.getInvoiceRule();
+
+		final InvoiceRule effectiveRule = InvoiceRule.ofNullableCode(effectiveCode);
+		if (effectiveRule != null && effectiveRule.isManual())
+		{
+			throw new AdempiereException(MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT)
+					.markAsUserValidationError();
+		}
 	}
 
 	@ModelChange( //
