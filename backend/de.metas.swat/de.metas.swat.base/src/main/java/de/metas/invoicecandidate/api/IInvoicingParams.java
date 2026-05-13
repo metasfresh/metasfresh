@@ -70,7 +70,7 @@ public interface IInvoicingParams
 	/**
 	 * @return {@code true} if the enqueuer shall include invoice candidates whose effective {@link de.metas.order.InvoiceRule}
 	 * is {@link de.metas.order.InvoiceRule#Manual}. Decoupled from {@link #isIgnoreInvoiceSchedule()} so the user can
-	 * trigger Manual-rule invoicing without bypassing the schedule for the other rule types. me03#28882.
+	 * trigger Manual-rule invoicing without bypassing the schedule for the other rule types.
 	 */
 	boolean isInvoiceManualRule();
 

@@ -132,7 +132,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Same as {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean)} but also accepts the
 	 * dedicated flag that controls whether {@link de.metas.order.InvoiceRule#Manual} candidates are included.
-	 * me03#28882.
 	 *
 	 * @param isInvoiceManualRule when {@code true}, candidates whose effective rule is {@code Manual} are NOT skipped
 	 *                            (otherwise Manual candidates carry {@code DateToInvoice=NULL} and are always skipped

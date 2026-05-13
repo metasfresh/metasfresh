@@ -24,7 +24,6 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.InvoiceRule;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -81,7 +80,7 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * me03#28882: forbid the contradictory combination of an effective {@code InvoiceRule = Manual}
+	 * Forbid the contradictory combination of an effective {@code InvoiceRule = Manual}
 	 * with {@code IsAutoInvoice = Y} on the candidate itself.
 	 *
 	 * <p>The same conflict is already blocked at {@code C_Order} level by

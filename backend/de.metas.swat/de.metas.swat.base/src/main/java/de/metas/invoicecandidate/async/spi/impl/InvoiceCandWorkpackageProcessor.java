@@ -101,7 +101,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 					.setCollector(createInvoiceResults)
 					.setInvoicingParams(getInvoicingParams())
 					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs that would be skipped here would already have been skipped on enqueue time.
-					.setInvoiceManualRule(true) // me03#28882: same rationale — Manual ICs that reached the workpackage already passed the enqueue-time skip filter.
+					.setInvoiceManualRule(true) // same rationale — Manual ICs that reached the workpackage already passed the enqueue-time skip filter.
 					.generateInvoices(candidatesOfPackage.iterator());
 
 			// Log invoices generation result

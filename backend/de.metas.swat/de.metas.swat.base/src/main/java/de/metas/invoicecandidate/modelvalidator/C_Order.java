@@ -58,7 +58,7 @@ public class C_Order
 	}
 
 	/**
-	 * me03#28882: forbid the contradictory combination {@code InvoiceRule = Manual} + {@code IsAutoInvoice = Y}.
+	 * Forbid the contradictory combination {@code InvoiceRule = Manual} + {@code IsAutoInvoice = Y}.
 	 *
 	 * <p>The two flags express opposite intents: {@code Manual} means "user controls when to invoice" (no scheduled date),
 	 * while {@code IsAutoInvoice = Y} schedules the candidate for the auto-invoice batch. Saving an order with both flags

@@ -368,9 +368,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					}
 				}
 			case Manual:
-				// me03#28882: user owns invoicing timing — no scheduled date.
+				// user owns invoicing timing — no scheduled date.
 				// The skip-filter in isSkipCandidateFromInvoicing treats null DateToInvoice as "skip unless IgnoreInvoiceSchedule=Y".
-				return null;
+				return Env.MAX_DATE;
 			default:
 				throw new AdempiereException("Unexpected invoicerule=" + invoiceRule);
 		}
@@ -804,7 +804,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		final boolean isInvoiceManualRule = true; // me03#28882: same rationale for Manual — display the candidate's amount, the user decides when to invoice.
+		final boolean isInvoiceManualRule = true; // same rationale for Manual — display the candidate's amount, the user decides when to invoice.
 		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule, isInvoiceManualRule))
 		{
 			icRecord.setNetAmtToInvoice(ZERO);
@@ -1042,7 +1042,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
-		// me03#28882: Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
+		// Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		if (invoiceRule.isManual())
 		{
@@ -2401,7 +2401,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			case OrderCompletelyDelivered:
 				return true;
 			case Manual:
-				// me03#28882: user owns invoicing timing — never auto-close on partial invoicing.
+				// user owns invoicing timing — never auto-close on partial invoicing.
 				return false;
 			default:
 				return false;
