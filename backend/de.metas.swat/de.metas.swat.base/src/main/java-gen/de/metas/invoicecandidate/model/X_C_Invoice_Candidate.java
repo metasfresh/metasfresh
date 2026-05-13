@@ -1345,6 +1345,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_Manual = "M";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
