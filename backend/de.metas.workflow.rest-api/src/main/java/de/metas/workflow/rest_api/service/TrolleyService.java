@@ -53,6 +53,14 @@ public class TrolleyService
 		return locatorQRCode;
 	}
 
+	public void clearCurrent(@NonNull final UserId userId)
+	{
+		synchronized (userId2locator)
+		{
+			userId2locator.remove(userId);
+		}
+	}
+
 	public Optional<LocatorQRCode> getCurrent(@NonNull final UserId userId)
 	{
 		synchronized (userId2locator)
