@@ -29,19 +29,25 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_Order;
 
 import java.util.Optional;
@@ -75,11 +81,51 @@ public class C_Order
 			return;
 		}
 
+		// For sales orders with IsDropShip='Y', auto-select a warehouse marked IsDropShipWarehouse='Y'.
+		// (The existing warehouseAdvisor.evaluateOrderWarehouse path is PO-only — see WarehouseAdvisor.findOrderWarehouseId
+		// which guards 'if (order.isDropShip() && !isSOTrx)'.)
+		if (order.isSOTrx())
+		{
+			final WarehouseId soDropshipWarehouseId = findDropshipWarehouseIdForOrg(OrgId.ofRepoId(order.getAD_Org_ID()));
+			if (soDropshipWarehouseId != null)
+			{
+				order.setM_Warehouse_ID(soDropshipWarehouseId.getRepoId());
+			}
+			// If no dropship warehouse is configured for the org, leave M_Warehouse_ID untouched so the
+			// standard (non-dropship) flow still works. The new SO→PO flow simply won't trigger.
+			return;
+		}
+
+		// Existing PO path (unchanged):
 		final WarehouseId warehouseId = warehouseAdvisor.evaluateOrderWarehouse(order);
 		if (warehouseId != null)
 		{
 			order.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
+	}
+
+	private WarehouseId findDropshipWarehouseIdForOrg(@NonNull final OrgId orgId)
+	{
+		// Preference 1: AD_OrgInfo.DropShip_Warehouse_ID, if that warehouse is itself IsDropShipWarehouse='Y'.
+		final WarehouseId orgConfiguredWarehouseId = Services.get(IOrgDAO.class).getOrgDropshipWarehouseId(orgId);
+		if (orgConfiguredWarehouseId != null)
+		{
+			final I_M_Warehouse w = Services.get(IWarehouseDAO.class).getById(orgConfiguredWarehouseId);
+			if (w != null && w.isDropShipWarehouse())
+			{
+				return orgConfiguredWarehouseId;
+			}
+		}
+
+		// Preference 2: any active warehouse in this org marked IsDropShipWarehouse='Y'.
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsDropShipWarehouse, true)
+				.orderBy().addColumn(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID).endOrderBy()
+				.create()
+				.firstId(WarehouseId::ofRepoIdOrNull);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_AD_User_ID, skipIfCopying = true)
