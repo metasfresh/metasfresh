@@ -147,7 +147,7 @@ const WFLaunchersScreen = () => {
           additionalCssClass="action-button"
           typeFASIconName="fa-solid fa-cart-shopping"
           caption={trolley?.caption ?? trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
-          onClick={() => clearTrolley()}
+          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
           testId="scanTrolley-button"
         />
       )}
