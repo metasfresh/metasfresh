@@ -742,4 +742,28 @@ test('Nine GRAIs distribute across three aggregate blocks on a multi-product LU'
     await GRAIScreen.reloadFromBackend();
     await GRAIScreen.expectGraiChipCount({ expectedCount: 9 });
     await GRAIScreen.expectGraiChipTexts({ expectedTexts: expectedCanonicals });
+
+    // Backend-state assertion — the UI checks above can be satisfied by any
+    // storage shape that produces nine flat chips on reload. To prove the GRAIs
+    // *actually* landed on three distinct VHUs (one per HA item), assert the
+    // exact M_HU_Attribute(GRAI) comma-separated value on each VHU. `vhu1` /
+    // `vhu2` / `vhu3` were registered in the masterdata context by the picking
+    // expectations earlier in this test.
+    await Backend.expect({
+        title: 'Three VHUs each carry the right share of GRAIs',
+        hus: {
+            vhu1: {
+                storages: { P1: '30 PCE' },
+                attributes: { GRAI: expectedCanonicals.slice(0, 3).join(',') },
+            },
+            vhu2: {
+                storages: { P2: '50 PCE' },
+                attributes: { GRAI: expectedCanonicals.slice(3, 8).join(',') },
+            },
+            vhu3: {
+                storages: { P3: '10 PCE' },
+                attributes: { GRAI: expectedCanonicals.slice(8, 9).join(',') },
+            },
+        },
+    });
 });
