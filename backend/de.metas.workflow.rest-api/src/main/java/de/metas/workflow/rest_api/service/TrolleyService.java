@@ -16,7 +16,6 @@ import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Service
@@ -26,6 +25,8 @@ public class TrolleyService
 	private static final String SYSCONFIG_INCLUDE_HOLDER_NAME = "de.metas.workflow.rest_api.TrolleyService.IncludeHolderNameInConflictError";
 
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	private final HashBiMap<UserId, LocatorQRCode> userId2locator = HashBiMap.create();
@@ -73,23 +74,15 @@ public class TrolleyService
 			@NonNull final UserId currentHolderUserId,
 			@NonNull final LocatorQRCode locatorQRCode)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean includeHolderName = sysConfigBL.getBooleanValue(SYSCONFIG_INCLUDE_HOLDER_NAME, false);
 		if (includeHolderName)
 		{
-			final String holderName = lookupHolderDisplayName(currentHolderUserId);
-			if (holderName != null && !holderName.trim().isEmpty())
+			final String holderName = userDAO.retrieveUserFullName(currentHolderUserId);
+			if (!holderName.trim().isEmpty())
 			{
 				return TrolleyAlreadyAssignedException.forNamedConflict(holderName, locatorQRCode);
 			}
 		}
 		return TrolleyAlreadyAssignedException.forGenericConflict(locatorQRCode);
-	}
-
-	@Nullable
-	private String lookupHolderDisplayName(@NonNull final UserId userId)
-	{
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		return userDAO.retrieveUserFullName(userId);
 	}
 }
