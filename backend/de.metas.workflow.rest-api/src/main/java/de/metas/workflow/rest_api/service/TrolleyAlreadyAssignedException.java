@@ -7,6 +7,8 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 public class TrolleyAlreadyAssignedException extends AdempiereException
 {
+	private static final long serialVersionUID = 1L;
+
 	private static final AdMessageKey MSG_GENERIC = AdMessageKey.of("WFRestAPI_TrolleyAlreadyAssigned");
 	private static final AdMessageKey MSG_NAMED = AdMessageKey.of("WFRestAPI_TrolleyAlreadyAssignedTo");
 

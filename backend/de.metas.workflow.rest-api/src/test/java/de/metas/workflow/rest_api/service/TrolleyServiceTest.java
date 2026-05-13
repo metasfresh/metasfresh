@@ -69,14 +69,8 @@ class TrolleyServiceTest
 	void setCurrent_doesNotBumpOriginalHolder_whenSecondUserScansSameTrolley()
 	{
 		service.setCurrent(USER_A, scannedCode);
-		try
-		{
-			service.setCurrent(USER_B, scannedCode);
-		}
-		catch (final TrolleyAlreadyAssignedException expected)
-		{
-			/* expected — verify state below */
-		}
+		assertThatThrownBy(() -> service.setCurrent(USER_B, scannedCode))
+				.isInstanceOf(TrolleyAlreadyAssignedException.class);
 		assertThat(service.getCurrent(USER_A)).isPresent();
 		assertThat(service.getCurrent(USER_B)).isEmpty();
 	}
