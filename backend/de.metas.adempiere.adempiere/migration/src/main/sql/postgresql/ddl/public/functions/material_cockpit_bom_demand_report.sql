@@ -157,6 +157,18 @@ BEGIN
                           WHERE po.docstatus IN ('CO', 'IP')
                             AND po.isactive = 'Y'
                             AND pobl.isactive = 'Y'
+
+                          UNION ALL
+
+                          -- supply from confirmed/in-progress manufacturing orders (product being produced)
+                          -- counts as incoming supply for the semi-finished/component product
+                          SELECT po.m_product_id,
+                                 0                                                                             AS qty_stock,
+                                 0                                                                             AS qty_reserved,
+                                 GREATEST(po.qtyordered - COALESCE(po.qtydelivered, 0), 0)                    AS qty_ordered
+                          FROM pp_order po
+                          WHERE po.docstatus IN ('CO', 'IP')
+                            AND po.isactive = 'Y'
                       ) src
                  GROUP BY src.m_product_id
              )
