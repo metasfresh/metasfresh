@@ -39,7 +39,6 @@ public final class SeqNo implements Comparable<SeqNo>
 		return seqNo != null ? seqNo : new SeqNo(value);
 	}
 
-	@JsonCreator
 	public static SeqNo first()
 	{
 		return ofInt(STEP);

@@ -41,15 +41,15 @@ public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 			}
 			else if (name.equals("Selection"))
 			{
-				p_Selection = "Y".equals(para.getParameter());
+				p_Selection = para.getParameterAsBoolean();
 			}
 			else if (name.equals(CHECKBOX_IGNORE_INVOICE_SCHEDULE))
 			{
-				p_IgnoreInvoiceSchedule = "Y".equals(para.getParameter());
+				p_IgnoreInvoiceSchedule = para.getParameterAsBoolean();
 			}
 			else if (name.equals(IInvoicingParams.PARA_IsPartialInvoice))
 			{
-				p_IsPartialInvoice = "Y".equals(para.getParameter());
+				p_IsPartialInvoice = para.getParameterAsBoolean();
 			}
 		}
 	}

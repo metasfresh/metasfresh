@@ -84,7 +84,7 @@ public class C_Payment_AutoAllocateGuard
 		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
 		if (proformaInvoiceId == null)
 		{
-			// Regular payment — the iter-2 auto-allocation flow must not be disturbed.
+			// Regular payment — auto-allocation flow must not be disturbed.
 			return;
 		}
 

@@ -218,7 +218,7 @@ public class DataTableUtil
 	public boolean isNullPlaceholder(@Nullable final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
-		return valueNorm == null || NULL_STRING.equals(value) || "-" .equals(value);
+		return valueNorm == null || NULL_STRING.equals(valueNorm) || "-".equals(valueNorm);
 	}
 
 	@NonNull

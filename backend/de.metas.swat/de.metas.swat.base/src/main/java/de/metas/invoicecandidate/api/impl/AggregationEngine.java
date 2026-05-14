@@ -877,7 +877,7 @@ public final class AggregationEngine
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
 
-		final DocTypeId docTypeIdToBeUsed;
+		DocTypeId docTypeIdToBeUsed;
 
 		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
 		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
@@ -908,7 +908,6 @@ public final class AggregationEngine
 		// via the C_Invoice interceptor. If a swap is needed but no sibling exists, fall through
 		// and keep the current doctype rather than throwing (same rationale: the explicit
 		// caller value is honoured by the interceptor).
-		DocTypeId docTypeIdFinal = docTypeIdToBeUsed;
 		if (partialInvoice != null && docTypeIdToBeUsed != null)
 		{
 			final I_C_DocType resolvedDocType = docTypeBL.getById(docTypeIdToBeUsed);
@@ -920,14 +919,13 @@ public final class AggregationEngine
 
 			if (swapNeeded)
 			{
-				final DocTypeQuery query = DocTypeQuery.builder()
+				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(DocTypeQuery.builder()
 						.docBaseType(DocBaseType.ofCode(resolvedDocType.getDocBaseType()))
 						.adClientId(resolvedDocType.getAD_Client_ID())
 						.adOrgId(resolvedDocType.getAD_Org_ID())
 						.isSOTrx(resolvedDocType.isSOTrx())
 						.isPartialInvoice(partialInvoice)
-						.build();
-				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(query);
+						.build());
 				if (alternativeDocTypeId == null)
 				{
 					// No sibling doctype found — keep the current doctype; the invoice's
@@ -939,11 +937,11 @@ public final class AggregationEngine
 				}
 				else
 				{
-					docTypeIdFinal = alternativeDocTypeId;
+					docTypeIdToBeUsed = alternativeDocTypeId;
 				}
 			}
 		}
-		invoiceHeader.setDocTypeInvoiceId(docTypeIdFinal);
+		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
 
 		// Propagate caller's explicit IsPartialInvoice intent directly to the invoice header.
 		// The downstream invoice-creation code (InvoiceCandBLCreateInvoices) sets the value on
