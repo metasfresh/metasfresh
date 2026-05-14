@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -22,13 +22,20 @@
 
 package de.metas.order.model.validator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
+import de.metas.organization.OrgId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -37,8 +44,10 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,9 +67,11 @@ import static org.mockito.Mockito.when;
  */
 class C_Order_DropshipPOTest
 {
+	private static final int ORG_ID = 10;
+
 	private IOrderBL orderBL;
 	private IWarehouseDAO warehouseDAO;
-	private IQueryBL queryBL;
+	private VendorProductInfoService vendorProductInfoService;
 	private DropshipPOFromSOService dropshipPOFromSOService;
 
 	private C_Order_DropshipPO interceptor;
@@ -73,14 +84,13 @@ class C_Order_DropshipPOTest
 		// Register mocks BEFORE creating the interceptor — its field initializers call Services.get(...).
 		orderBL = mock(IOrderBL.class);
 		warehouseDAO = mock(IWarehouseDAO.class);
-		queryBL = mock(IQueryBL.class);
+		vendorProductInfoService = mock(VendorProductInfoService.class);
 		dropshipPOFromSOService = mock(DropshipPOFromSOService.class);
 
 		Services.registerService(IOrderBL.class, orderBL);
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
-		Services.registerService(IQueryBL.class, queryBL);
 
-		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService);
+		interceptor = new C_Order_DropshipPO(dropshipPOFromSOService, vendorProductInfoService);
 	}
 
 	// -----------------------------------------------------------------------
@@ -93,6 +103,7 @@ class C_Order_DropshipPOTest
 		when(order.getC_Order_ID()).thenReturn(orderId);
 		when(order.getM_Warehouse_ID()).thenReturn(warehouseId);
 		when(order.isSOTrx()).thenReturn(isSOTrx);
+		when(order.getAD_Org_ID()).thenReturn(ORG_ID);
 		return order;
 	}
 
@@ -103,42 +114,147 @@ class C_Order_DropshipPOTest
 		return wh;
 	}
 
-	/** Builds a mock OrderLine. Setting vendorBPartnerId > 0 means the line has an explicit vendor. */
-	private I_C_OrderLine buildOrderLine(final int lineNo, final int vendorBPartnerId)
+	/**
+	 * Builds a mock OrderLine with an explicit vendor already set.
+	 * Setting vendorBPartnerId > 0 means the line has a pre-set vendor.
+	 */
+	private I_C_OrderLine buildOrderLineWithVendor(final int lineNo, final int vendorBPartnerId)
 	{
 		final I_C_OrderLine ol = mock(I_C_OrderLine.class);
 		when(ol.getLine()).thenReturn(lineNo);
 		when(ol.getC_BPartner_Vendor_ID()).thenReturn(vendorBPartnerId);
-		// product id 0 — irrelevant when vendor is already set
 		when(ol.getM_Product_ID()).thenReturn(0);
 		return ol;
 	}
 
+	/**
+	 * Builds a mock OrderLine without a vendor, but with a real product (productId > 0).
+	 * The VendorProductInfoService lookup can then either succeed or return empty.
+	 */
+	private I_C_OrderLine buildOrderLineWithProduct(final int lineNo, final int productId)
+	{
+		final I_C_OrderLine ol = mock(I_C_OrderLine.class);
+		when(ol.getLine()).thenReturn(lineNo);
+		when(ol.getC_BPartner_Vendor_ID()).thenReturn(0); // no explicit vendor
+		when(ol.getM_Product_ID()).thenReturn(productId);
+		return ol;
+	}
+
+	/**
+	 * Builds a minimal real {@link VendorProductInfo} exposing only a vendor ID.
+	 * <p>
+	 * {@link VendorProductInfo} is a Lombok {@code @Value} (final) class and cannot be Mockito-mocked.
+	 * We construct a real instance with dummy values for the fields we don't care about in these tests.
+	 */
+	private VendorProductInfo buildVendorProductInfo(final int vendorBPartnerId, final int productId)
+	{
+		final PricingConditions dummyPricingConditions = PricingConditions.builder()
+				.validFrom(Instant.EPOCH)
+				.build();
+
+		return VendorProductInfo.builder()
+				.vendorId(BPartnerId.ofRepoId(vendorBPartnerId))
+				.defaultVendor(true)
+				.product(ProductAndCategoryAndManufacturerId.of(productId, 1 /* dummy category */, 0))
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.vendorProductNo("TEST-VENDOR-PRODUCT-NO")
+				.vendorProductName("Test Vendor Product")
+				.pricingConditions(dummyPricingConditions)
+				.build();
+	}
+
 	// -----------------------------------------------------------------------
-	// Test (a): BEFORE_COMPLETE aggregates all offending lines into ONE message
+	// Test (a): BEFORE_COMPLETE — line with explicit vendor passes unchanged
 	// -----------------------------------------------------------------------
 
 	@Test
-	void validateVendorsBeforeComplete_allOffendingLinesAreCollectedIntoOneException()
+	void validateVendorsBeforeComplete_lineWithExplicitVendor_passesWithoutLookup()
 	{
-		// Given: a dropship-warehouse SO with 3 lines — lines 10 and 30 have no vendor; line 20 has a vendor.
+		// Given: a dropship-warehouse SO with one line that already has a vendor set
 		final int orderId = 1001;
 		final int warehouseId = 500;
 		final I_C_Order order = buildOrder(orderId, warehouseId, true);
 		final I_M_Warehouse warehouse = buildWarehouse(true);
 		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
 
-		final I_C_OrderLine line10 = buildOrderLine(10, 0); // no vendor
-		final I_C_OrderLine line20 = buildOrderLine(20, 99); // has vendor
-		final I_C_OrderLine line30 = buildOrderLine(30, 0); // no vendor
+		final I_C_OrderLine line10 = buildOrderLineWithVendor(10, 99); // has explicit vendor
+		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
+				.thenReturn(Collections.singletonList(line10));
 
-		// For lines without a vendor, also no C_BPartner_Product with UsedForVendor — simulate via queryBL
-		// We need to stub the query chain for lines 10 and 30 (M_Product_ID=0 → flagged as offending directly).
-		// Line 10 and line 30 have M_Product_ID=0 (set in buildOrderLine), so isVendorMissing returns true without
-		// hitting queryBL. Line 20 has vendorBPartnerId=99 > 0 so it returns false immediately.
+		// When: validation runs — must not throw
+		interceptor.validateVendorsBeforeComplete(order);
+
+		// Then: vendor lookup service must NOT be called for this line
+		verify(vendorProductInfoService, never()).getDefaultVendorProductInfo(any(), any());
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (b): BEFORE_COMPLETE — no vendor + lookup returns present → auto-fill the line
+	// -----------------------------------------------------------------------
+
+	@Test
+	void validateVendorsBeforeComplete_noVendorAndLookupSucceeds_setsVendorOnLine()
+	{
+		// Given: a dropship-warehouse SO with one line that has no vendor but a resolvable product
+		final int orderId = 2001;
+		final int warehouseId = 500;
+		final int productId = 42;
+		final int resolvedVendorId = 77;
+
+		final I_C_Order order = buildOrder(orderId, warehouseId, true);
+		final I_M_Warehouse warehouse = buildWarehouse(true);
+		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
+
+		final I_C_OrderLine line10 = buildOrderLineWithProduct(10, productId);
+		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
+				.thenReturn(Collections.singletonList(line10));
+
+		final VendorProductInfo vendorInfo = buildVendorProductInfo(resolvedVendorId, productId);
+		when(vendorProductInfoService.getDefaultVendorProductInfo(
+				ProductId.ofRepoId(productId),
+				OrgId.ofRepoId(ORG_ID)))
+				.thenReturn(Optional.of(vendorInfo));
+
+		// When: validation runs — must not throw (lookup succeeded)
+		interceptor.validateVendorsBeforeComplete(order);
+
+		// Then: the vendor must be written back to the line
+		verify(line10).setC_BPartner_Vendor_ID(resolvedVendorId);
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (c): BEFORE_COMPLETE — no vendor + lookup returns empty → collect as offending
+	// -----------------------------------------------------------------------
+
+	@Test
+	void validateVendorsBeforeComplete_noVendorAndLookupEmpty_throwsWithOffendingLines()
+	{
+		// Given: a dropship-warehouse SO with 3 lines — lines 10 and 30 have no vendor and lookup returns empty;
+		//        line 20 has an explicit vendor.
+		final int orderId = 3001;
+		final int warehouseId = 500;
+		final int productId10 = 11;
+		final int productId30 = 33;
+
+		final I_C_Order order = buildOrder(orderId, warehouseId, true);
+		final I_M_Warehouse warehouse = buildWarehouse(true);
+		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
+
+		final I_C_OrderLine line10 = buildOrderLineWithProduct(10, productId10); // no vendor, lookup empty
+		final I_C_OrderLine line20 = buildOrderLineWithVendor(20, 99);           // explicit vendor
+		final I_C_OrderLine line30 = buildOrderLineWithProduct(30, productId30); // no vendor, lookup empty
 
 		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
 				.thenReturn(Arrays.asList(line10, line20, line30));
+
+		when(vendorProductInfoService.getDefaultVendorProductInfo(
+				ProductId.ofRepoId(productId10),
+				OrgId.ofRepoId(ORG_ID)))
+				.thenReturn(Optional.empty());
+		when(vendorProductInfoService.getDefaultVendorProductInfo(
+				ProductId.ofRepoId(productId30),
+				OrgId.ofRepoId(ORG_ID)))
+				.thenReturn(Optional.empty());
 
 		// When / Then: interceptor must throw ONE exception mentioning both offending line numbers.
 		assertThatThrownBy(() -> interceptor.validateVendorsBeforeComplete(order))
@@ -151,23 +267,22 @@ class C_Order_DropshipPOTest
 					assertThat(msg)
 							.as("Exception message must reference line 30")
 							.contains("30");
-					// Sorted ascending: "10, 30" — not two separate exceptions
 					assertThat(msg)
-							.as("Both line numbers appear in the same message (comma-separated)")
+							.as("Both line numbers appear in the same message (comma-separated, sorted ascending)")
 							.contains("10")
 							.contains("30");
 				});
 	}
 
 	// -----------------------------------------------------------------------
-	// Test (b): BEFORE_COMPLETE short-circuits for non-dropship warehouses
+	// Test (d): BEFORE_COMPLETE short-circuits for non-dropship warehouses
 	// -----------------------------------------------------------------------
 
 	@Test
 	void validateVendorsBeforeComplete_nonDropshipWarehouse_doesNotExamineLines()
 	{
 		// Given: an SO on a regular (non-dropship) warehouse
-		final int orderId = 2001;
+		final int orderId = 4001;
 		final int warehouseId = 600;
 		final I_C_Order order = buildOrder(orderId, warehouseId, true);
 		final I_M_Warehouse warehouse = buildWarehouse(false); // not dropship
@@ -181,14 +296,14 @@ class C_Order_DropshipPOTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test (c): AFTER_COMPLETE short-circuits for non-dropship warehouses
+	// Test (e): AFTER_COMPLETE short-circuits for non-dropship warehouses
 	// -----------------------------------------------------------------------
 
 	@Test
 	void createDropshipPOAfterComplete_nonDropshipWarehouse_doesNotCallService()
 	{
 		// Given: a completed SO on a non-dropship warehouse
-		final int orderId = 3001;
+		final int orderId = 5001;
 		final int warehouseId = 700;
 		final I_C_Order order = buildOrder(orderId, warehouseId, true);
 		final I_M_Warehouse warehouse = buildWarehouse(false); // not dropship
@@ -202,14 +317,14 @@ class C_Order_DropshipPOTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test (d): AFTER_COMPLETE invokes the service for dropship warehouses
+	// Test (f): AFTER_COMPLETE invokes the service for dropship warehouses
 	// -----------------------------------------------------------------------
 
 	@Test
 	void createDropshipPOAfterComplete_dropshipWarehouse_callsServiceExactlyOnce()
 	{
 		// Given: a completed SO on a dropship warehouse
-		final int orderId = 4001;
+		final int orderId = 6001;
 		final int warehouseId = 800;
 		final I_C_Order order = buildOrder(orderId, warehouseId, true);
 		final I_M_Warehouse warehouse = buildWarehouse(true); // dropship

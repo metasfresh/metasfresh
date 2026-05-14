@@ -3,16 +3,16 @@
 
 -- Message 1: DropshipWarehouse_MissingVendorOnLine (Error)
 INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, MsgType, MsgText, ErrorCode)
-VALUES (545679 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'DropshipWarehouse_MissingVendorOnLine', 'E', 'Dropship warehouse: vendor is missing on the following order line(s) — lines: {0}. Either set a vendor per line or maintain a default vendor on the product.', 'DROPSHIP_MISSING_VENDOR_ON_LINE');
+VALUES (545679 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'DropshipWarehouse_MissingVendorOnLine', 'E', 'Dropship warehouse: vendor is missing on the following order line(s) — lines: {0}. Set a vendor on the line, or maintain a default vendor for the product.', 'DROPSHIP_MISSING_VENDOR_ON_LINE');
 
 INSERT INTO AD_Message_Trl (AD_Message_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, MsgText)
-VALUES (545679 /*From ID Server*/, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:01', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Streckengeschäft-Lager: Auf folgenden Auftragspositionen fehlt ein Lieferant — Positionen: {0}. Bitte Lieferant pro Position setzen oder Standard-Lieferant am Produkt hinterlegen.');
+VALUES (545679 /*From ID Server*/, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:01', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Streckengeschäft-Lager: Auf folgenden Auftragspositionen fehlt ein Lieferant — Positionen: {0}. Bitte einen Lieferant pro Position setzen oder einen Standard-Lieferant für das Produkt im Bereich „Lieferant" pflegen.');
 
 INSERT INTO AD_Message_Trl (AD_Message_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, MsgText)
-VALUES (545679 /*From ID Server*/, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:02', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Streckengeschäft-Lager: Auf folgenden Auftragspositionen fehlt ein Lieferant — Positionen: {0}. Bitte Lieferant pro Position setzen oder Standard-Lieferant am Produkt hinterlegen.');
+VALUES (545679 /*From ID Server*/, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:02', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:02', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Streckengeschäft-Lager: Auf folgenden Auftragspositionen fehlt ein Lieferant — Positionen: {0}. Bitte einen Lieferant pro Position setzen oder einen Standard-Lieferant für das Produkt im Bereich „Lieferant" pflegen.');
 
 INSERT INTO AD_Message_Trl (AD_Message_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, MsgText)
-VALUES (545679 /*From ID Server*/, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Dropship warehouse: vendor is missing on the following order line(s) — lines: {0}. Either set a vendor per line or maintain a default vendor on the product.');
+VALUES (545679 /*From ID Server*/, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-05-11 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-11 14:04:03', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Dropship warehouse: vendor is missing on the following order line(s) — lines: {0}. Set a vendor on the line, or maintain a default vendor for the product.');
 
 -- Message 2: DropshipWarehouse_NotAllowedDocType (Error)
 INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, MsgType, MsgText, ErrorCode)

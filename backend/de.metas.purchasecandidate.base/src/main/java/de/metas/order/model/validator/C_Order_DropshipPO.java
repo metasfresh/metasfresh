@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -26,37 +26,41 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Model interceptor for {@link I_C_Order} that handles dropship-warehouse purchase order creation.
  * <p>
  * Responsibilities:
  * <ul>
- * <li>BEFORE_COMPLETE: validates that every sales-order line on a dropship-warehouse SO has a vendor
- *     (either via {@code C_BPartner_Vendor_ID} on the line, or via an active {@code C_BPartner_Product}
- *     row with {@code UsedForVendor='Y'} for the product). Throws an {@link AdempiereException} listing
- *     offending line numbers if validation fails.</li>
+ * <li>BEFORE_COMPLETE: validates that every sales-order line on a dropship-warehouse SO has a vendor.
+ *     Explicit {@code C_BPartner_Vendor_ID} on the line wins. If absent, falls back to the canonical
+ *     vendor lookup via {@link VendorProductInfoService#getDefaultVendorProductInfo} and
+ *     <em>populates</em> the line's {@code C_BPartner_Vendor_ID} when the lookup succeeds.
+ *     Throws an {@link AdempiereException} listing offending line numbers if any line still has no vendor
+ *     after the auto-fill attempt.</li>
  * <li>AFTER_COMPLETE: triggers dropship PO creation for the sales order via
  *     {@link DropshipPOFromSOService}.</li>
  * </ul>
@@ -70,10 +74,10 @@ public class C_Order_DropshipPO
 	private static final AdMessageKey MSG_MISSING_VENDOR = AdMessageKey.of("DropshipWarehouse_MissingVendorOnLine");
 
 	@NonNull private final DropshipPOFromSOService dropshipPOFromSOService;
+	@NonNull private final VendorProductInfoService vendorProductInfoService;
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateVendorsBeforeComplete(@NonNull final I_C_Order order)
@@ -83,14 +87,41 @@ public class C_Order_DropshipPO
 			return;
 		}
 
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final List<de.metas.interfaces.I_C_OrderLine> lines = orderBL.getLinesByOrderIds(
 				Collections.singleton(OrderId.ofRepoId(order.getC_Order_ID())));
 
-		final List<String> offendingLineNumbers = lines.stream()
-				.filter(this::isVendorMissing)
-				.map(ol -> String.valueOf(ol.getLine()))
-				.sorted(Comparator.comparingInt(Integer::parseInt))
-				.collect(Collectors.toList());
+		final List<String> offendingLineNumbers = new ArrayList<>();
+		for (final de.metas.interfaces.I_C_OrderLine line : lines)
+		{
+			if (line.getC_BPartner_Vendor_ID() > 0)
+			{
+				// explicit vendor already set — line is fine
+				continue;
+			}
+			final int productRepoId = line.getM_Product_ID();
+			if (productRepoId <= 0)
+			{
+				// no product — cannot resolve a vendor
+				offendingLineNumbers.add(String.valueOf(line.getLine()));
+				continue;
+			}
+			final Optional<VendorProductInfo> vendorInfoOpt = vendorProductInfoService.getDefaultVendorProductInfo(
+					ProductId.ofRepoId(productRepoId),
+					orgId);
+			if (vendorInfoOpt.isPresent())
+			{
+				// auto-fill the vendor from the canonical lookup and persist
+				line.setC_BPartner_Vendor_ID(vendorInfoOpt.get().getVendorId().getRepoId());
+				InterfaceWrapperHelper.saveRecord(line);
+			}
+			else
+			{
+				offendingLineNumbers.add(String.valueOf(line.getLine()));
+			}
+		}
+
+		offendingLineNumbers.sort(Comparator.comparingInt(Integer::parseInt));
 
 		if (!offendingLineNumbers.isEmpty())
 		{
@@ -125,48 +156,5 @@ public class C_Order_DropshipPO
 		}
 		final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(warehouseRepoId));
 		return warehouse != null && warehouse.isDropShipWarehouse();
-	}
-
-	/**
-	 * Returns {@code true} if the given order line is missing a vendor.
-	 * <p>
-	 * A line is considered "missing a vendor" when:
-	 * <ol>
-	 * <li>The line has no explicit vendor set ({@code C_BPartner_Vendor_ID <= 0}), AND</li>
-	 * <li>No active {@code C_BPartner_Product} row with {@code UsedForVendor='Y'} exists for the product.</li>
-	 * </ol>
-	 * Lines without a product ({@code M_Product_ID <= 0}) are flagged as offending because
-	 * they cannot be matched to a vendor.
-	 */
-	private boolean isVendorMissing(@NonNull final I_C_OrderLine ol)
-	{
-		if (ol.getC_BPartner_Vendor_ID() > 0)
-		{
-			// line already has an explicit vendor — not offending
-			return false;
-		}
-		final int productRepoId = ol.getM_Product_ID();
-		if (productRepoId <= 0)
-		{
-			// no product — cannot determine a vendor; flag as offending
-			return true;
-		}
-		final ProductId productId = ProductId.ofRepoId(productRepoId);
-		return !hasAnyVendorForProduct(productId);
-	}
-
-	/**
-	 * Returns {@code true} if at least one active {@code C_BPartner_Product} row with
-	 * {@code UsedForVendor='Y'} exists for the given product (any org, any vendor).
-	 */
-	private boolean hasAnyVendorForProduct(@NonNull final ProductId productId)
-	{
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
-				.create()
-				.anyMatch();
 	}
 }
