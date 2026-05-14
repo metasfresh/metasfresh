@@ -80,7 +80,7 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
-      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | LC                | 70000.00 | 21000.00 | null          | null          | 9999-12-01 | PR     | N      |
       | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── R1: 400 PCE received — no proforma, so recomputeDeliverySteps is dormant ──
@@ -102,7 +102,7 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
     # AC #22 — schedule unchanged: still exactly 2 iter-2 rows (LC + OD), no delivery sub-rows
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
-      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | LC                | 70000.00 | 21000.00 | null          | null          | 9999-12-01 | PR     | N      |
       | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── INV1: financial purchase invoice via the real IC pipeline (IsPartialInvoice=Y) ──
@@ -128,7 +128,7 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
     # AC #22 — delivery schedule still unchanged after invoice completion
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
-      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | LC                | 70000.00 | 21000.00 | null          | null          | 9999-12-01 | PR     | N      |
       | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
 

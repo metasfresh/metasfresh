@@ -248,7 +248,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
       | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
       | BL                | r2         | 32000.00 | 22400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2         |
-      | BL                | null       | 38000.00 | 26600.00 | null          | null          | null       | PR     | null         |
+      | BL                | null       | 38000.00 | 26600.00 | null          | null          | 9999-12-01 | PR     | null         |
 
 
   @from:cucumber

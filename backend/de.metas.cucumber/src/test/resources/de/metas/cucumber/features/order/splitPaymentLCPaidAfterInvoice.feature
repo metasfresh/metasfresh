@@ -91,7 +91,7 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
-      | LC                | 10000.00 | 3000.00 | null          | null          | null       | PR     | N      |
+      | LC                | 10000.00 | 3000.00 | null          | null          | 9999-12-01 | PR     | N      |
       | OD                | 10000.00 | 7000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── Proforma created + completed (GrandTotal = LC plan = 3,000) ──

@@ -101,9 +101,9 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     # GrandTotal = 12,000 (productA: 200×50×1.20) + 11,000 (productB: 200×50×1.10) = 23,000
     # LC 30% = 6,900; BL 70% = 16,100
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status | IsPaid |
-      | LC                | 23000.00 | 6900.00  | null          | null          | null    | PR     | N      |
-      | BL                | 23000.00 | 16100.00 | null          | null          | null    | PR     | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 23000.00 | 6900.00  | null          | null          | 9999-12-01 | PR     | N      |
+      | BL                | 23000.00 | 16100.00 | null          | null          | 9999-12-01 | PR     | N      |
 
     # ── Iter-2: proforma (6,900 EUR) + payment → LC Paid ──
     And metasfresh contains C_Invoice:
@@ -153,7 +153,7 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
       | LC                | null       | 23000.00  | 6900.00 | 6900.00       | 2026-04-24    | 2026-04-24 | P      | null         |
       | BL                | r1         | 12000.00  | 8400.00 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
-      | BL                | null       | 11000.00  | 7700.00 | null          | null          | null       | PR     | null         |
+      | BL                | null       | 11000.00  | 7700.00 | null          | null          | 9999-12-01 | PR     | null         |
 
     # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
     And metasfresh contains C_Invoice:
@@ -177,7 +177,7 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
       | LC                | null       | 23000.00  | 6900.00 | 6900.00       | 2026-04-24    | 2026-04-24 | P      | null         |
       | BL                | r1         | 12000.00  | 8400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1         |
-      | BL                | null       | 11000.00  | 7700.00 | null          | null          | null       | PR     | null         |
+      | BL                | null       | 11000.00  | 7700.00 | null          | null          | 9999-12-01 | PR     | null         |
 
     # ── R2: 200 PCE of productB ──
     # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r2 QtyEntered=200.

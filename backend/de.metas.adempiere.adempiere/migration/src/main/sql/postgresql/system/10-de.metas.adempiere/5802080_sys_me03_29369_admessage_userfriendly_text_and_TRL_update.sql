@@ -1,5 +1,5 @@
 -- 2026-05-14
--- iter-3 https://github.com/metasfresh/me03/issues/29369
+-- https://github.com/metasfresh/me03/issues/29369
 -- PR review fixes (https://github.com/metasfresh/metasfresh/pull/23780 comments #6 + #22):
 --   * #6  user-friendly text for AD_Message 545675 (IsAutoAllocateAvailableAmt_ProformaPrepayment_Forbidden)
 --   * #22 refresh TRL tables for AD_Element 584794 (IsPartialInvoice) — the original migration
