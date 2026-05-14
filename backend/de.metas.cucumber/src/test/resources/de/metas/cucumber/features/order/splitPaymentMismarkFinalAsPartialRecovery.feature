@@ -134,8 +134,8 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
     # ── INV1bad: MISMARKED as Final (IsPartialInvoice='N' when it should be 'Y' Partial) ──
     # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1bad    | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv1bad    | vendor        | Endabrechnung           | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv1badL1  | inv1bad      | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
@@ -155,10 +155,13 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | inv1bad    | 19000.00 |
 
     # OD sub-row for r1 linked to inv1bad; Status = Awaiting_Pay
+    # PO=70000 (700 PCE × 100), LC=21000 (30%), OD=49000 (70%); R1.with_tax=40000.
+    # INV1bad Final consumes full prepay → no remainder row.
+    # LC.ReferenceDate=proforma.DateInvoiced; OD sub-row ReferenceDate=receipt MovementDate (2026-04-24).
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | OD                | r1         | WP     | inv1bad      |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | OD                | r1         | 40000.00 | 28000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1bad      |
 
     # ── User detects mistake → reverses INV1bad (AC #13 + AC #16 cascade) ──
     And the invoice identified by inv1bad is reversed
@@ -175,8 +178,8 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
     # ── User reissues INV1' correctly marked as Partial (IsPartialInvoice='Y'), matched to R1 ──
     # MInvoice.completeIt() auto-creates M_MatchInv via M_InOutLine_ID FK.
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
@@ -195,7 +198,8 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
       | inv1       | 28000.00 |
 
     # R1 sub-row now points to the corrected invoice; Status = Awaiting_Pay
+    # LC.ReferenceDate=proforma.DateInvoiced; OD sub-row ReferenceDate=receipt MovementDate (2026-04-24).
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | OD                | r1         | WP     | inv1         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | OD                | r1         | 40000.00 | 28000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1         |

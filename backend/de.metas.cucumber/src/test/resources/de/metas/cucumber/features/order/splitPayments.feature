@@ -560,8 +560,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # ── INV1: Partial vendor invoice linked to R1 via M_InOutLine_ID (E.1d) ──
     # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor recomputes delivery steps.
     And metasfresh contains C_Invoice:
-      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1Partial | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | Identifier  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv1Partial | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price    | C_OrderLine_ID | M_InOutLine_ID |
       | inv1L1     | inv1Partial  | productA     | 195 PCE     | 163.1179 | olA            | r1_line1       |
@@ -613,8 +613,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # ── INV2: Final vendor invoice linked to R2 via M_InOutLine_ID (E.1d) ──
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2Final  | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv2Final  | vendor        | Endabrechnung           | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   | C_OrderLine_ID | M_InOutLine_ID |
       | inv2L1     | inv2Final    | productB     | 363 PCE     | 102.1818 | olB            | r2_line1       |

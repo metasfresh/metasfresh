@@ -79,9 +79,9 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
-      | LC                | 21000.00 | null          | PR     | null          | N      |
-      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── R1: 400 PCE received — no proforma, so recomputeDeliverySteps is dormant ──
     # Wait for WP processor to create M_ReceiptSchedule for the order line (async after order completion).
@@ -101,9 +101,9 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
 
     # AC #22 — schedule unchanged: still exactly 2 iter-2 rows (LC + OD), no delivery sub-rows
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
-      | LC                | 21000.00 | null          | PR     | null          | N      |
-      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── INV1: financial purchase invoice via the real IC pipeline (IsPartialInvoice=Y) ──
     # Wait for IC to be created after receipt, then generate invoice via the real pipeline.
@@ -127,9 +127,9 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
 
     # AC #22 — delivery schedule still unchanged after invoice completion
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
-      | LC                | 21000.00 | null          | PR     | null          | N      |
-      | OD                | 49000.00 | null          | WP     | 2026-04-24    | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 70000.00 | 21000.00 | null          | null          | null       | PR     | N      |
+      | OD                | 70000.00 | 49000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
 
   @from:cucumber
@@ -167,8 +167,8 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
 
     # ── Vendor invoice: 10 PCE × 100 EUR = 1,000 EUR, matched to the order line ──
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | ac23_inv   | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | ac23_inv   | vendor        | Endabrechnung           | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID |
       | ac23_invL1  | ac23_inv     | product      | 10 PCE      | 100.00 | ac23_orderL1   |

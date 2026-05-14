@@ -133,8 +133,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
     # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK ──
     # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv1L1     | inv1         | product      | 200 PCE     | 100.00 | lcOrderL1      | r1_line1       |
@@ -163,8 +163,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
     # ── INV2: Partial, matched to R2 via M_InOutLine_ID FK ──
     # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv2L1     | inv2         | product      | 200 PCE     | 100.00 | lcOrderL1      | r2_line1       |
@@ -193,8 +193,8 @@ Feature: Split-payment — three partial invoices, Final consumes remainder (AC 
     # ── INV3: Final, matched to R3 via M_InOutLine_ID FK ──
     # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor triggers allocation.
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv3       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv3       | vendor        | Endabrechnung           | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv3L1     | inv3         | product      | 200 PCE     | 100.00 | lcOrderL1      | r3_line1       |

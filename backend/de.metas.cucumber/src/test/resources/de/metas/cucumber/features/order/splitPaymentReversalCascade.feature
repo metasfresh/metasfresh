@@ -135,8 +135,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # INV1 Partial → alloc 12,000; prepay = 9,000.
     # M_InOutLine_ID FK drives auto M_MatchInv on MInvoice.completeIt().
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | true             |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv1L1     | inv1         | product      | 400 PCE     | 100.00 | lcOrderL1      | r1_line1       |
@@ -157,8 +157,8 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # INV2 Final → alloc 9,000; prepay = 0.
     # M_InOutLine_ID FK drives auto M_MatchInv on MInvoice.completeIt().
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | IsPartialInvoice |
-      | inv2       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           | false            |
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | inv2       | vendor        | Endabrechnung           | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price  | C_OrderLine_ID | M_InOutLine_ID |
       | inv2L1     | inv2         | product      | 320 PCE     | 100.00 | lcOrderL1      | r2_line1       |
