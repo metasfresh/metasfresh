@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION report.open_account_balance_report(
     p_ad_org_id       numeric,
     p_account_id      numeric DEFAULT NULL,
     p_c_bpartner_id   numeric DEFAULT NULL,
-    p_tolerance       numeric DEFAULT 0.01,
+    p_tolerance       numeric DEFAULT 0.05,
     p_showdetails     varchar DEFAULT 'N'
 )
     RETURNS TABLE
@@ -75,7 +75,6 @@ CREATE OR REPLACE FUNCTION report.open_account_balance_report(
                 -- -------------------------------------------------------
                 total_fact_lines         numeric,
                 open_fact_lines          numeric,
-                overall_count            numeric,
                 param_acct_schema        text,
                 param_account            text,
                 param_bpartner           text
@@ -86,6 +85,7 @@ $BODY$
     # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
     v_rowcount          numeric;
+    v_ad_client_id      numeric;
     v_main_currency_id  numeric;
     v_main_currency     char(3);
     v_overall           numeric;
@@ -98,8 +98,8 @@ BEGIN
          Resolve accounting currency
        ================================================================ */
 
-    SELECT s.c_currency_id, s.name
-    INTO v_main_currency_id,v_param_acct_schema
+    SELECT s.c_currency_id, s.name, s.ad_client_id
+    INTO v_main_currency_id,v_param_acct_schema, v_ad_client_id
     FROM C_AcctSchema s
     WHERE s.C_AcctSchema_ID = p_c_acctschema_id;
 
@@ -185,10 +185,15 @@ BEGIN
              JOIN tmp_oib_accounts oa
                   ON oa.account_id = fa.Account_ID
     WHERE TRUE
+      AND fa.ad_client_id = v_ad_client_id
+      AND fa.PostingType = 'A'
       AND fa.DateAcct <= p_date
       AND fa.C_AcctSchema_ID = p_c_acctschema_id
       AND fa.AD_Org_ID = p_ad_org_id
       AND (p_c_bpartner_id IS NULL OR fa.C_BPartner_ID = p_c_bpartner_id);
+
+    CREATE INDEX ON tmp_oib_accounts (account_id);
+    CREATE INDEX ON tmp_oib_fact_base (c_acctschema_id, account_id, c_bpartner_id, c_currency_id, openitemkey);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'STEP 2 — Base fact lines loaded: %', v_rowcount;
@@ -358,8 +363,7 @@ BEGIN
 
         /* diagnostics */
            s.total_fact_lines,
-           s.open_fact_lines,
-           NULL::numeric                     AS overall_count -- patched in STEP 7
+           s.open_fact_lines
 
     FROM tmp_oib_summary s
              JOIN tmp_oib_accounts oa
@@ -409,7 +413,6 @@ BEGIN
         /* diagnostics: NULL at detail level */
            NULL::numeric                     AS total_fact_lines,
            NULL::numeric                     AS open_fact_lines,
-           NULL::numeric                     AS overall_count -- patched in STEP 7
 
     FROM tmp_oib_fact_base f
              JOIN tmp_oib_accounts oa
@@ -425,20 +428,10 @@ BEGIN
     WHERE p_showdetails = 'Y';
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 6 — Final rows assembled (before overall_count patch): %', v_rowcount;
-
-
-    /* ================================================================
-       STEP 7 — Patch overall_count.
-       ================================================================ */
-    SELECT COUNT(*) INTO v_overall FROM tmp_oib_final;
-    UPDATE tmp_oib_final SET overall_count = v_overall;
-
-    RAISE NOTICE 'STEP 7 — overall_count patched: %', v_overall;
-
+    RAISE NOTICE 'STEP 6 — Final rows assembled : %', v_rowcount;
 
     /* ================================================================
-       STEP 8 — Return result.
+       STEP 7 — Return result.
        Order:
          - Account value (alphabetical)
          - Partner (NULLs last)
@@ -479,7 +472,6 @@ BEGIN
                r.oi_openamount,
                r.total_fact_lines,
                r.open_fact_lines,
-               r.overall_count,
                v_param_acct_schema,
                v_param_account,
                v_param_bpartner

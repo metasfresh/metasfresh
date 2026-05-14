@@ -231,45 +231,6 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2026-05-14 06:48:41.413000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543202
 ;
 
--- 2026-05-14T06:50:18.887Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584872,0,'OnlyUnreconciled',TO_TIMESTAMP('2026-05-14 06:50:18.759000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Show Only Unreconciled Items','D','Y','Show Only Unreconciled Items','Show Only Unreconciled Items',TO_TIMESTAMP('2026-05-14 06:50:18.759000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2026-05-14T06:50:18.893Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584872 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Element: OnlyUnreconciled
--- 2026-05-14T06:50:27.325Z
-UPDATE AD_Element_Trl SET Description='Nur nicht abgestimmte Posten anzeigen', IsTranslated='Y', Name='Nur nicht abgestimmte Posten anzeigen', PrintName='Nur nicht abgestimmte Posten anzeigen',Updated=TO_TIMESTAMP('2026-05-14 06:50:27.325000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584872 AND AD_Language='de_CH'
-;
-
--- 2026-05-14T06:50:27.327Z
-UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
-;
-
--- 2026-05-14T06:50:27.591Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584872,'de_CH')
-;
-
--- Element: OnlyUnreconciled
--- 2026-05-14T06:50:32.882Z
-UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-14 06:50:32.882000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584872 AND AD_Language='en_US'
-;
-
--- 2026-05-14T06:50:32.885Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584872,'en_US')
-;
-
--- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
--- ParameterName: OnlyUnreconciled
--- 2026-05-14T06:50:54.977Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,584872,0,585616,543203,20,'OnlyUnreconciled',TO_TIMESTAMP('2026-05-14 06:50:54.856000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Show Only Unreconciled Items','U',0,'Y','N','Y','N','Y','N','Show Only Unreconciled Items',80,'N',TO_TIMESTAMP('2026-05-14 06:50:54.856000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2026-05-14T06:50:54.981Z
-INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543203 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
-;
 
 -- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
 -- ParameterName: Tolerance
@@ -297,16 +258,6 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 
 -- 2026-05-14T12:02:11.051Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543019,'de_CH')
-;
-
--- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
--- ParameterName: OnlyUnreconciled
--- 2026-05-14T12:46:26.584Z
-DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=543203
-;
-
--- 2026-05-14T12:46:26.621Z
-DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=543203
 ;
 
 -- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)

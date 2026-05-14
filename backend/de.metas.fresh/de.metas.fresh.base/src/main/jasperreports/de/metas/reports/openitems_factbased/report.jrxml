@@ -530,7 +530,7 @@ FROM report.open_account_balance_report(
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{param5}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{parm5}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-4" x="133" y="64" width="167" height="12" uuid="1ea48196-1d3c-4661-a5d4-2eefc070854f"/>
@@ -558,7 +558,7 @@ FROM report.open_account_balance_report(
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{param6}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{parm6}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-8" x="388" y="64" width="109" height="12" uuid="55e89fc7-c9fc-42c4-8283-64b9525aa15f"/>
