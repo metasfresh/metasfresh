@@ -1,8 +1,7 @@
 /**
- * me03#29557 — M_Product.DepositType field in Product window
+ * M_Product.DepositType field in the Product window
  *
- * Scope: Verify that the new DepositType field introduced by
- * migration 58023600_sys_me03_29557_M_Product_DepositType.sql is:
+ * Scope: verify that the DepositType field on M_Product is:
  *   1. Visible in the Product main tab (AD_Window_ID=140, AD_Tab_ID=180)
  *   2. Selectable from the dropdown by its underlying KEY ("NRC")
  *   3. Persisted after save + page reload
@@ -35,7 +34,7 @@ const FIELD_NAME = 'DepositType';
 // Underlying AD_Ref_List.Value — same in every UI language
 const DEPOSIT_TYPE_NRC_VALUE = 'NRC';
 
-test.describe('me03#29557 — M_Product.DepositType field in Product window', () => {
+test.describe('M_Product.DepositType field in Product window', () => {
   test('DepositType field appears in Product window and persists NRC selection', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0380: Masterdata Products');
@@ -43,11 +42,11 @@ test.describe('me03#29557 — M_Product.DepositType field in Product window', ()
     allure.story('me03#29557 DepositType field visible and persists');
     allure.severity('normal');
     allure.description(`
-## me03#29557 — M_Product.DepositType
+## M_Product.DepositType
 
-Verifies that the new DepositType field introduced for the Markant
-clearing-center INVOIC integration appears in the Product master data window
-and that selecting the NRC value persists after save and page reload.
+Verifies that the DepositType field introduced for the Markant clearing-center
+INVOIC integration appears in the Product master data window and that selecting
+the NRC value persists after save and page reload.
     `);
 
     // Create a fresh test user + a dedicated test product (no shared seed data).
@@ -111,9 +110,13 @@ and that selecting the NRC value persists after save and page reload.
 
       expect(rawKey).toBe(DEPOSIT_TYPE_NRC_VALUE);
 
-      // Attach a full-page screenshot so reviewers can visually confirm the
-      // DepositType field is wired up and shows the persisted value, regardless
-      // of the UI language.
+      // Scroll the DepositType field into the viewport BEFORE screenshotting.
+      // A fullPage screenshot captures everything in the layout, but elements
+      // outside the viewport may not have rendered yet (lazy-mounted form
+      // groups, virtualised sections), so they appear blank in the capture.
+      // Scrolling into view forces the render and gives a useful proof shot.
+      await fieldContainer.scrollIntoViewIfNeeded();
+
       const screenshotBuffer = await page.screenshot({ fullPage: true });
       await allure.attachment(
           'Product window with DepositType field after save & reload',
