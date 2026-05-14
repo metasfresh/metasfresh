@@ -4,9 +4,13 @@
  * Scope: Verify that the new DepositType field introduced by
  * migration 58023600_sys_me03_29557_M_Product_DepositType.sql is:
  *   1. Visible in the Product main tab (AD_Window_ID=140, AD_Tab_ID=180)
- *   2. Populated via the dropdown (the test runs in de_DE so the displayed
- *      label is the German translation of NRC)
+ *   2. Selectable from the dropdown by its underlying KEY ("NRC")
  *   3. Persisted after save + page reload
+ *
+ * The test is language-independent: it selects the NRC option by its
+ * `data-testid="option-NRC"` (the dropdown renders the key, not the
+ * caption, into data-testid) and verifies persistence by reading the
+ * raw field value via the WebAPI rather than the displayed caption.
  *
  * AD_Reference_ID: 542089 — List reference with values NRC / RC
  * Widget type: List (renders as #lookup_DepositType dropdown)
@@ -20,21 +24,19 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 import { ListWidget } from '../utils/widgets/ListWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { PRODUCT_WINDOW_ID } from '../utils/WindowIds';
-import { assertRecordIsValid } from '../utils/WebAPIValidation';
+import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 
 // AD_Column.ColumnName for the new deposit-type field
 const FIELD_NAME = 'DepositType';
 
-// The UI runs in de_DE so the dropdown shows the German translation of NRC.
-// This is the literal UI label the user sees and the test clicks on.
-const DEPOSIT_TYPE_NRC_LABEL = 'Einwegpfand';
+// Underlying AD_Ref_List.Value — same in every UI language
+const DEPOSIT_TYPE_NRC_VALUE = 'NRC';
 
 test.describe('me03#29557 — M_Product.DepositType field in Product window', () => {
-  test('DepositType field appears in Product window and persists Einwegpfand selection', async ({ page }) => {
+  test('DepositType field appears in Product window and persists NRC selection', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0380: Masterdata Products');
     allure.tag('F6000: Maintain Product Data');
@@ -48,11 +50,10 @@ clearing-center INVOIC integration appears in the Product master data window
 and that selecting the NRC value persists after save and page reload.
     `);
 
-    // Create a fresh test user (de_DE so dropdown shows German labels)
-    // and a dedicated test product to avoid touching shared seed data.
+    // Create a fresh test user + a dedicated test product (no shared seed data).
+    // No language pin — the test selects + asserts by key, not by caption.
     const masterdata = await Backend.createMasterdata({
       request: {
-        login: { user: { language: 'de_DE' } },
         products: {
           PROD_DEPOSITTYPE: {
             name: 'Test Deposit Type Product',
@@ -77,42 +78,39 @@ and that selecting the NRC value persists after save and page reload.
 
     // === STEP 1: Verify DepositType field is visible ===
     await test.step('Assert DepositType field is present in the form', async () => {
-      // List widgets render as: #lookup_DepositType (the container div)
-      // with an <input> inside for display, and a dropdown trigger.
       const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
       await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
       await expect(fieldContainer).toBeVisible();
       console.log(`[INFO] DepositType field container is visible`);
     });
 
-    // === STEP 2: Select "Einwegpfand" from the dropdown ===
-    await test.step(`Set ${FIELD_NAME} to "${DEPOSIT_TYPE_NRC_LABEL}"`, async () => {
-      await ListWidget.setValue(FIELD_NAME, DEPOSIT_TYPE_NRC_LABEL, { exactMatch: true });
-      console.log(`[INFO] Selected "${DEPOSIT_TYPE_NRC_LABEL}" from DepositType dropdown`);
+    // === STEP 2: Select the NRC option by its key (data-testid="option-NRC") ===
+    await test.step(`Set ${FIELD_NAME} to key "${DEPOSIT_TYPE_NRC_VALUE}"`, async () => {
+      await ListWidget.setByValue(FIELD_NAME, DEPOSIT_TYPE_NRC_VALUE);
+      console.log(`[INFO] Selected option key "${DEPOSIT_TYPE_NRC_VALUE}" from DepositType dropdown`);
     });
 
-    // ListWidget.setValue already calls triggerBlur + waitForSaveComplete internally — no extra step needed.
-
-    // === STEP 4: Reload page and verify persistence ===
-    await test.step('Reload page and assert DepositType still shows Einwegpfand', async () => {
+    // === STEP 3: Reload page and verify persistence via WebAPI (language-independent) ===
+    await test.step('Reload page and assert DepositType raw value is NRC', async () => {
       await page.reload();
-      // Wait for the detail view to re-render
       await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: 30000 });
 
-      // Wait for the field to be visible again after reload
       const fieldContainer = WidgetCommon.getFieldContainer(FIELD_NAME);
       await fieldContainer.waitFor({ state: 'visible', timeout: 30000 });
 
-      // Read back the displayed value
-      const persistedValue = await ListWidget.getValue(FIELD_NAME);
-      console.log(`[INFO] DepositType value after reload: "${persistedValue}"`);
+      // Read the raw field value from the WebAPI — this returns the underlying
+      // key, e.g. { key: 'NRC', caption: <localized-caption> } for List widgets.
+      const field = await getFieldData(PRODUCT_WINDOW_ID, productId, FIELD_NAME);
+      const rawKey = typeof field.value === 'object' && field.value !== null
+        ? field.value.key
+        : field.value;
+      console.log(`[INFO] DepositType raw value after reload: ${JSON.stringify(field.value)}`);
 
-      expect(persistedValue).toBe(DEPOSIT_TYPE_NRC_LABEL);
+      expect(rawKey).toBe(DEPOSIT_TYPE_NRC_VALUE);
 
-      // Attach a screenshot of the Product window after reload so reviewers
-      // can confirm visually that the DepositType field is wired up and
-      // shows the persisted value. The Allure attachment + a written file
-      // give us both an in-report artefact and a debuggable local file.
+      // Attach a full-page screenshot so reviewers can visually confirm the
+      // DepositType field is wired up and shows the persisted value, regardless
+      // of the UI language.
       const screenshotBuffer = await page.screenshot({ fullPage: true });
       await allure.attachment(
           'Product window with DepositType field after save & reload',
