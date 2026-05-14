@@ -27,6 +27,8 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -198,6 +200,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()))
 				.build();
 	}
 
@@ -221,7 +224,8 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.minMaxDescriptor(minMaxDescriptor);
+				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()));
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -321,6 +325,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()))
 				.build();
 	}
 
@@ -341,5 +346,17 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();
+	}
+
+	private boolean getIsDropShipWarehouse(final int warehouseId)
+	{
+		if (warehouseId <= 0)
+		{
+			return false;
+		}
+
+		return Services.get(IWarehouseDAO.class)
+				.getById(WarehouseId.ofRepoId(warehouseId))
+				.isDropShipWarehouse();
 	}
 }
