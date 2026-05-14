@@ -49,7 +49,7 @@ WHERE l.IsActive='Y'
 ;
 
 -- ===========================================================================
--- 2. AD_Ref_List: NRC (Einwegpfand)
+-- 2. AD_Ref_List: NRC (Disposable Deposit)
 -- ===========================================================================
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Ref_List
@@ -58,7 +58,7 @@ INSERT INTO AD_Ref_List
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (544229 /*From ID Server*/, 0, 0, 542089 /*From ID Server*/,
-     'NRC', 'Einwegpfand', 'D', 'Y',
+     'NRC', 'Disposable Deposit', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -81,7 +81,7 @@ WHERE l.IsActive='Y'
 ;
 
 -- ===========================================================================
--- 3. AD_Ref_List: RC (Mehrwegpfand)
+-- 3. AD_Ref_List: RC (Reusable Deposit)
 -- ===========================================================================
 -- 2026-05-13T17:00:00.000Z
 INSERT INTO AD_Ref_List
@@ -90,7 +90,7 @@ INSERT INTO AD_Ref_List
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (544230 /*From ID Server*/, 0, 0, 542089 /*From ID Server*/,
-     'RC', 'Mehrwegpfand', 'D', 'Y',
+     'RC', 'Reusable Deposit', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -122,7 +122,7 @@ INSERT INTO AD_Element
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (584866 /*From ID Server*/, 0, 0, 'DepositType',
-     'Pfandart', 'Pfandart', 'D', 'Y',
+     'Deposit Type', 'Deposit Type', 'D', 'Y',
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100)
 ;
@@ -190,9 +190,9 @@ VALUES
     (592521 /*From ID Server*/, 0, 0,
      208 /*M_Product AD_Table_ID, From DB lookup*/, 584866 /*From ID Server*/,
      17 /*List reference type*/, 542089 /*AD_Reference_Value_ID = our new ref, From ID Server*/,
-     'DepositType', 'Pfandart',
-     'Klassifizierung des Pfandtyps: Einwegpfand (NRC) oder Mehrwegpfand (RC).',
-     'Pfandtyp-Klassifizierung des Produkts für den EDIFACT IMD+C Pfandsegment (Einwegpfand = NRC, Mehrwegpfand = RC).',
+     'DepositType', 'Deposit Type',
+     'Deposit type classification: Disposable (NRC) or Reusable (RC) container.',
+     'Deposit-type classification of the product for the EDIFACT IMD+C deposit segment (NRC = disposable / single-use container, RC = reusable / multi-use container).',
      3, 'N', 'Y', 'Y', 'N',
      'N', 'N', 'N', 'N', 'N',
      'Y', 'N', 'N',
@@ -250,7 +250,7 @@ INSERT INTO AD_Field
 VALUES
     (779547 /*From ID Server*/, 0, 0,
      180 /*AD_Tab_ID Product main tab, From DB lookup*/, 592521 /*From ID Server*/,
-     'Pfandart', 'D',
+     'Deposit Type', 'D',
      'Y', 'Y', 'N', 'N',
      'N', 'N', 'N', 'N',
      435 /*SeqNo: GTIN=430 + 5; From DB lookup*/, 465 /*SeqNoGrid: GTIN grid=460+5*/,
@@ -299,7 +299,7 @@ VALUES
     (651358 /*From ID Server*/, 0, 0,
      180 /*AD_Tab_ID, From DB lookup*/, 779547 /*From ID Server*/, 1000015 /*GTIN group, From DB lookup*/,
      'F',
-     'Pfandart', 100 /*SeqNo: max in group 90+10, From DB lookup*/, 0, 0,
+     'Deposit Type', 100 /*SeqNo: max in group 90+10, From DB lookup*/, 0, 0,
      'Y', 'N', 'N',
      'Y', 'N', 'N', 'N', 0,
      TO_TIMESTAMP('2026-05-13 17:00','YYYY-MM-DD HH24:MI'), 100,

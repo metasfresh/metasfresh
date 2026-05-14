@@ -1,10 +1,11 @@
 /**
  * me03#29557 — M_Product.DepositType field in Product window
  *
- * Scope: Verify that the new DepositType field (Pfandart) introduced by
- * migration 5831760_sys_me03_29557_M_Product_DepositType.sql is:
+ * Scope: Verify that the new DepositType field introduced by
+ * migration 58023600_sys_me03_29557_M_Product_DepositType.sql is:
  *   1. Visible in the Product main tab (AD_Window_ID=140, AD_Tab_ID=180)
- *   2. Populated via the dropdown (de_DE label "Einwegpfand" = NRC)
+ *   2. Populated via the dropdown (the test runs in de_DE so the displayed
+ *      label is the German translation of NRC)
  *   3. Persisted after save + page reload
  *
  * AD_Reference_ID: 542089 — List reference with values NRC / RC
@@ -28,7 +29,8 @@ import { assertRecordIsValid } from '../utils/WebAPIValidation';
 // AD_Column.ColumnName for the new deposit-type field
 const FIELD_NAME = 'DepositType';
 
-// de_DE display label for value NRC (Einwegpfand = Disposable Deposit)
+// The UI runs in de_DE so the dropdown shows the German translation of NRC.
+// This is the literal UI label the user sees and the test clicks on.
 const DEPOSIT_TYPE_NRC_LABEL = 'Einwegpfand';
 
 test.describe('me03#29557 — M_Product.DepositType field in Product window', () => {
@@ -41,9 +43,9 @@ test.describe('me03#29557 — M_Product.DepositType field in Product window', ()
     allure.description(`
 ## me03#29557 — M_Product.DepositType
 
-Verifies that the new DepositType (Pfandart) field introduced for the Markant
+Verifies that the new DepositType field introduced for the Markant
 clearing-center INVOIC integration appears in the Product master data window
-and that selecting "Einwegpfand" (NRC) persists after save and page reload.
+and that selecting the NRC value persists after save and page reload.
     `);
 
     // Create a fresh test user (de_DE so dropdown shows German labels)
@@ -53,7 +55,7 @@ and that selecting "Einwegpfand" (NRC) persists after save and page reload.
         login: { user: { language: 'de_DE' } },
         products: {
           PROD_DEPOSITTYPE: {
-            name: 'Test Pfandart Product',
+            name: 'Test Deposit Type Product',
           },
         },
       },
@@ -106,6 +108,17 @@ and that selecting "Einwegpfand" (NRC) persists after save and page reload.
       console.log(`[INFO] DepositType value after reload: "${persistedValue}"`);
 
       expect(persistedValue).toBe(DEPOSIT_TYPE_NRC_LABEL);
+
+      // Attach a screenshot of the Product window after reload so reviewers
+      // can confirm visually that the DepositType field is wired up and
+      // shows the persisted value. The Allure attachment + a written file
+      // give us both an in-report artefact and a debuggable local file.
+      const screenshotBuffer = await page.screenshot({ fullPage: true });
+      await allure.attachment(
+          'Product window with DepositType field after save & reload',
+          screenshotBuffer,
+          'image/png',
+      );
     });
 
     console.log('[PASS] DepositType field visible, selectable, and persists correctly.');
