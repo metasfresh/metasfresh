@@ -560,10 +560,11 @@ export class RawLookup extends Component {
       return;
     }
 
+    // Include disabled inputs — the next field (e.g. Qty) may be temporarily disabled
+    // during a callout/re-render after product selection. Excluding it would skip straight
+    // to the field after it. We detect that case and retry below.
     const inputs = Array.from(
-      form.querySelectorAll(
-        'input:not([disabled]):not([type="hidden"]):not([readonly])'
-      )
+      form.querySelectorAll('input:not([type="hidden"]):not([readonly])')
     );
     const idx = inputs.indexOf(this.inputSearch);
     if (idx < 0) {
@@ -575,6 +576,13 @@ export class RawLookup extends Component {
     }
     if (idx < inputs.length - 1) {
       const nextInput = inputs[idx + 1];
+      if (nextInput.disabled) {
+        // Next field not yet enabled (callout pending) — retry
+        if (retriesLeft > 0) {
+          setTimeout(() => this.focusNextFieldInForm(retriesLeft - 1), 100);
+        }
+        return;
+      }
       nextInput.focus();
 
       if (document.activeElement === nextInput) {

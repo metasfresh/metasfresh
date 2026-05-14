@@ -161,30 +161,36 @@ class Lookup extends Component {
     return hasNextSubField;
   };
 
-  focusNextFormField = () => {
+  focusNextFormField = (retriesLeft = 5) => {
     const wrapperEl = this.wrapperElement;
     if (!wrapperEl) return;
 
     const form = wrapperEl.closest('form');
     if (!form) return;
 
+    // Include disabled inputs — Qty may be temporarily disabled during callout.
     const allInputs = Array.from(
-      form.querySelectorAll(
-        'input:not([disabled]):not([readonly]):not([type="hidden"])'
-      )
+      form.querySelectorAll('input:not([readonly]):not([type="hidden"])')
     );
 
     const lookupInputs = wrapperEl.querySelectorAll(
-      'input:not([disabled]):not([readonly]):not([type="hidden"])'
+      'input:not([readonly]):not([type="hidden"])'
     );
     if (lookupInputs.length === 0) return;
 
     const lastLookupInput = lookupInputs[lookupInputs.length - 1];
     const currentIndex = allInputs.indexOf(lastLookupInput);
+    if (currentIndex < 0 || currentIndex + 1 >= allInputs.length) return;
 
-    if (currentIndex >= 0 && currentIndex + 1 < allInputs.length) {
-      allInputs[currentIndex + 1].focus();
+    const nextInput = allInputs[currentIndex + 1];
+    if (nextInput.disabled) {
+      // Next field not yet enabled (callout pending) — retry
+      if (retriesLeft > 0) {
+        setTimeout(() => this.focusNextFormField(retriesLeft - 1), 100);
+      }
+      return;
     }
+    nextInput.focus();
   };
 
   // isMouseEvent param is to tell us if we should enable listening to keys
