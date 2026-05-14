@@ -716,3 +716,49 @@ UPDATE AD_TreeNodeMM SET Parent_ID=236, SeqNo=23, Updated=now(), UpdatedBy=100 W
 UPDATE AD_TreeNodeMM SET Parent_ID=236, SeqNo=24, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000103 AND AD_Tree_ID=10
 ;
 
+
+-- Value: opent_items_fact_based
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/reports/openitems_factbased/report.jasper
+-- 2026-05-14T15:54:56.383Z
+UPDATE AD_Process SET Description='Offene Posten basierend auf Fact_Acct Buchunge',Updated=TO_TIMESTAMP('2026-05-14 15:54:56.380000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585616
+;
+
+-- 2026-05-14T15:54:56.393Z
+UPDATE AD_Process_Trl trl SET Description='Offene Posten basierend auf Fact_Acct Buchunge' WHERE AD_Process_ID=585616 AND AD_Language='de_DE'
+;
+
+-- Name: Offene Posten
+-- Action Type: R
+-- Report: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-05-14T15:54:56.453Z
+UPDATE AD_Menu SET Description='Offene Posten basierend auf Fact_Acct Buchunge', IsActive='Y', Name='Offene Posten',Updated=TO_TIMESTAMP('2026-05-14 15:54:56.453000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=542324
+;
+
+-- 2026-05-14T15:54:56.456Z
+UPDATE AD_Menu_Trl trl SET Description='Offene Posten basierend auf Fact_Acct Buchunge' WHERE AD_Menu_ID=542324 AND AD_Language='de_DE'
+;
+
+-- Value: opent_items_fact_based
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/reports/openitems_factbased/report.jasper
+-- 2026-05-14T15:55:01.002Z
+UPDATE AD_Process SET Description='Offene Posten basierend auf Fact_Acct Buchungen',Updated=TO_TIMESTAMP('2026-05-14 15:55:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585616
+;
+
+-- 2026-05-14T15:55:01.005Z
+UPDATE AD_Process_Trl trl SET Description='Offene Posten basierend auf Fact_Acct Buchungen' WHERE AD_Process_ID=585616 AND AD_Language='de_DE'
+;
+
+-- Name: Offene Posten
+-- Action Type: R
+-- Report: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-05-14T15:55:01.015Z
+UPDATE AD_Menu SET Description='Offene Posten basierend auf Fact_Acct Buchungen', IsActive='Y', Name='Offene Posten',Updated=TO_TIMESTAMP('2026-05-14 15:55:01.015000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=542324
+;
+
+-- 2026-05-14T15:55:01.017Z
+UPDATE AD_Menu_Trl trl SET Description='Offene Posten basierend auf Fact_Acct Buchungen' WHERE AD_Menu_ID=542324 AND AD_Language='de_DE'
+;
+
+

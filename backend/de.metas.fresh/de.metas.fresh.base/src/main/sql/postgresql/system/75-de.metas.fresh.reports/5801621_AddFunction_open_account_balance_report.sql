@@ -201,10 +201,6 @@ BEGIN
        STEP 3 — Per-OpenItemKey aggregation.
        This is the atomic matching unit:
          (account, bpartner, currency, openitemkey)
-       The authoritative clearing signal is gl_key_balance_amt — the
-       net DR-CR per key.  This catches manual GL journals that offset
-       an invoice on the same key without going through the normal
-       payment/allocation process.
        ================================================================ */
     DROP TABLE IF EXISTS tmp_oib_keys;
     CREATE TEMPORARY TABLE tmp_oib_keys ON COMMIT DROP AS
@@ -338,7 +334,7 @@ BEGIN
            s.oi_open_amt_unreconciled,
            s.oldest_open_dateacct,
 
-        /* data quality flag — GL is authoritative */
+        /* data quality flag  */
            CASE
                WHEN ABS(s.oi_open_amt_unreconciled) > p_tolerance
                    THEN 'Y'
