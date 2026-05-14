@@ -312,6 +312,7 @@ test('Wagen freigeben: holder releases own trolley returns to scan screen', asyn
     await DistributionJobsListScreen.clickReleaseTrolleyButton();
     await DistributionJobsListScreen.expectTrolleyScanScreen();
 
+    await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.logout();
 });
 
@@ -333,6 +334,7 @@ test('Wagen freigeben: second user scanning held trolley sees conflict toast and
         scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode,
         expectHeader: masterdata.warehouses.whInTransit.locators.whInTransit_l1.code
     });
+    await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.logout();
 
     // user2 tries to scan the same trolley — should see conflict toast
@@ -345,6 +347,7 @@ test('Wagen freigeben: second user scanning held trolley sees conflict toast and
             scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode
         });
     });
+    await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.logout();
 
     // user1 still holds the trolley
@@ -354,5 +357,6 @@ test('Wagen freigeben: second user scanning held trolley sees conflict toast and
     await DistributionJobsListScreen.expectTrolley({
         value: masterdata.warehouses.whInTransit.locators.whInTransit_l1.code
     });
+    await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.logout();
 });
