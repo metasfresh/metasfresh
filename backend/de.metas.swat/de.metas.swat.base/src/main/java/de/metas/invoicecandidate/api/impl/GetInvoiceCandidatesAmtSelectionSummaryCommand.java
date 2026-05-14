@@ -187,12 +187,12 @@ class GetInvoiceCandidatesAmtSelectionSummaryCommand
 				final String curSymbol = rs.getString(I_C_Currency.COLUMNNAME_CurSymbol);
 				final boolean isToRecompute = StringUtils.toBoolean(rs.getString(I_C_Invoice_Candidate.COLUMNNAME_IsToRecompute));
 				final int countToRecompute = rs.getInt(ALIAS_Count);
-				final BigDecimal netOrderValueNextDayBD = rs.getBigDecimal(ALIAS_NetOrderValueNextDay);
+				final BigDecimal netOrderValueNextDay = rs.getBigDecimal(ALIAS_NetOrderValueNextDay);
 
 				summaryBuilder
 						.addTotalNetAmt(netAmtTotal, isApprovedForInvoicing, isPackingMaterial)
 						.addCurrencySymbol(curSymbol)
-						.addNetOrderValueNextDay(netOrderValueNextDayBD);
+						.addNetOrderValueNextDay(netOrderValueNextDay);
 				if (isToRecompute)
 				{
 					summaryBuilder.addCountToRecompute(countToRecompute);
