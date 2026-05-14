@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.isEmpty;
 
 /*
@@ -77,6 +77,7 @@ public class BPartner
 	public static final String COMPANY = "company";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
@@ -108,14 +109,14 @@ public class BPartner
 	/**
 	 * May be null if the bpartner was not yet saved.
 	 */
-	private BPartnerId id;
+	private @Nullable BPartnerId id;
 
-	private ExternalId externalId;
+	private @Nullable ExternalId externalId;
 	private boolean active;
-	private String value;
-	private String name;
-	private String name2;
-	private String name3;
+	private @Nullable String value;
+	private @Nullable String name;
+	private @Nullable String name2;
+	private @Nullable String name3;
 	private final GreetingId greetingId;
 
 	private final DocTypeId soDocTypeTargetId;
@@ -125,49 +126,50 @@ public class BPartner
 	/**
 	 * non-empty value implies that the bpartner is also a company
 	 */
-	private String companyName;
+	private @Nullable String companyName;
 
 	/**
 	 * This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company.
 	 */
-	private BPartnerId parentId;
+	private @Nullable BPartnerId parentId;
 
 	/**
 	 * This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number.
 	 */
-	private String phone;
+	private @Nullable String phone;
 
-	private Language language;
+	private @Nullable Language language;
 
-	private String url;
+	private @Nullable String url;
 
-	private String url2;
+	private @Nullable String url2;
 
-	private String url3;
+	private @Nullable String url3;
 
-	private BPGroupId groupId;
+	private @Nullable BPGroupId groupId;
 
 	private boolean vendor;
 	private boolean customer;
 	private boolean company;
-	private String salesPartnerCode;
-	private SalesRep salesRep;
-	private PaymentRule paymentRule;
-	private PaymentRule paymentRulePO;
-	private String internalName;
+	private @Nullable String salesPartnerCode;
+	private @Nullable SalesRep salesRep;
+	private boolean discountPrinted;
+	private @Nullable PaymentRule paymentRule;
+	private @Nullable PaymentRule paymentRulePO;
+	private @Nullable String internalName;
 
-	private InvoiceRule customerInvoiceRule;
-	private InvoiceRule vendorInvoiceRule;
+	private @Nullable InvoiceRule customerInvoiceRule;
+	private @Nullable InvoiceRule vendorInvoiceRule;
 
-	private String globalId;
+	private @Nullable String globalId;
 
-	private String vatId;
+	private @Nullable String vatId;
 
-	private OrgMappingId orgMappingId;
+	private @Nullable OrgMappingId orgMappingId;
 
 	private final RecordChangeLog changeLog;
 
-	private String memo;
+	private @Nullable String memo;
 
 	/**
 	 * Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}.
@@ -180,10 +182,10 @@ public class BPartner
 	 */
 	private boolean identifiedByExternalReference;
 
-	private PaymentTermId customerPaymentTermId;
-	private PricingSystemId customerPricingSystemId;
+	private @Nullable PaymentTermId customerPaymentTermId;
+	private @Nullable PricingSystemId customerPricingSystemId;
 
-	private PaymentTermId vendorPaymentTermId;
+	private @Nullable PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
 
 	private final boolean excludeFromPromotions;
@@ -256,6 +258,7 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
+			@Nullable final Boolean discountPrinted,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentRule paymentRulePO,
 			@Nullable final String internalName,
@@ -294,7 +297,7 @@ public class BPartner
 		this.id = id;
 		this.externalId = externalId;
 		this.globalId = globalId;
-		this.active = coalesce(active, true);
+		this.active = coalesceNotNull(active, true);
 		this.value = value;
 		this.name = name;
 		this.name2 = name2;
@@ -310,11 +313,12 @@ public class BPartner
 		this.groupId = groupId;
 		this.customerInvoiceRule = customerInvoiceRule;
 		this.vendorInvoiceRule = vendorInvoiceRule;
-		this.vendor = coalesce(vendor, false);
-		this.customer = coalesce(customer, false);
-		this.company = coalesce(company, false);
+		this.vendor = coalesceNotNull(vendor, false);
+		this.customer = coalesceNotNull(customer, false);
+		this.company = coalesceNotNull(company, false);
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
+		this.discountPrinted = coalesceNotNull(discountPrinted, false);
 		this.paymentRule = paymentRule;
 		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
@@ -323,7 +327,7 @@ public class BPartner
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;
-		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
+		this.identifiedByExternalReference = coalesceNotNull(identifiedByExternalReference, false);
 		this.memo = memo;
 
 		this.customerPaymentTermId = customerPaymentTermId;
@@ -345,15 +349,15 @@ public class BPartner
 		this.description = description;
 		this.deliveryRule = deliveryRule;
 		this.deliveryViaRule = deliveryViaRule;
-		this.storageWarehouse = coalesce(storageWarehouse, false);
+		this.storageWarehouse = coalesceNotNull(storageWarehouse, false);
 		this.incotermsCustomerId = incotermsCustomerId;
 		this.incotermsVendorId = incotermsVendorId;
 		this.sectionGroupPartnerId = sectionGroupPartnerId;
-		this.prospect = coalesce(prospect, false);
+		this.prospect = coalesceNotNull(prospect, false);
 		this.sapBPartnerCode = sapBPartnerCode;
-		this.sectionGroupPartner = coalesce(sectionGroupPartner, false);
-		this.sectionPartner = coalesce(sectionPartner, false);
-		this.urproduzent = coalesce(urproduzent, false);
+		this.sectionGroupPartner = coalesceNotNull(sectionGroupPartner, false);
+		this.sectionPartner = coalesceNotNull(sectionPartner, false);
+		this.urproduzent = coalesceNotNull(urproduzent, false);
 	}
 
 	/**

@@ -46,7 +46,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CODE;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Stats_StepDef
@@ -69,6 +69,37 @@ public class C_BPartner_Stats_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			upsertCBPartnerStats(tableRow);
+		}
+	}
+
+	/**
+	 * @cucumber.stepdef
+	 * Removes the C_BPartner_Stats row(s) for the given C_BPartners.
+	 * Used to reproduce the legacy data scenario in which a partner has no stats record at all
+	 * (e.g. seeded customer data that pre-dates the C_BPartner interceptor that auto-creates one).
+	 *
+	 * @cucumber.depends C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And delete C_BPartner_Stats:
+	 *   | C_BPartner_ID.Identifier |
+	 *   | bp_1                     |
+	 * </pre>
+	 */
+	@And("delete C_BPartner_Stats:")
+	public void delete_c_bpartner_stats(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+
+			final int deleted = queryBL.createQueryBuilder(I_C_BPartner_Stats.class)
+					.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+					.create()
+					.delete();
+
+			assertThat(deleted).as("expected to delete the auto-created C_BPartner_Stats row for " + bpartnerIdentifier).isGreaterThanOrEqualTo(0);
 		}
 	}
 
