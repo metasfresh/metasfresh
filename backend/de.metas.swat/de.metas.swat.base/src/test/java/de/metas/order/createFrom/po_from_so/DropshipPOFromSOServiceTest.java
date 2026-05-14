@@ -22,6 +22,8 @@
 
 package de.metas.order.createFrom.po_from_so;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
@@ -43,7 +45,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -65,6 +70,7 @@ class DropshipPOFromSOServiceTest
 {
 	private IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO;
 	private IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL;
+	private IDocumentBL documentBL;
 
 	/** Testable subclass that captures factory arguments. */
 	private TestableDropshipPOFromSOService service;
@@ -77,9 +83,11 @@ class DropshipPOFromSOServiceTest
 		// Register mocks BEFORE creating the service — its field initializers call Services.get(...).
 		orderCreatePOFromSOsDAO = mock(IC_Order_CreatePOFromSOsDAO.class);
 		orderCreatePOFromSOsBL = mock(IC_Order_CreatePOFromSOsBL.class);
+		documentBL = mock(IDocumentBL.class);
 
 		Services.registerService(IC_Order_CreatePOFromSOsDAO.class, orderCreatePOFromSOsDAO);
 		Services.registerService(IC_Order_CreatePOFromSOsBL.class, orderCreatePOFromSOsBL);
+		Services.registerService(IDocumentBL.class, documentBL);
 
 		when(orderCreatePOFromSOsBL.getConfigPurchaseQtySource()).thenReturn("QtyOrdered");
 		when(orderCreatePOFromSOsDAO.retrieveOrderLines(any(), anyBoolean(), anyString()))
@@ -186,6 +194,58 @@ class DropshipPOFromSOServiceTest
 		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrderId))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(skippedMsg);
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (e): IDocumentBL.processEx is called once for a DR purchase order
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Verifies that {@link IDocumentBL#processEx} is called exactly once with
+	 * {@code ACTION_Complete} / {@code STATUS_Completed} for a purchase order that
+	 * was created (DocStatus=DR) and linked back to the sales order.
+	 *
+	 * <p>The test creates a minimal in-memory PO record with DocStatus=DR and
+	 * Link_Order_ID pointing to the sales order, which is exactly what the aggregator
+	 * produces. The service's post-aggregation query should find it and complete it.</p>
+	 */
+	@Test
+	void createDropshipPOForSO_callsProcessExOnDraftedPO()
+	{
+		// Given: a sales order
+		final OrderId salesOrderId = createSalesOrderId();
+
+		// and a draft PO linked to it (simulates what the aggregator produces)
+		final I_C_Order draftPO = newInstance(I_C_Order.class);
+		draftPO.setIsSOTrx(false);
+		draftPO.setLink_Order_ID(salesOrderId.getRepoId());
+		draftPO.setDocStatus(IDocument.STATUS_Drafted);
+		saveRecord(draftPO);
+
+		// When
+		service.createDropshipPOForSO(salesOrderId);
+
+		// Then: processEx was called exactly once on the draft PO
+		verify(documentBL).processEx(eq(draftPO), eq(IDocument.ACTION_Complete), eq(IDocument.STATUS_Completed));
+	}
+
+	/**
+	 * Verifies that {@link IDocumentBL#processEx} is NOT called when skipped lines
+	 * are detected — the exception path must not attempt auto-completion.
+	 */
+	@Test
+	void createDropshipPOForSO_doesNotCallProcessExWhenSkippedLinesPresent()
+	{
+		// Given
+		final OrderId salesOrderId = createSalesOrderId();
+		service.skippedLinesMessageToReturn = Optional.of("SO-line-10");
+
+		// When / Then: exception is thrown
+		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrderId))
+				.isInstanceOf(AdempiereException.class);
+
+		// and processEx was never called
+		verify(documentBL, never()).processEx(any(), anyString(), anyString());
 	}
 
 	// -----------------------------------------------------------------------

@@ -22,12 +22,15 @@
 
 package de.metas.order.createFrom.po_from_so;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -89,6 +92,23 @@ public class DropshipPOFromSOService
 		{
 			throw new AdempiereException("Dropship PO creation skipped sales-order lines: " + msg);
 		});
+
+		// Auto-complete every PO created from this SO so the project-creation chain finalises
+		// in the same transaction. The aggregator leaves POs in DR; we flip them to CO here.
+		// Filter by DocStatus='DR' to be idempotent if this method is somehow invoked twice.
+		final List<I_C_Order> createdPOs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, salesOrderId.getRepoId())
+				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, false)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Drafted)
+				.create()
+				.list();
+
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		for (final I_C_Order po : createdPOs)
+		{
+			documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
 	}
 
 	/**
