@@ -8,6 +8,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
@@ -80,6 +82,7 @@ public class C_Invoice // 03771
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	// ==========================================================================
 	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
@@ -99,7 +102,7 @@ public class C_Invoice // 03771
 	}
 
 	/**
-	 * Package-private static helper — testable without Spring context.
+	 * Package-private instance helper — testable via a constructed {@link C_Invoice} interceptor.
 	 * Copies the doctype's {@code IsPartialInvoice} (Y / N / NULL = NA) to the invoice — see
 	 * {@link de.metas.invoice.IsPartialInvoice}. Leaves the field as NULL (= NA, legacy semantic)
 	 * when no doctype is set, or when the doctype's flag is itself NULL.
@@ -114,7 +117,7 @@ public class C_Invoice // 03771
 	 * the IC pipeline or Cucumber step defs — set a specific flag without it being silently
 	 * overwritten by the BEFORE_NEW interceptor.
 	 */
-	static void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
+	void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
 	{
 		// Skip if already explicitly set by the caller before the first save
 		if (InterfaceWrapperHelper.isValueChanged(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice))
@@ -122,10 +125,10 @@ public class C_Invoice // 03771
 			return;
 		}
 
-		final int docTypeId = invoice.getC_DocType_ID();
-		if (docTypeId > 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		if (docTypeId != null)
 		{
-			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
+			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 			// Read the raw column value to preserve the Y / N / NULL tri-state — the boolean
 			// accessor docType.isPartialInvoice() would collapse N and NULL into the same false.
 			// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
@@ -153,7 +156,7 @@ public class C_Invoice // 03771
 			ifColumnsChanged = org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice)
 	public void rejectIsPartialInvoiceChangeAfterComplete_interceptor(@NonNull final I_C_Invoice invoice)
 	{
-		assertIsPartialInvoiceEditableForDocStatus(invoice.getDocStatus());
+		assertIsPartialInvoiceEditableForDocStatus(DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()));
 	}
 
 	/**
@@ -161,10 +164,9 @@ public class C_Invoice // 03771
 	 * Throws {@link AdempiereException} if the given {@code docStatus} is not editable
 	 * (i.e., not {@code DR} or {@code IP}).
 	 */
-	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final String docStatus)
+	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final DocStatus docStatus)
 	{
-		final DocStatus status = DocStatus.ofNullableCode(docStatus);
-		if (status == null || !status.isDraftedOrInProgress())
+		if (!docStatus.isDraftedOrInProgress())
 		{
 			throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
 					.markAsUserValidationError();

@@ -22,7 +22,22 @@
 
 package de.metas.invoice.interceptor;
 
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.invoice.IsPartialInvoice;
+import de.metas.invoice.due_date.InvoiceDueDateProviderService;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.order.IOrderBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -30,6 +45,7 @@ import org.compiere.model.I_C_DocType;
 import de.metas.adempiere.model.I_C_Invoice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -39,17 +55,40 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for {@link C_Invoice} interceptor — {@code IsPartialInvoice} defaulting (AC #11)
  * and readonly-after-Complete enforcement (AC #14).
  * <p>
- * Tests exercise the static helpers {@link C_Invoice#defaultIsPartialInvoiceFromDocType}
- * and {@link C_Invoice#assertIsPartialInvoiceEditableForDocStatus} directly to avoid Spring-context
- * wiring. The interceptor's {@code @ModelChange} methods forward to those helpers; the helpers
+ * Tests exercise the helpers {@link C_Invoice#defaultIsPartialInvoiceFromDocType}
+ * (instance) and {@link C_Invoice#assertIsPartialInvoiceEditableForDocStatus} (static).
+ * The interceptor's {@code @ModelChange} methods forward to those helpers; the helpers
  * carry all the logic.
  */
 class C_Invoice_IsPartialInvoiceTest
 {
+	private C_Invoice interceptor;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		// C_Invoice declares ~10 service fields initialised via Services.get(...). For these tests
+		// we only exercise the two helpers; register Mockito stand-ins so the service locator
+		// returns lightweight mocks instead of trying to instantiate real BLs (which pull in
+		// IPostingService and other modules not on the test classpath). IDocTypeDAO is left
+		// to resolve to its real impl (DocTypeDAO) — it uses InterfaceWrapperHelper.loadOutOfTrx
+		// which works against the POJO in-memory store populated by these tests.
+		Services.registerService(IOrgDAO.class, Mockito.mock(IOrgDAO.class));
+		Services.registerService(IPriceListDAO.class, Mockito.mock(IPriceListDAO.class));
+		Services.registerService(IPaymentDAO.class, Mockito.mock(IPaymentDAO.class));
+		Services.registerService(IPaymentBL.class, Mockito.mock(IPaymentBL.class));
+		Services.registerService(IAllocationBL.class, Mockito.mock(IAllocationBL.class));
+		Services.registerService(IInvoiceBL.class, Mockito.mock(IInvoiceBL.class));
+		Services.registerService(IInvoiceDAO.class, Mockito.mock(IInvoiceDAO.class));
+		Services.registerService(IBPartnerDAO.class, Mockito.mock(IBPartnerDAO.class));
+		Services.registerService(IAllocationDAO.class, Mockito.mock(IAllocationDAO.class));
+		Services.registerService(IOrderBL.class, Mockito.mock(IOrderBL.class));
+
+		interceptor = new C_Invoice(
+				Mockito.mock(PaymentReservationService.class),
+				Mockito.mock(IDocumentLocationBL.class),
+				Mockito.mock(InvoiceDueDateProviderService.class));
 	}
 
 	// -------------------------------------------------------------------------
@@ -74,7 +113,7 @@ class C_Invoice_IsPartialInvoiceTest
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		// IsPartialInvoice intentionally NOT set on the invoice — simulates a brand-new record
 
-		C_Invoice.defaultIsPartialInvoiceFromDocType(invoice);
+		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
 		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
 		assertThat(IsPartialInvoice.fromCode(storedValue)).isEqualTo(IsPartialInvoice.Yes);
@@ -94,7 +133,7 @@ class C_Invoice_IsPartialInvoiceTest
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 
-		C_Invoice.defaultIsPartialInvoiceFromDocType(invoice);
+		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
 		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
 		assertThat(IsPartialInvoice.fromCode(storedValue)).isEqualTo(IsPartialInvoice.No);
@@ -120,7 +159,7 @@ class C_Invoice_IsPartialInvoiceTest
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, "Y"); // caller explicitly set to "Partial"
 
-		C_Invoice.defaultIsPartialInvoiceFromDocType(invoice);
+		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
 		// must remain Y (caller wins, doctype is ignored)
 		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
@@ -137,7 +176,7 @@ class C_Invoice_IsPartialInvoiceTest
 	@Test
 	void editFlag_whileDraft_allowed()
 	{
-		assertThatCode(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus("DR"))
+		assertThatCode(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus(DocStatus.Drafted))
 				.doesNotThrowAnyException();
 	}
 
@@ -147,7 +186,7 @@ class C_Invoice_IsPartialInvoiceTest
 	@Test
 	void editFlag_whileInProgress_allowed()
 	{
-		assertThatCode(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus("IP"))
+		assertThatCode(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus(DocStatus.InProgress))
 				.doesNotThrowAnyException();
 	}
 
@@ -160,7 +199,7 @@ class C_Invoice_IsPartialInvoiceTest
 	@Test
 	void editFlag_afterComplete_rejected()
 	{
-		assertThatThrownBy(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus("CO"))
+		assertThatThrownBy(() -> C_Invoice.assertIsPartialInvoiceEditableForDocStatus(DocStatus.Completed))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("IsPartialInvoice");
 	}
