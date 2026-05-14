@@ -93,4 +93,10 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	int getEdiINVOIC_ExternalSystem_Config_ID();
 	void setEdiINVOIC_ExternalSystem_Config_ID(int EdiINVOIC_ExternalSystem_Config_ID);
 	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_IsEdiOneEDIDesadvPerShipment = "IsEdiOneEDIDesadvPerShipment";
+	boolean isEdiOneEDIDesadvPerShipment();
+	void setIsEdiOneEDIDesadvPerShipment(boolean IsEdiOneEDIDesadvPerShipment);
+	// @formatter:on
 }
