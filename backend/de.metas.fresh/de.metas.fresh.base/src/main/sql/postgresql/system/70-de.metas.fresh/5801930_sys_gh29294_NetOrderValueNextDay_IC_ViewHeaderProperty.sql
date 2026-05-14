@@ -50,3 +50,33 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 -- 2026-05-13T14:31:22.288Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584855,'de_DE')
 ;
+
+-- Element: NetOrderValueNextDay
+-- 2026-05-14T09:05:30.733Z
+UPDATE AD_Element_Trl SET Name='Net Order Value Tomorrow', PrintName='Net Order Value Tomorrow',Updated=TO_TIMESTAMP('2026-05-14 09:05:30.733000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584855 AND AD_Language='en_US'
+;
+
+-- 2026-05-14T09:05:30.792Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-14T09:05:37.667Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584855,'en_US')
+;
+
+-- Element: NetOrderValueNextDay
+-- 2026-05-14T09:05:55.117Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Nettoauftragswert morgen', PrintName='Nettoauftragswert morgen',Updated=TO_TIMESTAMP('2026-05-14 09:05:55.117000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584855 AND AD_Language='de_DE'
+;
+
+-- 2026-05-14T09:05:55.174Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-14T09:05:59.876Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584855,'de_DE')
+;
+
+-- 2026-05-14T09:05:59.936Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584855,'de_DE')
+;
