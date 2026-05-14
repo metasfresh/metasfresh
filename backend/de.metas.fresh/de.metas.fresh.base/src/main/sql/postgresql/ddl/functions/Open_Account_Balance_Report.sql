@@ -88,7 +88,6 @@ DECLARE
     v_ad_client_id      numeric;
     v_main_currency_id  numeric;
     v_main_currency     char(3);
-    v_overall           numeric;
     v_param_acct_schema text;
     v_param_account     text;
     v_param_bpartner    text;
@@ -412,7 +411,7 @@ BEGIN
 
         /* diagnostics: NULL at detail level */
            NULL::numeric                     AS total_fact_lines,
-           NULL::numeric                     AS open_fact_lines,
+           NULL::numeric                     AS open_fact_lines
 
     FROM tmp_oib_fact_base f
              JOIN tmp_oib_accounts oa
@@ -428,7 +427,7 @@ BEGIN
     WHERE p_showdetails = 'Y';
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 6 — Final rows assembled : %', v_rowcount;
+    RAISE NOTICE 'STEP 6 — Final rows assembled: %', v_rowcount;
 
     /* ================================================================
        STEP 7 — Return result.
