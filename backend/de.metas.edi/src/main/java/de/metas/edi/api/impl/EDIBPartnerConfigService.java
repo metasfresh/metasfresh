@@ -84,6 +84,17 @@ public class EDIBPartnerConfigService
 		return ediBPartnerConfig.isDESADVExternalSystemRecipient();
 	}
 
+	public boolean isDESADVOneDesadvPerShipment(@NonNull final BPartnerId bPartnerId)
+	{
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
+		if (ediBPartnerConfig == null)
+		{
+			return false;
+		}
+
+		return ediBPartnerConfig.isDESADVOneDesadvPerShipment();
+	}
+
 	@NonNull
 	public ExternalSystemParentConfigId getDESADVExternalSystemParentConfigId(@NonNull final BPartnerId bPartnerId)
 	{

@@ -108,6 +108,7 @@ public class EDIBPartnerConfigRepository
 				.ediDesadvRecipientGLN(partner.getEdiDesadvRecipientGLN())
 				.ediDesadvSendingMode(EDISendingMode.ofCode(partner.getEdiDESADVSendingMode()))
 				.ediDesadvExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(partner.getEdiDESADV_ExternalSystem_Config_ID()))
+				.isEdiOneEDIDesadvPerShipment(partner.isEdiOneEDIDesadvPerShipment())
 				.isEdiInvoicRecipient(partner.isEdiInvoicRecipient())
 				.ediInvoicRecipientGLN(partner.getEdiInvoicRecipientGLN())
 				.ediInvoicSendingMode(EDISendingMode.ofCode(partner.getEdiINVOICSendingMode()))

@@ -40,6 +40,7 @@ public class EDIBPartnerConfig
 	@Nullable String ediDesadvRecipientGLN;
 	@NonNull EDISendingMode ediDesadvSendingMode;
 	@Nullable ExternalSystemParentConfigId ediDesadvExternalSystemParentConfigId;
+	boolean isEdiOneEDIDesadvPerShipment;
 
 	boolean isEdiInvoicRecipient;
 	@Nullable String ediInvoicRecipientGLN;
@@ -54,6 +55,11 @@ public class EDIBPartnerConfig
 	public boolean isDESADVExternalSystemRecipient()
 	{
 		return isEdiDesadvRecipient && ediDesadvSendingMode.isExternalSystem() && ediDesadvExternalSystemParentConfigId != null;
+	}
+
+	public boolean isDESADVOneDesadvPerShipment()
+	{
+		return isDESADVExternalSystemRecipient() && isEdiOneEDIDesadvPerShipment;
 	}
 
 	public boolean isINVOICReplicationInterfaceRecipient()
