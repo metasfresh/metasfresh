@@ -150,9 +150,21 @@ public class DesadvBL
 		return desadvDAO.retrieveLinesByIds(desadvLineIds);
 	}
 
+	@Nullable
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(@NonNull final I_C_Order orderRecord)
 	{
 		Check.assumeNotEmpty(orderRecord.getPOReference(), "C_Order {} has a not-empty POReference", orderRecord);
+
+		// me03#29231 — when the recipient BPartner uses "one DESADV per shipment" mode,
+		// the DESADV is created at shipment-complete time, not at order-complete time.
+		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(
+				CoalesceUtil.firstGreaterThanZero(
+						orderRecord.getDropShip_BPartner_ID(),
+						orderRecord.getC_BPartner_ID()));
+		if (ediBpartnerConfigService.isDESADVOneDesadvPerShipment(recipientBPartnerId))
+		{
+			return null;
+		}
 
 		final I_EDI_Desadv desadvRecord = retrieveOrCreateDesadv(orderRecord);
 		orderRecord.setEDI_Desadv_ID(desadvRecord.getEDI_Desadv_ID());

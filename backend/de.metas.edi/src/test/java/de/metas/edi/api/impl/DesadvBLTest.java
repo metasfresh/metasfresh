@@ -1,10 +1,13 @@
 package de.metas.edi.api.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.edi.model.I_C_BPartner;
+import de.metas.edi.model.I_C_Order;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.generichumodel.HURepository;
@@ -264,6 +267,35 @@ class DesadvBLTest
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
 				.contains(new BigDecimal("9"), new BigDecimal("9"), new BigDecimal("20"));
+	}
+
+	@Test
+	void addToDesadvCreateForOrderIfNotExist_returnsNull_whenBPartnerIsOneDesadvPerShipment()
+	{
+		// given
+		// Create a BPartner configured for "one DESADV per shipment" mode:
+		// isDESADVOneDesadvPerShipment() requires: isEdiDesadvRecipient=true, sendingMode=ExternalSystem, externalSystemConfigId != null, isEdiOneEDIDesadvPerShipment=true
+		final I_C_BPartner bpartnerRecord = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartnerRecord.setIsEdiDesadvRecipient(true);
+		bpartnerRecord.setEdiDESADVSendingMode(I_C_BPartner.EDISendingMode_ExternalSystem);
+		bpartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(1);
+		bpartnerRecord.setIsEdiOneEDIDesadvPerShipment(true);
+		// EdiINVOICSendingMode must be set to a valid code — fromRecord() calls EDISendingMode.ofCode() unconditionally
+		bpartnerRecord.setEdiINVOICSendingMode(I_C_BPartner.EDISendingMode_ReplicationInterface);
+		org.adempiere.model.InterfaceWrapperHelper.saveRecord(bpartnerRecord);
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
+
+		final I_C_Order orderRecord = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		orderRecord.setC_BPartner_ID(bPartnerId.getRepoId());
+		orderRecord.setPOReference("TEST-REF-001");
+		org.adempiere.model.InterfaceWrapperHelper.saveRecord(orderRecord);
+
+		// when
+		final I_EDI_Desadv result = desadvBL.addToDesadvCreateForOrderIfNotExist(orderRecord);
+
+		// then — method must return null and no EDI_Desadv record must have been created
+		assertThat(result).isNull();
+		assertThat(orderRecord.getEDI_Desadv_ID()).isZero();
 	}
 
 }
