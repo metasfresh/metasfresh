@@ -82,6 +82,12 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateVendorsBeforeComplete(@NonNull final I_C_Order order)
 	{
+		if (!order.isSOTrx())
+		{
+			// BEFORE_COMPLETE vendor-validation only makes sense for SOs (the auto-fill is upstream
+			// of the PO aggregator). POs on a dropship warehouse don't need this check.
+			return;
+		}
 		if (!isDropshipWarehouseOrder(order))
 		{
 			return;
