@@ -270,13 +270,13 @@ export class RawLookup extends Component {
       ? mainProperty.parameterName
       : mainProperty.field;
 
-    // NOTE: When onChange returns a Promise (async path, typical for regular documents),
-    // the callback inside executeAfterPromise runs AFTER this.focus() below.
-    // In that case shouldKeepFocus is always true at the this.focus() call site,
-    // preserving the original behavior (always refocus). The "don't refocus" path
-    // only takes effect when onChange is synchronous (returns null/undefined).
-    // For quick input, focus advance is handled by a completely different code path
-    // (resolveAndSelectOnEnter → handleAutoSelectAndAdvance → focusNextFieldInForm).
+    // shouldKeepFocus: only suppress this.focus() when onChange is synchronous AND
+    // setNextProperty reports no next sub-field (Lookup exits the last sub-field via
+    // focusNextFormField instead). For async onChange (regular documents), the Promise
+    // callback runs after this.focus() is already evaluated — shouldKeepFocus remains
+    // true, preserving the original "always refocus" behavior. For quick input, focus
+    // advance on Enter goes through resolveAndSelectOnEnter → handleAutoSelectAndAdvance
+    // → focusNextFieldInForm, bypassing this code path entirely.
     let shouldKeepFocus = true;
 
     executeAfterPromise(onChange(fieldName, selectedItemNorm), () => {
@@ -571,8 +571,9 @@ export class RawLookup extends Component {
       console.warn(
         'RawLookup.focusNextFieldInForm: current input not found in form input list. This may indicate a DOM structure issue.'
       );
+      return; // no point retrying — the input won't appear in the list on next attempt
     }
-    if (idx >= 0 && idx < inputs.length - 1) {
+    if (idx < inputs.length - 1) {
       const nextInput = inputs[idx + 1];
       nextInput.focus();
 

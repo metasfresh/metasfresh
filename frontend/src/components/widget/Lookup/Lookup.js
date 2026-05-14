@@ -174,7 +174,9 @@ class Lookup extends Component {
       )
     );
 
-    const lookupInputs = wrapperEl.querySelectorAll('input');
+    const lookupInputs = wrapperEl.querySelectorAll(
+      'input:not([disabled]):not([readonly]):not([type="hidden"])'
+    );
     if (lookupInputs.length === 0) return;
 
     const lastLookupInput = lookupInputs[lookupInputs.length - 1];
