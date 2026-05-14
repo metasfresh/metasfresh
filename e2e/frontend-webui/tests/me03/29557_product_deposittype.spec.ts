@@ -51,9 +51,12 @@ and that selecting the NRC value persists after save and page reload.
     `);
 
     // Create a fresh test user + a dedicated test product (no shared seed data).
-    // No language pin — the test selects + asserts by key, not by caption.
+    // The `login` block is required so that Backend returns `login.user` for
+    // LoginPage.login(); the test deliberately does NOT pin a language —
+    // selection happens by option key and assertion by raw field value.
     const masterdata = await Backend.createMasterdata({
       request: {
+        login: { user: {} },
         products: {
           PROD_DEPOSITTYPE: {
             name: 'Test Deposit Type Product',
