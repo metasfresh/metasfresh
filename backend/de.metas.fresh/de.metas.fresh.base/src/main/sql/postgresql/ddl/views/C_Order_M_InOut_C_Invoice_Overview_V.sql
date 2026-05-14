@@ -163,7 +163,6 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
                JOIN c_invoiceline il ON il.c_invoice_id = i.c_invoice_id) doc
          LEFT JOIN c_doctype dt ON dt.c_doctype_id = doc.c_doctype_id
          LEFT JOIN m_product p ON p.m_product_id = doc.m_product_id
-         LEFT JOIN m_warehouse wh ON wh.m_warehouse_id = doc.m_warehouse_id
          LEFT JOIN (SELECT s.m_product_id, s.m_warehouse_id, SUM(s.qtyonhand) AS qtyonhand
                     FROM md_stock s
                     WHERE s.isactive = 'Y'
