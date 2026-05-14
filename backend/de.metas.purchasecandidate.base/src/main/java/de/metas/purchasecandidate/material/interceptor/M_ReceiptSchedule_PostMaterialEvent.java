@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
+import javax.annotation.Nullable;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -200,7 +201,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()))
+				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
@@ -225,7 +226,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()));
+				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)));
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -325,7 +326,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptSchedule.getM_Warehouse_ID()))
+				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
@@ -348,15 +349,15 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.build();
 	}
 
-	private boolean getIsDropShipWarehouse(final int warehouseId)
+	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
 	{
-		if (warehouseId <= 0)
+		if (warehouseId == null)
 		{
 			return false;
 		}
 
 		return Services.get(IWarehouseDAO.class)
-				.getById(WarehouseId.ofRepoId(warehouseId))
+				.getById(warehouseId)
 				.isDropShipWarehouse();
 	}
 }

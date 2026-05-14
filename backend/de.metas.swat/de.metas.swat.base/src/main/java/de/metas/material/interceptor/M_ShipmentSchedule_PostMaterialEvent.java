@@ -152,7 +152,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
 		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
@@ -185,7 +185,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
 
 		final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder = ShipmentScheduleUpdatedEvent.builder();
 
@@ -270,7 +270,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentSchedule.getM_Warehouse_ID());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
 
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
