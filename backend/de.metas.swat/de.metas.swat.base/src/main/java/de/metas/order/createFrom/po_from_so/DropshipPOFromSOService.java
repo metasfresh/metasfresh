@@ -115,6 +115,13 @@ public class DropshipPOFromSOService
 				.create()
 				.list();
 
+		// Force a fresh read of the SO before reading its C_Project_ID. The salesOrder instance was
+		// loaded at the start of this method (before the SO's BEFORE_COMPLETE finished persisting),
+		// so its C_Project_ID may be stale (0) even though the SO's beforeComplete interceptor has
+		// already created and assigned a project. Without this refresh, the stamp loop below would
+		// skip the propagation and PO's own beforeComplete would create a SECOND project for the
+		// PO -- the symptom the user originally reported.
+		InterfaceWrapperHelper.refresh(salesOrder);
 		final ProjectId salesOrderProjectId = ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
 		if (salesOrderProjectId != null)
 		{
