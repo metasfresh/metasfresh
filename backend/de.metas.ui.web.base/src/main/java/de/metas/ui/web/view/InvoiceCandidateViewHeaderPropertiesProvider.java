@@ -119,8 +119,6 @@ public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderP
 								.value(summary.getCUNetAmtNotApprovedAsTranslatableString())
 								.build())
 						.build())
-				//
-				// Net Order Value for next day (Netto Auftragswert – Zugesagter Termin morgen)
 				.add(ViewHeaderPropertiesGroup.builder()
 							 .entry(ViewHeaderProperty.builder()
 											.caption(msgBL.translatable("NetOrderValueNextDay"))

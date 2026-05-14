@@ -51,12 +51,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 	private final BigDecimal huNetAmtNotApproved;
 	private final BigDecimal cuNetAmtNotApproved;
 	private final int countTotalToRecompute;
-
-	/**
-	 * Sum of {@code NetAmtToInvoice} for all invoice candidates in the current selection
-	 * whose {@code DatePromised} falls on the next calendar day.
-	 */
-	private final BigDecimal netOrderValueNextDayBD;
+	private final BigDecimal netOrderValueNextDay;
 
 	private final ImmutableSet<String> currencySymbols;
 
@@ -76,7 +71,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		cuNetAmtNotApproved = builder.cuNetAmtNotApproved;
 
 		countTotalToRecompute = builder.countTotalToRecompute;
-		netOrderValueNextDayBD = builder.netOrderValueNextDayBD;
+		netOrderValueNextDay = builder.netOrderValueNextDay;
 		currencySymbols = builder.currencySymbols.build();
 	}
 
@@ -150,13 +145,9 @@ public class InvoiceCandidatesAmtSelectionSummary
 		return countTotalToRecompute;
 	}
 
-	/**
-	 * Returns the sum of {@code NetAmtToInvoice} for candidates in the current selection
-	 * whose {@code DatePromised} is tomorrow.
-	 */
 	public BigDecimal getNetOrderValueNextDay()
 	{
-		return netOrderValueNextDayBD;
+		return netOrderValueNextDay;
 	}
 
 	public ITranslatableString getNetOrderValueNextDayAsTranslatableString()
@@ -205,7 +196,7 @@ public class InvoiceCandidatesAmtSelectionSummary
 		private BigDecimal cuNetAmtNotApproved = BigDecimal.ZERO;
 
 		private int countTotalToRecompute = 0;
-		private BigDecimal netOrderValueNextDayBD = BigDecimal.ZERO;
+		private BigDecimal netOrderValueNextDay = BigDecimal.ZERO;
 		private final ImmutableSet.Builder<String> currencySymbols = ImmutableSet.builder();
 
 		private Builder()
@@ -266,17 +257,11 @@ public class InvoiceCandidatesAmtSelectionSummary
 			Check.assume(countToRecomputeToAdd > 0, "countToRecomputeToAdd > 0");
 			countTotalToRecompute += countToRecomputeToAdd;
 		}
-
-		/**
-		 * Accumulates the per-row {@code NetOrderValueNextDay} value across result set rows.
-		 * {@code null} (from {@link java.sql.ResultSet#getBigDecimal}) is treated as zero.
-		 * null treated as zero.
-		 */
 		public Builder addNetOrderValueNextDay(@Nullable final BigDecimal amtToAdd)
 		{
 			if (amtToAdd != null)
 			{
-				netOrderValueNextDayBD = netOrderValueNextDayBD.add(amtToAdd);
+				netOrderValueNextDay = netOrderValueNextDay.add(amtToAdd);
 			}
 			return this;
 		}
