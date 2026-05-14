@@ -93,8 +93,8 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | so_dw1     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
-      | sol_dw1_1  | so_dw1     | product_dw   | 10         | vendor_dw     |
-      | sol_dw1_2  | so_dw1     | product_dw   | 5          | vendor_dw     |
+      | sol_dw1_1  | so_dw1     | product_dw   | 10         | vendor_dw            |
+      | sol_dw1_2  | so_dw1     | product_dw   | 5          | vendor_dw            |
     When the order identified by so_dw1 is completed
 
     # Assert: exactly 1 PO was created with Link_Order_ID pointing back to the SO,
@@ -115,8 +115,8 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | so_dw2     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
-      | sol_dw2_1  | so_dw2     | product_dw   | 8          | vendor_dw     |
-      | sol_dw2_2  | so_dw2     | product_dw   | 3          | vendor_dw     |
+      | sol_dw2_1  | so_dw2     | product_dw   | 8          | vendor_dw            |
+      | sol_dw2_2  | so_dw2     | product_dw   | 3          | vendor_dw            |
     When the order identified by so_dw2 is completed
 
     # Drain the event queue so any async processing that would create MD_Candidates has a chance to run
@@ -124,3 +124,42 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
 
     # Assert: no MD_Candidate demand rows created for the dropship-warehouse product
     Then no MD_Candidate exists for M_Product_ID product_dw
+
+  @from:cucumber
+  Scenario: Auto-completed dropship PO produces zero MD_Candidate rows
+    # Regression guard for the combined contract: even after the dropship PO has auto-completed
+    # (i.e. the PO-completion material-event chain has fired AND the rabbitMQ queue has drained),
+    # NO non-STOCK MD_Candidate rows must exist for product_dw. This is the explicit statement
+    # of the design contract that Scenarios 1 (auto-complete=CO) and 2 (zero candidates) only
+    # exercise separately. The PO-side short-circuit in M_ReceiptSchedule_PostMaterialEvent +
+    # ReceiptsScheduleCreatedOrUpdatedHandler/Deleted is what makes this hold.
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw3     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw3_1  | so_dw3     | product_dw   | 10         | vendor_dw            |
+      | sol_dw3_2  | so_dw3     | product_dw   | 5          | vendor_dw            |
+    When the order identified by so_dw3 is completed
+
+    # Verify the PO auto-completed in the same transaction as the SO (Scenario 1's guarantee)
+    Then the order is created:
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | so_dw3                   | false   | POO         | CO            | true           |
+
+    # Drain the event queue so any PO-completion async processing has a chance to run
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Assert: still zero non-STOCK MD_Candidate rows after PO completion + queue drain
+    Then no MD_Candidate exists for M_Product_ID product_dw
+
+# Scenario "SO and auto-generated dropship PO share a single C_Project_ID" was DEFERRED.
+# Writing the scenario (mirroring the project-type activation pattern from
+# purchaseOrderProjectToSO.feature lines 15+109) revealed a real production gap:
+# with project type Sales/Purchase Order active, the SO gets C_Project=1000008 but the
+# auto-generated dropship PO ends up with C_Project=1000009 — DIFFERENT projects, not the
+# shared identity the design contract promises.
+# See ai-work/29584/pending-questions.md Q3 (2026-05-15) for the diagnostic trace
+# (SO and PO end up with distinct project IDs despite DropshipPOFromSOService stamping
+# salesOrder.getC_Project_ID() on the PO before auto-complete — likely C_Order_Project
+# BEFORE_COMPLETE on the PO is racing the propagation).
