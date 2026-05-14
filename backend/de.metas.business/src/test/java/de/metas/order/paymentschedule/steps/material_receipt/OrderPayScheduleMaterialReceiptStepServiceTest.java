@@ -686,10 +686,10 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		// Stub: orderPayScheduleService.getContextById → complex order
 		when(orderPayScheduleService.getContextById(ORDER_ID)).thenReturn(Optional.of(order));
 
-		// Stub: receiptService.getByOrderId(orderId, null, r1Record) → only R2
-		// (simulates the fix: R1 excluded because excludeReceipt=r1Record)
+		// Stub: receiptService.getByOrderId(orderId, null, excludeReceiptId) → only R2
+		// (simulates the fix: R1 excluded because excludeReceiptId=r1Record's ID)
 		final MaterialReceiptCollection onlyR2 = receiptCollection(buildReceipt(R2_ID, R2_LINE_ID, r2Value));
-		when(receiptService.getByOrderId(eq(ORDER_ID), isNull(), eq(r1Record))).thenReturn(onlyR2);
+		when(receiptService.getByOrderId(eq(ORDER_ID), isNull(), eq(R1_ID))).thenReturn(onlyR2);
 
 		// Capture the consumer passed to updateById so we can invoke it and inspect the result
 		final OrderPaySchedule[] capturedSchedule = { null };
@@ -710,8 +710,8 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		// updateById must have been called (proves the service did not short-circuit)
 		verify(orderPayScheduleService).updateById(eq(ORDER_ID), any());
 
-		// receiptService must have been called with the exclude hint
-		verify(receiptService).getByOrderId(eq(ORDER_ID), isNull(), eq(r1Record));
+		// receiptService must have been called with the exclude hint (R1_ID)
+		verify(receiptService).getByOrderId(eq(ORDER_ID), isNull(), eq(R1_ID));
 
 		// The schedule must have been updated: R2 sub-row + remainder row (no R1 sub-row)
 		assertThat(capturedSchedule[0]).isNotNull();

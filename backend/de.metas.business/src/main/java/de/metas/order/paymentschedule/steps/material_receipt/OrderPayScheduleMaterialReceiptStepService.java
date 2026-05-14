@@ -109,7 +109,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 	 */
 	public void recomputeDeliveryStepsAfterReceiptReversed(@NonNull final OrderId orderId, @NonNull final I_M_InOut reversedReceipt)
 	{
-		recomputeDeliverySteps(orderId, null, reversedReceipt, null, null);
+		recomputeDeliverySteps(orderId, null, InOutId.ofRepoId(reversedReceipt.getM_InOut_ID()), null, null);
 	}
 
 	/**
@@ -158,14 +158,14 @@ public class OrderPayScheduleMaterialReceiptStepService
 	private void recomputeDeliverySteps(
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt,
-			@Nullable final I_M_InOut excludeReceipt,
+			@Nullable final InOutId excludeReceiptId,
 			@Nullable final RegularInvoice completingInvoice,
 			@Nullable final InvoiceId excludeInvoiceId)
 	{
 		final OrderSchedulingContext order = orderPayScheduleService.getContextById(orderId).orElse(null);
 		if (order == null || !order.isComplexPaymentTerm()) {return;}
 
-		final MaterialReceiptCollection receiptInfos = receiptService.getByOrderId(orderId, completingReceipt, excludeReceipt);
+		final MaterialReceiptCollection receiptInfos = receiptService.getByOrderId(orderId, completingReceipt, excludeReceiptId);
 
 		orderPayScheduleService.updateById(
 				orderId,
@@ -237,7 +237,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 				continue;
 			}
 
-			// I-1: BaseAmt = receipt GrandTotal (with-tax); DueAmt = BaseAmt × break%
+			// Per-receipt row: BaseAmt = receipt.GrandTotal (with-tax); DueAmt = BaseAmt × break%
 			final Money dueAmt = receiptValue.multiply(termBreak.getPercent(), order.getPrecision());
 			final RegularInvoice invoice = regularInvoiceService.getByReceipt(receipt, completingInvoice, excludeInvoiceId).orElse(null);
 			final OrderPayScheduleStatus status = computeOrderPayScheduleStatus(invoice);
@@ -265,7 +265,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 		}
 
 		// Remainder row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax); omit if BaseAmt ≤ 0 (over-delivery)
-		// I-4: DueAmt = BaseAmt × break%
+		// Remainder DueAmt = BaseAmt × break%
 		final Money remainderBaseAmt = order.getGrandTotal().subtract(totalReceiptValue).toZeroIfNegative();
 		if (remainderBaseAmt.signum() > 0)
 		{

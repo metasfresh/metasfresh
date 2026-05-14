@@ -60,16 +60,16 @@ public class OrderPayScheduleMaterialReceiptService
 	 *
 	 * @param orderId         the order whose receipts are to be retrieved
 	 * @param completingReceipt in-memory receipt currently completing (not yet CO in DB); may be {@code null}
-	 * @param excludeReceipt  in-memory receipt currently being reversed (Reversal_ID not yet saved to DB);
+	 * @param excludeReceiptId ID of the receipt currently being reversed (Reversal_ID not yet saved to DB);
 	 *                        the receipt with this ID will be excluded from the result even if the DB still
 	 *                        shows it as {@code DocStatus=CO} / {@code Reversal_ID=0}; may be {@code null}
 	 */
 	public MaterialReceiptCollection getByOrderId(
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt,
-			@Nullable final I_M_InOut excludeReceipt)
+			@Nullable final InOutId excludeReceiptId)
 	{
-		final List<I_M_InOut> receiptRecords = retrieveReceiptRecords(orderId, completingReceipt, excludeReceipt);
+		final List<I_M_InOut> receiptRecords = retrieveReceiptRecords(orderId, completingReceipt, excludeReceiptId);
 
 		return fromRecords(receiptRecords, orderId);
 	}
@@ -138,16 +138,15 @@ public class OrderPayScheduleMaterialReceiptService
 	private @NotNull List<I_M_InOut> retrieveReceiptRecords(
 			@NonNull final OrderId orderId,
 			@Nullable final I_M_InOut completingReceipt0,
-			@Nullable final I_M_InOut excludeReceipt)
+			@Nullable final InOutId excludeReceiptId)
 	{
 		final I_M_InOut completingReceiptEffective = isEligibleReceipt(completingReceipt0, false) ? completingReceipt0 : null;
-		final int excludeReceiptId = excludeReceipt != null ? excludeReceipt.getM_InOut_ID() : -1;
 
 		final ArrayList<I_M_InOut> result = new ArrayList<>();
 		for (final I_M_InOut receiptRecord : inOutDAO.retrieveInOutsByOrderId(orderId))
 		{
 			// Skip the reversed receipt even though the DB still shows it as CO/Reversal_ID=0
-			if (excludeReceiptId > 0 && receiptRecord.getM_InOut_ID() == excludeReceiptId)
+			if (excludeReceiptId != null && receiptRecord.getM_InOut_ID() == excludeReceiptId.getRepoId())
 			{
 				continue;
 			}
