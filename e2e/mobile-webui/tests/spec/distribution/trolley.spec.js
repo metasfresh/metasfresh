@@ -4,6 +4,8 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
+import { expectErrorToast } from '../../utils/common';
 import { generateEAN13 } from '../../utils/ean13';
 import { allure } from 'allure-playwright';
 
@@ -284,4 +286,73 @@ test('Pick multiple HUs (by HU code) to trolley and drop them all together in on
         });
     });
 
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Wagen freigeben: holder releases own trolley returns to scan screen', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.tag('F5114');
+    allure.story('Trolley: holder can release their own Wagen');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user1);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+
+    await DistributionJobsListScreen.scanTrolley({
+        scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode,
+        expectHeader: masterdata.warehouses.whInTransit.locators.whInTransit_l1.code
+    });
+
+    await DistributionJobsListScreen.expectReleaseTrolleyButtonVisible({ visible: true });
+    await DistributionJobsListScreen.clickReleaseTrolleyButton();
+    await DistributionJobsListScreen.expectTrolleyScanScreen();
+
+    await ApplicationsListScreen.logout();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Wagen freigeben: second user scanning held trolley sees conflict toast and original holder is not bumped', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.tag('F5114');
+    allure.story('Trolley: conflict when second user scans held cart');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ qtyToMove: 100 });
+
+    // user1 takes whInTransit_l1
+    await LoginScreen.login(masterdata.login.user1);
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.scanTrolley({
+        scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode,
+        expectHeader: masterdata.warehouses.whInTransit.locators.whInTransit_l1.code
+    });
+    await ApplicationsListScreen.logout();
+
+    // user2 tries to scan the same trolley — should see conflict toast
+    await LoginScreen.login(masterdata.login.user2);
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+
+    await expectErrorToast('Trolley conflict toast', async () => {
+        await BarcodeScannerComponent.type({
+            scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode
+        });
+    });
+    await ApplicationsListScreen.logout();
+
+    // user1 still holds the trolley
+    await LoginScreen.login(masterdata.login.user1);
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.expectTrolley({
+        value: masterdata.warehouses.whInTransit.locators.whInTransit_l1.code
+    });
+    await ApplicationsListScreen.logout();
 });
