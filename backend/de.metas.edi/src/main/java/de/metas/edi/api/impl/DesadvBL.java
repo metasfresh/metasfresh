@@ -366,6 +366,127 @@ public class DesadvBL
 		return desadv;
 	}
 
+	@NonNull
+	public I_EDI_Desadv createDesadvForInOut(@NonNull final I_M_InOut inOut)
+	{
+		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
+		final ImmutableSet<OrderId> sourceOrderIds = inOutLines.stream()
+				.mapToInt(I_M_InOutLine::getC_OrderLine_ID)
+				.filter(id -> id > 0)
+				.mapToObj(id -> OrderLineId.ofRepoId(id))
+				.map(orderLineId -> orderDAO.getOrderLineById(orderLineId).getC_Order_ID())
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<I_C_Order> sourceOrders = sourceOrderIds.stream()
+				.map(orderId -> InterfaceWrapperHelper.create(orderDAO.getById(orderId), I_C_Order.class))
+				.collect(ImmutableList.toImmutableList());
+
+		Check.assumeNotEmpty(sourceOrders, "Shipment {} has no source orders — cannot create a DESADV", inOut.getM_InOut_ID());
+
+		final I_EDI_Desadv desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, inOut);
+		applyAggregatedHeader(desadv, inOut, sourceOrders);
+		InterfaceWrapperHelper.save(desadv);
+		return desadv;
+	}
+
+	@VisibleForTesting
+	static void applyAggregatedHeader(
+			@NonNull final I_EDI_Desadv desadv,
+			@NonNull final I_M_InOut inOut,
+			@NonNull final List<I_C_Order> sourceOrders)
+	{
+		// --- BPartner identity comes from the shipment (single ship-to)
+		desadv.setC_BPartner_ID(inOut.getC_BPartner_ID());
+		desadv.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
+
+		// --- POReference: distinct-or-empty
+		desadv.setPOReference(singleValueOrEmpty(sourceOrders, I_C_Order::getPOReference));
+
+		// --- DeliveryViaRule: distinct-or-from-inout
+		desadv.setDeliveryViaRule(singleValueOrFallback(
+				sourceOrders, I_C_Order::getDeliveryViaRule, inOut.getDeliveryViaRule()));
+
+		// --- DateOrdered: distinct-or-earliest
+		desadv.setDateOrdered(singleValueOrEarliest(sourceOrders, I_C_Order::getDateOrdered));
+
+		// --- MovementDate: authoritative on shipment
+		desadv.setMovementDate(inOut.getMovementDate());
+
+		// --- C_Currency_ID: from the shipment's main order (all orders share via price list)
+		final I_C_Order mainOrder = sourceOrders.get(0);
+		desadv.setC_Currency_ID(mainOrder.getC_Currency_ID());
+
+		// --- HandOver_* and DropShip_*: distinct-or-fallback-to-BPartner
+		desadv.setHandOver_Partner_ID(singleIntOrFallback(
+				sourceOrders, I_C_Order::getHandOver_Partner_ID, inOut.getC_BPartner_ID()));
+		desadv.setHandOver_Location_ID(singleIntOrFallback(
+				sourceOrders, I_C_Order::getHandOver_Location_ID, inOut.getC_BPartner_Location_ID()));
+		desadv.setDropShip_BPartner_ID(singleIntOrFallback(
+				sourceOrders, I_C_Order::getDropShip_BPartner_ID, inOut.getC_BPartner_ID()));
+		desadv.setDropShip_Location_ID(singleIntOrFallback(
+				sourceOrders, I_C_Order::getDropShip_Location_ID, inOut.getC_BPartner_Location_ID()));
+
+		// --- Bill_Location_ID: from the main order
+		// Inline the getBillToLocationId logic to keep this helper static (avoids Services lookup in unit tests).
+		// Logic mirrors OrderBL.getBillToLocationId: prefer Bill_* fields; fall back to C_BPartner_* fields.
+		final BPartnerLocationAndCaptureId billToLocationIdExplicit = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				mainOrder.getBill_BPartner_ID(),
+				mainOrder.getBill_Location_ID(),
+				mainOrder.getBill_Location_Value_ID());
+		final BPartnerLocationAndCaptureId billToLocationIdFallback = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				mainOrder.getC_BPartner_ID(),
+				mainOrder.getC_BPartner_Location_ID(),
+				mainOrder.getC_BPartner_Location_Value_ID());
+		final BPartnerLocationAndCaptureId billToLocationId = billToLocationIdExplicit != null
+				? billToLocationIdExplicit
+				: billToLocationIdFallback;
+		desadv.setBill_Location_ID(BPartnerLocationAndCaptureId.toBPartnerLocationRepoId(billToLocationId));
+	}
+
+	@VisibleForTesting
+	static @Nullable String singleValueOrEmpty(
+			@NonNull final List<I_C_Order> orders,
+			@NonNull final java.util.function.Function<I_C_Order, String> extract)
+	{
+		final java.util.Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
+		return distinct.size() == 1 ? distinct.iterator().next() : null;
+	}
+
+	@VisibleForTesting
+	static @NonNull String singleValueOrFallback(
+			@NonNull final List<I_C_Order> orders,
+			@NonNull final java.util.function.Function<I_C_Order, String> extract,
+			@NonNull final String fallback)
+	{
+		final java.util.Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
+		return distinct.size() == 1 ? distinct.iterator().next() : fallback;
+	}
+
+	@VisibleForTesting
+	static int singleIntOrFallback(
+			@NonNull final List<I_C_Order> orders,
+			@NonNull final java.util.function.ToIntFunction<I_C_Order> extract,
+			final int fallback)
+	{
+		final java.util.Set<Integer> distinct = orders.stream().mapToInt(extract).filter(v -> v > 0).boxed().collect(Collectors.toSet());
+		return distinct.size() == 1 ? distinct.iterator().next() : fallback;
+	}
+
+	@VisibleForTesting
+	static @Nullable java.sql.Timestamp singleValueOrEarliest(
+			@NonNull final List<I_C_Order> orders,
+			@NonNull final java.util.function.Function<I_C_Order, java.sql.Timestamp> extract)
+	{
+		final List<java.sql.Timestamp> values = orders.stream().map(extract).filter(java.util.Objects::nonNull).collect(Collectors.toList());
+		if (values.isEmpty())
+		{
+			return null;
+		}
+		final java.util.Set<java.sql.Timestamp> distinct = new java.util.HashSet<>(values);
+		return distinct.size() == 1 ? values.get(0) : values.stream().min(java.sql.Timestamp::compareTo).orElse(null);
+	}
+
 	@Nullable
 	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(@NonNull final I_M_InOut inOut)
 	{
