@@ -102,7 +102,7 @@ BEGIN
     FROM C_AcctSchema s
     WHERE s.C_AcctSchema_ID = p_c_acctschema_id;
 
-    RAISE NOTICE 'Resolved C_Currency_ID: % for C_AcctSchema_ID: %', v_main_currency_id, p_c_acctschema_id;
+    RAISE DEBUG 'Resolved C_Currency_ID: % for C_AcctSchema_ID: %', v_main_currency_id, p_c_acctschema_id;
 
 
     SELECT c.iso_code
@@ -137,8 +137,9 @@ BEGIN
       AND (p_account_id IS NULL OR ev.C_ElementValue_ID = p_account_id);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 1 — Open-item accounts resolved: %', v_rowcount;
+    RAISE DEBUG 'STEP 1 — Open-item accounts resolved: %', v_rowcount;
 
+    CREATE INDEX ON tmp_oib_accounts (account_id);
 
     /* ================================================================
        STEP 2 — Base fact lines.
@@ -191,12 +192,10 @@ BEGIN
       AND fa.AD_Org_ID = p_ad_org_id
       AND (p_c_bpartner_id IS NULL OR fa.C_BPartner_ID = p_c_bpartner_id);
 
-    CREATE INDEX ON tmp_oib_accounts (account_id);
-    CREATE INDEX ON tmp_oib_fact_base (c_acctschema_id, account_id, c_bpartner_id, c_currency_id, openitemkey);
-
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 2 — Base fact lines loaded: %', v_rowcount;
+    RAISE DEBUG 'STEP 2 — Base fact lines loaded: %', v_rowcount;
 
+    CREATE INDEX ON tmp_oib_fact_base (c_acctschema_id, account_id, c_bpartner_id, c_currency_id, openitemkey);
 
     /* ================================================================
        STEP 3 — Per-OpenItemKey aggregation.
@@ -250,7 +249,7 @@ BEGIN
              f.openitemkey;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 3 — OpenItemKey groups computed: %', v_rowcount;
+    RAISE DEBUG 'STEP 3 — OpenItemKey groups computed: %', v_rowcount;
 
 
     /* ================================================================
@@ -262,7 +261,7 @@ BEGIN
     WHERE ABS(oi_open_amt_unreconciled) <= p_tolerance;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 4 — Cleared key groups suppressed: %', v_rowcount;
+    RAISE DEBUG 'STEP 4 — Cleared key groups suppressed: %', v_rowcount;
 
 
     /* ================================================================
@@ -302,7 +301,7 @@ BEGIN
              k.currency;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 5 — Account-level summary rows: %', v_rowcount;
+    RAISE DEBUG 'STEP 5 — Account-level summary rows: %', v_rowcount;
 
 
     /* ================================================================
@@ -427,7 +426,7 @@ BEGIN
     WHERE p_showdetails = 'Y';
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'STEP 6 — Final rows assembled: %', v_rowcount;
+    RAISE DEBUG 'STEP 6 — Final rows assembled: %', v_rowcount;
 
     /* ================================================================
        STEP 7 — Return result.
