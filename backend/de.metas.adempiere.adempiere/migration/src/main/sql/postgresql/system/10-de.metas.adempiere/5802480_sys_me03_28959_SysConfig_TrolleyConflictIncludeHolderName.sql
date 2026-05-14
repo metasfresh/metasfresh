@@ -9,10 +9,10 @@ INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, Configuratio
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
 VALUES (0, 0, 541809 /*From ID Server*/, 'S',
-        TO_TIMESTAMP('2026-05-13 10:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        TO_TIMESTAMP('2026-05-13 10:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        TO_TIMESTAMP('2026-05-15 10:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+        TO_TIMESTAMP('2026-05-15 10:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'D', 'Y',
         'de.metas.workflow.rest_api.TrolleyService.IncludeHolderNameInConflictError',
         'N',
-        'When Y, the trolley-conflict error message includes the current holder''s name; when N (default), the message is generic.')
+        'Wenn Y, enthält die Fehlermeldung bei Wagenkonflikten den Namen des aktuellen Halters; wenn N (Standard), ist die Meldung generisch.')
 ;
