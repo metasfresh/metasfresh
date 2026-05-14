@@ -23,6 +23,7 @@
 package de.metas.order.createFrom.po_from_so;
 
 import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
@@ -95,19 +96,17 @@ public class DropshipPOFromSOService
 			throw new AdempiereException("Dropship PO creation skipped sales-order lines: " + msg);
 		});
 
-		// The aggregator leaves each created PO in DocStatus=DR. We deliberately do NOT
-		// auto-complete those POs here: completing them would fire the PO-completion
-		// material-event chain (SupplyRequired / MD_Candidate / shipment-schedule recompute),
-		// which violates the dropship-warehouse design contract that no MD_Candidate rows
-		// appear for these orders (the SO-side shipment-schedule short-circuit already
-		// suppresses the SO-completion path; the PO-completion path must stay closed too).
+		// The aggregator leaves each created PO in DocStatus=DR. PO auto-completes here;
+		// the PO-completion material-event chain is short-circuited for dropship warehouses
+		// (see M_ReceiptSchedule_PostMaterialEvent and the dispo-service receipt-schedule
+		// handlers), so no MD_Candidate rows are produced.
 		//
-		// To still finalise the project chain in the same transaction without completing,
-		// we explicitly stamp the SO's C_Project_ID onto each created PO (header + lines).
-		// The aggregator already copies the project on line 338 of
-		// CreatePOFromSOsAggregator.createPurchaseOrder, but that read goes through a
-		// lazy-loaded SO instance which can be stale and miss the project the SO's own
-		// BEFORE_COMPLETE just created — so we re-do it here from a known-good source.
+		// As a defensive measure (and to keep the project finalised even if the auto-complete
+		// step is later disabled), we also explicitly stamp the SO's C_Project_ID onto each
+		// created PO (header + lines) before completing. The aggregator already copies the
+		// project on line 338 of CreatePOFromSOsAggregator.createPurchaseOrder, but that read
+		// goes through a lazy-loaded SO instance which can be stale and miss the project the
+		// SO's own BEFORE_COMPLETE just created — so we re-do it here from a known-good source.
 		final List<I_C_Order> createdPOs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, salesOrderId.getRepoId())
@@ -117,33 +116,42 @@ public class DropshipPOFromSOService
 				.list();
 
 		final ProjectId salesOrderProjectId = ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
-		if (salesOrderProjectId == null)
+		if (salesOrderProjectId != null)
 		{
-			// SO has no project (typical when no SalesPurchaseOrder project type is configured
-			// for the org); nothing to propagate.
-			return;
-		}
-
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		for (final I_C_Order po : createdPOs)
-		{
-			if (po.getC_Project_ID() != salesOrderProjectId.getRepoId())
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			for (final I_C_Order po : createdPOs)
 			{
-				po.setC_Project_ID(salesOrderProjectId.getRepoId());
-				InterfaceWrapperHelper.save(po);
-			}
-
-			// Propagate the project to every PO line that doesn't already carry one.
-			final List<de.metas.interfaces.I_C_OrderLine> poLines = orderBL.getLinesByOrderIds(
-					Collections.singleton(OrderId.ofRepoId(po.getC_Order_ID())));
-			for (final de.metas.interfaces.I_C_OrderLine poLine : poLines)
-			{
-				if (poLine.getC_Project_ID() != salesOrderProjectId.getRepoId())
+				if (po.getC_Project_ID() != salesOrderProjectId.getRepoId())
 				{
-					poLine.setC_Project_ID(salesOrderProjectId.getRepoId());
-					InterfaceWrapperHelper.save(poLine);
+					po.setC_Project_ID(salesOrderProjectId.getRepoId());
+					InterfaceWrapperHelper.save(po);
+				}
+
+				// Propagate the project to every PO line that doesn't already carry one.
+				final List<de.metas.interfaces.I_C_OrderLine> poLines = orderBL.getLinesByOrderIds(
+						Collections.singleton(OrderId.ofRepoId(po.getC_Order_ID())));
+				for (final de.metas.interfaces.I_C_OrderLine poLine : poLines)
+				{
+					if (poLine.getC_Project_ID() != salesOrderProjectId.getRepoId())
+					{
+						poLine.setC_Project_ID(salesOrderProjectId.getRepoId());
+						InterfaceWrapperHelper.save(poLine);
+					}
 				}
 			}
+		}
+		// else: SO has no project (typical when no SalesPurchaseOrder project type is configured
+		// for the org); nothing to propagate — still auto-complete the POs below.
+
+		// Auto-complete every created PO so the project chain finalises in the same transaction
+		// as the SO. The PO-completion material-event chain is short-circuited for dropship
+		// warehouses via the isDropShipWarehouse flag on receipt-schedule events (see
+		// M_ReceiptSchedule_PostMaterialEvent and the dispo-service ReceiptsSchedule*Handlers),
+		// so no MD_Candidate rows are created.
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		for (final I_C_Order po : createdPOs)
+		{
+			documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 

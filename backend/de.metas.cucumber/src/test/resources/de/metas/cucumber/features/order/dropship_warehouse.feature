@@ -97,17 +97,13 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | sol_dw1_2  | so_dw1     | product_dw   | 5          | vendor_dw     |
     When the order identified by so_dw1 is completed
 
-    # Assert: exactly 1 PO was created with Link_Order_ID pointing back to the SO, IsDropShip=Y, DocStatus=DR.
-    # The 'the order is created:' step uses Link_Order_ID.Identifier to locate the PO.
-    # The PO is intentionally left in DR (Drafted) — the dropship-warehouse design forbids completing it
-    # here, because PO-completion would fire the material-event chain (SupplyRequired / MD_Candidate /
-    # shipment-schedule recompute) and produce MD_Candidate rows that the dropship-warehouse flow must
-    # suppress (cf. the second scenario below). The project chain is still finalised in the same
-    # transaction by DropshipPOFromSOService, which explicitly propagates the SO's C_Project_ID onto
-    # the PO header and lines in DR. The buyer completes the PO manually when ready.
+    # Assert: exactly 1 PO was created with Link_Order_ID pointing back to the SO,
+    # IsDropShip=Y, DocStatus=CO. The PO auto-completes in the same transaction as the SO.
+    # The PO-completion material-event chain is short-circuited for dropship warehouses,
+    # so no MD_Candidate rows appear (asserted explicitly in Scenarios 2 and 3).
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
-      | so_dw1                   | false   | POO         | DR            | true           |
+      | so_dw1                   | false   | POO         | CO            | true           |
 
   @from:cucumber
   Scenario: SO on a dropship warehouse does not create MD_Candidate rows
