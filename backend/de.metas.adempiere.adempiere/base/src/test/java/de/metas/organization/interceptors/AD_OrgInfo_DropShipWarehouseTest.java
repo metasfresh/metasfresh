@@ -121,4 +121,21 @@ class AD_OrgInfo_DropShipWarehouseTest
 		assertThatCode(() -> interceptor.validateDropShipWarehouseIsFlagged(orgInfo))
 				.doesNotThrowAnyException();
 	}
+
+	// -----------------------------------------------------------------------
+	// Test D: warehouse not found (DAO returns null) → exception
+	// IWarehouseDAO.getById has no @NonNull annotation; it can return null for
+	// inactive/deleted warehouses. The interceptor's guard treats null as
+	// "not flagged" and throws.
+	// -----------------------------------------------------------------------
+	@Test
+	void validate_warehouseNotFound_throws()
+	{
+		final int warehouseId = 502;
+		final I_AD_OrgInfo orgInfo = buildOrgInfo(warehouseId);
+		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(null);
+
+		assertThatThrownBy(() -> interceptor.validateDropShipWarehouseIsFlagged(orgInfo))
+				.isInstanceOf(AdempiereException.class);
+	}
 }
