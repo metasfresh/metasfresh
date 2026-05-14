@@ -1,26 +1,22 @@
 DROP FUNCTION IF EXISTS report.open_account_balance_report(
-    p_date              date,
-    p_c_acctschema_id   numeric,
-    p_ad_org_id         numeric,
-    p_account_id        numeric,
-    p_c_bpartner_id     numeric,
-    p_c_currency_id     numeric,
-    p_tolerance         numeric,
-    p_show_details      character,
-    p_only_unreconciled character
+    p_date            date,
+    p_c_acctschema_id numeric,
+    p_ad_org_id       numeric,
+    p_account_id      numeric,
+    p_c_bpartner_id   numeric,
+    p_tolerance       numeric,
+    p_showdetails     varchar
 )
 ;
 
 CREATE OR REPLACE FUNCTION report.open_account_balance_report(
-    p_date              date,
-    p_c_acctschema_id   numeric,
-    p_ad_org_id         numeric,
-    p_account_id        numeric DEFAULT NULL,
-    p_c_bpartner_id     numeric DEFAULT NULL,
-    p_c_currency_id     numeric DEFAULT NULL,
-    p_tolerance         numeric DEFAULT 0.01,
-    p_show_details      character DEFAULT 'N',
-    p_only_unreconciled character DEFAULT 'Y'
+    p_date            date,
+    p_c_acctschema_id numeric,
+    p_ad_org_id       numeric,
+    p_account_id      numeric DEFAULT NULL,
+    p_c_bpartner_id   numeric DEFAULT NULL,
+    p_tolerance       numeric DEFAULT 0.01,
+    p_showdetails     varchar DEFAULT 'N'
 )
     RETURNS TABLE
             (
@@ -34,6 +30,7 @@ CREATE OR REPLACE FUNCTION report.open_account_balance_report(
                 -- -------------------------------------------------------
                 c_acctschema_id          numeric,
                 ad_org_id                numeric,
+                organization             text,
                 account_id               numeric,
                 account_value            varchar,
                 account_name             varchar,
@@ -78,25 +75,31 @@ CREATE OR REPLACE FUNCTION report.open_account_balance_report(
                 -- -------------------------------------------------------
                 total_fact_lines         numeric,
                 open_fact_lines          numeric,
-                overall_count            numeric
+                overall_count            numeric,
+                param_acct_schema        text,
+                param_account            text,
+                param_bpartner           text
             )
     LANGUAGE plpgsql
 AS
 $BODY$
     # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
-    v_rowcount         numeric;
-    v_main_currency_id numeric;
-    v_main_currency    char(3);
-    v_overall          numeric;
+    v_rowcount          numeric;
+    v_main_currency_id  numeric;
+    v_main_currency     char(3);
+    v_overall           numeric;
+    v_param_acct_schema text;
+    v_param_account     text;
+    v_param_bpartner    text;
 BEGIN
 
     /* ================================================================
          Resolve accounting currency
        ================================================================ */
 
-    SELECT s.c_currency_id
-    INTO v_main_currency_id
+    SELECT s.c_currency_id, s.name
+    INTO v_main_currency_id,v_param_acct_schema
     FROM C_AcctSchema s
     WHERE s.C_AcctSchema_ID = p_c_acctschema_id;
 
@@ -107,6 +110,16 @@ BEGIN
     INTO v_main_currency
     FROM c_currency c
     WHERE c.c_currency_id = v_main_currency_id;
+
+    SELECT c.value || ' ' || c.name
+    INTO v_param_account
+    FROM c_elementvalue c
+    WHERE c.c_elementvalue_id = p_account_id;
+
+    SELECT bp.value || ' ' || bp.name
+    INTO v_param_bpartner
+    FROM c_bpartner bp
+    WHERE bp.c_bpartner_id = p_c_bpartner_id;
 
 
     /* ================================================================
@@ -138,6 +151,7 @@ BEGIN
     SELECT fa.Fact_Acct_ID             AS fact_acct_id,
            fa.AD_Client_ID             AS ad_client_id,
            fa.AD_Org_ID                AS ad_org_id,
+           o.value || ' ' || o.name    AS organization,
            fa.C_AcctSchema_ID          AS c_acctschema_id,
            fa.Account_ID               AS account_id,
            fa.C_BPartner_ID            AS c_bpartner_id,
@@ -166,15 +180,15 @@ BEGIN
            fa.Description              AS description
     FROM Fact_Acct fa
              LEFT JOIN c_bpartner bp ON fa.c_bpartner_id = bp.c_bpartner_id
-        join c_currency c on fa.c_currency_id = c.c_currency_id
+             JOIN c_currency c ON fa.c_currency_id = c.c_currency_id
+             JOIN AD_org o ON fa.ad_org_id = o.ad_org_id
              JOIN tmp_oib_accounts oa
                   ON oa.account_id = fa.Account_ID
     WHERE TRUE
       AND fa.DateAcct <= p_date
       AND fa.C_AcctSchema_ID = p_c_acctschema_id
       AND fa.AD_Org_ID = p_ad_org_id
-      AND (p_c_bpartner_id IS NULL OR fa.C_BPartner_ID = p_c_bpartner_id)
-      AND (p_c_currency_id IS NULL OR fa.C_Currency_ID = p_c_currency_id);
+      AND (p_c_bpartner_id IS NULL OR fa.C_BPartner_ID = p_c_bpartner_id);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'STEP 2 — Base fact lines loaded: %', v_rowcount;
@@ -193,6 +207,7 @@ BEGIN
     CREATE TEMPORARY TABLE tmp_oib_keys ON COMMIT DROP AS
     SELECT f.ad_client_id,
            f.ad_org_id,
+           f.organization,
            f.c_acctschema_id,
            f.account_id,
            f.c_bpartner_id,
@@ -222,6 +237,7 @@ BEGIN
     FROM tmp_oib_fact_base f
     GROUP BY f.ad_client_id,
              f.ad_org_id,
+             f.organization,
              f.c_acctschema_id,
              f.account_id,
              f.c_bpartner_id,
@@ -252,6 +268,7 @@ BEGIN
     CREATE TEMPORARY TABLE tmp_oib_summary ON COMMIT DROP AS
     SELECT k.ad_client_id,
            k.ad_org_id,
+           k.organization,
            k.c_acctschema_id,
            k.account_id,
            k.c_bpartner_id,
@@ -271,6 +288,7 @@ BEGIN
              LEFT JOIN c_bpartner bp ON k.c_bpartner_id = bp.c_bpartner_id
     GROUP BY k.ad_client_id,
              k.ad_org_id,
+             k.organization,
              k.c_acctschema_id,
              k.account_id,
              k.c_bpartner_id,
@@ -302,6 +320,7 @@ BEGIN
     SELECT 'SUMMARY'::text                   AS report_level,
            s.c_acctschema_id,
            s.ad_org_id,
+           s.organization,
            s.account_id,
            oa.account_value,
            oa.account_name,
@@ -357,6 +376,7 @@ BEGIN
 
            f.c_acctschema_id,
            f.ad_org_id,
+           f.organization,
            f.account_id,
            oa.account_value,
            oa.account_name,
@@ -402,11 +422,7 @@ BEGIN
                       AND k.c_bpartner_id IS NOT DISTINCT FROM f.c_bpartner_id
                       AND k.c_currency_id = f.c_currency_id
                       AND k.openitemkey IS NOT DISTINCT FROM f.openitemkey
-    WHERE p_show_details = 'Y'
-      AND (
-        p_only_unreconciled = 'N'
-            OR f.isopenitemsreconciled = 'N'
-        );
+    WHERE p_showdetails = 'Y';
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'STEP 6 — Final rows assembled (before overall_count patch): %', v_rowcount;
@@ -434,6 +450,7 @@ BEGIN
         SELECT r.report_level,
                r.c_acctschema_id,
                r.ad_org_id,
+               r.organization,
                r.account_id,
                r.account_value,
                r.account_name,
@@ -462,7 +479,10 @@ BEGIN
                r.oi_openamount,
                r.total_fact_lines,
                r.open_fact_lines,
-               r.overall_count
+               r.overall_count,
+               v_param_acct_schema,
+               v_param_account,
+               v_param_bpartner
         FROM tmp_oib_final r
         ORDER BY r.account_value,
                  r.c_bpartner_id NULLS LAST,
