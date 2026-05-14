@@ -50,6 +50,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "company": false,
       "customer": true,
+      "discountPrinted": false,
       "excludeFromPromotions": false,
       "externalId": "fghij",
       "groupId": 15,
