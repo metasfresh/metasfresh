@@ -46,6 +46,4 @@ GROUP BY ex.BP_Account_Place, ex.currency, ex.dr_account, ex.dateacct, ex.docume
 $$
 ;
 
-ALTER FUNCTION datev_export_aggregat(numeric) OWNER TO metasfresh
-;
 
