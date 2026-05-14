@@ -1,5 +1,7 @@
 package de.metas.material.event.receiptschedule;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
@@ -40,6 +42,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static ReceiptScheduleUpdatedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)
