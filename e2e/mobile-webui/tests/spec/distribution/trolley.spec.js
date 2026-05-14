@@ -343,9 +343,16 @@ test('Wagen freigeben: second user scanning held trolley sees conflict toast and
     await DistributionJobsListScreen.waitForScreen();
 
     await expectErrorToast('Trolley conflict toast', async () => {
+        // Wait for the POST round-trip explicitly: BarcodeScannerComponent.type only dispatches
+        // keyboard events, so without awaiting the response the test declares "no toast" before
+        // the backend's 422 has a chance to be received and surfaced via toastError.
+        const postDone = page.waitForResponse(
+            (r) => r.url().endsWith('/userWorkflows/trolley') && r.request().method() === 'POST'
+        );
         await BarcodeScannerComponent.type({
             scannedCode: masterdata.warehouses.whInTransit.locators.whInTransit_l1.qrCode
         });
+        await postDone;
     });
     await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.logout();
