@@ -270,13 +270,18 @@ export class RawLookup extends Component {
       ? mainProperty.parameterName
       : mainProperty.field;
 
-    // shouldKeepFocus: only suppress this.focus() when onChange is synchronous AND
-    // setNextProperty reports no next sub-field (Lookup exits the last sub-field via
-    // focusNextFormField instead). For async onChange (regular documents), the Promise
-    // callback runs after this.focus() is already evaluated — shouldKeepFocus remains
-    // true, preserving the original "always refocus" behavior. For quick input, focus
-    // advance on Enter goes through resolveAndSelectOnEnter → handleAutoSelectAndAdvance
-    // → focusNextFieldInForm, bypassing this code path entirely.
+    // shouldKeepFocus: controls whether to call this.focus() after onChange completes.
+    // - Async onChange (regular documents): onChange returns a Promise; its .then()
+    //   callback is a microtask and cannot run before the current synchronous stack
+    //   unwinds. The `if (shouldKeepFocus)` check below runs synchronously, so
+    //   shouldKeepFocus is still true — preserving the original "always refocus" behavior.
+    // - Sync onChange (quick input): onChange returns undefined; executeAfterPromise
+    //   runs the callback inline. If setNextProperty reports no next sub-field,
+    //   shouldKeepFocus is set to false before `if (shouldKeepFocus)` is checked —
+    //   correct: Lookup.focusNextFormField handles focus advance instead.
+    // - Enter-key path in quick input: goes through resolveAndSelectOnEnter →
+    //   handleAutoSelectAndAdvance → focusNextFieldInForm, bypassing this code path
+    //   entirely.
     let shouldKeepFocus = true;
 
     executeAfterPromise(onChange(fieldName, selectedItemNorm), () => {
@@ -369,6 +374,7 @@ export class RawLookup extends Component {
   handleInputTextKeyDown = (e) => {
     const { isOpen, subentity } = this.props;
 
+    // ArrowDown on a closed dropdown: open it (same behaviour as clicking the field)
     if (e.key === 'ArrowDown') {
       if (!isOpen) {
         e.preventDefault();
@@ -442,11 +448,13 @@ export class RawLookup extends Component {
   };
 
   /**
-   * @method buildTypeaheadRequestForQuery
-   * @summary Build and fire a typeahead request for the given query string.
-   * Returns the axios promise. This is a non-debounced version of typeaheadRequest.
+   * @method _buildTypeaheadPromise
+   * @summary Core routing for typeahead requests: selects the correct API based on
+   * entity type, attribute flag, and filterWidget context. Returns the axios promise.
+   * Shared by buildTypeaheadRequestForQuery (Enter-key path) and typeaheadRequest
+   * (debounced path) so the routing logic is not duplicated.
    */
-  buildTypeaheadRequestForQuery = (query) => {
+  _buildTypeaheadPromise = (query) => {
     const {
       windowType,
       dataId,
@@ -463,7 +471,7 @@ export class RawLookup extends Component {
       typeaheadSupplier,
     } = this.props;
 
-    const typeaheadParams = {
+    const params = {
       entity,
       docType: windowType,
       docId: filterWidget ? viewId : dataId,
@@ -474,18 +482,14 @@ export class RawLookup extends Component {
     };
 
     if (typeaheadSupplier) {
-      return typeaheadSupplier({
-        ...typeaheadParams,
-        subentity,
-        subentityId,
-      });
+      return typeaheadSupplier({ ...params, subentity, subentityId });
     } else if (entity === 'documentView' && attribute) {
       return getViewAttributeTypeahead(
         windowType,
         viewId,
         dataId,
         mainProperty.field,
-        typeaheadParams.query
+        params.query
       );
     } else if (entity === 'documentView' && !attribute) {
       return getViewFieldTypeahead({
@@ -493,22 +497,25 @@ export class RawLookup extends Component {
         viewId,
         rowId,
         fieldName: mainProperty.field,
-        query: typeaheadParams.query,
+        query: params.query,
       });
     } else if (viewId && !filterWidget) {
       return autocompleteModalRequest({
-        ...typeaheadParams,
+        ...params,
         entity: 'documentView',
         viewId,
       });
     } else {
-      return autocompleteRequest({
-        ...typeaheadParams,
-        subentity,
-        subentityId,
-      });
+      return autocompleteRequest({ ...params, subentity, subentityId });
     }
   };
+
+  /**
+   * @method buildTypeaheadRequestForQuery
+   * @summary Build and fire a typeahead request for the given query string.
+   * Returns the axios promise. This is a non-debounced version of typeaheadRequest.
+   */
+  buildTypeaheadRequestForQuery = (query) => this._buildTypeaheadPromise(query);
 
   /**
    * @method handleAutoSelectAndAdvance
@@ -597,77 +604,11 @@ export class RawLookup extends Component {
   };
 
   typeaheadRequest = () => {
-    const {
-      windowType,
-      dataId,
-      filterWidget,
-      attribute,
-      parameterName,
-      tabId,
-      rowId,
-      entity,
-      subentity,
-      subentityId,
-      viewId,
-      mainProperty,
-      typeaheadSupplier,
-    } = this.props;
-
     const inputValue = this.inputSearch.value;
-    let typeaheadRequest;
-    const typeaheadParams = {
-      entity,
-      docType: windowType,
-      docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty.field,
-      query: inputValue,
-      rowId,
-      tabId,
-    };
+    this.typeaheadQuery = inputValue;
 
-    this.typeaheadQuery = typeaheadParams.query;
-
-    if (typeaheadSupplier) {
-      typeaheadRequest = typeaheadSupplier({
-        ...typeaheadParams,
-        subentity,
-        subentityId,
-      });
-    } else if (entity === 'documentView' && attribute) {
-      typeaheadRequest = getViewAttributeTypeahead(
-        windowType,
-        viewId,
-        dataId,
-        mainProperty.field,
-        typeaheadParams.query
-      );
-    } else if (entity === 'documentView' && !attribute) {
-      typeaheadRequest = getViewFieldTypeahead({
-        windowId: windowType,
-        viewId,
-        rowId,
-        fieldName: mainProperty.field,
-        query: typeaheadParams.query,
-      });
-    } else if (viewId && !filterWidget) {
-      typeaheadRequest = autocompleteModalRequest({
-        ...typeaheadParams,
-        entity: 'documentView',
-        viewId,
-      });
-    } else {
-      typeaheadRequest = autocompleteRequest({
-        ...typeaheadParams,
-        subentity,
-        subentityId,
-      });
-    }
-
-    typeaheadRequest.then((response) => {
-      if (
-        this.typeaheadQuery &&
-        this.typeaheadQuery === typeaheadParams.query
-      ) {
+    this._buildTypeaheadPromise(inputValue).then((response) => {
+      if (this.typeaheadQuery && this.typeaheadQuery === inputValue) {
         this.populateTypeaheadData(response.data);
       }
     });
