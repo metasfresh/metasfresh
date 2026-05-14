@@ -93,6 +93,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=779955
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,779955/*From ID Server*/,0,548980/*EDI-Konfiguration tab*/,554789/*UI ElementGroup*/,651661/*From ID Server*/,'F',TO_TIMESTAMP('2026-05-14 14:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Ein DESADV pro Lieferung',90,0,0,TO_TIMESTAMP('2026-05-14 14:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- 2026-05-14T14:02:30.001Z
-SELECT add_missing_translations()
-;
+-- me03#29231: add_missing_translations() is intentionally NOT called here.
+-- The per-element propagation (update_TRL_Tables_On_AD_Element_TRL_Update for AD_Element 584880)
+-- already covers our new element's translations across all active languages.
+-- Calling the global add_missing_translations() would surface unrelated pre-existing data
+-- integrity issues elsewhere in the AD dictionary (e.g. AD_Column rows with NULL Name created
+-- by earlier integrated migrations) and abort the whole script.
