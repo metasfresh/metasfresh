@@ -490,10 +490,22 @@ public class DesadvBL
 	@Nullable
 	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(@NonNull final I_M_InOut inOut)
 	{
+		// me03#29231 — resolve recipient BPartner and check the "one DESADV per shipment" flag
+		final BPartnerId recipientBPartnerId = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(inOut.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID()));
+		final boolean oneDesadvPerShipment = ediBpartnerConfigService.isDESADVOneDesadvPerShipment(recipientBPartnerId);
+
 		final I_EDI_Desadv desadv;
 
-		if (inOut.getC_Order_ID() > 0)
+		if (oneDesadvPerShipment)
 		{
+			// me03#29231 — new mode: create a fresh DESADV keyed to this shipment, aggregating header from source orders.
+			desadv = createDesadvForInOut(inOut);
+		}
+		else if (inOut.getC_Order_ID() > 0)
+		{
+			// legacy path: find DESADV via the main order link, or fall back to the order-side creator
 			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
 			if (order.getEDI_Desadv_ID() > 0)
 			{
@@ -502,7 +514,10 @@ public class DesadvBL
 			else
 			{
 				desadv = addToDesadvCreateForOrderIfNotExist(order);
-				InterfaceWrapperHelper.save(order);
+				if (desadv != null)
+				{
+					InterfaceWrapperHelper.save(order);
+				}
 			}
 		}
 		else if (Check.isNotBlank(inOut.getPOReference()))
@@ -521,9 +536,10 @@ public class DesadvBL
 
 		inOut.setEDI_Desadv(desadv);
 
-		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
-
 		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+
+		// inOutBPartnerId preserves the existing "ship-to BPartner" semantics for addInOutLine (GTIN resolution)
+		final BPartnerId inOutBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
@@ -532,7 +548,21 @@ public class DesadvBL
 			{
 				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
-			addInOutLine(inOutLine, recipientBPartnerId, sequences);
+
+			if (oneDesadvPerShipment)
+			{
+				// me03#29231 — DesadvLine for this OrderLine hasn't been pre-created at order-complete; do it now.
+				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class);
+				if (orderLine.getEDI_DesadvLine_ID() <= 0 && !orderLine.isPackagingMaterial())
+				{
+					final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
+					final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadv, orderLine);
+					orderLine.setEDI_DesadvLine(desadvLine);
+					InterfaceWrapperHelper.save(orderLine);
+				}
+			}
+
+			addInOutLine(inOutLine, inOutBPartnerId, sequences);
 		}
 		return desadv;
 	}
