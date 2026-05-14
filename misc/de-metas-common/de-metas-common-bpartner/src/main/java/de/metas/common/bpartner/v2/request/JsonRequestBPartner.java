@@ -220,6 +220,11 @@ public class JsonRequestBPartner
 
 	private boolean parentIdentifierSet;
 
+	@Schema(description = "Translates to `C_BPartner.IsDiscountPrinted`")
+	private Boolean discountPrinted;
+	
+	private boolean discountPrintedSet;
+	
 	@Schema(description = "Translates to `C_BPartner.PaymentRule`")
 	private JsonPaymentRule paymentRule;
 
@@ -466,7 +471,13 @@ public class JsonRequestBPartner
 		this.parentIdentifier = parentIdentifier;
 		this.parentIdentifierSet = true;
 	}
-
+	
+	public void setPaymentRule(final boolean discountPrinted)
+	{
+		this.discountPrinted = discountPrinted;
+		this.discountPrintedSet = true;
+	}
+		
 	public void setPaymentRule(final JsonPaymentRule paymentRule)
 	{
 		this.paymentRule = paymentRule;

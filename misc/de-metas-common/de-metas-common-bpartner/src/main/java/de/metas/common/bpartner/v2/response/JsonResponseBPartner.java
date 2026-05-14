@@ -39,7 +39,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Schema(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
+@Schema(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
@@ -63,6 +63,7 @@ public class JsonResponseBPartner
 	public static final String PRICING_SYSTEM_ID = "pricingSystemId";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
