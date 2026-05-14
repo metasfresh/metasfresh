@@ -101,9 +101,9 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
     # GrandTotal = 12,000 (productA: 200×50×1.20) + 11,000 (productB: 200×50×1.10) = 23,000
     # LC 30% = 6,900; BL 70% = 16,100
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | ReferenceDate | IsPaid |
-      | LC                | 6900.00  | null          | PR     | null          | N      |
-      | BL                | 16100.00 | null          | PR     | null          | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status | IsPaid |
+      | LC                | 23000.00 | 6900.00  | null          | null          | null    | PR     | N      |
+      | BL                | 23000.00 | 16100.00 | null          | null          | null    | PR     | N      |
 
     # ── Iter-2: proforma (6,900 EUR) + payment → LC Paid ──
     And metasfresh contains C_Invoice:
@@ -147,11 +147,13 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
 
     # AC #21: BaseAmt = 12,000 proves per-line 20% rate was used (not avg 15% = 11,500)
     # Remainder row: BaseAmt = 23,000 − 12,000 = 11,000; DueAmt = 11,000 × 70% = 7,700
+    # LC ReferenceDate = proforma.DateInvoiced; BL sub-row ReferenceDate = receipt MovementDate (2026-04-24).
+    # BL remainder row has no ReferenceDate until a receipt is recorded.
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
-      | LC                | null       | 23000.00  | 6900.00 | P      | null         |
-      | BL                | r1         | 12000.00  | 8400.00 | PR     | null         |
-      | BL                | null       | 11000.00  | 7700.00 | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 23000.00  | 6900.00 | 6900.00       | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 12000.00  | 8400.00 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
+      | BL                | null       | 11000.00  | 7700.00 | null          | null          | null       | PR     | null         |
 
     # ── INV1: Partial, matched to R1 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
     And metasfresh contains C_Invoice:
@@ -172,10 +174,10 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
 
     # R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | WP     | inv1         |
-      | BL                | null       | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 23000.00  | 6900.00 | 6900.00       | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 12000.00  | 8400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1         |
+      | BL                | null       | 11000.00  | 7700.00 | null          | null          | null       | PR     | null         |
 
     # ── R2: 200 PCE of productB ──
     # HU receipt: QtyCUsPerTU=200 → 1 HU with 200 PCE → receipt r2 QtyEntered=200.
@@ -192,11 +194,12 @@ Feature: Split-payment — mixed-tax order (per-order-line tax, AC #21)
       | 200        | r2_line1       | r2         | CO        | lcOrderL2      |
 
     # R1(12,000) + R2(11,000) = 23,000 = GrandTotal → exact delivery → no remainder row
+    # BL sub-rows ReferenceDate = receipt MovementDate (2026-04-24).
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | Status | C_Invoice_ID |
-      | LC                | null       | 23000.00  | 6900.00 | P      | null         |
-      | BL                | r1         | 12000.00  | 8400.00 | WP     | inv1         |
-      | BL                | r2         | 11000.00  | 7700.00 | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt   | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 23000.00  | 6900.00 | 6900.00       | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 12000.00  | 8400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1         |
+      | BL                | r2         | 11000.00  | 7700.00 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
 
     # ── INV2: Final, matched to R2 via M_InOutLine_ID FK (auto-creates M_MatchInv on completeIt) ──
     And metasfresh contains C_Invoice:

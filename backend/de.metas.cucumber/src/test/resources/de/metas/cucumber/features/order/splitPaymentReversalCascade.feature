@@ -210,12 +210,14 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | lcPayment               | 12000.00 |
 
     # AC #16 — R1 sub-row: C_Invoice_ID cleared, Status → Pending (PR); R2 sub-row unchanged
-    # LC row stays Paid; total pay schedule lines = LC + r1 + r2 = 3
+    # LC row stays Paid; total pay schedule lines = LC + r1 + r2 = 3 (over-delivery → no remainder)
+    # LC.ReferenceDate=proforma.DateInvoiced; BL sub-row ReferenceDate=receipt MovementDate (2026-04-24).
+    # R1=40000 (with-tax), R2=32000 (with-tax); DueAmt = BaseAmt × 70%.
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | PR     | null         |
-      | BL                | r2         | WP     | inv2         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 40000.00 | 28000.00 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
+      | BL                | r2         | 32000.00 | 22400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2         |
 
 
   @from:cucumber
@@ -241,11 +243,12 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # After: 1 sub-row for R2 (still completed) + 1 remainder row.
     # R2 still 32,000 with-tax → remainder BaseAmt = 70,000 − 32,000 = 38,000; DueAmt = 38,000 × 70 % = 26,600.
     # LC row stays Paid; total pay schedule lines = LC + r2 + null(remainder) = 3
+    # LC.ReferenceDate=proforma.DateInvoiced; BL sub-row ReferenceDate=receipt MovementDate; BL remainder has none.
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | LC                | null       | 70000.00 | 21000.00 | P      | null         |
-      | BL                | r2         | 32000.00 | 22400.00 | WP     | inv2         |
-      | BL                | null       | 38000.00 | 26600.00 | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r2         | 32000.00 | 22400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2         |
+      | BL                | null       | 38000.00 | 26600.00 | null          | null          | null       | PR     | null         |
 
 
   @from:cucumber
@@ -282,11 +285,13 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
 
     # Delivery sub-rows: still 2 rows (R1 + R2), still pointing at the invoices, no remainder (over-delivery preserved)
     # LC row reverted to WP; total pay schedule lines = LC + r1 + r2 = 3
+    # LC.ReferenceDate=proforma.DateInvoiced (preserved on payment reversal); DueAmt_Actual preserved.
+    # BL sub-row ReferenceDate=receipt MovementDate (2026-04-24, preserved).
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | C_Invoice_ID |
-      | LC                | null       | null         |
-      | BL                | r1         | inv1         |
-      | BL                | r2         | inv2         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | WP     | null         |
+      | BL                | r1         | 40000.00 | 28000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1         |
+      | BL                | r2         | 32000.00 | 22400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2         |
 
 
   @from:cucumber
@@ -323,8 +328,9 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
 
     # R1 sub-row: C_Invoice_ID cleared; R2 sub-row unchanged (still tied to INV2)
     # LC row stays Paid; total pay schedule lines = LC + r1 + r2 = 3
+    # LC.ReferenceDate=proforma.DateInvoiced; BL sub-row ReferenceDate=receipt MovementDate (2026-04-24).
     Then the order identified by lcOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | PR     | null         |
-      | BL                | r2         | WP     | inv2         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 70000.00 | 21000.00 | 21000.00      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 40000.00 | 28000.00 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
+      | BL                | r2         | 32000.00 | 22400.00 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2         |

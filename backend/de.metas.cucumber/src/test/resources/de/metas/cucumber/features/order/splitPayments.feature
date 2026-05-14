@@ -109,9 +109,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | null          | PR     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status |
+      | LC                | 68654.40 | 20596.32 | null          | null          | null    | PR     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null    | PR     |
 
     # ── Proforma created and completed (GrandTotal = LC plan = 20596.32) — no pay-schedule change ──
     And metasfresh contains C_Invoice:
@@ -128,9 +128,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | lcInvoice  | N      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | null          | PR     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status |
+      | LC                | 68654.40 | 20596.32 | null          | null          | null    | PR     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null    | PR     |
 
     # AC #17 — invoiceOpenToDate proforma branch on an unpaid proforma:
     # OpenAmt = GrandTotal, PaidAmt = 0, HasAllocations = false (proformas have no C_AllocationLine rows).
@@ -142,9 +142,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | WP     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
@@ -184,9 +184,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | lcInvoice  | Y      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | P      |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | P      |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment completion:
     # The CO payment lands in the SUM(abs(PayAmt)) so OpenAmt = GrandTotal - GrandTotal = 0,
@@ -223,9 +223,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # DueAmt = plan (20596.32, unchanged); DueAmt_Actual = proforma.GrandTotal (20500.00).
     # BL break is PR (Pending) because BillOfLadingDate is not yet known (no goods receipt).
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20500.00      | WP     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20500.00      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
 
 
   Scenario: S3 - Deallocation before payment rolls LC back to Pending (DueAmt_Actual + LC_Date cleared)
@@ -252,9 +252,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | WP     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
     And validate the created orders
       | Identifier | LC_Date    |
       | lcOrder    | 2026-04-24 |
@@ -262,9 +262,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And I deallocate proforma 'lcInvoice' from order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | null          | PR     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status |
+      | LC                | 68654.40 | 20596.32 | null          | null          | null    | PR     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null    | PR     |
     And validate the created orders
       | Identifier | LC_Date |
       | lcOrder    | null    |
@@ -295,9 +295,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | WP     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
 
     And metasfresh contains Pay Selection
       | Identifier   | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -320,9 +320,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | lcInvoice  | Y      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | P      |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | P      |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
 
     # ── Reverse the proforma payment ──
     # MPayment.reverseCorrectIt() creates a counter-payment that mirrors the original — every
@@ -349,9 +349,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | lcInvoice  | N      |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.32 | 20596.32      | WP     |
-      | BL                | 48058.08 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.40 | 48058.08 | null          | null          | null       | PR     |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
     # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
@@ -483,9 +483,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # Initial pay schedule: LC row + 1 BL remainder row (both Pending)
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 68654.38 | 20596.31 | null          | PR     |
-      | BL                | 68654.38 | 48058.07 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate | Status |
+      | LC                | 68654.38 | 20596.31 | null          | null          | null    | PR     |
+      | BL                | 68654.38 | 48058.07 | null          | null          | null    | PR     |
 
     # ── Proforma (20,596.32 EUR) → allocate → pay-selection → payment → LC=Paid ──
     And metasfresh contains C_Invoice:
@@ -499,9 +499,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # LC step: Pending → Awaiting_Pay (allocation)
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.31 | 20596.31      | WP     |
-      | BL                | 48058.07 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | WP     |
+      | BL                | 68654.38 | 48058.07 | null          | null          | null       | PR     |
 
     And metasfresh contains Pay Selection
       | Identifier     | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
@@ -522,9 +522,9 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # LC step: Awaiting_Pay → Paid; prepayment.AvailableAmt = 20,596.31
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
-      | LC                | 20596.31 | 20596.31      | P      |
-      | BL                | 48058.07 | null          | PR     |
+      | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
+      | LC                | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      |
+      | BL                | 68654.38 | 48058.07 | null          | null          | null       | PR     |
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt  |
       | customerPayment         | 20596.31 |
@@ -551,11 +551,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # AC #3: R1 sub-row (M_InOut_ID=r1) + remainder row (M_InOut_ID=null) created; both Pending
     # R1: BaseAmt=31807.99, DueAmt=31807.99×0.70=22265.59
     # Remainder: BaseAmt=68654.38−31807.99=36846.39, DueAmt=36846.39×0.70=25792.47
+    # LC.ReferenceDate=proforma.DateInvoiced (2026-04-24); BL sub-row ReferenceDate=receipt MovementDate (2026-04-24); BL remainder has none.
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | Status | C_Invoice_ID |
-      | LC                | null       | 68654.38 | 20596.31 | P      | null         |
-      | BL                | r1         | 31807.99 | 22265.59 | PR     | null         |
-      | BL                | null       | 36846.39 | 25792.47 | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
+      | BL                | null       | 36846.39 | 25792.47 | null          | null          | null       | PR     | null         |
 
     # ── INV1: Partial vendor invoice linked to R1 via M_InOutLine_ID (E.1d) ──
     # MInvoice.completeIt() auto-creates M_MatchInv; AFTER_COMPLETE interceptor recomputes delivery steps.
@@ -575,10 +576,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # AC #5: R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1Partial
     #        prepay.AvailableAmt = 20,596.31 − 9,542.40 = 11,053.91
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | WP     | inv1Partial  |
-      | BL                | null       | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
+      | BL                | null       | 36846.39 | 25792.47 | null          | null          | null       | PR     | null         |
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt  |
       | customerPayment         | 11053.91 |
@@ -605,11 +606,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | 363        | r2_line1       | r2         | CO        | olB            |
 
     # AC #7: over-delivery → remainder DELETED; exactly 3 rows (LC + r1 + r2, no remainder)
+    # R2.with_tax = 37,092.00 (363 × 102.1818 = 37091.9934 → rounded). DueAmt = 37092.00 × 0.70 = 25964.40.
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | WP     | inv1Partial  |
-      | BL                | r2         | PR     | null         |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
+      | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | PR     | null         |
 
     # ── INV2: Final vendor invoice linked to R2 via M_InOutLine_ID (E.1d) ──
     And metasfresh contains C_Invoice:
@@ -627,10 +629,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # AC #9: R2 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 0
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | WP     | inv1Partial  |
-      | BL                | r2         | WP     | inv2Final    |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
+      | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2Final    |
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt |
       | customerPayment         | 0.00    |
@@ -645,7 +647,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # Σ alloc = 9,542.40 + 11,053.91 = 20,596.31 = full LC prepay consumed ✓
     # OpenAmt uses net (C_Invoice.GrandTotal = net; tax stored separately in C_InvoiceTax)
     Then the order identified by customerOrder has following pay schedules
-      | ReferenceDateType | M_InOut_ID | Status | C_Invoice_ID |
-      | LC                | null       | P      | null         |
-      | BL                | r1         | WP     | inv1Partial  |
-      | BL                | r2         | WP     | inv2Final    |
+      | ReferenceDateType | M_InOut_ID | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status | C_Invoice_ID |
+      | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
+      | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
+      | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2Final    |

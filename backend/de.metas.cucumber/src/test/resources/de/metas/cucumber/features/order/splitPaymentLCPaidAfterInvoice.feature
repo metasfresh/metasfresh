@@ -90,9 +90,9 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
     And the order identified by lcOrder is completed
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 3000.00  | null          | PR     | N      |
-      | OD                | 7000.00  | null          | WP     | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 10000.00 | 3000.00 | null          | null          | null       | PR     | N      |
+      | OD                | 10000.00 | 7000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── Proforma created + completed (GrandTotal = LC plan = 3,000) ──
     And metasfresh contains C_Invoice:
@@ -107,9 +107,9 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
     And I allocate proforma 'lcInvoice' to order 'lcOrder'
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt   | DueAmt_Actual | Status | IsPaid |
-      | LC                | 3000.00  | 3000.00       | WP     | N      |
-      | OD                | 7000.00  | null          | WP     | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 10000.00 | 3000.00 | 3000.00       | 2026-04-24    | 2026-04-24 | WP     | N      |
+      | OD                | 10000.00 | 7000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # ── T2: R1 + INV1 complete BEFORE the LC payment ──
     # The procurement worker has goods received + vendor's financial invoice in hand
@@ -177,9 +177,9 @@ Feature: Split-payment — LC payment completes AFTER financial invoice arrived 
 
     # LC pay-schedule line: Status=P (Paid), IsPaid=Y, ReferenceDate=proforma.DateInvoiced.
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | DueAmt  | DueAmt_Actual | Status | IsPaid |
-      | LC                | 3000.00 | 3000.00       | P      | Y      |
-      | OD                | 7000.00 | null          | WP     | N      |
+      | ReferenceDateType | BaseAmt  | DueAmt  | DueAmt_Actual | ReferenceDate | DueDate    | Status | IsPaid |
+      | LC                | 10000.00 | 3000.00 | 3000.00       | 2026-04-24    | 2026-04-24 | P      | Y      |
+      | OD                | 10000.00 | 7000.00 | null          | 2026-04-24    | 2026-04-24 | WP     | N      |
 
     # Prepayment fully consumed: AvailableAmt = 3000 − 3000 = 0.
     Then validate payments
