@@ -39,7 +39,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -259,29 +261,112 @@ class C_Order_ProjectTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 5 — order already has a project — early-return regardless
+	// Test 5 — order already has a project — propagates to lines that are missing it
 	// -----------------------------------------------------------------------
 
 	/**
 	 * When an order (SO or PO) already has a {@code C_Project_ID > 0}, the interceptor
-	 * must return immediately without touching any downstream service.
+	 * must propagate the header's project to any order lines that do not yet have one,
+	 * then return — without creating a new project or consulting the warehouse.
+	 * <p>
+	 * Lines that already carry the same project ID must be left untouched.
 	 */
 	@Test
-	void beforeComplete_orderAlreadyHasProject_earlyReturn()
+	void beforeComplete_orderAlreadyHasProject_propagatesToLines()
 	{
 		// Given: SO that already has a project assigned
 		final I_C_Order order = buildOrder(true /*isSOTrx*/, WAREHOUSE_ID);
-		order.setC_Project_ID(PROJECT_ID); // already has a project
+		order.setC_Project_ID(PROJECT_ID);
 		saveRecord(order);
+
+		// Two lines with no project yet
+		final I_C_OrderLine lineNoProject1 = newInstance(I_C_OrderLine.class);
+		lineNoProject1.setC_Order_ID(order.getC_Order_ID());
+		lineNoProject1.setC_Project_ID(0);
+		saveRecord(lineNoProject1);
+
+		final I_C_OrderLine lineNoProject2 = newInstance(I_C_OrderLine.class);
+		lineNoProject2.setC_Order_ID(order.getC_Order_ID());
+		lineNoProject2.setC_Project_ID(0);
+		saveRecord(lineNoProject2);
+
+		// One line that already has the header's project
+		final I_C_OrderLine lineAlreadyHasProject = newInstance(I_C_OrderLine.class);
+		lineAlreadyHasProject.setC_Order_ID(order.getC_Order_ID());
+		lineAlreadyHasProject.setC_Project_ID(PROJECT_ID);
+		saveRecord(lineAlreadyHasProject);
+
+		final List<I_C_OrderLine> allLines = Arrays.asList(lineNoProject1, lineNoProject2, lineAlreadyHasProject);
+		when(orderBL.getLinesByOrderIds(any())).thenReturn(allLines);
 
 		// When
 		interceptor.beforeComplete(order);
 
-		// Then: nothing was touched
-		assertThat(order.getC_Project_ID()).isEqualTo(PROJECT_ID); // unchanged
-		verify(orderBL, never()).getLinesByOrderIds(any());
-		verify(warehouseDAO, never()).getById(any());
+		// Then: the two NULL lines now carry the header's project
+		assertThat(lineNoProject1.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		assertThat(lineNoProject2.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// The line that already had the project is unchanged
+		assertThat(lineAlreadyHasProject.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// Header is unchanged
+		assertThat(order.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// No new project was created — we're in the early-return branch
 		verify(projectService, never()).createProject(any());
+		// Warehouse was NOT consulted — we exited before the SO/dropship check
+		verify(warehouseDAO, never()).getById(any());
+	}
+
+	// -----------------------------------------------------------------------
+	// Test 6 — dropship PO: header has project — propagates to lines
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Regression test for the dropship-PO path: the aggregator
+	 * {@code CreatePOFromSOsAggregator.createPurchaseOrder()} copies {@code C_Project_ID}
+	 * to the PO header but NOT to the PO lines. This test verifies that the interceptor
+	 * fills the gap by propagating the header project to any line that lacks one.
+	 */
+	@Test
+	void beforeComplete_dropshipPOHeaderHasProject_propagatesToLines()
+	{
+		// Given: PO (isSOTrx=false) whose header already has a project, but lines do not
+		final I_C_Order order = buildOrder(false /*isSOTrx*/, WAREHOUSE_ID);
+		order.setC_Project_ID(PROJECT_ID);
+		saveRecord(order);
+
+		// Two lines with no project yet
+		final I_C_OrderLine lineNoProject1 = newInstance(I_C_OrderLine.class);
+		lineNoProject1.setC_Order_ID(order.getC_Order_ID());
+		lineNoProject1.setC_Project_ID(0);
+		saveRecord(lineNoProject1);
+
+		final I_C_OrderLine lineNoProject2 = newInstance(I_C_OrderLine.class);
+		lineNoProject2.setC_Order_ID(order.getC_Order_ID());
+		lineNoProject2.setC_Project_ID(0);
+		saveRecord(lineNoProject2);
+
+		// One line that already has the header's project (should be left untouched)
+		final I_C_OrderLine lineAlreadyHasProject = newInstance(I_C_OrderLine.class);
+		lineAlreadyHasProject.setC_Order_ID(order.getC_Order_ID());
+		lineAlreadyHasProject.setC_Project_ID(PROJECT_ID);
+		saveRecord(lineAlreadyHasProject);
+
+		final List<I_C_OrderLine> allLines = Arrays.asList(lineNoProject1, lineNoProject2, lineAlreadyHasProject);
+		when(orderBL.getLinesByOrderIds(any())).thenReturn(allLines);
+
+		// When
+		interceptor.beforeComplete(order);
+
+		// Then: the two NULL lines now carry the header's project
+		assertThat(lineNoProject1.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		assertThat(lineNoProject2.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// The line that already had the project is unchanged
+		assertThat(lineAlreadyHasProject.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// Header is unchanged
+		assertThat(order.getC_Project_ID()).isEqualTo(PROJECT_ID);
+		// No new project was created — header already had one
+		verify(projectService, never()).createProject(any());
+		// Warehouse was NOT consulted — we exited before the SO/dropship check
+		verify(warehouseDAO, never()).getById(any());
 	}
 
 	// -----------------------------------------------------------------------
