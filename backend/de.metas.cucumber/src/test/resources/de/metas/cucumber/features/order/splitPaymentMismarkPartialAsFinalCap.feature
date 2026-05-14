@@ -9,7 +9,7 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
   # Scenario (reuses TC1's R1 + R2 numbers, over-delivery):
   #   - PO GrandTotal = 70,000 EUR (700 PCE @ 100 EUR/PCE, tax-inclusive).
   #   - LC 30 % = 21,000 EUR prepayment; Delivery 70 % = 49,000 EUR.
-  #   - Iter-2 cycle: proforma allocated + paid → LC step Paid; prepay.AvailableAmt = 21,000.
+  #   - Iter-2 cycle (complete): proforma allocated + paid → LC step Paid; prepay.AvailableAmt = 21,000.
   #   - R1 = 400 PCE = 40,000 with-tax → INV1 (Partial, correctly marked).
   #     INV1 alloc = MIN(40,000 × 30 %, 21,000) = 12,000. Remaining prepay = 9,000.
   #   - R2 = 320 PCE = 32,000 with-tax → R1+R2 = 72,000 > 70,000 (over-delivery).
@@ -25,7 +25,7 @@ Feature: Split-payment — mismarked Partial-as-Final cap (AC #12)
   #   NOT the proportional 9,600. The flag is wrong but the cap saves the books.
   #
   # NOTE: This feature stays RED until the production-code change `Q-iter3-trigger-after-LC-paid`
-  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369.
+  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369 for details.
 
   Background:
     Given infrastructure and metasfresh are running

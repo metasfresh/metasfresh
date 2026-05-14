@@ -4,21 +4,21 @@
 @ghActions:run_on_executor1
 Feature: Split-payment — non-proforma order regression (split-payment dormant)
   # Domain: a purchase order with the same LC+OD payment term but WITHOUT a proforma
-  # allocation. Proves AC #22: iter-3 services are dormant unless a proforma-allocated
+  # allocation. Proves AC #22: split-payment services are dormant unless a proforma-allocated
   # prepayment payment exists for the order.
   #
   # Scenario:
   #   - PO GrandTotal = 70,000 EUR (700 PCE @ 100 EUR/PCE, tax-inclusive).
   #   - LC 30 % + OD 70 % payment term — same as TC1/TC2.
   #   - NO proforma allocation, NO prepayment payment.
-  #   - After completing the order: LC row Pending, OD row Awaiting_Pay (iter-2 behaviour).
+  #   - After completing the order: LC row Pending, OD row Awaiting_Pay (base iter-2 behaviour).
   #   - Receive R1 (400 PCE): recomputeDeliverySteps is NOT triggered (no proforma).
-  #     Pay schedule unchanged — still only the two iter-2 rows (LC + single OD).
+  #     Pay schedule unchanged — still only the two base rows (LC + single OD).
   #   - Complete a financial invoice INV1 matched to R1: DeliveryPrepaymentAllocationService
   #     is NOT triggered. Zero allocation lines for INV1.
   #   - The single OD delivery row is NOT split into sub-rows.
   #
-  # This scenario gating the entire iter-3 PR (AC #22).
+  # This scenario gates the entire split-payment service gate (AC #22).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -137,7 +137,7 @@ Feature: Split-payment — non-proforma order regression (split-payment dormant)
   Scenario: Non-proforma payment with IsAutoAllocateAvailableAmt='Y' triggers standard greedy allocation (AC #23 regression guard)
     # Domain: a vendor invoice + a vendor payment that are allocated via the standard
     # IAllocationBL greedy MIN path.  There is NO proforma allocation on any related order,
-    # so iter-3's DeliveryPrepaymentAllocationService is entirely dormant.
+    # so the split-payment DeliveryPrepaymentAllocationService is entirely dormant.
     #
     # Allocation rule under test: alloc = MIN(payment.AvailableAmt, invoice.OpenAmt)
     #

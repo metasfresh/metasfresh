@@ -21,8 +21,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
   #   INV1 (Partial) alloc:  9,542.40 EUR  (= MIN(R1_with_tax × LC%, remaining_prepay))
   #   INV2 (Final)   alloc: 11,053.92 EUR  (full remaining prepay consumed)
   #
-  # iter-3 design: ReferenceDateType BL → isMaterialReceiptDate(BL) = true
-  #               (OD → isMaterialReceiptDate(OD) = false)
+  # Split-payment design: ReferenceDateType BL → isMaterialReceiptDate(BL) = true
+  #                       (OD → isMaterialReceiptDate(OD) = false)
   # Refs: https://github.com/metasfresh/me03/issues/29369
 
   Background:
@@ -63,7 +63,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # Two payment terms:
     #   pt_lc        — order-level term: 30 % LC + 70 % BL (drives the LC pay-schedule rows)
-    #                  break-2 uses BL (BillOfLadingDate) — iter-3 design: isMaterialReceiptDate(BL)=true
+    #                  break-2 uses BL (BillOfLadingDate) — split-payment design: isMaterialReceiptDate(BL)=true
     #   pt_immediate — proforma-level term (NetDays=0) so the proforma's DueDate = DateInvoiced
     #                  (the procurement worker pays on the proforma's due date, OnlyDue=Y picks it up)
     And metasfresh contains C_PaymentTerm

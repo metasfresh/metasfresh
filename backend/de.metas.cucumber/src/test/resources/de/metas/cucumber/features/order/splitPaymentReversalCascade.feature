@@ -3,7 +3,7 @@
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
-  # Domain: covers the four reversal cascades documented in §3.6 of the iter-3 requirements.
+  # Domain: covers the four reversal cascades documented in §3.6 of the split-payment requirements (https://github.com/metasfresh/me03/issues/29369).
   # Each scenario starts from TC1's step-5 state (INV1 Partial + INV2 Final both completed,
   # prepay drained to 0) and reverses one element to assert the cascade behaviour.
   #
@@ -14,25 +14,25 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
   #
   # Scenarios in this file:
   #   TC5a — reverse INV1 only (recommended sequence first step). AC #16.
-  #          Cascade: iter-3 alloc auto-reverses; R1 sub-row C_Invoice_ID cleared; Status → Pending.
+  #          Cascade: allocation auto-reverses; R1 sub-row C_Invoice_ID cleared; Status → Pending.
   #          Prepay restored from 0 to 12,000. INV2 alloc unchanged (still 9,000 against INV2).
   #
   #   TC5b — reverse R1 after first reversing INV1 (recommended sequence). AC #17.
   #          Cascade: R1 sub-row deleted from schedule; remainder row recomputes.
   #
   #   TC5c — reverse the prepayment payment (after TC1 step 5). AC #18.
-  #          Cascade: ALL iter-3 C_AllocationHdr rows auto-reverse via MPayment.deAllocate().
-  #          LC step Paid → Awaiting_Pay (iter-2 contract).
+  #          Cascade: ALL C_AllocationHdr rows auto-reverse via MPayment.deAllocate().
+  #          LC step Paid → Awaiting_Pay (base contract).
   #          Delivery sub-rows unchanged (still tied to invoices).
   #          Both INV1.OpenAmt and INV2.OpenAmt grow back to full receipt-with-tax.
   #
   #   TC5d — reverse INV1 ONLY after INV2 (Final) has completed (stranding case). AC #25.
-  #          Cascade: iter-3 alloc for INV1 auto-reverses; INV2's alloc untouched.
+  #          Cascade: allocation for INV1 auto-reverses; INV2's alloc untouched.
   #          Prepay.AvailableAmt = 12,000 (stranded — sits available until user reverses
   #          INV2 too or a future partial invoice claims it).
   #
   # NOTE: All scenarios stay RED until the production-code change `Q-iter3-trigger-after-LC-paid`
-  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369.
+  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369 for details.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -187,7 +187,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # ── Reverse INV1 only ──
     And the invoice identified by inv1 is reversed
 
-    # AC #16 — iter-3 alloc auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
+    # AC #16 — allocation auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
     # metasfresh's MInvoice.reverseCorrectIt() explicitly sets OpenAmt=0 + IsPaid=Y on the original invoice
     # Expected allocation lines after reversal (all active, ordered by C_AllocationLine_ID):
     #   1. Original payment→inv1 line: Amount=-12000 (in original alloc hdr, DocStatus=RE)
@@ -252,10 +252,10 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
   @Id:S29369_TC5c
   Scenario: Reverse the prepayment payment: cascade reverses ALL allocs; LC → Awaiting_Pay (AC #18)
 
-    # ── Reverse the iter-2 prepayment payment ──
+    # ── Reverse the prepayment payment ──
     And the payment identified by lcPayment is reversed
 
-    # AC #18 — all iter-3 C_AllocationHdr auto-reverse via MPayment.deAllocate()
+    # AC #18 — all C_AllocationHdr rows auto-reverse via MPayment.deAllocate()
     # After reversing the payment, each invoice's allocation is reversed (reverseCorrectIt0 path):
     #   inv1: original line Amount=-12000 + counter-line Amount=+12000 (net zero, both DocStatus=RE hdrs)
     #   inv2: original line Amount=-9000  + counter-line Amount=+9000  (net zero, both DocStatus=RE hdrs)
@@ -275,7 +275,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | inv1       | 40000.00 |
       | inv2       | 32000.00 |
 
-    # AC #18 — LC step Paid → Awaiting_Pay (iter-2 contract).
+    # AC #18 — LC step Paid → Awaiting_Pay (base contract).
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | Status | IsPaid |
       | LC                | WP     | N      |
@@ -296,7 +296,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
     # ── Reverse INV1 only (INV2 stays completed) ──
     And the invoice identified by inv1 is reversed
 
-    # AC #25 — INV1's iter-3 alloc auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
+    # AC #25 — INV1's allocation auto-reversed; INV1.OpenAmt=0 (reversed invoice FULLY_PAID by design)
     # metasfresh's MInvoice.reverseCorrectIt() explicitly sets OpenAmt=0 + IsPaid=Y on the original invoice
     # Same mirror-pair shape as TC5a: 3 active lines for inv1 after reversal
     And validate C_AllocationLines for invoice inv1
@@ -315,7 +315,7 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | -9000.00 |
 
     # AC #25 — stranded amount: prepay.AvailableAmt = 12,000 (the freed INV1 alloc)
-    # Iter-3 does NOT auto-re-allocate; the 12,000 sits available until either INV2 is also
+    # Split-payment does NOT auto-re-allocate; the 12,000 sits available until either INV2 is also
     # reversed or a new partial invoice claims it.
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt  |

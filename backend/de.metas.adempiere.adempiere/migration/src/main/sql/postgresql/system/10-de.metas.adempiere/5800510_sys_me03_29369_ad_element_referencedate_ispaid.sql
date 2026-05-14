@@ -4,7 +4,7 @@
 --       Only ReferenceDate (584813) is new.
 
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ColumnName, Name, PrintName, Description, Help, EntityType) VALUES
-  (584813, 0, 0, 'Y', '2026-04-30 12:00', 0, '2026-04-30 12:00', 0, 'ReferenceDate', 'Bezugsdatum', 'Bezugsdatum', 'Datum, aus dem das Fälligkeitsdatum berechnet wird (Fälligkeitsdatum = Bezugsdatum + Verschiebungstage).', 'Im Zahlungsplan wird das Fälligkeitsdatum für jede Zeile berechnet als Bezugsdatum + Verschiebungstage. Das Bezugsdatum ist je nach Bezugsdatumstyp das Bestelldatum, Akkreditiv-Datum, Konnossement-Datum, ETA-Datum oder Rechnungsdatum. Solange noch kein reales Datum verfügbar ist (Status Ausstehend), bleibt das Bezugsdatum leer.', 'D');
+  (584813 /*From ID Server*/, 0, 0, 'Y', '2026-04-30 12:00', 0, '2026-04-30 12:00', 0, 'ReferenceDate', 'Bezugsdatum', 'Bezugsdatum', 'Datum, aus dem das Fälligkeitsdatum berechnet wird (Fälligkeitsdatum = Bezugsdatum + Verschiebungstage).', 'Im Zahlungsplan wird das Fälligkeitsdatum für jede Zeile berechnet als Bezugsdatum + Verschiebungstage. Das Bezugsdatum ist je nach Bezugsdatumstyp das Bestelldatum, Akkreditiv-Datum, Konnossement-Datum, ETA-Datum oder Rechnungsdatum. Solange noch kein reales Datum verfügbar ist (Status Ausstehend), bleibt das Bezugsdatum leer.', 'D');
 
 INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Name, PrintName, Description, Help, IsTranslated)
   SELECT t.AD_Element_ID, l.AD_Language, t.AD_Client_ID, t.AD_Org_ID, t.IsActive, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy,

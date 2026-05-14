@@ -17,7 +17,7 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
   #     INV1.OpenAmt = 40,000 − 21,000 = 19,000 (too low).
   #     prepay.AvailableAmt = 0.
   #   - User detects mistake → reverses INV1.
-  #     Auto-reverse cascade: iter-3 alloc reverses; prepay.AvailableAmt restored to 21,000.
+  #     Auto-reverse cascade: allocation auto-reverses; prepay.AvailableAmt restored to 21,000.
   #   - User reissues INV1' with IsPartialInvoice='Y' (Partial), matched to R1, completes.
   #     Partial rule: alloc = MIN(40,000 × 30 %, 21,000) = 12,000.
   #     INV1'.OpenAmt = 28,000; prepay.AvailableAmt = 9,000.
@@ -29,7 +29,7 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
   #   reissued Partial invoice produces the canonical alloc value.
   #
   # NOTE: This feature stays RED until the production-code change `Q-iter3-trigger-after-LC-paid`
-  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369.
+  # is approved + implemented. See https://github.com/metasfresh/me03/issues/29369 for details.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -163,7 +163,7 @@ Feature: Split-payment — mismarked Final-as-Partial + correction by reverse-an
     # ── User detects mistake → reverses INV1bad (AC #13 + AC #16 cascade) ──
     And the invoice identified by inv1bad is reversed
 
-    # iter-3 alloc auto-reverses → prepay.AvailableAmt restored to full 21,000
+    # alloc auto-reverses → prepay.AvailableAmt restored to full 21,000
     Then validate payments
       | C_Payment_ID.Identifier | OpenAmt   |
       | lcPayment               | 21000.00  |
