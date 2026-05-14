@@ -700,16 +700,16 @@ Feature: EDI DESADV export via postgREST
 
     # Product has NO GTIN (column intentionally omitted so p.gtin = NULL)
     # ASI data has EAN13_ProductCode but NO GTIN (so asi_data.gtin = NULL)
-    # Note: M_Product_ASI_Data.EAN13_ProductCode is VARCHAR(4) in this schema version;
-    # the value 'E123' is chosen to fit the column and still prove the COALESCE fallback:
-    # COALESCE(dl.gtin_cu=NULL, asi_data.gtin=NULL, asi_data.ean13_productcode='E123', p.gtin=NULL) → 'E123'
+    # Migration 5802510 widened M_Product_ASI_Data.EAN13_ProductCode from VARCHAR(4)
+    # to VARCHAR(50), so it can now hold a real 13-digit EAN. The COALESCE resolution:
+    # COALESCE(dl.gtin_cu=NULL, asi_data.gtin=NULL, asi_data.ean13_productcode='4012345001234', p.gtin=NULL) → '4012345001234'
     Given metasfresh contains M_Products:
       | Identifier         | Value                          | Name                          | Description                          |
       | product_S0468_050  | ean13FallbackProductValue      | ean13FallbackProductName      | ean13FallbackProductDescription      |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier      | M_Product_ID      | C_BPartner_ID | SeqNo | EAN13_ProductCode |
-      | asiData_050     | product_S0468_050 | customer1     | 10    | E123              |
+      | asiData_050     | product_S0468_050 | customer1     | 10    | 4012345001234     |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID      | Name                     |
       | pm_1_S0468_050          | product_S0468_050 | packingMaterialEan13Test |
@@ -793,7 +793,7 @@ Feature: EDI DESADV export via postgREST
     # Assert that GTIN_CU is resolved from EAN13_ProductCode (the COALESCE fallback) because:
     #   - EDI_DesadvLine.GTIN_CU is NULL (no GTIN set on the desadv line)
     #   - M_Product_ASI_Data.GTIN is NULL (not provided in fixture)
-    #   - M_Product_ASI_Data.EAN13_ProductCode = 'E123'  ← this wins
+    #   - M_Product_ASI_Data.EAN13_ProductCode = '4012345001234'  ← this wins
     #   - M_Product.GTIN is NULL (not provided in fixture)
     Then the metasfresh REST-API responds with
     """
@@ -882,7 +882,7 @@ Feature: EDI DESADV export via postgREST
             "DesadvLine": {
               "Product": {
                 "Name": "ean13FallbackProductName",
-                "GTIN_CU": "E123",
+                "GTIN_CU": "4012345001234",
                 "GTIN_TU": null,
                 "NetWeight": 0,
                 "Description": "ean13FallbackProductDescription",
