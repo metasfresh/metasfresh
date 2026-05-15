@@ -49,7 +49,7 @@ public interface IHUPIItemProductQuery
 
 	Set<ProductId> getOnlyProductIds();
 
-	void setOnlyProductIds(Collection<ProductId> productIds);
+	void setOnlyProductIds(@Nullable Collection<ProductId> productIds);
 
 	void setM_Product_ID(final int productId);
 
@@ -122,7 +122,7 @@ public interface IHUPIItemProductQuery
 	void setAllowAnyPartner(final boolean allowAnyPartner);
 
 	/**
-	 * task: https://metasfresh.atlassian.net/browse/FRESH-386
+	 * task: <a href="https://metasfresh.atlassian.net/browse/FRESH-386">...</a>
 	 */
 	// @formatter:off
 	void setM_Product_Packaging_ID(int packagingProductId);
