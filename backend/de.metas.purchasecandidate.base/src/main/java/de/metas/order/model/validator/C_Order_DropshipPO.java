@@ -22,6 +22,7 @@
 
 package de.metas.order.model.validator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -46,9 +47,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Model interceptor for {@link I_C_Order} that handles dropship-warehouse purchase order creation.
@@ -97,23 +98,24 @@ public class C_Order_DropshipPO
 		final List<de.metas.interfaces.I_C_OrderLine> lines = orderBL.getLinesByOrderIds(
 				Collections.singleton(OrderId.ofRepoId(order.getC_Order_ID())));
 
-		final List<String> offendingLineNumbers = new ArrayList<>();
+		final List<Integer> offendingLineNumbers = new ArrayList<>();
 		for (final de.metas.interfaces.I_C_OrderLine line : lines)
 		{
-			if (line.getC_BPartner_Vendor_ID() > 0)
+			final BPartnerId vendorId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_Vendor_ID());
+			if (vendorId != null)
 			{
 				// explicit vendor already set — line is fine
 				continue;
 			}
-			final int productRepoId = line.getM_Product_ID();
-			if (productRepoId <= 0)
+			final ProductId productId = ProductId.ofRepoIdOrNull(line.getM_Product_ID());
+			if (productId == null)
 			{
 				// no product — cannot resolve a vendor
-				offendingLineNumbers.add(String.valueOf(line.getLine()));
+				offendingLineNumbers.add(line.getLine());
 				continue;
 			}
 			final Optional<VendorProductInfo> vendorInfoOpt = vendorProductInfoService.getDefaultVendorProductInfo(
-					ProductId.ofRepoId(productRepoId),
+					productId,
 					orgId);
 			if (vendorInfoOpt.isPresent())
 			{
@@ -123,15 +125,16 @@ public class C_Order_DropshipPO
 			}
 			else
 			{
-				offendingLineNumbers.add(String.valueOf(line.getLine()));
+				offendingLineNumbers.add(line.getLine());
 			}
 		}
 
-		offendingLineNumbers.sort(Comparator.comparingInt(Integer::parseInt));
+		Collections.sort(offendingLineNumbers);
 
 		if (!offendingLineNumbers.isEmpty())
 		{
-			throw new AdempiereException(MSG_MISSING_VENDOR, String.join(", ", offendingLineNumbers))
+			final String lineList = offendingLineNumbers.stream().map(String::valueOf).collect(Collectors.joining(", "));
+			throw new AdempiereException(MSG_MISSING_VENDOR, lineList)
 					.markAsUserValidationError();
 		}
 	}
@@ -139,13 +142,13 @@ public class C_Order_DropshipPO
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createDropshipPOAfterComplete(@NonNull final I_C_Order order)
 	{
-		if (!isDropshipWarehouseOrder(order))
-		{
-			return;
-		}
 		if (!order.isSOTrx())
 		{
 			// safety guard: never run on purchase orders even if accidentally invoked on a dropship warehouse
+			return;
+		}
+		if (!isDropshipWarehouseOrder(order))
+		{
 			return;
 		}
 		dropshipPOFromSOService.createDropshipPOForSO(order);

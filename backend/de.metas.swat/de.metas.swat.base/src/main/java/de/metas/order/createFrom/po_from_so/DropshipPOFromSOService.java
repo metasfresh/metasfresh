@@ -109,7 +109,7 @@ public class DropshipPOFromSOService
 		// gap discovered at aggregation time — surface as an exception rather than a silent notification.
 		aggregator.getSkippedLinesMessage().ifPresent(msg ->
 		{
-			throw new AdempiereException("Dropship PO creation skipped sales-order lines: " + msg);
+			throw new AdempiereException("Dropship PO creation for sales order " + salesOrderId + " skipped lines: " + msg);
 		});
 
 		// The aggregator leaves each created PO in DocStatus=DR. Look them up so we can
