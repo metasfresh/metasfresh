@@ -134,6 +134,7 @@ BEGIN
     WHERE ev.IsOpenItem = 'Y'
       AND ev.IsActive = 'Y'
       AND ev.AD_Org_ID IN (p_ad_org_id, 0)
+      AND ev.AD_Client_ID = v_ad_client_id
       AND (p_account_id IS NULL OR ev.C_ElementValue_ID = p_account_id);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -185,7 +186,7 @@ BEGIN
              JOIN tmp_oib_accounts oa
                   ON oa.account_id = fa.Account_ID
     WHERE TRUE
-      AND fa.ad_client_id = v_ad_client_id
+      AND fa.AD_Client_ID = v_ad_client_id
       AND fa.PostingType = 'A'
       AND fa.DateAcct <= p_date
       AND fa.C_AcctSchema_ID = p_c_acctschema_id

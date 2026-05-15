@@ -258,7 +258,7 @@ FROM report.open_account_balance_report(
 					<reportElement key="rectangle-4" x="0" y="0" width="535" height="15" backcolor="#FFFFCC" uuid="cd0cb0ec-8365-40cc-9c11-6729d2d09587">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
-						<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Account_COUNT}.intValue()%2)==1) && $P{showdetails}.equals("N")]]></printWhenExpression>
+						<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Account_COUNT}.intValue()%2)==1) && "N".equals($P{showdetails})]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -306,7 +306,7 @@ FROM report.open_account_balance_report(
 				<line>
 					<reportElement x="0" y="14" width="535" height="1" uuid="840d23d1-166b-482f-bd00-2da01d00a4a0">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
-						<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+						<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 					</reportElement>
 				</line>
 			</band>
@@ -316,7 +316,7 @@ FROM report.open_account_balance_report(
 		<groupExpression><![CDATA[$F{partnervalue}]]></groupExpression>
 		<groupHeader>
 			<band height="16">
-				<printWhenExpression><![CDATA[$F{report_level}.equals("SUMMARY") && $P{showdetails}.equals("Y")]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{report_level}.equals("SUMMARY") && "Y".equals($P{showdetails})]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-106" x="10" y="3" width="377" height="12" uuid="487f37ce-a9c8-4bea-aac2-bb4a5a826d8d"/>
 					<box>
@@ -566,7 +566,7 @@ FROM report.open_account_balance_report(
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{showdetails}.equals("N") ? $R{no} : ($P{showdetails} .equals("Y") ? $R{yes} : $R{all} )]]></textFieldExpression>
+				<textFieldExpression><![CDATA["N".equals($P{showdetails}) ? $R{no} : ("Y".equals($P{showdetails}) ? $R{yes} : $R{all} )]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -581,7 +581,7 @@ FROM report.open_account_balance_report(
 			</rectangle>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-66" x="1" y="0" width="45" height="12" forecolor="#FFFFFF" uuid="b46161f0-4d9e-45a5-91b6-3efdcb844d59">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -596,7 +596,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-72" x="388" y="0" width="112" height="12" forecolor="#FFFFFF" uuid="1b779eb3-8090-47b4-96fa-07a2a2b3b03f">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -619,7 +619,7 @@ FROM report.open_account_balance_report(
 			</rectangle>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-66" x="20" y="15" width="69" height="12" forecolor="#FFFFFF" uuid="a71c4e7f-fbcb-49b1-bef2-e7f521fdf35a">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -634,7 +634,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-67" x="89" y="15" width="45" height="12" forecolor="#FFFFFF" uuid="ffd3401d-445d-4b30-893f-27082dd3eb2c">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -649,7 +649,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-67" x="134" y="15" width="56" height="12" forecolor="#FFFFFF" uuid="eeb71e4e-8d15-4d01-b48d-b7afd144cc3f">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -664,7 +664,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-67" x="190" y="15" width="56" height="12" forecolor="#FFFFFF" uuid="f3212f10-45bb-48a6-976b-324e0e26abf2">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -679,7 +679,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-66" x="1" y="7" width="45" height="12" forecolor="#FFFFFF" uuid="ba38df95-21d6-44e5-a2fa-2e977d267878">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("N")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["N".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -694,7 +694,7 @@ FROM report.open_account_balance_report(
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-72" x="388" y="7" width="112" height="12" forecolor="#FFFFFF" uuid="d048266d-9c8e-4117-aa5a-3e492054cc3f">
-					<printWhenExpression><![CDATA[$P{showdetails}.equals("N")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["N".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -712,7 +712,7 @@ FROM report.open_account_balance_report(
 	<detail>
 		<band height="21" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$F{report_level}.equals("DETAIL") && $P{showdetails}.equals("Y")]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{report_level}.equals("DETAIL") && "Y".equals($P{showdetails})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-103" x="20" y="-1" width="69" height="12" uuid="c15719e2-b986-4199-b6f7-4118679e7c17"/>
 				<box>
