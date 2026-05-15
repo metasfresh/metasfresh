@@ -572,12 +572,12 @@ public class C_OrderLine_StepDef
 				});
 
 		final List<I_C_OrderLine> lines = queryBuilder.create().list(I_C_OrderLine.class);
-		assertThat(lines.isEmpty()).as("Expected at least one C_OrderLine for order %s", order.getC_Order_ID()).isFalse();
+		assertThat(lines).as("Expected at least one C_OrderLine for order %s", order.getC_Order_ID()).isNotEmpty();
 
 		// Register the first matching line under the given identifier
 		final I_C_OrderLine firstLine = lines.get(0);
-		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
-				.ifPresent(lineIdentifier -> orderLineTable.putOrReplace(lineIdentifier, firstLine));
+		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
+		orderLineTable.putOrReplace(lineIdentifier, firstLine);
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")

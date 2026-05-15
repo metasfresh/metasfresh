@@ -367,8 +367,10 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     # the cockpit handler must short-circuit and produce zero MD_Candidate rows — even though
     # m_transaction rows DO exist for the receipt.
     #
-    # Existing scenarios 2, 3, and 9 verify the SO/PO-completion path (SupplyRequired → short-circuit).
-    # This scenario covers the later receipt path: SO → auto-PO (short-circuit already) → PO receipt
+    # Existing scenarios 2 and 3 verify the SO/PO-completion short-circuit path
+    # (SupplyRequired → short-circuit); scenario 7 is the counterexample (regular
+    # warehouse still creates MD_Candidate). This scenario covers the later receipt
+    # path: SO → auto-PO (short-circuit already) → PO receipt
     # (TransactionCreatedEvent → short-circuit) → still zero MD_Candidate.
     #
     # Single SO line keeps the auto-PO to exactly one PO line, simplifying receipt-schedule lookup.
