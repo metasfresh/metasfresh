@@ -568,12 +568,23 @@ public class C_Order_StepDef
 		{
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
 			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
-			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
+
+			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId)
-					.create()
-					.firstOnly(I_C_Order.class);
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
+
+			// Optional disambiguation by vendor — needed for multi-vendor SOs where N POs
+			// share the same Link_Order_ID but differ by C_BPartner_ID. Backward compatible:
+			// callers that omit the column get the original firstOnly behaviour.
+			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID);
+			if (EmptyUtil.isNotBlank(bpartnerIdentifier))
+			{
+				final int bpartnerRepoId = bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID();
+				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
+			}
+
+			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();

@@ -32,10 +32,7 @@ import de.metas.project.ProjectTypeRepository;
 import de.metas.project.service.ProjectService;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,19 +51,23 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link C_Order_Project} — dropship-warehouse gate.
+ * Unit tests for {@link C_Order_Project}.
  * <p>
  * Style: {@code AdempiereTestHelper.get().init()} (POJO-backed IQueryBL) +
  * Mockito for BL services registered via {@link Services#registerService(Class, Object)}.
  * <p>
  * Services must be registered <em>before</em> instantiating the interceptor, because
  * its field initializers call {@link Services#get(Class)} eagerly.
+ * <p>
+ * Note: project creation for dropship-warehouse sales orders is intentionally NOT handled
+ * here anymore — each dropship PO creates its own project via its own BEFORE_COMPLETE and
+ * the {@code PurchaseOrderProjectListener} pushes the PO's project back to the SO line(s)
+ * via {@code C_PO_OrderLine_Alloc}. The SO-side interceptor only handles non-SO trx.
  */
 class C_Order_ProjectTest
 {
 	// Services injected via Services.get(...)
 	private IOrderBL orderBL;
-	private IWarehouseDAO warehouseDAO;
 
 	// Constructor-injected dependencies
 	private ProjectService projectService;
@@ -99,7 +100,6 @@ class C_Order_ProjectTest
 
 		// Create mocks
 		orderBL = mock(IOrderBL.class);
-		warehouseDAO = mock(IWarehouseDAO.class);
 		projectService = mock(ProjectService.class);
 		projectTypeRepository = mock(ProjectTypeRepository.class);
 		eventDispatcher = mock(PurchaseOrderProjectListenerDispatcher.class);
@@ -107,7 +107,6 @@ class C_Order_ProjectTest
 		// Register Services.get(...) mocks BEFORE instantiating the interceptor —
 		// its field initializers call Services.get() eagerly.
 		Services.registerService(IOrderBL.class, orderBL);
-		Services.registerService(IWarehouseDAO.class, warehouseDAO);
 		// NOTE: Do NOT mock ITrxManager — AdempiereTestHelper.get().init() registers the real
 		// in-memory ITrxManager. Mocking it would prevent POJOLookupMap.save() from executing
 		// (it wraps the save in runInTrx), which would leave C_Order_ID == 0.
@@ -117,23 +116,19 @@ class C_Order_ProjectTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 1 — non-dropship SO early-returns on isSOTrx()
+	// Test 1 — SO early-returns on isSOTrx()
 	// -----------------------------------------------------------------------
 
 	/**
-	 * A sales order whose warehouse does NOT have {@code IsDropShipWarehouse='Y'} must
-	 * cause {@code populateProjectIfNeeded} to return immediately — no project is created
-	 * or promoted.
+	 * Any sales order (dropship-warehouse or not) must cause {@code populateProjectIfNeeded}
+	 * to return immediately — the SO-side interceptor no longer participates in project
+	 * creation. POs handle that themselves via their own BEFORE_COMPLETE and the listener
+	 * pushes the project back to the SO line(s) afterwards.
 	 */
 	@Test
-	void beforeComplete_nonDropshipSO_earlyReturn()
+	void beforeComplete_salesOrder_earlyReturn()
 	{
-		// Given: SO on a non-dropship warehouse
-		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsDropShipWarehouse(false);
-
-		when(warehouseDAO.getById(WarehouseId.ofRepoId(WAREHOUSE_ID))).thenReturn(warehouse);
-
+		// Given: SO (warehouse type irrelevant)
 		final I_C_Order order = buildOrder(true /*isSOTrx*/, WAREHOUSE_ID);
 		order.setC_Project_ID(0); // no project yet
 		saveRecord(order);
@@ -149,13 +144,12 @@ class C_Order_ProjectTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 2 — PO unchanged (regression protection)
+	// Test 2 — PO promotes project from lines
 	// -----------------------------------------------------------------------
 
 	/**
 	 * A purchase order (isSOTrx=false) with a single project on all lines must have
-	 * that project promoted to the order header — the non-dropship existing PO flow
-	 * must continue to work after the dropship gate was added.
+	 * that project promoted to the order header.
 	 */
 	@Test
 	void beforeComplete_purchaseOrder_promotesProjectFromLines()
@@ -180,56 +174,18 @@ class C_Order_ProjectTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 3 — dropship SO creates/promotes project from lines
+	// Test 3 — PO with no project on lines creates a new project
 	// -----------------------------------------------------------------------
 
 	/**
-	 * A sales order on a dropship warehouse with at least one order line that already has
-	 * a {@code C_Project_ID} must have that project promoted to the order header.
+	 * A purchase order where NO order lines have a project must trigger project creation
+	 * and stamp the newly created project on the order header.
 	 */
 	@Test
-	void beforeComplete_dropshipSO_promotesProjectFromLines()
+	void beforeComplete_purchaseOrderNoProjectOnLines_createsNewProject()
 	{
-		// Given: SO on a dropship warehouse with a project on the order line
-		final I_M_Warehouse dropshipWarehouse = newInstance(I_M_Warehouse.class);
-		dropshipWarehouse.setIsDropShipWarehouse(true);
-		when(warehouseDAO.getById(WarehouseId.ofRepoId(WAREHOUSE_ID))).thenReturn(dropshipWarehouse);
-
-		final I_C_Order order = buildOrder(true /*isSOTrx*/, WAREHOUSE_ID);
-		order.setC_Project_ID(0);
-		saveRecord(order);
-
-		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
-		line.setC_Project_ID(ORDER_LINE_PROJECT_ID);
-		saveRecord(line);
-
-		when(orderBL.getLinesByOrderIds(any())).thenReturn(Collections.singletonList(line));
-
-		// When
-		interceptor.beforeComplete(order);
-
-		// Then: the single project from the line was promoted to the SO header
-		assertThat(order.getC_Project_ID()).isEqualTo(ORDER_LINE_PROJECT_ID);
-		verify(projectService, never()).createProject(any());
-	}
-
-	// -----------------------------------------------------------------------
-	// Test 4 — dropship SO with no project on lines creates new project
-	// -----------------------------------------------------------------------
-
-	/**
-	 * A sales order on a dropship warehouse where NO order lines have a project must
-	 * trigger project creation, and the newly created project must be set on the order header.
-	 */
-	@Test
-	void beforeComplete_dropshipSONoProjectOnLines_createsNewProject()
-	{
-		// Given: SO on a dropship warehouse, no project on lines
-		final I_M_Warehouse dropshipWarehouse = newInstance(I_M_Warehouse.class);
-		dropshipWarehouse.setIsDropShipWarehouse(true);
-		when(warehouseDAO.getById(WarehouseId.ofRepoId(WAREHOUSE_ID))).thenReturn(dropshipWarehouse);
-
-		final I_C_Order order = buildOrder(true /*isSOTrx*/, WAREHOUSE_ID);
+		// Given: PO with no project on lines
+		final I_C_Order order = buildOrder(false /*isSOTrx*/, WAREHOUSE_ID);
 		order.setC_Project_ID(0);
 		saveRecord(order);
 
@@ -261,13 +217,13 @@ class C_Order_ProjectTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 5 — order already has a project — propagates to lines that are missing it
+	// Test 4 — order already has a project — propagates to lines that are missing it
 	// -----------------------------------------------------------------------
 
 	/**
 	 * When an order (SO or PO) already has a {@code C_Project_ID > 0}, the interceptor
 	 * must propagate the header's project to any order lines that do not yet have one,
-	 * then return — without creating a new project or consulting the warehouse.
+	 * then return — without creating a new project.
 	 * <p>
 	 * Lines that already carry the same project ID must be left untouched.
 	 */
@@ -311,12 +267,10 @@ class C_Order_ProjectTest
 		assertThat(order.getC_Project_ID()).isEqualTo(PROJECT_ID);
 		// No new project was created — we're in the early-return branch
 		verify(projectService, never()).createProject(any());
-		// Warehouse was NOT consulted — we exited before the SO/dropship check
-		verify(warehouseDAO, never()).getById(any());
 	}
 
 	// -----------------------------------------------------------------------
-	// Test 6 — dropship PO: header has project — propagates to lines
+	// Test 5 — dropship PO: header has project — propagates to lines
 	// -----------------------------------------------------------------------
 
 	/**
@@ -365,8 +319,6 @@ class C_Order_ProjectTest
 		assertThat(order.getC_Project_ID()).isEqualTo(PROJECT_ID);
 		// No new project was created — header already had one
 		verify(projectService, never()).createProject(any());
-		// Warehouse was NOT consulted — we exited before the SO/dropship check
-		verify(warehouseDAO, never()).getById(any());
 	}
 
 	// -----------------------------------------------------------------------

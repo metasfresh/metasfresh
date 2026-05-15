@@ -38,12 +38,15 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | plv_dw_po   | pl_dw_po       |
 
     And metasfresh contains M_Products:
-      | Identifier | M_Product_Category_ID | IsSold | IsPurchased |
-      | product_dw | standard_category     | Y      | Y           |
+      | Identifier   | M_Product_Category_ID | IsSold | IsPurchased |
+      | product_dw   | standard_category     | Y      | Y           |
+      | product_dw_2 | standard_category     | Y      | Y           |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_dw_so   | plv_dw_so              | product_dw   | 20.0     | PCE               | Normal                        |
       | pp_dw_po   | plv_dw_po              | product_dw   | 15.0     | PCE               | Normal                        |
+      | pp_dw_so_2 | plv_dw_so              | product_dw_2 | 25.0     | PCE               | Normal                        |
+      | pp_dw_po_2 | plv_dw_po              | product_dw_2 | 18.0     | PCE               | Normal                        |
 
     And metasfresh contains M_DiscountSchemas:
       | Identifier | Name             | DiscountType | ValidFrom  |
@@ -51,10 +54,12 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
       | dsb_dw     | ds_dw               | product_dw   | ps_dw                 | 10    | Y                      | P         | 0          | 0             |
+      | dsb_dw_2   | ds_dw               | product_dw_2 | ps_dw                 | 20    | Y                      | P         | 0          | 0             |
 
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete |
       | ppln_dw    | product_dw   | true         | Y           | true          |
+      | ppln_dw_2  | product_dw_2 | true         | Y           | true          |
 
     # Customer bpartner (for the SO)
     And metasfresh contains C_BPartners without locations:
@@ -68,12 +73,15 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     And metasfresh contains C_BPartners without locations:
       | Identifier  | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
       | vendor_dw   | Y        | N          | ps_dw              | ds_dw                |
+      | vendor_dw_2 | Y        | N          | ps_dw              | ds_dw                |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier      | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | vendor_dw_loc   | vendor_dw     | Y               | Y               |
+      | Identifier        | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | vendor_dw_loc     | vendor_dw     | Y               | Y               |
+      | vendor_dw_2_loc   | vendor_dw_2   | Y               | Y               |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
       | vendor_dw     | product_dw   |
+      | vendor_dw_2   | product_dw_2 |
 
     # Dropship warehouse — the key setup that triggers the dropship-warehouse flow
     And metasfresh contains M_Warehouse:
@@ -154,19 +162,15 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     Then no MD_Candidate exists for M_Product_ID product_dw
 
   @from:cucumber
-  Scenario: SO on a dropship warehouse and its auto-generated PO share a single C_Project_ID
-    # Regression guard for the design contract that the SO and the auto-generated dropship PO
-    # both carry the same C_Project_ID after the SO is completed. Path:
-    #   1. SO BEFORE_COMPLETE runs C_Order_Project.populateProjectIfNeeded -> creates a project
-    #      (because project type Sales/Purchase Order is active for the org) and stamps it on
-    #      the SO header + SO lines.
-    #   2. SO AFTER_COMPLETE -> C_Order_DropshipPO -> DropshipPOFromSOService.createDropshipPOForSO
-    #      then refreshes the SO instance and stamps the SO's C_Project_ID on every created PO
-    #      header + PO line before auto-completing the PO. The refresh is required because the
-    #      salesOrder instance was loaded BEFORE the SO's BEFORE_COMPLETE interceptor wrote the
-    #      project to the SO -- without it the stamp loop would skip propagation and the PO's own
-    #      C_Order_Project beforeComplete would create a SECOND, distinct project for the PO
-    #      (the originally-reported bug).
+  Scenario: Single-vendor dropship SO — auto-generated PO carries its own project, pushed back to SO lines
+    # Design contract for the single-vendor case: the PO's own BEFORE_COMPLETE
+    # (C_Order_Project.populateProjectIfNeeded) creates one project for the PO, stamps it on the
+    # PO header + PO lines, then PurchaseOrderProjectListener
+    # (UpdateSalesOrderFromPurchaseOrderProjectListener) propagates that project back to the
+    # corresponding SO line(s) via C_PO_OrderLine_Alloc.
+    #
+    # The SO-side C_Order_Project interceptor explicitly skips sales orders, so the SO header
+    # stays NULL — the project lives on the PO and is pushed back to the SO LINES only.
     #
     # Project-type activation is scoped to this scenario (rather than the Background) so it
     # doesn't affect the MD_Candidate counts in Scenarios 2 and 3.
@@ -185,24 +189,30 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
       | po_dw4         | so_dw4                   | false   | POO         | CO            | true           |
 
-    # Assert the SO carries an auto-generated project; register it as `proj1`
+    # Drain the material queue first so async work has a chance to complete.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Register the PO's project as `proj1` (created by the PO's own BEFORE_COMPLETE).
     And validate the created orders
       | C_Order_ID | C_Project_ID |
-      | so_dw4     | proj1        |
+      | po_dw4     | proj1        |
 
-    # Assert the SO lines carry the same project (propagated by C_Order_Project.beforeComplete)
-    And validate C_OrderLine:
+    # CORE assertion of the new design: the SO lines receive the PO's project via the
+    # PurchaseOrderProjectListener pushback (using C_PO_OrderLine_Alloc lookup for dropship POs,
+    # which don't have C_PurchaseCandidate rows). Polling because the listener dispatch is
+    # async (localAndAsync event bus, after-commit).
+    And after not more than 30s, validate C_OrderLine:
       | C_OrderLine_ID | C_Project_ID |
       | sol_dw4_1      | proj1        |
       | sol_dw4_2      | proj1        |
 
-    # CORE design-contract assertion: the auto-generated dropship PO must share the SAME project
-    # as the SO. Without this assertion the test is half-blind — only the SO half is verified and
-    # the PO can silently end up with a different project (the originally-reported bug).
-    # PO-line propagation is verified by C_Order_ProjectTest unit tests.
+    # SO header stays NULL: the SO-side C_Order_Project interceptor early-returns on isSOTrx()
+    # and the listener only pushes the project to the SO LINES — never the SO header. This is
+    # intentional and accepted (see refactor notes); the project lives on the PO and the SO line
+    # is the link surface for downstream consumers.
     And validate the created orders
       | C_Order_ID | C_Project_ID |
-      | po_dw4     | proj1        |
+      | so_dw4     | -            |
 
     # cleanup: deactivate project type so subsequent scenarios are not affected
     And set project type Sales/Purchase Order to inactive
@@ -301,3 +311,50 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     Then MD_Candidates exist for M_Product_ID product_dw:
       | MD_Candidate_Type | MD_Candidate_BusinessCase |
       | SUPPLY            | PURCHASE                  |
+
+  @from:cucumber
+  Scenario: Multi-vendor dropship SO — each vendor's PO carries its OWN project, pushed back to the matching SO line
+    # Design contract for the multi-vendor case (the case the per-PO project model was designed for):
+    # N vendors on one dropship SO produce N POs (one per vendor); each PO's own BEFORE_COMPLETE
+    # creates its own project; the listener pushes each PO's project back to the SO lines that
+    # belong to that PO via C_PO_OrderLine_Alloc. Different SO lines therefore carry different
+    # projects — and the SO header stays NULL (no shared project across vendors).
+    Given set project type Sales/Purchase Order to active
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw10    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw10_A | so_dw10    | product_dw   | 10         | vendor_dw            |
+      | sol_dw10_B | so_dw10    | product_dw_2 | 7          | vendor_dw_2          |
+    When the order identified by so_dw10 is completed
+
+    # Two POs created, one per vendor. Register each via the OPT.C_BPartner_ID disambiguation column.
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | OPT.C_BPartner_ID | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_dw10_A      | so_dw10                  | vendor_dw         | false   | POO         | CO            | true           |
+      | po_dw10_B      | so_dw10                  | vendor_dw_2       | false   | POO         | CO            | true           |
+
+    # Drain the material queue first so async work has a chance to complete.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Each PO has its OWN project — register them as projA and projB.
+    And validate the created orders
+      | C_Order_ID | C_Project_ID |
+      | po_dw10_A  | projA        |
+      | po_dw10_B  | projB        |
+
+    # CORE assertion: each SO line carries the project of its corresponding PO, pushed back by
+    # PurchaseOrderProjectListener via C_PO_OrderLine_Alloc lookup.
+    And after not more than 30s, validate C_OrderLine:
+      | C_OrderLine_ID | C_Project_ID |
+      | sol_dw10_A     | projA        |
+      | sol_dw10_B     | projB        |
+
+    # SO header stays NULL — multiple projects on lines, no single promotion possible.
+    And validate the created orders
+      | C_Order_ID | C_Project_ID |
+      | so_dw10    | -            |
+
+    # cleanup
+    And set project type Sales/Purchase Order to inactive

@@ -375,6 +375,44 @@ public class C_OrderLine_StepDef
 				});
 	}
 
+	/**
+	 * Polling variant of {@code validate C_OrderLine:} — retries the same assertion loop until it
+	 * passes or {@code maxWaitSec} elapses. Useful when an async listener (e.g.
+	 * {@code UpdateSalesOrderFromPurchaseOrderProjectListener}) needs time to push a value onto the
+	 * SO line after the originating PO completes.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And after not more than 30s, validate C_OrderLine:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | sol_dw4_1      | proj1        |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, validate C_OrderLine:$")
+	public void validate_C_OrderLine_polling(final int maxWaitSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + (long) maxWaitSec * 1000L;
+		AssertionError lastError = null;
+		while (true)
+		{
+			try
+			{
+				validate_C_OrderLine(dataTable);
+				return;
+			}
+			catch (final AssertionError e)
+			{
+				lastError = e;
+				if (System.currentTimeMillis() >= deadline)
+				{
+					throw new AssertionError("Polling validate C_OrderLine still failing after " + maxWaitSec + "s. "
+							+ "Last assertion failure: " + e.getMessage(), e);
+				}
+				Thread.sleep(500L);
+			}
+		}
+	}
+
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
