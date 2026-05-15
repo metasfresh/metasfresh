@@ -69,11 +69,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link M_InOut_DropshipReceiptListener}.
+ * Unit tests for {@link M_InOut_DropshipReceiptListener} / {@link DropshipReceiptHUAllocationBL}.
  * <p>
  * Style: AdempiereTestHelper.get().init() (provides POJO-backed IQueryBL) + Mockito for BL services.
- * Services must be registered BEFORE instantiating the listener, because the listener
- * initialises its service fields eagerly via {@link Services#get(Class)}.
+ * Services must be registered BEFORE instantiating the listener, because the listener creates a
+ * {@link DropshipReceiptHUAllocationBL} eagerly, whose service fields are initialised via
+ * {@link Services#get(Class)}.
  */
 class M_InOut_DropshipReceiptListenerTest
 {
