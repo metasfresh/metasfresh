@@ -120,7 +120,7 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            isClosed: false,
+                            isClosed: true,
                             qtyPicked: [{
                                 qtyPicked: "12 PCE",
                                 qtyTUs: 3,
