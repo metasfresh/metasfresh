@@ -1,7 +1,8 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+-- https://github.com/metasfresh/me03/issues/29842 — expose pack-item line number inside DesadvLine
+-- sub-object as `LineItemLine`, so EDIFACT mappings that read the line context from DesadvLine.*
+-- obtain the same value as LineItems[].Line — preventing LIN-vs-packing-allocation mismatches on
+-- partial-delivery shipments.
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -140,8 +141,8 @@ BEGIN
                                                'SupplierProductNo', p.value,
                                                'Name', p.name,
                                                'Description', p.description,
-                                               'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
+                                               'BuyerProductNo', COALESCE(dl.productno, bpp.productno),
+                                               'GTIN_CU', COALESCE(dl.gtin_cu, bpp.gtin, bpp.ean_cu, p.gtin),
                                                'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
@@ -181,17 +182,15 @@ BEGIN
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
             -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+            -- BPartner product lookup
                  LEFT JOIN LATERAL (
-            SELECT gtin, ean13_productcode, productno
-            FROM m_product_asi_data
+            SELECT gtin, ean_cu, productno
+            FROM c_bpartner_product
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id
-              AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
-              AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
-            ORDER BY seqno
+              AND c_bpartner_id = d.c_bpartner_id
             LIMIT 1
-            ) asi_data ON TRUE
+            ) bpp ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
