@@ -1,7 +1,17 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+--
+-- me03#29063: Add EAN13_ProductCode fallback to GTIN_CU resolution in the packs function,
+-- mirroring the same fallback added to get_desadv_lines_no_pack_json_fn (in script 5802240).
+-- When a customer-specific M_Product_ASI_Data record carries an EAN13 product code but no
+-- GTIN_CU, the EAN13 is used as the CU GTIN instead of falling all the way back to the
+-- generic M_Product.GTIN.
+--
+-- Resolution chain for GTIN_CU:
+--   1. EDI_DesadvLine.gtin_cu          (explicit value from DESADV creation)
+--   2. M_Product_ASI_Data.gtin         (ASI/BPartner-specific GTIN override)
+--   3. M_Product_ASI_Data.ean13_productcode  (NEW — EAN13 fallback for the same record)
+--   4. M_Product.gtin                  (base product GTIN)
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -31,7 +41,6 @@ BEGIN
           AND epi.isactive = 'Y'
     ),
          main_per_group AS (
-             -- The main line in each comp group = the one with the lowest order_line
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id,
                  edi_desadvline_id AS main_desadvline_id,
@@ -41,7 +50,6 @@ BEGIN
              ORDER BY comp_group_id, order_line
          ),
          pack_with_role AS (
-             -- Enrich each pack_item with its role (main vs sub-article)
              SELECT ep.edi_desadv_pack_id,
                     ep.seqno,
                     ep.ipa_sscc18,
@@ -78,9 +86,6 @@ BEGIN
                AND ep.isactive = 'Y'
          ),
          main_packs AS (
-             -- Identify the main pack per compensation group
-             -- (the pack containing the main article item, i.e. lowest order_line).
-             -- Uses DISTINCT ON to pick one main pack per group regardless of seqno ordering.
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id, edi_desadv_pack_id AS main_pack_id
              FROM pack_with_role
@@ -88,7 +93,6 @@ BEGIN
              ORDER BY comp_group_id, seqno
          ),
          items_assigned AS (
-             -- Sub-article items are reassigned to the main pack in their compensation group
              SELECT pwr.*,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
@@ -98,7 +102,6 @@ BEGIN
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
-             -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
              SELECT DISTINCT ON (ia.effective_pack_id)
                  ia.effective_pack_id,
                  ep.seqno,
@@ -123,9 +126,6 @@ BEGIN
              LEFT JOIN m_hu_packagingcode pc_lu
                        ON pc_lu.m_hu_packagingcode_id = ph.m_hu_packagingcode_id
              LEFT JOIN LATERAL (
-        -- Build LineItems JSON per effective pack.
-        -- Inlines the edi_desadv_line_object_v logic using ia.m_inoutline_id
-        -- to get the correct orderline/order context (avoiding 1:N multiplication).
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
                                'BestBeforeDate', ia.bestbeforedate,
@@ -174,13 +174,10 @@ BEGIN
                  JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
-            -- Use pack_item's m_inoutline_id for 1:1 join (not desadvline-level N:M)
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-            -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
             SELECT gtin, ean13_productcode, productno
             FROM m_product_asi_data
@@ -191,7 +188,6 @@ BEGIN
             ORDER BY seqno
             LIMIT 1
             ) asi_data ON TRUE
-            -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
             FROM m_hu_pi_item_product
