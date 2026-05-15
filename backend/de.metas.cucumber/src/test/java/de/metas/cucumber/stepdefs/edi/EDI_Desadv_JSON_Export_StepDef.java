@@ -123,9 +123,24 @@ public class EDI_Desadv_JSON_Export_StepDef
 								.isTrue();
 					}
 
+					// LineItemLine invariant: the EDIFACT-LIN line number is exposed at two paths
+					// (top-of-LineItem as `Line`, and inside `DesadvLine` as `LineItemLine`) and
+					// MUST carry the same value — both are sourced from EDI_Desadv_Pack_Item.line.
+					// This guards against future SQL drift between the two paths
+					// (see metasfresh me03#29842 — Spavetti/Migros LAF-1021 packing-allocation rejection).
+					final JsonNode desadvLine = item.path("DesadvLine");
+					assertThat(item.has("Line"))
+							.as("LineItem should contain top-level Line field")
+							.isTrue();
+					assertThat(desadvLine.has("LineItemLine"))
+							.as("Packed LineItem.DesadvLine should contain LineItemLine field")
+							.isTrue();
+					assertThat(desadvLine.path("LineItemLine").asInt())
+							.as("LineItem.DesadvLine.LineItemLine must equal LineItem.Line")
+							.isEqualTo(item.path("Line").asInt());
+
 					if (expectedIsDeliveryClosed != null)
 					{
-						final JsonNode desadvLine = item.path("DesadvLine");
 						assertThat(desadvLine.has("IsDeliveryClosed"))
 								.as("DesadvLine should contain IsDeliveryClosed field")
 								.isTrue();
@@ -163,6 +178,11 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *     <li>{@code IsDeliveryClosed} (optional) — expected value of IsDeliveryClosed</li>
 	 *     <li>{@code QtyCUsPerTU} (optional) — expected consumer units per traded unit (from order line's QtyItemCapacity)</li>
 	 * </ul>
+	 * <p>
+	 * Structural invariant (asserted on every entry independently of the DataTable):
+	 * each entry's {@code DesadvLine} sub-object MUST NOT contain {@code LineItemLine} —
+	 * no pack-item exists for no-packing lines, so there is no pack-item line number to
+	 * expose (see https://github.com/metasfresh/me03/issues/29842).
 	 */
 	@Then("verify DESADV JSON export has DesadvLineWithNoPacking:")
 	public void verifyDesadvLineWithNoPacking(@NonNull final DataTable dataTable) throws Exception
@@ -182,6 +202,12 @@ public class EDI_Desadv_JSON_Export_StepDef
 			final JsonNode entry = noPacking.get(index);
 			final JsonNode desadvLine = entry.path("DesadvLine");
 			assertThat(desadvLine.isMissingNode()).as("Entry %d should have DesadvLine", index).isFalse();
+
+			// LineItemLine is intentionally absent for no-pack entries: there is no
+			// EDI_Desadv_Pack_Item, so there is no pack-item line number to expose.
+			assertThat(desadvLine.has("LineItemLine"))
+					.as("DesadvLineWithNoPacking[%d].DesadvLine must NOT contain LineItemLine (no pack-item exists)", index)
+					.isFalse();
 
 			final int expectedOrderLine = row.getAsInt("OrderLine");
 			assertThat(desadvLine.path("OrderLine").asInt())
