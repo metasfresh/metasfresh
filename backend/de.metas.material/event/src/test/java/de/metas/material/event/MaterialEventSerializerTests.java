@@ -1005,6 +1005,90 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void transactionCreatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final TransactionCreatedEvent event = TransactionCreatedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
+						.huId(30)
+						.productDescriptor(createProductDescriptor())
+						.quantity(TEN)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+		event.assertValid();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void transactionCreatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final TransactionCreatedEvent withFlag = TransactionCreatedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
+						.huId(30)
+						.productDescriptor(createProductDescriptor())
+						.quantity(TEN)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<TransactionCreatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(TransactionCreatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final TransactionCreatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void transactionDeletedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final TransactionDeletedEvent event = TransactionDeletedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+		event.assertValid();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void transactionDeletedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final TransactionDeletedEvent withFlag = TransactionDeletedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<TransactionDeletedEvent> jsonObjectMapper = JSONObjectMapper.forClass(TransactionDeletedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final TransactionDeletedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
 	public void purchaseOfferCreatedEvent()
 	{
 		final PurchaseOfferCreatedEvent evt = PurchaseOfferCreatedEvent.builder()
