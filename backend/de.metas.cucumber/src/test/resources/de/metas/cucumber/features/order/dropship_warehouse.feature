@@ -358,3 +358,66 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
 
     # cleanup
     And set project type Sales/Purchase Order to inactive
+
+  @from:cucumber
+  Scenario: Dropship warehouse — receipt processing creates no MD_Candidate even after m_transaction
+    # Regression guard for the transaction-event short-circuit path (T1–T5 in PR #23918).
+    # When a dropship PO receipt is completed, the HU receipt generates m_transaction rows that
+    # trigger TransactionCreatedEvent. Because TransactionCreatedEvent carries isDropShipWarehouse=true,
+    # the cockpit handler must short-circuit and produce zero MD_Candidate rows — even though
+    # m_transaction rows DO exist for the receipt.
+    #
+    # Existing scenarios 2, 3, and 9 verify the SO/PO-completion path (SupplyRequired → short-circuit).
+    # This scenario covers the later receipt path: SO → auto-PO (short-circuit already) → PO receipt
+    # (TransactionCreatedEvent → short-circuit) → still zero MD_Candidate.
+    #
+    # Single SO line keeps the auto-PO to exactly one PO line, simplifying receipt-schedule lookup.
+    # product_dw_2 / vendor_dw_2 are used here (rather than product_dw / vendor_dw) because
+    # Scenario 9 creates MD_Candidate SUPPLY/PURCHASE rows for product_dw on warehouse_regular,
+    # and those rows persist across scenarios. Using product_dw_2 keeps the final
+    # "no MD_Candidate" assertion free of cross-scenario pollution.
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw11    | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw11_1 | so_dw11    | product_dw_2 | 10         | vendor_dw_2          |
+    When the order identified by so_dw11 is completed
+
+    # The auto-PO is created synchronously in the same transaction as SO completion.
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_dw11        | so_dw11                  | false   | POO         | CO            | true           |
+
+    # Load the auto-created PO line so we can look up its receipt schedule below.
+    And load C_OrderLines from C_Order:
+      | C_Order_ID | C_OrderLine_ID | OPT.M_Product_ID |
+      | po_dw11    | pol_dw11_1     | product_dw_2     |
+
+    # Drain the material queue so any ReceiptScheduleCreatedEvent short-circuit has run.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # The receipt schedule was created by PO completion; locate and register it.
+    # Note: for a dropship PO the delivery-location on the receipt schedule comes from the SO's
+    # delivery location (customer_dw_loc), not from the vendor's own location — this is the
+    # standard dropship behaviour (goods delivered directly to the customer).
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | rs_dw11                         | po_dw11               | pol_dw11_1                | vendor_dw_2              | customer_dw_loc                   | product_dw_2            | 10         | warehouse_dw              |
+
+    # Generate a planning HU (No Packing Item = ID 101) and create the material receipt.
+    # Completing the receipt fires TransactionCreatedEvent — the path under test.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | huLuTuConfig_dw11                      | hu_dw11            | rs_dw11                         | N               | 0     | N               | 1     | N               | 10          | 101                                |
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_dw11            | rs_dw11                         | receipt_dw11          |
+
+    # Drain the event queue so any TransactionCreatedEvent processing has a chance to run.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # CORE assertion: even after the receipt fires m_transaction rows and TransactionCreatedEvent,
+    # zero non-STOCK MD_Candidate rows must exist because isDropShipWarehouse=true triggers the
+    # short-circuit in the cockpit TransactionCreatedHandler.
+    Then no MD_Candidate exists for M_Product_ID product_dw_2

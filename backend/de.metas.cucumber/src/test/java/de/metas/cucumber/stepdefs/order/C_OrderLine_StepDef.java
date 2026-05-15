@@ -72,6 +72,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -516,6 +517,67 @@ public class C_OrderLine_StepDef
 		assertThat(orderRecord).isNotNull();
 
 		orderTable.putOrReplace(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID), orderRecord);
+	}
+
+	/**
+	 * Loads all {@link I_C_OrderLine} records that belong to the given order and registers each one
+	 * in {@link C_OrderLine_StepDefData} under the provided {@code C_OrderLine_ID.Identifier} value.
+	 * Useful when the order lines were auto-created (e.g. auto-PO from a dropship SO) and were not
+	 * explicitly set up in the feature file.
+	 *
+	 * <p>Each DataTable row must supply:</p>
+	 * <ul>
+	 *   <li>{@code C_Order_ID} (required) — identifier of the order whose lines to load
+	 *       (must have been registered previously in {@link C_Order_StepDefData})</li>
+	 *   <li>{@code C_OrderLine_ID} (required) — identifier under which the <em>first matching</em> line
+	 *       will be registered; when {@code M_Product_ID} is also provided only lines for that product
+	 *       are considered, otherwise the first line of the order is used</li>
+	 *   <li>{@code M_Product_ID} (optional) — restricts the search to lines with this product</li>
+	 * </ul>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_Order_ID} — required, references a previously registered order</li>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier under which the loaded line is registered</li>
+	 *     <li>{@code M_Product_ID} — optional, filter by product</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_OrderLines from C_Order:
+	 *   | C_Order_ID | C_OrderLine_ID | OPT.M_Product_ID |
+	 *   | po_dw9     | pol_dw9_1      | product_dw       |
+	 * </pre>
+	 */
+	@And("load C_OrderLines from C_Order:")
+	public void loadC_OrderLinesFromC_Order(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(this::loadC_OrderLineFromC_Order);
+	}
+
+	private void loadC_OrderLineFromC_Order(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID());
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.ifPresent(productIdentifier -> {
+					final ProductId productId = productTable.getIdOptional(productIdentifier)
+							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+					queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productId.getRepoId());
+				});
+
+		final List<I_C_OrderLine> lines = queryBuilder.create().list(I_C_OrderLine.class);
+		assertThat(lines.isEmpty()).as("Expected at least one C_OrderLine for order %s", order.getC_Order_ID()).isFalse();
+
+		// Register the first matching line under the given identifier
+		final I_C_OrderLine firstLine = lines.get(0);
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.ifPresent(lineIdentifier -> orderLineTable.putOrReplace(lineIdentifier, firstLine));
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")
