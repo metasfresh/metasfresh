@@ -551,9 +551,11 @@ public class DesadvBL
 
 			if (oneDesadvPerShipment)
 			{
-				// me03#29231 — DesadvLine for this OrderLine hasn't been pre-created at order-complete; do it now.
+				// me03#29231 — In per-shipment mode, always resolve (or create) the DesadvLine for the current DESADV.
+				// The order line's EDI_DesadvLine_ID may already point to a prior shipment's DESADV; we must
+				// create a fresh DesadvLine linked to the current desadv so packs land on the right DESADV header.
 				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class);
-				if (orderLine.getEDI_DesadvLine_ID() <= 0 && !orderLine.isPackagingMaterial())
+				if (!orderLine.isPackagingMaterial())
 				{
 					final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 					final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadv, orderLine);

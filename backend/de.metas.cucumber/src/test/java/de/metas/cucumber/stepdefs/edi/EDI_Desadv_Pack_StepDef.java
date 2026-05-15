@@ -118,6 +118,25 @@ public class EDI_Desadv_Pack_StepDef
 		);
 	}
 
+	/**
+	 * Wait until exactly the given number of active EDI_Desadv_Pack records exist.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example <pre>
+	 * Then after not more than 60s, there are exactly 2 EDI_Desadv_Pack records
+	 * </pre>
+	 */
+	@Then("^after not more than (.*)s, there are exactly (.*) EDI_Desadv_Pack records$")
+	public void tableHasExactCount(final int timeoutSec, final int expectedCount) throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(
+				timeoutSec,
+				1000,
+				() -> queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class).addOnlyActiveRecordsFilter().create().count() == expectedCount,
+				() -> logger.error(getCurrentContext())
+		);
+	}
+
 	private void updatePack(@NonNull final Map<String, String> tableRow)
 	{
 		final String packIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_EDI_Desadv_Pack_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

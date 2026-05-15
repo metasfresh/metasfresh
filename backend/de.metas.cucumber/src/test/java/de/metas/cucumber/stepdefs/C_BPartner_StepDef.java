@@ -416,6 +416,7 @@ public class C_BPartner_StepDef
 
 		bPartnerRecord.setEdiDESADVSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADVSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
 		bPartnerRecord.setEdiINVOICSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOICSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
+		row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiOneEDIDesadvPerShipment).ifPresent(v -> bPartnerRecord.setIsEdiOneEDIDesadvPerShipment(v));
 
 		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID)
 				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
@@ -423,6 +424,7 @@ public class C_BPartner_StepDef
 				.ifPresent(identifier -> bPartnerRecord.setEdiINVOIC_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
+		row.getAsOptionalBoolean(org.compiere.model.I_C_BPartner.COLUMNNAME_AllowConsolidateInOut).ifPresent(v -> bPartnerRecord.setAllowConsolidateInOut(v));
 
 		InterfaceWrapperHelper.save(bPartnerRecord);
 	}
