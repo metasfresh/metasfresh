@@ -40,6 +40,12 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
+    expectNewTUTargetNotPresent: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Expect New TU target "${tuPIItemProductTestId}" not present`, async () => {
+        await MaterialReceiptLineScreen.clickReceiveTargetButton();
+        await ReceiptReceiveTargetScreen.clickNewHUButton();
+        await ReceiptNewHUScreen.expectTUTargetNotPresent({ tuPIItemProductTestId });
+    }),
+
     selectExistingHUTarget: async ({ huQRCode }) => await test.step(`${NAME} - Select existing HU target`, async () => {
         await MaterialReceiptLineScreen.clickReceiveTargetButton();
         await ReceiptReceiveTargetScreen.clickExistingHUButton();
