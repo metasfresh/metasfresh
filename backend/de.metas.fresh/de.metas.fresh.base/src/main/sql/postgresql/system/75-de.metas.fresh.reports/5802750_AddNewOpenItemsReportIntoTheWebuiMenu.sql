@@ -642,3 +642,28 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000064, SeqNo=28, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000064, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542301 AND AD_Tree_ID=10
 ;
 
+-- Name: Offene Posten (Belegbasiert)
+-- Action Type: R
+-- Report: opent_items_doc_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2026-05-15T08:51:10.893Z
+UPDATE AD_Menu SET AD_Element_ID=584879, Description='Offene Posten (Belegbasiert)', Name='Offene Posten (Belegbasiert)', WEBUI_NameBrowse=NULL, WEBUI_NameNew=NULL, WEBUI_NameNewBreadcrumb=NULL,Updated=TO_TIMESTAMP('2026-05-15 08:51:10.893000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=540948
+;
+
+-- 2026-05-15T08:51:10.910Z
+/* DDL */  select update_menu_translation_from_ad_element(584879)
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: ReportFormat
+-- 2026-05-15T08:54:46.110Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,577492,0,585616,543204,17,541097,'ReportFormat',TO_TIMESTAMP('2026-05-15 08:54:45.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'@SQL=SELECT getDefaultValue_ProcessPara(p_AD_Process_Para_ID => 541681)','U',0,'Y','N','Y','N','Y','N','Report format',80,'N',TO_TIMESTAMP('2026-05-15 08:54:45.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-05-15T08:54:46.112Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543204 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2026-05-15T08:54:46.114Z
+/* DDL */  select update_Process_Para_Translation_From_AD_Element(577492)
+;
+
