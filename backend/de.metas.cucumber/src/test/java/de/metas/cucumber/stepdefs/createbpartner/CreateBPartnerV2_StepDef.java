@@ -143,6 +143,12 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
 			}
 
+			final Boolean discountPrinted = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_IsDiscountPrinted);
+			if (discountPrinted != null)
+			{
+				softly.assertThat(bPartnerRecord.isDiscountPrinted()).isEqualTo(discountPrinted);
+			}
+			
 			softly.assertAll();
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
