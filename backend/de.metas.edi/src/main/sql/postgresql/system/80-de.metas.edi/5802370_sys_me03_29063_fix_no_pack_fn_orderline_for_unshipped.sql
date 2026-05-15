@@ -1,35 +1,22 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- Function for desadv lines with no pack.
--- Builds the JSON for desadv lines that have no edi_desadv_pack_item: both unshipped lines
--- (must still appear in DESADV with qty 0) and shipped-but-not-packed lines.
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_lines_no_pack_json_fn.sql
 --
--- Note: the per-line JSON object was previously assembled via the view
--- edi_desadv_line_object_v. That view had an unguarded LEFT JOIN to m_inoutline and
--- produced row multiplication (and inconsistent GTIN resolution) when one edi_desadvline
--- mapped to multiple m_inoutline rows. The same logic is now inlined here with
--- LATERAL + LIMIT 1 on m_inoutline to guarantee exactly one row per desadv line — the
--- pattern that get_desadv_packs_json_fn already used to side-step the same view.
+-- me03#29063: Fix regression introduced in migration 5802240.
+--
+-- When inlining the (now-dropped) edi_desadv_line_object_v into the no-pack function,
+-- the c_orderline join was routed via iol.c_orderline_id. For UNSHIPPED desadv lines
+-- there is no m_inoutline (iol is NULL via the LATERAL+LIMIT 1), which made ol NULL
+-- and produced OrderLine=0 in the output JSON. The original view resolved c_orderline
+-- directly from edi_desadvline (`ol.edi_desadvline_id = dl.edi_desadvline_id`) precisely
+-- so that unshipped lines still expose their order context.
+--
+-- This script recreates the function with c_orderline / c_order resolved DIRECTLY from
+-- edi_desadvline via a separate LATERAL+LIMIT 1, restoring the unshipped-line behaviour
+-- while still guarding against the 1:N multiplication risk the old view had.
+--
+-- Caught by cucumber CI on PR https://github.com/metasfresh/metasfresh/pull/23942:
+-- scenario "DESADV export includes unshipped order lines in DesadvLineWithNoPacking"
+-- expected OrderLine=20 but received 0 (test (cucumber) (profile5) failure).
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
@@ -77,10 +64,6 @@ BEGIN
              JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
              LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
              LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
-             -- Pick exactly one m_inoutline per desadv line for this shipment. Without LIMIT 1
-             -- a desadv line that maps to multiple m_inoutline rows would multiply the output
-             -- and could resolve different GTINs per multiplied row via the asi_data join.
-             -- When the line is unshipped (or shipped under a different M_InOut), iol is NULL.
              LEFT JOIN LATERAL (
                  SELECT iol_inner.m_inoutline_id,
                         iol_inner.line,
@@ -91,12 +74,8 @@ BEGIN
                  ORDER BY iol_inner.m_inoutline_id
                  LIMIT 1
              ) iol ON TRUE
-             -- Resolve OrderLine / Order context DIRECTLY from edi_desadvline -> c_orderline
-             -- (not via iol). For unshipped desadv lines, iol is NULL but c_orderline still
-             -- exists and we must still expose its line number / order header in the JSON
-             -- (test scenario "DESADV export includes unshipped order lines in
-             -- DesadvLineWithNoPacking" requires OrderLine=20 for the unshipped line).
-             -- LATERAL + LIMIT 1 guards against the same 1:N multiplication risk.
+             -- Direct edi_desadvline -> c_orderline lookup. Required because unshipped lines
+             -- have no m_inoutline (iol NULL) but still need OrderLine + Order context in JSON.
              LEFT JOIN LATERAL (
                  SELECT ol_inner.line, ol_inner.c_order_id
                  FROM c_orderline ol_inner
@@ -105,9 +84,6 @@ BEGIN
                  LIMIT 1
              ) ol ON TRUE
              LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-             -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed).
-             -- LATERAL + LIMIT 1 prevents row multiplication when one edi_desadvline maps to
-             -- multiple m_inoutline records in the same shipment.
              LEFT JOIN LATERAL (
                  SELECT diol_inner.desadvlinetotalqtydelivered
                  FROM m_inoutline iol_diol
@@ -118,7 +94,6 @@ BEGIN
                    AND iol_diol.edi_desadvline_id = dl.edi_desadvline_id
                  LIMIT 1
              ) diol ON TRUE
-             -- Packing instruction product lookup (preferred BPartner, fall back to wildcard)
              LEFT JOIN LATERAL (
                  SELECT gtin
                  FROM m_hu_pi_item_product
@@ -128,12 +103,8 @@ BEGIN
                  ORDER BY c_bpartner_id NULLS LAST
                  LIMIT 1
              ) pip ON TRUE
-             -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI
-             -- subset matching). When iol is NULL (unshipped line) iol.m_attributesetinstance_id
-             -- is NULL and only wildcard records (m_attributesetinstance_id IS NULL in
-             -- M_Product_ASI_Data) match — that is the documented fallback for unshipped lines.
              LEFT JOIN LATERAL (
-                 SELECT gtin, ean13_productcode, productno 
+                 SELECT gtin, ean13_productcode, productno
                  FROM m_product_asi_data
                  WHERE isactive = 'Y'
                    AND m_product_id = p.m_product_id
@@ -144,8 +115,6 @@ BEGIN
              ) asi_data ON TRUE
     WHERE dl.edi_desadv_id = p_edi_desadv_id
       AND dl.isactive = 'Y'
-      -- Include lines that either have a shipment line in this InOut (shipped but no pack),
-      -- OR have no shipment line at all (not shipped — qty delivered = 0, must still appear in DESADV).
       AND (
           EXISTS (
               SELECT 1 FROM m_inoutline iol_exist
@@ -158,7 +127,6 @@ BEGIN
               WHERE iol_any.edi_desadvline_id = dl.edi_desadvline_id
           )
       )
-      -- Exclude lines that have a pack in this shipment (those are handled by get_desadv_packs_json_fn).
       AND NOT EXISTS (
         SELECT 1
         FROM edi_desadv_pack_item edpi_check
