@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.edi
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- Function for desadv packs
 -- Handles compensation group sub-articles: sub-article pack items are merged
 -- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
@@ -71,7 +93,7 @@ BEGIN
                       JOIN edi_desadv_pack_item epi
                            ON epi.edi_desadv_pack_id = ep.edi_desadv_pack_id AND epi.isactive = 'Y'
                       JOIN m_inoutline iol_filter ON iol_filter.m_inoutline_id = epi.m_inoutline_id
-                           AND iol_filter.m_inout_id = p_m_inout_id
+                 AND iol_filter.m_inout_id = p_m_inout_id
                       LEFT JOIN pack_item_comp pic ON pic.edi_desadv_pack_item_id = epi.edi_desadv_pack_item_id
                       LEFT JOIN main_per_group mg ON mg.comp_group_id = pic.comp_group_id
              WHERE ep.edi_desadv_id = p_edi_desadv_id
@@ -92,8 +114,8 @@ BEGIN
              SELECT pwr.*,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
-                        ELSE pwr.edi_desadv_pack_id
-                        END AS effective_pack_id
+                                                ELSE pwr.edi_desadv_pack_id
+                    END AS effective_pack_id
              FROM pack_with_role pwr
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
@@ -137,16 +159,16 @@ BEGIN
                                'QtyTU', ia.qtytu,
                                'DesadvLine', JSONB_BUILD_OBJECT(
                                        'Product', JSONB_BUILD_OBJECT(
-                                               'SupplierProductNo', p.value,
-                                               'Name', p.name,
-                                               'Description', p.description,
-                                               'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
-                                               'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
-                                               'NetWeight', p.weight,
-                                               'GrossWeight', p.grossweight,
-                                               'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
-                                       ),
+                                       'SupplierProductNo', p.value,
+                                       'Name', p.name,
+                                       'Description', p.description,
+                                       'BuyerProductNo', COALESCE(dl.productno, bpp.productno),
+                                       'GTIN_CU', COALESCE(dl.gtin_cu, bpp.gtin, bpp.ean_cu, p.gtin),
+                                       'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
+                                       'NetWeight', p.weight,
+                                       'GrossWeight', p.grossweight,
+                                       'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
+                                                  ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
                                        'QtyDeliveredInDesadvLineUOM', dl.qtydeliveredinuom,
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
@@ -158,7 +180,7 @@ BEGIN
                                        'OrderDocumentNo', o.documentno,
                                        'DesadvLine', dl.line,
                                        'IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered), true)
-                               ),
+                                             ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
                                'Line', ia.pi_line,
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
@@ -180,17 +202,15 @@ BEGIN
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
             -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+            -- BPartner product lookup
                  LEFT JOIN LATERAL (
-            SELECT gtin, ean13_productcode, productno
-            FROM m_product_asi_data
+            SELECT gtin, ean_cu, productno
+            FROM c_bpartner_product
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id
-              AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
-              AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
-            ORDER BY seqno
+              AND c_bpartner_id = d.c_bpartner_id
             LIMIT 1
-            ) asi_data ON TRUE
+            ) bpp ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
