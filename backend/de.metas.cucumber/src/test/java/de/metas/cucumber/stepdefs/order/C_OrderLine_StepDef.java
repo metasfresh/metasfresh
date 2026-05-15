@@ -392,7 +392,6 @@ public class C_OrderLine_StepDef
 	public void validate_C_OrderLine_polling(final int maxWaitSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final long deadline = System.currentTimeMillis() + (long) maxWaitSec * 1000L;
-		AssertionError lastError = null;
 		while (true)
 		{
 			try
@@ -402,13 +401,12 @@ public class C_OrderLine_StepDef
 			}
 			catch (final AssertionError e)
 			{
-				lastError = e;
 				if (System.currentTimeMillis() >= deadline)
 				{
 					throw new AssertionError("Polling validate C_OrderLine still failing after " + maxWaitSec + "s. "
 							+ "Last assertion failure: " + e.getMessage(), e);
 				}
-				Thread.sleep(500L);
+				Thread.sleep(1000L);
 			}
 		}
 	}

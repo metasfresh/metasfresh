@@ -40,6 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -48,6 +50,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +64,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UpdateSalesOrderFromPurchaseOrderProjectListener implements PurchaseOrderProjectListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(UpdateSalesOrderFromPurchaseOrderProjectListener.class);
+
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -75,6 +80,9 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+
+		logger.debug("onCreated: projectId={}, purchaseOrderLineIds.size={}, salesOrderAndLineIds-after-candidate-match.size={}",
+				projectId, purchaseOrderLineIds.size(), salesOrderAndLineIds.size());
 
 		// Fall back to C_PO_OrderLine_Alloc for PO lines not linked to a C_PurchaseCandidate.
 		// Dropship POs created via CreatePOFromSOsAggregator skip the candidate flow, so the
@@ -95,6 +103,9 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 
 		final Set<OrderLineId> unmatchedPoLineIds = new HashSet<>(allInputPoLineIds);
 		unmatchedPoLineIds.removeAll(matchedPoLineIds);
+
+		logger.debug("onCreated: unmatchedPoLineIds.size={} (PO lines without C_PurchaseCandidate, will fall back to C_PO_OrderLine_Alloc)",
+				unmatchedPoLineIds.size());
 
 		if (!unmatchedPoLineIds.isEmpty())
 		{
@@ -117,6 +128,9 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 						.filter(Objects::nonNull)
 						.collect(Collectors.toSet());
 
+				logger.debug("onCreated: extraSalesOrderAndLineIds.size={} (resolved via C_PO_OrderLine_Alloc fallback)",
+						extraSalesOrderAndLineIds.size());
+
 				salesOrderAndLineIds = ImmutableSet.<OrderAndLineId>builder()
 						.addAll(salesOrderAndLineIds)
 						.addAll(extraSalesOrderAndLineIds)
@@ -135,6 +149,16 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 				.filter(orderLine -> ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()) == null)
 				.peek(orderLine -> orderLine.setC_Project_ID(projectId.getRepoId()))
 				.collect(Collectors.toSet());
+
+		if (logger.isDebugEnabled())
+		{
+			final Set<Integer> updatedSoLineIds = updatedOrderLines.stream()
+					.map(I_C_OrderLine::getC_OrderLine_ID)
+					.collect(Collectors.toCollection(TreeSet::new));
+			logger.debug("onCreated: updating projectId={} on {} SO line(s): {}",
+					projectId, updatedOrderLines.size(), updatedSoLineIds);
+		}
+
 		saveAllForUserId(event, updatedOrderLines);
 	}
 
