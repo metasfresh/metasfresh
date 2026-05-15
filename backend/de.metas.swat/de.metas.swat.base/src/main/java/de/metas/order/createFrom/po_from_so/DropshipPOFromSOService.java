@@ -73,6 +73,17 @@ public class DropshipPOFromSOService
 	 * below would skip propagation, causing the PO's own beforeComplete to create a SECOND,
 	 * distinct project.</p>
 	 *
+	 * <p><b>Maintenance warning — post-commit material-event publishing is load-bearing here.</b>
+	 * The PO's auto-completion below fires inside the SO's transaction, and all receipt-schedule
+	 * observers in this module (notably
+	 * {@code M_ReceiptSchedule_PostMaterialEvent} in {@code de.metas.purchasecandidate.base}) use
+	 * {@code PostMaterialEventService.enqueueEventAfterNextCommit} to defer event publication
+	 * until after the outer SO transaction commits. If a future observer ever uses
+	 * {@code enqueueEventNow} instead, the dropship invariant ("no MD_Candidate rows appear for
+	 * these orders") will silently break because dispo could see a half-built PO before the
+	 * SO transaction commits. Keep the deferred-event pattern for every receipt-schedule
+	 * observer that participates in the dropship flow.</p>
+	 *
 	 * @param salesOrder the in-memory sales-order instance to create a dropship PO for
 	 */
 	public void createDropshipPOForSO(@NonNull final I_C_Order salesOrder)

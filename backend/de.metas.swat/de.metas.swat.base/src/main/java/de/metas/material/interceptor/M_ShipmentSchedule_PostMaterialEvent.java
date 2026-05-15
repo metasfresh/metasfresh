@@ -31,6 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -331,8 +332,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			return false;
 		}
 
-		return Services.get(IWarehouseDAO.class)
-				.getById(warehouseId)
-				.isDropShipWarehouse();
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+		return warehouse != null && warehouse.isDropShipWarehouse();
 	}
 }
