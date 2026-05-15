@@ -358,7 +358,7 @@ class C_Order_DropshipPOTest
 		// When: interceptor fires after-complete
 		interceptor.createDropshipPOAfterComplete(order);
 
-		// Then: service called exactly once with the correct order id
-		verify(dropshipPOFromSOService).createDropshipPOForSO(OrderId.ofRepoId(orderId));
+		// Then: service called exactly once with the in-memory SO instance
+		verify(dropshipPOFromSOService).createDropshipPOForSO(order);
 	}
 }

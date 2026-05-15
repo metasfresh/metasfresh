@@ -596,12 +596,18 @@ public class C_Order_StepDef
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 			// TODO: introduce DataTableRows for this whole stepdef
-			DataTableRow.singleRow(tableRow)
-					.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+			final DataTableRow singleRow = DataTableRow.singleRow(tableRow);
+			singleRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 					.map(bpartnerTable::getId)
 					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
 							.as("DropShip_BPartner_ID")
 							.isEqualTo(dropShipId.getRepoId()));
+
+			// Optional `Identifier` column: register the looked-up PO in orderTable so subsequent
+			// steps (validate the created orders, validate C_OrderLine:, etc.) can reference it by
+			// its feature-file identifier.
+			singleRow.getAsOptionalIdentifier()
+					.ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 		}
 	}
 

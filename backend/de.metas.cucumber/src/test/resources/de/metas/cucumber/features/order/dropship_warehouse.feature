@@ -170,15 +170,6 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     #
     # Project-type activation is scoped to this scenario (rather than the Background) so it
     # doesn't affect the MD_Candidate counts in Scenarios 2 and 3.
-    #
-    # Limitation: no existing step registers the auto-created PO under an identifier, so we
-    # cannot directly assert that the PO carries the same project as the SO. Instead we assert
-    # the SO has a project (via `validate the created orders` on `so_dw4`, which registers the
-    # auto-generated project as `proj1` in the project-step-def table) and that the SO lines
-    # carry the same `proj1`. The PO is verified to exist via `the order is created:`. Once a
-    # step exists to register a PO from Link_Order_ID (or `the order is created:` is extended
-    # to register the PO under an identifier), this scenario can be tightened to assert the PO
-    # header + PO lines also carry `proj1`.
     Given set project type Sales/Purchase Order to active
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
@@ -189,10 +180,10 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | sol_dw4_2  | so_dw4     | product_dw   | 5          | vendor_dw            |
     When the order identified by so_dw4 is completed
 
-    # Verify the PO was created
+    # Verify the PO was created and register it as `po_dw4` for downstream assertions
     Then the order is created:
-      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
-      | so_dw4                   | false   | POO         | CO            | true           |
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_dw4         | so_dw4                   | false   | POO         | CO            | true           |
 
     # Assert the SO carries an auto-generated project; register it as `proj1`
     And validate the created orders
@@ -204,6 +195,14 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | C_OrderLine_ID | C_Project_ID |
       | sol_dw4_1      | proj1        |
       | sol_dw4_2      | proj1        |
+
+    # CORE design-contract assertion: the auto-generated dropship PO must share the SAME project
+    # as the SO. Without this assertion the test is half-blind — only the SO half is verified and
+    # the PO can silently end up with a different project (the originally-reported bug).
+    # PO-line propagation is verified by C_Order_ProjectTest unit tests.
+    And validate the created orders
+      | C_Order_ID | C_Project_ID |
+      | po_dw4     | proj1        |
 
     # cleanup: deactivate project type so subsequent scenarios are not affected
     And set project type Sales/Purchase Order to inactive

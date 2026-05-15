@@ -148,7 +148,7 @@ public class C_Order_DropshipPO
 			// safety guard: never run on purchase orders even if accidentally invoked on a dropship warehouse
 			return;
 		}
-		dropshipPOFromSOService.createDropshipPOForSO(OrderId.ofRepoId(order.getC_Order_ID()));
+		dropshipPOFromSOService.createDropshipPOForSO(order);
 	}
 
 	// -------

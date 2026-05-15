@@ -24,7 +24,6 @@ package de.metas.order.createFrom.po_from_so;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
@@ -96,13 +95,13 @@ class DropshipPOFromSOServiceTest
 		service = new TestableDropshipPOFromSOService();
 	}
 
-	/** Creates a persisted in-memory sales order and returns its ID. */
-	private OrderId createSalesOrderId()
+	/** Creates a persisted in-memory sales order and returns the instance. */
+	private I_C_Order createSalesOrder()
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
 		saveRecord(order);
-		return OrderId.ofRepoId(order.getC_Order_ID());
+		return order;
 	}
 
 	// -----------------------------------------------------------------------
@@ -117,10 +116,10 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_passesDROPSHIPTypeToAggregator()
 	{
 		// Given
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 
 		// When
-		service.createDropshipPOForSO(salesOrderId);
+		service.createDropshipPOForSO(salesOrder);
 
 		// Then
 		assertThat(service.capturedPurchaseType)
@@ -140,10 +139,10 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_passesIsVendorRequiredTrueToKeyBuilder()
 	{
 		// Given
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 
 		// When
-		service.createDropshipPOForSO(salesOrderId);
+		service.createDropshipPOForSO(salesOrder);
 
 		// Then
 		assertThat(service.capturedIsVendorInOrderLinesRequired)
@@ -167,10 +166,10 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_callsCloseAllGroupsExactlyOnce()
 	{
 		// Given
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 
 		// When
-		service.createDropshipPOForSO(salesOrderId);
+		service.createDropshipPOForSO(salesOrder);
 
 		// Then: getSkippedLinesMessage is called once — it sits immediately after closeAllGroups() in the service
 		assertThat(service.capturedSpyAggregator.getSkippedLinesMessageCallCount)
@@ -186,12 +185,12 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_throwsExceptionWhenSkippedLinesMessagePresent()
 	{
 		// Given
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 		final String skippedMsg = "SO-12345-10, SO-12345-20";
 		service.skippedLinesMessageToReturn = Optional.of(skippedMsg);
 
 		// When / Then
-		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrderId))
+		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrder))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(skippedMsg);
 	}
@@ -213,17 +212,17 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_callsProcessExOnDraftedPO()
 	{
 		// Given: a sales order
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 
 		// and a draft PO linked to it (simulates what the aggregator produces)
 		final I_C_Order draftPO = newInstance(I_C_Order.class);
 		draftPO.setIsSOTrx(false);
-		draftPO.setLink_Order_ID(salesOrderId.getRepoId());
+		draftPO.setLink_Order_ID(salesOrder.getC_Order_ID());
 		draftPO.setDocStatus(IDocument.STATUS_Drafted);
 		saveRecord(draftPO);
 
 		// When
-		service.createDropshipPOForSO(salesOrderId);
+		service.createDropshipPOForSO(salesOrder);
 
 		// Then: processEx was called exactly once on the draft PO
 		verify(documentBL).processEx(eq(draftPO), eq(IDocument.ACTION_Complete), eq(IDocument.STATUS_Completed));
@@ -237,11 +236,11 @@ class DropshipPOFromSOServiceTest
 	void createDropshipPOForSO_doesNotCallProcessExWhenSkippedLinesPresent()
 	{
 		// Given
-		final OrderId salesOrderId = createSalesOrderId();
+		final I_C_Order salesOrder = createSalesOrder();
 		service.skippedLinesMessageToReturn = Optional.of("SO-line-10");
 
 		// When / Then: exception is thrown
-		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrderId))
+		assertThatThrownBy(() -> service.createDropshipPOForSO(salesOrder))
 				.isInstanceOf(AdempiereException.class);
 
 		// and processEx was never called

@@ -28,7 +28,6 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
-import de.metas.order.model.I_C_Order;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
@@ -66,11 +66,18 @@ public class DropshipPOFromSOService
 	 * If the aggregator still skips lines at aggregation time (e.g., product master-data gap),
 	 * this method throws an {@link AdempiereException} rather than silently losing data.</p>
 	 *
-	 * @param salesOrderId the ID of the sales order to create a dropship PO for
+	 * <p>The caller MUST pass the in-memory sales-order instance (typically obtained from the
+	 * AFTER_COMPLETE interceptor parameter). At AFTER_COMPLETE time the SO's {@code C_Project_ID}
+	 * is set in-memory by {@code C_Order_Project.beforeComplete} but the doc engine has not yet
+	 * persisted the SO — a re-load by ID would return {@code C_Project_ID=0} and the stamp loop
+	 * below would skip propagation, causing the PO's own beforeComplete to create a SECOND,
+	 * distinct project.</p>
+	 *
+	 * @param salesOrder the in-memory sales-order instance to create a dropship PO for
 	 */
-	public void createDropshipPOForSO(@NonNull final OrderId salesOrderId)
+	public void createDropshipPOForSO(@NonNull final I_C_Order salesOrder)
 	{
-		final I_C_Order salesOrder = InterfaceWrapperHelper.load(salesOrderId, I_C_Order.class);
+		final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(salesOrder);
 
 		final boolean isVendorInOrderLinesRequired = true;
@@ -81,7 +88,9 @@ public class DropshipPOFromSOService
 		aggregator.setItemAggregationKeyBuilder(createKeyBuilder(ctxAware, isVendorInOrderLinesRequired));
 		aggregator.setGroupsBufferSize(100);
 
-		final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder, allowMultiplePOOrders, purchaseQtySource);
+		// retrieveOrderLines needs the extended de.metas.order.model.I_C_Order view of the same underlying record.
+		final de.metas.order.model.I_C_Order salesOrderExt = InterfaceWrapperHelper.create(salesOrder, de.metas.order.model.I_C_Order.class);
+		final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrderExt, allowMultiplePOOrders, purchaseQtySource);
 		for (final I_C_OrderLine line : salesOrderLines)
 		{
 			aggregator.add(line);
@@ -106,7 +115,8 @@ public class DropshipPOFromSOService
 		// created PO (header + lines) before completing. The aggregator already copies the
 		// project on line 338 of CreatePOFromSOsAggregator.createPurchaseOrder, but that read
 		// goes through a lazy-loaded SO instance which can be stale and miss the project the
-		// SO's own BEFORE_COMPLETE just created — so we re-do it here from a known-good source.
+		// SO's own BEFORE_COMPLETE just created — we re-do it here from the in-memory SO
+		// instance passed by the AFTER_COMPLETE interceptor (which already has the project set).
 		final List<I_C_Order> createdPOs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, salesOrderId.getRepoId())
@@ -115,13 +125,13 @@ public class DropshipPOFromSOService
 				.create()
 				.list();
 
-		// Force a fresh read of the SO before reading its C_Project_ID. The salesOrder instance was
-		// loaded at the start of this method (before the SO's BEFORE_COMPLETE finished persisting),
-		// so its C_Project_ID may be stale (0) even though the SO's beforeComplete interceptor has
-		// already created and assigned a project. Without this refresh, the stamp loop below would
-		// skip the propagation and PO's own beforeComplete would create a SECOND project for the
-		// PO -- the symptom the user originally reported.
-		InterfaceWrapperHelper.refresh(salesOrder);
+		// Read the SO's C_Project_ID directly from the in-memory instance passed by the caller.
+		// At AFTER_COMPLETE time the SO's beforeComplete interceptor (C_Order_Project) has already
+		// assigned the project in-memory, but the doc engine has not yet persisted the SO to DB —
+		// so an ID-based re-load (or InterfaceWrapperHelper.refresh) would return C_Project_ID=0.
+		// Using the in-memory instance avoids that DB round-trip and lets the stamp loop propagate
+		// the project to the created POs; without this, the PO's own beforeComplete would create
+		// a SECOND, distinct project for the PO -- the symptom the user originally reported.
 		final ProjectId salesOrderProjectId = ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
 		if (salesOrderProjectId != null)
 		{
