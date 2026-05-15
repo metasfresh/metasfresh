@@ -298,6 +298,9 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_Description).ifPresent(productRecord::setDescription);
 
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_DepositType)
+				.ifPresent(value -> productRecord.setDepositType(nullToken2Null(value)));
+
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
 					assertThat(netWeight.getX12DE355()).as("NetWeight must be in Kilograms").isEqualTo(X12DE355.KILOGRAM);

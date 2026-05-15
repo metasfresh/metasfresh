@@ -7,7 +7,7 @@ SELECT dl.edi_desadvline_id,
                    'Name', p.name,
                    'Description', p.Description,
                    'BuyerProductNo', COALESCE(dl.ProductNo, asi_data.productno),
-                   'GTIN_CU', COALESCE(dl.GTIN_CU, asi_data.gtin, p.gtin),
+                   'GTIN_CU', COALESCE(dl.GTIN_CU, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
                    'GTIN_TU', COALESCE(dl.GTIN_TU, pip.gtin),
                    'NetWeight', p.weight,
                    'GrossWeight', p.grossweight,
@@ -49,7 +49,7 @@ FROM edi_desadvline dl
     -- and only wildcard records (m_attributesetinstance_id IS NULL in M_Product_ASI_Data) will match.
     -- This is acceptable: unshipped lines are rare and always use the buyer-level wildcard GTIN.
          LEFT JOIN LATERAL (
-    SELECT gtin, productno
+    SELECT gtin, ean13_productcode, productno
     FROM m_product_asi_data
     WHERE isactive = 'Y'
       AND m_product_id = p.m_product_id
