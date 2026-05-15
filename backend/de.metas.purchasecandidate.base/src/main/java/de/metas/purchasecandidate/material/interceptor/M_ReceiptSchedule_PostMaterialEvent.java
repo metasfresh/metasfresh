@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nullable;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -73,6 +73,8 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -202,7 +204,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)))
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
@@ -227,7 +229,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)));
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)));
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -327,14 +329,12 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule)))
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
 	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final BigDecimal orderedQuantity = receiptScheduleQtysBL.getQtyOrdered(receiptSchedule);
 
 		final Timestamp preparationDate = receiptSchedule.getMovementDate();

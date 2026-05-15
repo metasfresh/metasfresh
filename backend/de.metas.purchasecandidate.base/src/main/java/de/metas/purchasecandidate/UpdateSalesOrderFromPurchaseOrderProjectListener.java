@@ -68,6 +68,7 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public void onCreated(@NonNull final ProjectCreatedEvent event)
@@ -91,7 +92,7 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 				.map(OrderAndLineId::getOrderLineId)
 				.collect(Collectors.toCollection(HashSet::new));
 
-		final Set<OrderLineId> matchedPoLineIds = Services.get(IQueryBL.class)
+		final Set<OrderLineId> matchedPoLineIds = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID, allInputPoLineIds)
 				.create()
@@ -109,7 +110,7 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 
 		if (!unmatchedPoLineIds.isEmpty())
 		{
-			final Set<OrderLineId> extraSoLineIds = Services.get(IQueryBL.class)
+			final Set<OrderLineId> extraSoLineIds = queryBL
 					.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, unmatchedPoLineIds)
