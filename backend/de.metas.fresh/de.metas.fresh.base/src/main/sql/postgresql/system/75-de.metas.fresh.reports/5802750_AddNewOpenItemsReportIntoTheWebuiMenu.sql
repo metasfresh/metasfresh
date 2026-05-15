@@ -667,3 +667,53 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(577492)
 ;
 
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_AcctSchema_ID
+-- 2026-05-15T09:08:02.309Z
+UPDATE AD_Process_Para SET DefaultValue='@#C_AcctSchema_ID@', DisplayLogic='',Updated=TO_TIMESTAMP('2026-05-15 09:08:02.309000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543197
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: Date
+-- 2026-05-15T09:08:09.778Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@', DisplayLogic='',Updated=TO_TIMESTAMP('2026-05-15 09:08:09.778000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543196
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: AD_Org_ID
+-- 2026-05-15T09:08:17.606Z
+UPDATE AD_Process_Para SET DefaultValue='@AD_Org_ID@', DisplayLogic='',Updated=TO_TIMESTAMP('2026-05-15 09:08:17.606000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543198
+;
+
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_AcctSchema_ID
+-- 2026-05-15T09:09:17.939Z
+UPDATE AD_Process_Para SET DefaultValue='1000000',Updated=TO_TIMESTAMP('2026-05-15 09:09:17.939000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543197
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: Account_ID
+-- 2026-05-15T09:10:19.046Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2026-05-15 09:10:19.046000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543199
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_BPartner_ID
+-- 2026-05-15T09:13:30.189Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2026-05-15 09:13:30.189000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543200
+;
+
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_BPartner_ID
+-- 2026-05-15T09:19:01.332Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30, AD_Reference_Value_ID=138, AD_Val_Rule_ID=540244,Updated=TO_TIMESTAMP('2026-05-15 09:19:01.332000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543200
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: C_BPartner_ID
+-- 2026-05-15T09:22:14.845Z
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540278,Updated=TO_TIMESTAMP('2026-05-15 09:22:14.845000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543200
+;
