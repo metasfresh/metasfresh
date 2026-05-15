@@ -51,6 +51,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -65,10 +66,8 @@ import java.util.List;
  *
  * <p>Errors within per-line processing are caught and logged so they never abort
  * the receipt completion.
- *
- * <p>This is a plain POJO; it is instantiated directly by {@link M_InOut_DropshipReceiptListener}
- * and is not Spring-managed.
  */
+@Service
 public class DropshipReceiptHUAllocationBL
 {
 	private static final Logger logger = LogManager.getLogger(DropshipReceiptHUAllocationBL.class);

@@ -122,7 +122,7 @@ class M_InOut_DropshipReceiptListenerTest
 		Services.registerService(IProductBL.class, productBL);
 		Services.registerService(IUOMConversionBL.class, uomConversionBL);
 
-		listener = new M_InOut_DropshipReceiptListener();
+		listener = new M_InOut_DropshipReceiptListener(new DropshipReceiptHUAllocationBL());
 	}
 
 	// ---------------------------------------------------------------------------

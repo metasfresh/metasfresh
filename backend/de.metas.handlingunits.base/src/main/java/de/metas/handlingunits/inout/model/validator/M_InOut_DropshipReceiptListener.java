@@ -23,6 +23,7 @@ package de.metas.handlingunits.inout.model.validator;
  */
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
@@ -35,9 +36,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Interceptor(I_M_InOut.class)
+@RequiredArgsConstructor
 public class M_InOut_DropshipReceiptListener
 {
-	private final DropshipReceiptHUAllocationBL bl = new DropshipReceiptHUAllocationBL();
+	@NonNull private final DropshipReceiptHUAllocationBL bl;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void onAfterComplete(@NonNull final I_M_InOut inout)
