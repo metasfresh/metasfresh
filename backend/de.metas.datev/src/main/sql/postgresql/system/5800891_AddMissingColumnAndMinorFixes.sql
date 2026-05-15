@@ -102,7 +102,7 @@ UPDATE AD_Process_Para SET ColumnName='ExportEXTF' WHERE AD_Element_ID=584825
 -- Process: DATEV_ExportFile(de.metas.datev.process.DATEV_ExportFile)
 -- ParameterName: ExportEXTF
 -- 2026-05-05T13:04:36.789Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,584825,0,540924,543190,20,'ExportEXTF',TO_TIMESTAMP('2026-05-05 13:04:36.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','de.metas.datev',0,'Y','N','Y','N','Y','N','ExportEXTF',20,'N',TO_TIMESTAMP('2026-05-05 13:04:36.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584825,0,540924,543190,20,'ExportEXTF',TO_TIMESTAMP('2026-05-05 13:04:36.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','de.metas.datev',0,'Y','N','Y','N','Y','N','ExportEXTF',20,TO_TIMESTAMP('2026-05-05 13:04:36.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-05-05T13:04:36.795Z
