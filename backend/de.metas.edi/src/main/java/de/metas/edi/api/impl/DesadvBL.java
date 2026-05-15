@@ -366,7 +366,7 @@ public class DesadvBL
 		return desadv;
 	}
 
-	@NonNull
+	@Nullable
 	public I_EDI_Desadv createDesadvForInOut(@NonNull final I_M_InOut inOut)
 	{
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
@@ -383,6 +383,20 @@ public class DesadvBL
 				.collect(ImmutableList.toImmutableList());
 
 		Check.assumeNotEmpty(sourceOrders, "Shipment {} has no source orders — cannot create a DESADV", inOut.getM_InOut_ID());
+
+		// me03#29231 — DESADV needs a customer order reference (Kd-Bestellnummer) at line level.
+		// The legacy order-side path silently skips DESADV creation when POReference is empty
+		// (see C_Order validator's addToDesadv). Mirror that semantic here: if no source order
+		// has a POReference, we have nothing meaningful to put on DESADV lines — skip.
+		final boolean anyOrderHasPOReference = sourceOrders.stream()
+				.map(I_C_Order::getPOReference)
+				.anyMatch(po -> po != null && !po.isEmpty());
+		if (!anyOrderHasPOReference)
+		{
+			logger.debug("DesadvBL.createDesadvForInOut - M_InOut_ID={}: none of the {} source orders has a POReference — skipping DESADV creation",
+					inOut.getM_InOut_ID(), sourceOrders.size());
+			return null;
+		}
 
 		final I_EDI_Desadv desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, inOut);
 		applyAggregatedHeader(desadv, inOut, sourceOrders);
