@@ -128,11 +128,15 @@ public class DropshipPOFromSOService
 		// goes through a lazy-loaded SO instance which can be stale and miss the project the
 		// SO's own BEFORE_COMPLETE just created — we re-do it here from the in-memory SO
 		// instance passed by the AFTER_COMPLETE interceptor (which already has the project set).
+		// IsDropShip='Y' narrows the result to POs created by the aggregator above — guards
+		// against picking up a stale draft PO with the same Link_Order_ID left over from a
+		// prior failed completion (the aggregator stamps IsDropShip='Y' on every created PO).
 		final List<I_C_Order> createdPOs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, salesOrderId.getRepoId())
 				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, false)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Drafted)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_IsDropShip, true)
 				.create()
 				.list();
 

@@ -214,11 +214,12 @@ class DropshipPOFromSOServiceTest
 		// Given: a sales order
 		final I_C_Order salesOrder = createSalesOrder();
 
-		// and a draft PO linked to it (simulates what the aggregator produces)
+		// and a draft PO linked to it (simulates what the aggregator produces — IsDropShip=Y stamped)
 		final I_C_Order draftPO = newInstance(I_C_Order.class);
 		draftPO.setIsSOTrx(false);
 		draftPO.setLink_Order_ID(salesOrder.getC_Order_ID());
 		draftPO.setDocStatus(IDocument.STATUS_Drafted);
+		draftPO.setIsDropShip(true);
 		saveRecord(draftPO);
 
 		// When
