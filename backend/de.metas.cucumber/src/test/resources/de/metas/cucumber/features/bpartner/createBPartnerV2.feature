@@ -458,7 +458,8 @@ Feature: create or update BPartner v2
                "url":"url_updated",
                "group":"test-group",
                "vatId":null,
-               "urproduzent":false
+               "urproduzent":false,
+               "discountPrinted":true
             },
             "locations":{
                "requestItems":[
@@ -545,7 +546,7 @@ Feature: create or update BPartner v2
 """
     Then verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName   | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent | OPT.IsDiscountPrinted |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name_updated | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 | false                 |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name_updated | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 | Y                     |
     And verify that location was updated for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
       | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |

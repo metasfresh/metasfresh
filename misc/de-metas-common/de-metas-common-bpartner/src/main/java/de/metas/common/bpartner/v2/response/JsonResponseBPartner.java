@@ -184,6 +184,10 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseSalesRep responseSalesRep;
 
+	@Schema(description = "Translates to `C_BPartner.IsDiscountPrinted`.")
+	@JsonProperty(DISCOUNT_PRINTED)
+	boolean discountPrinted;
+
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
 	JsonPaymentRule paymentRule;
@@ -322,6 +326,7 @@ public class JsonResponseBPartner
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(PRICING_SYSTEM_ID) @Nullable final JsonMetasfreshId pricingSystemId,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
+			@JsonProperty(DISCOUNT_PRINTED) final boolean discountPrinted,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JsonPaymentRule paymentRule,
 			@JsonProperty(PAYMENT_RULE_PO) @Nullable final JsonPaymentRule paymentRulePO,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
@@ -375,6 +380,7 @@ public class JsonResponseBPartner
 		this.salesPartnerCode = salesPartnerCode;
 		this.pricingSystemId = pricingSystemId;
 		this.responseSalesRep = responseSalesRep;
+		this.discountPrinted = discountPrinted;
 		this.paymentRule = paymentRule;
 		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;

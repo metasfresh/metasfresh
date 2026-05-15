@@ -414,6 +414,7 @@ public class JsonRetrieverService
 				.pricingSystemId(JsonMetasfreshId.ofOrNull(PricingSystemId.toRepoId(bpartner.getCustomerPricingSystemId())))
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
 
+				.discountPrinted(bpartner.isDiscountPrinted())
 				.paymentRule(bpartner.mapPaymentRule(ValueMappingHelper::getJsonPaymentRule))
 				.paymentRulePO(bpartner.mapPaymentRulePO(ValueMappingHelper::getJsonPaymentRule))
 
