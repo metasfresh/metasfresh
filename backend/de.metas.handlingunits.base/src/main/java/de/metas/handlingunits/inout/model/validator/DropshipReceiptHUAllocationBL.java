@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.model.validator;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHUContext;
@@ -47,9 +48,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -64,8 +65,10 @@ import java.util.List;
  *
  * <p>Errors within per-line processing are caught and logged so they never abort
  * the receipt completion.
+ *
+ * <p>This is a plain POJO; it is instantiated directly by {@link M_InOut_DropshipReceiptListener}
+ * and is not Spring-managed.
  */
-@Service
 public class DropshipReceiptHUAllocationBL
 {
 	private static final Logger logger = LogManager.getLogger(DropshipReceiptHUAllocationBL.class);
@@ -101,13 +104,36 @@ public class DropshipReceiptHUAllocationBL
 		final List<org.compiere.model.I_M_InOutLine> lines = inOutBL.retrieveLines(inout, org.compiere.model.I_M_InOutLine.class);
 		for (final org.compiere.model.I_M_InOutLine baseLine : lines)
 		{
+			final int orderLineRepoId = baseLine.getC_OrderLine_ID();
+			if (orderLineRepoId <= 0)
+			{
+				continue;
+			}
+			final OrderLineId poOrderLineId = OrderLineId.ofRepoId(orderLineRepoId);
+
+			final List<I_C_PO_OrderLine_Alloc> allocRecords = retrieveAllocRecords(poOrderLineId, inout);
+			if (allocRecords.isEmpty())
+			{
+				logger.debug("No C_PO_OrderLine_Alloc found for C_PO_OrderLine_ID={}; skipping line {}",
+						poOrderLineId, baseLine.getM_InOutLine_ID());
+				continue;
+			}
+
+			// Invariant: createDropshipPOForSO produces a 1:1 SO-line → PO-line mapping via the aggregator,
+			// so each PO line has exactly one C_PO_OrderLine_Alloc to one SO line. If multiple allocs ever
+			// appear, the per-HU CatchWeightHelper.extractQtys logic would allocate the FULL HU qty to each
+			// SO schedule (not split), so we fail loudly rather than silently double-allocate.
+			Check.assume(allocRecords.size() <= 1,
+					"Expected at most 1 C_PO_OrderLine_Alloc per PO line but got {} for C_PO_OrderLine_ID={}",
+					allocRecords.size(), poOrderLineId);
+
 			try
 			{
-				processReceiptLine(inout, baseLine);
+				processReceiptLine(inout, baseLine, allocRecords);
 			}
 			catch (final RuntimeException ex)
 			{
-				// Per task spec: never abort receipt completion — log and continue
+				// Errors per-line must never abort the overall receipt completion.
 				final String msg = "Failed allocating dropship receipt HUs to SO shipment schedule for line "
 						+ baseLine.getM_InOutLine_ID() + ": " + ex.getMessage();
 				Loggables.addLog(msg);
@@ -116,42 +142,23 @@ public class DropshipReceiptHUAllocationBL
 		}
 	}
 
-	private void processReceiptLine(
-			@NonNull final I_M_InOut inout,
-			@NonNull final org.compiere.model.I_M_InOutLine baseLine)
+	private List<I_C_PO_OrderLine_Alloc> retrieveAllocRecords(
+			@NonNull final OrderLineId poOrderLineId,
+			@NonNull final I_M_InOut inout)
 	{
-		// Skip packing-material lines and lines without an order line
-		final int orderLineRepoId = baseLine.getC_OrderLine_ID();
-		if (orderLineRepoId <= 0)
-		{
-			return;
-		}
-
-		final OrderLineId poOrderLineId = OrderLineId.ofRepoId(orderLineRepoId);
-
-		// Walk C_PO_OrderLine_Alloc to find the SO line
-		final List<org.compiere.model.I_C_PO_OrderLine_Alloc> allocRecords = queryBL
-				.createQueryBuilder(org.compiere.model.I_C_PO_OrderLine_Alloc.class, inout)
-				.addEqualsFilter(org.compiere.model.I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poOrderLineId.getRepoId())
+		return queryBL
+				.createQueryBuilder(I_C_PO_OrderLine_Alloc.class, inout)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poOrderLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
 
-		if (allocRecords.isEmpty())
-		{
-			logger.debug("No C_PO_OrderLine_Alloc found for C_PO_OrderLine_ID={}; skipping line {}",
-					poOrderLineId, baseLine.getM_InOutLine_ID());
-			return;
-		}
-
-		// Invariant: createDropshipPOForSO produces a 1:1 SO-line → PO-line mapping via the aggregator,
-		// so each PO line has exactly one C_PO_OrderLine_Alloc to one SO line. If multiple allocs ever
-		// appear, the per-HU CatchWeightHelper.extractQtys logic would allocate the FULL HU qty to each
-		// SO schedule (not split), so we fail loudly rather than silently double-allocate.
-		Check.assume(allocRecords.size() <= 1,
-				"Expected at most 1 C_PO_OrderLine_Alloc per PO line but got {} for C_PO_OrderLine_ID={}",
-				allocRecords.size(), poOrderLineId);
-
+	private void processReceiptLine(
+			@NonNull final I_M_InOut inout,
+			@NonNull final org.compiere.model.I_M_InOutLine baseLine,
+			@NonNull final List<I_C_PO_OrderLine_Alloc> allocRecords)
+	{
 		// Retrieve HUs assigned to this receipt line
 		final I_M_InOutLine huLine = InterfaceWrapperHelper.create(baseLine, I_M_InOutLine.class);
 		final List<I_M_HU> assignedHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(huLine);
@@ -164,7 +171,7 @@ public class DropshipReceiptHUAllocationBL
 		final ProductId productId = ProductId.ofRepoId(baseLine.getM_Product_ID());
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(inout);
 
-		for (final org.compiere.model.I_C_PO_OrderLine_Alloc allocRecord : allocRecords)
+		for (final I_C_PO_OrderLine_Alloc allocRecord : allocRecords)
 		{
 			final int soOrderLineRepoId = allocRecord.getC_SO_OrderLine_ID();
 			if (soOrderLineRepoId <= 0)
@@ -223,13 +230,13 @@ public class DropshipReceiptHUAllocationBL
 			Loggables.addLog("Skipped dropship receipt HU {0}: no VHU found", hu.getM_HU_ID());
 			return;
 		}
-		final int vhuRepoId = vhu.getM_HU_ID();
+		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
 
 		// Idempotency: skip if QtyPicked already exists for (schedule, VHU)
 		final boolean alreadyPicked = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, contextProvider)
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuRepoId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
@@ -237,7 +244,7 @@ public class DropshipReceiptHUAllocationBL
 		if (alreadyPicked)
 		{
 			logger.debug("Skipping already-picked HU {} for schedule {} (VHU_ID={})",
-					hu.getM_HU_ID(), schedule.getM_ShipmentSchedule_ID(), vhuRepoId);
+					hu.getM_HU_ID(), schedule.getM_ShipmentSchedule_ID(), vhuId);
 			return;
 		}
 
