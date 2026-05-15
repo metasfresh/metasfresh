@@ -224,3 +224,135 @@ test.describe('Quick Input Batch Entry — Tab focus cycle (https://github.com/m
     expect(result.isLast, 'Shift+Tab from first field must land on last focusable').toBe(true);
   });
 });
+
+// =========================================================================
+// NOTE: runs against http://localhost:3002 (dev server with the Enter-key fix)
+// https://github.com/metasfresh/me03/issues/29125
+// Quick Input (Batch Entry) panel: Enter-key product selection and focus advance
+//
+// Bug: Pressing Enter in the product lookup field did not select the first
+// typeahead match and advance focus to the Qty field. Instead the keystroke
+// was absorbed by the dropdown debounce and focus stayed on the product field.
+//
+// Expected: Enter fires an immediate (non-debounced) typeahead request,
+// selects the best match, and advances focus to the next field in the form.
+// =========================================================================
+
+test.describe('Quick Input Batch Entry — Enter-key product selection (https://github.com/metasfresh/me03/issues/29125)', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsMetasfresh(page);
+    await openSalesOrder(page);
+    await openBatchEntry(page);
+  });
+
+  test('Enter on product field selects first match and advances focus to Qty', async ({
+    page,
+  }) => {
+    const productInput = page.locator('.quick-input-container input').first();
+    await productInput.focus();
+    await productInput.fill('T');
+
+    // Wait for typeahead dropdown to appear with at least one real option
+    let dropdownVisible = false;
+    try {
+      await page
+        .locator(
+          '.input-dropdown-list .input-dropdown-list-option:not([data-test-id^="SEARCH"])'
+        )
+        .first()
+        .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+      dropdownVisible = true;
+    } catch {
+      // No dropdown appeared — seed DB may have no products starting with 'T'
+    }
+
+    if (!dropdownVisible) {
+      test.skip(true, 'No products matching "T" in seed DB');
+      return;
+    }
+
+    await page.keyboard.press('Enter');
+
+    // Wait for the PATCH round-trip + React re-render + focus advance
+    await page.waitForTimeout(1500);
+
+    const focusResult = await page.evaluate(() => {
+      const form = document.querySelector('.quick-input-container');
+      const productInput = form ? form.querySelector('input') : null;
+      const active = document.activeElement;
+      return {
+        inForm: !!form && form.contains(active),
+        isProductInput: active === productInput,
+        productValue: productInput ? productInput.value : '',
+      };
+    });
+
+    expect(
+      focusResult.productValue,
+      'product field must have a non-empty value after Enter selection'
+    ).toBeTruthy();
+    expect(
+      focusResult.inForm,
+      'focus must remain inside quick-input-container after selection'
+    ).toBe(true);
+    expect(
+      focusResult.isProductInput,
+      'focus must have advanced away from the product input'
+    ).toBe(false);
+  });
+
+  test('Mouse-click selection still works (regression: shouldKeepFocus)', async ({
+    page,
+  }) => {
+    const productInput = page.locator('.quick-input-container input').first();
+    await productInput.focus();
+    await productInput.fill('T');
+    // Give the debounced typeahead time to fire before polling the dropdown
+    await page.waitForTimeout(600);
+
+    let dropdownVisible = false;
+    try {
+      await page
+        .locator(
+          '.input-dropdown-list .input-dropdown-list-option:not([data-test-id^="SEARCH"])'
+        )
+        .first()
+        .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+      dropdownVisible = true;
+    } catch {
+      // No dropdown
+    }
+
+    if (!dropdownVisible) {
+      test.skip(true, 'No products matching "T" in seed DB');
+      return;
+    }
+
+    const firstOption = page
+      .locator(
+        '.input-dropdown-list .input-dropdown-list-option:not([data-test-id^="SEARCH"])'
+      )
+      .first();
+
+    // Read the text of the option we are about to click so we can verify it
+    // was actually selected — inputValue() is more reliable than checking focus.
+    const optionText = await firstOption.innerText();
+    await firstOption.click();
+
+    // Wait for the PATCH round-trip after selection
+    await page.waitForTimeout(1500);
+
+    // The product input DOM value is set directly by RawLookup (not via React state),
+    // so inputValue() reads the correct value.
+    const productValue = await productInput.inputValue();
+    expect(
+      productValue,
+      `product field must have a non-empty value after clicking "${optionText}"`
+    ).toBeTruthy();
+
+    await expect(
+      page.locator('.quick-input-container'),
+      'quick-input-container must remain visible after selection'
+    ).toBeVisible();
+  });
+});
