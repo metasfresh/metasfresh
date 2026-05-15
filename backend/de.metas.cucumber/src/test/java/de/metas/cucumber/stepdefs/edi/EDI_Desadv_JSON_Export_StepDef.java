@@ -178,6 +178,11 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *     <li>{@code IsDeliveryClosed} (optional) — expected value of IsDeliveryClosed</li>
 	 *     <li>{@code QtyCUsPerTU} (optional) — expected consumer units per traded unit (from order line's QtyItemCapacity)</li>
 	 * </ul>
+	 * <p>
+	 * Structural invariant (asserted on every entry independently of the DataTable):
+	 * each entry's {@code DesadvLine} sub-object MUST NOT contain {@code LineItemLine} —
+	 * no pack-item exists for no-packing lines, so there is no pack-item line number to
+	 * expose (see https://github.com/metasfresh/me03/issues/29842).
 	 */
 	@Then("verify DESADV JSON export has DesadvLineWithNoPacking:")
 	public void verifyDesadvLineWithNoPacking(@NonNull final DataTable dataTable) throws Exception
