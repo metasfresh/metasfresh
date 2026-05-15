@@ -77,6 +77,7 @@ public class BPartner
 	public static final String COMPANY = "company";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
@@ -152,6 +153,7 @@ public class BPartner
 	private boolean company;
 	private String salesPartnerCode;
 	private SalesRep salesRep;
+	private boolean discountPrinted;
 	private PaymentRule paymentRule;
 	private PaymentRule paymentRulePO;
 	private String internalName;
@@ -256,6 +258,7 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
+			@Nullable final Boolean discountPrinted,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentRule paymentRulePO,
 			@Nullable final String internalName,
@@ -315,6 +318,7 @@ public class BPartner
 		this.company = coalesce(company, false);
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
+		this.discountPrinted = coalesce(discountPrinted, false);
 		this.paymentRule = paymentRule;
 		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
