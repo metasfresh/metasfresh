@@ -889,6 +889,7 @@ public class MaterialEventSerializerTests
 				.shipmentScheduleId(5)
 				.isDropShipWarehouse(true)
 				.build();
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 		assertThat(event.isDropShipWarehouse()).isTrue();
 	}
@@ -934,6 +935,7 @@ public class MaterialEventSerializerTests
 				.shipmentScheduleId(5)
 				.isDropShipWarehouse(true)
 				.build();
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 		assertThat(event.isDropShipWarehouse()).isTrue();
 	}
