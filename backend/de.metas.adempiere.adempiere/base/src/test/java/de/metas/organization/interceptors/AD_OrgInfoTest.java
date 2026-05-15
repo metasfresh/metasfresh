@@ -23,6 +23,7 @@
 package de.metas.organization.interceptors;
 
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -31,6 +32,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,16 +40,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link AD_OrgInfo_DropShipWarehouse}.
+ * Unit tests for {@link AD_OrgInfo}.
  * <p>
  * Pattern: AdempiereTestHelper.get().init() + Mockito.mock() + Services.registerService().
  * Services must be registered BEFORE the interceptor is instantiated because the
  * interceptor initializes its service fields eagerly via Services.get(...).
+ * <p>
+ * Covers the {@code DropShip_Warehouse_ID} forward-guard previously housed in
+ * {@code AD_OrgInfo_DropShipWarehouse} — merged here so the WebUI {@code @CalloutMethod}
+ * can fire (the callout framework requires the callout class for {@code AD_OrgInfo} to
+ * be named {@code AD_OrgInfo}, per {@code AnnotatedCalloutInstanceFactory}).
  */
-class AD_OrgInfo_DropShipWarehouseTest
+class AD_OrgInfoTest
 {
 	private IWarehouseDAO warehouseDAO;
-	private AD_OrgInfo_DropShipWarehouse interceptor;
+	private AD_OrgInfo interceptor;
 
 	@BeforeEach
 	void beforeEach()
@@ -57,7 +64,13 @@ class AD_OrgInfo_DropShipWarehouseTest
 		warehouseDAO = mock(IWarehouseDAO.class);
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
 
-		interceptor = new AD_OrgInfo_DropShipWarehouse();
+		// The AD_OrgInfo constructor calls Services.get(IProgramaticCalloutProvider.class)
+		// to register itself as a programmatic callout. In unit tests we don't need
+		// callouts to actually fire — we invoke the validation method directly — so a
+		// no-op mock is sufficient.
+		Services.registerService(IProgramaticCalloutProvider.class, mock(IProgramaticCalloutProvider.class));
+
+		interceptor = new AD_OrgInfo();
 	}
 
 	private I_AD_OrgInfo buildOrgInfo(final int warehouseId)
@@ -120,6 +133,7 @@ class AD_OrgInfo_DropShipWarehouseTest
 
 		assertThatCode(() -> interceptor.validateDropShipWarehouseIsFlagged(orgInfo))
 				.doesNotThrowAnyException();
+		Mockito.verifyNoInteractions(warehouseDAO);
 	}
 
 	// -----------------------------------------------------------------------
