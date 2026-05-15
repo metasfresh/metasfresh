@@ -296,6 +296,31 @@ class C_Order_DropshipPOTest
 	}
 
 	// -----------------------------------------------------------------------
+	// Test (d2): BEFORE_COMPLETE short-circuits for purchase orders (IsSOTrx=N)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void validateVendorsBeforeComplete_purchaseOrder_skipsEntirely()
+	{
+		// Given: a PO (IsSOTrx=N) on a dropship-flagged warehouse — the BEFORE_COMPLETE
+		// vendor-validation logic must NOT engage at all (it is SO-only).
+		final int orderId = 4501;
+		final int warehouseId = 550;
+		final I_C_Order order = buildOrder(orderId, warehouseId, false /* isSOTrx */);
+
+		// When: validation runs — must not throw
+		interceptor.validateVendorsBeforeComplete(order);
+
+		// Then: no DAO / service interaction beyond the SOTrx check.
+		// Specifically: warehouse lookup must NOT happen (the isDropshipWarehouseOrder
+		// branch is gated behind the SOTrx check), lines are not fetched, and the
+		// vendor-info service is not consulted.
+		verify(warehouseDAO, never()).getById(any());
+		verify(orderBL, never()).getLinesByOrderIds(any());
+		verify(vendorProductInfoService, never()).getDefaultVendorProductInfo(any(), any());
+	}
+
+	// -----------------------------------------------------------------------
 	// Test (e): AFTER_COMPLETE short-circuits for non-dropship warehouses
 	// -----------------------------------------------------------------------
 
