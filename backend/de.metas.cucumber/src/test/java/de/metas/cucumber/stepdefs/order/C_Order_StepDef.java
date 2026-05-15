@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -62,7 +63,6 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
-import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
@@ -569,7 +569,7 @@ public class C_Order_StepDef
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
 			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
 
-			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = Services.get(IQueryBL.class)
+			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
