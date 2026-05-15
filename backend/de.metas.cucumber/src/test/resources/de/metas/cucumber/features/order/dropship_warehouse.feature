@@ -400,12 +400,17 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # The receipt schedule was created by PO completion; locate and register it.
-    # Note: for a dropship PO the delivery-location on the receipt schedule comes from the SO's
-    # delivery location (customer_dw_loc), not from the vendor's own location — this is the
-    # standard dropship behaviour (goods delivered directly to the customer).
+    # Note: CreatePOFromSOsAggregator.java:324 uses AD_OrgInfo.DropShip_Warehouse_ID
+    # (= seed warehouse "DropshipWarehouse", id 540005) for the auto-PO — NOT the SO's
+    # warehouse (warehouse_dw). Load that warehouse by Value so we can reference it.
+    # The receipt schedule's C_BPartner_Location_ID is the vendor's own location
+    # (we are "receiving from" the vendor), not the customer's ship-to location.
+    And load M_Warehouse:
+      | M_Warehouse_ID         | Value             |
+      | warehouse_org_dropship | DropshipWarehouse |
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | rs_dw11                         | po_dw11               | pol_dw11_1                | vendor_dw_2              | customer_dw_loc                   | product_dw_2            | 10         | warehouse_dw              |
+      | rs_dw11                         | po_dw11               | pol_dw11_1                | vendor_dw_2              | vendor_dw_2_loc                   | product_dw_2            | 10         | warehouse_org_dropship    |
 
     # Generate a planning HU (No Packing Item = ID 101) and create the material receipt.
     # Completing the receipt fires TransactionCreatedEvent — the path under test.
