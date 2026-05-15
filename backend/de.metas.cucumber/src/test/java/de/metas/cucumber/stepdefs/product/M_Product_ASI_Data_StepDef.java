@@ -36,6 +36,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * <li>{@code ProductNo} — (optional) buyer product number</li>
  * <li>{@code ProductName} — (optional) product name</li>
  * <li>{@code ProductDescription} — (optional) product description</li>
+ * <li>{@code EAN13_ProductCode} — (optional) EAN13 product code; used as {@code GTIN_CU} fallback when {@code GTIN} is empty</li>
  * </ul>
  */
 public class M_Product_ASI_Data_StepDef
@@ -88,6 +89,7 @@ public class M_Product_ASI_Data_StepDef
 		row.getAsOptionalString(I_M_Product_ASI_Data.COLUMNNAME_ProductNo).ifPresent(record::setProductNo);
 		row.getAsOptionalString(I_M_Product_ASI_Data.COLUMNNAME_ProductName).ifPresent(record::setProductName);
 		row.getAsOptionalString(I_M_Product_ASI_Data.COLUMNNAME_ProductDescription).ifPresent(record::setProductDescription);
+		row.getAsOptionalString(I_M_Product_ASI_Data.COLUMNNAME_EAN13_ProductCode).ifPresent(record::setEAN13_ProductCode);
 
 		saveRecord(record);
 
