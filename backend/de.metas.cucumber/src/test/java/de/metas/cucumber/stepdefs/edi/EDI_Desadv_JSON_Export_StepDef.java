@@ -200,7 +200,6 @@ public class EDI_Desadv_JSON_Export_StepDef
 
 			// LineItemLine is intentionally absent for no-pack entries: there is no
 			// EDI_Desadv_Pack_Item, so there is no pack-item line number to expose.
-			// (see metasfresh me03#29842)
 			assertThat(desadvLine.has("LineItemLine"))
 					.as("DesadvLineWithNoPacking[%d].DesadvLine must NOT contain LineItemLine (no pack-item exists)", index)
 					.isFalse();
