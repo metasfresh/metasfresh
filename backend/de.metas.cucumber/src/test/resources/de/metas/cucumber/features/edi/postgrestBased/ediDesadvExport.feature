@@ -244,6 +244,7 @@ Feature: EDI DESADV export via postgREST
               "QtyOrderedInDesadvLineUOM": 100,
               "QtyDeliveredInInvoicingUOM": 100,
               "QtyDeliveredInDesadvLineUOM": 100,
+              "LineItemLine": 10,
               "IsDeliveryClosed": true
             },
             "QtyCUsPerLU": 100,
