@@ -717,3 +717,15 @@ UPDATE AD_Process_Para SET AD_Reference_ID=30, AD_Reference_Value_ID=138, AD_Val
 -- 2026-05-15T09:22:14.845Z
 UPDATE AD_Process_Para SET AD_Val_Rule_ID=540278,Updated=TO_TIMESTAMP('2026-05-15 09:22:14.845000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543200
 ;
+
+-- Name: C_ElementValue AS Account_ID (OpenItem)
+-- 2026-05-15T10:03:10.788Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540785,'EXISTS (SELECT * from C_AcctSchema_Element ae where C_ElementValue.C_Element_ID=ae.C_Element_ID AND ae.ElementType=''AC'' AND ae.C_AcctSchema_ID=@C_AcctSchema_ID@) AND C_ElementValue.IsActive=''Y'' AND C_ElementValue.IsOpenItem=''Y''',TO_TIMESTAMP('2026-05-15 10:03:10.595000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Selected Accounting Schema','U','Y','C_ElementValue AS Account_ID (OpenItem)','S',TO_TIMESTAMP('2026-05-15 10:03:10.595000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Process: opent_items_fact_based(de.metas.report.jasper.client.process.JasperReportStarter)
+-- ParameterName: Account_ID
+-- 2026-05-15T10:03:19.281Z
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540785,Updated=TO_TIMESTAMP('2026-05-15 10:03:19.281000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543199
+;
+
