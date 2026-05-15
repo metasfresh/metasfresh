@@ -1,7 +1,7 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+-- me03#29842: expose pack-item line number inside DesadvLine sub-object as `LineItemLine`,
+-- so EDIFACT mappings that read the line context from DesadvLine.* obtain the same value as
+-- LineItems[].Line — preventing LIN-vs-packing-allocation mismatches on partial-delivery shipments.
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
