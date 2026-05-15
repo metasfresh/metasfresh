@@ -99,8 +99,9 @@ BEGIN
            fa.c_acctschema_id,
            fa.postingtype,
            fa.c_invoice_id,
-           i.poreference                                                                        AS poreference,
-		   i.duedate::timestamp WITH TIME ZONE                                                  AS duedate,
+           i.poreference                             AS poreference,
+		   
+                   i.duedate::TIMESTAMP WITH TIME ZONE                                                                                      AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,
