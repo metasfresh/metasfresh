@@ -206,3 +206,98 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
 
     # cleanup: deactivate project type so subsequent scenarios are not affected
     And set project type Sales/Purchase Order to inactive
+
+  @from:cucumber
+  Scenario: SO on a dropship warehouse with a line that has no vendor AND no default-vendor mapping fails completion
+    # Regression guard for C_Order_DropshipPO.validateVendorsBeforeComplete (TIMING_BEFORE_COMPLETE).
+    # When an SO line on a dropship warehouse has neither an explicit C_BPartner_Vendor_ID nor a
+    # matching C_BPartner_Product canonical mapping, completion must FAIL with a user-validation
+    # error (AdMessageKey 'DropshipWarehouse_MissingVendorOnLine') listing the offending line number.
+    # The error is caught by the "cannot be completed" step which asserts an exception was thrown
+    # (the existing step only verifies that an exception is raised — it does not currently expose
+    # the exception's AD_Message, but raising any exception during BEFORE_COMPLETE guarantees that
+    # the SO did not progress to DocStatus=CO and that the dropship PO was not created downstream).
+    #
+    # Setup: a new product `product_no_vendor` with NO C_BPartner_Product mapping. The Background's
+    # `vendor_dw` is a vendor with PO_DiscountSchema_ID set, but is not mapped to `product_no_vendor`,
+    # so VendorProductInfoService.getDefaultVendorProductInfo() returns empty for this product.
+    Given metasfresh contains M_Products:
+      | Identifier        | M_Product_Category_ID | IsSold | IsPurchased |
+      | product_no_vendor | standard_category     | Y      | Y           |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_nv_so     | plv_dw_so              | product_no_vendor | 20.0     | PCE               | Normal                        |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw5     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    # Note: NO C_BPartner_Vendor_ID column on the line — and product_no_vendor has no canonical mapping
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID      | QtyEntered |
+      | sol_dw5_1  | so_dw5     | product_no_vendor | 10         |
+    # Assert: completion is blocked (an exception is thrown by the BEFORE_COMPLETE interceptor)
+    Then the order identified by so_dw5 cannot be completed
+
+  @from:cucumber
+  Scenario: SO on a dropship warehouse with one line missing a vendor — vendor is auto-filled from C_BPartner_Product
+    # Regression guard for C_Order_DropshipPO.validateVendorsBeforeComplete (TIMING_BEFORE_COMPLETE)
+    # auto-fill path. When an SO line on a dropship warehouse has no explicit C_BPartner_Vendor_ID
+    # but the canonical lookup (C_BPartner_Product) yields a default vendor, the interceptor must
+    # set C_BPartner_Vendor_ID on the line and persist it before the SO completes. Downstream this
+    # means both lines share the same vendor, so the dropship-PO aggregator produces a SINGLE PO.
+    #
+    # Setup: the Background already wires C_BPartner_Product(vendor_dw, product_dw). Line 1 carries
+    # an explicit vendor (the no-op path of validateVendorsBeforeComplete); line 2 carries no vendor
+    # (the auto-fill path).
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_dw6     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_dw   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw6_1  | so_dw6     | product_dw   | 7          | vendor_dw            |
+      | sol_dw6_2  | so_dw6     | product_dw   | 4          |                      |
+    When the order identified by so_dw6 is completed
+
+    # Assert: line 2's vendor was auto-filled to vendor_dw by the interceptor
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | C_BPartner_Vendor_ID |
+      | sol_dw6_1      | vendor_dw            |
+      | sol_dw6_2      | vendor_dw            |
+
+    # Assert: a single dropship PO was created for the SO, with both lines aggregated under vendor_dw
+    And the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po_dw6         | so_dw6                   | false   | POO         | CO            | true           |
+    And validate the created orders
+      | C_Order_ID | C_BPartner_ID |
+      | po_dw6     | vendor_dw     |
+
+  @from:cucumber
+  Scenario: SO on a regular (non-dropship) warehouse still creates SUPPLY/PURCHASE MD_Candidate rows
+    # Negative regression guard for the dropship-warehouse material-disposition bypass: the bypass
+    # must ONLY fire when IsDropShipWarehouse=Y. On a regular warehouse the standard chain
+    # (ShipmentSchedule → SupplyRequiredEvent → PurchaseCandidateAdvisedEvent → C_PurchaseCandidate
+    # → auto-generated PO → ReceiptSchedule → MD_Candidate SUPPLY) must still run end-to-end.
+    #
+    # Setup: same products / vendor / pricing as Background, but with a fresh warehouse whose
+    # IsDropShipWarehouse=N. The PP_Product_Planning (`ppln_dw`) from Background already has
+    # IsCreatePlan=Y / IsPurchased=Y / IsDocComplete=Y, which is what drives the auto-PO chain.
+    Given metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | warehouse_regular | N                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID    |
+      | so_dw9     | true    | customer_dw   | 2024-06-17  | 2024-06-16T22:00:00Z | warehouse_regular |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_BPartner_Vendor_ID |
+      | sol_dw9_1  | so_dw9     | product_dw   | 10         | vendor_dw            |
+    When the order identified by so_dw9 is completed
+
+    # Drain the event queue so the full SupplyRequired → PurchaseCandidate → PO → ReceiptSchedule
+    # → MD_Candidate chain has time to run
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Assert: at least one SUPPLY/PURCHASE MD_Candidate row exists for product_dw — confirming
+    # that the bypass did NOT short-circuit the standard material-disposition flow on a regular warehouse
+    Then MD_Candidates exist for M_Product_ID product_dw:
+      | MD_Candidate_Type | MD_Candidate_BusinessCase |
+      | SUPPLY            | PURCHASE                  |

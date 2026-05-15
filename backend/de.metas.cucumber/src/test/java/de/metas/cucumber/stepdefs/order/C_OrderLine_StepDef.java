@@ -572,6 +572,12 @@ public class C_OrderLine_StepDef
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.ifPresent(orderIdentifier -> softly.assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID()));
 
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
+						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
+						.isEqualTo(vendorBPartnerId.getRepoId()));
+
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));
 

@@ -423,6 +423,70 @@ public class MD_Candidate_StepDef
 				.isZero();
 	}
 
+	/**
+	 * Asserts that at least one {@code MD_Candidate} row matching each given type / business-case combination
+	 * exists for the given product. The step polls the DB for up to ~10 seconds to tolerate async settle
+	 * (purchase-candidate-advised → requested → PO completion → MD_Candidate creation chain).
+	 * <p>
+	 * Counterpart to {@code no MD_Candidate exists for M_Product_ID …}: use this on a regular (non-dropship)
+	 * warehouse to verify that the material-disposition bypass does <em>not</em> over-fire — i.e. that the
+	 * standard SUPPLY/PURCHASE chain still creates the expected MD_Candidate rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code MD_Candidate_Type} — required, one of {@link CandidateType} (e.g. {@code SUPPLY}, {@code DEMAND}, {@code STOCK_UP})</li>
+	 *     <li>{@code MD_Candidate_BusinessCase} — required, one of {@link CandidateBusinessCase} (e.g. {@code PURCHASE}, {@code FORECAST}, {@code PRODUCTION})</li>
+	 *   </ul>
+	 *   Each row must match at least one MD_Candidate row for the product; no row-count assertion is performed.
+	 * @cucumber.example
+	 * <pre>
+	 * Then MD_Candidates exist for M_Product_ID product_dw:
+	 *   | MD_Candidate_Type | MD_Candidate_BusinessCase |
+	 *   | SUPPLY            | PURCHASE                  |
+	 * </pre>
+	 */
+	@Then("^MD_Candidates exist for M_Product_ID (.*):$")
+	public void md_candidates_exist_for_product(@NonNull final String productIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+		final int productRepoId = productRecord.getM_Product_ID();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		for (final DataTableRow row : rows)
+		{
+			final CandidateType candidateType = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+			final CandidateBusinessCase businessCase = row.getAsEnum(COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class);
+
+			final Supplier<Boolean> matchExists = () -> queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productRepoId)
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_Type, candidateType.getCode())
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, businessCase.getCode())
+					.create()
+					.anyMatch();
+
+			try
+			{
+				StepDefUtil.tryAndWait(10, 500, matchExists);
+			}
+			catch (final InterruptedException ie)
+			{
+				Thread.currentThread().interrupt();
+				throw ie;
+			}
+			catch (final RuntimeException ex)
+			{
+				throw new AdempiereException(
+						"No MD_Candidate found for product=" + productIdentifier
+								+ " (M_Product_ID=" + productRepoId + ")"
+								+ " with Type=" + candidateType.getCode()
+								+ " and BusinessCase=" + businessCase.getCode(),
+						ex);
+			}
+		}
+	}
+
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
 	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
