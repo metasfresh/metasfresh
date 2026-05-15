@@ -34,6 +34,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -152,7 +153,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
 		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
@@ -185,7 +186,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder = ShipmentScheduleUpdatedEvent.builder();
 
@@ -270,7 +271,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId());
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
@@ -323,15 +324,15 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.orElse(BigDecimal.ZERO);
 	}
 
-	private boolean getIsDropShipWarehouse(final int warehouseId)
+	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
 	{
-		if (warehouseId <= 0)
+		if (warehouseId == null)
 		{
 			return false;
 		}
 
 		return Services.get(IWarehouseDAO.class)
-				.getById(WarehouseId.ofRepoId(warehouseId))
+				.getById(warehouseId)
 				.isDropShipWarehouse();
 	}
 }
