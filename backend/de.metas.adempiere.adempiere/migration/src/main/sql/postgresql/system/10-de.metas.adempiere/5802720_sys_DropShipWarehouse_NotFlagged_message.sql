@@ -4,6 +4,7 @@
 -- AD_OrgInfo_DropShipWarehouse when the user tries to set DropShip_Warehouse_ID to a warehouse
 -- that does not have IsDropShipWarehouse='Y'.
 -- Created: 2026-05-14 22:02
+-- Convention: AD_Message.MsgText holds German (base language); AD_Message_Trl[en_US] holds English.
 
 INSERT INTO AD_Message
     (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -14,7 +15,7 @@ VALUES
      TO_TIMESTAMP('2026-05-14 22:02:00','YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-05-14 22:02:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'DropShipWarehouse_NotFlagged', 'E',
-     'The selected warehouse must be marked as ''Dropship warehouse''.',
+     'Das gewählte Lager muss als ''Dropship-Lager'' markiert sein.',
      'DROPSHIP_WAREHOUSE_NOT_FLAGGED')
 ;
 
