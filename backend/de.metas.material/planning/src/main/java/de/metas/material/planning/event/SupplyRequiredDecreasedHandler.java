@@ -63,6 +63,11 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 	public void handleEvent(@NonNull final SupplyRequiredDecreasedEvent event)
 	{
 		final SupplyRequiredDescriptor descriptor = event.getSupplyRequiredDescriptor();
+		// Intentionally single-context: the per-usage dispatch introduced for me03#28877 only affects
+		// the supply-required path (SupplyRequiredHandler). On decrease, each advisor looks up its own
+		// supply candidates by CandidateBusinessCase (PRODUCTION / DISTRIBUTION / PURCHASE), independent
+		// of the ProductPlanning row, so a single "best match" context is sufficient here. The context
+		// is only used as an "any planning at all?" gate and to carry org info to the warn notification.
 		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
 		final MaterialDescriptor materialDescriptor = descriptor.getMaterialDescriptor();
 		Quantity remainingQtyToHandle = Quantitys.of(materialDescriptor.getQuantity(), ProductId.ofRepoId(materialDescriptor.getProductId()));
