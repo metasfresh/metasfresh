@@ -231,6 +231,29 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Dropship Warehouse.
+	 * If Yes, this warehouse is used for dropship orders (direct supplier-to-customer delivery).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShipWarehouse (boolean IsDropShipWarehouse);
+
+	/**
+	 * Get Dropship Warehouse.
+	 * If Yes, this warehouse is used for dropship orders (direct supplier-to-customer delivery).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShipWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsDropShipWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsDropShipWarehouse", null);
+	String COLUMNNAME_IsDropShipWarehouse = "IsDropShipWarehouse";
+
+	/**
 	 * Set In Transit.
 	 * Movement is in transit
 	 *
