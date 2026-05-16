@@ -72,6 +72,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -110,7 +111,7 @@ import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
@@ -176,6 +177,10 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 				.map(partnerTable::getId)
 				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> orderLine.setC_BPartner_Vendor_ID(vendorBPartnerId.getRepoId()));
 
 		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(flatrateConditionsIdentifier))
@@ -371,6 +376,42 @@ public class C_OrderLine_StepDef
 				});
 	}
 
+	/**
+	 * Polling variant of {@code validate C_OrderLine:} — retries the same assertion loop until it
+	 * passes or {@code maxWaitSec} elapses. Useful when an async listener (e.g.
+	 * {@code UpdateSalesOrderFromPurchaseOrderProjectListener}) needs time to push a value onto the
+	 * SO line after the originating PO completes.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And after not more than 30s, validate C_OrderLine:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | sol_dw4_1      | proj1        |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, validate C_OrderLine:$")
+	public void validate_C_OrderLine_polling(final int maxWaitSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + (long) maxWaitSec * 1000L;
+		while (true)
+		{
+			try
+			{
+				validate_C_OrderLine(dataTable);
+				return;
+			}
+			catch (final AssertionError e)
+			{
+				if (System.currentTimeMillis() >= deadline)
+				{
+					throw new AssertionError("Polling validate C_OrderLine still failing after " + maxWaitSec + "s. "
+							+ "Last assertion failure: " + e.getMessage(), e);
+				}
+				Thread.sleep(1000L);
+			}
+		}
+	}
+
 	@And("update C_OrderLine:")
 	public void update_C_OrderLine(@NonNull final DataTable dataTable)
 	{
@@ -478,6 +519,67 @@ public class C_OrderLine_StepDef
 		orderTable.putOrReplace(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID), orderRecord);
 	}
 
+	/**
+	 * Loads all {@link I_C_OrderLine} records that belong to the given order and registers each one
+	 * in {@link C_OrderLine_StepDefData} under the provided {@code C_OrderLine_ID.Identifier} value.
+	 * Useful when the order lines were auto-created (e.g. auto-PO from a dropship SO) and were not
+	 * explicitly set up in the feature file.
+	 *
+	 * <p>Each DataTable row must supply:</p>
+	 * <ul>
+	 *   <li>{@code C_Order_ID} (required) — identifier of the order whose lines to load
+	 *       (must have been registered previously in {@link C_Order_StepDefData})</li>
+	 *   <li>{@code C_OrderLine_ID} (required) — identifier under which the <em>first matching</em> line
+	 *       will be registered; when {@code M_Product_ID} is also provided only lines for that product
+	 *       are considered, otherwise the first line of the order is used</li>
+	 *   <li>{@code M_Product_ID} (optional) — restricts the search to lines with this product</li>
+	 * </ul>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_Order_ID} — required, references a previously registered order</li>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier under which the loaded line is registered</li>
+	 *     <li>{@code M_Product_ID} — optional, filter by product</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_OrderLines from C_Order:
+	 *   | C_Order_ID | C_OrderLine_ID | OPT.M_Product_ID |
+	 *   | po_dw9     | pol_dw9_1      | product_dw       |
+	 * </pre>
+	 */
+	@And("load C_OrderLines from C_Order:")
+	public void loadC_OrderLinesFromC_Order(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(this::loadC_OrderLineFromC_Order);
+	}
+
+	private void loadC_OrderLineFromC_Order(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID());
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.ifPresent(productIdentifier -> {
+					final ProductId productId = productTable.getIdOptional(productIdentifier)
+							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+					queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productId.getRepoId());
+				});
+
+		final List<I_C_OrderLine> lines = queryBuilder.create().list(I_C_OrderLine.class);
+		assertThat(lines).as("Expected at least one C_OrderLine for order %s", order.getC_Order_ID()).isNotEmpty();
+
+		// Register the first matching line under the given identifier
+		final I_C_OrderLine firstLine = lines.get(0);
+		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
+		orderLineTable.putOrReplace(lineIdentifier, firstLine);
+	}
+
 	@Given("metasfresh contains C_OrderLine expecting error:")
 	public void metasfresh_contains_c_order_lines_expecting_error(@NonNull final DataTable dataTable)
 	{
@@ -567,6 +669,12 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.ifPresent(orderIdentifier -> softly.assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID()));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
+						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
+						.isEqualTo(vendorBPartnerId.getRepoId()));
 
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));

@@ -65,7 +65,8 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("receiptScheduleId") final int receiptScheduleId,
-			@JsonProperty("vendorId") final int vendorId
+			@JsonProperty("vendorId") final int vendorId,
+			@JsonProperty("isDropShipWarehouse") final boolean isDropShipWarehouse
 	)
 	{
 		super(eventDescriptor,
@@ -73,7 +74,8 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 				null, // no old record
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
-				receiptScheduleId);
+				receiptScheduleId,
+				isDropShipWarehouse);
 
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineDescriptor = orderLineDescriptor;

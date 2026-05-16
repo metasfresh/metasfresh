@@ -22,6 +22,7 @@
 
 package de.metas.purchasecandidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -29,20 +30,27 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.PurchaseOrderProjectListener;
 import de.metas.project.ProjectId;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +64,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UpdateSalesOrderFromPurchaseOrderProjectListener implements PurchaseOrderProjectListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(UpdateSalesOrderFromPurchaseOrderProjectListener.class);
+
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public void onCreated(@NonNull final ProjectCreatedEvent event)
@@ -65,11 +76,68 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 		@NonNull final ProjectId projectId = event.getProjectId();
 		@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds = event.getPurchaseOrderLineIds();
 
-		final Set<OrderAndLineId> salesOrderAndLineIds = purchaseCandidateRepo.getAllByPurchaseOrderLineIds(purchaseOrderLineIds)
+		Set<OrderAndLineId> salesOrderAndLineIds = purchaseCandidateRepo.getAllByPurchaseOrderLineIds(purchaseOrderLineIds)
 				.stream()
 				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+
+		logger.debug("onCreated: projectId={}, purchaseOrderLineIds.size={}, salesOrderAndLineIds-after-candidate-match.size={}",
+				projectId, purchaseOrderLineIds.size(), salesOrderAndLineIds.size());
+
+		// Fall back to C_PO_OrderLine_Alloc for PO lines not linked to a C_PurchaseCandidate.
+		// Dropship POs created via CreatePOFromSOsAggregator skip the candidate flow, so the
+		// allocation table is the only link between PO line and originating SO line for them.
+		final Set<OrderLineId> allInputPoLineIds = purchaseOrderLineIds.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.collect(Collectors.toCollection(HashSet::new));
+
+		final Set<OrderLineId> matchedPoLineIds = queryBL
+				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID, allInputPoLineIds)
+				.create()
+				.listImmutable(I_C_PurchaseCandidate_Alloc.class)
+				.stream()
+				.map(alloc -> OrderLineId.ofRepoIdOrNull(alloc.getC_OrderLinePO_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toCollection(HashSet::new));
+
+		final Set<OrderLineId> unmatchedPoLineIds = new HashSet<>(allInputPoLineIds);
+		unmatchedPoLineIds.removeAll(matchedPoLineIds);
+
+		logger.debug("onCreated: unmatchedPoLineIds.size={} (PO lines without C_PurchaseCandidate, will fall back to C_PO_OrderLine_Alloc)",
+				unmatchedPoLineIds.size());
+
+		if (!unmatchedPoLineIds.isEmpty())
+		{
+			final Set<OrderLineId> extraSoLineIds = queryBL
+					.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, unmatchedPoLineIds)
+					.create()
+					.listImmutable(I_C_PO_OrderLine_Alloc.class)
+					.stream()
+					.map(alloc -> OrderLineId.ofRepoIdOrNull(alloc.getC_SO_OrderLine_ID()))
+					.filter(Objects::nonNull)
+					.collect(Collectors.toCollection(HashSet::new));
+
+			if (!extraSoLineIds.isEmpty())
+			{
+				final Set<OrderAndLineId> extraSalesOrderAndLineIds = orderDAO.retrieveOrderLinesByIds(extraSoLineIds)
+						.stream()
+						.map(soLine -> OrderAndLineId.ofRepoIdsOrNull(soLine.getC_Order_ID(), soLine.getC_OrderLine_ID()))
+						.filter(Objects::nonNull)
+						.collect(Collectors.toSet());
+
+				logger.debug("onCreated: extraSalesOrderAndLineIds.size={} (resolved via C_PO_OrderLine_Alloc fallback)",
+						extraSalesOrderAndLineIds.size());
+
+				salesOrderAndLineIds = ImmutableSet.<OrderAndLineId>builder()
+						.addAll(salesOrderAndLineIds)
+						.addAll(extraSalesOrderAndLineIds)
+						.build();
+			}
+		}
 
 		final Set<OrderId> salesOrderIds = OrderAndLineId.getOrderIds(salesOrderAndLineIds);
 		final Set<OrderLineId> salesOrderLineIds = OrderAndLineId.getOrderLineIds(salesOrderAndLineIds);
@@ -82,6 +150,16 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 				.filter(orderLine -> ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()) == null)
 				.peek(orderLine -> orderLine.setC_Project_ID(projectId.getRepoId()))
 				.collect(Collectors.toSet());
+
+		if (logger.isDebugEnabled())
+		{
+			final Set<Integer> updatedSoLineIds = updatedOrderLines.stream()
+					.map(I_C_OrderLine::getC_OrderLine_ID)
+					.collect(Collectors.toCollection(TreeSet::new));
+			logger.debug("onCreated: updating projectId={} on {} SO line(s): {}",
+					projectId, updatedOrderLines.size(), updatedSoLineIds);
+		}
+
 		saveAllForUserId(event, updatedOrderLines);
 	}
 

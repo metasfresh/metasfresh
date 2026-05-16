@@ -14,6 +14,7 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,10 @@ import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.*;
 
@@ -112,5 +115,30 @@ public class TransactionEventHandlerTest
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
+	}
+
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final CandidateChangeService candidateChangeHandler = Mockito.mock(CandidateChangeService.class);
+		final CandidateRepositoryRetrieval candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
+
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
+				candidateChangeHandler,
+				candidateRepository,
+				Mockito.mock(PostMaterialEventService.class));
+
+		final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.transactionId(1)
+				.isDropShipWarehouse(true)
+				.build();
+
+		transactionEventHandler.handleEvent(event);
+
+		// dropship-warehouse transactions bypass material-disposition entirely — no candidates of any type are created.
+		Mockito.verifyZeroInteractions(candidateChangeHandler);
+		Mockito.verifyZeroInteractions(candidateRepository);
 	}
 }
