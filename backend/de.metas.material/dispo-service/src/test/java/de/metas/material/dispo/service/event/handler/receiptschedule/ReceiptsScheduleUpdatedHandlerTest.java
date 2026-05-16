@@ -84,6 +84,27 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		receiptsScheduleUpdatedHandler = new ReceiptsScheduleUpdatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 	}
 
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent
+				.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
+				.reservedQuantity(new BigDecimal("11"))
+				.reservedQuantityDelta(ONE)
+				.orderedQuantityDelta(ONE)
+				.isDropShipWarehouse(true)
+				.build()
+				.validate();
+
+		receiptsScheduleUpdatedHandler.handleEvent(event);
+
+		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
 	/** The update's timestamp is at the same date as the original creation (not sure how realisitic that is) */
 	@Test
 	public void handleEvent_ReceiptScheduleUpdatedEvent_update_NOW()

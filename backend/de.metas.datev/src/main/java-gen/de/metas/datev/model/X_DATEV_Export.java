@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 24376071L;
+	private static final long serialVersionUID = 1844434239L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -80,33 +80,6 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	public java.lang.String getClientNumber() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClientNumber);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Period getC_Period()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
-	}
-
-	@Override
-	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
-	}
-
-	@Override
-	public void setC_Period_ID (final int C_Period_ID)
-	{
-		if (C_Period_ID < 1) 
-			set_Value (COLUMNNAME_C_Period_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Period_ID, C_Period_ID);
-	}
-
-	@Override
-	public int getC_Period_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
 	}
 
 	@Override
