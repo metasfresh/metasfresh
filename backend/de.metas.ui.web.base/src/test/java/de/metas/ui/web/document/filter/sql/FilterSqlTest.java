@@ -39,19 +39,6 @@ class FilterSqlTest
 	@TestMethodOrder(MethodOrderer.DisplayName.class)
 	class toSqlAndParams
 	{
-		private FilterSql.FullTextSearchResult mockFilterByFTS(
-				final SqlOptions sqlOpts,
-				final String returnSql,
-				final Object... returnSqlParams)
-		{
-			final FilterSql.FullTextSearchResult filterByFTS = Mockito.mock(FilterSql.FullTextSearchResult.class);
-			Mockito.doReturn(SqlAndParams.of(returnSql, returnSqlParams))
-					.when(filterByFTS)
-					.buildExistsWhereClause(sqlOpts.getTableNameOrAlias());
-
-			return filterByFTS;
-		}
-
 		private FilterSql.RecordsToAlwaysIncludeSql mockAlwaysIncludeSql(
 				final String returnSql,
 				final Object... returnSqlParams)
@@ -98,21 +85,6 @@ class FilterSqlTest
 		}
 
 		@Test
-		void whereClause_filterByFTS()
-		{
-			final SqlOptions sqlOpts = SqlOptions.usingTableAlias("alias");
-
-			assertThat(FilterSql.builder()
-					.whereClause(SqlAndParams.of("some where clause", 1, 2, 3))
-					.filterByFTS(mockFilterByFTS(sqlOpts, "fts_filter", "fts_param1"))
-					.build()
-					.toSqlAndParams(sqlOpts))
-					.contains(SqlAndParams.of(
-							"(some where clause) AND (fts_filter)",
-							1, 2, 3, "fts_param1"));
-		}
-
-		@Test
 		void whereClause_alwaysIncludeSql()
 		{
 			final SqlOptions sqlOpts = SqlOptions.usingTableAlias("alias");
@@ -124,22 +96,6 @@ class FilterSqlTest
 					.contains(SqlAndParams.of(
 							"(some where clause) OR (alwaysIncludeSql)",
 							1, 2, 3, 10, 11, 12));
-		}
-
-		@Test
-		void whereClause_filterByFTS_alwaysIncludeSql()
-		{
-			final SqlOptions sqlOpts = SqlOptions.usingTableAlias("alias");
-
-			assertThat(FilterSql.builder()
-					.whereClause(SqlAndParams.of("some where clause", 1, 2, 3))
-					.filterByFTS(mockFilterByFTS(sqlOpts, "fts_filter", "fts_param1"))
-					.alwaysIncludeSql(mockAlwaysIncludeSql("alwaysIncludeSql", 10, 11, 12))
-					.build()
-					.toSqlAndParams(sqlOpts))
-					.contains(SqlAndParams.of(
-							"((some where clause) AND (fts_filter)) OR (alwaysIncludeSql)",
-							1, 2, 3, "fts_param1", 10, 11, 12));
 		}
 
 	}

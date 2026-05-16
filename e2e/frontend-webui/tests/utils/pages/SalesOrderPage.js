@@ -460,12 +460,13 @@ export class SalesOrderPage {
    * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
    * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
     await openRelatedDocument({
       dataCy: REFERENCE_DATA_CY.SO_TO_INVOICE_CANDIDATES,
       stepName: 'SalesOrderPage - Open related invoice candidate (Alt+6)',
       maxRetries,
       retryDelay,
+      refreshOnRetry,
       navigateToDetail: false, // Opens as list view
     });
   }

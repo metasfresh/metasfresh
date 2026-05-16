@@ -2,7 +2,7 @@
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,5 @@
  * #L%
  */
 
-package de.metas.ui.web.base.model;
-
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.*;
-
-class I_T_WEBUI_ViewSelectionLine_Test
-{
-	@Test
-	void checkIntKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_IntKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
-	}
-
-	@Test
-	void checkStringKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_StringKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
-	}
-
-	@Test
-	void checkTimestampKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_TimestampKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_TimestampKeys);
-	}
-}
+SELECT ops.update_all_fts_if_active()
+;

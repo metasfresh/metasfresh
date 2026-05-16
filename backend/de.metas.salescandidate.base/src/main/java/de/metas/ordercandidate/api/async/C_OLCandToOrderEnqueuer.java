@@ -57,7 +57,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
@@ -259,7 +258,7 @@ public class C_OLCandToOrderEnqueuer
 	{
 		// Create a new locker which will grab the locked candidate from initial lock
 		// and it will move them to a new owner which is created per work package
-		final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ProcessOLCand_" + Instant.now().getMillis());
+		final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ProcessOLCand_" + java.time.Instant.now().toEpochMilli());
 		return mainLock
 				.split()
 				.setOwner(workpackageElementsLockOwner)

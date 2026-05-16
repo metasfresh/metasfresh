@@ -2,7 +2,7 @@
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,22 @@
  * #L%
  */
 
-package de.metas.ui.web.base.model;
 
-import org.junit.jupiter.api.Test;
+CREATE OR REPLACE FUNCTION m_product_fts_trigger_function()
+    RETURNS trigger
+AS
+$$
+BEGIN
+    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+        PERFORM ops.reindex_m_product_fts(NEW.m_product_id);
+    END IF;
+    -- The DELETE case is handled automatically by the "ON DELETE CASCADE" constraint.
+    -- CONSTRAINT MProduct_MProductFTS FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    RETURN NULL;
+END;
+$$
+    LANGUAGE plpgsql
+;
 
-import static org.assertj.core.api.Assertions.*;
-
-class I_T_WEBUI_ViewSelectionLine_Test
-{
-	@Test
-	void checkIntKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_IntKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
-	}
-
-	@Test
-	void checkStringKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_StringKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
-	}
-
-	@Test
-	void checkTimestampKeys()
-	{
-		assertThat(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_TimestampKeys).isEqualTo(I_T_WEBUI_ViewSelection.COLUMNNAME_TimestampKeys);
-	}
-}
+COMMENT ON FUNCTION m_product_fts_trigger_function() IS 'Refresh the M_Product_FTS table when a M_Product record is inserted or updated'
+;

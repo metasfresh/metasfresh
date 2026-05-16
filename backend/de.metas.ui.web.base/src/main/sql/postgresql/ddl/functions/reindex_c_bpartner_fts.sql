@@ -38,23 +38,34 @@ WITH UserText AS (
          -- Pre-aggregate location data
          SELECT bpl.c_bpartner_id,
                 STRING_AGG(bpl.name || ' ' || COALESCE(bpl.phone, '') || ' ' || COALESCE(bpl.email, '') || ' ' ||
-                           COALESCE(l.city, '') || ' ' || COALESCE(l.postal, '') || ' ' || c.name, ' ') AS text
+                           COALESCE(l.address1, '') || COALESCE(l.city, '') || ' ' || COALESCE(l.postal, '') || ' ' || c.name, ' ') AS text
          FROM c_bpartner_location bpl
                   JOIN c_location l ON bpl.c_location_id = l.c_location_id
                   JOIN c_country c ON l.c_country_id = c.c_country_id
          WHERE p_c_bpartner_id IS NULL
             OR bpl.c_bpartner_id = p_c_bpartner_id
          GROUP BY bpl.c_bpartner_id),
+     ExternalReferenceText AS (
+         SELECT er.record_id AS c_bpartner_id,
+                 STRING_AGG(er.externalreference, ' ') AS text
+          FROM S_ExternalReference er
+          WHERE Type = 'BPartner'
+            AND referenced_ad_table_id = get_table_id('C_BPartner')
+            AND (p_c_bpartner_id IS NULL OR er.record_id = p_c_bpartner_id)
+          GROUP BY er.record_id),
      BPartnerText AS (SELECT bp.c_bpartner_id,
                              (
                                  bp.name || ' ' || COALESCE(bp.name2, '') || ' ' || bp.value || ' ' ||
+                                 COALESCE(bp.firstname, '') || ' ' || COALESCE(bp.lastname, '') || ' ' ||
                                  COALESCE(bp.debtorid::TEXT, '') || ' ' || COALESCE(bp.creditorid::TEXT, '') || ' ' ||
                                  COALESCE(ut.text, '') || ' ' ||
-                                 COALESCE(lt.text, '')
+                                 COALESCE(lt.text, '') || ' ' ||
+                                 COALESCE(er.text, '')
                                  ) AS aggregated_text
                       FROM c_bpartner bp
                                LEFT JOIN UserText ut ON bp.c_bpartner_id = ut.c_bpartner_id
                                LEFT JOIN LocationText lt ON bp.c_bpartner_id = lt.c_bpartner_id
+                               LEFT JOIN ExternalReferenceText er ON bp.c_bpartner_id = er.c_bpartner_id
                       WHERE (p_c_bpartner_id IS NULL OR bp.c_bpartner_id = p_c_bpartner_id))
 -- Perform an "UPSERT" into the FTS table.
 INSERT
