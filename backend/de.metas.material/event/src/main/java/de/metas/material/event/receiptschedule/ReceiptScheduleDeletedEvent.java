@@ -58,14 +58,16 @@ public class ReceiptScheduleDeletedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("receiptScheduleId") final int receiptScheduleId)
+			@JsonProperty("receiptScheduleId") final int receiptScheduleId,
+			@JsonProperty("isDropShipWarehouse") final boolean isDropShipWarehouse)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
 				null, // we don't care about it, we're going to delete it anyway
 				minMaxDescriptor,
 				reservedQuantity,
-				receiptScheduleId);
+				receiptScheduleId,
+				isDropShipWarehouse);
 	}
 
 	@Override

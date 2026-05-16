@@ -328,7 +328,13 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			}
 			else
 			{
-				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+				// No org-level dropship warehouse configured; fall back to the SO's warehouse,
+				// which is itself the dropship warehouse for a dropship-warehouse SO. This keeps
+				// the PO on a dropship-flagged warehouse so the receipt-schedule material-event
+				// short-circuit (see M_ReceiptSchedule_PostMaterialEvent + ReceiptsSchedule*Handlers)
+				// fires on PO completion, suppressing MD_Candidate creation.
+				purchaseOrder.setM_Warehouse_ID(salesOrder.getM_Warehouse_ID());
+				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@ — defaulting to SO's warehouse");
 			}
 		}
 
