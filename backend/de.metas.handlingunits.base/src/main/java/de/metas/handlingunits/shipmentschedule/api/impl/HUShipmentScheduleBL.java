@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
@@ -60,9 +61,11 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -212,6 +215,100 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		huContext.flush();
 
 		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPickedRecord, huContext);
+	}
+
+	@Override
+	public boolean tryMergeQtyPickedIntoExistingForVHU(@NonNull final AddQtyPickedRequest request)
+	{
+		// Eligibility — only HU-trx-listener-shaped picks may be merged.
+		// Order: cheapest request-shape guards first; HU lookup last.
+		final ShipmentScheduleAndJobScheduleId scheduleId = request.getScheduleId();
+		if (scheduleId.getJobScheduleId() != null)
+		{
+			return false;
+		}
+		if (request.isAnonymousHuPickedOnTheFly())
+		{
+			return false;
+		}
+
+		// Catch-weight merging is not supported here — fall through to create-new so each
+		// catch reading keeps its own row.
+		final StockQtyAndUOMQty qtyToAdd = request.getQtyPicked();
+		if (qtyToAdd.isUOMQtySet())
+		{
+			return false;
+		}
+
+		// Only merge strictly positive allocations. Negative qty represents an un-allocation
+		// (see ShipmentScheduleHUTrxListener#trxLineProcessed Javadoc) and must remain its own
+		// audit row so the netting is visible — silently subtracting from a sibling can drive
+		// a row to zero/negative and mask a stock discrepancy.
+		if (qtyToAdd.getStockQty().signum() <= 0)
+		{
+			return false;
+		}
+
+		final I_M_HU vhu = request.getHu();
+		if (!handlingUnitsBL.isVirtual(vhu))
+		{
+			return false;
+		}
+
+		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
+		final List<I_M_ShipmentSchedule_QtyPicked> candidates = huShipmentScheduleDAO.retrieveMergeableListenerQtyPickedForVHU(
+				scheduleId.getShipmentScheduleId(),
+				vhuId);
+
+		if (candidates.isEmpty())
+		{
+			return false;
+		}
+		if (candidates.size() > 1)
+		{
+			// Pre-existing duplicates — not our job to silently collapse them. Log and fall through;
+			// the new-row path will leave the duplicates intact for human inspection.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"tryMergeQtyPickedIntoExistingForVHU: found {} pre-existing un-shipped QtyPicked rows for shipmentScheduleId={} vhuId={} — falling through to create-new",
+					candidates.size(), scheduleId.getShipmentScheduleId(), vhuId);
+			return false;
+		}
+
+		final I_M_ShipmentSchedule_QtyPicked existing = candidates.get(0);
+		// Defensive: even though the request carries no catch UOM (guard above), reject merging
+		// into a row that was previously written with one. Could only happen if a different code
+		// path bypassed the request-side guard; better to fall through than risk arithmetic that
+		// loses the catch reading.
+		final BigDecimal existingCatchQty = existing.getQtyDeliveredCatch();
+		if (existing.getCatch_UOM_ID() > 0 || (existingCatchQty != null && existingCatchQty.signum() != 0))
+		{
+			return false;
+		}
+
+		existing.setQtyPicked(existing.getQtyPicked().add(qtyToAdd.getStockQty().toBigDecimal()));
+		final IHUContext huContext = request.getHuContext();
+		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(existing, huContext).updateQtyTUAndQtyLU();
+		saveRecord(existing);
+
+		// Drive the same HU side-effects as the create-new path. On the well-formed reversal
+		// flow the topLevelHU is already Picked with the right partner/location (the FIRST
+		// trx-line in the same transaction went through addQtyPickedAndUpdateHU), so each call
+		// is a verified no-op:
+		//   - HUStatusBL.setHUStatus returns early when status is unchanged
+		//   - PO setters with equal values do not produce an UPDATE
+		// Re-running them here is a safety net for edge cases where the first row's flow
+		// didn't reach this point (e.g. a row pre-existed from a prior session).
+		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+		final I_M_HU topLevelHU = husPair.getTopLevelHU();
+		setHUStatusToPicked(topLevelHU);
+		setHUPartnerAndLocationFromSched(topLevelHU, getShipmentSchedule(request));
+		handlingUnitsDAO.saveHU(topLevelHU);
+		huContext.flush();
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog(
+				"tryMergeQtyPickedIntoExistingForVHU: merged qty={} into M_ShipmentSchedule_QtyPicked_ID={} (shipmentScheduleId={} vhuId={})",
+				qtyToAdd.getStockQty(), existing.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId.getShipmentScheduleId(), vhuId);
+		return true;
 	}
 
 	private de.metas.inoutcandidate.model.I_M_ShipmentSchedule getShipmentSchedule(final AddQtyPickedRequest request)

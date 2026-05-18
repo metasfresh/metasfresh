@@ -53,6 +53,27 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(AddQtyPickedRequest request);
 
 	/**
+	 * Try to add the request's qty into a single existing un-shipped {@link I_M_ShipmentSchedule_QtyPicked}
+	 * row for the same {@code (M_ShipmentSchedule_ID, VHU_ID)} pair instead of creating a new row.
+	 * <p>
+	 * Scope is intentionally narrow — only HU-trx-listener-shaped picks are eligible:
+	 * the request must have no {@code PickingJobScheduleId}, must not be marked as
+	 * {@code anonymousHuPickedOnTheFly}, and the HU must be a virtual HU. The candidate
+	 * row is also filtered to {@code M_Picking_Job_Schedule_ID IS NULL} and
+	 * {@code IsAnonymousHuPickedOnTheFly = N} so that genuine multi-job picks on the same
+	 * VHU are never collapsed.
+	 * <p>
+	 * Used by {@code ShipmentScheduleHUTrxListener.trxLineProcessed} to defuse the duplicate-row
+	 * pattern produced when an aggregate HU's snapshot is replayed (one VHU node receives
+	 * multiple HU-trx lines in one transaction). See me03#29561.
+	 *
+	 * @return {@code true} if a matching row was found and the qty was merged into it (caller
+	 *         should skip the regular new-row path); {@code false} otherwise (caller should fall
+	 *         through to {@link #addQtyPickedAndUpdateHU(AddQtyPickedRequest)}).
+	 */
+	boolean tryMergeQtyPickedIntoExistingForVHU(AddQtyPickedRequest request);
+
+	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();

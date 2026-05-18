@@ -362,6 +362,9 @@ public class C_Order_StepDef
 			order.setDatePromised(Timestamp.from(datePromisedToBeSet));
 		}
 
+		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DateAcct)
+				.ifPresent(dateAcct -> order.setDateAcct(Timestamp.from(dateAcct)));
+
 		if (EmptyUtil.isNotBlank(poReference))
 		{
 			order.setPOReference(poReference);
