@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -62,7 +63,6 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
-import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.lang.SOTrx;
@@ -569,12 +569,23 @@ public class C_Order_StepDef
 		{
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
 			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
-			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
+
+			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId)
-					.create()
-					.firstOnly(I_C_Order.class);
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
+
+			// Optional disambiguation by vendor — needed for multi-vendor SOs where N POs
+			// share the same Link_Order_ID but differ by C_BPartner_ID. Backward compatible:
+			// callers that omit the column get the original firstOnly behaviour.
+			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID);
+			if (EmptyUtil.isNotBlank(bpartnerIdentifier))
+			{
+				final int bpartnerRepoId = bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID();
+				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
+			}
+
+			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
@@ -597,12 +608,18 @@ public class C_Order_StepDef
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 			// TODO: introduce DataTableRows for this whole stepdef
-			DataTableRow.singleRow(tableRow)
-					.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+			final DataTableRow singleRow = DataTableRow.singleRow(tableRow);
+			singleRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 					.map(bpartnerTable::getId)
 					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
 							.as("DropShip_BPartner_ID")
 							.isEqualTo(dropShipId.getRepoId()));
+
+			// Optional `Identifier` column: register the looked-up PO in orderTable so subsequent
+			// steps (validate the created orders, validate C_OrderLine:, etc.) can reference it by
+			// its feature-file identifier.
+			singleRow.getAsOptionalIdentifier()
+					.ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 		}
 	}
 

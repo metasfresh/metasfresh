@@ -42,6 +42,7 @@ public interface IInvoicingParams
 	String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
 	String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
+	String PARA_IsInvoiceManualRule = "IsInvoiceManualRule";
 	String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
 	String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
@@ -67,6 +68,13 @@ public interface IInvoicingParams
 	 * @return {@code true} if the enqueuer shall ignore the scheduled DateToInvoice-
 	 */
 	boolean isIgnoreInvoiceSchedule();
+
+	/**
+	 * @return {@code true} if the enqueuer shall include invoice candidates whose effective {@link de.metas.order.InvoiceRule}
+	 * is {@link de.metas.order.InvoiceRule#Manual}. Decoupled from {@link #isIgnoreInvoiceSchedule()} so the user can
+	 * trigger Manual-rule invoicing without bypassing the schedule for the other rule types.
+	 */
+	boolean isInvoiceManualRule();
 
 	/**
 	 * @return date invoiced to be set to all invoice candidates, right before enqueueing them.
@@ -166,6 +174,7 @@ public interface IInvoicingParams
 		}
 
 		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
+		result.put(InvoicingParams.PARA_IsInvoiceManualRule, isInvoiceManualRule());
 		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());

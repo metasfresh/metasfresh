@@ -730,6 +730,242 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void shipmentScheduleCreatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ShipmentScheduleCreatedEvent event = createShipmentScheduleEventBuilder()
+				.documentLineDescriptor(newOrderLineDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void shipmentScheduleCreatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ShipmentScheduleCreatedEvent withFlag = createShipmentScheduleEventBuilder()
+				.documentLineDescriptor(newOrderLineDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ShipmentScheduleCreatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ShipmentScheduleCreatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ShipmentScheduleCreatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void receiptScheduleCreatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.orderLineDescriptor(newOrderLineDescriptor())
+				.reservedQuantity(new BigDecimal("2"))
+				.receiptScheduleId(3)
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void receiptScheduleCreatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ReceiptScheduleCreatedEvent withFlag = ReceiptScheduleCreatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.orderLineDescriptor(newOrderLineDescriptor())
+				.reservedQuantity(new BigDecimal("2"))
+				.receiptScheduleId(3)
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ReceiptScheduleCreatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ReceiptScheduleCreatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ReceiptScheduleCreatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void receiptScheduleUpdatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.orderedQuantityDelta(new BigDecimal("2"))
+				.reservedQuantity(new BigDecimal("3"))
+				.reservedQuantityDelta(new BigDecimal("4"))
+				.receiptScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void receiptScheduleUpdatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ReceiptScheduleUpdatedEvent withFlag = ReceiptScheduleUpdatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.orderedQuantityDelta(new BigDecimal("2"))
+				.reservedQuantity(new BigDecimal("3"))
+				.reservedQuantityDelta(new BigDecimal("4"))
+				.receiptScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ReceiptScheduleUpdatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ReceiptScheduleUpdatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ReceiptScheduleUpdatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void receiptScheduleDeletedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.reservedQuantity(new BigDecimal("2"))
+				.receiptScheduleId(3)
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void receiptScheduleDeletedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ReceiptScheduleDeletedEvent withFlag = ReceiptScheduleDeletedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.reservedQuantity(new BigDecimal("2"))
+				.receiptScheduleId(3)
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ReceiptScheduleDeletedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ReceiptScheduleDeletedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ReceiptScheduleDeletedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void shipmentScheduleUpdatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ShipmentScheduleUpdatedEvent event = ShipmentScheduleUpdatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
+				.shipmentScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void shipmentScheduleUpdatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ShipmentScheduleUpdatedEvent withFlag = ShipmentScheduleUpdatedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
+				.shipmentScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ShipmentScheduleUpdatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ShipmentScheduleUpdatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ShipmentScheduleUpdatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void shipmentScheduleDeletedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
+				.shipmentScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void shipmentScheduleDeletedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final ShipmentScheduleDeletedEvent withFlag = ShipmentScheduleDeletedEvent.builder()
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
+				.shipmentScheduleId(5)
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<ShipmentScheduleDeletedEvent> jsonObjectMapper = JSONObjectMapper.forClass(ShipmentScheduleDeletedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final ShipmentScheduleDeletedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
 	public void transactionCreatedEvent()
 	{
 		final TransactionCreatedEvent evt = newTransactionCreatedEvent();
@@ -766,6 +1002,90 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
+	}
+
+	@Test
+	public void transactionCreatedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final TransactionCreatedEvent event = TransactionCreatedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
+						.huId(30)
+						.productDescriptor(createProductDescriptor())
+						.quantity(TEN)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+		event.assertValid();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void transactionCreatedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final TransactionCreatedEvent withFlag = TransactionCreatedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
+						.huId(30)
+						.productDescriptor(createProductDescriptor())
+						.quantity(TEN)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<TransactionCreatedEvent> jsonObjectMapper = JSONObjectMapper.forClass(TransactionCreatedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final TransactionCreatedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
+	}
+
+	@Test
+	public void transactionDeletedEvent_with_isDropShipWarehouse_roundtrips()
+	{
+		final TransactionDeletedEvent event = TransactionDeletedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+		event.assertValid();
+		assertEventEqualAfterSerializeDeserialize(event);
+		assertThat(event.isDropShipWarehouse()).isTrue();
+	}
+
+	@Test
+	public void transactionDeletedEvent_isDropShipWarehouse_defaults_false_when_missing_in_json() throws Exception
+	{
+		// Build an event WITH the flag, serialize it, then strip the field to simulate an old producer
+		final TransactionDeletedEvent withFlag = TransactionDeletedEvent
+				.builder()
+				.transactionId(10)
+				.eventDescriptor(newEventDescriptor())
+				.materialDescriptor(newMaterialDescriptor())
+				.minMaxDescriptor(createSampleMinMaxDescriptor())
+				.isDropShipWarehouse(true)
+				.build();
+
+		final JSONObjectMapper<TransactionDeletedEvent> jsonObjectMapper = JSONObjectMapper.forClass(TransactionDeletedEvent.class);
+		final String fullJson = jsonObjectMapper.writeValueAsString(withFlag);
+		final String strippedJson = fullJson.replaceAll(",\\s*\"isDropShipWarehouse\"\\s*:\\s*(true|false)", "");
+
+		final TransactionDeletedEvent deserialized = jsonObjectMapper.readValue(strippedJson);
+		assertThat(deserialized.isDropShipWarehouse()).isFalse();
 	}
 
 	@Test

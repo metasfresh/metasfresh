@@ -141,7 +141,7 @@ BEGIN
                                                'Name', p.name,
                                                'Description', p.description,
                                                'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, p.gtin),
+                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
                                                'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
@@ -157,6 +157,7 @@ BEGIN
                                        'OrderPOReference', o.poreference,
                                        'OrderDocumentNo', o.documentno,
                                        'DesadvLine', dl.line,
+                                       'LineItemLine', ia.pi_line,
                                        'IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered), true)
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
@@ -164,7 +165,7 @@ BEGIN
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
                                'IsSubArticle', ia.is_sub_article,
                                'MainArticleLine',
-                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line ELSE NULL END
+                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
         FROM items_assigned ia
@@ -182,7 +183,7 @@ BEGIN
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
             -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
-            SELECT gtin, productno
+            SELECT gtin, ean13_productcode, productno
             FROM m_product_asi_data
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id

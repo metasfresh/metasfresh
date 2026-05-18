@@ -44,11 +44,13 @@ CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id 
 AS
 $$
 DECLARE
-    v_result              JSONB;
-    v_grai_attribute_id   NUMERIC;
-    v_sscc_attribute_id   NUMERIC;
-    v_lot_attribute_id    NUMERIC;
-    v_bbd_attribute_id    NUMERIC;
+    v_result            JSONB;
+    v_grai_attribute_id NUMERIC;
+    v_sscc_attribute_id NUMERIC;
+    v_lot_attribute_id  NUMERIC;
+    v_bbd_attribute_id  NUMERIC;
+    v_dummy_grai_prefix TEXT;
+
 BEGIN
     -- Cache attribute IDs in one scan
     SELECT MAX(CASE WHEN value = 'GRAI' THEN m_attribute_id END),
@@ -58,6 +60,9 @@ BEGIN
     INTO v_grai_attribute_id, v_sscc_attribute_id, v_lot_attribute_id, v_bbd_attribute_id
     FROM m_attribute
     WHERE value IN ('GRAI', 'SSCC18', 'Lot-Nummer', 'HU_BestBeforeDate');
+
+    -- de.metas.edi.epcis.dummyGRAI.Prefix — GCP.assetType. portion before the 12-char serial, e.g. '7613264.00307.'
+    v_dummy_grai_prefix := get_sysconfig_value('de.metas.edi.epcis.dummyGRAI.Prefix', '0000000.11111.');
 
     WITH inout_context AS (
         -- Materialize all context data ONCE to avoid correlated subqueries
@@ -121,9 +126,9 @@ BEGIN
 
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet
-             SELECT lu_hu.m_hu_id                    AS lu_hu_id,
-                    tu_hu.m_hu_id                    AS tu_hu_id,
-                    tu_hu.m_hu_pi_item_product_id    AS tu_pi_item_product_id
+             SELECT lu_hu.m_hu_id                 AS lu_hu_id,
+                    tu_hu.m_hu_id                 AS tu_hu_id,
+                    tu_hu.m_hu_pi_item_product_id AS tu_pi_item_product_id
              FROM pallet_list pl
                       JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.m_lu_hu_id
                       JOIN m_hu_item parent_item
@@ -134,13 +139,13 @@ BEGIN
          ha_items_with_vtu AS MATERIALIZED (
              -- CASE B: HA items with their virtual TU resolved — computed ONCE, reused for
              --         both attribute lookup and storage item joins (avoids double m_hu scan)
-             SELECT lu_hu.m_hu_id                                    AS lu_hu_id,
-                    ha_item.m_hu_item_id                             AS tu_hu_id,
+             SELECT lu_hu.m_hu_id                           AS lu_hu_id,
+                    ha_item.m_hu_item_id                    AS tu_hu_id,
                     ha_item.qty,
-                    ha_vtu.m_hu_id                                   AS vtu_hu_id,
-                    ha_vtu.m_hu_pi_item_product_id                   AS vtu_pi_item_product_id,
+                    ha_vtu.m_hu_id                          AS vtu_hu_id,
+                    ha_vtu.m_hu_pi_item_product_id          AS vtu_pi_item_product_id,
                     -- HU ID to use for attribute lookups: virtual TU first, fall back to LU
-                    COALESCE(ha_vtu.m_hu_id, lu_hu.m_hu_id)         AS attr_hu_id
+                    COALESCE(ha_vtu.m_hu_id, lu_hu.m_hu_id) AS attr_hu_id
              FROM pallet_list pl
                       JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.m_lu_hu_id
                       JOIN m_hu_item ha_item
@@ -154,22 +159,23 @@ BEGIN
              -- Single pivot scan of m_hu_attribute for ALL relevant HU IDs and the 3 needed
              -- attribute IDs — replaces 6 separate LEFT JOIN m_hu_attribute (3 per TU type)
              SELECT ha.m_hu_id,
-                    MAX(CASE WHEN ha.m_attribute_id = v_grai_attribute_id THEN ha.value END)     AS grai_value,
-                    MAX(CASE WHEN ha.m_attribute_id = v_lot_attribute_id  THEN ha.value END)     AS lot_number,
-                    MAX(CASE WHEN ha.m_attribute_id = v_bbd_attribute_id  THEN ha.valuedate END) AS best_before_date
+                    MAX(CASE WHEN ha.m_attribute_id = v_grai_attribute_id THEN ha.value END)    AS grai_value,
+                    MAX(CASE WHEN ha.m_attribute_id = v_lot_attribute_id THEN ha.value END)     AS lot_number,
+                    MAX(CASE WHEN ha.m_attribute_id = v_bbd_attribute_id THEN ha.valuedate END) AS best_before_date
              FROM m_hu_attribute ha
-             WHERE ha.m_hu_id IN (SELECT tu_hu_id  FROM individual_tu_ids
+             WHERE ha.m_hu_id IN (SELECT tu_hu_id
+                                  FROM individual_tu_ids
                                   UNION
-                                  SELECT attr_hu_id FROM ha_items_with_vtu)
+                                  SELECT attr_hu_id
+                                  FROM ha_items_with_vtu)
                AND ha.m_attribute_id IN (v_grai_attribute_id, v_lot_attribute_id, v_bbd_attribute_id)
              GROUP BY ha.m_hu_id),
 
          bp_prod_lookup AS MATERIALIZED (
              -- Buyer-specific product GTINs: ONE scan replaces N LATERAL calls in items CTEs
-             SELECT DISTINCT ON (bp.m_product_id)
-                 bp.m_product_id,
-                 bp.gtin,
-                 bp.ean_cu
+             SELECT DISTINCT ON (bp.m_product_id) bp.m_product_id,
+                                                  bp.gtin,
+                                                  bp.ean_cu
              FROM c_bpartner_product bp
              WHERE bp.c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context)
                AND bp.isactive = 'Y'
@@ -221,7 +227,7 @@ BEGIN
                     COALESCE(
                             NULLIF(STRING_TO_ARRAY(TRIM(ha.grai_value), ','), ARRAY [NULL]::text[]),
                             ARRAY []::text[]
-                    )              AS grai_arr,
+                    ) AS grai_arr,
                     ha.lot_number,
                     ha.best_before_date
              FROM ha_items_with_vtu hwv
@@ -267,7 +273,7 @@ BEGIN
                     it.grai_raw,
                     it.lot_number,
                     it.best_before_date,
-                    1              AS sort_ord,
+                    1 AS sort_ord,
                     iti.items_json
              FROM individual_tus it
                       LEFT JOIN individual_tu_items iti ON iti.tu_hu_id = it.tu_hu_id
@@ -279,15 +285,15 @@ BEGIN
                     atb.tu_hu_id,
                     NULLIF(
                             CASE
-                                WHEN gs <= COALESCE(array_length(atb.grai_arr, 1), 0)
+                                WHEN gs <= COALESCE(ARRAY_LENGTH(atb.grai_arr, 1), 0)
                                     THEN TRIM(atb.grai_arr[gs])
                                     ELSE ''
                             END,
                             ''
-                    )              AS grai_raw,
+                    )  AS grai_raw,
                     atb.lot_number,
                     atb.best_before_date,
-                    gs             AS sort_ord,
+                    gs AS sort_ord,
                     ati.items_json
              FROM aggregated_tu_base atb
                       LEFT JOIN aggregated_tu_items ati ON ati.tu_hu_id = atb.tu_hu_id
@@ -301,7 +307,7 @@ BEGIN
                     CASE
                         WHEN grai_raw IS NOT NULL
                             THEN grai_raw
-                            ELSE '7613204.00307.' ||
+                            ELSE v_dummy_grai_prefix ||
                                  LPAD(COALESCE((SELECT poreference FROM inout_context), '0'), 10, '0') ||
                                  LPAD(
                                          (COUNT(*) FILTER (WHERE grai_raw IS NULL)

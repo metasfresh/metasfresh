@@ -55,6 +55,16 @@ CREATE TABLE report.saldobilanz_Report
     parentvalue3      character varying(60),
     parentname4       character varying(60),
     parentvalue4      character varying(60),
+    parentname5       character varying(60),
+    parentvalue5      character varying(60),
+    parentname6       character varying(60),
+    parentvalue6      character varying(60),
+    parentname7       character varying(60),
+    parentvalue7      character varying(60),
+    parentname8       character varying(60),
+    parentvalue8      character varying(60),
+    parentname9       character varying(60),
+    parentvalue9      character varying(60),
     name              character varying(60),
     namevalue         character varying(60),
     AccountType       char(1),
@@ -62,6 +72,16 @@ CREATE TABLE report.saldobilanz_Report
     sameyearsum       numeric,
     lastyearsum       numeric,
     euroSaldo         numeric,
+    L9_sameyearsum    numeric,
+    L9_lastyearsum    numeric,
+    L8_sameyearsum    numeric,
+    L8_lastyearsum    numeric,
+    L7_sameyearsum    numeric,
+    L7_lastyearsum    numeric,
+    L6_sameyearsum    numeric,
+    L6_lastyearsum    numeric,
+    L5_sameyearsum    numeric,
+    L5_lastyearsum    numeric,
     L4_sameyearsum    numeric,
     L4_lastyearsum    numeric,
     L3_sameyearsum    numeric,
@@ -91,6 +111,7 @@ CREATE FUNCTION report.saldobilanz_Report(IN p_Date                          Dat
                                           p_ExcludePostingTypeYearEnd        char(1) = 'N') RETURNS SETOF report.saldobilanz_Report
 AS
 $BODY$
+    -- make sure metasfresh/backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Balance_Sheet.sql is in sync!
 SELECT o.value                                                                                                  AS orgValue,
        o.name                                                                                                   AS orgName,
        parentname1,
@@ -101,6 +122,16 @@ SELECT o.value                                                                  
        parentvalue3,
        parentname4,
        parentvalue4,
+       parentname5,
+       parentvalue5,
+       parentname6,
+       parentvalue6,
+       parentname7,
+       parentvalue7,
+       parentname8,
+       parentvalue8,
+       parentname9,
+       parentvalue9,
        a.name,
        a.value,
        AccountType,
@@ -120,6 +151,16 @@ SELECT o.value                                                                  
                 ELSE NULL
         END)                                                                                                    AS L4_euroSaldo,
        --
+       SUM(CASE WHEN ParentValue9 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue9) AS L9_SameYearSum,
+       SUM(CASE WHEN ParentValue9 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue9) AS L9_LastYearSum,
+       SUM(CASE WHEN ParentValue8 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue8) AS L8_SameYearSum,
+       SUM(CASE WHEN ParentValue8 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue8) AS L8_LastYearSum,
+       SUM(CASE WHEN ParentValue7 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue7) AS L7_SameYearSum,
+       SUM(CASE WHEN ParentValue7 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue7) AS L7_LastYearSum,
+       SUM(CASE WHEN ParentValue6 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue6) AS L6_SameYearSum,
+       SUM(CASE WHEN ParentValue6 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue6) AS L6_LastYearSum,
+       SUM(CASE WHEN ParentValue5 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue5) AS L5_SameYearSum,
+       SUM(CASE WHEN ParentValue5 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue5) AS L5_LastYearSum,
        SUM(CASE WHEN ParentValue4 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_SameYearSum,
        SUM(CASE WHEN ParentValue4 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_LastYearSum,
        SUM(CASE WHEN ParentValue3 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_SameYearSum,
@@ -144,6 +185,16 @@ FROM (SELECT lvl.Lvl1_name                                                      
            , lvl.Lvl3_value                                                                                                                                                                                                       AS ParentValue3
            , lvl.Lvl4_name                                                                                                                                                                                                        AS ParentName4
            , lvl.Lvl4_value                                                                                                                                                                                                       AS ParentValue4
+           , lvl.Lvl5_name                                                                                                                                                                                                        AS ParentName5
+           , lvl.Lvl5_value                                                                                                                                                                                                       AS ParentValue5
+           , lvl.Lvl6_name                                                                                                                                                                                                        AS ParentName6
+           , lvl.Lvl6_value                                                                                                                                                                                                       AS ParentValue6
+           , lvl.Lvl7_name                                                                                                                                                                                                        AS ParentName7
+           , lvl.Lvl7_value                                                                                                                                                                                                       AS ParentValue7
+           , lvl.Lvl8_name                                                                                                                                                                                                        AS ParentName8
+           , lvl.Lvl8_value                                                                                                                                                                                                       AS ParentValue8
+           , lvl.Lvl9_name                                                                                                                                                                                                        AS ParentName9
+           , lvl.Lvl9_value                                                                                                                                                                                                       AS ParentValue9
            , lvl.Name                                                                                                                                                                                                             AS Name
            , lvl.Value                                                                                                                                                                                                            AS Value
            , ev.AccountType
@@ -210,8 +261,7 @@ FROM (SELECT lvl.Lvl1_name                                                      
         AND p.isActive = 'Y') a,
      ad_org o
 WHERE o.ad_org_id = p_ad_org_id
-ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value
+ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, parentValue5, parentValue6, parentValue7, parentValue8, parentValue9, value
 $BODY$
     LANGUAGE sql STABLE
 ;
-
