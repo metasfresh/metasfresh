@@ -248,11 +248,11 @@ public class OrderPayScheduleMaterialReceiptStepService
 					? existingLine
 					: OrderPayScheduleLine.from(order, termBreak);
 
-			// dueAmountActual stays null for Pending rows: it represents the amount actually
-			// allocated when an invoice is generated — not the planned receipt amount.
-			// Populating it for Pending rows breaks the assertion "DueAmt_Actual should be null".
-			// An invoice link means status is Awaiting_Pay or Paid; no link means Pending.
-			final Money dueAmtActual = status != OrderPayScheduleStatus.Pending ? dueAmt : null;
+			// dueAmountActual is reserved for the LC-step row (proforma grand total). Delivery
+			// sub-rows — Pending OR Awaiting_Pay OR Paid — always carry null DueAmt_Actual per
+			// business spec (see all split-payment feature files: every BL row has DueAmt_Actual=null).
+			// We pass null explicitly (not omit the call) so any stale value from a prior recompute
+			// invocation is cleared when an existing line is reused.
 
 			line.applyAndProcess(OrderPayScheduleLineContext.builder()
 					.status(status)
@@ -260,7 +260,7 @@ public class OrderPayScheduleMaterialReceiptStepService
 					.dueDate(receipt.getMovementDate().plusDays(termBreak.getOffsetDays()))
 					.baseAmount(receiptValue)        // receipt-row: BaseAmt = receipt.GrandTotal (with-tax)
 					.dueAmount(dueAmt)               // DueAmt = BaseAmt × break%
-					.dueAmountActual(dueAmtActual)   // only populated when an invoice is linked (Awaiting_Pay)
+					.dueAmountActual(null)           // delivery sub-rows: DueAmt_Actual always null (LC-step-only field)
 					.inoutId(receipt.getId())
 					.invoiceId(invoice != null ? invoice.getId() : null)
 					.build());
@@ -283,18 +283,16 @@ public class OrderPayScheduleMaterialReceiptStepService
 					? existingLine
 					: OrderPayScheduleLine.from(order, termBreak);
 
-			// Remainder rows are always Pending (no invoice linked), so dueAmountActual stays null:
-			// it represents the amount actually allocated when an invoice is generated, not the
-			// planned receipt amount. Populating it here breaks the assertion "DueAmt_Actual should be null".
-			// We explicitly pass null (not omit the call) so any stale dueAmountActual from prior
-			// invocations of this row — including the old buggy code — is cleared.
+			// Remainder rows: DueAmt_Actual always null (delivery sub-rows are LC-step-free per business spec).
+			// Pass null explicitly to clear any stale value when an existing remainder line is reused.
+			// Do NOT set referenceDate explicitly — let applyAndProcess null it via its Pending branch,
+			// matching the business spec (every BL-remainder row in split-payment features has ReferenceDate=null).
 			line.applyAndProcess(OrderPayScheduleLineContext.builder()
 					.status(OrderPayScheduleStatus.Pending)
-					.referenceDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.dueDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.baseAmount(remainderBaseAmt)    // remainder-row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax)
 					.dueAmount(remainderDueAmt)       // DueAmt = BaseAmt × break%
-					.dueAmountActual(null)            // remainder rows are always Pending → null
+					.dueAmountActual(null)            // delivery sub-rows: DueAmt_Actual always null
 					.inoutId(null)
 					.invoiceId(null)
 					.build());

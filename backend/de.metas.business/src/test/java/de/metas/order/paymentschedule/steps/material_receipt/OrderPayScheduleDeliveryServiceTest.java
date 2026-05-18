@@ -562,7 +562,7 @@ class OrderPayScheduleDeliveryServiceTest
 			assertThat(second.getDueAmount())
 					.as("idempotence row[%d] dueAmount [%s]", i, cell.label)
 					.isEqualByComparingTo(first.getDueAmount());
-			// dueAmountActual may be null for Pending rows; use isEqualTo (handles null) not isEqualByComparingTo.
+			// dueAmountActual is always null for delivery sub-rows; isEqualTo handles null safely.
 			assertThat(second.getDueAmountActual())
 					.as("idempotence row[%d] dueAmountActual [%s]", i, cell.label)
 					.isEqualTo(first.getDueAmountActual());
@@ -621,20 +621,12 @@ class OrderPayScheduleDeliveryServiceTest
 			assertThat(r1Line.getDueAmount())
 					.as("[%s] R1 dueAmount = R1_VALUE × 70% (I-1)", cell.label)
 					.isEqualByComparingTo(R1_DUE_ACTUAL);
-			// dueAmountActual is only populated when an invoice is linked (status=Awaiting_Pay/Paid).
-			// For Pending rows it must stay null (business spec; mirrors cucumber assertion in 2d94c8df563).
-			if (cell.expectedR1Status == OrderPayScheduleStatus.Pending)
-			{
-				assertThat(r1Line.getDueAmountActual())
-						.as("[%s] R1 dueAmountActual null (Pending — no invoice linked)", cell.label)
-						.isNull();
-			}
-			else
-			{
-				assertThat(r1Line.getDueAmountActual())
-						.as("[%s] R1 dueAmountActual = R1_VALUE × 70% (I-1)", cell.label)
-						.isEqualByComparingTo(R1_DUE_ACTUAL);
-			}
+			// Delivery sub-rows ALWAYS carry null DueAmt_Actual — regardless of status. DueAmt_Actual is
+			// reserved for the LC-step row (proforma grand total). Mirrors the cucumber assertion: every BL
+			// row in every split-payment feature has DueAmt_Actual=null (PR or WP, with or without invoice link).
+			assertThat(r1Line.getDueAmountActual())
+					.as("[%s] R1 dueAmountActual null (delivery sub-rows always null)", cell.label)
+					.isNull();
 			assertThat(r1Line.getStatus())
 					.as("[%s] R1 status", cell.label)
 					.isEqualTo(cell.expectedR1Status);
@@ -665,20 +657,10 @@ class OrderPayScheduleDeliveryServiceTest
 			assertThat(r2Line.getDueAmount())
 					.as("[%s] R2 dueAmount = BaseAmt × 70% (I-1)", cell.label)
 					.isEqualByComparingTo(expectedR2Due);
-			// dueAmountActual is only populated when an invoice is linked (status=Awaiting_Pay/Paid).
-			// For Pending rows it must stay null (business spec; mirrors cucumber assertion in 2d94c8df563).
-			if (cell.expectedR2Status == OrderPayScheduleStatus.Pending)
-			{
-				assertThat(r2Line.getDueAmountActual())
-						.as("[%s] R2 dueAmountActual null (Pending — no invoice linked)", cell.label)
-						.isNull();
-			}
-			else
-			{
-				assertThat(r2Line.getDueAmountActual())
-						.as("[%s] R2 dueAmountActual = BaseAmt × 70% (I-1)", cell.label)
-						.isEqualByComparingTo(expectedR2Due);
-			}
+			// Delivery sub-rows ALWAYS carry null DueAmt_Actual — see R1 assertion above for rationale.
+			assertThat(r2Line.getDueAmountActual())
+					.as("[%s] R2 dueAmountActual null (delivery sub-rows always null)", cell.label)
+					.isNull();
 			assertThat(r2Line.getStatus())
 					.as("[%s] R2 status", cell.label)
 					.isEqualTo(cell.expectedR2Status);
