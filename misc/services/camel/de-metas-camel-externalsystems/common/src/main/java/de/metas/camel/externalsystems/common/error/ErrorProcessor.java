@@ -31,6 +31,8 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import org.apache.camel.Exchange;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
@@ -133,7 +135,19 @@ public class ErrorProcessor
 			final JsonApiResponse apiResponse = objectMapper
 					.readValue(response, JsonApiResponse.class);
 
-			final JsonError jsonError = objectMapper.convertValue(apiResponse.getEndpointResponse(), JsonError.class)
+			if (apiResponse.getEndpointResponse() == null)
+			{
+				return Optional.empty();
+			}
+
+			final JsonError convertedError = objectMapper.convertValue(apiResponse.getEndpointResponse(), JsonError.class);
+
+			if (!isJsonErrorShaped(convertedError))
+			{
+				return Optional.empty();
+			}
+
+			final JsonError jsonError = convertedError
 					.toBuilder()
 					.requestId(apiResponse.getRequestId())
 					.build();
@@ -161,12 +175,27 @@ public class ErrorProcessor
 			final JsonError jsonError = JsonObjectMapperHolder.sharedJsonObjectMapper()
 					.readValue(response, JsonError.class);
 
+			if (!isJsonErrorShaped(jsonError))
+			{
+				return Optional.empty();
+			}
+
 			return Optional.of(jsonError);
 		}
 		catch (final JsonProcessingException e)
 		{
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * The shared ObjectMapper is configured to ignore unknown properties, so a non-error payload
+	 * may parse into a {@link JsonError} with no items. Treat such partial deserialisations as
+	 * "not a JsonError" so the caller falls back to the stacktrace path.
+	 */
+	private static boolean isJsonErrorShaped(@Nullable final JsonError jsonError)
+	{
+		return jsonError != null && jsonError.getErrors() != null && !jsonError.getErrors().isEmpty();
 	}
 
 	@NonNull
